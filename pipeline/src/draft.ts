@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import { z } from 'zod';
 import { defaultFormat, formatSpec, getChannel, loadPrompt } from './config.js';
 import { parseJson } from './claude.js';
@@ -41,13 +42,20 @@ export interface DraftOptions {
   ideaId?: string;
   format?: string;
   publishAt?: string;
+  /**
+   * 여행 메모 파일 경로. 네이버 롱폼처럼 본인 경험이 원재료인 글에 쓴다.
+   * 메모가 있으면 소재 뱅크 없이도 초안을 만들 수 있다.
+   */
+  notesPath?: string;
 }
 
 export async function createDraft(opts: DraftOptions): Promise<{ path: string; meta: ContentMeta }> {
   const cfg = getChannel(opts.channel);
   const format = opts.format ?? defaultFormat(cfg);
   const spec = formatSpec(cfg, format);
-  const idea = pickIdea(cfg, opts.ideaId);
+  const notes = opts.notesPath ? readNotes(opts.notesPath) : undefined;
+  // 메모가 있으면 그것이 원재료다. 없을 때만 소재 뱅크에서 꺼낸다.
+  const idea = notes && !opts.ideaId ? undefined : pickIdea(cfg, opts.ideaId);
 
   const publishAt =
     opts.publishAt ??
@@ -60,7 +68,7 @@ export async function createDraft(opts: DraftOptions): Promise<{ path: string; m
     undefined;
 
   const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-  const id = `${cfg.id}-${stamp}-${slugify(idea?.title ?? format)}`;
+  const id = `${cfg.id}-${stamp}-${slugify(idea?.title ?? notes?.title ?? format)}`;
   const base = {
     id,
     channel: cfg.id,
@@ -73,7 +81,7 @@ export async function createDraft(opts: DraftOptions): Promise<{ path: string; m
     createdAt: new Date().toISOString(),
   };
 
-  const prompt = buildPrompt(cfg, spec, idea);
+  const prompt = buildPrompt(cfg, spec, idea, notes?.text);
   const system = loadPrompt(cfg.id) || undefined;
 
   let meta: ContentMeta;
@@ -138,8 +146,25 @@ function pickIdea(cfg: ChannelConfig, ideaId?: string): Idea | undefined {
   return unused;
 }
 
-function buildPrompt(cfg: ChannelConfig, spec: FormatSpec, idea?: Idea): string {
+function buildPrompt(
+  cfg: ChannelConfig,
+  spec: FormatSpec,
+  idea?: Idea,
+  notes?: string,
+): string {
   const parts = [channelBrief(cfg), performanceBrief(cfg.id), formatBrief(spec)];
+
+  if (notes) {
+    parts.push(
+      [
+        '## 여행 메모 (원재료)',
+        notes,
+        '',
+        '이 메모가 글의 사실 관계 전부입니다. 메모에 없는 장소·가격·시간을 채워 넣지 마세요.',
+        '메모가 단편적이면 문장으로 잇되, 없는 사건을 만들지는 마세요.',
+      ].join('\n'),
+    );
+  }
 
   if (idea) {
     parts.push(
@@ -182,6 +207,14 @@ function formatBrief(spec: FormatSpec): string {
     }
   }
   return lines.join('\n');
+}
+
+function readNotes(p: string): { title: string; text: string } {
+  if (!fs.existsSync(p)) throw new Error(`메모 파일을 찾을 수 없습니다: ${p}`);
+  const text = fs.readFileSync(p, 'utf8').trim();
+  if (!text) throw new Error(`메모 파일이 비어 있습니다: ${p}`);
+  const firstHeading = /^#{1,6}\s+(.+)$/m.exec(text)?.[1];
+  return { title: firstHeading ?? text.split('\n')[0]!.slice(0, 40), text };
 }
 
 function slugify(s: string): string {

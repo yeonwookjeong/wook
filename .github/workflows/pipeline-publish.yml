@@ -2,9 +2,10 @@ name: pipeline · 발행
 
 # 발행 시각이 지난 콘텐츠를 인스타/스레드에 올린다.
 # 네이버는 브라우저 자동화라 여기서 돌리지 않는다 (채널 설정 local_only: true).
+# 보류 중: 발행할 콘텐츠가 생기면 아래 schedule 주석을 해제한다.
 on:
-  schedule:
-    - cron: '*/15 * * * *'
+  # schedule:
+  #   - cron: '*/15 * * * *'
   workflow_dispatch:
     inputs:
       dry_run:

@@ -1,8 +1,9 @@
 name: pipeline · 성과 수집
 
+# 보류 중: 발행된 콘텐츠가 쌓이면 아래 schedule 주석을 해제한다.
 on:
-  schedule:
-    - cron: '0 18 * * *'     # 매일 03:00 KST
+  # schedule:
+  #   - cron: '0 18 * * *'   # 매일 03:00 KST
   workflow_dispatch:
 
 concurrency:

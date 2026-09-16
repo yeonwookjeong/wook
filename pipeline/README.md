@@ -1,11 +1,28 @@
 # 콘텐츠 파이프라인
 
-6개 채널을 1인이 돌리기 위한 운영 시스템. 두 트랙으로 나뉜다.
+6개 채널을 1인이 돌리기 위한 운영 시스템.
+
+## 지금 켜져 있는 범위
+
+**리서치(소재 발굴)만 자동으로 돈다.** 글쓰기는 네이버 블로그 하나만 대상이고,
+여행 메모가 입력이라 수동으로 실행한다.
+
+| 단계 | 상태 | 대상 |
+|---|---|---|
+| 리서치 · 소재 뱅크 | **켜짐** — 주 1회 자동 | Toryvel · 할거없나 |
+| 글쓰기 (초안 생성) | 수동 실행 | 네이버 블로그만 |
+| 이미지 렌더 · 발행 | **보류** — 코드는 있고 스케줄만 꺼둠 | 인스타 · 스레드 |
+| 성과 수집 | **보류** — 발행분이 쌓이면 켠다 | 전 채널 |
+
+보류 중인 워크플로는 지운 게 아니라 `schedule` 만 주석 처리했다.
+발행을 시작할 때 주석을 풀면 된다.
+
+## 채널 트랙
 
 | 트랙 | 채널 | 파이프라인이 하는 일 |
 |---|---|---|
-| **auto** | Toryvel · 할거없나 · 네이버 블로그 | 소재 발굴 → 초안 → 이미지 렌더 → 발행까지 |
-| **assist** | 만타 · Woogi Jeong · 일본어 스레드 | 소재·기획·초안까지. 촬영본이 필요하므로 제작은 사람이 한다 |
+| **auto** | Toryvel · 할거없나 · 네이버 블로그 | 리서치 기반이라 전 구간 자동화가 가능한 채널 |
+| **assist** | 만타 · Woogi Jeong · 일본어 스레드 | 촬영본이 있어야 하므로 소재·기획까지만 |
 
 일본어 스레드는 `automation: none`. 실시간성이 이 채널의 신뢰도라서 자동 발행 대상이 아니고,
 파이프라인은 다른 채널에서 나온 일본 관련 소재를 교차 공유 후보로 표시만 한다.
@@ -21,13 +38,17 @@ cp .env.example .env          # ANTHROPIC_API_KEY 만 있으면 초안까지 가
 npx playwright install chromium
 
 npm run pipe -- status                          # 현황
+npm run pipe -- ideas:list                      # 소재 뱅크 보기
 npm run pipe -- ideas --channel toryvel -n 6    # 소재 뱅크 채우기 (웹 검색 사용)
-npm run pipe -- ideas:list --channel toryvel
-npm run pipe -- draft --channel toryvel         # 미사용 소재 1건 → 초안
-npm run pipe -- render --id <content-id>        # 슬라이드 → PNG
-npm run pipe -- approve --id <content-id>       # 발행 대기로 전환
-npm run pipe -- publish                         # 발행 시각 지난 건 업로드
+
+# 네이버 블로그 글쓰기 — 여행 메모가 입력이다
+cp notes/TEMPLATE.md notes/2026-09-14-강릉.md
+npm run pipe -- draft --channel naver --notes notes/2026-09-14-강릉.md
+npm run pipe -- naver:login                     # 최초 1회
+npm run pipe -- naver:draft --id <content-id>   # 네이버에 임시저장
 ```
+
+발행(인스타/스레드)을 켤 때는 `render → approve → publish` 가 이어진다. README 아래쪽 참고.
 
 ## 흐름
 
@@ -50,7 +71,8 @@ ideas ─→ data/ideas.json (소재 뱅크)
 
 ## 승인 = PR 머지
 
-`pipeline · 배치 제작` 워크플로가 주 1회 초안과 이미지를 만들어 PR 을 연다.
+`pipeline · 리서치` 워크플로가 주 1회 소재를 뽑아 PR 을 연다.
+발행 단계를 켜면 같은 방식으로 초안과 이미지도 PR 로 올라온다.
 폰에서 PR 을 읽고 머지하면 끝이다. 머지된 콘텐츠는 각자의 `publishAt` 에 자동으로 올라간다.
 내리고 싶으면 파일을 지우거나 `publishAt` 을 비우고 머지한다.
 
@@ -94,10 +116,10 @@ npm run pipe -- naver:draft --id <id> --dry   # 저장 직전에 멈춤
 
 | 워크플로 | 주기 | 하는 일 |
 |---|---|---|
-| `pipeline-batch` | 월 09:00 KST | 소재 보충 + 초안 + 렌더 → PR |
-| `pipeline-publish` | 15분마다 | 발행 시각 지난 건 업로드 |
-| `pipeline-insights` | 매일 03:00 KST | 성과 수집 |
-| `pipeline-report` | 월 09:00 KST | 주간 리포트 이슈 |
+| `pipeline-research` | 월 09:00 KST | 소재 뱅크 보충 → PR |
+| `pipeline-report` | 월 09:00 KST | 주간 리포트 이슈 (소재 잔량 경고 포함) |
+| `pipeline-publish` | *보류* | 발행 시각 지난 건 업로드 |
+| `pipeline-insights` | *보류* | 성과 수집 |
 
 필요한 Secrets 는 `.env.example` 과 같은 이름이다.
 `PUBLIC_ASSET_BASE_URL` 과 `GRAPH_API_VERSION` 은 Secrets 가 아니라 Variables 로 넣는다.

@@ -1,0 +1,73 @@
+name: pipeline · 리서치
+
+# 주 1회 소재 뱅크를 채운다. 지금 단계에서 자동으로 도는 것은 이 워크플로 하나다.
+# 글쓰기(초안 생성)는 네이버 블로그만 대상이고, 여행 메모가 있어야 하므로 수동으로 돌린다.
+on:
+  schedule:
+    - cron: '0 0 * * 1'      # 매주 월요일 09:00 KST
+  workflow_dispatch:
+    inputs:
+      channels:
+        description: '대상 채널 (쉼표 구분)'
+        required: false
+        default: 'toryvel,halgeo'
+      count:
+        description: '채널당 새로 뽑을 소재 수'
+        required: false
+        default: '6'
+
+concurrency:
+  group: pipeline-research
+  cancel-in-progress: false
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: pipeline/package-lock.json
+      - run: npm ci
+
+      - name: 소재 뱅크 채우기
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          set -euo pipefail
+          CHANNELS="${{ inputs.channels || 'toryvel,halgeo' }}"
+          for ch in ${CHANNELS//,/ }; do
+            echo "::group::$ch"
+            npm run --silent pipe -- ideas --channel "$ch" -n "${{ inputs.count || 6 }}"
+            echo "::endgroup::"
+          done
+
+      - name: PR 생성
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE"
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pipeline/data
+          if git diff --cached --quiet; then
+            echo "새 소재 없음 — PR 을 만들지 않습니다."
+            exit 0
+          fi
+          BRANCH="pipeline/research-$(date -u +%Y%m%d-%H%M)"
+          git checkout -b "$BRANCH"
+          git commit -m "chore(pipeline): 소재 리서치 $(date -u +%Y-%m-%d)"
+          git push -u origin "$BRANCH"
+          gh pr create \
+            --title "소재 리서치 $(date -u +%Y-%m-%d)" \
+            --body "$(npm --prefix pipeline run --silent pipe -- ideas:list)" \
+            --base "${{ github.event.repository.default_branch }}"

@@ -18,7 +18,8 @@ const USAGE = `
   status                          전체 채널 현황
   ideas    --channel <id> [-n 6]  소재 뱅크 채우기 (auto 트랙은 웹 리서치 사용)
   ideas:list [--channel <id>]     뱅크에 쌓인 소재 보기
-  draft    --channel <id>         소재 1건으로 초안 생성 [--idea <id>] [--format <f>] [--at <ISO>]
+  draft    --channel <id>         초안 생성 [--idea <id>] [--notes <파일>] [--format <f>] [--at <ISO>]
+                                  네이버 롱폼은 --notes 로 여행 메모를 넣는다
   render   [--id <id>]            초안 슬라이드를 PNG 로 렌더 (없으면 draft 전체)
   approve  --id <id>              초안을 발행 대기 상태로 전환
   publish  [--channel <id>]       발행 시각이 지난 건을 올린다 [--dry] [--include-drafts]
@@ -40,6 +41,7 @@ async function main(): Promise<void> {
       idea: { type: 'string' },
       format: { type: 'string', short: 'f' },
       at: { type: 'string' },
+      notes: { type: 'string' },
       id: { type: 'string' },
       days: { type: 'string' },
       dry: { type: 'boolean', default: false },
@@ -85,6 +87,7 @@ async function main(): Promise<void> {
       const out = await createDraft({
         channel,
         ...(values.idea ? { ideaId: values.idea } : {}),
+        ...(values.notes ? { notesPath: values.notes } : {}),
         format: values.format ?? defaultFormat(cfg),
         ...(values.at ? { publishAt: values.at } : {}),
       });

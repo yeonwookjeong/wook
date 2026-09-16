@@ -19,10 +19,16 @@ export function weeklyReport(opts: { days?: number } = {}): string {
 
     lines.push(`## ${cfg.name} \`${cfg.track}\``);
     lines.push(
-      `- 대기: 소재 ${bank.length} / 초안 ${drafts.length} / 발행대기 ${approved.length} / 누적발행 ${published.length}`,
+      cfg.research?.enabled
+        ? `- 대기: 소재 ${bank.length} / 초안 ${drafts.length} / 발행대기 ${approved.length} / 누적발행 ${published.length}`
+        : `- 대기: 초안 ${drafts.length} / 발행대기 ${approved.length} / 누적발행 ${published.length} (소재는 촬영본·메모에서 나온다)`,
     );
 
-    if (bank.length <= 2) lines.push(`- ⚠️ 소재 뱅크 고갈 임박 — \`pipe ideas --channel ${cfg.id}\` 필요`);
+    // 리서치로 소재가 나오는 채널만 경고한다.
+    // 만타·색보정·스레드는 촬영본이, 네이버는 여행 메모가 입력이라 뱅크 잔량이 의미 없다.
+    if (cfg.research?.enabled && bank.length <= 2) {
+      lines.push(`- ⚠️ 소재 뱅크 고갈 임박 — \`pipe ideas --channel ${cfg.id}\` 필요`);
+    }
 
     const recent = latestPerMedia(insights.filter((r) => r.channel === cfg.id && r.date >= since));
     if (recent.length) {
