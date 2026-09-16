@@ -1,0 +1,34 @@
+id: manta
+name: 만타 (MANTA)
+track: assist               # assist = 소재/기획/초안만. 최종 제작·발행은 사람
+language: ko
+bio: "여행했던 날들을 까먹고 싶지 않아서 만들었습니다."
+positioning: "gogossi 스타일 — 여행 중 실시간 기록, 힘 뺀 솔직한 톤."
+targets:
+  instagram: manta
+  youtube: manta
+  threads: manta
+formats:
+  - id: reels
+    default: true
+    note: "목소리 내레이션 스토리텔링. 내레이션 스크립트 + 타이포 오버레이 문구 생성."
+    duration_sec: { min: 20, max: 60 }
+  - id: feed
+    note: "사진/영상 캐러셀 + 감상·있었던 이야기·추천 코멘트"
+series:
+  - { id: fragment, name: "오늘의 조각", note: "일상/여행 속 짧은 순간 + 감성 서사. 조회수 1위 포맷" }
+  - { id: temperature, name: "도시의 온도", note: "장소 분위기·색감 중심 릴스" }
+  - { id: diary, name: "비주얼 다이어리", note: "사진 캐러셀 + 이야기" }
+tone:
+  voice: "구어체 해요체. 꾸미지 않음. 문장 짧게."
+  rules:
+    - "정보 나열 금지 — 서사형으로 고정 (데이터: 서사형 1,266회 vs 정보형 246~370회)."
+    - "타이포 오버레이는 영문 소문자 시적 단문 (예: falling in love with SEOUL, KR)."
+    - "추천/설명은 캡션 하단에만. 영상 본문은 이야기만."
+performance_baseline:
+  instagram: { followers: 379, views_3posts: 1400 }
+  youtube:   { subscribers: 6, views_3posts: 7500, note: "알고리즘 도달 확인 — 최우선 배포처" }
+  tiktok:    { followers: 10, views_3posts: 1450 }
+publish:
+  slots: ["THU 20:00"]
+  timezone: "Asia/Seoul"

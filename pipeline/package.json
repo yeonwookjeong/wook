@@ -1,0 +1,23 @@
+{
+  "name": "@wook/pipeline",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Toryvel / 할거없나 / 네이버블로그 발행 자동화 + 만타·Woogi·일본어스레드 기획 지원 파이프라인",
+  "scripts": {
+    "pipe": "tsx src/cli.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.126.0",
+    "gray-matter": "^4.0.3",
+    "playwright": "^1.56.0",
+    "yaml": "^2.8.1",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.20.0",
+    "typescript": "~5.9.0"
+  }
+}

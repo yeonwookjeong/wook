@@ -1,0 +1,53 @@
+name: pipeline · 성과 수집
+
+on:
+  schedule:
+    - cron: '0 18 * * *'     # 매일 03:00 KST
+  workflow_dispatch:
+
+concurrency:
+  group: pipeline-insights
+  cancel-in-progress: true
+
+jobs:
+  insights:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: pipeline/package-lock.json
+      - run: npm ci
+
+      - name: 수집
+        env:
+          GRAPH_API_VERSION: ${{ vars.GRAPH_API_VERSION }}
+          IG_TOKEN_TORYVEL: ${{ secrets.IG_TOKEN_TORYVEL }}
+          IG_USER_ID_TORYVEL: ${{ secrets.IG_USER_ID_TORYVEL }}
+          IG_TOKEN_HALGEO: ${{ secrets.IG_TOKEN_HALGEO }}
+          IG_USER_ID_HALGEO: ${{ secrets.IG_USER_ID_HALGEO }}
+          IG_TOKEN_MANTA: ${{ secrets.IG_TOKEN_MANTA }}
+          IG_USER_ID_MANTA: ${{ secrets.IG_USER_ID_MANTA }}
+          IG_TOKEN_WOOGI: ${{ secrets.IG_TOKEN_WOOGI }}
+          IG_USER_ID_WOOGI: ${{ secrets.IG_USER_ID_WOOGI }}
+          THREADS_TOKEN_TORYVEL: ${{ secrets.THREADS_TOKEN_TORYVEL }}
+          THREADS_USER_ID_TORYVEL: ${{ secrets.THREADS_USER_ID_TORYVEL }}
+        run: npm run --silent pipe -- insights
+
+      - name: 커밋
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE"
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pipeline/data
+          git diff --cached --quiet && exit 0
+          git commit -m "chore(pipeline): 성과 데이터 $(date -u +%Y-%m-%d) [skip ci]"
+          git push

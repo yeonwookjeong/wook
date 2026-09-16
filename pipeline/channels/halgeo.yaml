@@ -1,0 +1,54 @@
+id: halgeo
+name: 할거없나 (halgeo.guide)
+track: auto
+language: ko
+owner: "파트너 공동 운영 — 발행 전 파트너 확인 필요"
+bio: "오늘 뭐하지, 를 해결하는 국내 놀거리 가이드"
+positioning: >
+  국내 일상 재미 전문가. 데이트 코스, 동네 맛집, 팝업/행사, 영화, 집에서 노는 법.
+  Toryvel과 같은 메커니즘(정보 큐레이션)의 국내·일상 밀착형 버전.
+targets:
+  instagram: halgeo.guide
+formats:
+  - id: carousel
+    default: true
+    slides: { min: 5, max: 9 }
+    ratio: "4:5"
+    structure:
+      - { role: hook,    count: 1, note: "상황 지정형 훅 — '비 오는 주말, 실내에서'" }
+      - { role: item,    count: 5, note: "장소/활동 1개씩. 이름 + 위치 + 왜 여기인지 한 줄" }
+      - { role: insight, count: 1, note: "묶음의 기준을 드러내는 마무리" }
+  - id: single
+    slides: { min: 1, max: 1 }
+    note: "팝업/행사 단건 공지. 기간·장소·가격 필수"
+tone:
+  voice: "친구가 알려주듯 가볍고 빠른 구어체. 반말 아님, 해요체."
+  banned_phrases:
+    - "여기 모르면 간첩"
+    - "찐맛집"
+    - "가성비 甲"
+    - "필수 코스"
+  rules:
+    - "장소는 반드시 '이름 · 자치구/동' 형태로 표기."
+    - "가격·운영시간·기간은 확인된 것만 쓰고, 불확실하면 생략."
+    - "슬라이드당 한국어 70자 이내."
+    - "이모지는 슬라이드당 최대 1개."
+research:
+  enabled: true
+  query_hints:
+    - "서울 팝업스토어 일정"
+    - "이번 주말 서울 전시 행사"
+    - "데이트 코스 추천 동네"
+geo:
+  # 지도 웹앱 연동은 나중 단계. 지금은 좌표만 같이 뽑아 JSON으로 적재해 둔다.
+  export: true
+  default_city: "서울"
+theme:
+  bg: "#FFFDF7"
+  fg: "#1A1A1A"
+  accent: "#FF5A36"
+  font: "'Pretendard', sans-serif"
+hashtags: ["#할거없나", "#주말뭐하지", "#데이트코스", "#서울나들이", "#팝업스토어"]
+publish:
+  slots: ["WED 18:00", "SAT 10:00"]
+  timezone: "Asia/Seoul"

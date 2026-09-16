@@ -1,0 +1,23 @@
+id: jp-threads
+name: 일본어 스레드
+track: assist
+automation: none            # 예약 발행 없음. 매일 직접 기록 — 실시간성이 신뢰도의 핵심
+language: ja
+positioning: "독립 트랙. 어학 학습 기록. 일본 관련 소재가 자연 발생한 채널에서만 교차 공유."
+targets:
+  threads: "CHANGE_ME"
+formats:
+  - id: note
+    default: true
+    note: "그날 배운 표현 1개 + 실제로 쓴 문장 1개. 200자 이내."
+tone:
+  voice: "です・ます体. 학습자 시점 그대로. 완벽한 척 하지 않음."
+  rules:
+    - "AI가 대신 쓰지 않는다. 파이프라인은 '오늘 쓸 표현 후보'만 제안한다."
+    - "다른 채널 소재 중 일본 관련 건이 있으면 교차 공유 후보로 표시."
+performance_baseline:
+  views_week1: 30000
+  note: "파이프라인 전체에서 유일하게 반응이 검증된 채널"
+publish:
+  slots: ["DAILY manual"]
+  timezone: "Asia/Seoul"

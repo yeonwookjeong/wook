@@ -1,0 +1,35 @@
+name: pipeline · 주간 리포트
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'      # 매주 월요일 09:00 KST
+  workflow_dispatch:
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: pipeline/package-lock.json
+      - run: npm ci
+
+      - name: 리포트 이슈 생성
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          npm run --silent pipe -- report --days 7 > /tmp/report.md
+          gh issue create \
+            --title "주간 리포트 $(date -u +%Y-%m-%d)" \
+            --body-file /tmp/report.md \
+            --repo "${{ github.repository }}"

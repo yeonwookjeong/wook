@@ -1,0 +1,51 @@
+id: toryvel
+name: Toryvel (토리블)
+track: auto                 # auto = 소재→초안→이미지→발행 전구간 자동
+language: ko
+bio: "알고 가면 완전히 달라지는 여행, 가기 전에 보는 그곳의 이야기"
+positioning: >
+  뻔한 정보 나열이 아닌, 장소에 숨겨진 반전 서사와 인과관계를 전하는 여행 아카이브.
+  해외/여행지 대상.
+targets:
+  instagram: toryvel_
+  threads: toryvel_
+formats:
+  - id: carousel
+    default: true
+    slides: { min: 5, max: 8 }
+    ratio: "4:5"
+    structure:
+      - { role: hook,    count: 1, note: "고정관념을 깨는 반전" }
+      - { role: context, count: 3, note: "경제·기술·문화 배경 근거의 시대적 변천사, 시대순" }
+      - { role: insight, count: 1, note: "그래서 지금 왜 가야 하는가" }
+  - id: utility
+    slides: { min: 3, max: 5 }
+    note: "라이트업 시간·입장 팁 등 실용 정보. 서사 콘텐츠와 분리 발행"
+tone:
+  voice: "담백하고 절제된 어조. 단정형 종결."
+  banned_phrases:
+    - "알고 계셨나요?"
+    - "저장 필수"
+    - "꼭 가봐야 할"
+    - "인생샷"
+    - "여러분"
+  rules:
+    - "슬라이드당 한국어 90자 이내. 스크롤 중 10초 안에 핵심 전달."
+    - "각 슬라이드는 볼드 소제목 + 핵심 연도/숫자 키워드를 반드시 포함."
+    - "감성 형용사보다 구체적 사실(연도, 금액, 인물명)을 우선."
+    - "이모지 사용 금지."
+research:
+  enabled: true
+  query_hints:
+    - "landmark original purpose controversy history"
+    - "도시 건축물 원래 용도 반전"
+    - "관광지 숨겨진 역사 배경"
+theme:
+  bg: "#12100E"
+  fg: "#F2EDE4"
+  accent: "#C8A04A"
+  font: "'Noto Serif KR', serif"
+hashtags: ["#토리블", "#여행", "#여행정보", "#해외여행", "#여행기록"]
+publish:
+  slots: ["TUE 19:30", "FRI 19:30"]
+  timezone: "Asia/Seoul"

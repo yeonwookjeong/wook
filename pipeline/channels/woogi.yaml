@@ -1,0 +1,37 @@
+id: woogi
+name: Woogi Jeong (색보정)
+track: assist
+language: en
+bio: |
+  Chasing the colors I don't want to forget.
+  Photo · Film · Color
+
+  📍 Seoul, South Korea
+  ✉️ DM for collabs
+positioning: "kosnio 스타일 — 완성도로 말하는 계정. '배우는 중' 프레이밍 배제."
+targets:
+  instagram: woogi.jeong
+formats:
+  - id: grade_compare
+    default: true
+    name: "Same clip, different grade"
+    note: "원본 1개 → 3~4가지 톤 비교. 내레이션 선택적."
+  - id: before_after
+    name: "이 장소엔 이 톤"
+    note: "만타 미사용 원본 재활용. Before & After."
+tone:
+  voice: "Concise English. Technical but not lecturing. No hedging, no 'still learning'."
+  rules:
+    - "Name the actual adjustments (LUT, lift/gamma/gain, HSL target) — never vague 'warm tone'."
+    - "One claim per caption. No hashtag stuffing beyond the set list."
+    - "Never apologise for the work or frame it as practice."
+highlights: ["Gear", "Grade", "Work"]
+source_hints:
+  - FilmFreebies
+  - Aziz Ben Amara
+  - Pexels
+  - "권장 조합: 인물 2 · 풍경 2 · 야경 1"
+hashtags: ["#colorgrading", "#colorist", "#davinciresolve", "#filmlook", "#seoul"]
+publish:
+  slots: ["MON 21:00"]
+  timezone: "Asia/Seoul"

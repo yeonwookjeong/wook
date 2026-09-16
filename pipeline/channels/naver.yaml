@@ -1,0 +1,37 @@
+id: naver
+name: 네이버 블로그
+track: auto                 # 단, 발행은 브라우저 자동화(로컬 전용) — API 없음
+language: ko
+bio: "여행 + 일부 라이프스타일. 만타의 텍스트 확장판이 아닌 독립 채널."
+positioning: >
+  사진 + 긴 글 서술 기록. 누적 방문자 14,000명 자산 위에 쌓는다.
+  수익화는 애드포스트.
+targets:
+  naver_blog_id: "CHANGE_ME"
+formats:
+  - id: longform
+    default: true
+    structure:
+      - { role: lead,     count: 1, note: "도입 — 언제/어디를 왜 갔는지 3~4문장" }
+      - { role: section,  count: 4, note: "소제목 + 본문 3~6문단 + 사진 자리" }
+      - { role: practical,count: 1, note: "가는 법·비용·소요시간 등 실용 정보 표" }
+      - { role: closing,  count: 1, note: "다음 글 예고 또는 한 줄 회고" }
+    length: { min_chars: 1500, max_chars: 3000 }
+tone:
+  voice: "1인칭 회고체. 담담하고 구체적. 검색 유입을 의식하되 광고 문투 금지."
+  banned_phrases:
+    - "내돈내산"
+    - "강추합니다"
+    - "안 가면 후회"
+  rules:
+    - "제목에 지역명 + 핵심 키워드를 자연스럽게 포함 (검색 유입)."
+    - "소제목은 H3. 문단 3~4줄마다 사진 자리 표시자 [PHOTO:n]를 넣는다."
+    - "확인되지 않은 가격·영업시간은 쓰지 않는다."
+seo:
+  keyword_slots: 3
+  meta_tags_max: 10
+publish:
+  mode: draft               # draft | schedule — 기본은 임시저장, 사람이 최종 확인 후 발행
+  local_only: true          # CI에서 실행 금지 (데이터센터 IP 차단/제재 회피)
+  slots: ["SUN 21:00"]
+  timezone: "Asia/Seoul"

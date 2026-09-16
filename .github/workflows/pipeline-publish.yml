@@ -1,0 +1,58 @@
+name: pipeline · 발행
+
+# 발행 시각이 지난 콘텐츠를 인스타/스레드에 올린다.
+# 네이버는 브라우저 자동화라 여기서 돌리지 않는다 (채널 설정 local_only: true).
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: '실제로 올리지 않고 대상만 확인'
+        type: boolean
+        default: false
+
+concurrency:
+  group: pipeline-publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: pipeline
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: pipeline/package-lock.json
+      - run: npm ci
+
+      - name: 발행
+        env:
+          PUBLIC_ASSET_BASE_URL: ${{ vars.PUBLIC_ASSET_BASE_URL }}
+          GRAPH_API_VERSION: ${{ vars.GRAPH_API_VERSION }}
+          IG_TOKEN_TORYVEL: ${{ secrets.IG_TOKEN_TORYVEL }}
+          IG_USER_ID_TORYVEL: ${{ secrets.IG_USER_ID_TORYVEL }}
+          IG_TOKEN_HALGEO: ${{ secrets.IG_TOKEN_HALGEO }}
+          IG_USER_ID_HALGEO: ${{ secrets.IG_USER_ID_HALGEO }}
+          THREADS_TOKEN_TORYVEL: ${{ secrets.THREADS_TOKEN_TORYVEL }}
+          THREADS_USER_ID_TORYVEL: ${{ secrets.THREADS_USER_ID_TORYVEL }}
+        run: npm run --silent pipe -- publish --include-drafts ${{ inputs.dry_run && '--dry' || '' }}
+
+      - name: 발행 기록 커밋
+        if: ${{ !inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE"
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pipeline/content
+          git diff --cached --quiet && exit 0
+          git commit -m "chore(pipeline): 발행 기록 갱신 [skip ci]"
+          git push
