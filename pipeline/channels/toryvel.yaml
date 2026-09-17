@@ -55,6 +55,7 @@ season:
     - "東京 戦後 闇市 跡地 現在"
     - "奈良 平城京 遷都 廃都"
     - "Tokyo landmark hidden history surprising origin"
+# TODO: 미확정 — 레퍼런스/폰트/컬러 정하기 전까지 렌더 금지. 아래는 자리값일 뿐이다.
 theme:
   bg: "#12100E"
   fg: "#F2EDE4"

@@ -162,7 +162,8 @@
     },
     "japan_related": true,
     "theme": "japan-tokyo-nara",
-    "createdAt": "2026-09-17T00:00:00.000Z"
+    "createdAt": "2026-09-17T00:00:00.000Z",
+    "usedBy": "toryvel-20260917-tokyo-tower"
   },
   {
     "id": "toryvel-20260917-05",
@@ -456,7 +457,8 @@
       "district": ""
     },
     "japan_related": false,
-    "createdAt": "2026-09-16T00:00:00.000Z"
+    "createdAt": "2026-09-16T00:00:00.000Z",
+    "usedBy": "halgeo-20260917-culture-wednesday"
   },
   {
     "id": "halgeo-20260916-02",

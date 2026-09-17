@@ -80,9 +80,11 @@ function slideHtml(
     padding: 96px 88px; -webkit-font-smoothing: antialiased;
   }
   .keyword { font-size: ${isHook ? 132 : 96}px; font-weight: 700; color: ${t.accent};
-             letter-spacing: -0.03em; line-height: 1; margin-bottom: 40px; }
+             letter-spacing: -0.03em; line-height: 1.05; margin-bottom: 40px;
+             word-break: keep-all; overflow-wrap: break-word; }
   .heading { font-size: ${isHook ? 76 : 58}px; font-weight: 700; line-height: 1.25;
-             letter-spacing: -0.02em; margin-bottom: 36px; }
+             letter-spacing: -0.02em; margin-bottom: 36px; word-break: keep-all;
+             overflow-wrap: break-word; }
   .body    { font-size: ${isHook ? 42 : 40}px; font-weight: 400; line-height: 1.65;
              opacity: 0.86; word-break: keep-all; }
   .foot    { display: flex; justify-content: space-between; align-items: baseline;

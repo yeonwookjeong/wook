@@ -43,11 +43,12 @@ geo:
   # 지도 웹앱 연동은 나중 단계. 지금은 좌표만 같이 뽑아 JSON으로 적재해 둔다.
   export: true
   default_city: "서울"
+# TODO: 미확정 — 레퍼런스/폰트/컬러 정하기 전까지 렌더 금지. 아래는 자리값일 뿐이다.
 theme:
   bg: "#FFFDF7"
   fg: "#1A1A1A"
   accent: "#FF5A36"
-  font: "'Pretendard', sans-serif"
+  font: "'Noto Sans KR', sans-serif"
 hashtags: ["#할거없나", "#주말뭐하지", "#데이트코스", "#서울나들이", "#팝업스토어"]
 publish:
   slots: ["WED 18:00", "SAT 10:00"]
