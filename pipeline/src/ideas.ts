@@ -64,6 +64,7 @@ export async function generateIdeas(channelId: string, count: number): Promise<I
       ? { place: { name: d.place_name, ...(d.place_district ? { district: d.place_district } : {}) } }
       : {}),
     japan_related: d.japan_related,
+    ...(cfg.season ? { theme: cfg.season.id } : {}),
     createdAt: now,
   }));
 }
@@ -76,7 +77,8 @@ export async function refillBank(channelId: string, count: number) {
 /* ------------------------------- 내부 헬퍼 ------------------------------- */
 
 async function runResearch(cfg: ChannelConfig, count: number, existing: Idea[]): Promise<string> {
-  const hints = cfg.research?.query_hints ?? [];
+  // 시즌이 걸려 있으면 그 힌트가 채널 기본 힌트를 대신한다.
+  const hints = cfg.season?.query_hints ?? cfg.research?.query_hints ?? [];
   const prompt = [
     channelBrief(cfg),
     existing.length ? `이미 다룬 소재(제외): ${existing.map((i) => i.title).join(', ')}` : '',
@@ -126,5 +128,11 @@ export function channelBrief(cfg: ChannelConfig): string {
     lines.push(`- 금지 표현: ${cfg.tone.banned_phrases.join(', ')}`);
   }
   if (cfg.owner) lines.push(`- 운영: ${cfg.owner}`);
-  return lines.join('\n');
+  if (cfg.season) {
+    lines.push(
+      `- **현재 시즌: ${cfg.season.name}** — 이 범위를 벗어난 소재는 뽑지 않습니다.`,
+      cfg.season.note ? `  ${cfg.season.note}` : '',
+    );
+  }
+  return lines.filter(Boolean).join('\n');
 }

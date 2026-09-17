@@ -56,6 +56,16 @@ export interface ChannelConfig {
     rules?: string[];
   };
   research?: { enabled: boolean; query_hints?: string[] };
+  /**
+   * 당분간 이 채널이 다룰 범위. 소재 발굴과 초안이 모두 여기에 묶인다.
+   * 시즌을 바꾸면 이전 시즌 소재는 뱅크에 남되 우선순위에서 밀린다.
+   */
+  season?: {
+    id: string;
+    name: string;
+    note?: string;
+    query_hints?: string[];
+  };
   geo?: { export: boolean; default_city?: string };
   seo?: { keyword_slots: number; meta_tags_max: number };
   theme?: { bg: string; fg: string; accent: string; font: string };
@@ -84,6 +94,8 @@ export interface Idea {
   place?: { name: string; district?: string; lat?: number; lng?: number };
   /** 일본 관련 소재면 true — 일본어 스레드 교차 공유 후보 */
   japan_related?: boolean;
+  /** 어느 시즌에 뽑힌 소재인지. 시즌이 바뀌면 이전 것은 뒤로 밀린다. */
+  theme?: string;
   createdAt: string;
   usedBy?: string; // 이 소재로 만들어진 콘텐츠 id
 }

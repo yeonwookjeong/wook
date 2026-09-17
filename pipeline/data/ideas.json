@@ -1,19 +1,293 @@
 [
   {
+    "id": "toryvel-20260917-01",
+    "channel": "toryvel",
+    "title": "도다이지 대불전은 원래 크기의 3분의 2다",
+    "angle": "세계 최대 목조건축이라는 타이틀이 사실은 '축소 재건'의 결과라는 반전. 돈과 나무가 없어서 줄어든 30m",
+    "facts": [
+      {
+        "claim": "현재 대불전은 폭 50.0m, 깊이 50.5m, 높이 46.4m로 세계 최대급 목조 건축물이다",
+        "source": "https://ja.wikipedia.org/wiki/東大寺大仏殿",
+        "confidence": "high"
+      },
+      {
+        "claim": "758년 나라시대에 창건됐고, 1180년 소실, 가마쿠라 시대에 재건, 1567년 다시 소실됐다",
+        "source": "https://love-japanese-history.com/toudaiji_daibutuden/",
+        "confidence": "high"
+      },
+      {
+        "claim": "지금 서 있는 건물은 세 번째 대불전으로, 1691년에 지어졌다",
+        "source": "https://ja.wikipedia.org/wiki/東大寺大仏殿",
+        "confidence": "high"
+      },
+      {
+        "claim": "창건 당시와 가마쿠라기 대불전은 폭 약 290척(약 86.1m), 깊이 170척(약 50.5m)으로 추정된다",
+        "source": "https://ja.wikipedia.org/wiki/東大寺大仏殿",
+        "confidence": "high"
+      },
+      {
+        "claim": "재정난과 원래 규모를 재현할 대형 목재를 구하지 못해 폭이 약 30m 줄었고, 창건 당시의 약 3분의 2가 됐다",
+        "source": "https://welcome-nara.com/daibutsuden/",
+        "confidence": "high"
+      }
+    ],
+    "place": {
+      "name": "東大寺 大仏殿",
+      "district": "나라시"
+    },
+    "japan_related": true,
+    "theme": "japan-tokyo-nara",
+    "createdAt": "2026-09-17T00:00:00.000Z"
+  },
+  {
+    "id": "toryvel-20260917-02",
+    "channel": "toryvel",
+    "title": "헤이조쿄는 74년 만에 버려진 수도다",
+    "angle": "'나라 시대'의 무대가 단 74년짜리였고, 그 뒤 1200년간 논밭이었다가 2010년에 다시 세워졌다는 시간의 낙차",
+    "facts": [
+      {
+        "claim": "710년 겐메이 천황이 후지와라쿄에서 헤이조쿄로 천도했다",
+        "source": "https://www.touken-world.jp/tips/11065/",
+        "confidence": "high"
+      },
+      {
+        "claim": "헤이조쿄가 수도였던 기간은 784년까지 7대 74년간이다",
+        "source": "https://kotobank.jp/word/平城京-128958",
+        "confidence": "high"
+      },
+      {
+        "claim": "781년 즉위한 간무 천황이 784년 헤이조쿄를 버리고 나가오카쿄로 천도했다",
+        "source": "https://www.touken-world.jp/tips/63746/",
+        "confidence": "high"
+      },
+      {
+        "claim": "간무 천황은 11년 뒤인 794년 나가오카쿄에서 헤이안쿄로 또 한 번 천도했다",
+        "source": "https://www.touken-world.jp/tips/63746/",
+        "confidence": "high"
+      },
+      {
+        "claim": "제1차 대극전 복원 공사는 천도 1300년이 되는 2010년 완성을 목표로 2001년에 시작됐다",
+        "source": "https://www.nabunken.go.jp/heijo/museum/page/daigokuden.html",
+        "confidence": "high"
+      },
+      {
+        "claim": "2010년 복원된 대극전은 정면 약 44m, 측면 약 20m, 지면에서 높이 약 27m다",
+        "source": "https://www.heijo-park.jp/guide/daigokuden/",
+        "confidence": "high"
+      }
+    ],
+    "place": {
+      "name": "平城宮跡 第一次大極殿",
+      "district": "나라시"
+    },
+    "japan_related": true,
+    "theme": "japan-tokyo-nara",
+    "createdAt": "2026-09-17T00:00:00.000Z"
+  },
+  {
+    "id": "toryvel-20260917-03",
+    "channel": "toryvel",
+    "title": "나라의 사슴은 한때 79마리까지 줄었다",
+    "angle": "지금 1,200마리가 관광객에게 절하는 풍경이, 전쟁 직후 거의 멸종했다가 사람 손으로 되살린 결과라는 인과",
+    "facts": [
+      {
+        "claim": "2차 세계대전 전 나라의 사슴은 약 900마리였다",
+        "source": "https://naradeer.com/learning/hogonorekishi.html",
+        "confidence": "high"
+      },
+      {
+        "claim": "1945년에는 79마리까지 격감해 나라공원에서 그 모습을 찾기 어려워졌다",
+        "source": "https://naradeer.com/learning/hogonorekishi.html",
+        "confidence": "high"
+      },
+      {
+        "claim": "1957년 5월 나라현이 천연기념물로 가지정했고, 같은 해 9월 18일 정식 지정됐다",
+        "source": "https://kunishitei.bunka.go.jp/heritage/detail/401/3133",
+        "confidence": "high"
+      },
+      {
+        "claim": "시민과 가스가신록보호회(현 나라의 사슴 애호회) 등의 보호 육성으로 1965년 전쟁 전과 같은 약 900마리까지 회복했다",
+        "source": "https://naradeer.com/learning/hogonorekishi.html",
+        "confidence": "high"
+      },
+      {
+        "claim": "근년에는 1,200마리 전후를 유지하고 있다",
+        "source": "https://www.pref.nara.jp/secure/218528/hogokeikaku-1.pdf",
+        "confidence": "high"
+      }
+    ],
+    "place": {
+      "name": "奈良公園",
+      "district": "나라시"
+    },
+    "japan_related": true,
+    "theme": "japan-tokyo-nara",
+    "createdAt": "2026-09-17T00:00:00.000Z"
+  },
+  {
+    "id": "toryvel-20260917-04",
+    "channel": "toryvel",
+    "title": "도쿄타워 윗부분은 한국전쟁에서 부서진 미군 전차로 만들어졌다",
+    "angle": "도쿄의 상징 꼭대기가 전쟁 고철이라는 반전. 한국 시청자에게는 거리감이 더 가깝다",
+    "facts": [
+      {
+        "claim": "도쿄타워 건설 당시 일본 국내에는 재료가 될 철이 부족했다",
+        "source": "https://www.buzzfeed.com/jp/kenjiando/tokyo-tower-tank",
+        "confidence": "high"
+      },
+      {
+        "claim": "민간업자가 한국전쟁에서 손상·폐기된 미군 전차 M4 셔먼과 M47 패튼 합계 약 90대를 낙찰받아 해체했다",
+        "source": "https://crd.ndl.go.jp/reference/entry/index.php?id=1000203656&page=ref_view",
+        "confidence": "high"
+      },
+      {
+        "claim": "해체를 맡은 곳은 스미다구의 다카노공업소였고, 고철로 제철회사에 보내져 녹여 정련됐다",
+        "source": "https://www.buzzfeed.com/jp/kenjiando/tokyo-tower-tank",
+        "confidence": "medium"
+      },
+      {
+        "claim": "그 양은 1,000~1,500톤이며, 이 강재는 전망대보다 윗부분에 쓰여 타워 전체의 약 3분의 1을 차지한다",
+        "source": "https://crd.ndl.go.jp/reference/entry/index.php?id=1000203656&page=ref_view",
+        "confidence": "medium"
+      },
+      {
+        "claim": "다만 도쿄타워를 완성시킨 마에다 히사키치의 1959년 저서 『東京タワー物語』에는 미군 전차 철재를 썼다는 기술이 없다",
+        "source": "https://crd.ndl.go.jp/reference/entry/index.php?id=1000203656&page=ref_view",
+        "confidence": "high"
+      }
+    ],
+    "place": {
+      "name": "東京タワー",
+      "district": "미나토구"
+    },
+    "japan_related": true,
+    "theme": "japan-tokyo-nara",
+    "createdAt": "2026-09-17T00:00:00.000Z"
+  },
+  {
+    "id": "toryvel-20260917-05",
+    "channel": "toryvel",
+    "title": "아메요코의 '아메'는 사탕이 아니라 아메리카였다",
+    "angle": "이름 자체가 역사의 화석. 도쿄에서 암시장으로 시작한 상점가가 여기 하나만 남았다는 사실이 마무리가 된다",
+    "facts": [
+      {
+        "claim": "1945년 8월 종전 후 연합군 점령으로 경제 통제와 배급제가 시행됐고, 고용 부족과 황폐한 경제 상황 속에서 암시장이 생겨났다",
+        "source": "https://www.mlit.go.jp/tagengo-db/R1-00098.html",
+        "confidence": "high"
+      },
+      {
+        "claim": "1950년 한국전쟁으로 군수 물자 수요가 급증하면서 미군 물자가 새로 유입됐다",
+        "source": "https://www.mlit.go.jp/tagengo-db/R1-00098.html",
+        "confidence": "high"
+      },
+      {
+        "claim": "미군 상품을 전문으로 다루는 점포들이 우에노 시장 남쪽 오카치마치역 부근에 문을 열었다",
+        "source": "https://www.mlit.go.jp/tagengo-db/R1-00098.html",
+        "confidence": "high"
+      },
+      {
+        "claim": "미군 방출품 거래로 이 상점가는 '아메리카 요코초(アメリカ横丁)'라 불리게 됐고, 이후 인근 엿가게(飴屋)들과 통합되면서 두 개의 '아메요코'가 하나가 됐다",
+        "source": "https://www.mlit.go.jp/tagengo-db/R1-00098.html",
+        "confidence": "high"
+      },
+      {
+        "claim": "신주쿠 등에도 암시장이 있었으나 도시 개발로 흔적이 사라졌고, 우에노 아메요코는 암시장에서 시작한 상점가로는 도쿄에서 유일하게 남은 곳이다",
+        "source": "https://www.70seeds.jp/ameyoko/",
+        "confidence": "medium"
+      }
+    ],
+    "place": {
+      "name": "上野アメ横商店街",
+      "district": "다이토구"
+    },
+    "japan_related": true,
+    "theme": "japan-tokyo-nara",
+    "createdAt": "2026-09-17T00:00:00.000Z"
+  },
+  {
+    "id": "toryvel-20260917-06",
+    "channel": "toryvel",
+    "title": "골든가이가 목조로 남은 건 점주들이 재개발을 막아냈기 때문이다",
+    "angle": "'레트로 감성'으로 소비되는 골목이 사실은 버블기 지상げ에 맞서 조직적으로 지켜낸 결과라는 반전",
+    "facts": [
+      {
+        "claim": "종전 후 신주쿠가 불탄 들판이 됐을 때, 골든가이 일대는 '아오센(青線)'이라 불린 비공인 매춘 지역이 됐다",
+        "source": "https://www.nippon.com/ja/guide-to-japan/gu900052/",
+        "confidence": "high"
+      },
+      {
+        "claim": "발단은 종전 후 신주쿠역 동쪽에 있던 암시장이었고, GHQ가 암시장 철폐를 명하자 점포들이 이 지역으로 옮겨왔다",
+        "source": "https://www.nippon.com/ja/guide-to-japan/gu900052/",
+        "confidence": "high"
+      },
+      {
+        "claim": "1958년 매춘방지법 시행 후 작가·영화감독·연극인 같은 문화인이 모이는 음식·술집 거리로 바뀌었다",
+        "source": "https://www.nippon.com/ja/guide-to-japan/gu900052/",
+        "confidence": "high"
+      },
+      {
+        "claim": "약 2,000평의 좁은 구역에 280채가 넘는 저층 목조 건물이 들어서 있다",
+        "source": "https://ja.wikipedia.org/wiki/新宿ゴールデン街",
+        "confidence": "high"
+      },
+      {
+        "claim": "1980년대 후반 버블 절정기에 격심한 토지 매수(지아게) 압력을 받았으나, 점주들이 '신주쿠 하나조노 골든가이 방위조합'을 결성해 재개발에 반대했다",
+        "source": "https://ja.wikipedia.org/wiki/新宿ゴールデン街",
+        "confidence": "high"
+      },
+      {
+        "claim": "2000년 정기차가법 이후 3년간 50개가 넘는 점포가 새로 들어섰다",
+        "source": "https://ja.wikipedia.org/wiki/新宿ゴールデン街",
+        "confidence": "medium"
+      }
+    ],
+    "place": {
+      "name": "新宿ゴールデン街",
+      "district": "신주쿠구"
+    },
+    "japan_related": true,
+    "theme": "japan-tokyo-nara",
+    "createdAt": "2026-09-17T00:00:00.000Z"
+  },
+  {
     "id": "toryvel-20260916-01",
     "channel": "toryvel",
     "title": "블루라군은 자연 온천이 아니라 발전소 폐수다",
     "angle": "아이슬란드 최고 관광지가 원래는 지열발전소가 용암지대에 버린 폐수 웅덩이였다는 반전",
     "facts": [
-      { "claim": "스바르트셍기 지열발전소는 1976년 세계 최초의 지열 열병합발전소(CHP)로 가동을 시작했다", "source": "https://perlan.is/articles/svartsengi-power-plant-blue-lagoon", "confidence": "high" },
-      { "claim": "발전소는 쓰고 남은 고온 염수를 인근 용암지대에 버렸고, 그대로 스며들어 빠질 것으로 예상했다", "source": "https://www.scandinaviastandard.com/b-icelands-blue-lagoon-is-the-runoff-pond-of-the-svartsengi-geothermal-plant-which-began-dumping-hot-brine-on-a-lava-field-in-1976-expecting-it-to-drain-away-and-the-silica-in-the-cooling-water-seale/", "confidence": "high" },
-      { "claim": "물에 녹아 있던 실리카가 다공질 현무암 틈을 메워버려, 빠져야 할 물이 고이면서 1976년 웅덩이가 생겼다", "source": "https://en.wikipedia.org/wiki/Blue_Lagoon_(geothermal_spa)", "confidence": "high" },
-      { "claim": "우윳빛 푸른색은 실리카 농도가 높아 햇빛을 산란시키기 때문이다", "source": "https://perlan.is/articles/blue-lagoon-history", "confidence": "high" },
-      { "claim": "1981년 건선을 앓던 발전소 직원 발뤼르 마르게이르손이 이 웅덩이에서 목욕하게 해 달라고 요청한 것이 관광지화의 시작이었다", "source": "https://perlan.is/articles/blue-lagoon-history", "confidence": "high" }
+      {
+        "claim": "스바르트셍기 지열발전소는 1976년 세계 최초의 지열 열병합발전소(CHP)로 가동을 시작했다",
+        "source": "https://perlan.is/articles/svartsengi-power-plant-blue-lagoon",
+        "confidence": "high"
+      },
+      {
+        "claim": "발전소는 쓰고 남은 고온 염수를 인근 용암지대에 버렸고, 그대로 스며들어 빠질 것으로 예상했다",
+        "source": "https://www.scandinaviastandard.com/b-icelands-blue-lagoon-is-the-runoff-pond-of-the-svartsengi-geothermal-plant-which-began-dumping-hot-brine-on-a-lava-field-in-1976-expecting-it-to-drain-away-and-the-silica-in-the-cooling-water-seale/",
+        "confidence": "high"
+      },
+      {
+        "claim": "물에 녹아 있던 실리카가 다공질 현무암 틈을 메워버려, 빠져야 할 물이 고이면서 1976년 웅덩이가 생겼다",
+        "source": "https://en.wikipedia.org/wiki/Blue_Lagoon_(geothermal_spa)",
+        "confidence": "high"
+      },
+      {
+        "claim": "우윳빛 푸른색은 실리카 농도가 높아 햇빛을 산란시키기 때문이다",
+        "source": "https://perlan.is/articles/blue-lagoon-history",
+        "confidence": "high"
+      },
+      {
+        "claim": "1981년 건선을 앓던 발전소 직원 발뤼르 마르게이르손이 이 웅덩이에서 목욕하게 해 달라고 요청한 것이 관광지화의 시작이었다",
+        "source": "https://perlan.is/articles/blue-lagoon-history",
+        "confidence": "high"
+      }
     ],
-    "place": { "name": "Blue Lagoon", "district": "Grindavík, Reykjanes" },
+    "place": {
+      "name": "Blue Lagoon",
+      "district": "Grindavík, Reykjanes"
+    },
     "japan_related": false,
-    "createdAt": "2026-09-16T00:00:00.000Z"
+    "createdAt": "2026-09-16T00:00:00.000Z",
+    "theme": "europe-americas"
   },
   {
     "id": "toryvel-20260916-02",
@@ -21,15 +295,39 @@
     "title": "잔세스칸스 풍차는 목가적 풍경이 아니라 세계 최초의 공업단지였다",
     "angle": "네덜란드 엽서 사진의 상징이 사실은 산업혁명보다 앞선 대규모 생산설비 밀집지였다는 반전",
     "facts": [
-      { "claim": "잔 지역(Zaanstreek)은 17세기 네덜란드 황금기에 세계에서 가장 이른 공업지대 중 하나였다", "source": "https://www.dezaanseschans.nl/en/", "confidence": "high" },
-      { "claim": "전성기에는 이 일대에 1,000기가 넘는 풍차가 있었고, 17~18세기 기준으로도 600~700기가 가동됐다", "source": "https://www.zaanseschans.com/en/", "confidence": "high" },
-      { "claim": "풍차는 관상용이 아니라 제재, 착유, 향신료 분쇄 같은 공정을 돌리는 동력원이었다", "source": "https://www.dezaanseschans.nl/en/discover/windmills/", "confidence": "high" },
-      { "claim": "주력 산업은 목재였고 전체 풍차의 약 절반이 제재소였다. 이 지역에만 제재용 풍차가 350기 이상 있었다", "source": "https://en.wikipedia.org/wiki/Het_Jonge_Schaap,_Zaandam", "confidence": "high" },
-      { "claim": "안료·염료 풍차 '더 카트(De Kat)'는 1664년으로 거슬러 올라간다", "source": "https://en.wikipedia.org/wiki/Zaanse_Schans", "confidence": "medium" }
+      {
+        "claim": "잔 지역(Zaanstreek)은 17세기 네덜란드 황금기에 세계에서 가장 이른 공업지대 중 하나였다",
+        "source": "https://www.dezaanseschans.nl/en/",
+        "confidence": "high"
+      },
+      {
+        "claim": "전성기에는 이 일대에 1,000기가 넘는 풍차가 있었고, 17~18세기 기준으로도 600~700기가 가동됐다",
+        "source": "https://www.zaanseschans.com/en/",
+        "confidence": "high"
+      },
+      {
+        "claim": "풍차는 관상용이 아니라 제재, 착유, 향신료 분쇄 같은 공정을 돌리는 동력원이었다",
+        "source": "https://www.dezaanseschans.nl/en/discover/windmills/",
+        "confidence": "high"
+      },
+      {
+        "claim": "주력 산업은 목재였고 전체 풍차의 약 절반이 제재소였다. 이 지역에만 제재용 풍차가 350기 이상 있었다",
+        "source": "https://en.wikipedia.org/wiki/Het_Jonge_Schaap,_Zaandam",
+        "confidence": "high"
+      },
+      {
+        "claim": "안료·염료 풍차 '더 카트(De Kat)'는 1664년으로 거슬러 올라간다",
+        "source": "https://en.wikipedia.org/wiki/Zaanse_Schans",
+        "confidence": "medium"
+      }
     ],
-    "place": { "name": "Zaanse Schans", "district": "Zaandam, Noord-Holland" },
+    "place": {
+      "name": "Zaanse Schans",
+      "district": "Zaandam, Noord-Holland"
+    },
     "japan_related": false,
-    "createdAt": "2026-09-16T00:00:00.000Z"
+    "createdAt": "2026-09-16T00:00:00.000Z",
+    "theme": "europe-americas"
   },
   {
     "id": "toryvel-20260916-03",
@@ -37,15 +335,39 @@
     "title": "하이라인은 철거 명령이 떨어진 고가 화물철도였다",
     "angle": "도시재생의 교과서가 사실은 두 명의 동네 주민이 철거 명령을 뒤집어서 만들어졌다는 인과",
     "facts": [
-      { "claim": "1980년 냉동 칠면조 화차 세 량을 끌고 간 열차가 이 고가선의 마지막 화물 운행이었다", "source": "https://www.thehighline.org/history/", "confidence": "high" },
-      { "claim": "1992년 하이라인에 철거 명령이 내려졌다", "source": "https://www.historyhit.com/locations/the-high-line/", "confidence": "high" },
-      { "claim": "줄리아니 시장은 퇴임 직전 마지막 조치 중 하나로 철거 명령에 서명했다", "source": "https://ccnmtl.columbia.edu/projects/caseconsortium/casestudies/128/casestudy/www/layout/case_id_128_id_902.html", "confidence": "medium" },
-      { "claim": "1999년 8월 동네 주민 조슈아 데이비드와 로버트 해먼드가 'Friends of the High Line'을 결성해 구조물 보존에 나섰다", "source": "https://www.thehighline.org/history/", "confidence": "high" },
-      { "claim": "2009년 개장 이후 뉴욕에서 두 번째로 방문객이 많은 문화 공간이 됐고 연간 약 400만 명이 찾는다", "source": "https://edc.nyc/project/high-line", "confidence": "high" }
+      {
+        "claim": "1980년 냉동 칠면조 화차 세 량을 끌고 간 열차가 이 고가선의 마지막 화물 운행이었다",
+        "source": "https://www.thehighline.org/history/",
+        "confidence": "high"
+      },
+      {
+        "claim": "1992년 하이라인에 철거 명령이 내려졌다",
+        "source": "https://www.historyhit.com/locations/the-high-line/",
+        "confidence": "high"
+      },
+      {
+        "claim": "줄리아니 시장은 퇴임 직전 마지막 조치 중 하나로 철거 명령에 서명했다",
+        "source": "https://ccnmtl.columbia.edu/projects/caseconsortium/casestudies/128/casestudy/www/layout/case_id_128_id_902.html",
+        "confidence": "medium"
+      },
+      {
+        "claim": "1999년 8월 동네 주민 조슈아 데이비드와 로버트 해먼드가 'Friends of the High Line'을 결성해 구조물 보존에 나섰다",
+        "source": "https://www.thehighline.org/history/",
+        "confidence": "high"
+      },
+      {
+        "claim": "2009년 개장 이후 뉴욕에서 두 번째로 방문객이 많은 문화 공간이 됐고 연간 약 400만 명이 찾는다",
+        "source": "https://edc.nyc/project/high-line",
+        "confidence": "high"
+      }
     ],
-    "place": { "name": "The High Line", "district": "Manhattan, New York" },
+    "place": {
+      "name": "The High Line",
+      "district": "Manhattan, New York"
+    },
     "japan_related": false,
-    "createdAt": "2026-09-16T00:00:00.000Z"
+    "createdAt": "2026-09-16T00:00:00.000Z",
+    "theme": "europe-americas"
   },
   {
     "id": "toryvel-20260916-04",
@@ -53,16 +375,44 @@
     "title": "몽생미셸은 70년간 '바다의 바스티유'로 불린 감옥이었다",
     "angle": "순례지의 상징이 프랑스혁명 이후 정치범 수용소로 바뀌었다가, 작가들의 캠페인으로 되살아난 과정",
     "facts": [
-      { "claim": "프랑스혁명으로 순례가 끊겼고, 수도원은 1793년부터 1863년까지 감옥으로 쓰였다", "source": "https://www.abbaye-mont-saint-michel.fr/en/discover/history-of-the-monument", "confidence": "high" },
-      { "claim": "이 기간 동안 약 14,000명의 수감자가 거쳐 갔다", "source": "https://www.ot-montsaintmichel.com/en/discover/visit-the-mont-saint-michel/visit-the-mont-saint-michel/history/", "confidence": "high" },
-      { "claim": "조수와 유사(流砂) 때문에 탈출이 불가능해 '바다의 바스티유(Bastille des mers)'라 불렸다", "source": "https://www.ot-montsaintmichel.com/en/discover/visit-the-mont-saint-michel/visit-the-mont-saint-michel/history/", "confidence": "high" },
-      { "claim": "7월 왕정의 반대파였던 아르망 바르베스, 오귀스트 블랑키 같은 정치범이 수감됐다", "source": "https://visitmontstmichel.com/mont-saint-michel-during-the-french-revolution/", "confidence": "medium" },
-      { "claim": "빅토르 위고 등이 감옥 폐쇄 캠페인을 벌였고, 1863년 감옥이 문을 닫았을 때 수도원은 완전히 황폐한 상태였다", "source": "https://www.abbaye-mont-saint-michel.fr/en/discover/history-of-the-monument", "confidence": "high" },
-      { "claim": "1874년 역사기념물로 지정되면서 복원이 시작됐고, 그때부터 첫 관광객을 받기 위한 정비가 이뤄졌다", "source": "https://www.abbaye-mont-saint-michel.fr/en/discover/history-of-the-monument", "confidence": "high" }
+      {
+        "claim": "프랑스혁명으로 순례가 끊겼고, 수도원은 1793년부터 1863년까지 감옥으로 쓰였다",
+        "source": "https://www.abbaye-mont-saint-michel.fr/en/discover/history-of-the-monument",
+        "confidence": "high"
+      },
+      {
+        "claim": "이 기간 동안 약 14,000명의 수감자가 거쳐 갔다",
+        "source": "https://www.ot-montsaintmichel.com/en/discover/visit-the-mont-saint-michel/visit-the-mont-saint-michel/history/",
+        "confidence": "high"
+      },
+      {
+        "claim": "조수와 유사(流砂) 때문에 탈출이 불가능해 '바다의 바스티유(Bastille des mers)'라 불렸다",
+        "source": "https://www.ot-montsaintmichel.com/en/discover/visit-the-mont-saint-michel/visit-the-mont-saint-michel/history/",
+        "confidence": "high"
+      },
+      {
+        "claim": "7월 왕정의 반대파였던 아르망 바르베스, 오귀스트 블랑키 같은 정치범이 수감됐다",
+        "source": "https://visitmontstmichel.com/mont-saint-michel-during-the-french-revolution/",
+        "confidence": "medium"
+      },
+      {
+        "claim": "빅토르 위고 등이 감옥 폐쇄 캠페인을 벌였고, 1863년 감옥이 문을 닫았을 때 수도원은 완전히 황폐한 상태였다",
+        "source": "https://www.abbaye-mont-saint-michel.fr/en/discover/history-of-the-monument",
+        "confidence": "high"
+      },
+      {
+        "claim": "1874년 역사기념물로 지정되면서 복원이 시작됐고, 그때부터 첫 관광객을 받기 위한 정비가 이뤄졌다",
+        "source": "https://www.abbaye-mont-saint-michel.fr/en/discover/history-of-the-monument",
+        "confidence": "high"
+      }
     ],
-    "place": { "name": "Mont Saint-Michel", "district": "Normandie" },
+    "place": {
+      "name": "Mont Saint-Michel",
+      "district": "Normandie"
+    },
     "japan_related": false,
-    "createdAt": "2026-09-16T00:00:00.000Z"
+    "createdAt": "2026-09-16T00:00:00.000Z",
+    "theme": "europe-americas"
   },
   {
     "id": "halgeo-20260916-01",
@@ -70,14 +420,41 @@
     "title": "'문화가 있는 날'이 매달 마지막 수요일에서 매주 수요일로 바뀌었다",
     "angle": "아직도 '마지막 주 수요일'로 알고 있는 사람이 대부분이다. 제도가 바뀐 걸 알려주는 것 자체가 콘텐츠",
     "facts": [
-      { "claim": "2026년부터 '문화가 있는 날'이 매달 마지막 수요일에서 매주 수요일로 확대됐다", "source": "https://www.khan.co.kr/article/202604011543001", "confidence": "high" },
-      { "claim": "영화관 할인은 2026년 5월부터 월 2회로 늘어, 매달 둘째·마지막 수요일에 적용된다", "source": "https://www.wegive.co.kr/wezine/detail/1620", "confidence": "high" },
-      { "claim": "해당일 오후 5시~9시에 성인 10,000원, 청소년 8,000원으로 관람할 수 있다", "source": "https://www.wegive.co.kr/wezine/detail/1620", "confidence": "high" },
-      { "claim": "CGV, 롯데시네마, 메가박스, 씨네Q 등 주요 극장이 참여한다", "source": "https://www.wegive.co.kr/wezine/detail/1620", "confidence": "high" },
-      { "claim": "국립박물관·미술관·고궁·자연휴양림은 무료 개방 또는 연장 운영을 한다", "source": "https://www.culture.go.kr/local/", "confidence": "medium" },
-      { "claim": "영화진흥위원회가 6,000원 영화 할인 쿠폰을 배포하며 문화가 있는 날 할인과 중복 적용된다", "source": "https://www.wegive.co.kr/wezine/detail/1620", "confidence": "medium" }
+      {
+        "claim": "2026년부터 '문화가 있는 날'이 매달 마지막 수요일에서 매주 수요일로 확대됐다",
+        "source": "https://www.khan.co.kr/article/202604011543001",
+        "confidence": "high"
+      },
+      {
+        "claim": "영화관 할인은 2026년 5월부터 월 2회로 늘어, 매달 둘째·마지막 수요일에 적용된다",
+        "source": "https://www.wegive.co.kr/wezine/detail/1620",
+        "confidence": "high"
+      },
+      {
+        "claim": "해당일 오후 5시~9시에 성인 10,000원, 청소년 8,000원으로 관람할 수 있다",
+        "source": "https://www.wegive.co.kr/wezine/detail/1620",
+        "confidence": "high"
+      },
+      {
+        "claim": "CGV, 롯데시네마, 메가박스, 씨네Q 등 주요 극장이 참여한다",
+        "source": "https://www.wegive.co.kr/wezine/detail/1620",
+        "confidence": "high"
+      },
+      {
+        "claim": "국립박물관·미술관·고궁·자연휴양림은 무료 개방 또는 연장 운영을 한다",
+        "source": "https://www.culture.go.kr/local/",
+        "confidence": "medium"
+      },
+      {
+        "claim": "영화진흥위원회가 6,000원 영화 할인 쿠폰을 배포하며 문화가 있는 날 할인과 중복 적용된다",
+        "source": "https://www.wegive.co.kr/wezine/detail/1620",
+        "confidence": "medium"
+      }
     ],
-    "place": { "name": "전국", "district": "" },
+    "place": {
+      "name": "전국",
+      "district": ""
+    },
     "japan_related": false,
     "createdAt": "2026-09-16T00:00:00.000Z"
   },
@@ -87,13 +464,36 @@
     "title": "여의도 한강공원에 8주간 야외도서관이 열려 있다",
     "angle": "돈 안 드는 주말 코스인데 기간이 짧다. 10월 31일이 끝이라는 마감이 행동을 만든다",
     "facts": [
-      { "claim": "'2026 책읽는 한강공원' 하반기 운영은 9월 12일(토)부터 10월 31일(토)까지 8주간이다", "source": "https://www.asiatoday.co.kr/kn/view.php?key=20260909010003512", "confidence": "high" },
-      { "claim": "매주 토요일에 열리며, 추석 연휴에만 일요일에도 운영한다", "source": "https://www.handmk.com/news/articleView.html?idxno=43030", "confidence": "high" },
-      { "claim": "장소는 여의도한강공원 멀티플라자다", "source": "https://www.asiatoday.co.kr/kn/view.php?key=20260909010003512", "confidence": "high" },
-      { "claim": "최대 500석 규모의 독서존과 놀이존, 체험존으로 구성된다", "source": "https://www.handmk.com/news/articleView.html?idxno=43030", "confidence": "high" },
-      { "claim": "올해 처음으로 영유아용 촉각도서와 시각장애인용 점자도서를 도입했다", "source": "https://www.seoulfocus.kr/news/articleView.html?idxno=309012", "confidence": "high" }
+      {
+        "claim": "'2026 책읽는 한강공원' 하반기 운영은 9월 12일(토)부터 10월 31일(토)까지 8주간이다",
+        "source": "https://www.asiatoday.co.kr/kn/view.php?key=20260909010003512",
+        "confidence": "high"
+      },
+      {
+        "claim": "매주 토요일에 열리며, 추석 연휴에만 일요일에도 운영한다",
+        "source": "https://www.handmk.com/news/articleView.html?idxno=43030",
+        "confidence": "high"
+      },
+      {
+        "claim": "장소는 여의도한강공원 멀티플라자다",
+        "source": "https://www.asiatoday.co.kr/kn/view.php?key=20260909010003512",
+        "confidence": "high"
+      },
+      {
+        "claim": "최대 500석 규모의 독서존과 놀이존, 체험존으로 구성된다",
+        "source": "https://www.handmk.com/news/articleView.html?idxno=43030",
+        "confidence": "high"
+      },
+      {
+        "claim": "올해 처음으로 영유아용 촉각도서와 시각장애인용 점자도서를 도입했다",
+        "source": "https://www.seoulfocus.kr/news/articleView.html?idxno=309012",
+        "confidence": "high"
+      }
     ],
-    "place": { "name": "여의도한강공원 멀티플라자", "district": "영등포구" },
+    "place": {
+      "name": "여의도한강공원 멀티플라자",
+      "district": "영등포구"
+    },
     "japan_related": false,
     "createdAt": "2026-09-16T00:00:00.000Z"
   },
@@ -103,14 +503,41 @@
     "title": "서울시청 전망대 3곳이 전부 무료이고, 이달부터 밤 10시까지 연다",
     "angle": "서울스카이 말고도 야경 보는 법이 있다. 예약도 입장료도 없다는 게 핵심",
     "facts": [
-      { "claim": "서울시청 본관 8·9층 '하늘전망대'는 무료로 이용할 수 있다", "source": "https://www.newspim.com/news/view/20260902000199", "confidence": "high" },
-      { "claim": "하늘전망대는 평일 오전 7시 30분~오후 6시이며, 금·토요일은 하절기 오후 10시, 동절기(11~2월) 오후 9시까지 연장 운영한다", "source": "https://www.newspim.com/news/view/20260902000199", "confidence": "high" },
-      { "claim": "서소문청사 1동 13층 '정동전망대'는 예약이나 이용료 없이 방문할 수 있고 덕수궁이 내려다보인다", "source": "https://www.mt.co.kr/policy/2026/09/02/2026090210122780982", "confidence": "high" },
-      { "claim": "서울도서관 5층 옥상 '하늘뜰'은 이달부터 서울광장 방면까지 전망 공간을 전면 개방했다", "source": "https://www.khan.co.kr/article/202609021115001/amp", "confidence": "high" },
-      { "claim": "하늘뜰은 휴관일인 월요일을 제외한 평일 오전 9시~오후 9시, 주말 오전 9시~오후 6시 운영이다", "source": "https://www.khan.co.kr/article/202609021115001/amp", "confidence": "high" },
-      { "claim": "청사 투어 '통통투어'에 야간코스가 신설돼 매주 금·토 오후 7시 30분부터 1시간 운영된다", "source": "https://view.asiae.co.kr/article/2026090215243757176", "confidence": "high" }
+      {
+        "claim": "서울시청 본관 8·9층 '하늘전망대'는 무료로 이용할 수 있다",
+        "source": "https://www.newspim.com/news/view/20260902000199",
+        "confidence": "high"
+      },
+      {
+        "claim": "하늘전망대는 평일 오전 7시 30분~오후 6시이며, 금·토요일은 하절기 오후 10시, 동절기(11~2월) 오후 9시까지 연장 운영한다",
+        "source": "https://www.newspim.com/news/view/20260902000199",
+        "confidence": "high"
+      },
+      {
+        "claim": "서소문청사 1동 13층 '정동전망대'는 예약이나 이용료 없이 방문할 수 있고 덕수궁이 내려다보인다",
+        "source": "https://www.mt.co.kr/policy/2026/09/02/2026090210122780982",
+        "confidence": "high"
+      },
+      {
+        "claim": "서울도서관 5층 옥상 '하늘뜰'은 이달부터 서울광장 방면까지 전망 공간을 전면 개방했다",
+        "source": "https://www.khan.co.kr/article/202609021115001/amp",
+        "confidence": "high"
+      },
+      {
+        "claim": "하늘뜰은 휴관일인 월요일을 제외한 평일 오전 9시~오후 9시, 주말 오전 9시~오후 6시 운영이다",
+        "source": "https://www.khan.co.kr/article/202609021115001/amp",
+        "confidence": "high"
+      },
+      {
+        "claim": "청사 투어 '통통투어'에 야간코스가 신설돼 매주 금·토 오후 7시 30분부터 1시간 운영된다",
+        "source": "https://view.asiae.co.kr/article/2026090215243757176",
+        "confidence": "high"
+      }
     ],
-    "place": { "name": "서울시청 하늘전망대 · 정동전망대 · 서울도서관 하늘뜰", "district": "중구" },
+    "place": {
+      "name": "서울시청 하늘전망대 · 정동전망대 · 서울도서관 하늘뜰",
+      "district": "중구"
+    },
     "japan_related": false,
     "createdAt": "2026-09-16T00:00:00.000Z"
   },
@@ -120,13 +547,36 @@
     "title": "비 오는 날 돈 안 쓰고 갈 수 있는 서울 실내",
     "angle": "'비 와서 갈 데 없다'는 상황 지정형 훅. 전부 무료거나 밤늦게까지 여는 곳으로만 묶는다",
     "facts": [
-      { "claim": "국립중앙박물관 상설전시관은 무료다", "source": "https://datetravel.co.kr/seoul-indoor-date/", "confidence": "medium" },
-      { "claim": "스타필드 코엑스몰 별마당도서관은 매일 22:00까지 운영한다", "source": "https://kr.trip.com/blog/seoul-indoor-guide/", "confidence": "medium" },
-      { "claim": "리움미술관 상설전시관은 무료 관람이 가능하다", "source": "https://www.telltrip.com/domestic-travel/", "confidence": "low" },
-      { "claim": "DDP는 자하 하디드가 설계했고 기획 전시와 디자인 마켓이 상시 열린다", "source": "https://kr.trip.com/blog/seoul-indoor-guide/", "confidence": "medium" },
-      { "claim": "코엑스 아쿠아리움은 650종 약 4만 마리를 전시하며 별마당도서관과 동선을 잇기 좋다", "source": "https://kr.trip.com/blog/seoul-indoor-guide/", "confidence": "medium" }
+      {
+        "claim": "국립중앙박물관 상설전시관은 무료다",
+        "source": "https://datetravel.co.kr/seoul-indoor-date/",
+        "confidence": "medium"
+      },
+      {
+        "claim": "스타필드 코엑스몰 별마당도서관은 매일 22:00까지 운영한다",
+        "source": "https://kr.trip.com/blog/seoul-indoor-guide/",
+        "confidence": "medium"
+      },
+      {
+        "claim": "리움미술관 상설전시관은 무료 관람이 가능하다",
+        "source": "https://www.telltrip.com/domestic-travel/",
+        "confidence": "low"
+      },
+      {
+        "claim": "DDP는 자하 하디드가 설계했고 기획 전시와 디자인 마켓이 상시 열린다",
+        "source": "https://kr.trip.com/blog/seoul-indoor-guide/",
+        "confidence": "medium"
+      },
+      {
+        "claim": "코엑스 아쿠아리움은 650종 약 4만 마리를 전시하며 별마당도서관과 동선을 잇기 좋다",
+        "source": "https://kr.trip.com/blog/seoul-indoor-guide/",
+        "confidence": "medium"
+      }
     ],
-    "place": { "name": "국립중앙박물관 · 별마당도서관 · DDP", "district": "서울" },
+    "place": {
+      "name": "국립중앙박물관 · 별마당도서관 · DDP",
+      "district": "서울"
+    },
     "japan_related": false,
     "createdAt": "2026-09-16T00:00:00.000Z"
   }

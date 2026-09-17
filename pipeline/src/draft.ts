@@ -137,10 +137,20 @@ function pickIdea(cfg: ChannelConfig, ideaId?: string): Idea | undefined {
     if (!found) throw new Error(`소재 "${ideaId}" 를 찾을 수 없습니다. \`pipe ideas:list\` 로 확인하세요.`);
     return found;
   }
-  const unused = ideas.find((i) => !i.usedBy);
+  // 시즌이 걸린 채널은 시즌 안쪽 소재만 자동으로 집는다.
+  // 시즌 밖 소재를 쓰려면 --idea 로 직접 지정해야 한다.
+  const pool = cfg.season
+    ? ideas.filter((i) => !i.usedBy && i.theme === cfg.season!.id)
+    : ideas.filter((i) => !i.usedBy);
+  const unused = pool[0];
   if (!unused) {
+    const parked = ideas.filter((i) => !i.usedBy).length;
     throw new Error(
-      `채널 ${cfg.id} 의 미사용 소재가 없습니다. 먼저 \`pipe ideas --channel ${cfg.id}\` 를 실행하세요.`,
+      cfg.season
+        ? `채널 ${cfg.id} 의 현재 시즌(${cfg.season.name}) 미사용 소재가 없습니다.` +
+          (parked ? ` 시즌 밖 소재 ${parked}건은 --idea 로 직접 지정하세요.` : '') +
+          ` 또는 \`pipe ideas --channel ${cfg.id}\` 를 실행하세요.`
+        : `채널 ${cfg.id} 의 미사용 소재가 없습니다. 먼저 \`pipe ideas --channel ${cfg.id}\` 를 실행하세요.`,
     );
   }
   return unused;

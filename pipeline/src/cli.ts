@@ -75,8 +75,16 @@ async function main(): Promise<void> {
       const all = loadIdeas().filter((i) => !values.channel || i.channel === values.channel);
       if (!all.length) return console.log('소재 뱅크가 비어 있습니다.');
       for (const i of all) {
-        console.log(`${i.usedBy ? '✔' : '·'} ${i.id}  [${i.channel}] ${i.title}`);
-        if (!i.usedBy) console.log(`    ↳ ${i.angle}  (근거 ${i.facts.length}건)`);
+        const season = loadChannels().get(i.channel)?.season;
+        // 시즌이 걸린 채널에서 시즌 밖 소재는 자동 선택되지 않는다.
+        const offSeason = Boolean(season && i.theme !== season.id);
+        const mark = i.usedBy ? '✔' : offSeason ? '⏸' : '·';
+        console.log(`${mark} ${i.id}  [${i.channel}] ${i.title}${offSeason ? '  — 시즌 밖(보류)' : ''}`);
+        if (!i.usedBy && !offSeason) console.log(`    ↳ ${i.angle}  (근거 ${i.facts.length}건)`);
+      }
+      if (values.channel) {
+        const season = loadChannels().get(values.channel as never)?.season;
+        if (season) console.log(`\n현재 시즌: ${season.name}  (⏸ 는 --idea 로 직접 지정해야 씁니다)`);
       }
       break;
     }

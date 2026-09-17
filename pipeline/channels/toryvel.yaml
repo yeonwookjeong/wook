@@ -40,6 +40,21 @@ research:
     - "landmark original purpose controversy history"
     - "도시 건축물 원래 용도 반전"
     - "관광지 숨겨진 역사 배경"
+
+# 당분간 이 범위만 다룬다. 시즌을 바꾸면 이전 시즌 소재는 뱅크에 남되 뒤로 밀린다.
+season:
+  id: japan-tokyo-nara
+  name: 일본 — 도쿄 · 나라
+  note: >
+    도쿄와 나라 안에서, 스토리가 있는 장소만 다룬다.
+    유명세가 아니라 '왜 지금 이 모습이 되었는가' 가 있는 곳을 고른다.
+    일본 소재이므로 japan_related 를 true 로 두어 일본어 스레드 교차 공유 후보로 표시한다.
+  query_hints:
+    - "東京 観光地 意外な歴史 由来"
+    - "奈良 寺社 再建 縮小 焼失 歴史"
+    - "東京 戦後 闇市 跡地 現在"
+    - "奈良 平城京 遷都 廃都"
+    - "Tokyo landmark hidden history surprising origin"
 theme:
   bg: "#12100E"
   fg: "#F2EDE4"

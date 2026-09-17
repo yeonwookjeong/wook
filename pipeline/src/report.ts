@@ -15,7 +15,10 @@ export function weeklyReport(opts: { days?: number } = {}): string {
     const published = content.filter((c) => c.meta.status === 'published');
     const drafts = content.filter((c) => c.meta.status === 'draft');
     const approved = content.filter((c) => c.meta.status === 'approved');
-    const bank = ideas.filter((i) => i.channel === cfg.id && !i.usedBy);
+    const allUnused = ideas.filter((i) => i.channel === cfg.id && !i.usedBy);
+    // 시즌이 걸린 채널은 시즌 안쪽 소재만 '쓸 수 있는 재고'로 본다.
+    const bank = cfg.season ? allUnused.filter((i) => i.theme === cfg.season!.id) : allUnused;
+    const parked = allUnused.length - bank.length;
 
     lines.push(`## ${cfg.name} \`${cfg.track}\``);
     lines.push(
@@ -26,6 +29,9 @@ export function weeklyReport(opts: { days?: number } = {}): string {
 
     // 리서치로 소재가 나오는 채널만 경고한다.
     // 만타·색보정·스레드는 촬영본이, 네이버는 여행 메모가 입력이라 뱅크 잔량이 의미 없다.
+    if (cfg.season) {
+      lines.push(`- 시즌: **${cfg.season.name}**${parked ? ` (시즌 밖 보류 ${parked}건)` : ''}`);
+    }
     if (cfg.research?.enabled && bank.length <= 2) {
       lines.push(`- ⚠️ 소재 뱅크 고갈 임박 — \`pipe ideas --channel ${cfg.id}\` 필요`);
     }
