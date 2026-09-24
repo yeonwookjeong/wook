@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Travel Deal Radar</title>
+  <meta name="description" content="평소 가격 대비 이상하게 싼 호텔·항공권만 골라 알려주는 레이더" />
+  <style>
+    :root {
+      --bg: #f6f7f9; --card: #fff; --ink: #14171c; --muted: #5f6773; --line: #e3e6ea;
+      --accent: #0a7c5a; --accent-bg: #e3f4ec; --warn: #b54708; --warn-bg: #fef0e6; --bad: #b42318;
+      --bar: #d9dde3; --bar-mid: #aab2bd;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #0f1216; --card: #171b21; --ink: #e8ebef; --muted: #98a1ad; --line: #272d35;
+        --accent: #3ccf98; --accent-bg: #133328; --warn: #f5a25d; --warn-bg: #3a2414; --bad: #f97066;
+        --bar: #2c333c; --bar-mid: #4b5563;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; }
+    main { max-width: 760px; margin: 0 auto; padding: 20px 16px 64px; }
+    h1 { font-size: 22px; margin: 0 0 4px; }
+    .sub { color: var(--muted); margin: 0 0 16px; }
+    .notice { font-size: 13px; color: var(--warn); background: var(--warn-bg); border-radius: 8px; padding: 8px 12px; margin-bottom: 16px; }
+    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+    .seg button { border: 1px solid var(--line); background: var(--card); color: var(--ink); padding: 6px 14px; font: inherit; cursor: pointer; }
+    .seg button:first-child { border-radius: 8px 0 0 8px; }
+    .seg button:last-child { border-radius: 0 8px 8px 0; }
+    .seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+    label.chk { display: flex; gap: 6px; align-items: center; color: var(--muted); font-size: 14px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+    .row { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+    .name { font-weight: 600; }
+    .meta { color: var(--muted); font-size: 13px; }
+    .price { text-align: right; white-space: nowrap; }
+    .price b { font-size: 20px; font-variant-numeric: tabular-nums; }
+    .price s { color: var(--muted); font-size: 13px; }
+    .badge { display: inline-block; font-size: 13px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--accent-bg); color: var(--accent); }
+    .badge.typical { background: var(--line); color: var(--muted); }
+    .badge.high { background: var(--warn-bg); color: var(--bad); }
+    .range { position: relative; height: 26px; margin: 14px 0 4px; }
+    .range .track { position: absolute; top: 11px; left: 0; right: 0; height: 4px; background: var(--bar); border-radius: 2px; }
+    .range .iqr { position: absolute; top: 9px; height: 8px; background: var(--bar-mid); border-radius: 4px; }
+    .range .med { position: absolute; top: 5px; width: 2px; height: 16px; background: var(--muted); }
+    .range .now { position: absolute; top: 5px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: var(--accent); border: 2px solid var(--card); }
+    .range .now.up { background: var(--bad); }
+    .legend { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+    details { margin-top: 10px; }
+    summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+    .reason { margin: 8px 0 0; }
+    .reason .t { font-weight: 600; }
+    .conf { font-size: 11px; color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; margin-left: 4px; }
+    ul.check { margin: 8px 0 0; padding-left: 20px; color: var(--muted); font-size: 14px; }
+    .empty { color: var(--muted); text-align: center; padding: 24px; }
+    h2 { font-size: 17px; margin: 28px 0 8px; }
+    form.quick { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+    form.quick label { display: flex; flex-direction: column; font-size: 13px; color: var(--muted); gap: 4px; }
+    form.quick input, form.quick select { font: inherit; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--ink); }
+    form.quick button { grid-column: 1 / -1; font: inherit; font-weight: 600; padding: 10px; border: 0; border-radius: 8px; background: var(--ink); color: var(--bg); cursor: pointer; }
+    #quick-result:empty { display: none; }
+    .err { color: var(--bad); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>📡 Travel Deal Radar</h1>
+    <p class="sub">평소 가격보다 <b>이상하게 싼</b> 호텔·항공권만 골라, 왜 싼지까지 알려줍니다.</p>
+    <div class="notice">지금 보이는 목록은 <b>샘플 데이터</b>(기준일 <span id="today"></span>)입니다. 실제 판매가가 아닙니다.</div>
+
+    <div class="toolbar">
+      <div class="seg" role="group" aria-label="종류">
+        <button data-kind="all" aria-pressed="true">전체</button>
+        <button data-kind="hotel" aria-pressed="false">호텔</button>
+        <button data-kind="flight" aria-pressed="false">항공</button>
+      </div>
+      <label class="chk"><input type="checkbox" id="deals-only" /> 딜만 보기 (평소보다 15%↓)</label>
+    </div>
+    <div id="list"></div>
+
+    <h2>🧮 내가 본 가격 바로 판정</h2>
+    <p class="sub">과거 데이터가 없어도, 평소 가격만 알면 판정할 수 있어요.</p>
+    <form class="quick" id="quick">
+      <label>종류
+        <select name="kind"><option value="hotel">호텔</option><option value="flight">항공</option></select>
+      </label>
+      <label>지금 가격(원)<input name="price" type="number" inputmode="numeric" min="1" value="58000" required /></label>
+      <label>평소 주말 가격(원)<input name="usualPrice" type="number" inputmode="numeric" min="1" value="150000" required /></label>
+      <label>평소 연휴 가격(원)<input name="peakPrice" type="number" inputmode="numeric" min="1" value="300000" /></label>
+      <label>날짜 유형
+        <select name="isPeak"><option value="1">연휴</option><option value="0">평일·주말</option></select>
+      </label>
+      <label>이용일까지 남은 일수<input name="leadDays" type="number" min="0" value="0" /></label>
+      <label>환불 가능?
+        <select name="refundable"><option value="0">환불불가</option><option value="1">환불가능</option></select>
+      </label>
+      <button type="submit">판정하기</button>
+    </form>
+    <div id="quick-result" style="margin-top:12px"></div>
+  </main>
+  <script type="module" src="./src/ui/app.js"></script>
+</body>
+</html>

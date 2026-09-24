@@ -1,0 +1,14 @@
+{
+  "name": "travel-deal-radar",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "평소 가격 대비 이상하게 싼 호텔·항공권만 골라 알려주는 웹 MVP",
+  "scripts": {
+    "start": "node scripts/serve.js",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
