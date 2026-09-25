@@ -206,7 +206,8 @@ export function sillok(p: Pillars, { cast = {}, kingName = "" }: { cast?: Cast; 
       : "",
   ];
 
-  const nick = p.dayBranch % 2;
+  // Day stem and day branch always share yin/yang, so branch % 2 would pin one nickname per stem; use the next bit.
+  const nick = (p.dayBranch >> 1) % 2;
   const golden = t.dark ? DARK_GOLDEN[p.dayStem] : GOLDEN[p.dayStem][nick];
   const nickname = t.dark ? DARK_GOLDEN[p.dayStem].nickname : COURT_NICKNAMES[p.dayStem][nick];
   const ch4 = [
