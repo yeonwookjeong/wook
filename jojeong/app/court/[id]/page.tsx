@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import BirthForm from "@/components/BirthForm";
-import Naegwan from "@/components/Naegwan";
+import Seoun from "@/components/Seoun";
 import KingCard from "@/components/KingCard";
+import PairHighlights from "@/components/PairHighlights";
 import SeatRow from "@/components/SeatRow";
 import { SaveImageButton, ShareLinkButton } from "@/components/ShareButtons";
 import { loadCourt, viewerOf } from "@/lib/load";
@@ -56,12 +57,19 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
         />
       ) : (
         <>
-          {isOwner && seats.length === 0 && <KingCard kingName={court.kingName} pillars={court.king} />}
+          {isOwner && seats.length === 0 && (
+            <>
+              <section className="mt-6">
+                <Seoun>전하, 즉위를 경하드리옵니다. 소신이 전하의 사주를 살펴 즉위 교서를 올리옵니다.</Seoun>
+              </section>
+              <KingCard kingName={court.kingName} pillars={court.king} />
+            </>
+          )}
           <section className="mt-6">
-            <Naegwan>
+            <Seoun>
               {isOwner ? (
                 seats.length === 0 ? (
-                  <>즉위를 경하드리옵니다, 전하! 이제 조정을 채우실 차례이옵니다. 벗들을 부르시면 누가 영의정이고 누가 간신인지 소신이 가려드리겠사옵니다.</>
+                  <>이제 조정을 채우실 차례이옵니다. 벗들을 부르시면 소신이 그들의 사주를 살펴, 누가 영의정감이고 누가 간신인지 가려 천거하겠사옵니다.</>
                 ) : gansinCount > 0 ? (
                   <>
                     전하… 조정에 간신이 <b className="text-seal">{gansinCount}명</b> 숨어 있사옵니다. 누구인지 확인해
@@ -73,7 +81,7 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
               ) : (
                 <>그대도 입궐을 마쳤사옵니다. 다른 신하들의 관직도 살펴보시옵소서.</>
               )}
-            </Naegwan>
+            </Seoun>
           </section>
 
           {isOwner && (
@@ -123,6 +131,8 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
               </ul>
             </section>
           )}
+
+          <PairHighlights ministers={seats.map((s) => s.minister)} />
 
           {isOwner && seats.length > 0 && <KingCard kingName={court.kingName} pillars={court.king} />}
 
@@ -179,10 +189,10 @@ function Invitation({
       </section>
 
       <section className="mt-6">
-        <Naegwan>
-          입궐하시면 소신이 그대의 사주를 전하의 사주와 맞춰보고 관직을 내리겠사옵니다. 혹 간신으로 몰려도 소신을 원망
-          마시옵소서.
-        </Naegwan>
+        <Seoun>
+          관상감 명과학 훈도 서운이옵니다. 입궐하시면 소신이 그대의 사주를 전하의 사주와 맞춰보고 관직을 천거하겠사옵니다.
+          혹 간신으로 몰려도 소신을 너무 서운해 마시옵소서.
+        </Seoun>
       </section>
 
       <section className="mt-5 rounded-3xl border border-ink/10 bg-hanji-deep/60 p-5">

@@ -1,6 +1,6 @@
 import { CHARACTER_IMAGE, CHARACTER_NAME } from "@/lib/brand";
 
-export default function Naegwan({ children }: { children: React.ReactNode }) {
+export default function Seoun({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-end gap-3">
       {/* eslint-disable-next-line @next/next/no-img-element */}

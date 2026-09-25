@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import Naegwan from "@/components/Naegwan";
+import Seoun from "@/components/Seoun";
 import { SaveImageButton, ShareLinkButton } from "@/components/ShareButtons";
 import { bragLine, decreeLine } from "@/lib/decree";
 import { loadCourt, viewerOf } from "@/lib/load";
@@ -67,7 +67,7 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
       </section>
 
       <section className="mt-6">
-        <Naegwan>{role.report}</Naegwan>
+        <Seoun>{role.report}</Seoun>
       </section>
 
       <section className="mt-5 rounded-3xl border border-ink/10 bg-hanji-deep/60 p-5">
@@ -86,7 +86,7 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
           </ul>
         )}
         <p className="mt-4 rounded-xl bg-white/70 px-4 py-3 text-sm leading-relaxed">
-          <b className="text-gold">복길의 진언</b> · {role.advice}
+          <b className="text-gold">서운의 진언</b> · {role.advice}
         </p>
       </section>
 

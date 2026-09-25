@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import BirthForm from "@/components/BirthForm";
-import Naegwan from "@/components/Naegwan";
+import Seoun from "@/components/Seoun";
 import { OWNER_PREFIX } from "@/lib/cookies";
 import { ROLES } from "@/lib/roles";
 import { getCourt, type Court } from "@/lib/store";
@@ -66,11 +66,19 @@ export default async function Home() {
         </section>
       )}
 
-      <section className="mt-8">
-        <Naegwan>
-          전하, 먼저 즉위하시옵소서. 전하가 어떤 왕이신지, 실록 속 어느 왕과 사주가 같은지 아뢰겠사옵니다. 그다음 벗들을
-          부르시면 누가 영의정이고 누가 간신인지 가려드리겠사옵니다.
-        </Naegwan>
+      <section className="mt-8 rounded-2xl border border-gold/40 bg-white/60 px-5 py-4">
+        <p className="text-xs font-extrabold tracking-wider text-gold">알고 계셨사옵니까?</p>
+        <p className="mt-2 text-[15px] leading-relaxed">
+          조선 왕실에는 사주를 보는 관직이 있었사옵니다. <b>관상감 명과학(命課學)</b>의 관원들은 왕자와 공주의 궁합을
+          심사하고 왕실의 길일을 택했으며, 오늘날 사주와 같은 <b>자평명리</b>로 시험을 치렀사옵니다.
+        </p>
+      </section>
+
+      <section className="mt-5">
+        <Seoun>
+          관상감 명과학 훈도 서운, 입시하였사옵니다. 품계는 말단 정9품이오나 사주 보는 눈만큼은 조선 제일이옵니다. 먼저
+          즉위하시면 전하가 어떤 왕이신지 아뢰고, 벗들을 부르시면 누가 영의정이고 누가 간신인지 가려 천거하겠사옵니다.
+        </Seoun>
       </section>
 
       <section className="mt-5 rounded-3xl border border-ink/10 bg-hanji-deep/60 p-5">

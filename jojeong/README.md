@@ -35,7 +35,8 @@ Redis 환경변수 없이 Vercel에 배포하면 즉위 시 오류가 나도록 
 | `/court/[id]/m/[mid]/card` | 개인 교지 스토리 이미지 (1080×1920) |
 
 - `lib/saju.ts`: 만세력 계산(`lunar-javascript`, 입춘 기준) → 일간 오행 생극 + 천간합·육합·반합·충·원진·띠·시지로 점수와 관직 결정
-- `lib/roles.ts`: 관직별 카피(상선 복길 말투). 문구 수정은 여기서
+- `lib/roles.ts`: 관직별 카피(명과학 훈도 서운 말투). 문구 수정은 여기서
+- `lib/pairs.ts`: 신하끼리 궁합(양방향 점수 평균). 조정 화면에 천생연분·앙숙 1쌍씩 무료 노출
 - `lib/kingTypes.ts`: 일간별 왕 유형 10종 카피 (성격 해석, 실존 왕 이름은 넣지 않음)
 - `lib/kings.ts`: 조선 27왕의 실록 음력 탄일 → 일주 계산. 사용자와 일주가 같으면 그 왕들, 없으면 같은 일간의 왕, 그것도 없으면(경금) "조선 최초의 경금 군주"
   - 탄일은 위키백과·우리역사넷 등에서 수집해 양력 환산일과 대조함. 1582년 이전 날짜는 출처별로 율리우스력/그레고리력 표기가 달라 8~10일 차이가 나는 것이 정상
@@ -47,21 +48,37 @@ Redis 환경변수 없이 Vercel에 배포하면 즉위 시 오류가 나도록 
 
 공유 이미지 폰트 `assets/fonts/NanumMyeongjo-*.ttf`는 SIL Open Font License 1.1 폰트(나눔명조, Google Fonts 배포본)입니다.
 
-## 캐릭터(상선 복길) AI 이미지로 교체
+## 유료 상품 (결제 연동 예정)
 
-지금은 `public/naegwan.svg` 임시 캐릭터입니다. 아래 프롬프트로 이미지를 만든 뒤:
+| 상품 | 구매자 | 내용 |
+|---|---|---|
+| 관상감 밀계 | 왕 | 신하 한 명 상세 궁합 (우정·일·돈·연애, 2026년 흐름, 다루는 법) |
+| 전하께 올라간 밀계 엿보기 | 신하 | 왕이 나에 대해 받은 보고 + 이 왕을 다루는 법 |
+| 전하의 명과 | 왕 | 본인 사주팔자 전체 풀이, 2026 병오년 운세 |
+| 어전회의 | 왕·신하 | 신하끼리 전체 조합표, 파벌, 조합별 풀이 |
 
-1. 배경 투명 PNG(정사각, 512px 이상)로 `public/naegwan.png`에 저장
-2. `lib/brand.ts`의 `CHARACTER_IMAGE`를 `"/naegwan.png"`로 변경
+가격: 전 상품 990원. **복채 단골 할인**으로 결제할 때마다 100원씩 내려가 990 → 890 → 790 → **690원(최저, 4회차부터 고정)**. 결제 횟수는 브라우저 쿠키로 추적(쿠키를 지우면 990원으로 돌아갈 뿐이라 악용 여지 없음). 결제 버튼에 실제 결제 금액과 할인액을 미리 표시.
+
+## 캐릭터: 관상감 명과학 훈도 서운
+
+- 관상감 명과학은 조선 왕실의 궁합 심사·택일·왕실 자녀 사주 기록을 맡은 실제 부서. 명과학 훈도는 경국대전상 정9품 관직
+- 이름 "서운"은 관상감의 옛 이름 서운관(書雲觀)에서 따옴. "서운하다" 말장난에 활용
+- 설정: 품계는 말단 정9품이지만 사주 보는 눈은 조선 제일. 왕에게도 할 말은 하는 젊은 관원. 관직은 서운이 "천거"하고 왕이 내리는 구조
+
+지금은 `public/seoun.svg` 임시 캐릭터입니다. 아래 프롬프트로 이미지를 만든 뒤:
+
+1. 배경 투명 PNG(정사각, 512px 이상)로 `public/seoun.png`에 저장
+2. `lib/brand.ts`의 `CHARACTER_IMAGE`를 `"/seoun.png"`로 변경
 
 **프롬프트 (Midjourney / ChatGPT 이미지 / Gemini 공용, 영어가 결과가 안정적)**
 
 ```
-Cute chibi character of a Joseon-dynasty royal eunuch (sangseon naegwan), upper body,
-round face with sly half-closed smiling eyes and rosy cheeks, black traditional gauze hat
-(samo) with side wings, deep red official robe with white collar, holding a small scroll,
+Cute chibi character of a young Joseon-dynasty royal astrologer official
+(Gwansanggam fortune-reading scholar), upper body, confident sly smile with one eyebrow raised,
+black traditional gauze hat (samo) with side wings, green low-rank official robe with white collar,
+a small golden star emblem on the chest, holding a rolled star-chart scroll,
 flat vector illustration, soft pastel shading, thick clean outlines, Korean webtoon style,
 transparent background, centered, square composition --ar 1:1
 ```
 
-변형 표정(선택): 간신 결과용 `shocked face, sweating, whispering behind hand`, 영의정 결과용 `bowing deeply, proud smile`.
+변형 표정(선택): 간신 결과용 `sighing with a disappointed look, "I'm so let down" expression`, 영의정 결과용 `bowing with a proud grin`.
