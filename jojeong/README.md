@@ -83,10 +83,9 @@ Redis 환경변수 없이 Vercel에 배포하면 즉위 시 오류가 나도록 
 
 | 파일 | 표정 | 쓰는 곳 |
 |---|---|---|
-| `hundo-hero.png` | 별자리 두루마리, 배경 투명 + 사모 윗부분 보정 | 첫 화면 일월오봉도 앞 (`components/Hero.tsx`) |
 | `hundo-face.png` | 얼굴 클로즈업 | 기본 말풍선 아이콘 |
 | `hundo.png` | 별자리 두루마리 | 예비(상반신 기본) |
-| `hundo-bow.png` | 공손한 인사 | 즉위 축하, 영의정·좌의정 결과, 즉위 교서 스토리 |
+| `hundo-bow.png` | 공손한 인사 | 첫 화면 옥좌 옆 신하(`components/Hero.tsx`), 즉위 축하, 영의정·좌의정 결과, 즉위 교서 스토리 |
 | `hundo-fan.png` | 부채로 속삭임 | 간신 결과, 간신이 있는 조정 |
 | `hundo-shock.png` | 놀람 | 유배 결과, 404 |
 | `hundo-decree.png` | 교지 펼쳐 보임 | 초대장, 카톡 초대 미리보기, 일반 관직 결과 |
