@@ -97,7 +97,13 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
           {seats.length > 0 && (
             <ol className="mt-6 flex flex-col gap-2">
               {seats.map((seat) => (
-                <SeatRow key={seat.minister.id} courtId={court.id} seat={seat} mine={seat.minister.id === myMinisterId} />
+                <SeatRow
+                  key={seat.minister.id}
+                  courtId={court.id}
+                  seat={seat}
+                  mine={seat.minister.id === myMinisterId}
+                  canDismiss={isOwner}
+                />
               ))}
             </ol>
           )}

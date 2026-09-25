@@ -1,4 +1,5 @@
 import Link from "next/link";
+import DismissButton from "./DismissButton";
 import type { Seat } from "@/lib/court";
 import { ROLES } from "@/lib/roles";
 
@@ -9,13 +10,23 @@ const TONE: Record<string, string> = {
   gray: "bg-ink-soft/70 text-hanji",
 };
 
-export default function SeatRow({ courtId, seat, mine }: { courtId: string; seat: Seat; mine: boolean }) {
+export default function SeatRow({
+  courtId,
+  seat,
+  mine,
+  canDismiss = false,
+}: {
+  courtId: string;
+  seat: Seat;
+  mine: boolean;
+  canDismiss?: boolean;
+}) {
   const role = ROLES[seat.role];
   return (
-    <li>
+    <li className="flex items-stretch gap-2">
       <Link
         href={`/court/${courtId}/m/${seat.minister.id}`}
-        className={`flex items-center gap-3 rounded-2xl border bg-white/70 px-3 py-3 transition active:scale-[0.99] ${mine ? "border-seal ring-2 ring-seal/30" : "border-ink/10"}`}
+        className={`flex min-w-0 flex-1 items-center gap-3 rounded-2xl border bg-white/70 px-3 py-3 transition active:scale-[0.99] ${mine ? "border-seal ring-2 ring-seal/30" : "border-ink/10"}`}
       >
         <span
           className={`flex h-12 w-[72px] shrink-0 items-center justify-center rounded-xl font-myeongjo text-[15px] font-extrabold ${TONE[role.tone]}`}
@@ -34,6 +45,7 @@ export default function SeatRow({ courtId, seat, mine }: { courtId: string; seat
           <span className="block text-[10px] text-ink-soft">궁합</span>
         </span>
       </Link>
+      {canDismiss && <DismissButton courtId={courtId} ministerId={seat.minister.id} name={seat.minister.name} />}
     </li>
   );
 }

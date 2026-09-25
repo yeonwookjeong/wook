@@ -16,6 +16,7 @@ type Backend = {
   set(key: string, value: string): Promise<void>;
   push(key: string, value: string): Promise<number>;
   list(key: string): Promise<string[]>;
+  remove(key: string, value: string): Promise<void>;
 };
 
 function redisBackend(url: string, token: string): Backend {
@@ -36,6 +37,7 @@ function redisBackend(url: string, token: string): Backend {
     set: async (key, value) => void (await call(["SET", key, value])),
     push: (key, value) => call<number>(["RPUSH", key, value]),
     list: (key) => call<string[]>(["LRANGE", key, 0, -1]),
+    remove: async (key, value) => void (await call(["LREM", key, 1, value])),
   };
 }
 
@@ -67,6 +69,12 @@ function fileBackend(): Backend {
     set: (key, value) => mutate((db) => void (db.kv[key] = value)),
     push: (key, value) => mutate((db) => (db.lists[key] ??= []).push(value)),
     list: async (key) => (await load()).lists[key] ?? [],
+    remove: (key, value) =>
+      mutate((db) => {
+        const list = db.lists[key] ?? [];
+        const i = list.indexOf(value);
+        if (i >= 0) list.splice(i, 1);
+      }),
   };
 }
 
@@ -103,4 +111,10 @@ export async function addMinister(courtId: string, name: string, pillars: Pillar
   const minister: Minister = { id: id(6), name, pillars, joinedAt: Date.now() };
   await db.push(`court:${courtId}:m`, JSON.stringify(minister));
   return minister;
+}
+
+export async function removeMinister(courtId: string, ministerId: string) {
+  const db = backend();
+  const raw = (await db.list(`court:${courtId}:m`)).find((r) => (JSON.parse(r) as Minister).id === ministerId);
+  if (raw) await db.remove(`court:${courtId}:m`, raw);
 }

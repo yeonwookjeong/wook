@@ -1,9 +1,10 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { BirthInputError, computePillars, type BirthInput, type Pillars } from "@/lib/saju";
-import { addMinister, createCourt, CourtFullError, getCourt, MAX_MINISTERS } from "@/lib/store";
+import { addMinister, createCourt, CourtFullError, getCourt, MAX_MINISTERS, removeMinister } from "@/lib/store";
 import { OWNER_COOKIE, MINISTER_COOKIE } from "@/lib/cookies";
 
 export type FormState = { error: string | null };
@@ -75,4 +76,15 @@ export async function joinCourtAction(_prev: FormState, formData: FormData): Pro
     return { error: "입궐 중 문제가 생겼사옵니다. 잠시 후 다시 시도해 주시옵소서." };
   }
   redirect(`/court/${courtId}/m/${ministerId}`);
+}
+
+export async function dismissMinisterAction(formData: FormData) {
+  const courtId = String(formData.get("courtId") ?? "");
+  const ministerId = String(formData.get("ministerId") ?? "");
+  const court = await getCourt(courtId);
+  if (!court) return;
+  const token = (await cookies()).get(OWNER_COOKIE(court.id))?.value;
+  if (token !== court.ownerToken) return;
+  await removeMinister(court.id, ministerId);
+  refresh();
 }
