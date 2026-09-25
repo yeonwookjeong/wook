@@ -1,7 +1,8 @@
 import Link from "next/link";
+import { SERVICE_NAME } from "@/lib/brand";
 import { cookies } from "next/headers";
 import BirthForm from "@/components/BirthForm";
-import Seoun from "@/components/Seoun";
+import Hundo from "@/components/Hundo";
 import { OWNER_PREFIX } from "@/lib/cookies";
 import { ROLES } from "@/lib/roles";
 import { getCourt, type Court } from "@/lib/store";
@@ -28,7 +29,7 @@ export default async function Home() {
         <p className="mx-auto w-fit rounded-full border border-seal/40 px-3 py-1 text-xs font-bold tracking-widest text-seal">
           사주 인사발령
         </p>
-        <h1 className="mt-4 font-myeongjo text-5xl font-extrabold tracking-tight">나의 조정</h1>
+        <h1 className="mt-4 font-myeongjo text-5xl font-extrabold tracking-tight">{SERVICE_NAME}</h1>
         <p className="mt-3 text-[15px] leading-relaxed text-ink-soft">
           생년월일을 넣으면 <b className="text-ink">전하가 어떤 왕이었을지</b> 알려드리옵니다.
           <br />
@@ -75,10 +76,11 @@ export default async function Home() {
       </section>
 
       <section className="mt-5">
-        <Seoun>
-          관상감 명과학 훈도 서운, 입시하였사옵니다. 품계는 말단 정9품이오나 사주 보는 눈만큼은 조선 제일이옵니다. 먼저
+        <Hundo>
+          관상감 막내, 명과학 훈도 정가이옵니다. 다들 정 훈도라 부르옵니다. 품계는 말단 정9품이오나 사주 보는 눈만큼은 조선
+          제일이옵니다. 먼저
           즉위하시면 전하가 어떤 왕이신지 아뢰고, 벗들을 부르시면 누가 영의정이고 누가 간신인지 가려 천거하겠사옵니다.
-        </Seoun>
+        </Hundo>
       </section>
 
       <section className="mt-5 rounded-3xl border border-ink/10 bg-hanji-deep/60 p-5">

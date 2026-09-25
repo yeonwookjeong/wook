@@ -26,7 +26,7 @@ export default function PairHighlights({ ministers }: { ministers: Minister[] })
   if (!h) return null;
   return (
     <section className="mt-6">
-      <p className="mb-2 text-center text-xs font-bold text-ink-soft">서운이 살핀 신하들끼리의 궁합</p>
+      <p className="mb-2 text-center text-xs font-bold text-ink-soft">정 훈도가 살핀 신하들끼리의 궁합</p>
       <div className="flex flex-col gap-2">
         {h.worst ? (
           <>

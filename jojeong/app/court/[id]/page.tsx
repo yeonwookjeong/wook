@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import { SERVICE_NAME } from "@/lib/brand";
 import Link from "next/link";
 import BirthForm from "@/components/BirthForm";
-import Seoun from "@/components/Seoun";
+import Hundo from "@/components/Hundo";
 import KingCard from "@/components/KingCard";
 import PairHighlights from "@/components/PairHighlights";
 import SeatRow from "@/components/SeatRow";
@@ -34,7 +35,7 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
     <>
       <header className="animate-rise pt-8 text-center">
         <Link href="/" className="text-xs font-bold tracking-widest text-seal">
-          나의 조정
+          {SERVICE_NAME}
         </Link>
         <p className="mt-3 text-sm font-bold text-gold">{kingType.title}</p>
         <h1 className="mt-0.5 font-myeongjo text-3xl font-extrabold">{court.kingName} 전하의 조정</h1>
@@ -60,13 +61,13 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
           {isOwner && seats.length === 0 && (
             <>
               <section className="mt-6">
-                <Seoun>전하, 즉위를 경하드리옵니다. 소신이 전하의 사주를 살펴 즉위 교서를 올리옵니다.</Seoun>
+                <Hundo>전하, 즉위를 경하드리옵니다. 소신이 전하의 사주를 살펴 즉위 교서를 올리옵니다.</Hundo>
               </section>
               <KingCard kingName={court.kingName} pillars={court.king} />
             </>
           )}
           <section className="mt-6">
-            <Seoun>
+            <Hundo>
               {isOwner ? (
                 seats.length === 0 ? (
                   <>이제 조정을 채우실 차례이옵니다. 벗들을 부르시면 소신이 그들의 사주를 살펴, 누가 영의정감이고 누가 간신인지 가려 천거하겠사옵니다.</>
@@ -81,7 +82,7 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
               ) : (
                 <>그대도 입궐을 마쳤사옵니다. 다른 신하들의 관직도 살펴보시옵소서.</>
               )}
-            </Seoun>
+            </Hundo>
           </section>
 
           {isOwner && (
@@ -189,10 +190,10 @@ function Invitation({
       </section>
 
       <section className="mt-6">
-        <Seoun>
-          관상감 명과학 훈도 서운이옵니다. 입궐하시면 소신이 그대의 사주를 전하의 사주와 맞춰보고 관직을 천거하겠사옵니다.
+        <Hundo>
+          관상감 명과학 훈도 정가이옵니다. 입궐하시면 소신이 그대의 사주를 전하의 사주와 맞춰보고 관직을 천거하겠사옵니다.
           혹 간신으로 몰려도 소신을 너무 서운해 마시옵소서.
-        </Seoun>
+        </Hundo>
       </section>
 
       <section className="mt-5 rounded-3xl border border-ink/10 bg-hanji-deep/60 p-5">

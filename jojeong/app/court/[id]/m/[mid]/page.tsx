@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import { SERVICE_NAME } from "@/lib/brand";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import Seoun from "@/components/Seoun";
+import Hundo from "@/components/Hundo";
 import { SaveImageButton, ShareLinkButton } from "@/components/ShareButtons";
 import { bragLine, decreeLine } from "@/lib/decree";
 import { loadCourt, viewerOf } from "@/lib/load";
@@ -39,7 +40,7 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
           ← {court.kingName} 전하의 조정
         </Link>
         <Link href="/" className="font-bold text-seal">
-          나의 조정
+          {SERVICE_NAME}
         </Link>
       </nav>
 
@@ -67,7 +68,7 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
       </section>
 
       <section className="mt-6">
-        <Seoun>{role.report}</Seoun>
+        <Hundo>{role.report}</Hundo>
       </section>
 
       <section className="mt-5 rounded-3xl border border-ink/10 bg-hanji-deep/60 p-5">
@@ -86,7 +87,7 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
           </ul>
         )}
         <p className="mt-4 rounded-xl bg-white/70 px-4 py-3 text-sm leading-relaxed">
-          <b className="text-gold">서운의 진언</b> · {role.advice}
+          <b className="text-gold">정 훈도의 진언</b> · {role.advice}
         </p>
       </section>
 
