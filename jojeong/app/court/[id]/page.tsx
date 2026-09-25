@@ -4,6 +4,7 @@ import Link from "next/link";
 import BirthForm from "@/components/BirthForm";
 import Hundo from "@/components/Hundo";
 import KingCard from "@/components/KingCard";
+import Sillok from "@/components/Sillok";
 import PairHighlights from "@/components/PairHighlights";
 import SeatRow from "@/components/SeatRow";
 import { SaveImageButton, ShareLinkButton } from "@/components/ShareButtons";
@@ -145,6 +146,8 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
           <PairHighlights ministers={seats.map((s) => s.minister)} />
 
           {isOwner && seats.length > 0 && <KingCard kingName={court.kingName} pillars={court.king} />}
+
+          <Sillok kingName={court.kingName} pillars={court.king} />
 
           {!isOwner && (
             <section className="mt-8 flex flex-col gap-3">

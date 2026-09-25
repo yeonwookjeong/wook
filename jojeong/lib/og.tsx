@@ -7,6 +7,7 @@ import type { Seat } from "./court";
 import { decreeLine } from "./decree";
 import { kingLinkText } from "./kings";
 import { KING_TYPES } from "./kingTypes";
+import { sillok } from "./sillok";
 import { moodFor, ROLES } from "./roles";
 import type { Pillars, RoleKey } from "./saju";
 
@@ -254,6 +255,7 @@ function balancedLines(text: string, max: number): string[] {
 export function kingStory(kingName: string, king: Pillars) {
   const t = KING_TYPES[king.dayStem];
   const { short } = kingLinkText(king);
+  const record = sillok(king);
   return render(
     <div style={{ ...frame(1080, 1920, C.gold), paddingTop: 220 }}>
       <InnerRule width={1080} accent={C.gold} />
@@ -261,6 +263,9 @@ export function kingStory(kingName: string, king: Pillars) {
       <div style={{ marginTop: 120, fontSize: 52, color: C.soft }}>{`${kingName} 전하는`}</div>
       <div style={{ marginTop: 30, fontSize: 150, fontWeight: 800 }}>{t.title}</div>
       <div style={{ marginTop: 20, fontSize: 44, color: C.gold, fontWeight: 800 }}>{t.symbol}</div>
+      <div style={{ marginTop: 18, fontSize: 38, color: C.soft }}>
+        {`존호 ${record.epithet} · 재위 ${record.reign}년 · 향년 ${record.death}세`}
+      </div>
       <div style={{ marginTop: 50, fontSize: 46, lineHeight: 1.5, display: "flex", flexDirection: "column", alignItems: "center" }}>
         {balancedLines(`“${t.tagline}”`, 18).map((line) => (
           <div key={line}>{line}</div>
