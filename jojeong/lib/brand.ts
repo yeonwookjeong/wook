@@ -1,5 +1,5 @@
-export const SERVICE_NAME = "나의 조정";
-export const TAGLINE = "사주로 뽑는 나만의 조정";
+export const SERVICE_NAME = "왕이 될 사주";
+export const TAGLINE = "관상감 막내 정 훈도가 봐드리는 궁중 사주";
 export const CHARACTER_NAME = "관상감 막내 · 정 훈도";
 // Swap this for the AI-generated character (e.g. /hundo.png) once it's ready.
 export const CHARACTER_IMAGE = "/hundo.svg";

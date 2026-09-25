@@ -10,7 +10,7 @@ export function decreeLine(name: string, role: RoleKey) {
 }
 
 export function bragLine(kingName: string, role: RoleKey) {
-  if (role === "gansin") return `${kingName} 전하 조정에서 간신으로 찍혔다ㅋㅋㅋ 너도 사주로 관직 받아봐`;
-  if (role === "yubae") return `${kingName} 전하한테 유배당함… 너도 사주로 관직 받아봐`;
-  return `나 ${kingName} 전하 조정의 ${ROLES[role].title}됨ㅋㅋ 너도 사주로 관직 받아봐`;
+  if (role === "gansin") return `${kingName} 전하 조정에서 간신으로 찍혔다ㅋㅋㅋ 너도 왕이 될 사주인지 봐봐`;
+  if (role === "yubae") return `${kingName} 전하한테 유배당함… 너도 왕이 될 사주인지 봐봐`;
+  return `나 ${kingName} 전하 조정의 ${ROLES[role].title}됨ㅋㅋ 너도 왕이 될 사주인지 봐봐`;
 }

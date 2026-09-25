@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { ministerImage } from "@/lib/og";
 import { loadCourt } from "@/lib/load";
 
-export const alt = "사주 인사발령 교지";
+export const alt = "왕이 될 사주 인사발령 교지";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
