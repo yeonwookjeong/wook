@@ -27,7 +27,7 @@ export default async function Home() {
     <>
       <header className="animate-rise pt-10 text-center">
         <p className="mx-auto w-fit rounded-full border border-seal/40 px-3 py-1 text-xs font-bold tracking-widest text-seal">
-          내가 왕이 될 사주인가
+          조선 왕실도 사주를 봤다
         </p>
         <h1 className="mt-4 font-myeongjo text-5xl font-extrabold tracking-tight">{SERVICE_NAME}</h1>
         <p className="mt-3 text-[15px] leading-relaxed text-ink-soft">
