@@ -1,5 +1,21 @@
-import { BLOOPERS, CHILDHOOD, CRISES, FAREWELL, FIRST_ACTS, GOLDEN, RESOLVE } from "./episodes";
+import {
+  BLOOPERS,
+  CHILDHOOD,
+  CRISES,
+  DARK_FAREWELL,
+  DARK_FIRST,
+  DARK_GOLDEN,
+  DARK_PEOPLE,
+  DARK_RESOLVE,
+  DARK_SAGWAN,
+  DARK_TURN,
+  FAREWELL,
+  FIRST_ACTS,
+  GOLDEN,
+  RESOLVE,
+} from "./episodes";
 import { josa } from "./josa";
+import { isClash, isWonjin, lifespan, mix, ratings, reignTier, TIERS } from "./reign";
 import type { Pillars } from "./saju";
 
 // Deterministic fictional chronicle: the same pillars always produce the same record.
@@ -97,29 +113,23 @@ const KING_AGES: [string, number][] = [
   ["철종", 32], ["인종", 30], ["연산군", 29], ["헌종", 21], ["예종", 19], ["단종", 16],
 ];
 
-const isClash = (a: number, b: number) => Math.abs(a - b) === 6;
-const WONJIN = new Set(["0-7", "1-6", "2-9", "3-8", "4-11", "5-10"]);
-const isWonjin = (a: number, b: number) => WONJIN.has(`${Math.min(a, b)}-${Math.max(a, b)}`);
-
 export const KING_AVG_LIFESPAN = 46.1;
 
 export type Cast = { yeong?: string; gansin?: string; yubae?: string; witness?: string };
 
+// Where the age at death sits among the 27 real kings. Stated flatly: short lives are not softened.
 function lifespanRank(death: number) {
   const older = KING_AGES.filter(([, age]) => age > death);
   const rank = older.length + 1;
-  if (rank === 1) return { rank, note: "조선 최장수 왕 영조(82세)의 기록마저 넘어선 천수였다." };
+  const younger = KING_AGES.filter(([, age]) => age < death).length;
+  if (rank === 1) return { rank, note: "조선 최장수 왕 영조(82세)의 기록마저 넘어섰다." };
   const [aboveName, aboveAge] = older[older.length - 1];
   if (death >= 60) return { rank, note: `${aboveName}(${aboveAge}세) 다음가는 장수였다. 회갑을 넘긴 조선 왕은 다섯뿐이었다.` };
-  if (death > KING_AVG_LIFESPAN) return { rank, note: `조선 왕들의 평균 수명 ${KING_AVG_LIFESPAN}세는 넘겼으니, 이만하면 천수를 누린 편이다.` };
-  return { rank, note: `조선 왕들의 평균 수명 ${KING_AVG_LIFESPAN}세에 미치지 못한 짧은 생이었다. 백성들은 오래도록 그 이른 죽음을 아쉬워하였다.` };
-}
-
-// Independent hash for lifespan so it is not tied to the other picks.
-function mix(x: number) {
-  x = Math.imul(x ^ (x >>> 16), 0x45d9f3b);
-  x = Math.imul(x ^ (x >>> 16), 0x45d9f3b);
-  return (x ^ (x >>> 16)) >>> 0;
+  if (death > KING_AVG_LIFESPAN) return { rank, note: `조선 왕 평균 수명 ${KING_AVG_LIFESPAN}세는 넘겼다.` };
+  if (death >= 30) return { rank, note: `조선 왕 평균 수명 ${KING_AVG_LIFESPAN}세에 미치지 못했다.` };
+  if (death === 16) return { rank, note: "조선 최단명 왕 단종과 같은 나이였다." };
+  if (younger === 0) return { rank, note: "조선 최단명 왕 단종(16세)보다도 짧은 생이었다." };
+  return { rank, note: `조선 27왕 가운데 이보다 짧게 산 왕은 ${younger}명뿐이다.` };
 }
 
 // Fills {key} and {key|particle} placeholders; "이/가"-style pairs pick by final consonant, others are appended.
@@ -131,24 +141,30 @@ function fill(text: string, vars: Record<string, string>) {
   });
 }
 
-export function sillok(p: Pillars, cast: Cast = {}) {
+export function sillok(p: Pillars, { cast = {}, kingName = "" }: { cast?: Cast; kingName?: string } = {}) {
   const seed = (n: number) =>
     (p.dayStem * 131 + p.dayBranch * 31 + p.yearBranch * 7 + (p.hourBranch ?? 12) * 3 + n * 17) >>> 0;
 
-  // Triangular spread over 24–88 (peak ~56), so ranks cover the whole list instead of bunching at the top.
-  const base = seed(0);
-  const death = 24 + (mix(base) % 33) + (mix(base + 101) % 33);
-  const accession = Math.min(13 + (seed(1) % 20), death - 8);
-  const reign = death - accession;
+  const life = lifespan(p);
+  const { tier, reasons: tierReasons } = reignTier(p);
+  const t = TIERS[tier];
+  const deposed = tier === "pok";
+  const { headline, rows } = ratings(p, tier);
+
+  const death = life.death;
+  // Short lives start young so even a brief reign has a few years to tell.
+  const accession = Math.max(8, Math.min(13 + (seed(1) % 20), death - Math.max(3, Math.floor((death - 8) / 2))));
+  // A deposed king lives on in exile for a few years after losing the throne.
+  const exile = deposed ? Math.min(1 + (mix(seed(3)) % 3), Math.max(0, death - accession - 1)) : 0;
+  const reign = Math.max(1, death - accession - exile);
   const { rank, note: rankNote } = lifespanRank(death);
 
-  const epithet = `${EPITHETS[p.dayStem][p.dayBranch % 3]}대왕`;
+  const epithet = deposed ? `${kingName || "폐"}군` : `${EPITHETS[p.dayStem][p.dayBranch % 3]}대왕`;
   const [eraTitle, eraText] = ERAS[p.dayBranch];
-  const [peopleName, rumor] = PEOPLE[p.yearBranch];
-  const firstYear = 1 + (seed(8) % 3);
-  // reign >= 8, so the crisis lands in the first half and the peak always comes after it.
-  const crisisYear = 2 + (seed(6) % Math.max(1, Math.floor(reign / 2) - 1));
-  const peakYear = Math.min(reign - 1, crisisYear + 3 + (seed(9) % 8));
+  const [peopleName, rumor] = t.dark ? DARK_PEOPLE[p.yearBranch % DARK_PEOPLE.length] : PEOPLE[p.yearBranch];
+  const firstYear = 1 + (seed(8) % Math.min(3, Math.max(1, Math.floor(reign / 3))));
+  const crisisYear = Math.min(reign, firstYear + 1 + (seed(6) % Math.max(1, Math.floor(reign / 2) - firstYear)));
+  const peakYear = Math.min(reign, crisisYear + 3 + (seed(9) % 8));
   const who = { 영의정: cast.yeong ? `영의정 ${cast.yeong}` : "영의정" };
 
   const childhood = CHILDHOOD[p.dayStem];
@@ -160,10 +176,14 @@ export function sillok(p: Pillars, cast: Cast = {}) {
       : accession >= 28
         ? "늦은 즉위였으나, 오래 준비해 온 임금이었다."
         : "",
+    t.dark ? DARK_TURN[p.dayStem] : "",
   ];
 
-  const first = FIRST_ACTS[p.dayStem][p.yearBranch % 2];
-  const ch2 = [`훗날 사람들은 전하의 치세를 ‘${eraTitle}’라 부른다. ${eraText}`, fill(first.text, { ...who, 년: String(firstYear) })];
+  const first = t.dark ? DARK_FIRST[p.dayStem] : FIRST_ACTS[p.dayStem][p.yearBranch % 2];
+  const ch2 = [
+    t.dark ? `훗날 사람들은 이 치세를 ‘잃어버린 ${reign}년’이라 불렀다.` : `훗날 사람들은 전하의 치세를 ‘${eraTitle}’라 부른다. ${eraText}`,
+    fill(first.text, { ...who, 년: String(firstYear) }),
+  ];
 
   const crisis = isClash(p.dayBranch, p.yearBranch)
     ? CRISES.clash
@@ -173,16 +193,25 @@ export function sillok(p: Pillars, cast: Cast = {}) {
   const ch3 = [
     fill(crisis.text, { 년: String(crisisYear) }) +
       (cast.gansin ? ` 이 틈을 타 간신 ${josa(cast.gansin, "이/가")} “전하, 소신만 믿으소서” 하며 곁을 파고들었다.` : ""),
-    RESOLVE[p.dayStem],
-    cast.gansin ? `모든 일이 끝난 뒤, 전하는 간신 ${josa(cast.gansin, "을/를")} 조용히 불러 그간의 속셈을 하나하나 짚어 주었다. 그날 밤 ${josa(cast.gansin, "은/는")} 식은땀을 흘리며 잠을 이루지 못했다.` : "",
-    cast.yubae ? `이 무렵 전하와 사사건건 부딪치던 ${josa(cast.yubae, "은/는")} 먼 섬으로 유배되었다. 떠나는 날, 전하는 아무도 모르게 겨울옷 한 벌을 보냈다.` : "",
+    t.dark ? DARK_RESOLVE[p.dayStem] : RESOLVE[p.dayStem],
+    cast.gansin
+      ? t.dark
+        ? `모든 일이 끝난 뒤, 벼슬이 오른 것은 간신 ${josa(cast.gansin, "이었다/였다")}. 전하는 끝내 그 속셈을 알아채지 못했다.`
+        : `모든 일이 끝난 뒤, 전하는 간신 ${josa(cast.gansin, "을/를")} 조용히 불러 그간의 속셈을 하나하나 짚어 주었다. 그날 밤 ${josa(cast.gansin, "은/는")} 식은땀을 흘리며 잠을 이루지 못했다.`
+      : "",
+    cast.yubae
+      ? t.dark
+        ? `이 무렵 전하에게 바른말을 하던 ${josa(cast.yubae, "은/는")} 먼 섬으로 유배되었다. 떠나는 날 배웅하는 이는 아무도 없었다.`
+        : `이 무렵 전하와 사사건건 부딪치던 ${josa(cast.yubae, "은/는")} 먼 섬으로 유배되었다. 떠나는 날, 전하는 아무도 모르게 겨울옷 한 벌을 보냈다.`
+      : "",
   ];
 
   const nick = p.dayBranch % 2;
-  const golden = GOLDEN[p.dayStem][nick];
+  const golden = t.dark ? DARK_GOLDEN[p.dayStem] : GOLDEN[p.dayStem][nick];
+  const nickname = t.dark ? DARK_GOLDEN[p.dayStem].nickname : COURT_NICKNAMES[p.dayStem][nick];
   const ch4 = [
-    `${fill(golden.text, { 년: String(peakYear) })} 이 일로 조정에서는 뒤에서 몰래 ‘${COURT_NICKNAMES[p.dayStem][nick]}’라 불렀다.`,
-    `백성들은 전하를 ‘${peopleName}’이라 불렀다. ${rumor}`,
+    `${fill(golden.text, { 년: String(peakYear) })} 이 일로 조정에서는 뒤에서 몰래 ‘${nickname}’라 불렀다.`,
+    `백성들은 전하를 ‘${peopleName}’${josa(peopleName, "이라/라").slice(peopleName.length)} 불렀다. ${rumor}`,
   ];
 
   const blooper = BLOOPERS[seed(5) % BLOOPERS.length];
@@ -191,26 +220,51 @@ export function sillok(p: Pillars, cast: Cast = {}) {
     cast.witness ? `이 광경을 목격한 ${josa(cast.witness, "은/는")} 평생 입을 다물었다고 한다.` : "",
   ];
 
-  const ch6 = [
-    fill(FAREWELL[p.dayStem], who),
-    `재위 ${reign}년, 향년 ${death}세. ${rankNote}`,
-    `신하들은 전하께 ${epithet}이라는 존호를 올렸다.`,
-  ];
+  const ending = deposed
+    ? {
+        title: "폐위",
+        paras: [
+          `재위 ${reign}년, 마침내 반정이 일어났다. 반정군이 궐문을 열었을 때, 전하를 지키려 나선 군사는 한 명도 없었다.` +
+            (cast.yeong ? ` 반정군의 맨 앞에는 영의정 ${josa(cast.yeong, "이/가")} 서 있었다.` : ""),
+          `왕위에서 쫓겨난 전하는 ‘${epithet}’으로 강등되어 먼 섬으로 유배되었고, ${exile > 0 ? `${exile}년 뒤 ` : "그 해 "}향년 ${death}세로 그곳에서 생을 마쳤다. ${rankNote}`,
+          "폐위된 왕에게는 묘호도 존호도 올리지 않았다. 무덤은 능(陵)이 아닌 묘(墓)라 불렸고, 치세의 기록은 실록이 아닌 ‘일기’로 낮추어 불렸다.",
+        ],
+      }
+    : {
+        title: "마지막 날",
+        paras: [
+          t.dark ? DARK_FAREWELL[seed(11) % DARK_FAREWELL.length] : fill(FAREWELL[p.dayStem], who),
+          `재위 ${reign}년, 향년 ${death}세. ${rankNote}`,
+          `신하들은 ${epithet}이라는 존호를 올렸다.`,
+        ],
+      };
 
   return {
+    tier,
+    tierLabel: t.label,
+    tierHanja: t.hanja,
+    tierLine: t.line,
+    deposed,
+    headline,
+    ratings: rows,
     epithet,
+    nickname,
+    peopleName,
     accession,
     reign,
     death,
     rank,
+    lifeVerdict: life.verdict,
+    // Two reasons for the verdict and one for the lifespan, avoiding a second mention of the zodiac clash.
+    reasons: [...tierReasons, life.reasons.find((r) => !r.includes("띠")) ?? life.reasons[0]],
     chapters: [
       { title: childhood.title, paras: ch1 },
       { title: first.title, paras: ch2 },
       { title: crisis.title, paras: ch3 },
       { title: golden.title, paras: ch4 },
       { title: blooper.title, paras: ch5 },
-      { title: "마지막 날", paras: ch6 },
+      ending,
     ].map((c) => ({ title: c.title, paras: c.paras.filter(Boolean) })),
-    sagwan: SAGWAN[p.dayStem],
+    sagwan: t.dark ? DARK_SAGWAN[p.dayStem] : SAGWAN[p.dayStem],
   };
 }
