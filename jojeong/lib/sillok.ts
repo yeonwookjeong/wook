@@ -1,3 +1,4 @@
+import { josa } from "./josa";
 import type { Pillars } from "./saju";
 
 // Deterministic fictional chronicle: the same pillars always produce the same record.
@@ -100,10 +101,46 @@ const BLOOPERS = [
 ];
 
 const CRISES = [
-  "삼 년 내리 큰 가뭄이 들었다. 전하는 몸소 기우제를 올리고 곳간을 열어 굶어 죽는 백성을 한 명도 내지 않았다.",
+  "삼 년 내리 큰 가뭄이 들었다. 전하는 몸소 기우제를 올리고 곳간을 열어, 굶어 죽는 백성을 한 명도 내지 않았다.",
   "도성에 역병이 돌았다. 전하는 혜민서를 늘리고 약재를 풀어 역병을 잠재웠다.",
-  "반정의 조짐이 있었으나, 전하가 미리 간파해 피 한 방울 없이 막아냈다.",
-  "이웃 나라 사신단과 큰 외교 분쟁이 일었으나, 전하의 담판 한 번으로 조공 부담을 절반으로 줄였다.",
+  "반정의 조짐이 있었다. 전하는 미리 간파하고 주모자들을 한자리에 불러 술 한 잔씩 따라 주었을 뿐인데, 그날로 반정은 없던 일이 되었다.",
+  "이웃 나라 사신단과 큰 외교 분쟁이 일었다. 전하의 담판 한 번으로 조공 부담이 절반으로 줄었다.",
+];
+
+const OMENS = [
+  "즉위하던 날 새벽, 궁궐 창고의 쥐들이 일제히 자취를 감추었다. 사람들은 곳간이 넘칠 징조라 수군댔다.",
+  "즉위식 날, 황소 한 마리가 광화문 앞에 엎드려 끝내 비키지 않았다. 사람들은 우직한 치세의 징조라 했다.",
+  "즉위하던 밤, 인왕산에서 범 울음소리가 세 번 들렸다.",
+  "즉위하던 날, 궁궐 뜰에 때아닌 매화가 피었다.",
+  "즉위식 날, 오색구름 사이로 용 모양 구름이 떠 도성 사람들이 모두 하늘을 올려다보았다.",
+  "즉위하던 날 아침, 경회루 연못의 물이 거울처럼 맑았다.",
+  "즉위식 날, 사복시의 말들이 일제히 울었다.",
+  "즉위하던 해, 팔도에 대풍년이 들었다.",
+  "즉위식 날 종일 내리던 비가, 행렬이 지나는 동안만 거짓말처럼 그쳤다.",
+  "즉위하던 새벽, 궁궐 닭이 평소보다 한 시진이나 일찍 울었다.",
+  "즉위식 날, 궁궐 문지기 개가 새 왕 앞에서만 꼬리를 흔들었다.",
+  "즉위하던 해, 대궐 연못의 잉어가 곱절로 불어났다.",
+];
+
+const LAST_WORDS = [
+  "마지막으로 '길은 내가 냈으니 걷는 것은 너희 몫이다'라는 말을 남겼다.",
+  "'모두 사이좋게 지내라'는 한마디를 남기고 눈을 감았다.",
+  "'잔치는 끝났으나 즐거웠노라' 하고 웃으며 눈을 감았다.",
+  "마지막 순간까지 상소 하나를 손에 쥐고 있었다.",
+  "'서두르지 마라'는 말을 남기고 조용히 눈을 감았다.",
+  "'백성들 끼니는 챙겼느냐'고 물은 것이 마지막 말이었다.",
+  "'뒤돌아보지 마라'는 한마디가 유언이었다.",
+  "마지막 명은 '실록의 오탈자를 고치라'였다.",
+  "'백 년 뒤를 보아라'는 말을 남겼다.",
+  "유언은 봉투에 담겨 세자에게만 전해졌고, 그 내용은 지금도 알려지지 않았다.",
+];
+
+// Age at death. 영조·태조·고종·광해군·정종 follow the figures cited in 황상익's study; others are computed from recorded birth and death dates.
+const KING_AGES: [string, number][] = [
+  ["영조", 82], ["태조", 72], ["광해군", 66], ["고종", 66], ["정종", 62], ["숙종", 58], ["중종", 56],
+  ["선조", 55], ["태종", 54], ["인조", 53], ["세종", 52], ["순종", 52], ["세조", 50], ["정조", 47],
+  ["순조", 44], ["효종", 39], ["문종", 37], ["성종", 37], ["경종", 35], ["명종", 33], ["현종", 33],
+  ["철종", 32], ["인종", 30], ["연산군", 29], ["헌종", 21], ["예종", 19], ["단종", 16],
 ];
 
 const isClash = (a: number, b: number) => Math.abs(a - b) === 6;
@@ -113,51 +150,114 @@ const isWonjin = (a: number, b: number) => WONJIN.has(`${Math.min(a, b)}-${Math.
 
 export const KING_AVG_LIFESPAN = 46.1;
 
-export function sillok(p: Pillars) {
+export type Cast = { yeong?: string; gansin?: string; yubae?: string; witness?: string };
+
+function lifespanRank(death: number) {
+  const older = KING_AGES.filter(([, age]) => age > death);
+  const rank = older.length + 1;
+  if (rank === 1) return { rank, note: "조선 최장수 왕 영조(82세)의 기록마저 넘어선 천수였다." };
+  const [aboveName, aboveAge] = older[older.length - 1];
+  if (death >= 60) return { rank, note: `${aboveName}(${aboveAge}세) 다음가는 장수였다. 회갑을 넘긴 조선 왕은 다섯뿐이었다.` };
+  if (death > KING_AVG_LIFESPAN) return { rank, note: `조선 왕들의 평균 수명 ${KING_AVG_LIFESPAN}세는 넘겼으니, 이만하면 천수를 누린 편이다.` };
+  return { rank, note: `조선 왕들의 평균 수명 ${KING_AVG_LIFESPAN}세에 미치지 못한 짧은 생이었다. 백성들은 오래도록 그 이른 죽음을 아쉬워하였다.` };
+}
+
+// Independent hash for lifespan so it is not tied to the other picks.
+function mix(x: number) {
+  x = Math.imul(x ^ (x >>> 16), 0x45d9f3b);
+  x = Math.imul(x ^ (x >>> 16), 0x45d9f3b);
+  return (x ^ (x >>> 16)) >>> 0;
+}
+
+export function sillok(p: Pillars, cast: Cast = {}) {
   const seed = (n: number) =>
     (p.dayStem * 131 + p.dayBranch * 31 + p.yearBranch * 7 + (p.hourBranch ?? 12) * 3 + n * 17) >>> 0;
 
-  const accession = 13 + (seed(1) % 20);
-  let reign = 20 + (seed(2) % 36);
-  const death = Math.min(88, Math.max(55, accession + reign));
-  reign = death - accession;
+  // Triangular spread over 24–88 (peak ~56), so ranks cover the whole list instead of bunching at the top.
+  const base = seed(0);
+  const death = 24 + (mix(base) % 33) + (mix(base + 101) % 33);
+  const accession = Math.min(13 + (seed(1) % 20), death - 8);
+  const reign = death - accession;
+  const { rank, note: rankNote } = lifespanRank(death);
 
-  const lifespanNote =
-    death > 82
-      ? "조선 최장수 왕 영조(82세)의 기록마저 넘어섰다."
-      : death >= 61
-        ? "조선 27왕 가운데 회갑을 넘긴 왕은 다섯뿐이었으니, 보기 드문 장수였다."
-        : `조선 왕들의 평균 수명(${KING_AVG_LIFESPAN}세)보다 ${Math.round(death - KING_AVG_LIFESPAN)}년을 더 누렸다.`;
-
-  const crisisYear = 3 + (seed(6) % Math.max(1, reign - 5));
-  const crisis = isClash(p.dayBranch, p.yearBranch)
-    ? "조정이 둘로 갈라지는 큰 당쟁이 일었다. 전하는 양쪽 영수를 한 상에 앉혀 밤새 술을 권한 끝에 화해시켰다."
-    : isWonjin(p.dayBranch, p.yearBranch)
-      ? "궁중 암투가 극에 달해 독이 든 탕약이 올라왔으나, 먼저 맛본 내시가 알아채 화를 면했다."
-      : isHarmony(p.dayBranch, p.yearBranch)
-        ? null
-        : CRISES[seed(7) % CRISES.length];
-
+  const epithet = `${EPITHETS[p.dayStem][p.dayBranch % 3]}대왕`;
+  const [eraTitle, eraText] = ERAS[p.dayBranch];
   const deedOffset = seed(4) % 5;
+  const deeds = [0, 1, 2].map((i) => DEEDS[p.dayStem][(deedOffset + i) % 5]);
   const [nickname, nicknameWhy] = COURT_NICKNAMES[p.dayStem][p.dayBranch % 2];
   const [peopleName, rumor] = PEOPLE[p.yearBranch];
+  const firstDecreeYear = 1 + (seed(8) % 3);
+  // reign >= 8, so the crisis lands in the first half and the peak always comes after it.
+  const crisisYear = 2 + (seed(6) % Math.max(1, Math.floor(reign / 2) - 1));
+  const peakYear = Math.min(reign - 1, crisisYear + 3 + (seed(9) % 8));
+
+  const ch1 = [
+    `${accession}세의 나이로 보위에 올랐다.`,
+    OMENS[p.yearBranch],
+    accession < 18
+      ? "나이가 어려 한동안 대비가 수렴청정하였으나, 어린 왕은 발 너머에서 모든 것을 듣고 있었다."
+      : accession >= 28
+        ? "늦은 즉위였으나, 오래 준비해 온 임금이었다."
+        : "",
+  ];
+
+  const ch2 = [
+    `${eraTitle}가 열렸다. ${eraText}`,
+    `즉위 ${firstDecreeYear}년, 전하는 첫 교지로 ${josa(`'${deeds[0]}'`, "을/를")} 명하였다.`,
+    cast.yeong
+      ? `이때 영의정 ${josa(cast.yeong, "이/가")} 앞장서 전하를 도왔으니, 사람들은 두 사람을 '물과 물고기 같은 사이'라 불렀다.`
+      : "다만 전하의 곁을 지킬 영의정감은 아직 조정에 없었다.",
+  ];
+
+  const clash = isClash(p.dayBranch, p.yearBranch);
+  const wonjin = isWonjin(p.dayBranch, p.yearBranch);
+  const calm = !clash && !wonjin && isHarmony(p.dayBranch, p.yearBranch);
+  const crisis = clash
+    ? "조정이 둘로 갈라지는 큰 당쟁이 일었다. 전하는 양쪽 영수를 한 상에 앉혀 밤새 술을 권한 끝에 화해시켰다."
+    : wonjin
+      ? "궁중 암투가 극에 달해 독이 든 탕약이 올라왔으나, 먼저 맛본 내시가 알아채 화를 면했다."
+      : CRISES[seed(7) % CRISES.length];
+  const ch3 = [
+    calm ? "치세 내내 큰 위기가 없었다. 사관이 '적을 것이 없어 붓이 심심하다'고 적었을 정도다." : `재위 ${crisisYear}년, ${crisis}`,
+    cast.gansin
+      ? calm
+        ? `태평한 가운데서도 간신 ${josa(cast.gansin, "이/가")} 뒤에서 달콤한 말을 속삭였으나, 전하는 웃어넘겼다.`
+        : `이 혼란의 뒤편에는 간신 ${josa(cast.gansin, "이/가")} 있었다. 전하는 모른 척 지켜보다가, 결정적인 순간에 그 속셈을 만천하에 드러냈다.`
+      : "",
+    cast.yubae ? `한편 전하와 사사건건 부딪치던 ${josa(cast.yubae, "은/는")} 이 무렵 먼 섬으로 유배되었다.` : "",
+  ];
+
+  const ch4 = [
+    `재위 ${peakYear}년 무렵, 치세는 절정에 이르렀다. ${josa(`'${deeds[1]}'`, "과/와")} ${josa(`'${deeds[2]}'`, "이/가")} 모두 이 시기의 일이다.`,
+    `조정에서는 뒤에서 몰래 '${nickname}'라 불렀으니, ${nicknameWhy}이다.`,
+    `백성들은 '${peopleName}'이라 불렀다. ${rumor}`,
+  ];
+
+  const ch5 = [
+    `정사에는 없으나 야사는 이렇게 전한다. ${BLOOPERS[seed(5) % BLOOPERS.length]}`,
+    cast.witness ? `이 광경을 목격한 ${josa(cast.witness, "은/는")} 평생 입을 다물었다고 한다.` : "",
+  ];
+
+  const ch6 = [
+    `재위 ${reign}년, 향년 ${death}세로 승하하였다. ${rankNote}`,
+    LAST_WORDS[p.dayStem],
+    `훗날 신하들은 ${epithet}이라는 존호를 올렸다.`,
+  ];
 
   return {
-    epithet: `${EPITHETS[p.dayStem][p.dayBranch % 3]}대왕`,
+    epithet,
     accession,
     reign,
     death,
-    lifespanNote,
-    era: { title: ERAS[p.dayBranch][0], text: ERAS[p.dayBranch][1] },
+    rank,
+    chapters: [
+      { title: "즉위", lines: ch1 },
+      { title: "치세의 시작", lines: ch2 },
+      { title: "시련", lines: ch3 },
+      { title: "전성기", lines: ch4 },
+      { title: "야사", lines: ch5 },
+      { title: "승하", lines: ch6 },
+    ].map((c) => ({ title: c.title, text: c.lines.filter(Boolean).join(" ") })),
     sagwan: SAGWAN[p.dayStem],
-    nickname,
-    nicknameWhy,
-    peopleName,
-    rumor,
-    deeds: [0, 1, 2].map((i) => DEEDS[p.dayStem][(deedOffset + i) % 5]),
-    blooper: BLOOPERS[seed(5) % BLOOPERS.length],
-    crisis: crisis
-      ? `재위 ${crisisYear}년, ${crisis}`
-      : "큰 위기 없이 태평했다. 사관이 '적을 것이 없어 붓이 심심하다'고 적었을 정도다.",
   };
 }

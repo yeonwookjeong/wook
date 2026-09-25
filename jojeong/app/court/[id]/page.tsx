@@ -147,7 +147,16 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
 
           {isOwner && seats.length > 0 && <KingCard kingName={court.kingName} pillars={court.king} />}
 
-          <Sillok kingName={court.kingName} pillars={court.king} />
+          <Sillok
+            kingName={court.kingName}
+            pillars={court.king}
+            cast={{
+              yeong: seats.find((s) => s.role === "yeong")?.minister.name,
+              gansin: seats.find((s) => s.role === "gansin")?.minister.name,
+              yubae: seats.find((s) => s.role === "yubae")?.minister.name,
+              witness: seats.find((s) => !["yeong", "gansin", "yubae"].includes(s.role))?.minister.name,
+            }}
+          />
 
           {!isOwner && (
             <section className="mt-8 flex flex-col gap-3">
