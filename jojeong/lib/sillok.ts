@@ -1,3 +1,4 @@
+import { BLOOPERS, CHILDHOOD, CRISES, FAREWELL, FIRST_ACTS, GOLDEN, RESOLVE } from "./episodes";
 import { josa } from "./josa";
 import type { Pillars } from "./saju";
 
@@ -44,22 +45,23 @@ const SAGWAN = [
   "왕은 속을 좀처럼 드러내지 않았다. 신하들은 왕의 뜻을 짐작하느라 애를 먹었으나, 돌이켜 보면 왕은 늘 한 수 앞에 있었다.",
 ];
 
-const COURT_NICKNAMES: [string, string][][] = [
-  [["직진 전하", "한번 정한 일은 누가 말려도 밀고 나갔기 때문"], ["큰 나무 전하", "그늘이 넓어 모두가 기댈 곳이 되었기 때문"]],
-  [["줄타기 전하", "어느 편에도 서지 않고 절묘하게 균형을 잡았기 때문"], ["버들 전하", "휘어질지언정 꺾이지 않았기 때문"]],
-  [["해님 전하", "들어서기만 하면 편전이 환해졌기 때문"], ["잔치 전하", "무슨 핑계로든 연회를 열었기 때문"]],
-  [["야근 전하", "밤마다 신하들을 붙잡고 국사를 논했기 때문"], ["촛불 전하", "편전의 불이 가장 늦게 꺼졌기 때문"]],
-  [["바위 전하", "어떤 상소에도 표정 하나 변하지 않았기 때문"], ["느긋 전하", "급한 일도 사흘은 두고 보았기 때문"]],
-  [["살림꾼 전하", "나라 곳간을 제 살림처럼 챙겼기 때문"], ["어머니 전하", "신하들의 끼니까지 챙겼기 때문"]],
-  [["칼날 전하", "결단이 칼처럼 빨랐기 때문"], ["호랑이 전하", "한 번 호통에 편전이 얼어붙었기 때문"]],
-  [["돋보기 전하", "상소문의 오탈자까지 찾아냈기 때문"], ["깐깐 전하", "보고서를 세 번씩 돌려보냈기 때문"]],
-  [["바다 전하", "무엇이든 품었으나 속을 알 수 없었기 때문"], ["꿈꾸는 전하", "늘 백 년 뒤의 계획을 이야기했기 때문"]],
-  [["여우 전하", "말 한마디 없이 판을 뒤집었기 때문"], ["안개 전하", "속내를 도무지 짐작할 수 없었기 때문"]],
+// Paired with GOLDEN in episodes.ts: each nickname comes from that episode.
+const COURT_NICKNAMES: [string, string][] = [
+  ["직진 전하", "큰 나무 전하"],
+  ["줄타기 전하", "버들 전하"],
+  ["해님 전하", "잔치 전하"],
+  ["야근 전하", "촛불 전하"],
+  ["바위 전하", "느긋 전하"],
+  ["살림꾼 전하", "어머니 전하"],
+  ["칼날 전하", "호랑이 전하"],
+  ["돋보기 전하", "깐깐 전하"],
+  ["바다 전하", "꿈꾸는 전하"],
+  ["여우 전하", "안개 전하"],
 ];
 
 const PEOPLE: [string, string][] = [
   ["부지런한 임금님", "새벽닭보다 먼저 일어나 정사를 본다는 소문이 저잣거리에 돌았다."],
-  ["우직한 임금님", "한번 한 말은 반드시 지킨다 하여, 장터 흥정에 '임금님 약속'이라는 말이 생겼다."],
+  ["우직한 임금님", "한번 한 말은 반드시 지킨다 하여, 장터 흥정에 ‘임금님 약속’이라는 말이 생겼다."],
   ["범 같은 임금님", "탐관오리가 전하의 이름만 들어도 도망친다는 노래가 아이들 사이에 퍼졌다."],
   ["다정한 임금님", "행차 때마다 길가 아이들에게 엿을 나눠 준다는 소문이 자자했다."],
   ["하늘이 내린 임금님", "즉위하던 날 오색구름이 떴다는 이야기가 팔도에 퍼졌다."],
@@ -68,43 +70,8 @@ const PEOPLE: [string, string][] = [
   ["순한 임금님", "백성의 억울한 사연에 눈물을 보였다는 이야기가 전해진다."],
   ["재주꾼 임금님", "직접 그린 그림을 몰래 장터에 내다 팔았다는 소문이 있다."],
   ["깔끔한 임금님", "행차 길을 쓸고 닦게 하여, 한양 거리가 가장 깨끗했던 시절로 기억된다."],
-  ["의리의 임금님", "한번 믿은 신하는 끝까지 감쌌다 하여 '임금님 의리'라는 말이 생겼다."],
-  ["복 많은 임금님", "치세 내내 풍년이 들어 '임금님 복이 나라 복'이라는 말이 돌았다."],
-];
-
-const DEEDS: string[][] = [
-  ["새 도읍 후보지 답사", "북방 신도시 건설", "과거제에 실무 과목 추가", "국경 교역소 개설", "신분 대신 실력으로 인재 등용"],
-  ["당파 간 인사 균형 제도", "지방 수령 순환 근무제", "난립한 서원 정리", "백성 상소 창구 개설", "궁중 예산 절감"],
-  ["한양 대축제 정례화", "궁중 악단 재건", "전국 장터 활성화", "청년 인재 특별 시험", "궁궐 개방의 날 신설"],
-  ["야간 서당 설립", "혜민서 증설", "억울한 옥사 재심 제도", "고을마다 서고 설치", "노비 자녀 교육 허용"],
-  ["대규모 저수지 축조", "전국 도로망 정비", "곡식 비축 창고 확충", "도성 성곽 보수", "세금 제도 안정화"],
-  ["흉년 대비 구휼 제도", "수라상 반찬 가짓수 감축", "농서 편찬과 보급", "약재 무상 배급", "의녀 제도 확대"],
-  ["탐관오리 대숙청", "군제 개편", "국경 방어선 구축", "부정 과거 일소", "병기 개량"],
-  ["과거 시험 부정 일소", "도량형 통일", "법전 교정", "궁중 기록 보관소 정비", "한양 야간 순찰 제도"],
-  ["해상 교역로 개척", "먼 나라에 사신단 파견", "조선술 발전", "팔도 지도 제작", "백년 국가 계획서 편찬"],
-  ["비밀 정보 조직 운영", "외교 담판 승리", "조세 누수 적발", "천문 관측 강화", "암행 인재 발굴 제도"],
-];
-
-const BLOOPERS = [
-  "수라상 간이 맞지 않는다며 수라간 상궁을 세 번 바꾼 일이 실록에 남았다.",
-  "경연 도중 졸다가 사관에게 들키자 '왕이 잠시 눈을 감고 깊이 생각하였다'로 적게 했다.",
-  "몰래 궐 밖에 나가 국밥을 먹다 포졸에게 붙잡힐 뻔했다.",
-  "신하와 바둑을 두다 지자, 사흘간 그 신하의 상소를 읽지 않았다.",
-  "궁궐 고양이에게 벼슬을 내리려다 신하들의 극렬한 반대에 부딪혔다.",
-  "새 곤룡포가 마음에 안 든다며 상의원을 다섯 번 뒤집었다.",
-  "연회에서 직접 춤을 추다 발목을 삐어 열흘간 조회를 쉬었다.",
-  "한밤중에 약과 스무 개를 먹어 어의가 기겁했다.",
-  "사냥에서 토끼 한 마리 못 잡고 돌아와 '오늘은 짐이 살생을 삼갔다'고 둘러댔다.",
-  "직접 지은 시를 신하들에게 억지로 외우게 했다.",
-  "비 오는 날 우산 대신 연잎을 쓰고 나섰다가 감기로 앓아누웠다.",
-  "어린 시절 쓴 연애편지가 발견되어 궁중이 발칵 뒤집혔다.",
-];
-
-const CRISES = [
-  "삼 년 내리 큰 가뭄이 들었다. 전하는 몸소 기우제를 올리고 곳간을 열어, 굶어 죽는 백성을 한 명도 내지 않았다.",
-  "도성에 역병이 돌았다. 전하는 혜민서를 늘리고 약재를 풀어 역병을 잠재웠다.",
-  "반정의 조짐이 있었다. 전하는 미리 간파하고 주모자들을 한자리에 불러 술 한 잔씩 따라 주었을 뿐인데, 그날로 반정은 없던 일이 되었다.",
-  "이웃 나라 사신단과 큰 외교 분쟁이 일었다. 전하의 담판 한 번으로 조공 부담이 절반으로 줄었다.",
+  ["의리의 임금님", "한번 믿은 신하는 끝까지 감쌌다 하여 ‘임금님 의리’라는 말이 생겼다."],
+  ["복 많은 임금님", "치세 내내 풍년이 들어 ‘임금님 복이 나라 복’이라는 말이 돌았다."],
 ];
 
 const OMENS = [
@@ -122,19 +89,6 @@ const OMENS = [
   "즉위하던 해, 대궐 연못의 잉어가 곱절로 불어났다.",
 ];
 
-const LAST_WORDS = [
-  "마지막으로 '길은 내가 냈으니 걷는 것은 너희 몫이다'라는 말을 남겼다.",
-  "'모두 사이좋게 지내라'는 한마디를 남기고 눈을 감았다.",
-  "'잔치는 끝났으나 즐거웠노라' 하고 웃으며 눈을 감았다.",
-  "마지막 순간까지 상소 하나를 손에 쥐고 있었다.",
-  "'서두르지 마라'는 말을 남기고 조용히 눈을 감았다.",
-  "'백성들 끼니는 챙겼느냐'고 물은 것이 마지막 말이었다.",
-  "'뒤돌아보지 마라'는 한마디가 유언이었다.",
-  "마지막 명은 '실록의 오탈자를 고치라'였다.",
-  "'백 년 뒤를 보아라'는 말을 남겼다.",
-  "유언은 봉투에 담겨 세자에게만 전해졌고, 그 내용은 지금도 알려지지 않았다.",
-];
-
 // Age at death. 영조·태조·고종·광해군·정종 follow the figures cited in 황상익's study; others are computed from recorded birth and death dates.
 const KING_AGES: [string, number][] = [
   ["영조", 82], ["태조", 72], ["광해군", 66], ["고종", 66], ["정종", 62], ["숙종", 58], ["중종", 56],
@@ -144,7 +98,6 @@ const KING_AGES: [string, number][] = [
 ];
 
 const isClash = (a: number, b: number) => Math.abs(a - b) === 6;
-const isHarmony = (a: number, b: number) => (a + b) % 12 === 1 || (a !== b && a % 4 === b % 4);
 const WONJIN = new Set(["0-7", "1-6", "2-9", "3-8", "4-11", "5-10"]);
 const isWonjin = (a: number, b: number) => WONJIN.has(`${Math.min(a, b)}-${Math.max(a, b)}`);
 
@@ -169,6 +122,15 @@ function mix(x: number) {
   return (x ^ (x >>> 16)) >>> 0;
 }
 
+// Fills {key} and {key|particle} placeholders; "이/가"-style pairs pick by final consonant, others are appended.
+function fill(text: string, vars: Record<string, string>) {
+  return text.replace(/\{([^|}]+)(?:\|([^}]+))?\}/g, (_, key: string, particle?: string) => {
+    const word = vars[key];
+    if (!particle) return word;
+    return particle.includes("/") ? josa(word, particle as Parameters<typeof josa>[1]) : word + particle;
+  });
+}
+
 export function sillok(p: Pillars, cast: Cast = {}) {
   const seed = (n: number) =>
     (p.dayStem * 131 + p.dayBranch * 31 + p.yearBranch * 7 + (p.hourBranch ?? 12) * 3 + n * 17) >>> 0;
@@ -182,18 +144,17 @@ export function sillok(p: Pillars, cast: Cast = {}) {
 
   const epithet = `${EPITHETS[p.dayStem][p.dayBranch % 3]}대왕`;
   const [eraTitle, eraText] = ERAS[p.dayBranch];
-  const deedOffset = seed(4) % 5;
-  const deeds = [0, 1, 2].map((i) => DEEDS[p.dayStem][(deedOffset + i) % 5]);
-  const [nickname, nicknameWhy] = COURT_NICKNAMES[p.dayStem][p.dayBranch % 2];
   const [peopleName, rumor] = PEOPLE[p.yearBranch];
-  const firstDecreeYear = 1 + (seed(8) % 3);
+  const firstYear = 1 + (seed(8) % 3);
   // reign >= 8, so the crisis lands in the first half and the peak always comes after it.
   const crisisYear = 2 + (seed(6) % Math.max(1, Math.floor(reign / 2) - 1));
   const peakYear = Math.min(reign - 1, crisisYear + 3 + (seed(9) % 8));
+  const who = { 영의정: cast.yeong ? `영의정 ${cast.yeong}` : "영의정" };
 
+  const childhood = CHILDHOOD[p.dayStem];
   const ch1 = [
-    `${accession}세의 나이로 보위에 올랐다.`,
-    OMENS[p.yearBranch],
+    childhood.text,
+    `그리고 ${accession}세, 마침내 보위에 올랐다. ${OMENS[p.yearBranch]}`,
     accession < 18
       ? "나이가 어려 한동안 대비가 수렴청정하였으나, 어린 왕은 발 너머에서 모든 것을 듣고 있었다."
       : accession >= 28
@@ -201,47 +162,39 @@ export function sillok(p: Pillars, cast: Cast = {}) {
         : "",
   ];
 
-  const ch2 = [
-    `${eraTitle}가 열렸다. ${eraText}`,
-    `즉위 ${firstDecreeYear}년, 전하는 첫 교지로 ${josa(`'${deeds[0]}'`, "을/를")} 명하였다.`,
-    cast.yeong
-      ? `이때 영의정 ${josa(cast.yeong, "이/가")} 앞장서 전하를 도왔으니, 사람들은 두 사람을 '물과 물고기 같은 사이'라 불렀다.`
-      : "다만 전하의 곁을 지킬 영의정감은 아직 조정에 없었다.",
-  ];
+  const first = FIRST_ACTS[p.dayStem][p.yearBranch % 2];
+  const ch2 = [`훗날 사람들은 전하의 치세를 ‘${eraTitle}’라 부른다. ${eraText}`, fill(first.text, { ...who, 년: String(firstYear) })];
 
-  const clash = isClash(p.dayBranch, p.yearBranch);
-  const wonjin = isWonjin(p.dayBranch, p.yearBranch);
-  const calm = !clash && !wonjin && isHarmony(p.dayBranch, p.yearBranch);
-  const crisis = clash
-    ? "조정이 둘로 갈라지는 큰 당쟁이 일었다. 전하는 양쪽 영수를 한 상에 앉혀 밤새 술을 권한 끝에 화해시켰다."
-    : wonjin
-      ? "궁중 암투가 극에 달해 독이 든 탕약이 올라왔으나, 먼저 맛본 내시가 알아채 화를 면했다."
-      : CRISES[seed(7) % CRISES.length];
+  const crisis = isClash(p.dayBranch, p.yearBranch)
+    ? CRISES.clash
+    : isWonjin(p.dayBranch, p.yearBranch)
+      ? CRISES.wonjin
+      : CRISES.others[seed(7) % CRISES.others.length];
   const ch3 = [
-    calm ? "치세 내내 큰 위기가 없었다. 사관이 '적을 것이 없어 붓이 심심하다'고 적었을 정도다." : `재위 ${crisisYear}년, ${crisis}`,
-    cast.gansin
-      ? calm
-        ? `태평한 가운데서도 간신 ${josa(cast.gansin, "이/가")} 뒤에서 달콤한 말을 속삭였으나, 전하는 웃어넘겼다.`
-        : `이 혼란의 뒤편에는 간신 ${josa(cast.gansin, "이/가")} 있었다. 전하는 모른 척 지켜보다가, 결정적인 순간에 그 속셈을 만천하에 드러냈다.`
-      : "",
-    cast.yubae ? `한편 전하와 사사건건 부딪치던 ${josa(cast.yubae, "은/는")} 이 무렵 먼 섬으로 유배되었다.` : "",
+    fill(crisis.text, { 년: String(crisisYear) }) +
+      (cast.gansin ? ` 이 틈을 타 간신 ${josa(cast.gansin, "이/가")} “전하, 소신만 믿으소서” 하며 곁을 파고들었다.` : ""),
+    RESOLVE[p.dayStem],
+    cast.gansin ? `모든 일이 끝난 뒤, 전하는 간신 ${josa(cast.gansin, "을/를")} 조용히 불러 그간의 속셈을 하나하나 짚어 주었다. 그날 밤 ${josa(cast.gansin, "은/는")} 식은땀을 흘리며 잠을 이루지 못했다.` : "",
+    cast.yubae ? `이 무렵 전하와 사사건건 부딪치던 ${josa(cast.yubae, "은/는")} 먼 섬으로 유배되었다. 떠나는 날, 전하는 아무도 모르게 겨울옷 한 벌을 보냈다.` : "",
   ];
 
+  const nick = p.dayBranch % 2;
+  const golden = GOLDEN[p.dayStem][nick];
   const ch4 = [
-    `재위 ${peakYear}년 무렵, 치세는 절정에 이르렀다. ${josa(`'${deeds[1]}'`, "과/와")} ${josa(`'${deeds[2]}'`, "이/가")} 모두 이 시기의 일이다.`,
-    `조정에서는 뒤에서 몰래 '${nickname}'라 불렀으니, ${nicknameWhy}이다.`,
-    `백성들은 '${peopleName}'이라 불렀다. ${rumor}`,
+    `${fill(golden.text, { 년: String(peakYear) })} 이 일로 조정에서는 뒤에서 몰래 ‘${COURT_NICKNAMES[p.dayStem][nick]}’라 불렀다.`,
+    `백성들은 전하를 ‘${peopleName}’이라 불렀다. ${rumor}`,
   ];
 
+  const blooper = BLOOPERS[seed(5) % BLOOPERS.length];
   const ch5 = [
-    `정사에는 없으나 야사는 이렇게 전한다. ${BLOOPERS[seed(5) % BLOOPERS.length]}`,
+    `정사에는 없으나 야사는 이렇게 전한다. ${blooper.text}`,
     cast.witness ? `이 광경을 목격한 ${josa(cast.witness, "은/는")} 평생 입을 다물었다고 한다.` : "",
   ];
 
   const ch6 = [
-    `재위 ${reign}년, 향년 ${death}세로 승하하였다. ${rankNote}`,
-    LAST_WORDS[p.dayStem],
-    `훗날 신하들은 ${epithet}이라는 존호를 올렸다.`,
+    fill(FAREWELL[p.dayStem], who),
+    `재위 ${reign}년, 향년 ${death}세. ${rankNote}`,
+    `신하들은 전하께 ${epithet}이라는 존호를 올렸다.`,
   ];
 
   return {
@@ -251,13 +204,13 @@ export function sillok(p: Pillars, cast: Cast = {}) {
     death,
     rank,
     chapters: [
-      { title: "즉위", lines: ch1 },
-      { title: "치세의 시작", lines: ch2 },
-      { title: "시련", lines: ch3 },
-      { title: "전성기", lines: ch4 },
-      { title: "야사", lines: ch5 },
-      { title: "승하", lines: ch6 },
-    ].map((c) => ({ title: c.title, text: c.lines.filter(Boolean).join(" ") })),
+      { title: childhood.title, paras: ch1 },
+      { title: first.title, paras: ch2 },
+      { title: crisis.title, paras: ch3 },
+      { title: golden.title, paras: ch4 },
+      { title: blooper.title, paras: ch5 },
+      { title: "마지막 날", paras: ch6 },
+    ].map((c) => ({ title: c.title, paras: c.paras.filter(Boolean) })),
     sagwan: SAGWAN[p.dayStem],
   };
 }

@@ -38,7 +38,11 @@ export default function Sillok({ kingName, pillars, cast = {} }: { kingName: str
             <h3 className="font-myeongjo text-sm font-extrabold text-seal">
               제{HANJA_NUM[i]}장 <span className="text-ink">{c.title}</span>
             </h3>
-            <p className="mt-1.5 text-[15px] leading-relaxed">{c.text}</p>
+            {c.paras.map((t) => (
+              <p key={t} className="mt-1.5 text-[15px] leading-relaxed">
+                {t}
+              </p>
+            ))}
           </article>
         ))}
       </div>
