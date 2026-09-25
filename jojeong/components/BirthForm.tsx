@@ -11,13 +11,13 @@ const CALENDARS = [
 ] as const;
 
 const MODES = {
-  king: { action: enthroneAction, nameLabel: "전하의 존함", submit: "즉위하기" },
-  minister: { action: joinCourtAction, nameLabel: "그대의 이름", submit: "입궐하기" },
-  appoint: { action: appointMinisterAction, nameLabel: "등용할 신하의 이름", submit: "등용하기" },
+  king: { action: enthroneAction, nameLabel: "전하의 존함", submit: "즉위하기", unknownHour: "모르겠노라" },
+  minister: { action: joinCourtAction, nameLabel: "그대의 이름", submit: "입궐하기", unknownHour: "모르겠사옵니다" },
+  appoint: { action: appointMinisterAction, nameLabel: "등용할 신하의 이름", submit: "등용하기", unknownHour: "모르겠노라" },
 };
 
 export default function BirthForm({ mode, courtId }: { mode: keyof typeof MODES; courtId?: string }) {
-  const { action, nameLabel, submit } = MODES[mode];
+  const { action, nameLabel, submit, unknownHour } = MODES[mode];
   const [state, formAction, pending] = useActionState<FormState, FormData>(action, { error: null });
 
   return (
@@ -68,7 +68,7 @@ export default function BirthForm({ mode, courtId }: { mode: keyof typeof MODES;
           defaultValue=""
           className="rounded-xl border border-ink/15 bg-white/70 px-4 py-3 text-base outline-none focus:border-seal"
         >
-          <option value="">모르겠사옵니다</option>
+          <option value="">{unknownHour}</option>
           {HOUR_SLOTS.map((slot, i) => (
             <option key={slot} value={i}>
               {slot}
