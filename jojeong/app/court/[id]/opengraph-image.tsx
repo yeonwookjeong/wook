@@ -8,5 +8,5 @@ export const contentType = "image/png";
 export default async function Image({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { court, seats } = await loadCourt(id);
-  return inviteImage(court.kingName, seats.length);
+  return inviteImage(court.kingName, court.king, seats.length);
 }

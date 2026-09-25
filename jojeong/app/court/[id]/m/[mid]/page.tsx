@@ -108,7 +108,7 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
               href="/"
               className="mt-2 w-full rounded-2xl bg-seal py-4 text-center font-myeongjo text-lg font-extrabold text-hanji shadow-[0_6px_0_#7d1a14]"
             >
-              나도 즉위해서 신하 부르기
+              나는 어떤 왕일까? 즉위하기
             </Link>
           </>
         )}
@@ -133,7 +133,7 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
               href="/"
               className="w-full rounded-2xl bg-seal py-4 text-center font-myeongjo text-lg font-extrabold text-hanji shadow-[0_6px_0_#7d1a14]"
             >
-              나도 즉위하기
+              나는 어떤 왕일까? 즉위하기
             </Link>
           </>
         )}

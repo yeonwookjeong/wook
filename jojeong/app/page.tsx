@@ -30,7 +30,7 @@ export default async function Home() {
         </p>
         <h1 className="mt-4 font-myeongjo text-5xl font-extrabold tracking-tight">나의 조정</h1>
         <p className="mt-3 text-[15px] leading-relaxed text-ink-soft">
-          생년월일만 넣으면 전하가 되옵니다.
+          생년월일을 넣으면 <b className="text-ink">전하가 어떤 왕이었을지</b> 알려드리옵니다.
           <br />
           벗들을 부르면 <b className="text-ink">사주가 관직을 내려드리옵니다.</b>
         </p>
@@ -68,8 +68,8 @@ export default async function Home() {
 
       <section className="mt-8">
         <Naegwan>
-          전하, 조정이 텅 비었사옵니다. 어서 즉위하시고 벗들을 부르시옵소서. 누가 영의정이고 누가 간신인지 소신이
-          사주로 가려드리겠사옵니다.
+          전하, 먼저 즉위하시옵소서. 전하가 어떤 왕이신지, 실록 속 어느 왕과 사주가 같은지 아뢰겠사옵니다. 그다음 벗들을
+          부르시면 누가 영의정이고 누가 간신인지 가려드리겠사옵니다.
         </Naegwan>
       </section>
 
@@ -78,7 +78,7 @@ export default async function Home() {
       </section>
 
       <ol className="mt-8 grid grid-cols-3 gap-2 text-center text-xs text-ink-soft">
-        {["즉위하기", "벗들에게 링크 보내기", "관직 발표 & 교지 공유"].map((step, i) => (
+        {["즉위하고 왕 유형 확인", "벗들에게 링크 보내기", "관직 발표 & 교지 공유"].map((step, i) => (
           <li key={step} className="flex flex-col items-center gap-1.5">
             <span className="flex size-7 items-center justify-center rounded-full bg-ink font-myeongjo text-sm font-extrabold text-hanji">
               {i + 1}

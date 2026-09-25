@@ -5,8 +5,10 @@ import { ImageResponse } from "next/og";
 import { CHARACTER_IMAGE, SERVICE_NAME, TAGLINE } from "./brand";
 import type { Seat } from "./court";
 import { decreeLine } from "./decree";
+import { kingLinkText } from "./kings";
+import { KING_TYPES } from "./kingTypes";
 import { ROLES } from "./roles";
-import type { RoleKey } from "./saju";
+import type { Pillars, RoleKey } from "./saju";
 
 const [regular, bold, character] = await Promise.all([
   readFile(join(process.cwd(), "assets/fonts/NanumMyeongjo-400.ttf")),
@@ -85,12 +87,13 @@ function InnerRule({ width, accent }: { width: number; accent: string }) {
   );
 }
 
-export function inviteImage(kingName: string, ministerCount: number) {
+export function inviteImage(kingName: string, king: Pillars, ministerCount: number) {
   return render(
     <div style={{ ...frame(1200, 630, C.seal), justifyContent: "center" }}>
       <InnerRule width={1200} accent={C.seal} />
       <div style={{ fontSize: 30, letterSpacing: 16, color: C.seal, fontWeight: 800 }}>敎 旨</div>
-      <div style={{ marginTop: 28, fontSize: 76, fontWeight: 800 }}>{`${kingName} 전하께서`}</div>
+      <div style={{ marginTop: 22, fontSize: 34, color: C.gold, fontWeight: 800 }}>{KING_TYPES[king.dayStem].title}</div>
+      <div style={{ marginTop: 6, fontSize: 76, fontWeight: 800 }}>{`${kingName} 전하께서`}</div>
       <div style={{ fontSize: 76, fontWeight: 800 }}>그대를 부르셨사옵니다</div>
       <div style={{ marginTop: 28, fontSize: 30, color: C.soft }}>
         {ministerCount > 0 ? `이미 ${ministerCount}명이 입궐했사옵니다 · 사주로 관직 받기` : "사주로 관직을 받아보시옵소서"}
@@ -145,7 +148,11 @@ export function ministerStory(kingName: string, name: string, role: RoleKey, sco
       <div style={{ marginTop: 16, fontSize: 60, fontWeight: 800 }}>{decreeLine(name, role)}</div>
       <div style={{ marginTop: 90, fontSize: 250, fontWeight: 800, color: danger ? C.seal : C.ink }}>{r.title}</div>
       <div style={{ marginTop: 20, fontSize: 48, color: C.gold, fontWeight: 800 }}>{r.rank}</div>
-      <div style={{ marginTop: 40, fontSize: 50 }}>{`“${r.tagline}”`}</div>
+      <div style={{ marginTop: 40, fontSize: 50, lineHeight: 1.5, display: "flex", flexDirection: "column", alignItems: "center" }}>
+        {balancedLines(`“${r.tagline}”`, 16).map((line) => (
+          <div key={line}>{line}</div>
+        ))}
+      </div>
       <div
         style={{
           marginTop: 70,
@@ -201,6 +208,60 @@ export function courtStory(kingName: string, seats: Seat[]) {
         {rest > 0 && (
           <div style={{ marginTop: 20, fontSize: 36, color: C.soft, display: "flex", justifyContent: "center" }}>{`외 ${rest}명`}</div>
         )}
+      </div>
+      <StoryFooter />
+    </div>,
+    1080,
+    1920,
+  );
+}
+
+// Satori breaks Korean mid-word, so long lines are split by hand at the space nearest the middle.
+function balancedLines(text: string, max: number): string[] {
+  if (text.length <= max) return [text];
+  const mid = text.length / 2;
+  let best = -1;
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] === " " && (best < 0 || Math.abs(i - mid) < Math.abs(best - mid))) best = i;
+  }
+  return best < 0 ? [text] : [text.slice(0, best), text.slice(best + 1)];
+}
+
+export function kingStory(kingName: string, king: Pillars) {
+  const t = KING_TYPES[king.dayStem];
+  const { short } = kingLinkText(king);
+  return render(
+    <div style={{ ...frame(1080, 1920, C.gold), paddingTop: 220 }}>
+      <InnerRule width={1080} accent={C.gold} />
+      <div style={{ fontSize: 52, letterSpacing: 24, color: C.seal, fontWeight: 800 }}>卽 位 敎 書</div>
+      <div style={{ marginTop: 120, fontSize: 52, color: C.soft }}>{`${kingName} 전하는`}</div>
+      <div style={{ marginTop: 30, fontSize: 150, fontWeight: 800 }}>{t.title}</div>
+      <div style={{ marginTop: 20, fontSize: 44, color: C.gold, fontWeight: 800 }}>{t.symbol}</div>
+      <div style={{ marginTop: 50, fontSize: 46, lineHeight: 1.5, display: "flex", flexDirection: "column", alignItems: "center" }}>
+        {balancedLines(`“${t.tagline}”`, 18).map((line) => (
+          <div key={line}>{line}</div>
+        ))}
+      </div>
+      <div
+        style={{
+          marginTop: 80,
+          width: 860,
+          padding: "34px 40px",
+          borderRadius: 32,
+          background: "rgba(179, 38, 30, 0.07)",
+          border: `3px solid rgba(179, 38, 30, 0.3)`,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        <div style={{ fontSize: 34, color: C.seal, fontWeight: 800 }}>실록 속 같은 사주의 왕</div>
+        <div style={{ marginTop: 14, fontSize: 50, fontWeight: 800, textAlign: "center", display: "flex", justifyContent: "center" }}>
+          {short}
+        </div>
+      </div>
+      <div style={{ marginTop: 90, display: "flex" }}>
+        <Seal size={190} />
       </div>
       <StoryFooter />
     </div>,
