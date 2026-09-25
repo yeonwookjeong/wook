@@ -48,20 +48,6 @@ export default async function Home() {
         })}
       </ul>
 
-      {courts.length > 0 && (
-        <section className="mt-6 flex flex-col gap-2">
-          {courts.map((court) => (
-            <Link
-              key={court.id}
-              href={`/court/${court.id}`}
-              className="rounded-2xl border-2 border-gold/60 bg-white/70 px-4 py-3 text-center font-bold"
-            >
-              {court.kingName} 전하의 조정으로 돌아가기 →
-            </Link>
-          ))}
-        </section>
-      )}
-
       <section className="mt-8 rounded-2xl border border-gold/40 bg-white/60 px-5 py-4">
         <p className="text-xs font-extrabold tracking-wider text-gold">알고 계셨사옵니까?</p>
         <p className="mt-2 text-[15px] leading-relaxed">
@@ -78,7 +64,25 @@ export default async function Home() {
         </Hundo>
       </section>
 
+      {/* Only this browser's own courts (owner cookie), so a returning king can pick up where they left off. */}
+      {courts.length > 0 && (
+        <section className="mt-5 rounded-2xl border border-gold/40 bg-white/60 px-4 py-3">
+          <p className="text-[11px] font-bold text-ink-soft">이 기기에서 즉위하신 조정</p>
+          <ul className="mt-1 flex flex-col divide-y divide-ink/10">
+            {courts.map((court) => (
+              <li key={court.id}>
+                <Link href={`/court/${court.id}`} className="flex items-center justify-between py-2 text-[15px] font-bold">
+                  <span>{court.kingName} 전하의 조정</span>
+                  <span className="text-sm text-gold">입궐 →</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <section className="mt-5 rounded-3xl border border-ink/10 bg-hanji-deep/60 p-5">
+        {courts.length > 0 && <p className="mb-4 text-center font-myeongjo font-extrabold">새로 즉위하기</p>}
         <BirthForm mode="king" />
       </section>
 
