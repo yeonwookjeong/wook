@@ -1,3 +1,4 @@
+import type { Mood } from "./brand";
 import type { RoleKey } from "./saju";
 
 export type Role = {
@@ -104,3 +105,10 @@ export const ROLES: Record<RoleKey, Role> = {
 };
 
 export const EMPTY_SEATS: RoleKey[] = ["yeong", "jwa", "daejehak", "byeongjo", "hojo", "yejo", "daesaheon", "gansin"];
+
+export function moodFor(role: RoleKey): Mood {
+  if (role === "gansin") return "fan";
+  if (role === "yubae") return "shock";
+  if (role === "yeong" || role === "jwa") return "bow";
+  return "decree";
+}

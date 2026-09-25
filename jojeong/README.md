@@ -66,19 +66,17 @@ Redis 환경변수 없이 Vercel에 배포하면 즉위 시 오류가 나도록 
 - 설정: 품계는 말단 정9품이지만 사주 보는 눈은 조선 제일. 흰 얼굴의 미남이라 궁녀들 사이에 소문이 자자한 관상감 막내. 관직은 정 훈도가 "천거"하고 왕이 내리는 구조
 - 실존 인물(정약용 등)의 후손으로 설정하지 않음. 성씨만 사용
 
-지금은 `public/hundo.svg` 임시 캐릭터입니다. 아래 프롬프트로 이미지를 만든 뒤:
+### 캐릭터 이미지
 
-1. 배경 투명 PNG(정사각, 512px 이상)로 `public/hundo.png`에 저장
-2. `lib/brand.ts`의 `CHARACTER_IMAGE`를 `"/hundo.png"`로 변경
+원본 시트: `assets/hundo-sheet.webp` (3×2 캐릭터 시트, AI 생성). 여기서 잘라낸 512px PNG 6종을 `public/`에 둡니다.
 
-**프롬프트 (Midjourney / ChatGPT 이미지 / Gemini 공용, 영어가 결과가 안정적)**
+| 파일 | 표정 | 쓰는 곳 |
+|---|---|---|
+| `hundo-face.png` | 얼굴 클로즈업 | 기본 말풍선 아이콘 |
+| `hundo.png` | 별자리 두루마리 | 예비(상반신 기본) |
+| `hundo-bow.png` | 공손한 인사 | 즉위 축하, 영의정·좌의정 결과, 즉위 교서 스토리 |
+| `hundo-fan.png` | 부채로 속삭임 | 간신 결과, 간신이 있는 조정 |
+| `hundo-shock.png` | 놀람 | 유배 결과, 404 |
+| `hundo-decree.png` | 교지 펼쳐 보임 | 초대장, 카톡 초대 미리보기, 일반 관직 결과 |
 
-```
-Handsome young Joseon-dynasty royal astrologer official in his early 20s, Korean webtoon male-lead style,
-fair clear skin, sharp but relaxed almond eyes, faint confident smile, neat black hair under a black gauze
-official hat (samo) with side wings, green low-rank official robe (dallyeong) with white collar,
-small golden star emblem on the chest, holding a rolled star-chart scroll, upper body, soft cel shading,
-clean lines, transparent background, centered, square composition --ar 1:1
-```
-
-변형 표정(선택): 간신 결과용 `serious look, whispering behind a folding fan`, 영의정 결과용 `bowing slightly with a charming smile`.
+표정 매핑은 `lib/roles.ts`의 `moodFor`, 파일 목록은 `lib/brand.ts`의 `CHARACTER`.

@@ -6,7 +6,7 @@ import Hundo from "@/components/Hundo";
 import { SaveImageButton, ShareLinkButton } from "@/components/ShareButtons";
 import { bragLine, decreeLine, summonLine } from "@/lib/decree";
 import { loadCourt, viewerOf } from "@/lib/load";
-import { ROLES } from "@/lib/roles";
+import { moodFor, ROLES } from "@/lib/roles";
 import { factLines, relationSentence } from "@/lib/saju";
 
 async function loadSeat(id: string, mid: string) {
@@ -68,7 +68,7 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
       </section>
 
       <section className="mt-6">
-        <Hundo>{role.report}</Hundo>
+        <Hundo mood={moodFor(seat.role)}>{role.report}</Hundo>
       </section>
 
       <section className="mt-5 rounded-3xl border border-ink/10 bg-hanji-deep/60 p-5">

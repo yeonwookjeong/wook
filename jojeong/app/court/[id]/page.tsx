@@ -61,13 +61,13 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
           {isOwner && seats.length === 0 && (
             <>
               <section className="mt-6">
-                <Hundo>전하, 즉위를 경하드리옵니다. 소신이 전하의 사주를 살펴 즉위 교서를 올리옵니다.</Hundo>
+                <Hundo mood="bow">전하, 즉위를 경하드리옵니다. 소신이 전하의 사주를 살펴 즉위 교서를 올리옵니다.</Hundo>
               </section>
               <KingCard kingName={court.kingName} pillars={court.king} />
             </>
           )}
           <section className="mt-6">
-            <Hundo>
+            <Hundo mood={isOwner && gansinCount > 0 ? "fan" : "face"}>
               {isOwner ? (
                 seats.length === 0 ? (
                   <>이제 조정을 채우실 차례이옵니다. 벗들을 부르시면 소신이 그들의 사주를 살펴, 누가 영의정감이고 누가 간신인지 가려 천거하겠사옵니다.</>
@@ -199,7 +199,7 @@ function Invitation({
       </section>
 
       <section className="mt-6">
-        <Hundo>
+        <Hundo mood="decree">
           관상감 명과학 훈도 정가이옵니다. 입궐하시면 소신이 그대의 사주를 전하의 사주와 맞춰보고 관직을 천거하겠사옵니다.
           혹 간신으로 몰려도 소신을 너무 서운해 마시옵소서.
         </Hundo>

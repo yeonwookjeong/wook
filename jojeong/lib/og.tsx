@@ -1,21 +1,27 @@
 import "server-only";
 import { readFile } from "node:fs/promises";
-import { extname, join } from "node:path";
+import { join } from "node:path";
 import { ImageResponse } from "next/og";
-import { CHARACTER_IMAGE, SERVICE_NAME, TAGLINE } from "./brand";
+import { CHARACTER, SERVICE_NAME, TAGLINE, type Mood } from "./brand";
 import type { Seat } from "./court";
 import { decreeLine } from "./decree";
 import { kingLinkText } from "./kings";
 import { KING_TYPES } from "./kingTypes";
-import { ROLES } from "./roles";
+import { moodFor, ROLES } from "./roles";
 import type { Pillars, RoleKey } from "./saju";
 
-const [regular, bold, character] = await Promise.all([
+const [regular, bold] = await Promise.all([
   readFile(join(process.cwd(), "assets/fonts/NanumMyeongjo-400.ttf")),
   readFile(join(process.cwd(), "assets/fonts/NanumMyeongjo-800.ttf")),
-  readFile(join(process.cwd(), "public", CHARACTER_IMAGE)),
 ]);
-const characterSrc = `data:${extname(CHARACTER_IMAGE) === ".svg" ? "image/svg+xml" : "image/png"};base64,${character.toString("base64")}`;
+const art = Object.fromEntries(
+  await Promise.all(
+    (Object.keys(CHARACTER) as Mood[]).map(async (mood) => {
+      const png = await readFile(join(process.cwd(), "public", CHARACTER[mood]));
+      return [mood, `data:image/png;base64,${png.toString("base64")}`] as const;
+    }),
+  ),
+) as Record<Mood, string>;
 
 const C = { hanji: "#f4ecdb", deep: "#e9dcc0", ink: "#211b17", soft: "#62564c", seal: "#b3261e", gold: "#a87a22" };
 
@@ -29,6 +35,19 @@ function render(node: React.ReactElement, width: number, height: number) {
     ],
     headers: { "Cache-Control": "public, max-age=60, s-maxage=60" },
   });
+}
+
+function Portrait({ mood, size }: { mood: Mood; size: number }) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element -- rendered by Satori, not the browser
+    <img
+      src={art[mood]}
+      width={size}
+      height={size}
+      alt=""
+      style={{ borderRadius: size / 2, border: `${Math.round(size / 40)}px solid ${C.gold}`, background: "#fff" }}
+    />
+  );
 }
 
 function Seal({ size }: { size: number }) {
@@ -98,8 +117,9 @@ export function inviteImage(kingName: string, king: Pillars, ministerCount: numb
       <div style={{ marginTop: 28, fontSize: 30, color: C.soft }}>
         {ministerCount > 0 ? `이미 ${ministerCount}명이 입궐했사옵니다 · 사주로 관직 받기` : "사주로 관직을 받아보시옵소서"}
       </div>
-      {/* eslint-disable-next-line @next/next/no-img-element -- rendered by Satori, not the browser */}
-      <img src={characterSrc} width={170} height={170} style={{ position: "absolute", left: 50, bottom: 40 }} alt="" />
+      <div style={{ position: "absolute", left: 60, bottom: 50, display: "flex" }}>
+        <Portrait mood="decree" size={190} />
+      </div>
       <div style={{ position: "absolute", right: 70, bottom: 60, display: "flex" }}>
         <Seal size={120} />
       </div>
@@ -119,6 +139,9 @@ export function ministerImage(kingName: string, name: string, role: RoleKey, sco
       <div style={{ marginTop: 8, fontSize: 44, fontWeight: 800 }}>{decreeLine(name, role)}</div>
       <div style={{ marginTop: 20, fontSize: 150, fontWeight: 800, color: danger ? C.seal : C.ink }}>{r.title}</div>
       <div style={{ marginTop: 8, fontSize: 32, color: C.gold, fontWeight: 800 }}>{`${r.rank} · 궁합 ${score}점`}</div>
+      <div style={{ position: "absolute", left: 60, bottom: 50, display: "flex" }}>
+        <Portrait mood={moodFor(role)} size={190} />
+      </div>
       <div style={{ position: "absolute", right: 70, bottom: 60, display: "flex" }}>
         <Seal size={120} />
       </div>
@@ -163,8 +186,9 @@ export function ministerStory(kingName: string, name: string, role: RoleKey, sco
           display: "flex",
         }}
       >{`궁합 ${score}점`}</div>
-      <div style={{ marginTop: 90, display: "flex" }}>
-        <Seal size={210} />
+      <div style={{ marginTop: 70, display: "flex", alignItems: "center", gap: 60 }}>
+        <Portrait mood={moodFor(role)} size={250} />
+        <Seal size={180} />
       </div>
       <StoryFooter />
     </div>,
@@ -260,8 +284,9 @@ export function kingStory(kingName: string, king: Pillars) {
           {short}
         </div>
       </div>
-      <div style={{ marginTop: 90, display: "flex" }}>
-        <Seal size={190} />
+      <div style={{ marginTop: 80, display: "flex", alignItems: "center", gap: 60 }}>
+        <Portrait mood="bow" size={250} />
+        <Seal size={180} />
       </div>
       <StoryFooter />
     </div>,
