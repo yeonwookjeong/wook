@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
   // Share images read these files from disk at request time.
   outputFileTracingIncludes: {
     "/court/**": ["./assets/fonts/**/*", "./public/**/*"],
+    "/opengraph-image": ["./assets/fonts/**/*", "./public/**/*"],
   },
 };
 

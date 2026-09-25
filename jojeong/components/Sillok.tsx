@@ -100,41 +100,45 @@ export default function Sillok({ kingName, pillars, cast = {} }: { kingName: str
         </ul>
       </div>
 
-      {/* 실록 본문 */}
-      <div className="mt-7 flex items-center gap-3">
-        <span className="h-px flex-1 bg-ink/15" />
-        <span className="font-myeongjo text-sm font-extrabold text-ink-soft">실록 본문</span>
-        <span className="h-px flex-1 bg-ink/15" />
-      </div>
+      {/* 실록 본문: folded so the verdict above stays the first thing people see */}
+      <details className="group mt-6">
+        <summary className="flex cursor-pointer list-none items-center gap-3 [&::-webkit-details-marker]:hidden">
+          <span className="h-px flex-1 bg-ink/15" />
+          <span className="rounded-full border border-seal/40 bg-white/70 px-4 py-2 font-myeongjo text-sm font-extrabold text-seal">
+            <span className="group-open:hidden">실록 본문 펼쳐 보기 · 6장</span>
+            <span className="hidden group-open:inline">실록 본문 접기</span>
+          </span>
+          <span className="h-px flex-1 bg-ink/15" />
+        </summary>
+        <div className="mt-4 flex flex-col">
+          {s.chapters.map((c, i) => (
+            <article key={c.title} className="border-t border-ink/10 py-4 first:border-t-0 first:pt-0">
+              <h3 className="font-myeongjo text-sm font-extrabold text-seal">
+                제{HANJA_NUM[i]}장 <span className="text-ink">{c.title}</span>
+              </h3>
+              {c.paras.map((t) => (
+                <p key={t} className="mt-1.5 text-[15px] leading-relaxed">
+                  {t}
+                </p>
+              ))}
+            </article>
+          ))}
+        </div>
 
-      <div className="mt-4 flex flex-col">
-        {s.chapters.map((c, i) => (
-          <article key={c.title} className="border-t border-ink/10 py-4 first:border-t-0 first:pt-0">
-            <h3 className="font-myeongjo text-sm font-extrabold text-seal">
-              제{HANJA_NUM[i]}장 <span className="text-ink">{c.title}</span>
-            </h3>
-            {c.paras.map((t) => (
-              <p key={t} className="mt-1.5 text-[15px] leading-relaxed">
-                {t}
-              </p>
-            ))}
-          </article>
-        ))}
-      </div>
+        <blockquote className="mt-2 rounded-2xl bg-ink/5 px-4 py-3">
+          <p className="text-xs font-extrabold text-ink-soft">사관은 이렇게 적었다</p>
+          <p className="mt-1 font-myeongjo text-[15px] leading-relaxed">&ldquo;{s.sagwan}&rdquo;</p>
+        </blockquote>
 
-      <blockquote className="mt-2 rounded-2xl bg-ink/5 px-4 py-3">
-        <p className="text-xs font-extrabold text-ink-soft">사관은 이렇게 적었다</p>
-        <p className="mt-1 font-myeongjo text-[15px] leading-relaxed">&ldquo;{s.sagwan}&rdquo;</p>
-      </blockquote>
+        {!hasCast && (
+          <p className="mt-4 rounded-xl border border-dashed border-seal/40 px-4 py-3 text-center text-sm text-seal">
+            신하를 부르면 그들의 이름이 실록에 오르옵니다
+          </p>
+        )}
 
-      {!hasCast && (
-        <p className="mt-4 rounded-xl border border-dashed border-seal/40 px-4 py-3 text-center text-sm text-seal">
-          신하를 부르면 그들의 이름이 실록에 오르옵니다
-        </p>
-      )}
-
-      <p className="mt-4 text-right font-myeongjo text-sm text-ink-soft">— 관상감 명과학 훈도 정가, 삼가 적음</p>
-      <p className="mt-2 text-center text-[11px] text-ink-soft/80">전하의 사주로 지어 올린 가상의 기록이옵니다.</p>
+        <p className="mt-4 text-right font-myeongjo text-sm text-ink-soft">— 관상감 명과학 훈도 정가, 삼가 적음</p>
+        <p className="mt-2 text-center text-[11px] text-ink-soft/80">전하의 사주로 지어 올린 가상의 기록이옵니다.</p>
+      </details>
     </section>
   );
 }

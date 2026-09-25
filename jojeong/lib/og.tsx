@@ -7,7 +7,8 @@ import type { Seat } from "./court";
 import { decreeLine } from "./decree";
 import { kingLinkText } from "./kings";
 import { KING_TYPES } from "./kingTypes";
-import { sillok } from "./sillok";
+import { type Tier } from "./reign";
+import { type Cast, sillok } from "./sillok";
 import { moodFor, ROLES } from "./roles";
 import type { Pillars, RoleKey } from "./saju";
 
@@ -23,6 +24,8 @@ const art = Object.fromEntries(
     }),
   ),
 ) as Record<Mood, string>;
+
+const throne = `data:image/svg+xml;base64,${(await readFile(join(process.cwd(), "public/throne.svg"))).toString("base64")}`;
 
 const C = { hanji: "#f4ecdb", deep: "#e9dcc0", ink: "#211b17", soft: "#62564c", seal: "#b3261e", gold: "#a87a22" };
 
@@ -292,6 +295,150 @@ export function kingStory(kingName: string, king: Pillars) {
       <div style={{ marginTop: 80, display: "flex", alignItems: "center", gap: 60 }}>
         <Portrait mood="bow" size={250} />
         <Seal size={180} />
+      </div>
+      <StoryFooter />
+    </div>,
+    1080,
+    1920,
+  );
+}
+
+// Link preview for the landing page: the same throne scene as the hero, with the pitch beside it.
+export function landingImage() {
+  return render(
+    <div style={{ width: 1200, height: 630, display: "flex", background: "#17304a", fontFamily: "Myeongjo", position: "relative" }}>
+      <div style={{ width: 615, height: 630, display: "flex", flexDirection: "column", justifyContent: "center", paddingLeft: 72 }}>
+        <div
+          style={{
+            display: "flex",
+            alignSelf: "flex-start",
+            padding: "8px 22px",
+            borderRadius: 999,
+            border: "2px solid rgba(243, 234, 208, 0.5)",
+            color: "#f3ead0",
+            fontSize: 26,
+            fontWeight: 800,
+          }}
+        >
+          조선 왕실도 사주를 봤다
+        </div>
+        <div style={{ marginTop: 26, fontSize: 92, fontWeight: 800, color: "#f7efd9", whiteSpace: "nowrap" }}>{SERVICE_NAME}</div>
+        <div style={{ marginTop: 6, fontSize: 40, fontWeight: 800, color: "#e9c46a" }}>옥좌의 주인을 찾사옵니다</div>
+        <div style={{ marginTop: 34, fontSize: 28, color: "#cfdad7", display: "flex", flexDirection: "column", lineHeight: 1.5 }}>
+          <div>성군일까 폭군일까, 수명은 몇 위일까</div>
+          <div>벗들을 부르면 사주가 관직을 내리옵니다</div>
+        </div>
+      </div>
+      {/* eslint-disable-next-line @next/next/no-img-element -- rendered by Satori, not the browser */}
+      <img src={throne} width={585} height={630} alt="" style={{ position: "absolute", right: 0, top: 0 }} />
+      <div style={{ position: "absolute", right: 28, bottom: 28, display: "flex" }}>
+        <Portrait mood="bow" size={120} />
+      </div>
+    </div>,
+    1200,
+    630,
+  );
+}
+
+const TIER_COLOR: Record<Tier, string> = { seong: C.gold, myeong: C.gold, pyeong: C.ink, am: C.soft, pok: C.seal };
+
+// Story card for the 가상 실록 summary: the verdict, the numbers and the ratings, built to be screenshotted.
+export function sillokStory(kingName: string, king: Pillars, cast: Cast) {
+  const s = sillok(king, { cast, kingName });
+  const accent = TIER_COLOR[s.tier];
+  return render(
+    <div style={{ ...frame(1080, 1920, s.tier === "pok" ? C.seal : C.gold), paddingTop: 150 }}>
+      <InnerRule width={1080} accent={s.tier === "pok" ? C.seal : C.gold} />
+      <div style={{ fontSize: 46, letterSpacing: 24, color: C.seal, fontWeight: 800 }}>假 想 實 錄</div>
+      <div style={{ marginTop: 50, fontSize: 46, color: C.soft }}>{`${kingName} 전하는`}</div>
+      <div
+        style={{
+          marginTop: 24,
+          display: "flex",
+          alignItems: "baseline",
+          gap: 22,
+          padding: "14px 60px",
+          borderRadius: 36,
+          border: `6px solid ${accent}`,
+          color: accent,
+        }}
+      >
+        <div style={{ fontSize: 50, fontWeight: 800, opacity: 0.7 }}>{s.tierHanja}</div>
+        <div style={{ fontSize: 120, fontWeight: 800 }}>{s.tierLabel}</div>
+      </div>
+      <div style={{ marginTop: 40, fontSize: 52, fontWeight: 800, lineHeight: 1.4, display: "flex", flexDirection: "column", alignItems: "center" }}>
+        {balancedLines(`“${s.headline}”`, 17).map((line) => (
+          <div key={line}>{line}</div>
+        ))}
+      </div>
+      <div style={{ marginTop: 18, fontSize: 38, color: s.deposed ? C.seal : C.gold, fontWeight: 800 }}>
+        {s.deposed ? `폐위되어 ${s.epithet}으로 강등` : `존호 ${s.epithet}`}
+      </div>
+
+      <div style={{ marginTop: 50, display: "flex", gap: 20 }}>
+        {[
+          ["즉위", `${s.accession}세`],
+          ["재위", `${s.reign}년`],
+          ["향년", `${s.death}세`],
+          ["수명 순위", `${s.rank}위`],
+        ].map(([label, value], i) => (
+          <div
+            key={label}
+            style={{
+              width: 205,
+              height: 150,
+              borderRadius: 26,
+              background: "#fbf6ea",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <div style={{ fontSize: 30, color: C.soft }}>{label}</div>
+            <div style={{ marginTop: 6, fontSize: 60, fontWeight: 800, color: i === 3 ? C.seal : C.ink }}>{value}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ marginTop: 14, fontSize: 28, color: C.soft }}>조선 27왕과 견준 순위 · 실제 왕들의 평균 수명 46.1세</div>
+
+      <div style={{ marginTop: 44, width: 566, display: "flex", flexDirection: "column", gap: 18 }}>
+        {s.ratings.map((r) => (
+          <div key={r.key} style={{ display: "flex", alignItems: "center" }}>
+            <div style={{ width: 250, fontSize: 40, fontWeight: 800, color: C.soft }}>{r.label}</div>
+            <div style={{ display: "flex", gap: 14 }}>
+              {[1, 2, 3, 4, 5].map((n) => (
+                <div
+                  key={n}
+                  style={{ width: 52, height: 52, borderRadius: 14, background: n <= r.value ? C.gold : "rgba(33, 27, 23, 0.1)" }}
+                />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ marginTop: 50, display: "flex", gap: 24 }}>
+        {[
+          ["신하들이 몰래 부른 이름", s.nickname],
+          ["백성들이 부른 이름", s.peopleName],
+        ].map(([label, value]) => (
+          <div
+            key={label}
+            style={{
+              width: 420,
+              padding: "22px 0",
+              borderRadius: 26,
+              background: "#fbf6ea",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <div style={{ fontSize: 28, color: C.soft }}>{label}</div>
+            <div style={{ marginTop: 6, fontSize: 46, fontWeight: 800 }}>{value}</div>
+          </div>
+        ))}
       </div>
       <StoryFooter />
     </div>,

@@ -16,6 +16,7 @@ import {
 } from "./episodes";
 import { josa } from "./josa";
 import { isClash, isWonjin, lifespan, mix, ratings, reignTier, TIERS } from "./reign";
+import type { Seat } from "./court";
 import type { Pillars } from "./saju";
 
 // Deterministic fictional chronicle: the same pillars always produce the same record.
@@ -116,6 +117,16 @@ const KING_AGES: [string, number][] = [
 export const KING_AVG_LIFESPAN = 46.1;
 
 export type Cast = { yeong?: string; gansin?: string; yubae?: string; witness?: string };
+
+// Who from the court appears in the story: the chief minister, the traitor, the exile and one plain witness.
+export function castOf(seats: Seat[]): Cast {
+  return {
+    yeong: seats.find((s) => s.role === "yeong")?.minister.name,
+    gansin: seats.find((s) => s.role === "gansin")?.minister.name,
+    yubae: seats.find((s) => s.role === "yubae")?.minister.name,
+    witness: seats.find((s) => !["yeong", "gansin", "yubae"].includes(s.role))?.minister.name,
+  };
+}
 
 // Where the age at death sits among the 27 real kings. Stated flatly: short lives are not softened.
 function lifespanRank(death: number) {
