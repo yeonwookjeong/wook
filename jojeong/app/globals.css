@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-hanji: #f4ecdb;
+  --color-hanji-deep: #e9dcc0;
+  --color-ink: #211b17;
+  --color-ink-soft: #62564c;
+  --color-seal: #b3261e;
+  --color-gold: #a87a22;
+  --color-jade: #3d6656;
+  --font-myeongjo: var(--font-nanum-myeongjo);
+  --font-sans: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+}
+
+body {
+  background: var(--color-hanji);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  word-break: keep-all;
+  background-image:
+    radial-gradient(circle at 20% 10%, rgb(255 255 255 / 0.5), transparent 40%),
+    radial-gradient(circle at 80% 90%, rgb(168 122 34 / 0.08), transparent 45%);
+  background-attachment: fixed;
+}
+
+@keyframes stamp {
+  0% { transform: scale(2.2) rotate(-18deg); opacity: 0; }
+  60% { transform: scale(0.92) rotate(-8deg); opacity: 1; }
+  100% { transform: scale(1) rotate(-8deg); opacity: 1; }
+}
+.animate-stamp {
+  animation: stamp 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.2) 0.25s both;
+}
+
+@keyframes rise {
+  from { transform: translateY(12px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.animate-rise {
+  animation: rise 0.5s ease-out both;
+}
