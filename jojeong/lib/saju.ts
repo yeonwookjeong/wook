@@ -208,7 +208,7 @@ export function factLines(king: Pillars, minister: Pillars, f: Facts): string[] 
   if (f.dayClash) lines.push("일지 충(沖): 생활 방식이 정반대라 부딪치기 쉽사옵니다.");
   if (f.dayWonjin) lines.push("원진(怨嗔): 이유 없이 서운한 마음이 쌓이기 쉽사옵니다.");
   const animals = `${ANIMALS[king.yearBranch]}띠와 ${ANIMALS[minister.yearBranch]}띠`;
-  if (f.yearSix || f.yearThree) lines.push(`${animals}: 띠 궁합도 합이옵니다.`);
+  if (f.yearSix || f.yearThree) lines.push(`${animals}: 띠끼리는 합이라 겉으로는 사이가 좋아 보이옵니다.`);
   if (f.yearClash) lines.push(`${animals}: 띠끼리 충이라 첫인상이 엇갈렸을 수 있사옵니다.`);
   if (f.hourSix) lines.push("시지 육합: 늦은 밤 대화가 유난히 잘 통하옵니다.");
   if (f.hourClash) lines.push("시지 충: 하루 중 컨디션 좋은 시간이 엇갈리옵니다.");
