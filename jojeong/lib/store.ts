@@ -5,7 +5,14 @@ import { join } from "node:path";
 import type { Pillars } from "./saju";
 
 export type Court = { id: string; kingName: string; king: Pillars; ownerToken: string; createdAt: number };
-export type Minister = { id: string; name: string; pillars: Pillars; joinedAt: number };
+export type Minister = {
+  id: string;
+  name: string;
+  pillars: Pillars;
+  joinedAt: number;
+  // Absent on records created before direct appointment existed; treat as "joined".
+  source?: "joined" | "appointed";
+};
 
 export const MAX_MINISTERS = 60;
 
@@ -104,11 +111,16 @@ export async function listMinisters(courtId: string): Promise<Minister[]> {
   return (await backend().list(`court:${courtId}:m`)).map((raw) => JSON.parse(raw) as Minister);
 }
 
-export async function addMinister(courtId: string, name: string, pillars: Pillars): Promise<Minister> {
+export async function addMinister(
+  courtId: string,
+  name: string,
+  pillars: Pillars,
+  source: "joined" | "appointed",
+): Promise<Minister> {
   const db = backend();
   const existing = await db.list(`court:${courtId}:m`);
   if (existing.length >= MAX_MINISTERS) throw new CourtFullError();
-  const minister: Minister = { id: id(6), name, pillars, joinedAt: Date.now() };
+  const minister: Minister = { id: id(6), name, pillars, joinedAt: Date.now(), source };
   await db.push(`court:${courtId}:m`, JSON.stringify(minister));
   return minister;
 }

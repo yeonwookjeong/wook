@@ -37,6 +37,11 @@ export default function SeatRow({
           <span className="block truncate font-bold">
             {seat.minister.name}
             {mine && <span className="ml-1.5 text-xs text-seal">(나)</span>}
+            {seat.minister.source === "appointed" && (
+              <span className="ml-1.5 rounded bg-ink/5 px-1.5 py-0.5 align-middle text-[10px] font-normal text-ink-soft">
+                직접 등용
+              </span>
+            )}
           </span>
           <span className="block truncate text-xs text-ink-soft">{role.tagline}</span>
         </span>

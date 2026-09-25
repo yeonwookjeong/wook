@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Hundo from "@/components/Hundo";
 import { SaveImageButton, ShareLinkButton } from "@/components/ShareButtons";
-import { bragLine, decreeLine } from "@/lib/decree";
+import { bragLine, decreeLine, summonLine } from "@/lib/decree";
 import { loadCourt, viewerOf } from "@/lib/load";
 import { ROLES } from "@/lib/roles";
 import { factLines, relationSentence } from "@/lib/saju";
@@ -114,15 +114,28 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
           </>
         )}
         {isOwner && (
-          <SaveImageButton
-            src={`/court/${court.id}/m/${seat.minister.id}/card`}
-            filename={`${seat.minister.name}-${role.title}.png`}
-            label="이 교지 저장"
-          />
+          <>
+            <ShareLinkButton
+              path={`/court/${court.id}/m/${seat.minister.id}`}
+              text={summonLine(seat.minister.name, seat.role)}
+              label={`${seat.minister.name}에게 교지 보내기`}
+            />
+            <SaveImageButton
+              src={`/court/${court.id}/m/${seat.minister.id}/card`}
+              filename={`${seat.minister.name}-${role.title}.png`}
+              label="이 교지 저장"
+            />
+            <Link
+              href={`/court/${court.id}`}
+              className="w-full rounded-2xl border-2 border-ink/30 py-3.5 text-center font-myeongjo font-extrabold text-ink-soft"
+            >
+              조정으로 돌아가기
+            </Link>
+          </>
         )}
         {!isSelf && !isOwner && (
           <>
-            {!myMinisterId && (
+            {!myMinisterId && seat.minister.source !== "appointed" && (
               <Link
                 href={`/court/${court.id}`}
                 className="w-full rounded-2xl border-2 border-ink py-3.5 text-center font-myeongjo font-extrabold"

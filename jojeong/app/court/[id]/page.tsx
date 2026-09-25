@@ -88,6 +88,15 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
           {isOwner && (
             <section className="mt-5 flex flex-col gap-3">
               <ShareLinkButton path={`/court/${court.id}`} text={inviteText} label="신하 부르기" />
+              <details className="group rounded-2xl border-2 border-dashed border-ink/25 bg-white/40">
+                <summary className="cursor-pointer list-none py-3.5 text-center font-myeongjo font-extrabold text-ink [&::-webkit-details-marker]:hidden">
+                  생년월일을 아는 신하 직접 등용하기
+                  <span className="ml-1 inline-block transition group-open:rotate-180">▾</span>
+                </summary>
+                <div className="border-t border-ink/10 p-5">
+                  <BirthForm mode="appoint" courtId={court.id} />
+                </div>
+              </details>
               <SaveImageButton
                 src={`/court/${court.id}/king`}
                 filename={`${court.kingName}-즉위교서.png`}

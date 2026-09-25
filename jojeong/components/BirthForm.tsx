@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { enthroneAction, joinCourtAction, type FormState } from "@/app/actions";
+import { appointMinisterAction, enthroneAction, joinCourtAction, type FormState } from "@/app/actions";
 import { HOUR_SLOTS } from "@/lib/saju";
 
 const CALENDARS = [
@@ -10,8 +10,14 @@ const CALENDARS = [
   { value: "lunar-leap", label: "음력 윤달" },
 ] as const;
 
-export default function BirthForm({ mode, courtId }: { mode: "king" | "minister"; courtId?: string }) {
-  const action = mode === "king" ? enthroneAction : joinCourtAction;
+const MODES = {
+  king: { action: enthroneAction, nameLabel: "전하의 존함", submit: "즉위하기" },
+  minister: { action: joinCourtAction, nameLabel: "그대의 이름", submit: "입궐하기" },
+  appoint: { action: appointMinisterAction, nameLabel: "등용할 신하의 이름", submit: "등용하기" },
+};
+
+export default function BirthForm({ mode, courtId }: { mode: keyof typeof MODES; courtId?: string }) {
+  const { action, nameLabel, submit } = MODES[mode];
   const [state, formAction, pending] = useActionState<FormState, FormData>(action, { error: null });
 
   return (
@@ -19,7 +25,7 @@ export default function BirthForm({ mode, courtId }: { mode: "king" | "minister"
       {courtId && <input type="hidden" name="courtId" value={courtId} />}
 
       <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-semibold text-ink-soft">{mode === "king" ? "전하의 존함" : "그대의 이름"}</span>
+        <span className="text-sm font-semibold text-ink-soft">{nameLabel}</span>
         <input
           name="name"
           required
@@ -82,9 +88,11 @@ export default function BirthForm({ mode, courtId }: { mode: "king" | "minister"
         disabled={pending}
         className="mt-1 rounded-2xl bg-seal py-4 font-myeongjo text-lg font-extrabold text-hanji shadow-[0_6px_0_#7d1a14] transition active:translate-y-1 active:shadow-[0_2px_0_#7d1a14] disabled:opacity-60"
       >
-        {pending ? "잠시만 기다리시옵소서…" : mode === "king" ? "즉위하기" : "입궐하기"}
+        {pending ? "잠시만 기다리시옵소서…" : submit}
       </button>
-      <p className="text-center text-xs text-ink-soft">생년월일은 사주 계산에만 쓰고 저장하지 않사옵니다.</p>
+      <p className="text-center text-xs text-ink-soft">
+        {mode === "appoint" && "본인에게 허락받고 입력하시옵소서. "}생년월일은 사주 계산에만 쓰고 저장하지 않사옵니다.
+      </p>
     </form>
   );
 }

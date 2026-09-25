@@ -66,7 +66,7 @@ export async function joinCourtAction(_prev: FormState, formData: FormData): Pro
     const court = await getCourt(courtId);
     if (!court) return { error: "이미 사라진 조정이옵니다." };
     const { name, pillars } = parseForm(formData);
-    const minister = await addMinister(court.id, name, pillars);
+    const minister = await addMinister(court.id, name, pillars, "joined");
     (await cookies()).set(MINISTER_COOKIE(court.id), minister.id, COOKIE_OPTS);
     ministerId = minister.id;
   } catch (e) {
@@ -87,4 +87,23 @@ export async function dismissMinisterAction(formData: FormData) {
   if (token !== court.ownerToken) return;
   await removeMinister(court.id, ministerId);
   refresh();
+}
+
+export async function appointMinisterAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const courtId = String(formData.get("courtId") ?? "");
+  let ministerId: string;
+  try {
+    const court = await getCourt(courtId);
+    if (!court) return { error: "이미 사라진 조정이옵니다." };
+    if ((await cookies()).get(OWNER_COOKIE(court.id))?.value !== court.ownerToken)
+      return { error: "전하만 신하를 등용하실 수 있사옵니다." };
+    const { name, pillars } = parseForm(formData);
+    ministerId = (await addMinister(court.id, name, pillars, "appointed")).id;
+  } catch (e) {
+    if (e instanceof BirthInputError) return { error: e.message };
+    if (e instanceof CourtFullError) return { error: `조정이 가득 찼사옵니다. (최대 ${MAX_MINISTERS}명)` };
+    console.error(e);
+    return { error: "등용 중 문제가 생겼사옵니다. 잠시 후 다시 시도해 주시옵소서." };
+  }
+  redirect(`/court/${courtId}/m/${ministerId}`);
 }
