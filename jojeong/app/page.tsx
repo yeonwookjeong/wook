@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { SERVICE_NAME } from "@/lib/brand";
 import { cookies } from "next/headers";
 import BirthForm from "@/components/BirthForm";
+import Hero from "@/components/Hero";
 import Hundo from "@/components/Hundo";
 import { OWNER_PREFIX } from "@/lib/cookies";
 import { ROLES } from "@/lib/roles";
@@ -25,17 +25,12 @@ export default async function Home() {
 
   return (
     <>
-      <header className="animate-rise pt-10 text-center">
-        <p className="mx-auto w-fit rounded-full border border-seal/40 px-3 py-1 text-xs font-bold tracking-widest text-seal">
-          조선 왕실도 사주를 봤다
-        </p>
-        <h1 className="mt-4 font-myeongjo text-5xl font-extrabold tracking-tight">{SERVICE_NAME}</h1>
-        <p className="mt-3 text-[15px] leading-relaxed text-ink-soft">
-          생년월일을 넣으면 <b className="text-ink">전하가 어떤 왕이었을지</b> 알려드리옵니다.
-          <br />
-          벗들을 부르면 <b className="text-ink">사주가 관직을 내려드리옵니다.</b>
-        </p>
-      </header>
+      <Hero />
+      <p className="mt-5 text-center text-[15px] leading-relaxed text-ink-soft">
+        생년월일을 넣으면 <b className="text-ink">전하가 어떤 왕이었을지</b> 알려드리옵니다.
+        <br />
+        벗들을 부르면 <b className="text-ink">사주가 관직을 내려드리옵니다.</b>
+      </p>
 
       <ul className="mt-6 grid grid-cols-3 gap-2">
         {SHOWCASE.map((key) => {
