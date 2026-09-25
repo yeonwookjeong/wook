@@ -57,8 +57,10 @@ export function computePillars(input: BirthInput): Pillars {
       calendar === "lunar-leap" ? "그 해에는 해당 윤달이 없사옵니다." : "존재하지 않는 날짜이옵니다.",
     );
   }
-  if (calendar === "solar" && (solar.getMonth() !== month || solar.getDay() !== day)) {
-    throw new BirthInputError("존재하지 않는 날짜이옵니다.");
+  // lunar-javascript keeps impossible solar dates like 2/31 as-is, so check them against the real calendar.
+  if (calendar === "solar") {
+    const d = new Date(Date.UTC(year, month - 1, day));
+    if (d.getUTCMonth() !== month - 1 || d.getUTCDate() !== day) throw new BirthInputError("존재하지 않는 날짜이옵니다.");
   }
 
   const ec = solar.getLunar().getEightChar();
