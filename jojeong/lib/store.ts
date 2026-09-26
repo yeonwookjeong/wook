@@ -2,6 +2,7 @@ import "server-only";
 import { randomBytes } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import type { Profile } from "./profile";
 import type { Pillars } from "./saju";
 
 export type Court = { id: string; kingName: string; king: Pillars; ownerToken: string; createdAt: number };
@@ -141,6 +142,17 @@ export async function removeMinister(courtId: string, ministerId: string) {
   const db = backend();
   const raw = (await db.list(`court:${courtId}:m`)).find((r) => (JSON.parse(r) as Minister).id === ministerId);
   if (raw) await db.remove(`court:${courtId}:m`, raw);
+}
+
+// Extra reading data for a king ("king") or a minister (their id): 대운 and the palace chart, derived from the
+// birth date at entry. Kept apart from the court so it can be added later without rewriting the minister list.
+export async function getProfile(courtId: string, who: string): Promise<Profile | null> {
+  const raw = await backend().get(`profile:${courtId}:${who}`);
+  return raw ? (JSON.parse(raw) as Profile) : null;
+}
+
+export async function setProfile(courtId: string, who: string, profile: Profile) {
+  await backend().set(`profile:${courtId}:${who}`, JSON.stringify(profile));
 }
 
 export async function courtCount(): Promise<number> {

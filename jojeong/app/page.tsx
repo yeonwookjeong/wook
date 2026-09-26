@@ -36,19 +36,19 @@ export default async function Home() {
 
       <div className="mt-6 grid grid-cols-2 gap-1.5 text-center">
         <div className="border border-seal/25 bg-[#f9f1de] px-3 py-3">
-          <p className="text-[11px] font-extrabold text-seal">무료 · 조선의 나</p>
+          <p className="text-[11px] font-extrabold text-seal">무료로 전부</p>
           <p className="mt-1.5 text-[13px] leading-snug">
             왕 등급과 가상 실록
             <br />
-            조선 신분과 직업
+            조선 신분 · 벗들의 관직
             <br />
-            벗들의 관직
+            <b>2026 신년 운세 전편</b>
           </p>
         </div>
         <Link href="/reports" className="border border-seal/50 bg-seal/5 px-3 py-3">
           <p className="text-[11px] font-extrabold text-seal">비밀 보고서 · 지금의 나</p>
           <p className="mt-1.5 text-[13px] leading-snug">
-            올해 운세·연애
+            연애·결혼운
             <br />
             재물·직업
             <br />

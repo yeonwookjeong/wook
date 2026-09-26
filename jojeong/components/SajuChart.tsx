@@ -1,4 +1,5 @@
-import { ELEMENT_HANJA, ELEMENT_KO, BRANCH_EL, stemEl, type Slot } from "@/lib/myeongri";
+import { stageOf } from "@/lib/deep";
+import { ELEMENT_HANJA, ELEMENT_KO, BRANCH_EL, HIDDEN, stemEl, tenGod, type Slot } from "@/lib/myeongri";
 import { BRANCHES, STEMS } from "@/lib/saju";
 
 // Element colours follow the traditional 오방색 loosely: 木 green, 火 red, 土 ochre, 金 grey-white, 水 black-blue.
@@ -38,23 +39,37 @@ export default function SajuChart({
   strength,
   yong,
   missing,
+  gyeok,
+  kingdom = true,
 }: {
   slots: Slot[];
   elements: number[];
   strength: string;
   yong: number;
   missing: number[];
+  gyeok?: string;
+  kingdom?: boolean; // read missing elements as what the king's realm lacks
 }) {
   const max = Math.max(...elements, 1);
+  const day = slots.find((s) => s.pos === "일")!.stem!;
   return (
     <div className="mt-4 border border-seal/25 px-4 py-3">
       <p className="text-xs font-extrabold text-ink-soft">사주 원국 · 여덟 글자</p>
       <div className="mt-2 grid grid-cols-4 gap-1.5 text-center">
         {slots.map((s) => (
-          <div key={s.pos} className="flex flex-col gap-1.5">
+          <div key={s.pos} className="flex flex-col gap-1">
             <span className="text-[11px] text-ink-soft">{s.pos}주</span>
+            {/* 십신 over the stem, then the branch with its 십신, hidden stems (지장간) and life stage (12운성) */}
+            <span className="text-[10px] font-bold text-seal">{s.stem === null ? " " : s.pos === "일" ? "나" : tenGod(day, s.stem)}</span>
             <Cell value={s.stem === null ? null : STEMS[s.stem]} el={s.stem === null ? null : stemEl(s.stem)} />
             <Cell value={s.branch === null ? null : BRANCHES[s.branch]} el={s.branch === null ? null : BRANCH_EL[s.branch]} />
+            {s.branch !== null && (
+              <span className="flex flex-col text-[10px] leading-tight text-ink-soft">
+                <span className="font-bold text-seal">{tenGod(day, HIDDEN[s.branch].at(-1)![0])}</span>
+                <span className="font-myeongjo">{HIDDEN[s.branch].map(([h]) => STEMS[h]).join("")}</span>
+                <span>{stageOf(day, s.branch)}</span>
+              </span>
+            )}
           </div>
         ))}
       </div>
@@ -75,6 +90,7 @@ export default function SajuChart({
 
       <div className="mt-3 flex flex-wrap justify-center gap-1.5 text-xs">
         <span className="rounded-full bg-ink px-2.5 py-1 font-bold text-hanji">{strength}</span>
+        {gyeok && <span className="rounded-full border border-ink/40 px-2.5 py-1 font-bold">{gyeok}</span>}
         <span className="rounded-full border border-seal/50 px-2.5 py-1 font-bold text-seal">
           용신 {ELEMENT_KO[yong]}({ELEMENT_HANJA[yong]})
         </span>
@@ -82,7 +98,7 @@ export default function SajuChart({
       {slots[0].stem === null && (
         <p className="mt-2 text-center text-[11px] text-ink-soft">태어난 시간을 몰라 여섯 글자로 보았사옵니다</p>
       )}
-      {missing.length > 0 && (
+      {kingdom && missing.length > 0 && (
         <ul className="mt-2 flex flex-col gap-0.5 text-center text-[13px] font-bold text-ink">
           {missing.map((el) => (
             <li key={el}>{MISSING_LINE[el]}</li>

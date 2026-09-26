@@ -1,8 +1,8 @@
 import { ELEMENT_HANJA, ELEMENT_KO, readChart, stemEl, type GodGroup, type Strength } from "./myeongri";
 import type { Pillars } from "./saju";
 
-// 조선 신분 감정 (free): what someone would have been in Joseon, read from the chart's most crowded ten-god
-// group and whether the day master is strong. Ends with a bridge to the present-day paid reports.
+// 조선 신분 감정 (free): what someone would have been in Joseon, read from the chart's heaviest ten-god
+// group (hidden stems included) and the day master's yin or yang. Ends with a bridge to the present-day paid reports.
 
 export type Sinbun = {
   rank: "양반" | "중인" | "상민" | "천민";
@@ -221,14 +221,13 @@ function keyOf(p: Pillars): { key: string; group: GodGroup | "고른" } {
     const key = LEGACY[p.dayStem];
     return { key, group: key.split("-")[0] as GodGroup | "고른" };
   }
-  const entries = Object.entries(chart.gods) as [GodGroup, number][];
-  const count = Math.max(...entries.map(([, n]) => n));
-  // Ties between groups are common with eight characters; the day branch settles them so no group hogs them.
-  const tied = entries.filter(([, n]) => n === count).map(([g]) => g);
-  const group = tied[p.dayBranch % tied.length];
+  // The group that weighs most once every hidden stem is counted (지장간) sets the calling.
+  const entries = Object.entries(chart.godWeights) as [GodGroup, number][];
+  const total = entries.reduce((a, [, w]) => a + w, 0);
+  const [group, weight] = entries.reduce((a, b) => (b[1] > a[1] ? b : a));
   const yang = p.dayStem % 2 === 0;
-  // No group stands out (at most two, shared with another): an evenly spread chart.
-  if (count < 2 || (count === 2 && tied.length >= 2)) return { key: yang ? "고른-양" : "고른-음", group: "고른" };
+  // No group stands out (the heaviest under ~30%, about one chart in seven): an evenly spread chart.
+  if (weight / total < 0.306) return { key: yang ? "고른-양" : "고른-음", group: "고른" };
   // A yang day master takes the outward, louder calling of its group; a yin one the quieter one.
   return { key: `${group}-${yang ? "강" : "약"}`, group };
 }

@@ -5,38 +5,77 @@ import { notFound } from "next/navigation";
 import Keep from "@/components/Keep";
 import RoyalDoc from "@/components/RoyalDoc";
 import SinbunReport from "@/components/SinbunReport";
+import YearReport from "@/components/YearReport";
 import { josa } from "@/lib/josa";
 import { MINISTER_COOKIE, OWNER_COOKIE, PURCHASES_COOKIE } from "@/lib/cookies";
 import { ownedCourts } from "@/lib/load";
 import { PRICE_STEPS, priceFor, productById, type Product } from "@/lib/products";
 import type { Pillars } from "@/lib/saju";
-import { getCourt, listMinisters } from "@/lib/store";
-import { yearPreview } from "@/lib/yearly";
+import { getCourt, getProfile, listMinisters } from "@/lib/store";
+import { yearReading } from "@/lib/yearly";
 
 export async function generateMetadata({ params }: PageProps<"/reports/[id]">): Promise<Metadata> {
   const product = productById((await params).id);
   return product ? { title: product.title, description: product.tagline } : {};
 }
 
-// Whose chart the preview is read from: a court (and minister) named in the link if this browser belongs to
-// it, otherwise the first court this browser enthroned.
-async function subjectFor(product: Product, courtId?: string, ministerId?: string) {
+type Subject = { name: string; pillars: Pillars; king: boolean; courtId: string; who: string; self: boolean };
+
+// Whose chart the report is read from: a court (and minister) named in the link if this browser belongs to
+// it, otherwise the first court this browser enthroned. `self` marks the reader's own chart: only then are the
+// private extras (대운, palace chart) used and offered.
+async function subjectFor(product: Product, courtId?: string, ministerId?: string): Promise<Subject | null> {
   const jar = await cookies();
   if (courtId) {
     const court = await getCourt(courtId);
     if (court) {
-      const mid = ministerId ?? jar.get(MINISTER_COOKIE(court.id))?.value;
+      const myMinister = jar.get(MINISTER_COOKIE(court.id))?.value;
+      const mid = ministerId ?? myMinister;
       if (product.for !== "king" && mid) {
         const minister = (await listMinisters(court.id)).find((m) => m.id === mid);
-        if (minister) return { name: minister.name, pillars: minister.pillars as Pillars, king: false };
+        if (minister)
+          return { name: minister.name, pillars: minister.pillars as Pillars, king: false, courtId: court.id, who: minister.id, self: myMinister === minister.id };
       }
       if (product.for !== "minister" && jar.get(OWNER_COOKIE(court.id))?.value === court.ownerToken)
-        return { name: court.kingName, pillars: court.king, king: true };
+        return { name: court.kingName, pillars: court.king, king: true, courtId: court.id, who: "king", self: true };
     }
   }
   if (product.for === "minister") return null;
   const [court] = await ownedCourts(1);
-  return court ? { name: court.kingName, pillars: court.king, king: true } : null;
+  return court ? { name: court.kingName, pillars: court.king, king: true, courtId: court.id, who: "king", self: true } : null;
+}
+
+async function FreeReport({ product, subject, query }: { product: Product; subject: Subject; query: string }) {
+  if (product.id === "sinbun")
+    return (
+      <SinbunReport
+        pillars={subject.pillars}
+        heading={subject.king ? `${subject.name} 전하가 왕이 아니었다면` : `${josa(subject.name, "이/가")} 조선에 태어났다면`}
+        query={query}
+      />
+    );
+  const profile = subject.self ? await getProfile(subject.courtId, subject.who) : null;
+  const reading = yearReading(subject.pillars, profile);
+  if (!reading)
+    return (
+      <RoyalDoc className="mt-3" paperClassName="px-5 text-center">
+        <h1 className="font-myeongjo text-xl font-extrabold">{product.title}</h1>
+        <p className="mt-3 text-sm leading-relaxed text-ink-soft">
+          예전 방식으로 올리신 사주라 여덟 글자가 다 갖춰지지 않았사옵니다. 새로 즉위하시면 병오년 운세를 온전히 풀어 드리옵니다.
+        </p>
+        <Link href="/#enthrone" className="mt-5 block bg-seal py-3 font-myeongjo font-extrabold text-hanji">
+          새로 즉위하기 →
+        </Link>
+      </RoyalDoc>
+    );
+  return (
+    <YearReport
+      reading={reading}
+      heading={subject.king ? `${subject.name} 전하의 병오년 운세` : `${subject.name} 님의 병오년 운세`}
+      deepen={subject.self ? { courtId: subject.courtId, who: subject.who } : null}
+      query={query}
+    />
+  );
 }
 
 export default async function ReportPage({ params, searchParams }: PageProps<"/reports/[id]">) {
@@ -58,11 +97,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
           </Link>
         </nav>
         {subject ? (
-          <SinbunReport
-            pillars={subject.pillars}
-            heading={subject.king ? `${subject.name} 전하가 왕이 아니었다면` : `${josa(subject.name, "이/가")} 조선에 태어났다면`}
-            query={query}
-          />
+          <FreeReport product={product} subject={subject} query={query} />
         ) : (
           <RoyalDoc className="mt-3" paperClassName="px-5 text-center">
             <p className="font-myeongjo text-sm font-extrabold tracking-[0.4em] text-seal">{product.hanja}</p>
@@ -79,7 +114,6 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
 
   const bought = Number((await cookies()).get(PURCHASES_COOKIE)?.value ?? 0);
   const price = priceFor(bought);
-  const year = product.id === "gukjeong" && subject ? yearPreview(subject.pillars) : null;
 
   return (
     <>
@@ -110,23 +144,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
         {/* 맛보기: the first chapter, free */}
         <div className="mt-5 border-l-[3px] border-seal/60 py-1 pl-3">
           <p className="text-xs font-extrabold text-seal">제一장 맛보기 · {product.toc[0]}</p>
-          {year ? (
-            <>
-              <p className="mt-2 font-myeongjo text-lg font-extrabold">
-                병오년 운세 <span className="text-seal">{year.verdict}</span>
-              </p>
-              <p className="mt-1.5 text-[15px] leading-relaxed">{year.lead}</p>
-              <p className="mt-1.5 text-[15px] leading-relaxed">{year.text}</p>
-              {year.full && (
-                <p className="mt-2 text-[15px] leading-relaxed">
-                  열두 달 가운데 <b className="whitespace-nowrap text-seal">좋은 달이 {year.good}번</b>,{" "}
-                  <b className="whitespace-nowrap text-seal">조심할 달이 {year.bad}번</b> 보이옵니다. 어느 달인지는 보고서에 적어 올리옵니다.
-                </p>
-              )}
-            </>
-          ) : (
-            <p className="mt-2 text-[15px] leading-relaxed">{product.teaser}</p>
-          )}
+          <p className="mt-2 text-[15px] leading-relaxed">{product.teaser}</p>
         </div>
 
         {!subject && (
