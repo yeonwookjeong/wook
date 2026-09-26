@@ -173,6 +173,7 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
   const johu = r.johu !== null ? JOHU_IMAGE[r.johu] : "";
   const natalStems = chartOf(full).flatMap((s) => (s.stem === null || s.pos === "일" ? [] : [s.stem]));
   const cureHave = img.cure.filter((c) => natalStems.includes(c));
+  const cureEl = stemEl(img.cure[0]);
   const coreHeadline =
     r.johu !== null
       ? `${johu}의 ${img.thing}, ${JOHU_NEED[r.johu]} 사주`
@@ -203,7 +204,12 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
       `${img.cureText}. ${cureHave.length ? `다행히 그대의 사주에는 ${cureHave.map((c) => STEMS[c]).join("·")}의 기운이 이미 있어 제 빛을 낼 재료를 갖추었사옵니다.` : "그대의 사주에는 이 재료가 드러나 있지 않아, 운에서 들어올 때 비로소 크게 빛나옵니다."}`,
       r.johu !== null
         ? `${r.season}에 태어나 ${r.johu === 4 ? "사주가 메마르고 뜨거우니" : "사주가 차고 습하니"}, 무엇보다 ${EL(r.johu)} 기운이 들어와야 숨통이 트이옵니다. 그래서 그대의 용신은 ${EL(r.yong)}이옵니다.`
-        : `${r.balanced ? "기운이 중화에 가까운 " : ""}${r.strength}한 사주라, ${EL(r.yong)} 기운이 들어올 때 일이 풀리고, ${EL(r.gi)} 기운이 몰릴 때 막히옵니다.`,
+        : `${r.balanced ? "기운이 중화에 가까운 " : ""}${r.strength}한 사주라, ${EL(r.yong)} 기운이 들어올 때 일이 풀리고, ${EL(r.gi)} 기운이 몰릴 때 막히옵니다.${
+            // The classical image (물상) can call for a different element than 억부; say so rather than hide it.
+            cureEl !== r.yong && cureEl !== r.gi
+              ? ` 다만 ${josa(img.thing, "이/가")} 제 빛을 내려면 ${EL(cureEl)} 기운도 함께 들어와야 하니, 두 기운이 겹치는 때가 그대의 가장 좋은 때이옵니다.`
+              : ""
+          }`,
       `${GYEOK_NAME[r.gyeok]}의 사주이옵니다. ${GYEOK_TEXT[r.gyeok]}`,
       `일주 ${STEMS[p.dayStem]}${BRANCHES[p.dayBranch]}는 ${stageOf(p.dayStem, p.dayBranch)}의 자리에 앉아 있사옵니다. ${STAGE_TEXT[stageOf(p.dayStem, p.dayBranch)]}`,
       ...(temper.length ? [`타고난 기질을 보면, ${temper[0]}${selfNatal ? ` ${NATAL_SELF[selfNatal]}` : ""}`] : []),
@@ -213,6 +219,7 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
       `지장간까지 따진 오행 비율 · ${[0, 1, 2, 3, 4].map((e) => `${ELEMENT_KO[e]} ${pct(r.weights, e)}%`).join(" · ")}`,
       `일간을 돕는 기운 ${Math.round(r.support * 100)}% → ${r.balanced ? "중화에 가까운 " : ""}${r.strength}`,
       `용신 ${EL(r.yong)} (${r.method === "조후" ? `조후 우선, 억부로는 ${EL(r.eokbu)}` : "억부"}) · 희신 ${EL(r.hee)} · 기신 ${EL(r.gi)}`,
+      `물상으로 빛을 내는 기운 · ${img.cure.map((c) => `${STEMS[c]}${ELEMENT_HANJA[stemEl(c)]}`).join(" · ")}`,
       `격국 ${GYEOK_NAME[r.gyeok]} · 일지 12운성 ${stageOf(p.dayStem, p.dayBranch)} · 공망 ${gongmang(p).map((b) => BRANCHES[b]).join("")}`,
     ],
   };

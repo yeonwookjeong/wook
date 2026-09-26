@@ -78,9 +78,10 @@ export const HIDDEN: [stem: number, days: number][][] = [
 // everything, the day branch (득지) comes next; stems count less than the branches they sit on.
 const POS_WEIGHT = { stem: { 연: 8, 월: 12, 시: 10 }, branch: { 연: 10, 월: 30, 일: 16, 시: 12 } } as const;
 
-// Strength cut points on the share of weight that backs the day master. Set at the 12th / 50th / 88th
-// percentiles of real birth charts (1950–2008) so the four labels stay evenly spread.
-const CUTS = { weak: 0.2, mid: 0.393, strong: 0.607 };
+// Strength cut points on the share of weight that backs the day master. As in the classical 득령·득지·득세
+// count, the day master is strong only when more than half of the chart backs it; the outer bands mark the
+// extremes. (Weak charts are the majority in real births, about seven in ten, as the classics note.)
+const CUTS = { weak: 0.25, mid: 0.5, strong: 0.7 };
 
 export type Reading = {
   elements: number[]; // count of 木火土金水 across the chart (6 or 8 characters)
@@ -161,7 +162,7 @@ export function readChart(p: Pillars): Reading | null {
 
   const share = support / total;
   const strength: Strength = share >= CUTS.strong ? "극신강" : share >= CUTS.mid ? "신강" : share > CUTS.weak ? "신약" : "극신약";
-  const balanced = Math.abs(share - CUTS.mid) < 0.05;
+  const balanced = Math.abs(share - CUTS.mid) < 0.06; // 중화에 가까움
   const strong = share >= CUTS.mid;
 
   // 억부: a strong day master wants what drains or checks it, a weak one what feeds or backs it — and which
