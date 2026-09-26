@@ -2,14 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
+import Keep from "@/components/Keep";
 import RoyalDoc from "@/components/RoyalDoc";
+import SinbunReport from "@/components/SinbunReport";
+import { josa } from "@/lib/josa";
 import { MINISTER_COOKIE, OWNER_COOKIE, PURCHASES_COOKIE } from "@/lib/cookies";
 import { ownedCourts } from "@/lib/load";
 import { PRICE_STEPS, priceFor, productById, type Product } from "@/lib/products";
 import type { Pillars } from "@/lib/saju";
 import { getCourt, listMinisters } from "@/lib/store";
 import { yearPreview } from "@/lib/yearly";
-import Keep from "@/components/Keep";
 
 export async function generateMetadata({ params }: PageProps<"/reports/[id]">): Promise<Metadata> {
   const product = productById((await params).id);
@@ -26,24 +28,55 @@ async function subjectFor(product: Product, courtId?: string, ministerId?: strin
       const mid = ministerId ?? jar.get(MINISTER_COOKIE(court.id))?.value;
       if (product.for !== "king" && mid) {
         const minister = (await listMinisters(court.id)).find((m) => m.id === mid);
-        if (minister) return { name: minister.name, pillars: minister.pillars as Pillars };
+        if (minister) return { name: minister.name, pillars: minister.pillars as Pillars, king: false };
       }
       if (product.for !== "minister" && jar.get(OWNER_COOKIE(court.id))?.value === court.ownerToken)
-        return { name: court.kingName, pillars: court.king };
+        return { name: court.kingName, pillars: court.king, king: true };
     }
   }
   if (product.for === "minister") return null;
   const [court] = await ownedCourts(1);
-  return court ? { name: court.kingName, pillars: court.king } : null;
+  return court ? { name: court.kingName, pillars: court.king, king: true } : null;
 }
 
 export default async function ReportPage({ params, searchParams }: PageProps<"/reports/[id]">) {
   const product = productById((await params).id);
   if (!product) notFound();
-  const query = await searchParams;
-  const courtId = typeof query.court === "string" ? query.court : undefined;
-  const ministerId = typeof query.m === "string" ? query.m : undefined;
+  const search = await searchParams;
+  const courtId = typeof search.court === "string" ? search.court : undefined;
+  const ministerId = typeof search.m === "string" ? search.m : undefined;
   const subject = await subjectFor(product, courtId, ministerId);
+  const query = new URLSearchParams({ ...(courtId && { court: courtId }), ...(ministerId && { m: ministerId }) }).toString();
+
+  // Free reports open in full: no lock, no price.
+  if (product.free) {
+    return (
+      <>
+        <nav className="pt-4 text-sm">
+          <Link href="/reports" className="font-bold text-ink-soft">
+            ← 보고서 목록
+          </Link>
+        </nav>
+        {subject ? (
+          <SinbunReport
+            pillars={subject.pillars}
+            heading={subject.king ? `${subject.name} 전하가 왕이 아니었다면` : `${josa(subject.name, "이/가")} 조선에 태어났다면`}
+            query={query}
+          />
+        ) : (
+          <RoyalDoc className="mt-3" paperClassName="px-5 text-center">
+            <p className="font-myeongjo text-sm font-extrabold tracking-[0.4em] text-seal">{product.hanja}</p>
+            <h1 className="mt-2 font-myeongjo text-2xl font-extrabold">{product.title}</h1>
+            <p className="mt-2 text-sm leading-relaxed text-ink-soft">{product.teaser}</p>
+            <Link href="/#enthrone" className="mt-5 block bg-seal py-3 font-myeongjo font-extrabold text-hanji">
+              즉위하고 무료로 보기 →
+            </Link>
+          </RoyalDoc>
+        )}
+      </>
+    );
+  }
+
   const bought = Number((await cookies()).get(PURCHASES_COOKIE)?.value ?? 0);
   const price = priceFor(bought);
   const year = product.id === "gukjeong" && subject ? yearPreview(subject.pillars) : null;

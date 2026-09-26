@@ -58,7 +58,7 @@ export default async function ReportsPage() {
                 </span>
               </span>
               <span className="flex shrink-0 flex-col items-end gap-1">
-                <span className="font-myeongjo font-extrabold text-seal">{price}원</span>
+                <span className="font-myeongjo font-extrabold text-seal">{p.free ? "무료" : `${price}원`}</span>
                 <span className="border border-gold/60 px-1.5 text-[10px] font-bold whitespace-nowrap text-gold">{FOR_LABEL[p.for]}</span>
               </span>
             </Link>

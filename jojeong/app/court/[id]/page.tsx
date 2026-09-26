@@ -6,7 +6,6 @@ import ReportShelf from "@/components/ReportShelf";
 import RoyalDoc from "@/components/RoyalDoc";
 import KingCard from "@/components/KingCard";
 import Sillok from "@/components/Sillok";
-import SinbunCard from "@/components/SinbunCard";
 import PairHighlights from "@/components/PairHighlights";
 import SeatRow from "@/components/SeatRow";
 import { SaveImageButton, ShareLinkButton } from "@/components/ShareButtons";
@@ -14,6 +13,7 @@ import { loadCourt, viewerOf } from "@/lib/load";
 import { KING_TYPES } from "@/lib/kingTypes";
 import { reignTier, TIERS } from "@/lib/reign";
 import { castOf } from "@/lib/sillok";
+import { sinbunOf } from "@/lib/sinbun";
 import { yearPreview } from "@/lib/yearly";
 import { EMPTY_SEATS, ROLES } from "@/lib/roles";
 
@@ -71,7 +71,6 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
                 <Hundo mood="bow">전하, 즉위를 경하드리옵니다. 소신이 전하의 사주로 실록과 즉위 교서를 지어 올리옵니다.</Hundo>
               </section>
               <Sillok kingName={court.kingName} pillars={court.king} cast={cast} />
-              <SinbunCard pillars={court.king} heading="전하가 왕이 아니었다면" reportQuery={`court=${court.id}`} />
               <KingCard kingName={court.kingName} pillars={court.king} />
               <section className="mt-6">
                 <Hundo mood="face">
@@ -150,9 +149,6 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
             <>
               <Sillok kingName={court.kingName} pillars={court.king} cast={cast} />
               {isOwner && (
-                <SinbunCard pillars={court.king} heading="전하가 왕이 아니었다면" reportQuery={`court=${court.id}`} />
-              )}
-              {isOwner && (
                 <details className="group mt-3 rounded-2xl border border-ink/15 bg-white/40">
                   <summary className="cursor-pointer list-none py-3 text-center text-sm font-bold text-ink-soft [&::-webkit-details-marker]:hidden">
                     즉위 교서 다시 보기
@@ -185,9 +181,12 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
 
           {isOwner && (
             <ReportShelf
-              ids={["gukjeong", "yeonae", "jaemul", "dwitjosa"]}
+              ids={["sinbun", "gukjeong", "yeonae", "jaemul", "dwitjosa"]}
               query={`court=${court.id}`}
-              highlight={{ id: "gukjeong", text: `병오년 운세 ‘${yearPreview(court.king).verdict}’ · 첫 장 무료` }}
+              highlights={{
+                sinbun: `왕이 아니었다면 ‘${sinbunOf(court.king).job}’`,
+                gukjeong: `병오년 운세 ‘${yearPreview(court.king).verdict}’ · 첫 장 무료`,
+              }}
             />
           )}
 

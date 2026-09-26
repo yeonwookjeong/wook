@@ -1,7 +1,7 @@
-// 정 훈도의 비밀 보고서: paid reports. Every report costs the same and gets cheaper with each purchase
-// (복채 단골 할인): 990 → 890 → 790 → 690, then 690 for good.
+// 정 훈도의 비밀 보고서. One free report (조선 신분 감정) opens the shelf; the paid ones all cost the same and get
+// cheaper with each purchase (복채 단골 할인): 990 → 890 → 790 → 690, then 690 for good.
 
-export type ProductId = "gukjeong" | "yeonae" | "jaemul" | "jikup" | "dwitjosa" | "gwangye" | "insa";
+export type ProductId = "sinbun" | "gukjeong" | "yeonae" | "jaemul" | "jikup" | "dwitjosa" | "gwangye" | "insa";
 
 export type Product = {
   id: ProductId;
@@ -12,11 +12,23 @@ export type Product = {
   toc: string[];
   // Shown as a free first taste before the lock.
   teaser: string;
+  // Free reports open in full with no price.
+  free?: boolean;
 };
 
 // The Joseon fantasy (king grade, chronicle, 신분 감정) is free. What is sold is the present day: the finest
 // fortune-reader of Joseon reading your life now.
 export const PRODUCTS: Product[] = [
+  {
+    id: "sinbun",
+    title: "조선 신분 감정",
+    hanja: "身分",
+    for: "anyone",
+    tagline: "조선에 태어났다면 어떤 신분, 어떤 일, 어떤 삶이었을지",
+    toc: ["태어난 집", "그 신분의 하루", "사람들이 본 그대", "인생의 고비", "귀인과 악연", "출세", "말년"],
+    teaser: "그대의 사주로 조선에서의 한평생을 일곱 장에 담아 올리옵니다.",
+    free: true,
+  },
   {
     id: "gukjeong",
     title: "2026 신년 운세",
