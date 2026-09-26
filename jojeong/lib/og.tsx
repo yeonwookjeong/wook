@@ -25,7 +25,7 @@ const art = Object.fromEntries(
   ),
 ) as Record<Mood, string>;
 
-const throne = `data:image/svg+xml;base64,${(await readFile(join(process.cwd(), "public/throne.svg"))).toString("base64")}`;
+const throne = `data:image/svg+xml;base64,${(await readFile(join(process.cwd(), "public/irworobongdo.svg"))).toString("base64")}`;
 
 const C = { hanji: "#f4ecdb", deep: "#e9dcc0", ink: "#211b17", soft: "#62564c", seal: "#b3261e", gold: "#a87a22" };
 
@@ -325,7 +325,7 @@ export function landingImage() {
         <div style={{ marginTop: 26, fontSize: 92, fontWeight: 800, color: "#f7efd9", whiteSpace: "nowrap" }}>{SERVICE_NAME}</div>
         <div style={{ marginTop: 6, fontSize: 40, fontWeight: 800, color: "#e9c46a" }}>옥좌의 주인을 찾사옵니다</div>
         <div style={{ marginTop: 34, fontSize: 28, color: "#cfdad7", display: "flex", flexDirection: "column", lineHeight: 1.5 }}>
-          <div>성군일까 폭군일까, 수명은 몇 위일까</div>
+          <div>성군일까 폭군일까, 사주로 보는 내 치세</div>
           <div>벗들을 부르면 사주가 관직을 내리옵니다</div>
         </div>
       </div>
@@ -380,12 +380,11 @@ export function sillokStory(kingName: string, king: Pillars, cast: Cast) {
           ["즉위", `${s.accession}세`],
           ["재위", `${s.reign}년`],
           ["향년", `${s.death}세`],
-          ["수명 순위", `${s.rank}위`],
-        ].map(([label, value], i) => (
+        ].map(([label, value]) => (
           <div
             key={label}
             style={{
-              width: 205,
+              width: 270,
               height: 150,
               borderRadius: 26,
               background: "#fbf6ea",
@@ -396,11 +395,10 @@ export function sillokStory(kingName: string, king: Pillars, cast: Cast) {
             }}
           >
             <div style={{ fontSize: 30, color: C.soft }}>{label}</div>
-            <div style={{ marginTop: 6, fontSize: 60, fontWeight: 800, color: i === 3 ? C.seal : C.ink }}>{value}</div>
+            <div style={{ marginTop: 6, fontSize: 60, fontWeight: 800 }}>{value}</div>
           </div>
         ))}
       </div>
-      <div style={{ marginTop: 14, fontSize: 28, color: C.soft }}>조선 27왕과 견준 순위 · 실제 왕들의 평균 수명 46.1세</div>
       {s.chart && (
         <div style={{ marginTop: 34, display: "flex", alignItems: "center", gap: 16 }}>
           {s.chart.elements.map((n, el) => (

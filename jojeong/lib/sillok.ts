@@ -10,6 +10,11 @@ import {
   DARK_SAGWAN,
   DARK_TURN,
   FAREWELL,
+  FLAW_MINOR,
+  FLAWS,
+  MISSING_QUIRKS,
+  STRENGTH_LINES,
+  TRAITS,
   FIRST_ACTS,
   GOLDEN,
   RESOLVE,
@@ -107,14 +112,6 @@ const OMENS = [
   "즉위하던 해, 대궐 연못의 잉어가 곱절로 불어났다.",
 ];
 
-// Age at death. 영조·태조·고종·광해군·정종 follow the figures cited in 황상익's study; others are computed from recorded birth and death dates.
-const KING_AGES: [string, number][] = [
-  ["영조", 82], ["태조", 72], ["광해군", 66], ["고종", 66], ["정종", 62], ["숙종", 58], ["중종", 56],
-  ["선조", 55], ["태종", 54], ["인조", 53], ["세종", 52], ["순종", 52], ["세조", 50], ["정조", 47],
-  ["순조", 44], ["효종", 39], ["문종", 37], ["성종", 37], ["경종", 35], ["명종", 33], ["현종", 33],
-  ["철종", 32], ["인종", 30], ["연산군", 29], ["헌종", 21], ["예종", 19], ["단종", 16],
-];
-
 export const KING_AVG_LIFESPAN = 46.1;
 
 export type Cast = { yeong?: string; gansin?: string; yubae?: string; witness?: string };
@@ -129,19 +126,14 @@ export function castOf(seats: Seat[]): Cast {
   };
 }
 
-// Where the age at death sits among the 27 real kings. Stated flatly: short lives are not softened.
-function lifespanRank(death: number) {
-  const older = KING_AGES.filter(([, age]) => age > death);
-  const rank = older.length + 1;
-  const younger = KING_AGES.filter(([, age]) => age < death).length;
-  if (rank === 1) return { rank, note: "조선 최장수 왕 영조(82세)의 기록마저 넘어섰다." };
-  const [aboveName, aboveAge] = older[older.length - 1];
-  if (death >= 60) return { rank, note: `${aboveName}(${aboveAge}세) 다음가는 장수였다. 회갑을 넘긴 조선 왕은 다섯뿐이었다.` };
-  if (death > KING_AVG_LIFESPAN) return { rank, note: `조선 왕 평균 수명 ${KING_AVG_LIFESPAN}세는 넘겼다.` };
-  if (death >= 30) return { rank, note: `조선 왕 평균 수명 ${KING_AVG_LIFESPAN}세에 미치지 못했다.` };
-  if (death === 16) return { rank, note: "조선 최단명 왕 단종과 같은 나이였다." };
-  if (younger === 0) return { rank, note: "조선 최단명 왕 단종(16세)보다도 짧은 생이었다." };
-  return { rank, note: `조선 27왕 가운데 이보다 짧게 산 왕은 ${younger}명뿐이다.` };
+// A plain remark on the age at death next to the real kings. No ranking: only the notable cases are named.
+function lifespanNote(death: number) {
+  if (death > 82) return "조선 최장수 왕 영조(82세)보다도 오래 살았다.";
+  if (death >= 60) return "회갑을 넘긴 조선 왕은 다섯뿐이었으니, 드문 장수였다.";
+  if (death > KING_AVG_LIFESPAN) return "";
+  if (death >= 30) return "조선 왕들의 평균 수명에도 미치지 못한 생이었다.";
+  if (death >= 16) return "열여섯에 떠난 단종처럼, 너무 이른 죽음이었다.";
+  return "조선 최단명 왕 단종(16세)보다도 짧은 생이었다.";
 }
 
 // Fills {key} and {key|particle} placeholders; "이/가"-style pairs pick by final consonant, others are appended.
@@ -170,10 +162,13 @@ export function sillok(p: Pillars, { cast = {}, kingName = "" }: { cast?: Cast; 
   // A deposed king lives on in exile for a few years after losing the throne.
   const exile = deposed ? Math.min(1 + (mix(seed(3)) % 3), Math.max(0, death - accession - 1)) : 0;
   const reign = Math.max(1, death - accession - exile);
-  const { rank, note: rankNote } = lifespanRank(death);
+  const rankNote = lifespanNote(death);
 
   const epithet = deposed ? `${kingName || "폐"}군` : `${EPITHETS[p.dayStem][p.dayBranch % 3]}대왕`;
-  const [eraTitle, eraText] = ERAS[p.dayBranch];
+  // The era is named after what the reign did best, so the story agrees with the ratings above it.
+  const bestKey = rows.reduce((a, b) => (b.value > a.value ? b : a)).key;
+  const ERA_OF: Record<string, number> = { people: 11, court: 9, enemy: 10, martial: 2, scholar: 0, treasury: 7 };
+  const [eraTitle, eraText] = ERAS[ERA_OF[bestKey]];
   const [peopleName, rumor] = t.dark ? DARK_PEOPLE[p.yearBranch % DARK_PEOPLE.length] : PEOPLE[p.yearBranch];
   const firstYear = 1 + (seed(8) % Math.min(3, Math.max(1, Math.floor(reign / 3))));
   const crisisYear = Math.min(reign, firstYear + 1 + (seed(6) % Math.max(1, Math.floor(reign / 2) - firstYear)));
@@ -228,10 +223,21 @@ export function sillok(p: Pillars, { cast = {}, kingName = "" }: { cast?: Cast; 
     `백성들은 전하를 ‘${peopleName}’${josa(peopleName, "이라/라").slice(peopleName.length)} 불렀다. ${rumor}`,
   ];
 
-  const blooper = BLOOPERS[seed(5) % BLOOPERS.length];
+  // The weakest rating becomes the king's flaw; the chart's strength sets the tone of it.
+  const weakest = rows.reduce((a, b) => (b.value <= a.value ? b : a));
+  const flaw = weakest.value <= 3 ? FLAWS[weakest.key][seed(12) % FLAWS[weakest.key].length] : FLAW_MINOR;
+  const flawYear = Math.min(reign, peakYear + 2 + (seed(13) % 5));
+  const chFlaw = [reading ? STRENGTH_LINES[reading.strength] : "", fill(flaw.text, { 년: String(flawYear) })];
+
+  // The 야사 is the habit the most crowded ten-god group gives; a balanced or four-character chart gets a blooper.
+  const [topGroup, topCount] = reading
+    ? (Object.entries(reading.gods) as [keyof typeof TRAITS, number][]).reduce((a, b) => (b[1] > a[1] ? b : a))
+    : ["", 0];
+  const yasa = topCount >= 3 ? TRAITS[topGroup] : BLOOPERS[seed(5) % BLOOPERS.length];
   const ch5 = [
-    `정사에는 없으나 야사는 이렇게 전한다. ${blooper.text}`,
-    cast.witness ? `이 광경을 목격한 ${josa(cast.witness, "은/는")} 평생 입을 다물었다고 한다.` : "",
+    `정사에는 없으나 야사는 이렇게 전한다. ${yasa.text}` +
+      (cast.witness ? ` 이 모습을 곁에서 지켜본 ${josa(cast.witness, "은/는")} 평생 입을 다물었다고 한다.` : ""),
+    reading && reading.missing.length > 0 ? MISSING_QUIRKS[reading.missing[0]] : "",
   ];
 
   const ending = deposed
@@ -240,7 +246,7 @@ export function sillok(p: Pillars, { cast = {}, kingName = "" }: { cast?: Cast; 
         paras: [
           `재위 ${reign}년, 마침내 반정이 일어났다. 반정군이 궐문을 열었을 때, 전하를 지키려 나선 군사는 한 명도 없었다.` +
             (cast.yeong ? ` 반정군의 맨 앞에는 영의정 ${josa(cast.yeong, "이/가")} 서 있었다.` : ""),
-          `왕위에서 쫓겨난 전하는 ‘${epithet}’으로 강등되어 먼 섬으로 유배되었고, ${exile > 0 ? `${exile}년 뒤 ` : "그 해 "}향년 ${death}세로 그곳에서 생을 마쳤다. ${rankNote}`,
+          `왕위에서 쫓겨난 전하는 ‘${epithet}’으로 강등되어 먼 섬으로 유배되었고, ${exile > 0 ? `${exile}년 뒤 ` : "그 해 "}향년 ${death}세로 그곳에서 생을 마쳤다.${rankNote && ` ${rankNote}`}`,
           "폐위된 왕에게는 묘호도 존호도 올리지 않았다. 무덤은 능(陵)이 아닌 묘(墓)라 불렸고, 치세의 기록은 실록이 아닌 ‘일기’로 낮추어 불렸다.",
         ],
       }
@@ -248,7 +254,7 @@ export function sillok(p: Pillars, { cast = {}, kingName = "" }: { cast?: Cast; 
         title: "마지막 날",
         paras: [
           t.dark ? DARK_FAREWELL[seed(11) % DARK_FAREWELL.length] : fill(FAREWELL[p.dayStem], who),
-          `재위 ${reign}년, 향년 ${death}세. ${rankNote}`,
+          `재위 ${reign}년, 향년 ${death}세.${rankNote && ` ${rankNote}`}`,
           `신하들은 ${epithet}이라는 존호를 올렸다.`,
         ],
       };
@@ -267,7 +273,6 @@ export function sillok(p: Pillars, { cast = {}, kingName = "" }: { cast?: Cast; 
     accession,
     reign,
     death,
-    rank,
     lifeVerdict: life.verdict,
     // The full chart leads with the day master's strength and 용신; then the verdict and one lifespan reason,
     // avoiding a second mention of the zodiac clash.
@@ -288,7 +293,8 @@ export function sillok(p: Pillars, { cast = {}, kingName = "" }: { cast?: Cast; 
       { title: first.title, paras: ch2 },
       { title: crisis.title, paras: ch3 },
       { title: golden.title, paras: ch4 },
-      { title: blooper.title, paras: ch5 },
+      { title: flaw.title, paras: chFlaw },
+      { title: yasa.title, paras: ch5 },
       ending,
     ].map((c) => ({ title: c.title, paras: c.paras.filter(Boolean) })),
     sagwan: t.dark ? DARK_SAGWAN[p.dayStem] : SAGWAN[p.dayStem],

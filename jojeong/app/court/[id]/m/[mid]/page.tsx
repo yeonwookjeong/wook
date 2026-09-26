@@ -3,11 +3,12 @@ import { SERVICE_NAME } from "@/lib/brand";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Hundo from "@/components/Hundo";
+import RoyalDoc from "@/components/RoyalDoc";
 import { SaveImageButton, ShareLinkButton } from "@/components/ShareButtons";
 import { bragLine, decreeLine, summonLine } from "@/lib/decree";
 import { loadCourt, viewerOf } from "@/lib/load";
 import { moodFor, ROLES } from "@/lib/roles";
-import { factLines, relationSentence } from "@/lib/saju";
+import { factLines, GANSIN_SIGNS, relationSentence, roleReasons } from "@/lib/saju";
 
 async function loadSeat(id: string, mid: string) {
   const { court, seats } = await loadCourt(id);
@@ -31,7 +32,11 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
   const isSelf = myMinisterId === seat.minister.id;
   const role = ROLES[seat.role];
   const danger = role.tone === "red" || role.tone === "gray";
-  const facts = factLines(court.king, seat.minister.pillars, seat.match.facts);
+  const reasons = roleReasons(court.king, seat.minister.pillars, seat.match, seat.role, seat.minister.name);
+  // The 기신 line is already part of the reasons for 간신 and 유배.
+  const facts = factLines(court.king, seat.minister.pillars, seat.match.facts, seat.role).filter(
+    (line) => !(danger && line.startsWith("기신(")),
+  );
 
   return (
     <>
@@ -44,9 +49,7 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
         </Link>
       </nav>
 
-      <section
-        className={`animate-rise relative mt-5 overflow-hidden rounded-3xl border-4 border-double bg-white/75 px-6 pt-8 pb-10 text-center ${danger ? "border-seal/70" : "border-gold/70"}`}
-      >
+      <RoyalDoc className="mt-5" paperClassName="pb-10 text-center">
         <p className="font-myeongjo text-sm font-extrabold tracking-[0.3em] text-seal">敎 旨</p>
         <p className="mt-5 text-sm text-ink-soft">{court.kingName} 전하께서</p>
         <p className="mt-1 font-myeongjo text-xl font-extrabold">{decreeLine(seat.minister.name, seat.role)}</p>
@@ -65,10 +68,36 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
           御
           <br />寶
         </span>
-      </section>
+      </RoyalDoc>
 
       <section className="mt-6">
         <Hundo mood={moodFor(seat.role)}>{role.report}</Hundo>
+      </section>
+
+      <section
+        className={`mt-5 rounded-3xl border px-5 py-4 ${danger ? "border-seal/40 bg-seal/5" : "border-gold/40 bg-white/60"}`}
+      >
+        <h2 className={`font-myeongjo text-lg font-extrabold ${danger ? "text-seal" : ""}`}>
+          {seat.role === "gansin" ? "간신 판정 사유" : seat.role === "yubae" ? "유배 사유" : `${role.title} 천거 사유`}
+        </h2>
+        <ol className="mt-2 flex flex-col gap-2 text-[15px] leading-relaxed">
+          {reasons.map((line, i) => (
+            <li key={line} className="flex gap-2">
+              <span className={`font-myeongjo font-extrabold ${danger ? "text-seal" : "text-gold"}`}>{"一二三四"[i]}</span>
+              <span>{line}</span>
+            </li>
+          ))}
+        </ol>
+        {seat.role === "gansin" && (
+          <div className="mt-3 rounded-2xl bg-white/70 px-4 py-3">
+            <p className="text-xs font-extrabold text-seal">이런 간신은 이렇게 티가 나옵니다</p>
+            <ul className="mt-1.5 flex flex-col gap-1 text-sm leading-relaxed">
+              {GANSIN_SIGNS.map((line) => (
+                <li key={line}>· {line}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </section>
 
       <section className="mt-5 rounded-3xl border border-ink/10 bg-hanji-deep/60 p-5">

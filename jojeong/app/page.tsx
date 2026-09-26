@@ -81,7 +81,7 @@ export default async function Home() {
         </section>
       )}
 
-      <section className="mt-5 rounded-3xl border border-ink/10 bg-hanji-deep/60 p-5">
+      <section id="enthrone" className="mt-5 scroll-mt-4 rounded-3xl border border-ink/10 bg-hanji-deep/60 p-5">
         {courts.length > 0 && <p className="mb-4 text-center font-myeongjo font-extrabold">새로 즉위하기</p>}
         <BirthForm mode="king" />
       </section>

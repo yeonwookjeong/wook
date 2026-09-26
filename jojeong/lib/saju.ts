@@ -232,7 +232,7 @@ export function relationSentence(king: Pillars, minister: Pillars, f: Facts, min
   }
 }
 
-export function factLines(king: Pillars, minister: Pillars, f: Facts): string[] {
+export function factLines(king: Pillars, minister: Pillars, f: Facts, role?: RoleKey): string[] {
   const lines: string[] = [];
   if (f.stemCombine)
     lines.push(`천간합(${STEMS[king.dayStem]}${STEMS[minister.dayStem]}合): 하늘이 맺어준 인연이라 끌림이 강하옵니다.`);
@@ -245,9 +245,72 @@ export function factLines(king: Pillars, minister: Pillars, f: Facts): string[] 
   if (f.yearClash) lines.push(`${animals}: 띠끼리 충이라 첫인상이 엇갈렸을 수 있사옵니다.`);
   if (f.hourSix) lines.push("시지 육합: 늦은 밤 대화가 유난히 잘 통하옵니다.");
   if (f.hourClash) lines.push("시지 충: 하루 중 컨디션 좋은 시간이 엇갈리옵니다.");
+  const suspect = role === "gansin" || role === "yubae";
   if (f.yong && f.yong.count >= 2)
-    lines.push(`용신(用神): 전하께 모자란 ${ELEMENT_KO[f.yong.el]}(${ELEMENT_HANJA[f.yong.el]}) 기운을 ${f.yong.count}개나 지녀, 곁에 두면 전하의 사주가 채워지옵니다.`);
+    lines.push(
+      suspect
+        ? `용신(用神): 그래도 전하께 모자란 ${ELEMENT_KO[f.yong.el]}(${ELEMENT_HANJA[f.yong.el]}) 기운을 ${f.yong.count}개 지녀 쓸모는 있사오니, 내치기보다 곁에 두고 지켜보시옵소서.`
+        : `용신(用神): 전하께 모자란 ${ELEMENT_KO[f.yong.el]}(${ELEMENT_HANJA[f.yong.el]}) 기운을 ${f.yong.count}개나 지녀, 곁에 두면 전하의 사주가 채워지옵니다.`,
+    );
   else if (f.yong && f.yong.giCount >= 3)
     lines.push(`기신(忌神): 전하의 용신을 누르는 ${ELEMENT_KO[(f.yong.el + 3) % 5]} 기운이 많아, 가까이하면 전하의 기운이 꺾이옵니다.`);
   return lines;
 }
+
+// Why the court seated someone where it did, spelled out for the minister page. 간신 and 유배 get the full
+// reasoning because those are the verdicts people argue about.
+export function roleReasons(king: Pillars, minister: Pillars, match: Match, role: RoleKey, name: string): string[] {
+  const f = match.facts;
+  const m = `${name}의 일간 ${dayMasterLabel(minister)}`;
+  const k = `전하의 일간 ${dayMasterLabel(king)}`;
+  const harmony = f.stemCombine || f.daySix;
+  const lines: string[] = [];
+
+  if (role === "gansin") {
+    if (f.group === "관성") {
+      lines.push(
+        `${josa(m, "이/가")} ${josa(k, "을/를")} 극(剋)하옵니다. 관성(官星)은 본디 전하를 다스리려 드는 기운이라, 겉으로는 받드는 척해도 속으로는 전하 위에 서려 하옵니다.`,
+        "둘 사이를 이어 줄 천간합도 일지 육합도 없사옵니다. 누르는 기운을 달래 줄 인연의 끈이 없으니, 틈만 나면 제 뜻대로 움직이옵니다.",
+      );
+    } else {
+      lines.push(
+        `두 분의 일간이 같은 ${ELEMENT_KO[elementOf(king.dayStem)]} 기운이나 음양이 달라 겁재(劫財)이옵니다. 겁재는 전하의 몫을 나누자 하다가 결국 빼앗으려 드는 기운이옵니다.`,
+        "게다가 일지가 충(沖)하니 속마음이 정면으로 부딪치옵니다. 앞에서는 웃고 뒤에서는 딴생각을 품기 쉽사옵니다.",
+      );
+    }
+  } else if (role === "yubae") {
+    lines.push(
+      f.dayClash
+        ? "두 분의 일지가 충(沖)하옵니다. 일지는 속마음과 생활의 자리라, 가까이 두면 사사건건 부딪치옵니다."
+        : "두 분의 일지가 원진(怨嗔)이옵니다. 딱히 잘못한 것도 없는데 서로 서운함이 쌓이는 사이이옵니다.",
+      `궁합이 ${match.score}점으로 55점에 못 미쳐, 조정에 두기보다 멀리 보내는 편이 서로에게 이롭사옵니다.`,
+    );
+  } else if (role === "yeong") {
+    lines.push(`조정의 신하 가운데 궁합이 가장 높고(${match.score}점), 영의정의 기준인 75점을 넘었사옵니다.`);
+  } else if (role === "jwa") {
+    lines.push(`궁합이 ${match.score}점으로 80점을 넘었사옵니다. 전하와 기운이 크게 맞으니 곁에 두어 의지할 만하옵니다.`);
+  } else {
+    const why: Record<RelationGroup, string> = {
+      인성: "전하를 생(生)하는 인성(印星)이라, 가르치고 키우는 대제학에 천거하였사옵니다.",
+      비겁: "전하와 같은 기운인 비겁(比劫)이라, 등을 맡길 병조판서에 천거하였사옵니다.",
+      재성: "전하가 다스리는 기운인 재성(財星)이라, 곳간을 맡길 호조판서에 천거하였사옵니다.",
+      식상: "전하의 재주가 흘러가는 식상(食傷)이라, 잔치와 예를 맡길 예조판서에 천거하였사옵니다.",
+      관성: "전하를 누르는 관성(官星)이나 합(合)이 있어 선을 지키니, 바른말 하는 대사헌에 천거하였사옵니다.",
+    };
+    lines.push(`${josa(m, "은/는")} ${why[f.group]}`);
+  }
+
+  if (f.yong && f.yong.giCount >= 3 && (role === "gansin" || role === "yubae"))
+    lines.push(`게다가 전하의 용신을 누르는 ${ELEMENT_KO[(f.yong.el + 3) % 5]} 기운을 ${f.yong.giCount}개나 지녔사옵니다.`);
+  if (role === "gansin" && match.score >= 65)
+    lines.push(`궁합이 ${match.score}점으로 높은 것이 오히려 수상하옵니다. 그만큼 전하의 마음을 잘 파고든다는 뜻이옵니다.`);
+  if (!harmony && role === "gansin" && f.yearSix) lines.push("다만 띠끼리는 합이라 겉으로는 사이가 좋아 보이니, 더욱 알아보기 어렵사옵니다.");
+  return lines;
+}
+
+// How a 간신 of this court is likely to behave, for the fun of spotting one.
+export const GANSIN_SIGNS = [
+  "회의 자리에서는 누구보다 크게 맞장구치고, 끝나고 나서 딴소리를 하옵니다.",
+  "전하의 결정마다 “그런데…”를 붙이며 슬쩍 제 뜻을 얹사옵니다.",
+  "공은 제 것으로, 탓은 남의 것으로 돌리는 솜씨가 뛰어나옵니다.",
+];

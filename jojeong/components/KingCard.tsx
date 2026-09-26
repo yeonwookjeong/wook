@@ -1,3 +1,4 @@
+import RoyalDoc from "./RoyalDoc";
 import { kingLinkText } from "@/lib/kings";
 import { KING_TYPES } from "@/lib/kingTypes";
 import type { Pillars } from "@/lib/saju";
@@ -9,7 +10,7 @@ export default function KingCard({ kingName, pillars }: { kingName: string; pill
   const rest = link.kind === "none" ? 0 : link.kings.length - shown.length;
 
   return (
-    <section className="animate-rise relative mt-6 overflow-hidden rounded-3xl border-4 border-double border-gold/70 bg-white/75 px-5 pt-7 pb-6">
+    <RoyalDoc paperClassName="px-5">
       <p className="text-center font-myeongjo text-sm font-extrabold tracking-[0.3em] text-seal">卽 位 敎 書</p>
       <p className="mt-4 text-center text-sm text-ink-soft">{kingName} 전하는</p>
       <p className="mt-1 text-center font-myeongjo text-4xl font-extrabold">{type.title}</p>
@@ -24,14 +25,14 @@ export default function KingCard({ kingName, pillars }: { kingName: string; pill
           ["곁에 둘 신하", type.keep],
           ["경계할 신하", type.beware],
         ].map(([k, v]) => (
-          <div key={k} className="rounded-xl bg-hanji-deep/60 px-3 py-2.5">
+          <div key={k} className="border border-seal/20 px-3 py-2">
             <dt className={`text-xs font-bold ${k === "경계할 신하" || k === "약점" ? "text-seal" : "text-gold"}`}>{k}</dt>
             <dd className="mt-0.5 leading-snug">{v}</dd>
           </div>
         ))}
       </dl>
 
-      <div className="mt-4 rounded-2xl border border-seal/25 bg-seal/5 px-4 py-3.5">
+      <div className="mt-4 border-y-[3px] border-double border-seal/40 px-1 py-3">
         <p className="text-sm font-extrabold text-seal">{headline}</p>
         {link.kind === "none" ? (
           <p className="mt-1 text-sm leading-relaxed">전하께서 이 기운을 타고난 최초의 군주이옵니다.</p>
@@ -48,6 +49,6 @@ export default function KingCard({ kingName, pillars }: { kingName: string; pill
         )}
       </div>
       <p className="mt-2 text-center text-[11px] text-ink-soft/80">왕들의 사주는 실록에 남은 음력 탄일로 계산했사옵니다.</p>
-    </section>
+    </RoyalDoc>
   );
 }

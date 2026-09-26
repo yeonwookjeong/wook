@@ -3,6 +3,7 @@ import { SERVICE_NAME } from "@/lib/brand";
 import Link from "next/link";
 import BirthForm from "@/components/BirthForm";
 import Hundo from "@/components/Hundo";
+import RoyalDoc from "@/components/RoyalDoc";
 import KingCard from "@/components/KingCard";
 import Sillok from "@/components/Sillok";
 import PairHighlights from "@/components/PairHighlights";
@@ -217,7 +218,7 @@ function Invitation({
 }) {
   return (
     <>
-      <section className="relative mt-6 overflow-hidden rounded-3xl border-4 border-double border-seal/60 bg-white/70 px-6 pt-8 pb-24 text-center">
+      <RoyalDoc paperClassName="pb-24 text-center">
         <p className="font-myeongjo text-sm font-extrabold tracking-[0.3em] text-seal">敎 旨</p>
         <p className="mt-4 text-sm font-bold text-gold">{kingTitle}</p>
         <p className="mt-1 font-myeongjo text-2xl font-extrabold leading-snug">
@@ -232,7 +233,7 @@ function Invitation({
           御
           <br />寶
         </span>
-      </section>
+      </RoyalDoc>
 
       <section className="mt-6">
         <Hundo mood="decree">

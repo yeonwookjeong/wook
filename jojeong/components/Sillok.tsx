@@ -1,8 +1,9 @@
-import { KING_AVG_LIFESPAN, sillok, type Cast } from "@/lib/sillok";
+import { sillok, type Cast } from "@/lib/sillok";
 import type { Pillars } from "@/lib/saju";
+import RoyalDoc from "./RoyalDoc";
 import SajuChart from "./SajuChart";
 
-const HANJA_NUM = "一二三四五六";
+const HANJA_NUM = "一二三四五六七";
 
 const TIER_STYLE = {
   seong: "border-gold bg-gold/10 text-gold",
@@ -12,11 +13,11 @@ const TIER_STYLE = {
   pok: "border-seal bg-seal/10 text-seal",
 } as const;
 
-function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex flex-col items-center rounded-xl bg-white/60 px-1 py-2.5">
+    <div className="flex flex-col items-center border border-seal/25 px-1 py-2">
       <span className="text-[11px] text-ink-soft">{label}</span>
-      <span className={`mt-0.5 font-myeongjo text-lg font-extrabold ${accent ? "text-seal" : ""}`}>{value}</span>
+      <span className="mt-0.5 font-myeongjo text-lg font-extrabold">{value}</span>
     </div>
   );
 }
@@ -35,7 +36,7 @@ export default function Sillok({ kingName, pillars, cast = {} }: { kingName: str
   const hasCast = Boolean(cast.yeong || cast.gansin || cast.yubae || cast.witness);
 
   return (
-    <section className="mt-6 rounded-3xl border border-ink/15 bg-[#fbf6ea] px-5 pt-6 pb-5 shadow-sm">
+    <RoyalDoc paperClassName="px-5">
       <p className="text-center font-myeongjo text-sm font-extrabold tracking-[0.3em] text-seal">假 想 實 錄</p>
       <h2 className="mt-2 text-center font-myeongjo text-2xl font-extrabold">{kingName} 전하의 가상 실록</h2>
 
@@ -60,17 +61,12 @@ export default function Sillok({ kingName, pillars, cast = {} }: { kingName: str
         </p>
       </div>
 
-      <div className="mt-4 grid grid-cols-4 gap-1.5">
+      <div className="mt-4 grid grid-cols-3 gap-1.5">
         <Stat label="즉위" value={`${s.accession}세`} />
         <Stat label="재위" value={`${s.reign}년`} />
         <Stat label="향년" value={`${s.death}세`} />
-        <Stat label="수명 순위" value={`${s.rank}위`} accent />
       </div>
-      <p className="mt-1.5 text-center text-[11px] text-ink-soft/80">
-        조선 27왕과 견준 순위 · 실제 왕들의 평균 수명은 {KING_AVG_LIFESPAN}세
-      </p>
-
-      <ul className="mt-4 flex flex-col divide-y divide-ink/10 rounded-2xl bg-white/60 px-4">
+      <ul className="mt-4 flex flex-col divide-y divide-seal/15 border-y-[3px] border-double border-seal/40 px-1">
         {s.ratings.map((r) => (
           <li key={r.key} className="flex items-center gap-3 py-2.5">
             <span className="w-16 shrink-0 text-xs font-extrabold text-ink-soft">{r.label}</span>
@@ -81,11 +77,11 @@ export default function Sillok({ kingName, pillars, cast = {} }: { kingName: str
       </ul>
 
       <dl className="mt-3 grid grid-cols-2 gap-1.5 text-center">
-        <div className="rounded-xl bg-white/60 px-2 py-2.5">
+        <div className="border border-seal/25 px-2 py-2">
           <dt className="text-[11px] text-ink-soft">신하들이 몰래 부른 이름</dt>
           <dd className="mt-0.5 font-myeongjo font-extrabold">{s.nickname}</dd>
         </div>
-        <div className="rounded-xl bg-white/60 px-2 py-2.5">
+        <div className="border border-seal/25 px-2 py-2">
           <dt className="text-[11px] text-ink-soft">백성들이 부른 이름</dt>
           <dd className="mt-0.5 font-myeongjo font-extrabold">{s.peopleName}</dd>
         </div>
@@ -93,7 +89,7 @@ export default function Sillok({ kingName, pillars, cast = {} }: { kingName: str
 
       {s.chart && <SajuChart {...s.chart} />}
 
-      <div className="mt-3 rounded-2xl border border-ink/10 px-4 py-3">
+      <div className="mt-4 border-l-[3px] border-seal/60 py-1 pl-3">
         <p className="text-xs font-extrabold text-seal">정 훈도의 소견</p>
         <ul className="mt-1.5 flex flex-col gap-1 text-[13px] leading-snug text-ink-soft">
           {s.reasons.map((r) => (
@@ -108,7 +104,7 @@ export default function Sillok({ kingName, pillars, cast = {} }: { kingName: str
         <summary className="flex cursor-pointer list-none items-center gap-3 [&::-webkit-details-marker]:hidden">
           <span className="h-px flex-1 bg-ink/15" />
           <span className="rounded-full border border-seal/40 bg-white/70 px-4 py-2 font-myeongjo text-sm font-extrabold text-seal">
-            <span className="group-open:hidden">실록 본문 펼쳐 보기 · 6장</span>
+            <span className="group-open:hidden">실록 본문 펼쳐 보기 · 7장</span>
             <span className="hidden group-open:inline">실록 본문 접기</span>
           </span>
           <span className="h-px flex-1 bg-ink/15" />
@@ -142,6 +138,6 @@ export default function Sillok({ kingName, pillars, cast = {} }: { kingName: str
         <p className="mt-4 text-right font-myeongjo text-sm text-ink-soft">— 관상감 명과학 훈도 정가, 삼가 적음</p>
         <p className="mt-2 text-center text-[11px] text-ink-soft/80">전하의 사주로 지어 올린 가상의 기록이옵니다.</p>
       </details>
-    </section>
+    </RoyalDoc>
   );
 }
