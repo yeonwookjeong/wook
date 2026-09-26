@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.128.0",
+    "@google/genai": "^2.24.0",
     "iztro": "^2.6.1",
     "lunar-javascript": "^1.7.7",
     "next": "16.3.6",
