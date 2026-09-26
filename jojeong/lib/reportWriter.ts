@@ -12,7 +12,7 @@ import { courtOfReader, subjectFor } from "./subject";
 // Each report is written once per unique input and cached.
 
 export const REPORT_MODEL = process.env.REPORT_MODEL ?? "claude-opus-5";
-const PROMPT_VERSION = "v1";
+const PROMPT_VERSION = "v2";
 export const aiEnabled = () => Boolean(process.env.ANTHROPIC_API_KEY) || process.env.REPORT_MOCK === "1";
 
 export type ReportJob = { key: string; system: string; prompt: string; title: string };

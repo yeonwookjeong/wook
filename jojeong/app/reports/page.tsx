@@ -37,16 +37,19 @@ export default async function ReportsPage() {
             </>
           )}
         </p>
-        <p className="mt-1 text-xs text-ink-soft">
-          <span className="inline-block">복채 단골 할인: 살 때마다 100원씩</span>{" "}
-          <span className="inline-block">{PRICE_STEPS.map((p) => p.toLocaleString("ko-KR")).join(" → ")}원</span>
-        </p>
+        {!OPEN_ALL && (
+          <p className="mt-1 text-xs text-ink-soft">
+            <span className="inline-block">복채 단골 할인: 살 때마다 100원씩</span>{" "}
+            <span className="inline-block">{PRICE_STEPS.map((p) => p.toLocaleString("ko-KR")).join(" → ")}원</span>
+          </p>
+        )}
       </section>
 
       <section className="mt-5">
         <Hundo mood="decree">
-          조선의 왕실 사주를 봐 온 눈으로 이번에는 그대의 지금을 보아 드리옵니다. 첫 장은 누구나 먼저 읽어 보시고, 마음에
-          드시면 그때 복채를 주시옵소서.
+          {OPEN_ALL
+            ? "왜 돈이 안 모이는지, 누구랑 맞는지, 올해 뭘 조심해야 하는지. 그대가 궁금한 것부터 골라 보시옵소서. 지금은 복채 없이 다 풀어 드리옵니다."
+            : "조선의 왕실 사주를 봐 온 눈으로 이번에는 그대의 지금을 보아 드리옵니다. 첫 장은 누구나 먼저 읽어 보시고, 마음에 드시면 그때 복채를 주시옵소서."}
         </Hundo>
       </section>
 
