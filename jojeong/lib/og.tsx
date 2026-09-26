@@ -401,8 +401,35 @@ export function sillokStory(kingName: string, king: Pillars, cast: Cast) {
         ))}
       </div>
       <div style={{ marginTop: 14, fontSize: 28, color: C.soft }}>조선 27왕과 견준 순위 · 실제 왕들의 평균 수명 46.1세</div>
+      {s.chart && (
+        <div style={{ marginTop: 34, display: "flex", alignItems: "center", gap: 16 }}>
+          {s.chart.elements.map((n, el) => (
+            <div
+              key={el}
+              style={{
+                width: 118,
+                height: 62,
+                borderRadius: 31,
+                background: ["#3d6656", C.seal, C.gold, "#d9d4c7", "#1f3448"][el],
+                color: el === 3 ? C.ink : "#fff",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 32,
+                fontWeight: 800,
+                border: el === s.chart!.yong ? `5px solid ${C.ink}` : "5px solid transparent",
+              }}
+            >{`${"木火土金水"[el]} ${n}`}</div>
+          ))}
+        </div>
+      )}
+      {s.chart && (
+        <div style={{ marginTop: 12, fontSize: 28, color: C.soft }}>
+          {`${s.chart.strength} · 용신 ${"목화토금수"[s.chart.yong]}(${"木火土金水"[s.chart.yong]})`}
+        </div>
+      )}
 
-      <div style={{ marginTop: 44, width: 566, display: "flex", flexDirection: "column", gap: 18 }}>
+      <div style={{ marginTop: s.chart ? 36 : 44, width: 566, display: "flex", flexDirection: "column", gap: s.chart ? 14 : 18 }}>
         {s.ratings.map((r) => (
           <div key={r.key} style={{ display: "flex", alignItems: "center" }}>
             <div style={{ width: 250, fontSize: 40, fontWeight: 800, color: C.soft }}>{r.label}</div>
@@ -418,7 +445,7 @@ export function sillokStory(kingName: string, king: Pillars, cast: Cast) {
         ))}
       </div>
 
-      <div style={{ marginTop: 50, display: "flex", gap: 24 }}>
+      <div style={{ marginTop: s.chart ? 36 : 50, display: "flex", gap: 24 }}>
         {[
           ["신하들이 몰래 부른 이름", s.nickname],
           ["백성들이 부른 이름", s.peopleName],

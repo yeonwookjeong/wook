@@ -1,5 +1,6 @@
 import { Lunar, Solar } from "lunar-javascript";
 import { josa } from "./josa";
+import { ELEMENT_HANJA, ELEMENT_KO, elementCount, readChart } from "./myeongri";
 
 export const STEMS = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"] as const;
 export const STEMS_KO = ["갑", "을", "병", "정", "무", "기", "경", "신", "임", "계"] as const;
@@ -24,12 +25,23 @@ export const HOUR_SLOTS = [
   "해시 (21:30~23:29)",
 ] as const;
 
+// The four fields every stored chart has. Charts made after the full-chart update also carry the year
+// stem and the month pillar; older ones only have these four, so the extra fields are optional.
 export type Pillars = {
   dayStem: number;
   dayBranch: number;
   yearBranch: number;
   hourBranch: number | null;
+  yearStem?: number;
+  monthStem?: number;
+  monthBranch?: number;
 };
+
+export type FullPillars = Required<Omit<Pillars, "hourBranch">> & { hourBranch: number | null };
+export const isFull = (p: Pillars): p is FullPillars => p.monthBranch !== undefined && p.monthStem !== undefined && p.yearStem !== undefined;
+
+// Hour stem follows from the day stem (甲己 days start the day at 甲子, 乙庚 at 丙子, ...).
+export const hourStemOf = (dayStem: number, hourBranch: number) => ((dayStem % 5) * 2 + hourBranch) % 10;
 
 export type BirthInput = {
   year: number;
@@ -64,11 +76,22 @@ export function computePillars(input: BirthInput): Pillars {
   }
 
   const ec = solar.getLunar().getEightChar();
+  // Year and month change at solar terms, which can fall on the birthday itself, so when the hour is known
+  // they are read at the middle of that hour slot instead of at noon.
+  const exact =
+    hourBranch === null
+      ? ec
+      : Solar.fromYmdHms(solar.getYear(), solar.getMonth(), solar.getDay(), hourBranch * 2, 30, 0).getLunar().getEightChar();
+  const stem = (s: string) => STEMS.indexOf(s as (typeof STEMS)[number]);
+  const branch = (b: string) => BRANCHES.indexOf(b as (typeof BRANCHES)[number]);
   return {
-    dayStem: STEMS.indexOf(ec.getDayGan() as (typeof STEMS)[number]),
-    dayBranch: BRANCHES.indexOf(ec.getDayZhi() as (typeof BRANCHES)[number]),
-    yearBranch: BRANCHES.indexOf(ec.getYearZhi() as (typeof BRANCHES)[number]),
+    dayStem: stem(ec.getDayGan()),
+    dayBranch: branch(ec.getDayZhi()),
+    yearBranch: branch(exact.getYearZhi()),
     hourBranch,
+    yearStem: stem(exact.getYearGan()),
+    monthStem: stem(exact.getMonthGan()),
+    monthBranch: branch(exact.getMonthZhi()),
   };
 }
 
@@ -130,6 +153,8 @@ export type Facts = {
   yearClash: boolean;
   hourSix: boolean;
   hourClash: boolean;
+  // Full-chart kings only: how much of the king's 용신 (and 기신) element the minister carries.
+  yong: { el: number; count: number; giCount: number } | null;
 };
 
 export type Match = { score: number; role: RoleKey; facts: Facts };
@@ -149,7 +174,10 @@ export function matchPillars(king: Pillars, minister: Pillars): Match {
     yearClash: isClash(king.yearBranch, minister.yearBranch),
     hourSix: hoursKnown && isSixCombine(king.hourBranch!, minister.hourBranch!),
     hourClash: hoursKnown && isClash(king.hourBranch!, minister.hourBranch!),
+    yong: null,
   };
+  const chart = readChart(king);
+  if (chart) facts.yong = { el: chart.yong, count: elementCount(minister, chart.yong), giCount: elementCount(minister, chart.gi) };
 
   const base: Record<RelationGroup, number> = { 인성: 76, 비겁: 70, 재성: 66, 식상: 64, 관성: 56 };
   let score = base[facts.group] + jitter(king, minister);
@@ -163,6 +191,9 @@ export function matchPillars(king: Pillars, minister: Pillars): Match {
   if (facts.yearClash) score -= 6;
   if (facts.hourSix) score += 4;
   if (facts.hourClash) score -= 4;
+  // Someone who brings the element the king lacks is worth keeping close; one heavy in its enemy is not.
+  // Centred so the average score (and so the spread of posts) stays where it was for 4-character charts.
+  if (facts.yong) score += Math.min(3, facts.yong.count) * 4 - Math.max(0, facts.yong.giCount - 1) * 2 - 4;
   score = Math.max(12, Math.min(99, score));
 
   return { score, role: assignRole(score, facts), facts };
@@ -214,5 +245,9 @@ export function factLines(king: Pillars, minister: Pillars, f: Facts): string[] 
   if (f.yearClash) lines.push(`${animals}: 띠끼리 충이라 첫인상이 엇갈렸을 수 있사옵니다.`);
   if (f.hourSix) lines.push("시지 육합: 늦은 밤 대화가 유난히 잘 통하옵니다.");
   if (f.hourClash) lines.push("시지 충: 하루 중 컨디션 좋은 시간이 엇갈리옵니다.");
+  if (f.yong && f.yong.count >= 2)
+    lines.push(`용신(用神): 전하께 모자란 ${ELEMENT_KO[f.yong.el]}(${ELEMENT_HANJA[f.yong.el]}) 기운을 ${f.yong.count}개나 지녀, 곁에 두면 전하의 사주가 채워지옵니다.`);
+  else if (f.yong && f.yong.giCount >= 3)
+    lines.push(`기신(忌神): 전하의 용신을 누르는 ${ELEMENT_KO[(f.yong.el + 3) % 5]} 기운이 많아, 가까이하면 전하의 기운이 꺾이옵니다.`);
   return lines;
 }

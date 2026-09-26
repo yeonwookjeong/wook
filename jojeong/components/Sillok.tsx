@@ -1,5 +1,6 @@
 import { KING_AVG_LIFESPAN, sillok, type Cast } from "@/lib/sillok";
 import type { Pillars } from "@/lib/saju";
+import SajuChart from "./SajuChart";
 
 const HANJA_NUM = "一二三四五六";
 
@@ -89,6 +90,8 @@ export default function Sillok({ kingName, pillars, cast = {} }: { kingName: str
           <dd className="mt-0.5 font-myeongjo font-extrabold">{s.peopleName}</dd>
         </div>
       </dl>
+
+      {s.chart && <SajuChart {...s.chart} />}
 
       <div className="mt-3 rounded-2xl border border-ink/10 px-4 py-3">
         <p className="text-xs font-extrabold text-seal">정 훈도의 소견</p>

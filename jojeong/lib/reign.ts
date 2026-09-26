@@ -1,3 +1,4 @@
+import { ELEMENT_KO, readChart, type TenGod } from "./myeongri";
 import type { Pillars } from "./saju";
 
 // Reads the king's pillars for the chronicle's verdicts: how long the king lives, what kind of
@@ -60,9 +61,19 @@ export function lifespan(p: Pillars) {
     if (isClash(p.dayBranch, p.hourBranch)) factors.push({ weight: -2, reason: "시지(時支)가 일지를 충하니 말년이 위태롭사옵니다" });
     else if (isCombine(p.dayBranch, p.hourBranch)) factors.push({ weight: 1, reason: "시지가 일지와 합하여 말년이 편안하옵니다" });
   }
+  const chart = readChart(p);
+  if (chart && p.monthBranch !== undefined) {
+    if (isClash(p.dayBranch, p.monthBranch)) factors.push({ weight: -1, reason: "월지와 일지가 충하니 기혈이 어지럽사옵니다" });
+    if (chart.strength === "극신강" || chart.strength === "극신약")
+      factors.push({ weight: -1, reason: `오행이 한쪽으로 치우친 ${chart.strength} 사주라 몸이 쉬이 상하옵니다` });
+    else if (chart.support >= 0.3 && chart.support < 0.5)
+      factors.push({ weight: 1, reason: "일간이 너무 강하지도 약하지도 않아 오래 버티옵니다" });
+    if (chart.missing.length >= 2)
+      factors.push({ weight: -1, reason: `${chart.missing.map((e) => ELEMENT_KO[e]).join("·")} 기운이 비어 있어 한쪽이 늘 허하옵니다` });
+  }
   const score = factors.reduce((s, f) => s + f.weight, 0);
   const jitter = (hashOf(p, 1) % 17) - 8;
-  const death = Math.max(14, Math.min(90, 47 + score * 7 + jitter));
+  const death = Math.max(14, Math.min(90, (readChart(p) ? 49 : 47) + score * 7 + jitter));
   const verdict =
     score >= 2 ? "천수를 누릴 사주" : score >= 0 ? "명이 무난한 사주" : score >= -2 ? "명이 짧은 편인 사주" : "명이 매우 짧은 사주";
   const reasons =
@@ -175,11 +186,40 @@ const TIER_TILT: Record<Tier, number[]> = {
   pok: [-2, -2, 0, 0, 0, -2],
 };
 
-export function ratings(p: Pillars, tier: Tier) {
-  const values = PROFILE[p.dayStem].map((base, i) => {
-    const noise = [-1, 0, 0, 1][hashOf(p, 10 + i) % 4];
-    return Math.max(1, Math.min(5, base + TIER_TILT[tier][i] + noise));
+// With the full chart each rating comes from the ten gods that govern it; older four-character charts keep the
+// king-type profile with a little noise.
+const GOD_WEIGHTS: Partial<Record<TenGod, number>>[] = [
+  { 식신: 1.5, 정재: 0.5, 정인: 0.7 }, // 백성에게: generosity and care
+  { 정관: 1.5, 정인: 0.7, 편재: 0.5 }, // 신하에게: order, trust, reading people
+  { 편관: 1.5, 겁재: 0.7, 비견: 0.5 }, // 외적에게: pressure and nerve
+  { 겁재: 1.2, 편관: 1, 비견: 0.7, 상관: 0.4 }, // 무예: raw force
+  { 정인: 1.3, 편인: 1.1, 상관: 0.4 }, // 학문: learning
+  { 정재: 1.3, 편재: 1.1, 식신: 0.4 }, // 나라 살림: money
+];
+
+// Cut points at roughly the 12/32/68/88th percentiles of real charts, so each rating spreads over 1–5 stars.
+const GOD_CUTS = [
+  [0.5, 1, 2, 3],
+  [0, 0.7, 2.1, 3.2],
+  [0.7, 1.5, 2.8, 3.7],
+  [1, 1.9, 3, 3.9],
+  [0, 1.2, 2.4, 3.5],
+  [0, 1.1, 2.4, 3.2],
+];
+
+function baseValues(p: Pillars): number[] {
+  const chart = readChart(p);
+  if (!chart) {
+    return PROFILE[p.dayStem].map((base, i) => base + [-1, 0, 0, 1][hashOf(p, 10 + i) % 4]);
+  }
+  return GOD_WEIGHTS.map((w, i) => {
+    const raw = chart.godList.reduce((sum, g) => sum + (w[g] ?? 0), 0);
+    return 1 + GOD_CUTS[i].filter((cut) => raw > cut).length;
   });
+}
+
+export function ratings(p: Pillars, tier: Tier) {
+  const values = baseValues(p).map((v, i) => Math.max(1, Math.min(5, v + TIER_TILT[tier][i])));
   const best = values.indexOf(Math.max(...values));
   const worst = values.lastIndexOf(Math.min(...values));
   const headline = `${STATS[best].hi} ${STATS[worst].lo} 왕`;

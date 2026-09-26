@@ -15,6 +15,7 @@ import {
   RESOLVE,
 } from "./episodes";
 import { josa } from "./josa";
+import { chartOf, readChart } from "./myeongri";
 import { isClash, isWonjin, lifespan, mix, ratings, reignTier, TIERS } from "./reign";
 import type { Seat } from "./court";
 import type { Pillars } from "./saju";
@@ -157,6 +158,7 @@ export function sillok(p: Pillars, { cast = {}, kingName = "" }: { cast?: Cast; 
     (p.dayStem * 131 + p.dayBranch * 31 + p.yearBranch * 7 + (p.hourBranch ?? 12) * 3 + n * 17) >>> 0;
 
   const life = lifespan(p);
+  const reading = readChart(p);
   const { tier, reasons: tierReasons } = reignTier(p);
   const t = TIERS[tier];
   const deposed = tier === "pok";
@@ -267,8 +269,20 @@ export function sillok(p: Pillars, { cast = {}, kingName = "" }: { cast?: Cast; 
     death,
     rank,
     lifeVerdict: life.verdict,
-    // Two reasons for the verdict and one for the lifespan, avoiding a second mention of the zodiac clash.
-    reasons: [...tierReasons, life.reasons.find((r) => !r.includes("띠")) ?? life.reasons[0]],
+    // The full chart leads with the day master's strength and 용신; then the verdict and one lifespan reason,
+    // avoiding a second mention of the zodiac clash.
+    reasons: [
+      ...(reading ? reading.reasons : []),
+      ...tierReasons.slice(0, reading ? 1 : 2),
+      life.reasons.find((r) => !r.includes("띠")) ?? life.reasons[0],
+    ],
+    chart: reading && {
+      slots: chartOf(p as Parameters<typeof chartOf>[0]),
+      elements: reading.elements,
+      strength: reading.strength,
+      yong: reading.yong,
+      missing: reading.missing,
+    },
     chapters: [
       { title: childhood.title, paras: ch1 },
       { title: first.title, paras: ch2 },
