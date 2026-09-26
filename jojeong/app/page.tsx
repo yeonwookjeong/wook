@@ -1,27 +1,17 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
 import BirthForm from "@/components/BirthForm";
 import Hero from "@/components/Hero";
 import Hundo from "@/components/Hundo";
-import { OWNER_PREFIX } from "@/lib/cookies";
 import { ROLES } from "@/lib/roles";
-import { getCourt, type Court } from "@/lib/store";
+import { ownedCourts } from "@/lib/load";
+import { courtCount } from "@/lib/store";
 import type { RoleKey } from "@/lib/saju";
 
 const SHOWCASE: RoleKey[] = ["yeong", "byeongjo", "hojo", "yejo", "gansin", "yubae"];
 
-async function myCourts() {
-  const jar = await cookies();
-  const owned = jar
-    .getAll()
-    .filter((c) => c.name.startsWith(OWNER_PREFIX))
-    .slice(0, 3);
-  const courts = await Promise.all(owned.map((c) => getCourt(c.name.slice(OWNER_PREFIX.length))));
-  return courts.filter((court, i): court is Court => !!court && court.ownerToken === owned[i].value);
-}
 
 export default async function Home() {
-  const courts = await myCourts();
+  const [courts, count] = await Promise.all([ownedCourts(), courtCount()]);
 
   return (
     <>
@@ -31,6 +21,11 @@ export default async function Home() {
         <br />
         벗들을 부르면 <b className="text-ink">사주가 관직을 내려드리옵니다.</b>
       </p>
+      {count > 0 && (
+        <p className="mx-auto mt-3 w-fit border-y border-seal/30 px-3 py-1 text-center text-sm">
+          지금까지 <b className="font-myeongjo text-base text-seal">{count.toLocaleString("ko-KR")}</b>명의 전하가 즉위하셨사옵니다
+        </p>
+      )}
 
       <p className="mt-7 text-center font-myeongjo text-xs font-extrabold tracking-[0.4em] text-seal">官 職</p>
       <ul className="mt-2 grid grid-cols-3 gap-1.5">
@@ -99,7 +94,6 @@ export default async function Home() {
         ))}
       </ol>
 
-      <p className="mt-10 text-center text-[11px] text-ink-soft/80">재미로 보는 사주 콘텐츠이옵니다. 진짜 간신은 행동으로 가려내시옵소서.</p>
     </>
   );
 }

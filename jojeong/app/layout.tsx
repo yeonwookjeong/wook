@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Nanum_Myeongjo } from "next/font/google";
 import { SERVICE_NAME, TAGLINE, siteUrl } from "@/lib/brand";
+import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import "./globals.css";
 
 const myeongjo = Nanum_Myeongjo({
@@ -23,7 +24,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ko" className={`${myeongjo.variable} h-full antialiased`}>
       <body className="min-h-full">
-        <main className="mx-auto flex min-h-dvh w-full max-w-[440px] flex-col px-4 pb-16">{children}</main>
+        <main className="mx-auto flex min-h-dvh w-full max-w-[440px] flex-col px-4 pb-8">
+          <SiteHeader />
+          {children}
+          <SiteFooter />
+        </main>
       </body>
     </html>
   );

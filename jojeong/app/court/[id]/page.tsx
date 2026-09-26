@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { SERVICE_NAME } from "@/lib/brand";
 import Link from "next/link";
 import BirthForm from "@/components/BirthForm";
 import Hundo from "@/components/Hundo";
+import ReportShelf from "@/components/ReportShelf";
 import RoyalDoc from "@/components/RoyalDoc";
 import KingCard from "@/components/KingCard";
 import Sillok from "@/components/Sillok";
@@ -13,6 +13,7 @@ import { loadCourt, viewerOf } from "@/lib/load";
 import { KING_TYPES } from "@/lib/kingTypes";
 import { reignTier, TIERS } from "@/lib/reign";
 import { castOf } from "@/lib/sillok";
+import { yearPreview } from "@/lib/yearly";
 import { EMPTY_SEATS, ROLES } from "@/lib/roles";
 
 export async function generateMetadata({ params }: PageProps<"/court/[id]">): Promise<Metadata> {
@@ -39,11 +40,8 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
 
   return (
     <>
-      <header className="animate-rise pt-8 text-center">
-        <Link href="/" className="text-xs font-bold tracking-widest text-seal">
-          {SERVICE_NAME}
-        </Link>
-        <p className="mt-3 text-sm font-bold text-gold">
+      <header className="animate-rise pt-6 text-center">
+        <p className="text-sm font-bold text-gold">
           {kingType.title} · <span className={tier.dark ? "text-seal" : ""}>{tier.label}</span>
         </p>
         <h1 className="mt-0.5 font-myeongjo text-3xl font-extrabold">{court.kingName} 전하의 조정</h1>
@@ -178,6 +176,14 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
                 )}
               </div>
             </section>
+          )}
+
+          {isOwner && (
+            <ReportShelf
+              ids={["gukjeong", "hwansaeng", "dwitjosa"]}
+              query={`court=${court.id}`}
+              highlight={{ id: "gukjeong", text: `병오년 운세 ‘${yearPreview(court.king).verdict}’ · 첫 장 무료` }}
+            />
           )}
 
           {isOwner && (

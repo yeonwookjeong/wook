@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { SERVICE_NAME } from "@/lib/brand";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Hundo from "@/components/Hundo";
+import ReportShelf from "@/components/ReportShelf";
 import RoyalDoc from "@/components/RoyalDoc";
 import { SaveImageButton, ShareLinkButton } from "@/components/ShareButtons";
 import { bragLine, decreeLine, summonLine } from "@/lib/decree";
@@ -45,9 +45,6 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
       <nav className="flex justify-between pt-5 text-sm">
         <Link href={`/court/${court.id}`} className="font-bold text-ink-soft">
           ← {court.kingName} 전하의 조정
-        </Link>
-        <Link href="/" className="font-bold text-seal">
-          {SERVICE_NAME}
         </Link>
       </nav>
 
@@ -124,6 +121,7 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
       </section>
 
       {isSelf && <MyChartTeaser pillars={seat.minister.pillars} name={seat.minister.name} />}
+      {isSelf && <ReportShelf ids={["insa", "sinbun"]} query={`court=${court.id}&m=${seat.minister.id}`} />}
 
       <section className="mt-6 flex flex-col gap-3">
         {isSelf && (

@@ -24,6 +24,7 @@ type Backend = {
   push(key: string, value: string): Promise<number>;
   list(key: string): Promise<string[]>;
   remove(key: string, value: string): Promise<void>;
+  incr(key: string): Promise<number>;
 };
 
 function redisBackend(url: string, token: string): Backend {
@@ -45,6 +46,7 @@ function redisBackend(url: string, token: string): Backend {
     push: (key, value) => call<number>(["RPUSH", key, value]),
     list: (key) => call<string[]>(["LRANGE", key, 0, -1]),
     remove: async (key, value) => void (await call(["LREM", key, 1, value])),
+    incr: (key) => call<number>(["INCR", key]),
   };
 }
 
@@ -82,6 +84,12 @@ function fileBackend(): Backend {
         const i = list.indexOf(value);
         if (i >= 0) list.splice(i, 1);
       }),
+    incr: (key) =>
+      mutate((db) => {
+        const next = Number(db.kv[key] ?? 0) + 1;
+        db.kv[key] = String(next);
+        return next;
+      }),
   };
 }
 
@@ -98,6 +106,10 @@ const id = (bytes: number) => randomBytes(bytes).toString("base64url");
 export async function createCourt(kingName: string, king: Pillars): Promise<Court> {
   const court: Court = { id: id(6), kingName, king, ownerToken: id(18), createdAt: Date.now() };
   await backend().set(`court:${court.id}`, JSON.stringify(court));
+  // Real count of enthronements, shown on the landing page as social proof. A failed count never blocks a court.
+  await backend()
+    .incr("stats:courts")
+    .catch(() => {});
   return court;
 }
 
@@ -129,4 +141,12 @@ export async function removeMinister(courtId: string, ministerId: string) {
   const db = backend();
   const raw = (await db.list(`court:${courtId}:m`)).find((r) => (JSON.parse(r) as Minister).id === ministerId);
   if (raw) await db.remove(`court:${courtId}:m`, raw);
+}
+
+export async function courtCount(): Promise<number> {
+  try {
+    return Number((await backend().get("stats:courts")) ?? 0);
+  } catch {
+    return 0;
+  }
 }
