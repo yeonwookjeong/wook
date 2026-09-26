@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { appointMinisterAction, enthroneAction, joinCourtAction, type FormState } from "@/app/actions";
-import { HOUR_SLOTS, LATE_ZI, LATE_ZI_LABEL } from "@/lib/saju";
+import BirthTimeFields from "./BirthTimeFields";
 
 const CALENDARS = [
   { value: "solar", label: "양력" },
@@ -67,22 +67,7 @@ export default function BirthForm({ mode, courtId }: { mode: keyof typeof MODES;
         ))}
       </fieldset>
 
-      <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-semibold text-ink-soft">태어난 시간 (선택)</span>
-        <select
-          name="hour"
-          defaultValue=""
-          className="rounded-xl border border-ink/15 bg-white/70 px-4 py-3 text-base outline-none focus:border-seal"
-        >
-          <option value="">{unknownHour}</option>
-          {HOUR_SLOTS.map((slot, i) => (
-            <option key={slot} value={i}>
-              {slot}
-            </option>
-          ))}
-          <option value={LATE_ZI}>{LATE_ZI_LABEL}</option>
-        </select>
-      </label>
+      <BirthTimeFields unknownLabel={unknownHour} />
 
       <fieldset className="flex flex-col gap-1.5">
         <legend className="mb-1.5 text-sm font-semibold text-ink-soft">성별 (선택 · 10년 대운 풀이에 쓰이옵니다)</legend>

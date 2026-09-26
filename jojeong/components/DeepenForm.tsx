@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { deepenAction, type FormState } from "@/app/actions";
-import { HOUR_SLOTS, LATE_ZI, LATE_ZI_LABEL } from "@/lib/saju";
+import BirthTimeFields from "./BirthTimeFields";
 
 const field = "rounded-xl border border-ink/15 bg-white/70 px-4 py-3 text-base outline-none focus:border-seal";
 const chip =
@@ -10,7 +10,7 @@ const chip =
 
 // Asks once more for the birth date (checked against the stored chart) plus gender and hour, to add the
 // ten-year luck and the finer reading of each area. The date is used for the calculation and not kept.
-export default function DeepenForm({ courtId, who, needs }: { courtId: string; who: string; needs: { daeun: boolean; palaces: boolean } }) {
+export default function DeepenForm({ courtId, who }: { courtId: string; who: string; needs?: { daeun: boolean; palaces: boolean } }) {
   const [state, action, pending] = useActionState<FormState, FormData>(deepenAction, { error: null });
   return (
     <form action={action} className="flex flex-col gap-3">
@@ -30,15 +30,7 @@ export default function DeepenForm({ courtId, who, needs }: { courtId: string; w
           </label>
         ))}
       </fieldset>
-      <select name="hour" defaultValue="" className={field} aria-label="태어난 시간">
-        <option value="">{needs.palaces ? "태어난 시간 (알면 더 정확해지옵니다)" : "태어난 시간 모름"}</option>
-        {HOUR_SLOTS.map((slot, i) => (
-          <option key={slot} value={i}>
-            {slot}
-          </option>
-        ))}
-        <option value={LATE_ZI}>{LATE_ZI_LABEL}</option>
-      </select>
+      <BirthTimeFields unknownLabel="모름" />
       <fieldset className="grid grid-cols-3 gap-2">
         <legend className="sr-only">성별</legend>
         {[

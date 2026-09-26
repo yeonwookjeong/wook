@@ -1,4 +1,5 @@
 import { Lunar, Solar } from "lunar-javascript";
+import { correctBirth } from "./birthtime";
 import { josa } from "./josa";
 import { ELEMENT_HANJA, ELEMENT_KO, elementCount, readChart } from "./myeongri";
 
@@ -52,6 +53,8 @@ export type BirthInput = {
   day: number;
   calendar: "solar" | "lunar" | "lunar-leap";
   hourBranch: number | null;
+  // The actual instant of birth (UTC ms) when the clock time is known; year and month are read at it.
+  instant?: number;
 };
 
 export class BirthInputError extends Error {}
@@ -66,6 +69,27 @@ export function resolveLateZi(input: BirthInput): BirthInput {
       : Lunar.fromYmdHms(year, calendar === "lunar-leap" ? -month : month, day, 12, 0, 0).getSolar();
   const next = base.next(1);
   return { year: next.getYear(), month: next.getMonth(), day: next.getDay(), calendar: "solar", hourBranch: 0 };
+}
+
+// Clock time and birthplace → the day pillar's solar date, the hour (시) and the exact instant, with Korea's
+// past standard times, summer time and the birthplace's longitude all accounted for (lib/birthtime.ts).
+export function resolveBirthTime(input: BirthInput, clock: { hour: number; minute: number }, lon: number) {
+  const { year, month, day, calendar } = input;
+  const solar =
+    calendar === "solar"
+      ? Solar.fromYmdHms(year, month, day, 12, 0, 0)
+      : Lunar.fromYmdHms(year, calendar === "lunar-leap" ? -month : month, day, 12, 0, 0).getSolar();
+  const c = correctBirth(solar.getYear(), solar.getMonth(), solar.getDay(), clock.hour, clock.minute, lon);
+  const dayOf = c.dayShift ? solar.next(c.dayShift) : solar;
+  const resolved: BirthInput = {
+    year: dayOf.getYear(),
+    month: dayOf.getMonth(),
+    day: dayOf.getDay(),
+    calendar: "solar",
+    hourBranch: c.hourBranch,
+    instant: c.utcMs,
+  };
+  return { input: resolved, correction: c };
 }
 
 export function computePillars(input: BirthInput): Pillars {
@@ -91,10 +115,14 @@ export function computePillars(input: BirthInput): Pillars {
   }
 
   const ec = solar.getLunar().getEightChar();
-  // Year and month change at solar terms, which can fall on the birthday itself, so when the hour is known
-  // they are read at the middle of that hour slot instead of at noon.
-  const exact =
-    hourBranch === null
+  // Year and month change at solar terms, which can fall on the birthday itself. With the exact instant they
+  // are read at it (lunar-javascript keeps China time, UTC+8); with only an hour slot, at its middle.
+  const at = input.instant === undefined ? null : new Date(input.instant + 8 * 3600000);
+  const exact = at
+    ? Solar.fromYmdHms(at.getUTCFullYear(), at.getUTCMonth() + 1, at.getUTCDate(), at.getUTCHours(), at.getUTCMinutes(), 0)
+        .getLunar()
+        .getEightChar()
+    : hourBranch === null
       ? ec
       : Solar.fromYmdHms(solar.getYear(), solar.getMonth(), solar.getDay(), hourBranch * 2, 30, 0).getLunar().getEightChar();
   const stem = (s: string) => STEMS.indexOf(s as (typeof STEMS)[number]);
