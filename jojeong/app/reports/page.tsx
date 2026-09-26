@@ -18,8 +18,12 @@ export default async function ReportsPage() {
       <section className="mt-6 text-center">
         <p className="font-myeongjo text-sm font-extrabold tracking-[0.4em] text-seal">秘 密 報 告</p>
         <h1 className="mt-2 font-myeongjo text-3xl font-extrabold">정 훈도의 비밀 보고서</h1>
-        <p className="mt-2 text-sm text-ink-soft">
-          실록은 무료, 보고서는 복채 한 닢. 모든 보고서 <b className="text-ink">{price.toLocaleString("ko-KR")}원</b>
+        <p className="mt-2 text-[15px] leading-relaxed">
+          조선 최고의 사주쟁이가 봐 드리는 <b>지금 그대의 운명</b>
+        </p>
+        <p className="mt-1 text-sm text-ink-soft">
+          왕 등급 · 실록 · 조선 신분은 무료, 지금의 운세는 복채 한 닢. 모든 보고서{" "}
+          <b className="text-ink">{price.toLocaleString("ko-KR")}원</b>
         </p>
         <p className="mt-1 text-xs text-ink-soft">
           복채 단골 할인: 살 때마다 100원씩 내려가 {PRICE_STEPS.map((p) => p.toLocaleString("ko-KR")).join(" → ")}원
@@ -28,8 +32,8 @@ export default async function ReportsPage() {
 
       <section className="mt-5">
         <Hundo mood="decree">
-          실록에는 차마 다 적지 못한 이야기가 있사옵니다. 앞부분은 누구나 먼저 읽어 보시고, 마음에 드시면 그때 복채를
-          주시옵소서.
+          조선의 왕실 사주를 봐 온 눈으로 이번에는 그대의 지금을 보아 드리옵니다. 첫 장은 누구나 먼저 읽어 보시고, 마음에
+          드시면 그때 복채를 주시옵소서.
         </Hundo>
       </section>
 

@@ -9,8 +9,10 @@ import { bragLine, decreeLine, summonLine } from "@/lib/decree";
 import { loadCourt, viewerOf } from "@/lib/load";
 import { moodFor, ROLES } from "@/lib/roles";
 import { factLines, GANSIN_SIGNS, relationSentence, roleReasons, type Pillars } from "@/lib/saju";
+import { josa } from "@/lib/josa";
 import { chartOf, readChart } from "@/lib/myeongri";
 import SajuChart from "@/components/SajuChart";
+import SinbunCard from "@/components/SinbunCard";
 
 async function loadSeat(id: string, mid: string) {
   const { court, seats } = await loadCourt(id);
@@ -120,8 +122,15 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
         </p>
       </section>
 
+      {isSelf && (
+        <SinbunCard
+          pillars={seat.minister.pillars}
+          heading={`${josa(seat.minister.name, "이/가")} 조선에 태어났다면`}
+          reportQuery={`court=${court.id}&m=${seat.minister.id}`}
+        />
+      )}
       {isSelf && <MyChartTeaser pillars={seat.minister.pillars} name={seat.minister.name} />}
-      {isSelf && <ReportShelf ids={["insa", "sinbun"]} query={`court=${court.id}&m=${seat.minister.id}`} />}
+      {isSelf && <ReportShelf ids={["gukjeong", "yeonae", "insa"]} query={`court=${court.id}&m=${seat.minister.id}`} />}
 
       <section className="mt-6 flex flex-col gap-3">
         {isSelf && (

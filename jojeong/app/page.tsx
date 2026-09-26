@@ -27,6 +27,17 @@ export default async function Home() {
         </p>
       )}
 
+      <div className="mt-6 grid grid-cols-2 gap-1.5 text-center">
+        <div className="border border-seal/25 bg-[#f9f1de] px-3 py-3">
+          <p className="text-[11px] font-extrabold text-seal">무료 · 조선의 나</p>
+          <p className="mt-1 text-[13px] leading-snug">왕 등급 · 가상 실록 · 조선 신분과 직업 · 벗들의 관직</p>
+        </div>
+        <Link href="/reports" className="border border-seal/50 bg-seal/5 px-3 py-3">
+          <p className="text-[11px] font-extrabold text-seal">비밀 보고서 · 지금의 나</p>
+          <p className="mt-1 text-[13px] leading-snug">올해 운세 · 연애 · 재물 · 직업, 조선 최고의 사주쟁이가 봐 드림</p>
+        </Link>
+      </div>
+
       <p className="mt-7 text-center font-myeongjo text-xs font-extrabold tracking-[0.4em] text-seal">官 職</p>
       <ul className="mt-2 grid grid-cols-3 gap-1.5">
         {SHOWCASE.map((key) => {
