@@ -226,8 +226,9 @@ function keyOf(p: Pillars): { key: string; group: GodGroup | "고른" } {
   const total = entries.reduce((a, [, w]) => a + w, 0);
   const [group, weight] = entries.reduce((a, b) => (b[1] > a[1] ? b : a));
   const yang = p.dayStem % 2 === 0;
-  // No group stands out (the heaviest under ~30%, about one chart in seven): an evenly spread chart.
-  if (weight / total < 0.306) return { key: yang ? "고른-양" : "고른-음", group: "고른" };
+  // No group stands out (the heaviest at 35% or less, about one chart in five): an evenly spread chart, split
+  // evenly between the two even-handed callings by the day branch.
+  if (weight / total <= 0.35) return { key: (p.dayBranch >> 1) % 2 === 0 ? "고른-양" : "고른-음", group: "고른" };
   // A yang day master takes the outward, louder calling of its group; a yin one the quieter one.
   return { key: `${group}-${yang ? "강" : "약"}`, group };
 }
