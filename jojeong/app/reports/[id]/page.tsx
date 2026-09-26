@@ -9,6 +9,7 @@ import { PRICE_STEPS, priceFor, productById, type Product } from "@/lib/products
 import type { Pillars } from "@/lib/saju";
 import { getCourt, listMinisters } from "@/lib/store";
 import { yearPreview } from "@/lib/yearly";
+import Keep from "@/components/Keep";
 
 export async function generateMetadata({ params }: PageProps<"/reports/[id]">): Promise<Metadata> {
   const product = productById((await params).id);
@@ -58,7 +59,9 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
       <RoyalDoc className="mt-3" paperClassName="px-5">
         <p className="text-center font-myeongjo text-sm font-extrabold tracking-[0.4em] text-seal">{product.hanja}</p>
         <h1 className="mt-2 text-center font-myeongjo text-2xl font-extrabold">{product.title}</h1>
-        <p className="mt-2 text-center text-sm leading-snug text-ink-soft">{product.tagline}</p>
+        <p className="mt-2 text-center text-sm leading-snug text-ink-soft">
+          <Keep clauses>{product.tagline}</Keep>
+        </p>
         {subject && <p className="mt-3 text-center text-xs font-bold text-gold">{subject.name} 님의 사주로 지어 올리옵니다</p>}
 
         <ol className="mt-5 flex flex-col divide-y divide-seal/15 border-y-[3px] border-double border-seal/40 px-1">
@@ -83,8 +86,8 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
               <p className="mt-1.5 text-[15px] leading-relaxed">{year.text}</p>
               {year.full && (
                 <p className="mt-2 text-[15px] leading-relaxed">
-                  열두 달 가운데 <b className="text-seal">좋은 달이 {year.good}번</b>,{" "}
-                  <b className="text-seal">조심할 달이 {year.bad}번</b> 보이옵니다. 어느 달인지는 보고서에 적어 올리옵니다.
+                  열두 달 가운데 <b className="whitespace-nowrap text-seal">좋은 달이 {year.good}번</b>,{" "}
+                  <b className="whitespace-nowrap text-seal">조심할 달이 {year.bad}번</b> 보이옵니다. 어느 달인지는 보고서에 적어 올리옵니다.
                 </p>
               )}
             </>
@@ -121,7 +124,8 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
         <div className="mt-6 border-t border-seal/20 pt-5 text-center">
           <p className="font-myeongjo text-3xl font-extrabold text-seal">{price.toLocaleString("ko-KR")}원</p>
           <p className="mt-1 text-xs text-ink-soft">
-            복채 단골 할인 · 살 때마다 100원씩 내려가 {PRICE_STEPS[PRICE_STEPS.length - 1]}원까지
+            <span className="inline-block">복채 단골 할인 ·</span>{" "}
+            <span className="inline-block">살 때마다 100원씩 내려가 {PRICE_STEPS[PRICE_STEPS.length - 1]}원까지</span>
           </p>
           <button
             type="button"
@@ -134,7 +138,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
             보고서는 결제 즉시 열리는 디지털 콘텐츠라, 열람을 시작한 뒤에는 전자상거래법에 따라 청약철회가 제한되옵니다.
             결제 전 위의 목차와 맛보기로 내용을 확인해 주시옵소서. 보고서가 안내한 내용과 다르게 제공된 경우에는 받은 날부터
             3개월 이내에 환불을 요청하실 수 있사옵니다. 자세한 내용은{" "}
-            <Link href="/refund" className="underline">
+            <Link href="/refund" className="whitespace-nowrap underline">
               환불 규정
             </Link>
             을 보시옵소서.

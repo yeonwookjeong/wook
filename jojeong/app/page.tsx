@@ -17,9 +17,16 @@ export default async function Home() {
     <>
       <Hero />
       <p className="mt-5 text-center text-[15px] leading-relaxed text-ink-soft">
-        생년월일을 넣으면 <b className="text-ink">전하가 어떤 왕이었을지</b> 알려드리옵니다.
+        {/* Each phrase wraps as a unit, so narrow screens break after "넣으면"/"부르면" and not mid-phrase. */}
+        생년월일을 넣으면{" "}
+        <span className="inline-block">
+          <b className="text-ink">전하가 어떤 왕이었을지</b> 알려드리옵니다.
+        </span>
         <br />
-        벗들을 부르면 <b className="text-ink">사주가 관직을 내려드리옵니다.</b>
+        벗들을 부르면{" "}
+        <span className="inline-block">
+          <b className="text-ink">사주가 관직을 내려드리옵니다.</b>
+        </span>
       </p>
       {count > 0 && (
         <p className="mx-auto mt-3 w-fit border-y border-seal/30 px-3 py-1 text-center text-sm">
@@ -30,11 +37,23 @@ export default async function Home() {
       <div className="mt-6 grid grid-cols-2 gap-1.5 text-center">
         <div className="border border-seal/25 bg-[#f9f1de] px-3 py-3">
           <p className="text-[11px] font-extrabold text-seal">무료 · 조선의 나</p>
-          <p className="mt-1 text-[13px] leading-snug">왕 등급 · 가상 실록 · 조선 신분과 직업 · 벗들의 관직</p>
+          <p className="mt-1.5 text-[13px] leading-snug">
+            왕 등급과 가상 실록
+            <br />
+            조선 신분과 직업
+            <br />
+            벗들의 관직
+          </p>
         </div>
         <Link href="/reports" className="border border-seal/50 bg-seal/5 px-3 py-3">
           <p className="text-[11px] font-extrabold text-seal">비밀 보고서 · 지금의 나</p>
-          <p className="mt-1 text-[13px] leading-snug">올해 운세 · 연애 · 재물 · 직업, 조선 최고의 사주쟁이가 봐 드림</p>
+          <p className="mt-1.5 text-[13px] leading-snug">
+            올해 운세·연애
+            <br />
+            재물·직업
+            <br />
+            정 훈도가 봐 드림
+          </p>
         </Link>
       </div>
 
@@ -95,12 +114,20 @@ export default async function Home() {
       </section>
 
       <ol className="mt-8 grid grid-cols-3 gap-2 text-center text-xs text-ink-soft">
-        {["즉위하고 왕 유형 확인", "벗들에게 링크 보내기", "관직 발표 & 교지 공유"].map((step, i) => (
-          <li key={step} className="flex flex-col items-center gap-1.5">
+        {[
+          ["즉위하고", "왕 유형 확인"],
+          ["벗들에게", "링크 보내기"],
+          ["관직 발표와", "교지 공유"],
+        ].map(([a, b], i) => (
+          <li key={a} className="flex flex-col items-center gap-1.5">
             <span className="flex size-7 items-center justify-center border border-seal/50 font-myeongjo text-sm font-extrabold text-seal">
               {"一二三"[i]}
             </span>
-            {step}
+            <span>
+              {a}
+              <br />
+              {b}
+            </span>
           </li>
         ))}
       </ol>

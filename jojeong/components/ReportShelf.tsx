@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { productById, type ProductId } from "@/lib/products";
+import Keep from "./Keep";
 
 // A short shelf of paid reports under a free result. `query` carries whose chart the report page should read.
 export default function ReportShelf({
@@ -28,7 +29,7 @@ export default function ReportShelf({
                 <span className="min-w-0 flex-1">
                   <span className="block font-myeongjo font-extrabold">{p.title}</span>
                   <span className="block text-xs leading-snug text-ink-soft">
-                    {highlight?.id === id ? <b className="text-seal">{highlight.text}</b> : p.tagline}
+                    {highlight?.id === id ? <b className="text-seal">{highlight.text}</b> : <Keep clauses>{p.tagline}</Keep>}
                   </span>
                 </span>
                 <span className="shrink-0 text-sm font-bold text-seal">맛보기 →</span>

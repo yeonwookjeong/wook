@@ -2,6 +2,7 @@ import RoyalDoc from "./RoyalDoc";
 import { kingLinkText } from "@/lib/kings";
 import { KING_TYPES } from "@/lib/kingTypes";
 import type { Pillars } from "@/lib/saju";
+import Keep from "./Keep";
 
 export default function KingCard({ kingName, pillars }: { kingName: string; pillars: Pillars }) {
   const type = KING_TYPES[pillars.dayStem];
@@ -39,9 +40,11 @@ export default function KingCard({ kingName, pillars }: { kingName: string; pill
         ) : (
           <ul className="mt-2 flex flex-col gap-1.5">
             {shown.map((k) => (
-              <li key={k.name} className="text-sm">
-                <b className="font-myeongjo text-base">{k.name}</b>
-                <span className="ml-2 text-ink-soft">{k.note}</span>
+              <li key={k.name} className="flex items-baseline gap-2 text-sm">
+                <b className="shrink-0 font-myeongjo text-base">{k.name}</b>
+                <span className="text-ink-soft">
+                  <Keep>{k.note}</Keep>
+                </span>
               </li>
             ))}
             {rest > 0 && <li className="text-xs text-ink-soft">외 {rest}명</li>}

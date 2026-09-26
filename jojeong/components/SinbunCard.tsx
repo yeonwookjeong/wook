@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Pillars } from "@/lib/saju";
 import { sinbunOf } from "@/lib/sinbun";
+import Keep from "./Keep";
 
 const RANK_STYLE = {
   양반: "border-gold text-gold",
@@ -9,7 +10,7 @@ const RANK_STYLE = {
   천민: "border-seal text-seal",
 } as const;
 
-// Free: who you would have been in Joseon. Ends with a bridge to the paid present-day 직업 · 적성 report.
+// Free: who you would have been in Joseon. Ends with a bridge to the paid present-day 직업·적성 report.
 export default function SinbunCard({
   pillars,
   heading,
@@ -39,18 +40,24 @@ export default function SinbunCard({
         ))}
       </ol>
 
-      <div className="mt-3 flex items-start gap-3 text-[14px] leading-relaxed">
-        <span className="w-16 shrink-0 text-xs font-extrabold text-ink-soft">출세 가능성</span>
-        <span>
-          <span className="text-gold">{"★".repeat(s.rise)}</span>
-          <span className="text-ink/15">{"★".repeat(5 - s.rise)}</span>
-          <span className="ml-1">{s.riseText}</span>
-        </span>
+      <div className="mt-3 text-[14px] leading-relaxed">
+        <p className="flex items-center gap-2">
+          <span className="text-xs font-extrabold text-ink-soft">출세 가능성</span>
+          <span aria-label={`5점 만점에 ${s.rise}점`}>
+            <span className="text-gold">{"★".repeat(s.rise)}</span>
+            <span className="text-ink/15">{"★".repeat(5 - s.rise)}</span>
+          </span>
+        </p>
+        <p className="mt-0.5">{s.riseText}</p>
       </div>
 
       <Link href={`/reports/jikup?${reportQuery}`} className="mt-4 block border border-seal/30 bg-seal/5 px-4 py-3 text-sm">
-        <span className="font-bold">{s.now}</span>{" "}
-        <span className="text-seal">지금 이 시대에 어울리는 일 세 가지는 &lsquo;직업 · 적성&rsquo; 보고서에서 →</span>
+        <span className="block font-bold">
+          <Keep>{s.now}</Keep>
+        </span>
+        <span className="mt-1 block text-seal">
+          어울리는 일 세 가지는 <span className="inline-block">&lsquo;직업·적성&rsquo; 보고서에서 →</span>
+        </span>
       </Link>
     </section>
   );

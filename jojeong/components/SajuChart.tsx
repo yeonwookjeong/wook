@@ -83,9 +83,11 @@ export default function SajuChart({
         <p className="mt-2 text-center text-[11px] text-ink-soft">태어난 시간을 몰라 여섯 글자로 보았사옵니다</p>
       )}
       {missing.length > 0 && (
-        <p className="mt-2 text-center text-[13px] font-bold text-ink">
-          {missing.map((el) => MISSING_LINE[el]).join(" · ")}
-        </p>
+        <ul className="mt-2 flex flex-col gap-0.5 text-center text-[13px] font-bold text-ink">
+          {missing.map((el) => (
+            <li key={el}>{MISSING_LINE[el]}</li>
+          ))}
+        </ul>
       )}
     </div>
   );

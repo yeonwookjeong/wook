@@ -44,9 +44,10 @@ export default function PrivacyPage() {
         있으며, 그 밖의 요청은 아래 연락처로 보내 주시면 지체 없이 처리합니다.
       </p>
       <h2>5. 개인정보 보호책임자</h2>
-      <p>
-        {biz("ceo", "대표자")} · {biz("email", "이메일")} · {biz("phone", "전화")}
-      </p>
+      <ul>
+        <li>책임자: {biz("ceo", "대표자")}</li>
+        <li>연락처: {biz("email", "이메일")} · {biz("phone", "전화")}</li>
+      </ul>
     </LegalDoc>
   );
 }

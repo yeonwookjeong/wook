@@ -1,7 +1,11 @@
 import { BUSINESS } from "@/lib/business";
 
 // Plain document layout for the legal pages. Business fields fall back to a visible placeholder until filled.
-export const biz = (key: keyof typeof BUSINESS, label: string) => BUSINESS[key] || `(${label})`;
+// Numbers and emails stay on one line ("070-/4578-4984" would otherwise split at the hyphen); the address may wrap.
+export const biz = (key: keyof typeof BUSINESS, label: string) => {
+  const value = BUSINESS[key] || `(${label})`;
+  return key === "address" ? value : <span className="whitespace-nowrap">{value}</span>;
+};
 
 export default function LegalDoc({
   title,
