@@ -65,7 +65,17 @@ export function ShareLinkButton({
   );
 }
 
-export function SaveImageButton({ src, filename, label }: { src: string; filename: string; label: string }) {
+export function SaveImageButton({
+  src,
+  filename,
+  label,
+  compact = false,
+}: {
+  src: string;
+  filename: string;
+  label: string;
+  compact?: boolean;
+}) {
   const { show, toast } = useToast();
   const [busy, setBusy] = useState(false);
 
@@ -103,9 +113,13 @@ export function SaveImageButton({ src, filename, label }: { src: string; filenam
         type="button"
         onClick={onClick}
         disabled={busy}
-        className="w-full rounded-2xl border-2 border-ink py-3.5 font-myeongjo text-base font-extrabold text-ink disabled:opacity-60"
+        className={
+          compact
+            ? "w-full rounded-xl border-2 border-ink/80 bg-white/50 py-2.5 font-myeongjo text-sm font-extrabold text-ink disabled:opacity-60"
+            : "w-full rounded-2xl border-2 border-ink py-3.5 font-myeongjo text-base font-extrabold text-ink disabled:opacity-60"
+        }
       >
-        {busy ? "교지를 쓰는 중…" : label}
+        {busy ? (compact ? "쓰는 중…" : "교지를 쓰는 중…") : label}
       </button>
       {toast}
     </>

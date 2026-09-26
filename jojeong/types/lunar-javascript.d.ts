@@ -2,6 +2,8 @@ declare module "lunar-javascript" {
   interface EightChar {
     getYearGan(): string;
     getYearZhi(): string;
+    getMonthGan(): string;
+    getMonthZhi(): string;
     getDayGan(): string;
     getDayZhi(): string;
   }

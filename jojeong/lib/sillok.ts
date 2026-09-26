@@ -15,7 +15,9 @@ import {
   RESOLVE,
 } from "./episodes";
 import { josa } from "./josa";
+import { chartOf, readChart } from "./myeongri";
 import { isClash, isWonjin, lifespan, mix, ratings, reignTier, TIERS } from "./reign";
+import type { Seat } from "./court";
 import type { Pillars } from "./saju";
 
 // Deterministic fictional chronicle: the same pillars always produce the same record.
@@ -117,6 +119,16 @@ export const KING_AVG_LIFESPAN = 46.1;
 
 export type Cast = { yeong?: string; gansin?: string; yubae?: string; witness?: string };
 
+// Who from the court appears in the story: the chief minister, the traitor, the exile and one plain witness.
+export function castOf(seats: Seat[]): Cast {
+  return {
+    yeong: seats.find((s) => s.role === "yeong")?.minister.name,
+    gansin: seats.find((s) => s.role === "gansin")?.minister.name,
+    yubae: seats.find((s) => s.role === "yubae")?.minister.name,
+    witness: seats.find((s) => !["yeong", "gansin", "yubae"].includes(s.role))?.minister.name,
+  };
+}
+
 // Where the age at death sits among the 27 real kings. Stated flatly: short lives are not softened.
 function lifespanRank(death: number) {
   const older = KING_AGES.filter(([, age]) => age > death);
@@ -146,6 +158,7 @@ export function sillok(p: Pillars, { cast = {}, kingName = "" }: { cast?: Cast; 
     (p.dayStem * 131 + p.dayBranch * 31 + p.yearBranch * 7 + (p.hourBranch ?? 12) * 3 + n * 17) >>> 0;
 
   const life = lifespan(p);
+  const reading = readChart(p);
   const { tier, reasons: tierReasons } = reignTier(p);
   const t = TIERS[tier];
   const deposed = tier === "pok";
@@ -206,7 +219,8 @@ export function sillok(p: Pillars, { cast = {}, kingName = "" }: { cast?: Cast; 
       : "",
   ];
 
-  const nick = p.dayBranch % 2;
+  // Day stem and day branch always share yin/yang, so branch % 2 would pin one nickname per stem; use the next bit.
+  const nick = (p.dayBranch >> 1) % 2;
   const golden = t.dark ? DARK_GOLDEN[p.dayStem] : GOLDEN[p.dayStem][nick];
   const nickname = t.dark ? DARK_GOLDEN[p.dayStem].nickname : COURT_NICKNAMES[p.dayStem][nick];
   const ch4 = [
@@ -255,8 +269,20 @@ export function sillok(p: Pillars, { cast = {}, kingName = "" }: { cast?: Cast; 
     death,
     rank,
     lifeVerdict: life.verdict,
-    // Two reasons for the verdict and one for the lifespan, avoiding a second mention of the zodiac clash.
-    reasons: [...tierReasons, life.reasons.find((r) => !r.includes("띠")) ?? life.reasons[0]],
+    // The full chart leads with the day master's strength and 용신; then the verdict and one lifespan reason,
+    // avoiding a second mention of the zodiac clash.
+    reasons: [
+      ...(reading ? reading.reasons : []),
+      ...tierReasons.slice(0, reading ? 1 : 2),
+      life.reasons.find((r) => !r.includes("띠")) ?? life.reasons[0],
+    ],
+    chart: reading && {
+      slots: chartOf(p as Parameters<typeof chartOf>[0]),
+      elements: reading.elements,
+      strength: reading.strength,
+      yong: reading.yong,
+      missing: reading.missing,
+    },
     chapters: [
       { title: childhood.title, paras: ch1 },
       { title: first.title, paras: ch2 },
