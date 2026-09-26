@@ -84,7 +84,7 @@ export async function writeReport(job: ReportJob, onText: (t: string) => void): 
   }
   const stream = anthropic().beta.messages.stream({
     model: REPORT_MODEL,
-    max_tokens: 16000,
+    max_tokens: 32000,
     betas: ["server-side-fallback-2026-07-01"],
     fallbacks: "default",
     thinking: { type: "adaptive" },

@@ -182,7 +182,7 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
 
           {isOwner && (
             <ReportShelf
-              ids={["sinbun", "gukjeong", "yeonae", "jaemul", "dwitjosa"]}
+              ids={["sinbun", "pyeongsaeng", "gukjeong", "yeonae", "jaemul", "dwitjosa"]}
               query={`court=${court.id}`}
               highlights={{
                 sinbun: `왕이 아니었다면 ‘${sinbunOf(court.king).job}’`,
