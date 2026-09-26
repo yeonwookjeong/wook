@@ -2,12 +2,18 @@
 
 import { useActionState } from "react";
 import { appointMinisterAction, enthroneAction, joinCourtAction, type FormState } from "@/app/actions";
-import { HOUR_SLOTS } from "@/lib/saju";
+import { HOUR_SLOTS, LATE_ZI, LATE_ZI_LABEL } from "@/lib/saju";
 
 const CALENDARS = [
   { value: "solar", label: "양력" },
   { value: "lunar", label: "음력" },
   { value: "lunar-leap", label: "음력 윤달" },
+] as const;
+
+const GENDERS = [
+  { value: "m", label: "남" },
+  { value: "f", label: "여" },
+  { value: "", label: "밝히지 않음" },
 ] as const;
 
 const MODES = {
@@ -74,8 +80,23 @@ export default function BirthForm({ mode, courtId }: { mode: keyof typeof MODES;
               {slot}
             </option>
           ))}
+          <option value={LATE_ZI}>{LATE_ZI_LABEL}</option>
         </select>
       </label>
+
+      <fieldset className="flex flex-col gap-1.5">
+        <legend className="mb-1.5 text-sm font-semibold text-ink-soft">성별 (선택 · 10년 대운 풀이에 쓰이옵니다)</legend>
+        <div className="grid grid-cols-3 gap-2">
+          {GENDERS.map((g) => (
+            <label key={g.value} className="cursor-pointer">
+              <input type="radio" name="gender" value={g.value} defaultChecked={g.value === ""} className="peer sr-only" />
+              <span className="block rounded-xl border border-ink/15 bg-white/50 py-2.5 text-center text-sm peer-checked:border-ink peer-checked:bg-ink peer-checked:text-hanji peer-focus-visible:ring-2 peer-focus-visible:ring-seal">
+                {g.label}
+              </span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
 
       {state.error && (
         <p role="alert" className="rounded-xl bg-seal/10 px-4 py-3 text-sm text-seal">

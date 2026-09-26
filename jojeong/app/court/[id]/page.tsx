@@ -72,6 +72,7 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
               </section>
               <Sillok kingName={court.kingName} pillars={court.king} cast={cast} />
               <KingCard kingName={court.kingName} pillars={court.king} />
+              <YearCallout href={`/reports/gukjeong?court=${court.id}`} verdict={yearPreview(court.king).verdict} />
               <section className="mt-6">
                 <Hundo mood="face">
                   이제 조정을 채우실 차례이옵니다. 벗들을 부르시면 소신이 그들의 사주를 살펴, 누가 영의정감이고 누가 간신인지
@@ -185,7 +186,7 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
               query={`court=${court.id}`}
               highlights={{
                 sinbun: `왕이 아니었다면 ‘${sinbunOf(court.king).job}’`,
-                gukjeong: `병오년 운세 ‘${yearPreview(court.king).verdict}’ · 첫 장 무료`,
+                gukjeong: `병오년 운세 ‘${yearPreview(court.king).verdict}’ · 무료로 전부 공개`,
               }}
             />
           )}
@@ -261,5 +262,22 @@ function Invitation({
         <BirthForm mode="minister" courtId={courtId} />
       </section>
     </>
+  );
+}
+
+// Right after the accession: the free 2026 reading, the strongest pull from the Joseon fantasy to the present.
+function YearCallout({ href, verdict }: { href: string; verdict: string }) {
+  return (
+    <Link href={href} className="doc-paper mt-6 flex items-center gap-4 px-5 py-5">
+      <span className="flex size-14 shrink-0 -rotate-3 items-center justify-center border-[3px] border-seal font-myeongjo text-xl font-extrabold text-seal">
+        {verdict}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-[11px] font-extrabold text-seal">國運 · 무료로 전부 공개</span>
+        <span className="block font-myeongjo text-lg leading-snug font-extrabold">전하의 2026 병오년 운세</span>
+        <span className="mt-0.5 block text-xs leading-snug text-ink-soft">열두 달 흐름, 돈·일·연애·건강, 10년 대운까지</span>
+      </span>
+      <span className="shrink-0 font-myeongjo text-sm font-extrabold text-seal">보기 →</span>
+    </Link>
   );
 }

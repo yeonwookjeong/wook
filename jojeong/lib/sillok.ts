@@ -20,7 +20,7 @@ import {
   RESOLVE,
 } from "./episodes";
 import { josa } from "./josa";
-import { chartOf, readChart } from "./myeongri";
+import { chartOf, GYEOK_NAME, readChart } from "./myeongri";
 import { isClash, isWonjin, lifespan, mix, ratings, reignTier, TIERS } from "./reign";
 import type { Seat } from "./court";
 import type { Pillars } from "./saju";
@@ -287,6 +287,7 @@ export function sillok(p: Pillars, { cast = {}, kingName = "" }: { cast?: Cast; 
       strength: reading.strength,
       yong: reading.yong,
       missing: reading.missing,
+      gyeok: GYEOK_NAME[reading.gyeok],
     },
     chapters: [
       { title: childhood.title, paras: ch1 },

@@ -11,7 +11,7 @@ export const ELEMENTS = ["木", "火", "土", "金", "水"] as const;
 export const ELEMENTS_KO = ["목", "화", "토", "금", "수"] as const;
 
 export const HOUR_SLOTS = [
-  "자시 (23:30~01:29)",
+  "자시 (00:00~01:29)",
   "축시 (01:30~03:29)",
   "인시 (03:30~05:29)",
   "묘시 (05:30~07:29)",
@@ -24,6 +24,9 @@ export const HOUR_SLOTS = [
   "술시 (19:30~21:29)",
   "해시 (21:30~23:29)",
 ] as const;
+// Born 23:30–23:59: the day already turns at the start of 자시 (정자시), so this is the next day's 자시.
+export const LATE_ZI = 12;
+export const LATE_ZI_LABEL = "밤 자시 (23:30~23:59)";
 
 // The four fields every stored chart has. Charts made after the full-chart update also carry the year
 // stem and the month pillar; older ones only have these four, so the extra fields are optional.
@@ -52,6 +55,18 @@ export type BirthInput = {
 };
 
 export class BirthInputError extends Error {}
+
+// A late-자시 birth becomes the next calendar day's 자시 (as a solar date, so lunar months roll over correctly).
+export function resolveLateZi(input: BirthInput): BirthInput {
+  if (input.hourBranch !== LATE_ZI) return input;
+  const { year, month, day, calendar } = input;
+  const base =
+    calendar === "solar"
+      ? Solar.fromYmdHms(year, month, day, 12, 0, 0)
+      : Lunar.fromYmdHms(year, calendar === "lunar-leap" ? -month : month, day, 12, 0, 0).getSolar();
+  const next = base.next(1);
+  return { year: next.getYear(), month: next.getMonth(), day: next.getDay(), calendar: "solar", hourBranch: 0 };
+}
 
 export function computePillars(input: BirthInput): Pillars {
   const { year, month, day, calendar, hourBranch } = input;

@@ -9,9 +9,10 @@ import { bragLine, decreeLine, summonLine } from "@/lib/decree";
 import { loadCourt, viewerOf } from "@/lib/load";
 import { moodFor, ROLES } from "@/lib/roles";
 import { factLines, GANSIN_SIGNS, relationSentence, roleReasons, type Pillars } from "@/lib/saju";
-import { chartOf, readChart } from "@/lib/myeongri";
+import { chartOf, GYEOK_NAME, readChart } from "@/lib/myeongri";
 import SajuChart from "@/components/SajuChart";
 import { sinbunOf } from "@/lib/sinbun";
+import { yearPreview } from "@/lib/yearly";
 
 async function loadSeat(id: string, mid: string) {
   const { court, seats } = await loadCourt(id);
@@ -130,7 +131,10 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
         <ReportShelf
           ids={["sinbun", "gukjeong", "yeonae", "insa"]}
           query={`court=${court.id}&m=${seat.minister.id}`}
-          highlights={{ sinbun: `조선에 태어났다면 ‘${sinbunOf(seat.minister.pillars).job}’` }}
+          highlights={{
+            sinbun: `조선에 태어났다면 ‘${sinbunOf(seat.minister.pillars).job}’`,
+            gukjeong: `병오년 운세 ‘${yearPreview(seat.minister.pillars).verdict}’ · 무료로 전부 공개`,
+          }}
         />
       )}
 
@@ -207,6 +211,7 @@ function MyChartTeaser({ pillars, name }: { pillars: Pillars; name: string }) {
           strength={reading.strength}
           yong={reading.yong}
           missing={reading.missing}
+          gyeok={GYEOK_NAME[reading.gyeok]}
         />
       )}
       <div className="relative mt-3 overflow-hidden border border-seal/30 bg-[#f9f1de] px-5 py-5 text-center">

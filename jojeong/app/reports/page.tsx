@@ -26,7 +26,7 @@ export default async function ReportsPage() {
           </span>
         </p>
         <p className="mt-1 text-sm text-ink-soft">
-          <span className="inline-block">왕 등급·실록·조선 신분은 무료,</span>{" "}
+          <span className="inline-block">신분 감정과 2026 운세는 무료,</span>{" "}
           <span className="inline-block">
             지금의 운세는 복채 한 닢 <b className="text-ink">{price.toLocaleString("ko-KR")}원</b>
           </span>
