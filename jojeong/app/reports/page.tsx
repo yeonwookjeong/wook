@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import Hundo from "@/components/Hundo";
 import { PURCHASES_COOKIE } from "@/lib/cookies";
 import { PRICE_STEPS, priceFor, PRODUCTS } from "@/lib/products";
+import Keep from "@/components/Keep";
 
 export const metadata: Metadata = { title: "정 훈도의 비밀 보고서" };
 
@@ -19,14 +20,20 @@ export default async function ReportsPage() {
         <p className="font-myeongjo text-sm font-extrabold tracking-[0.4em] text-seal">秘 密 報 告</p>
         <h1 className="mt-2 font-myeongjo text-3xl font-extrabold">정 훈도의 비밀 보고서</h1>
         <p className="mt-2 text-[15px] leading-relaxed">
-          조선 최고의 사주쟁이가 봐 드리는 <b>지금 그대의 운명</b>
+          조선 최고의 사주쟁이가{" "}
+          <span className="inline-block">
+            봐 드리는 <b>지금 그대의 운명</b>
+          </span>
         </p>
         <p className="mt-1 text-sm text-ink-soft">
-          왕 등급 · 실록 · 조선 신분은 무료, 지금의 운세는 복채 한 닢. 모든 보고서{" "}
-          <b className="text-ink">{price.toLocaleString("ko-KR")}원</b>
+          <span className="inline-block">왕 등급·실록·조선 신분은 무료,</span>{" "}
+          <span className="inline-block">
+            지금의 운세는 복채 한 닢 <b className="text-ink">{price.toLocaleString("ko-KR")}원</b>
+          </span>
         </p>
         <p className="mt-1 text-xs text-ink-soft">
-          복채 단골 할인: 살 때마다 100원씩 내려가 {PRICE_STEPS.map((p) => p.toLocaleString("ko-KR")).join(" → ")}원
+          <span className="inline-block">복채 단골 할인: 살 때마다 100원씩</span>{" "}
+          <span className="inline-block">{PRICE_STEPS.map((p) => p.toLocaleString("ko-KR")).join(" → ")}원</span>
         </p>
       </section>
 
@@ -45,13 +52,15 @@ export default async function ReportsPage() {
                 {p.hanja}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="flex items-center gap-2">
-                  <span className="font-myeongjo text-lg font-extrabold">{p.title}</span>
-                  <span className="shrink-0 border border-gold/60 px-1.5 text-[10px] font-bold text-gold">{FOR_LABEL[p.for]}</span>
+                <span className="block font-myeongjo text-lg leading-snug font-extrabold">{p.title}</span>
+                <span className="mt-0.5 block text-[13px] leading-snug text-ink-soft">
+                  <Keep clauses>{p.tagline}</Keep>
                 </span>
-                <span className="mt-0.5 block text-[13px] leading-snug text-ink-soft">{p.tagline}</span>
               </span>
-              <span className="shrink-0 font-myeongjo font-extrabold text-seal">{price}원</span>
+              <span className="flex shrink-0 flex-col items-end gap-1">
+                <span className="font-myeongjo font-extrabold text-seal">{p.free ? "무료" : `${price}원`}</span>
+                <span className="border border-gold/60 px-1.5 text-[10px] font-bold whitespace-nowrap text-gold">{FOR_LABEL[p.for]}</span>
+              </span>
             </Link>
           </li>
         ))}

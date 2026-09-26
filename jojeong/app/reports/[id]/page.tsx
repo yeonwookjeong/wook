@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
+import Keep from "@/components/Keep";
 import RoyalDoc from "@/components/RoyalDoc";
+import SinbunReport from "@/components/SinbunReport";
+import { josa } from "@/lib/josa";
 import { MINISTER_COOKIE, OWNER_COOKIE, PURCHASES_COOKIE } from "@/lib/cookies";
 import { ownedCourts } from "@/lib/load";
 import { PRICE_STEPS, priceFor, productById, type Product } from "@/lib/products";
@@ -25,24 +28,55 @@ async function subjectFor(product: Product, courtId?: string, ministerId?: strin
       const mid = ministerId ?? jar.get(MINISTER_COOKIE(court.id))?.value;
       if (product.for !== "king" && mid) {
         const minister = (await listMinisters(court.id)).find((m) => m.id === mid);
-        if (minister) return { name: minister.name, pillars: minister.pillars as Pillars };
+        if (minister) return { name: minister.name, pillars: minister.pillars as Pillars, king: false };
       }
       if (product.for !== "minister" && jar.get(OWNER_COOKIE(court.id))?.value === court.ownerToken)
-        return { name: court.kingName, pillars: court.king };
+        return { name: court.kingName, pillars: court.king, king: true };
     }
   }
   if (product.for === "minister") return null;
   const [court] = await ownedCourts(1);
-  return court ? { name: court.kingName, pillars: court.king } : null;
+  return court ? { name: court.kingName, pillars: court.king, king: true } : null;
 }
 
 export default async function ReportPage({ params, searchParams }: PageProps<"/reports/[id]">) {
   const product = productById((await params).id);
   if (!product) notFound();
-  const query = await searchParams;
-  const courtId = typeof query.court === "string" ? query.court : undefined;
-  const ministerId = typeof query.m === "string" ? query.m : undefined;
+  const search = await searchParams;
+  const courtId = typeof search.court === "string" ? search.court : undefined;
+  const ministerId = typeof search.m === "string" ? search.m : undefined;
   const subject = await subjectFor(product, courtId, ministerId);
+  const query = new URLSearchParams({ ...(courtId && { court: courtId }), ...(ministerId && { m: ministerId }) }).toString();
+
+  // Free reports open in full: no lock, no price.
+  if (product.free) {
+    return (
+      <>
+        <nav className="pt-4 text-sm">
+          <Link href="/reports" className="font-bold text-ink-soft">
+            ← 보고서 목록
+          </Link>
+        </nav>
+        {subject ? (
+          <SinbunReport
+            pillars={subject.pillars}
+            heading={subject.king ? `${subject.name} 전하가 왕이 아니었다면` : `${josa(subject.name, "이/가")} 조선에 태어났다면`}
+            query={query}
+          />
+        ) : (
+          <RoyalDoc className="mt-3" paperClassName="px-5 text-center">
+            <p className="font-myeongjo text-sm font-extrabold tracking-[0.4em] text-seal">{product.hanja}</p>
+            <h1 className="mt-2 font-myeongjo text-2xl font-extrabold">{product.title}</h1>
+            <p className="mt-2 text-sm leading-relaxed text-ink-soft">{product.teaser}</p>
+            <Link href="/#enthrone" className="mt-5 block bg-seal py-3 font-myeongjo font-extrabold text-hanji">
+              즉위하고 무료로 보기 →
+            </Link>
+          </RoyalDoc>
+        )}
+      </>
+    );
+  }
+
   const bought = Number((await cookies()).get(PURCHASES_COOKIE)?.value ?? 0);
   const price = priceFor(bought);
   const year = product.id === "gukjeong" && subject ? yearPreview(subject.pillars) : null;
@@ -58,7 +92,9 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
       <RoyalDoc className="mt-3" paperClassName="px-5">
         <p className="text-center font-myeongjo text-sm font-extrabold tracking-[0.4em] text-seal">{product.hanja}</p>
         <h1 className="mt-2 text-center font-myeongjo text-2xl font-extrabold">{product.title}</h1>
-        <p className="mt-2 text-center text-sm leading-snug text-ink-soft">{product.tagline}</p>
+        <p className="mt-2 text-center text-sm leading-snug text-ink-soft">
+          <Keep clauses>{product.tagline}</Keep>
+        </p>
         {subject && <p className="mt-3 text-center text-xs font-bold text-gold">{subject.name} 님의 사주로 지어 올리옵니다</p>}
 
         <ol className="mt-5 flex flex-col divide-y divide-seal/15 border-y-[3px] border-double border-seal/40 px-1">
@@ -83,8 +119,8 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
               <p className="mt-1.5 text-[15px] leading-relaxed">{year.text}</p>
               {year.full && (
                 <p className="mt-2 text-[15px] leading-relaxed">
-                  열두 달 가운데 <b className="text-seal">좋은 달이 {year.good}번</b>,{" "}
-                  <b className="text-seal">조심할 달이 {year.bad}번</b> 보이옵니다. 어느 달인지는 보고서에 적어 올리옵니다.
+                  열두 달 가운데 <b className="whitespace-nowrap text-seal">좋은 달이 {year.good}번</b>,{" "}
+                  <b className="whitespace-nowrap text-seal">조심할 달이 {year.bad}번</b> 보이옵니다. 어느 달인지는 보고서에 적어 올리옵니다.
                 </p>
               )}
             </>
@@ -121,7 +157,8 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
         <div className="mt-6 border-t border-seal/20 pt-5 text-center">
           <p className="font-myeongjo text-3xl font-extrabold text-seal">{price.toLocaleString("ko-KR")}원</p>
           <p className="mt-1 text-xs text-ink-soft">
-            복채 단골 할인 · 살 때마다 100원씩 내려가 {PRICE_STEPS[PRICE_STEPS.length - 1]}원까지
+            <span className="inline-block">복채 단골 할인 ·</span>{" "}
+            <span className="inline-block">살 때마다 100원씩 내려가 {PRICE_STEPS[PRICE_STEPS.length - 1]}원까지</span>
           </p>
           <button
             type="button"
@@ -134,7 +171,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
             보고서는 결제 즉시 열리는 디지털 콘텐츠라, 열람을 시작한 뒤에는 전자상거래법에 따라 청약철회가 제한되옵니다.
             결제 전 위의 목차와 맛보기로 내용을 확인해 주시옵소서. 보고서가 안내한 내용과 다르게 제공된 경우에는 받은 날부터
             3개월 이내에 환불을 요청하실 수 있사옵니다. 자세한 내용은{" "}
-            <Link href="/refund" className="underline">
+            <Link href="/refund" className="whitespace-nowrap underline">
               환불 규정
             </Link>
             을 보시옵소서.

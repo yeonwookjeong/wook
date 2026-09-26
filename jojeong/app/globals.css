@@ -20,11 +20,25 @@ body {
   background: var(--color-hanji);
   color: var(--color-ink);
   font-family: var(--font-sans);
+  /* Korean wraps between words (keep-all); long runs like emails and URLs may still break so nothing overflows. */
   word-break: keep-all;
+  overflow-wrap: anywhere;
   background-image:
     radial-gradient(circle at 20% 10%, rgb(255 255 255 / 0.5), transparent 40%),
     radial-gradient(circle at 80% 90%, rgb(168 122 34 / 0.08), transparent 45%);
   background-attachment: fixed;
+}
+
+/* Headings split into even lines; paragraphs avoid leaving a single word alone on the last line. */
+h1, h2, h3 {
+  text-wrap: balance;
+}
+p, li, dd, blockquote {
+  text-wrap: pretty;
+}
+/* Short centered captions read best as even lines. */
+.text-center p, p.text-center {
+  text-wrap: balance;
 }
 
 @keyframes stamp {

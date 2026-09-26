@@ -26,19 +26,19 @@ export default function Hero() {
 
         <a
           href="#enthrone"
-          className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full border-2 border-[#e2bc68] bg-seal px-5 py-2.5 font-myeongjo text-base font-extrabold text-hanji shadow-[0_4px_0_#7d1a14]"
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full border-2 border-[#e2bc68] bg-seal px-5 py-2.5 font-myeongjo text-base font-extrabold whitespace-nowrap text-hanji shadow-[0_4px_0_#7d1a14]"
         >
           사주로 즉위하기 ↓
         </a>
 
         {/* 정 훈도: 구석에서 허리 숙인 신하 */}
-        <div className="absolute right-4 bottom-4 size-16 overflow-hidden rounded-full border-2 border-[#d9ad52] bg-[#f7efd9] shadow-lg">
+        <div className="absolute right-3 bottom-16 size-14 overflow-hidden rounded-full border-2 border-[#d9ad52] bg-[#f7efd9] shadow-lg">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={CHARACTER.bow}
             alt={`허리 숙여 인사하는 ${CHARACTER_NAME}`}
-            width={64}
-            height={64}
+            width={56}
+            height={56}
             className="size-full origin-bottom scale-[1.18] object-cover"
           />
         </div>

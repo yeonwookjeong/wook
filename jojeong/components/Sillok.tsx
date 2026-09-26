@@ -69,16 +69,19 @@ export default function Sillok({ kingName, pillars, cast = {} }: { kingName: str
       <ul className="mt-4 flex flex-col divide-y divide-seal/15 border-y-[3px] border-double border-seal/40 px-1">
         {s.ratings.map((r) => (
           <li key={r.key} className="flex items-center gap-3 py-2.5">
-            <span className="w-16 shrink-0 text-xs font-extrabold text-ink-soft">{r.label}</span>
-            <Stars value={r.value} />
-            <span className="min-w-0 text-[13px] leading-snug break-keep">{r.line}</span>
+            {/* Label over stars on the left keeps the line on the right to one or two lines even on narrow phones. */}
+            <span className="flex w-[4.5rem] shrink-0 flex-col text-[13px] leading-tight">
+              <span className="text-xs font-extrabold text-ink-soft">{r.label}</span>
+              <Stars value={r.value} />
+            </span>
+            <span className="min-w-0 text-[13px] leading-snug">{r.line}</span>
           </li>
         ))}
       </ul>
 
       <dl className="mt-3 grid grid-cols-2 gap-1.5 text-center">
         <div className="border border-seal/25 px-2 py-2">
-          <dt className="text-[11px] text-ink-soft">신하들이 몰래 부른 이름</dt>
+          <dt className="text-[11px] text-ink-soft">신하들의 뒷담 별명</dt>
           <dd className="mt-0.5 font-myeongjo font-extrabold">{s.nickname}</dd>
         </div>
         <div className="border border-seal/25 px-2 py-2">
@@ -93,9 +96,17 @@ export default function Sillok({ kingName, pillars, cast = {} }: { kingName: str
         <p className="text-xs font-extrabold text-seal">정 훈도의 소견</p>
         <ul className="mt-1.5 flex flex-col gap-1 text-[13px] leading-snug text-ink-soft">
           {s.reasons.map((r) => (
-            <li key={r}>· {r}</li>
+            <li key={r} className="flex gap-1">
+              <span aria-hidden="true">·</span>
+              <span>{r}</span>
+            </li>
           ))}
-          <li className="font-bold text-ink">· 하여 {s.tierLabel}의 사주이며, {s.lifeVerdict}이옵니다.</li>
+          <li className="flex gap-1 font-bold text-ink">
+            <span aria-hidden="true">·</span>
+            <span>
+              하여 {s.tierLabel}의 사주이며, {s.lifeVerdict}이옵니다.
+            </span>
+          </li>
         </ul>
       </div>
 
