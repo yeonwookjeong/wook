@@ -4,7 +4,8 @@ import { cookies } from "next/headers";
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { computeProfile, type Gender } from "@/lib/profile";
-import { BirthInputError, computePillars, LATE_ZI, resolveLateZi, type BirthInput, type Pillars } from "@/lib/saju";
+import { cityById } from "@/lib/birthtime";
+import { BirthInputError, computePillars, LATE_ZI, resolveBirthTime, resolveLateZi, type BirthInput, type Pillars } from "@/lib/saju";
 import { addMinister, createCourt, CourtFullError, getCourt, listMinisters, MAX_MINISTERS, removeMinister, setProfile } from "@/lib/store";
 import { OWNER_COOKIE, MINISTER_COOKIE } from "@/lib/cookies";
 
@@ -32,10 +33,15 @@ function parseBirth(formData: FormData): Omit<Parsed, "name"> {
   if (calendar !== "solar" && calendar !== "lunar" && calendar !== "lunar-leap")
     throw new BirthInputError("양력·음력을 골라주시옵소서.");
 
+  // The clock time ("HH:MM"), or nothing when unknown. An hour slot ("hour") is still accepted from older pages.
+  const timeRaw = String(formData.get("time") ?? "").trim();
+  const clock = /^([01]?\d|2[0-3]):([0-5]\d)$/.exec(timeRaw);
+  if (timeRaw && !clock) throw new BirthInputError("태어난 시각을 다시 확인해 주시옵소서. (예: 09:30)");
   const hourRaw = String(formData.get("hour") ?? "");
-  const hour = hourRaw === "" ? null : Number(hourRaw);
+  const hour = clock || hourRaw === "" ? null : Number(hourRaw);
   if (hour !== null && !(Number.isInteger(hour) && hour >= 0 && hour <= LATE_ZI))
     throw new BirthInputError("태어난 시간을 다시 골라주시옵소서.");
+  const city = cityById(String(formData.get("city") ?? ""));
 
   const genderRaw = String(formData.get("gender") ?? "");
   const gender: Gender | null = genderRaw === "m" || genderRaw === "f" ? genderRaw : null;
@@ -48,9 +54,11 @@ function parseBirth(formData: FormData): Omit<Parsed, "name"> {
     hourBranch: hour,
   };
   if (raw.month < 1 || raw.month > 12 || raw.day < 1 || raw.day > 31) throw new BirthInputError("존재하지 않는 날짜이옵니다.");
-  // Validate the date as entered first; only then move a late-자시 birth to the next day.
+  // Validate the date as entered first; only then correct the time (which can move the day).
   computePillars({ ...raw, hourBranch: null });
-  const input = resolveLateZi(raw);
+  const input = clock
+    ? resolveBirthTime(raw, { hour: Number(clock[1]), minute: Number(clock[2]) }, city.lon).input
+    : resolveLateZi(raw);
   return { pillars: computePillars(input), input, gender };
 }
 
@@ -155,7 +163,11 @@ export async function deepenAction(_prev: FormState, formData: FormData): Promis
       parsed.pillars.dayBranch === stored.dayBranch &&
       parsed.pillars.yearBranch === stored.yearBranch &&
       (stored.monthBranch === undefined || parsed.pillars.monthBranch === stored.monthBranch);
-    const hourDiffers = stored.hourBranch !== null && parsed.input.hourBranch !== null && stored.hourBranch !== parsed.input.hourBranch;
+    // Charts saved before the time correction may sit one 시 off at a boundary; that still counts as the same.
+    const hourDiffers =
+      stored.hourBranch !== null &&
+      parsed.input.hourBranch !== null &&
+      ![0, 1, 11].includes((parsed.input.hourBranch - stored.hourBranch + 12) % 12);
     if (!same || hourDiffers) return { error: "처음 올리신 생년월일시와 사주가 다르옵니다. 다시 확인해 주시옵소서." };
     if (!parsed.gender && parsed.input.hourBranch === null) return { error: "성별이나 태어난 시간 중 하나는 알려 주시옵소서." };
     await setProfile(court.id, who, computeProfile(parsed.input, parsed.gender));
