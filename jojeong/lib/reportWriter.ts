@@ -1,6 +1,7 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 import { chartBrief, pairBrief } from "./brief";
 import { productById, type ProductId } from "./products";
 import { REPORT_SPECS, SYSTEM_PROMPT, userPrompt } from "./reportPrompts";
@@ -8,12 +9,17 @@ import type { Pillars } from "./saju";
 import { getProfile } from "./store";
 import { courtOfReader, subjectFor } from "./subject";
 
-// Written reports: the engine's chart brief goes to Claude, which writes the reading in 정 훈도's voice.
-// Each report is written once per unique input and cached.
-
-export const REPORT_MODEL = process.env.REPORT_MODEL ?? "claude-opus-5";
+// Written reports: the engine's chart brief goes to a language model, which writes the reading in 정 훈도's
+// voice. Each report is written once per unique input and cached.
+//
+// The model is picked by REPORT_MODEL: "claude-…" (ANTHROPIC_API_KEY) or "gemini-…" (GEMINI_API_KEY). Unset,
+// it follows whichever key is present, Claude first.
+export const REPORT_MODEL =
+  process.env.REPORT_MODEL ?? (process.env.ANTHROPIC_API_KEY || !process.env.GEMINI_API_KEY ? "claude-opus-5" : "gemini-3.8-flash");
+const isGemini = REPORT_MODEL.startsWith("gemini");
 const PROMPT_VERSION = "v2";
-export const aiEnabled = () => Boolean(process.env.ANTHROPIC_API_KEY) || process.env.REPORT_MOCK === "1";
+export const aiEnabled = () =>
+  Boolean(isGemini ? process.env.GEMINI_API_KEY : process.env.ANTHROPIC_API_KEY) || process.env.REPORT_MOCK === "1";
 
 export type ReportJob = { key: string; system: string; prompt: string; title: string };
 export type JobRequest = { product: string; court?: string; m?: string; t?: string };
@@ -74,7 +80,7 @@ export function anthropic() {
 // Streams the report text as it is written; resolves with the full text (or null when it did not finish).
 export async function writeReport(job: ReportJob, onText: (t: string) => void): Promise<string | null> {
   // Local UI testing without an API key: stream a canned report.
-  if (process.env.REPORT_MOCK === "1" && !process.env.ANTHROPIC_API_KEY) {
+  if (process.env.REPORT_MOCK === "1" && !(isGemini ? process.env.GEMINI_API_KEY : process.env.ANTHROPIC_API_KEY)) {
     const { MOCK_REPORT } = await import("./reportMock");
     for (const piece of MOCK_REPORT.match(/[\s\S]{1,40}/g) ?? []) {
       onText(piece);
@@ -82,6 +88,7 @@ export async function writeReport(job: ReportJob, onText: (t: string) => void): 
     }
     return MOCK_REPORT;
   }
+  if (isGemini) return writeWithGemini(job, onText);
   const stream = anthropic().beta.messages.stream({
     model: REPORT_MODEL,
     max_tokens: 32000,
@@ -102,4 +109,30 @@ export async function writeReport(job: ReportJob, onText: (t: string) => void): 
   const final = await stream.finalMessage();
   if (final.stop_reason !== "end_turn") return null;
   return text;
+}
+
+let gemini: GoogleGenAI | null = null;
+
+async function writeWithGemini(job: ReportJob, onText: (t: string) => void): Promise<string | null> {
+  gemini ??= new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  const stream = await gemini.models.generateContentStream({
+    model: REPORT_MODEL,
+    contents: job.prompt,
+    config: {
+      systemInstruction: job.system,
+      maxOutputTokens: 32000,
+      thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+    },
+  });
+  let text = "";
+  let finish: string | undefined;
+  for await (const chunk of stream) {
+    const t = chunk.text;
+    if (t) {
+      text += t;
+      onText(t);
+    }
+    finish = chunk.candidates?.[0]?.finishReason ?? finish;
+  }
+  return finish === "STOP" && text ? text : null;
 }

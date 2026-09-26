@@ -18,7 +18,7 @@ npm run dev        # http://localhost:3000
 2. Storage 탭 → Marketplace에서 **Upstash Redis**(무료 플랜) 추가 → 프로젝트에 연결
    - `KV_REST_API_URL` / `KV_REST_API_TOKEN` 또는 `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`이 자동 주입됩니다. 둘 다 인식합니다.
 3. 커스텀 도메인을 붙이면 환경변수 `NEXT_PUBLIC_SITE_URL=https://도메인` 추가 (카톡 미리보기 이미지 주소에 쓰임)
-4. 보고서 집필(AI): 환경변수 `ANTHROPIC_API_KEY` 추가. 선택: `REPORT_MODEL`(기본 `claude-opus-5`), `REPORT_DAILY_LIMIT`(하루 새로 쓰는 보고서 수 상한, 기본 1000). 키가 없으면 2026 운세는 엔진 문장으로, 나머지 보고서는 "준비 중"으로 보임. 로컬에서 키 없이 화면만 확인하려면 `REPORT_MOCK=1`
+4. 보고서 집필(AI): 환경변수 `ANTHROPIC_API_KEY` 또는 `GEMINI_API_KEY` 추가. 선택: `REPORT_MODEL`(`claude-…` 또는 `gemini-…`, 비우면 있는 키를 따라 `claude-opus-5` / `gemini-3.8-flash`), `REPORT_DAILY_LIMIT`(하루 새로 쓰는 보고서 수 상한, 기본 1000). 키가 없으면 2026 운세는 엔진 문장으로, 나머지 보고서는 "준비 중"으로 보임. 로컬에서 키 없이 화면만 확인하려면 `REPORT_MOCK=1`
 
 Redis 환경변수 없이 Vercel에 배포하면 즉위 시 오류가 나도록 되어 있습니다(서버리스는 파일 저장이 안 되기 때문).
 
