@@ -236,7 +236,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
         <ol className="mt-5 flex flex-col divide-y divide-seal/15 border-y-[3px] border-double border-seal/40 px-1">
           {product.toc.map((item, i) => (
             <li key={item} className="flex items-center gap-2 py-2 text-[15px]">
-              <span className="font-myeongjo font-extrabold text-seal">{"一二三四五六"[i]}</span>
+              <span className="font-myeongjo font-extrabold text-seal">{i < 9 ? "一二三四五六七八九"[i] : i + 1}</span>
               <span className="flex-1">{item}</span>
               <span className="text-xs text-ink-soft">{i === 0 ? "맛보기" : "🔒"}</span>
             </li>

@@ -129,7 +129,7 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
       {isSelf && <MyChartTeaser pillars={seat.minister.pillars} name={seat.minister.name} />}
       {isSelf && (
         <ReportShelf
-          ids={["sinbun", "gukjeong", "yeonae", "insa"]}
+          ids={["sinbun", "pyeongsaeng", "gukjeong", "yeonae", "insa"]}
           query={`court=${court.id}&m=${seat.minister.id}`}
           highlights={{
             sinbun: `조선에 태어났다면 ‘${sinbunOf(seat.minister.pillars).job}’`,

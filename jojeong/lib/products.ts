@@ -1,7 +1,7 @@
 // 정 훈도의 비밀 보고서. One free report (조선 신분 감정) opens the shelf; the paid ones all cost the same and get
 // cheaper with each purchase (복채 단골 할인): 990 → 890 → 790 → 690, then 690 for good.
 
-export type ProductId = "sinbun" | "gukjeong" | "yeonae" | "jaemul" | "jikup" | "dwitjosa" | "gwangye" | "insa";
+export type ProductId = "sinbun" | "pyeongsaeng" | "gukjeong" | "yeonae" | "jaemul" | "jikup" | "dwitjosa" | "gwangye" | "insa";
 
 export type Product = {
   id: ProductId;
@@ -28,6 +28,29 @@ export const PRODUCTS: Product[] = [
     toc: ["태어난 집", "그 신분의 하루", "사람들이 본 그대", "인생의 고비", "귀인과 악연", "출세", "말년"],
     teaser: "그대의 사주로 조선에서의 한평생을 일곱 장에 담아 올리옵니다.",
     free: true,
+  },
+  {
+    id: "pyeongsaeng",
+    title: "평생 사주",
+    hanja: "命書",
+    for: "anyone",
+    tagline: "나는 어떤 사람이고 어떻게 살아갈까? 성격·돈·일·사랑·가족·건강, 인생 전체를 한 권에",
+    toc: [
+      "나는 어떤 사람일까",
+      "남들이 보는 나, 진짜 나",
+      "내 사주의 무기와 약점",
+      "돈복은 어느 정도일까",
+      "어떤 일을 해야 잘 풀릴까",
+      "나의 연애와 결혼",
+      "부모님, 형제, 그리고 자녀",
+      "사람 복: 나를 돕는 사람, 조심할 사람",
+      "평생 챙겨야 할 몸",
+      "인생의 사계절: 초년·청년·중년·말년",
+      "지금 나는 인생의 어디쯤일까",
+      "앞으로 10년, 꼭 잡아야 할 기회",
+      "정 훈도가 드리는 평생의 처방",
+    ],
+    teaser: "그대의 사주를 처음부터 끝까지, 한 권의 책처럼 풀어 올리옵니다.",
   },
   {
     id: "gukjeong",

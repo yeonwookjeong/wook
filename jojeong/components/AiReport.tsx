@@ -4,7 +4,9 @@ import { useEffect, useRef, useState } from "react";
 
 type Section = { label: string; headline: string; paras: string[] };
 
-const HANJA = "一二三四五六七八九十";
+const DIGITS = "一二三四五六七八九";
+// 1 → 一, 10 → 十, 13 → 十三
+const hanjaNum = (n: number) => (n < 10 ? DIGITS[n - 1] : `十${n > 10 ? DIGITS[n - 11] : ""}`);
 const MARK_ERROR = "[[error]]";
 
 // "## [장 이름] 헤드라인" + paragraphs → sections. Works on partial text while it streams in.
@@ -82,7 +84,7 @@ export default function AiReport({ request, chapters, fallback }: { request: Rec
         <details key={i} open className="group doc-paper px-5 py-4">
           <summary className="flex cursor-pointer list-none items-start gap-3 [&::-webkit-details-marker]:hidden">
             <span className="flex size-9 shrink-0 items-center justify-center border-2 border-seal/60 font-myeongjo font-extrabold text-seal">
-              {HANJA[i] ?? i + 1}
+              {hanjaNum(i + 1)}
             </span>
             <span className="min-w-0 flex-1">
               <span className="block text-[11px] font-extrabold text-seal">{s.label}</span>
