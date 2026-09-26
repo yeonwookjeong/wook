@@ -98,13 +98,27 @@ export type Reading = {
   method: "억부" | "조후";
   eokbu: number; // the 억부 answer, even when 조후 wins
   johu: number | null; // element the season calls for, when it calls urgently
-  season: "봄" | "여름" | "환절기" | "가을" | "겨울";
+  season: "봄" | "여름" | "가을" | "겨울";
   gyeok: TenGod; // 격국 from the month branch
   missing: number[];
   reasons: string[];
 };
 
-const SEASON_OF = ["겨울", "겨울", "봄", "봄", "환절기", "여름", "여름", "환절기", "가을", "가을", "환절기", "겨울"] as const;
+// The season of each month branch. The earth months belong to the season they close (辰 late spring, 未 late
+// summer, 戌 late autumn, 丑 late winter): a 未 month is the hottest of the year, not a neutral one.
+const SEASON_OF = ["겨울", "겨울", "봄", "봄", "봄", "여름", "여름", "여름", "가을", "가을", "가을", "겨울"] as const;
+
+// 조후 보정: an earth branch in the month (and, less, the hour) carries its season's climate, so part of its
+// weight goes to the season's own stem hidden inside it (辰→乙, 未→丁, 戌→辛, 丑→癸). A summer 未 reads
+// half as fire, a winter 丑 half as water.
+const SEASON_STEM: Record<number, number> = { 4: 1, 7: 3, 10: 7, 1: 9 };
+const SEASON_SHARE = { 월: 0.5, 시: 0.25, 일: 0, 연: 0 } as const;
+function branchParts(branch: number, pos: Slot["pos"]): [stem: number, share: number][] {
+  const s = branch in SEASON_STEM ? SEASON_SHARE[pos] : 0;
+  const parts: [number, number][] = HIDDEN[branch].map(([stem, days]) => [stem, ((1 - s) * days) / 30]);
+  if (s) parts.push([SEASON_STEM[branch], s]);
+  return parts;
+}
 
 // 격국: the hidden stem of the month branch that shows itself among the heavenly stems (투출) sets the frame;
 // with none showing, the main hidden stem (본기) does.
@@ -147,10 +161,11 @@ export function readChart(p: Pillars): Reading | null {
       elements[BRANCH_EL[slot.branch]]++;
       godList.push(tenGod(full.dayStem, BRANCH_MAIN_STEM[slot.branch]));
       gods[GROUP_OF[tenGod(full.dayStem, BRANCH_MAIN_STEM[slot.branch])]]++;
-      // A branch counts through every stem hidden in it, each by the share of the month it rules.
+      // A branch counts through every stem hidden in it, each by the share of the month it rules, with the
+      // season's correction for earth branches in the month and hour.
       const w = POS_WEIGHT.branch[slot.pos];
-      for (const [stem, days] of HIDDEN[slot.branch]) {
-        const part = (w * days) / 30;
+      for (const [stem, share] of branchParts(slot.branch, slot.pos)) {
+        const part = w * share;
         const g = GROUP_OF[tenGod(full.dayStem, stem)];
         godWeights[g] += part;
         weights[stemEl(stem)] += part;
