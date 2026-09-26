@@ -65,7 +65,7 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
         <div className="mx-auto mt-6 w-fit rounded-full bg-hanji-deep px-4 py-1.5 text-sm">
           궁합 <b className="font-myeongjo text-lg">{seat.match.score}</b>점
         </div>
-        <p className="mt-1.5 text-[11px] text-ink-soft">평균 68점 · 75점 넘으면 영의정 후보 · 80점 넘으면 좌의정</p>
+        <p className="mt-1.5 text-[11px] text-ink-soft">평균 68점 · 조정 1등(75점 이상)은 영의정 · 80점 넘으면 좌의정</p>
 
         <span className="animate-stamp absolute right-5 bottom-5 flex size-16 items-center justify-center rounded-lg border-[3px] border-seal font-myeongjo text-sm font-extrabold leading-tight text-seal">
           御

@@ -288,7 +288,7 @@ export function roleReasons(king: Pillars, minister: Pillars, match: Match, role
   } else if (role === "yeong") {
     lines.push(`조정의 신하 가운데 궁합이 가장 높고(${match.score}점), 영의정의 기준인 75점을 넘었사옵니다.`);
   } else if (role === "jwa") {
-    lines.push(`궁합이 ${match.score}점으로 80점을 넘었사옵니다. 전하와 기운이 크게 맞으니 곁에 두어 의지할 만하옵니다.`);
+    lines.push(`궁합이 ${match.score}점으로 80점을 넘었사옵니다. 조정 1등에게 돌아가는 영의정 바로 아래 자리이니, 곁에 두어 의지할 만하옵니다.`);
   } else {
     const why: Record<RelationGroup, string> = {
       인성: "전하를 생(生)하는 인성(印星)이라, 가르치고 키우는 대제학에 천거하였사옵니다.",
