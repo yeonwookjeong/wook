@@ -79,40 +79,87 @@ function Seal({ size }: { size: number }) {
   );
 }
 
-const frame = (width: number, height: number, accent: string): React.CSSProperties => ({
+// Every image is a royal document: hanji paper with a red double frame on a dark lacquer ground, rolled on
+// wooden rods (top and bottom for the tall story images, left and right for the wide link previews).
+const frame = (width: number, height: number): React.CSSProperties => ({
   width,
   height,
   display: "flex",
   flexDirection: "column",
   alignItems: "center",
-  background: C.hanji,
+  background: "#2b1d12",
   color: C.ink,
   fontFamily: "Myeongjo",
-  border: `${Math.round(width / 90)}px solid ${accent}`,
   position: "relative",
 });
 
-// Satori has no `double` border style, so the inner rule is drawn as an overlay.
+const ROD = "linear-gradient(180deg, #8a5c33, #4a2e17 60%, #2e1c0d)";
+const ROD_SIDE = "linear-gradient(90deg, #8a5c33, #4a2e17 60%, #2e1c0d)";
+const CAP = "radial-gradient(circle at 35% 35%, #f3d383, #a8781f)";
+
+// Satori paints in document order, so this goes first and the content is drawn over the paper.
 function InnerRule({ width, accent }: { width: number; accent: string }) {
-  const inset = Math.round(width / 70);
-  return (
+  const wide = width === 1200;
+  const height = wide ? 630 : 1920;
+  const padX = wide ? 44 : 40;
+  const padY = wide ? 26 : 66;
+  const rod = wide ? 24 : 30;
+  const cap = wide ? 34 : 42;
+  const inset = wide ? 18 : 24;
+  const rule = (d: number, w: number, color: string) => (
     <div
       style={{
         position: "absolute",
-        top: inset,
-        left: inset,
-        right: inset,
-        bottom: inset,
-        border: `${Math.max(2, Math.round(width / 400))}px solid ${accent}`,
+        top: padY + d,
+        left: padX + d,
+        width: width - 2 * (padX + d),
+        height: height - 2 * (padY + d),
+        border: `${w}px solid ${color}`,
         display: "flex",
       }}
     />
+  );
+  const rods = wide
+    ? [
+        { left: padX - rod / 2, top: padY - 16, width: rod, height: height - 2 * padY + 32, background: ROD_SIDE },
+        { left: width - padX - rod / 2, top: padY - 16, width: rod, height: height - 2 * padY + 32, background: ROD_SIDE },
+      ]
+    : [
+        { left: padX - 22, top: padY - rod / 2, width: width - 2 * padX + 44, height: rod, background: ROD },
+        { left: padX - 22, top: height - padY - rod / 2, width: width - 2 * padX + 44, height: rod, background: ROD },
+      ];
+  return (
+    <div style={{ position: "absolute", top: 0, left: 0, width, height, display: "flex" }}>
+      <div style={{ position: "absolute", top: padY, left: padX, width: width - 2 * padX, height: height - 2 * padY, background: "#f9f1de", display: "flex" }} />
+      {rule(inset, wide ? 4 : 6, accent === C.gold ? "rgba(179, 38, 30, 0.7)" : "rgba(179, 38, 30, 0.8)")}
+      {rule(inset + (wide ? 10 : 14), 2, "rgba(179, 38, 30, 0.4)")}
+      {rods.map((r, i) => (
+        <div key={i} style={{ position: "absolute", ...r, borderRadius: rod / 2, display: "flex" }} />
+      ))}
+      {rods.flatMap((r, i) => {
+        const ends = wide
+          ? [
+              { left: r.left + (rod - cap) / 2, top: r.top - cap / 2 },
+              { left: r.left + (rod - cap) / 2, top: r.top + r.height - cap / 2 },
+            ]
+          : [
+              { left: r.left - cap / 2, top: r.top + (rod - cap) / 2 },
+              { left: r.left + r.width - cap / 2, top: r.top + (rod - cap) / 2 },
+            ];
+        return ends.map((e, k) => (
+          <div
+            key={`${i}-${k}`}
+            style={{ position: "absolute", ...e, width: cap, height: cap, borderRadius: cap / 2, background: CAP, display: "flex" }}
+          />
+        ));
+      })}
+    </div>
   );
 }
 
 export function inviteImage(kingName: string, king: Pillars, ministerCount: number) {
   return render(
-    <div style={{ ...frame(1200, 630, C.seal), justifyContent: "center" }}>
+    <div style={{ ...frame(1200, 630), justifyContent: "center" }}>
       <InnerRule width={1200} accent={C.seal} />
       <div style={{ fontSize: 30, letterSpacing: 16, color: C.seal, fontWeight: 800 }}>敎 旨</div>
       <div style={{ marginTop: 22, fontSize: 34, color: C.gold, fontWeight: 800 }}>{KING_TYPES[king.dayStem].title}</div>
@@ -121,10 +168,10 @@ export function inviteImage(kingName: string, king: Pillars, ministerCount: numb
       <div style={{ marginTop: 28, fontSize: 30, color: C.soft }}>
         {ministerCount > 0 ? `이미 ${ministerCount}명이 입궐했사옵니다 · 사주로 관직 받기` : "사주로 관직을 받아보시옵소서"}
       </div>
-      <div style={{ position: "absolute", left: 60, bottom: 50, display: "flex" }}>
+      <div style={{ position: "absolute", left: 96, bottom: 58, display: "flex" }}>
         <Portrait mood="decree" size={190} />
       </div>
-      <div style={{ position: "absolute", right: 70, bottom: 60, display: "flex" }}>
+      <div style={{ position: "absolute", right: 104, bottom: 66, display: "flex" }}>
         <Seal size={120} />
       </div>
     </div>,
@@ -137,16 +184,16 @@ export function ministerImage(kingName: string, name: string, role: RoleKey, sco
   const r = ROLES[role];
   const danger = r.tone === "red" || r.tone === "gray";
   return render(
-    <div style={{ ...frame(1200, 630, danger ? C.seal : C.gold), justifyContent: "center" }}>
+    <div style={{ ...frame(1200, 630), justifyContent: "center" }}>
       <InnerRule width={1200} accent={danger ? C.seal : C.gold} />
       <div style={{ fontSize: 30, color: C.soft }}>{`${kingName} 전하께서`}</div>
       <div style={{ marginTop: 8, fontSize: 44, fontWeight: 800 }}>{decreeLine(name, role)}</div>
       <div style={{ marginTop: 20, fontSize: 150, fontWeight: 800, color: danger ? C.seal : C.ink }}>{r.title}</div>
       <div style={{ marginTop: 8, fontSize: 32, color: C.gold, fontWeight: 800 }}>{`${r.rank} · 궁합 ${score}점`}</div>
-      <div style={{ position: "absolute", left: 60, bottom: 50, display: "flex" }}>
+      <div style={{ position: "absolute", left: 96, bottom: 58, display: "flex" }}>
         <Portrait mood={moodFor(role)} size={190} />
       </div>
-      <div style={{ position: "absolute", right: 70, bottom: 60, display: "flex" }}>
+      <div style={{ position: "absolute", right: 104, bottom: 66, display: "flex" }}>
         <Seal size={120} />
       </div>
     </div>,
@@ -157,7 +204,7 @@ export function ministerImage(kingName: string, name: string, role: RoleKey, sco
 
 function StoryFooter() {
   return (
-    <div style={{ position: "absolute", bottom: 90, display: "flex", flexDirection: "column", alignItems: "center" }}>
+    <div style={{ position: "absolute", bottom: 124, display: "flex", flexDirection: "column", alignItems: "center" }}>
       <div style={{ fontSize: 58, fontWeight: 800 }}>{SERVICE_NAME}</div>
       <div style={{ marginTop: 10, fontSize: 32, color: C.soft }}>{TAGLINE}</div>
     </div>
@@ -168,12 +215,12 @@ export function ministerStory(kingName: string, name: string, role: RoleKey, sco
   const r = ROLES[role];
   const danger = r.tone === "red" || r.tone === "gray";
   return render(
-    <div style={{ ...frame(1080, 1920, danger ? C.seal : C.gold), paddingTop: 220 }}>
+    <div style={{ ...frame(1080, 1920), paddingTop: 220 }}>
       <InnerRule width={1080} accent={danger ? C.seal : C.gold} />
       <div style={{ fontSize: 52, letterSpacing: 28, color: C.seal, fontWeight: 800 }}>敎 旨</div>
       <div style={{ marginTop: 110, fontSize: 48, color: C.soft }}>{`${kingName} 전하께서`}</div>
       <div style={{ marginTop: 16, fontSize: 60, fontWeight: 800 }}>{decreeLine(name, role)}</div>
-      <div style={{ marginTop: 90, fontSize: 250, fontWeight: 800, color: danger ? C.seal : C.ink }}>{r.title}</div>
+      <div style={{ marginTop: 90, fontSize: 210, fontWeight: 800, color: danger ? C.seal : C.ink }}>{r.title}</div>
       <div style={{ marginTop: 20, fontSize: 48, color: C.gold, fontWeight: 800 }}>{r.rank}</div>
       <div style={{ marginTop: 40, fontSize: 50, lineHeight: 1.5, display: "flex", flexDirection: "column", alignItems: "center" }}>
         {balancedLines(`“${r.tagline}”`, 16).map((line) => (
@@ -205,7 +252,7 @@ export function courtStory(kingName: string, seats: Seat[]) {
   const shown = seats.slice(0, 11);
   const rest = seats.length - shown.length;
   return render(
-    <div style={{ ...frame(1080, 1920, C.seal), paddingTop: 150 }}>
+    <div style={{ ...frame(1080, 1920), paddingTop: 150 }}>
       <InnerRule width={1080} accent={C.seal} />
       <div style={{ fontSize: 46, letterSpacing: 24, color: C.seal, fontWeight: 800 }}>朝 廷 圖</div>
       <div style={{ marginTop: 40, fontSize: 84, fontWeight: 800 }}>{`${kingName} 전하의 조정`}</div>
@@ -260,7 +307,7 @@ export function kingStory(kingName: string, king: Pillars) {
   const { short } = kingLinkText(king);
   const record = sillok(king, { kingName });
   return render(
-    <div style={{ ...frame(1080, 1920, C.gold), paddingTop: 220 }}>
+    <div style={{ ...frame(1080, 1920), paddingTop: 220 }}>
       <InnerRule width={1080} accent={C.gold} />
       <div style={{ fontSize: 52, letterSpacing: 24, color: C.seal, fontWeight: 800 }}>卽 位 敎 書</div>
       <div style={{ marginTop: 120, fontSize: 52, color: C.soft }}>{`${kingName} 전하는`}</div>
@@ -347,7 +394,7 @@ export function sillokStory(kingName: string, king: Pillars, cast: Cast) {
   const s = sillok(king, { cast, kingName });
   const accent = TIER_COLOR[s.tier];
   return render(
-    <div style={{ ...frame(1080, 1920, s.tier === "pok" ? C.seal : C.gold), paddingTop: 150 }}>
+    <div style={{ ...frame(1080, 1920), paddingTop: 150 }}>
       <InnerRule width={1080} accent={s.tier === "pok" ? C.seal : C.gold} />
       <div style={{ fontSize: 46, letterSpacing: 24, color: C.seal, fontWeight: 800 }}>假 想 實 錄</div>
       <div style={{ marginTop: 50, fontSize: 46, color: C.soft }}>{`${kingName} 전하는`}</div>

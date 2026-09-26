@@ -100,7 +100,10 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
           )}
 
           {seats.length > 0 && (
-            <ol className="mt-6 flex flex-col gap-2">
+            <p className="mt-6 text-right text-[11px] text-ink-soft">오른쪽 숫자는 전하와의 궁합 점수 · 평균 68점</p>
+          )}
+          {seats.length > 0 && (
+            <ol className="mt-1.5 flex flex-col gap-2">
               {seats.map((seat) => (
                 <SeatRow
                   key={seat.minister.id}
@@ -242,7 +245,9 @@ function Invitation({
         </Hundo>
       </section>
 
-      <section className="mt-5 rounded-3xl border border-ink/10 bg-hanji-deep/60 p-5">
+      <section className="doc-paper mt-5 px-6 pt-8 pb-7">
+        <p className="text-center font-myeongjo text-sm font-extrabold tracking-[0.4em] text-seal">入 闕</p>
+        <p className="mt-1 mb-4 text-center font-myeongjo font-extrabold">그대의 사주를 올리시옵소서</p>
         <BirthForm mode="minister" courtId={courtId} />
       </section>
     </>

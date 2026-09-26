@@ -8,7 +8,9 @@ import { SaveImageButton, ShareLinkButton } from "@/components/ShareButtons";
 import { bragLine, decreeLine, summonLine } from "@/lib/decree";
 import { loadCourt, viewerOf } from "@/lib/load";
 import { moodFor, ROLES } from "@/lib/roles";
-import { factLines, GANSIN_SIGNS, relationSentence, roleReasons } from "@/lib/saju";
+import { factLines, GANSIN_SIGNS, relationSentence, roleReasons, type Pillars } from "@/lib/saju";
+import { chartOf, readChart } from "@/lib/myeongri";
+import SajuChart from "@/components/SajuChart";
 
 async function loadSeat(id: string, mid: string) {
   const { court, seats } = await loadCourt(id);
@@ -49,7 +51,7 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
         </Link>
       </nav>
 
-      <RoyalDoc className="mt-5" paperClassName="pb-10 text-center">
+      <RoyalDoc className="mt-5" paperClassName="pb-24 text-center">
         <p className="font-myeongjo text-sm font-extrabold tracking-[0.3em] text-seal">敎 旨</p>
         <p className="mt-5 text-sm text-ink-soft">{court.kingName} 전하께서</p>
         <p className="mt-1 font-myeongjo text-xl font-extrabold">{decreeLine(seat.minister.name, seat.role)}</p>
@@ -63,6 +65,7 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
         <div className="mx-auto mt-6 w-fit rounded-full bg-hanji-deep px-4 py-1.5 text-sm">
           궁합 <b className="font-myeongjo text-lg">{seat.match.score}</b>점
         </div>
+        <p className="mt-1.5 text-[11px] text-ink-soft">평균 68점 · 75점 넘으면 영의정 후보 · 80점 넘으면 좌의정</p>
 
         <span className="animate-stamp absolute right-5 bottom-5 flex size-16 items-center justify-center rounded-lg border-[3px] border-seal font-myeongjo text-sm font-extrabold leading-tight text-seal">
           御
@@ -120,6 +123,8 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
         </p>
       </section>
 
+      {isSelf && <MyChartTeaser pillars={seat.minister.pillars} name={seat.minister.name} />}
+
       <section className="mt-6 flex flex-col gap-3">
         {isSelf && (
           <>
@@ -134,12 +139,6 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
               label="결과 자랑하기"
               primary={false}
             />
-            <Link
-              href="/"
-              className="mt-2 w-full rounded-2xl bg-seal py-4 text-center font-myeongjo text-lg font-extrabold text-hanji shadow-[0_6px_0_#7d1a14]"
-            >
-              나는 어떤 왕일까? 즉위하기
-            </Link>
           </>
         )}
         {isOwner && (
@@ -182,5 +181,46 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
         )}
       </section>
     </>
+  );
+}
+
+// The minister already gave a birth date, so show them their own chart and keep the verdict locked behind
+// enthronement: that curiosity is what turns a guest into the next king.
+function MyChartTeaser({ pillars, name }: { pillars: Pillars; name: string }) {
+  const reading = readChart(pillars);
+  return (
+    <section className="mt-6">
+      <h2 className="text-center font-myeongjo text-lg font-extrabold">{name}의 사주 여덟 글자</h2>
+      {reading && (
+        <SajuChart
+          slots={chartOf(pillars as Parameters<typeof chartOf>[0])}
+          elements={reading.elements}
+          strength={reading.strength}
+          yong={reading.yong}
+          missing={reading.missing}
+        />
+      )}
+      <div className="relative mt-3 overflow-hidden border border-seal/30 bg-[#f9f1de] px-5 py-5 text-center">
+        <div className="pointer-events-none flex justify-center gap-2 blur-[3px] select-none" aria-hidden="true">
+          {["聖君", "明君", "暗君", "暴君"].map((t) => (
+            <span key={t} className="border-2 border-gold/60 px-3 py-1 font-myeongjo text-xl font-extrabold text-gold">
+              {t}
+            </span>
+          ))}
+        </div>
+        <p className="mt-3 font-myeongjo text-lg leading-snug font-extrabold">
+          🔒 그대가 왕이었다면
+          <br />
+          성군이었을까, 폭군이었을까?
+        </p>
+        <p className="mt-1.5 text-sm text-ink-soft">즉위하면 그대의 등급과 가상 실록 일곱 장이 열리옵니다</p>
+        <Link
+          href="/#enthrone"
+          className="mt-4 block w-full rounded-2xl bg-seal py-3.5 font-myeongjo text-lg font-extrabold text-hanji shadow-[0_5px_0_#7d1a14]"
+        >
+          내 실록 열기 · 즉위하기
+        </Link>
+      </div>
+    </section>
   );
 }
