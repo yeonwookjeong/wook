@@ -2,16 +2,20 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
+import AiReport from "@/components/AiReport";
+import DeepenForm from "@/components/DeepenForm";
 import Keep from "@/components/Keep";
 import RoyalDoc from "@/components/RoyalDoc";
+import SajuChart from "@/components/SajuChart";
 import SinbunReport from "@/components/SinbunReport";
 import YearReport from "@/components/YearReport";
 import { josa } from "@/lib/josa";
-import { MINISTER_COOKIE, OWNER_COOKIE, PURCHASES_COOKIE } from "@/lib/cookies";
+import { PURCHASES_COOKIE } from "@/lib/cookies";
 import { ownedCourts } from "@/lib/load";
-import { PRICE_STEPS, priceFor, productById, type Product } from "@/lib/products";
-import type { Pillars } from "@/lib/saju";
-import { getCourt, getProfile, listMinisters } from "@/lib/store";
+import { isOpen, OPEN_ALL, PRICE_STEPS, priceFor, productById, type Product, type ProductId } from "@/lib/products";
+import { REPORT_SPECS } from "@/lib/reportPrompts";
+import { courtOfReader, subjectFor } from "@/lib/subject";
+import { getProfile } from "@/lib/store";
 import { yearReading } from "@/lib/yearly";
 
 export async function generateMetadata({ params }: PageProps<"/reports/[id]">): Promise<Metadata> {
@@ -19,33 +23,115 @@ export async function generateMetadata({ params }: PageProps<"/reports/[id]">): 
   return product ? { title: product.title, description: product.tagline } : {};
 }
 
-type Subject = { name: string; pillars: Pillars; king: boolean; courtId: string; who: string; self: boolean };
-
-// Whose chart the report is read from: a court (and minister) named in the link if this browser belongs to
-// it, otherwise the first court this browser enthroned. `self` marks the reader's own chart: only then are the
-// private extras (대운, palace chart) used and offered.
-async function subjectFor(product: Product, courtId?: string, ministerId?: string): Promise<Subject | null> {
-  const jar = await cookies();
-  if (courtId) {
-    const court = await getCourt(courtId);
-    if (court) {
-      const myMinister = jar.get(MINISTER_COOKIE(court.id))?.value;
-      const mid = ministerId ?? myMinister;
-      if (product.for !== "king" && mid) {
-        const minister = (await listMinisters(court.id)).find((m) => m.id === mid);
-        if (minister)
-          return { name: minister.name, pillars: minister.pillars as Pillars, king: false, courtId: court.id, who: minister.id, self: myMinister === minister.id };
-      }
-      if (product.for !== "minister" && jar.get(OWNER_COOKIE(court.id))?.value === court.ownerToken)
-        return { name: court.kingName, pillars: court.king, king: true, courtId: court.id, who: "king", self: true };
-    }
-  }
-  if (product.for === "minister") return null;
-  const [court] = await ownedCourts(1);
-  return court ? { name: court.kingName, pillars: court.king, king: true, courtId: court.id, who: "king", self: true } : null;
+function Header({ product, subjectName }: { product: Product; subjectName?: string }) {
+  return (
+    <RoyalDoc className="mt-3" paperClassName="px-5">
+      <p className="text-center font-myeongjo text-sm font-extrabold tracking-[0.4em] text-seal">{product.hanja}</p>
+      <h1 className="mt-2 text-center font-myeongjo text-2xl font-extrabold">{product.title}</h1>
+      <p className="mt-2 text-center text-sm leading-snug text-ink-soft">
+        <Keep clauses>{product.tagline}</Keep>
+      </p>
+      {subjectName && <p className="mt-3 text-center text-xs font-bold text-gold">{subjectName}의 사주로 지어 올리옵니다</p>}
+    </RoyalDoc>
+  );
 }
 
-async function FreeReport({ product, subject, query }: { product: Product; subject: Subject; query: string }) {
+function Notice({ children, href, cta }: { children: React.ReactNode; href?: string; cta?: string }) {
+  return (
+    <div className="doc-paper mt-4 px-5 py-6 text-center text-sm leading-relaxed">
+      <p>{children}</p>
+      {href && (
+        <Link href={href} className="mt-4 block bg-seal py-3 font-myeongjo font-extrabold text-hanji">
+          {cta}
+        </Link>
+      )}
+    </div>
+  );
+}
+
+const chaptersOf = (id: ProductId) => REPORT_SPECS[id]?.chapters ?? [];
+
+// Every report, open in full (무료 공개 기간 or a free report).
+async function OpenReport({ product, courtId, ministerId, targetId }: { product: Product; courtId?: string; ministerId?: string; targetId?: string }) {
+  const query = new URLSearchParams({ ...(courtId && { court: courtId }), ...(ministerId && { m: ministerId }) }).toString();
+
+  // Reports about the people of one court.
+  if (product.id === "dwitjosa" || product.id === "gwangye" || product.id === "insa") {
+    const cid = courtId ?? (await ownedCourts(1))[0]?.id;
+    const room = cid ? await courtOfReader(cid) : null;
+    if (!room)
+      return (
+        <>
+          <Header product={product} />
+          <Notice href="/#enthrone" cta="즉위하러 가기 →">
+            조정에서 여는 보고서이옵니다. 즉위하시거나 받으신 초대 링크로 입궐한 뒤, 조정 화면에서 여시옵소서.
+          </Notice>
+        </>
+      );
+    const { court, ministers, isKing, me } = room;
+    if (product.id === "dwitjosa") {
+      if (!isKing) return (<><Header product={product} /><Notice>전하만 신하를 뒷조사하실 수 있사옵니다.</Notice></>);
+      const target = ministers.find((m) => m.id === targetId);
+      if (!target)
+        return (
+          <>
+            <Header product={product} subjectName={`${court.kingName} 전하`} />
+            <section className="doc-paper mt-4 px-5 py-5">
+              <p className="text-center font-myeongjo font-extrabold">누구를 뒷조사하시겠사옵니까?</p>
+              {ministers.length ? (
+                <ul className="mt-3 grid grid-cols-2 gap-2">
+                  {ministers.map((m) => (
+                    <li key={m.id}>
+                      <Link href={`/reports/dwitjosa?court=${court.id}&t=${m.id}`} className="block border border-seal/30 bg-white/60 py-3 text-center font-bold">
+                        {m.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-3 text-center text-sm text-ink-soft">아직 입궐한 신하가 없사옵니다. 먼저 신하를 불러 주시옵소서.</p>
+              )}
+            </section>
+          </>
+        );
+      return (
+        <>
+          <Header product={product} subjectName={`${court.kingName} 전하와 ${target.name}`} />
+          <AiReport request={{ product: product.id, court: court.id, t: target.id }} chapters={chaptersOf(product.id)} />
+        </>
+      );
+    }
+    if (product.id === "insa") {
+      const mine = ministers.find((m) => m.id === me);
+      if (!mine) return (<><Header product={product} /><Notice>입궐한 신하 본인만 여실 수 있사옵니다. 받으신 교지에서 이 보고서를 여시옵소서.</Notice></>);
+      return (
+        <>
+          <Header product={product} subjectName={mine.name} />
+          <AiReport request={{ product: product.id, court: court.id }} chapters={chaptersOf(product.id)} />
+        </>
+      );
+    }
+    if (ministers.length < 2)
+      return (<><Header product={product} /><Notice href={`/court/${court.id}`} cta="조정으로 가기 →">모임 관계도는 신하가 두 명 이상 모이면 열리옵니다.</Notice></>);
+    return (
+      <>
+        <Header product={product} subjectName={`${court.kingName} 전하의 조정 ${ministers.length + 1}명`} />
+        <AiReport request={{ product: product.id, court: court.id }} chapters={chaptersOf(product.id)} />
+      </>
+    );
+  }
+
+  const subject = await subjectFor(product, courtId, ministerId);
+  if (!subject)
+    return (
+      <>
+        <Header product={product} />
+        <Notice href="/#enthrone" cta="즉위하고 무료로 보기 →">
+          {product.teaser}
+        </Notice>
+      </>
+    );
+
   if (product.id === "sinbun")
     return (
       <SinbunReport
@@ -54,27 +140,54 @@ async function FreeReport({ product, subject, query }: { product: Product; subje
         query={query}
       />
     );
+
   const profile = subject.self ? await getProfile(subject.courtId, subject.who) : null;
   const reading = yearReading(subject.pillars, profile);
   if (!reading)
     return (
-      <RoyalDoc className="mt-3" paperClassName="px-5 text-center">
-        <h1 className="font-myeongjo text-xl font-extrabold">{product.title}</h1>
-        <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-          예전 방식으로 올리신 사주라 여덟 글자가 다 갖춰지지 않았사옵니다. 새로 즉위하시면 병오년 운세를 온전히 풀어 드리옵니다.
-        </p>
-        <Link href="/#enthrone" className="mt-5 block bg-seal py-3 font-myeongjo font-extrabold text-hanji">
-          새로 즉위하기 →
-        </Link>
-      </RoyalDoc>
+      <>
+        <Header product={product} />
+        <Notice href="/#enthrone" cta="새로 즉위하기 →">
+          예전 방식으로 올리신 사주라 여덟 글자가 다 갖춰지지 않았사옵니다. 새로 즉위하시면 온전히 풀어 드리옵니다.
+        </Notice>
+      </>
     );
+  const request = { product: product.id, ...(courtId && { court: subject.courtId }), ...(ministerId && { m: ministerId }) };
+  if (product.id === "gukjeong")
+    return (
+      <YearReport
+        reading={reading}
+        heading={subject.king ? `${subject.name} 전하의 병오년 운세` : `${subject.name} 님의 병오년 운세`}
+        deepen={subject.self ? { courtId: subject.courtId, who: subject.who } : null}
+        query={query}
+        ai={subject.self ? { request, chapters: chaptersOf(product.id) } : undefined}
+      />
+    );
+  if (!subject.self)
+    return (<><Header product={product} /><Notice>본인의 사주로만 여실 수 있는 보고서이옵니다.</Notice></>);
   return (
-    <YearReport
-      reading={reading}
-      heading={subject.king ? `${subject.name} 전하의 병오년 운세` : `${subject.name} 님의 병오년 운세`}
-      deepen={subject.self ? { courtId: subject.courtId, who: subject.who } : null}
-      query={query}
-    />
+    <>
+      <Header product={product} subjectName={subject.king ? `${subject.name} 전하` : `${subject.name} 님`} />
+      <details className="group doc-paper mt-4 px-5 py-4">
+        <summary className="flex cursor-pointer list-none items-center justify-between [&::-webkit-details-marker]:hidden">
+          <span className="font-myeongjo font-extrabold">사주 원국 · 여덟 글자 보기</span>
+          <span className="text-ink-soft transition group-open:rotate-180" aria-hidden="true">
+            ▾
+          </span>
+        </summary>
+        <SajuChart {...reading.chart} kingdom={false} />
+      </details>
+      <AiReport request={request} chapters={chaptersOf(product.id)} />
+      {subject.self && (reading.missing.daeun || reading.missing.palaces) && (
+        <section className="doc-paper mt-6 px-6 pt-7 pb-6">
+          <h2 className="text-center font-myeongjo text-lg font-extrabold">더 깊이 보아 드릴 수 있사옵니다</h2>
+          <p className="mt-2 mb-4 text-center text-sm leading-relaxed text-ink-soft">
+            성별과 태어난 시각을 알려 주시면 10년 대운과 영역별 흐름까지 넣어 다시 적어 올리옵니다.
+          </p>
+          <DeepenForm courtId={subject.courtId} who={subject.who} />
+        </section>
+      )}
+    </>
   );
 }
 
@@ -84,11 +197,8 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
   const search = await searchParams;
   const courtId = typeof search.court === "string" ? search.court : undefined;
   const ministerId = typeof search.m === "string" ? search.m : undefined;
-  const subject = await subjectFor(product, courtId, ministerId);
-  const query = new URLSearchParams({ ...(courtId && { court: courtId }), ...(ministerId && { m: ministerId }) }).toString();
 
-  // Free reports open in full: no lock, no price.
-  if (product.free) {
+  if (isOpen(product))
     return (
       <>
         <nav className="pt-4 text-sm">
@@ -96,22 +206,14 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
             ← 보고서 목록
           </Link>
         </nav>
-        {subject ? (
-          <FreeReport product={product} subject={subject} query={query} />
-        ) : (
-          <RoyalDoc className="mt-3" paperClassName="px-5 text-center">
-            <p className="font-myeongjo text-sm font-extrabold tracking-[0.4em] text-seal">{product.hanja}</p>
-            <h1 className="mt-2 font-myeongjo text-2xl font-extrabold">{product.title}</h1>
-            <p className="mt-2 text-sm leading-relaxed text-ink-soft">{product.teaser}</p>
-            <Link href="/#enthrone" className="mt-5 block bg-seal py-3 font-myeongjo font-extrabold text-hanji">
-              즉위하고 무료로 보기 →
-            </Link>
-          </RoyalDoc>
+        {OPEN_ALL && !product.free && (
+          <p className="mt-3 rounded-full bg-gold/15 px-4 py-2 text-center text-xs font-bold text-gold">무료 공개 기간 · 지금은 모든 보고서를 그냥 보실 수 있사옵니다</p>
         )}
+        <OpenReport product={product} courtId={courtId} ministerId={ministerId} targetId={typeof search.t === "string" ? search.t : undefined} />
       </>
     );
-  }
 
+  const subject = await subjectFor(product, courtId, ministerId);
   const bought = Number((await cookies()).get(PURCHASES_COOKIE)?.value ?? 0);
   const price = priceFor(bought);
 

@@ -18,6 +18,7 @@ npm run dev        # http://localhost:3000
 2. Storage 탭 → Marketplace에서 **Upstash Redis**(무료 플랜) 추가 → 프로젝트에 연결
    - `KV_REST_API_URL` / `KV_REST_API_TOKEN` 또는 `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`이 자동 주입됩니다. 둘 다 인식합니다.
 3. 커스텀 도메인을 붙이면 환경변수 `NEXT_PUBLIC_SITE_URL=https://도메인` 추가 (카톡 미리보기 이미지 주소에 쓰임)
+4. 보고서 집필(AI): 환경변수 `ANTHROPIC_API_KEY` 추가. 선택: `REPORT_MODEL`(기본 `claude-opus-5`), `REPORT_DAILY_LIMIT`(하루 새로 쓰는 보고서 수 상한, 기본 1000). 키가 없으면 2026 운세는 엔진 문장으로, 나머지 보고서는 "준비 중"으로 보임. 로컬에서 키 없이 화면만 확인하려면 `REPORT_MOCK=1`
 
 Redis 환경변수 없이 Vercel에 배포하면 즉위 시 오류가 나도록 되어 있습니다(서버리스는 파일 저장이 안 되기 때문).
 
@@ -75,6 +76,13 @@ Redis 환경변수 없이 Vercel에 배포하면 즉위 시 오류가 나도록 
 - 줄바꿈: 본문은 어절 단위(keep-all) + `text-wrap: pretty`, 가운데 정렬 짧은 문구는 `balance`. `components/Keep.tsx`가 "돈·일·연애" 같은 가운뎃점 묶음과 쉼표 단위 구절을 한 줄로 붙잡음
 - `/contact`: 문의하기. 전화 상담 없이 이메일로만 받으며, 문의 종류별로 제목·양식이 채워진 메일을 연다
 - 첫 화면에 실제 즉위 수("지금까지 N명의 전하가 즉위") 표시(`stats:courts` 카운터)
+
+## 보고서 집필 구조
+- `lib/brief.ts`: 엔진이 계산한 모든 것(원국·십신·지장간·12운성·오행 비율·신강약·용신·격국·신살·원국 합충·대운·2026 세운과 월운·명반)을 한 사람당 한 장의 "사주 브리프"로 정리. 명반은 `[참고 전용]`으로 표시해 본문에 용어가 나오지 않게 함
+- `lib/reportPrompts.ts`: 정 훈도 문체 지침(헤드라인 훅, 근거→장면→처방, 바넘 문장 금지, 계산 결과와 모순 금지)과 보고서별 장 구성·초점
+- `lib/reportWriter.ts` + `app/api/report/route.ts`: 권한 확인(본인·해당 조정만) → 입력 전체의 해시로 캐시 조회 → 없으면 Claude로 스트리밍 집필 후 저장. 같은 사람·같은 보고서는 한 번만 쓰고 이후 즉시 열림. 사주 입력이 바뀌면(보강 등) 해시가 달라져 새로 씀
+- `components/AiReport.tsx`: 써지는 대로 장별 카드로 펼쳐 보여 줌
+- `lib/products.ts`의 `OPEN_ALL = true`: 무료 공개 기간(모든 보고서 무료). 결제를 열 때 false로
 
 ## 무료와 유료의 경계
 

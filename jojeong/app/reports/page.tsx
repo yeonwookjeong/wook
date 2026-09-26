@@ -3,7 +3,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import Hundo from "@/components/Hundo";
 import { PURCHASES_COOKIE } from "@/lib/cookies";
-import { PRICE_STEPS, priceFor, PRODUCTS } from "@/lib/products";
+import { PRICE_STEPS, priceFor, PRODUCTS, isOpen, OPEN_ALL } from "@/lib/products";
 import Keep from "@/components/Keep";
 
 export const metadata: Metadata = { title: "정 훈도의 비밀 보고서" };
@@ -26,10 +26,16 @@ export default async function ReportsPage() {
           </span>
         </p>
         <p className="mt-1 text-sm text-ink-soft">
-          <span className="inline-block">신분 감정과 2026 운세는 무료,</span>{" "}
-          <span className="inline-block">
-            지금의 운세는 복채 한 닢 <b className="text-ink">{price.toLocaleString("ko-KR")}원</b>
-          </span>
+          {OPEN_ALL ? (
+            <b className="text-gold">지금은 무료 공개 기간, 모든 보고서를 그냥 보실 수 있사옵니다</b>
+          ) : (
+            <>
+              <span className="inline-block">신분 감정과 2026 운세는 무료,</span>{" "}
+              <span className="inline-block">
+                지금의 운세는 복채 한 닢 <b className="text-ink">{price.toLocaleString("ko-KR")}원</b>
+              </span>
+            </>
+          )}
         </p>
         <p className="mt-1 text-xs text-ink-soft">
           <span className="inline-block">복채 단골 할인: 살 때마다 100원씩</span>{" "}
@@ -58,7 +64,10 @@ export default async function ReportsPage() {
                 </span>
               </span>
               <span className="flex shrink-0 flex-col items-end gap-1">
-                <span className="font-myeongjo font-extrabold text-seal">{p.free ? "무료" : `${price}원`}</span>
+                <span className="font-myeongjo font-extrabold text-seal">
+                  {isOpen(p) && !p.free && <s className="mr-1 text-xs font-normal text-ink-soft">{price}원</s>}
+                  {isOpen(p) ? "무료" : `${price}원`}
+                </span>
                 <span className="border border-gold/60 px-1.5 text-[10px] font-bold whitespace-nowrap text-gold">{FOR_LABEL[p.for]}</span>
               </span>
             </Link>

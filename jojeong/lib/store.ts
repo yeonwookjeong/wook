@@ -162,3 +162,15 @@ export async function courtCount(): Promise<number> {
     return 0;
   }
 }
+
+// Written reports, keyed by a hash of everything that went into them.
+export async function getReportText(key: string): Promise<string | null> {
+  return backend().get(`report:${key}`);
+}
+export async function setReportText(key: string, text: string) {
+  await backend().set(`report:${key}`, text);
+}
+// A per-day counter of freshly written reports (a spending guard).
+export async function countReportToday(): Promise<number> {
+  return backend().incr(`stats:reports:${new Date().toISOString().slice(0, 10)}`);
+}

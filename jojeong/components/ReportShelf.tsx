@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { productById, type ProductId } from "@/lib/products";
+import { isOpen, productById, type ProductId } from "@/lib/products";
 import Keep from "./Keep";
 
 // A short shelf of reports under a free result. `query` carries whose chart the report page should read;
@@ -33,7 +33,7 @@ export default function ReportShelf({
                     {highlights[id] ? <b className="text-seal">{highlights[id]}</b> : <Keep clauses>{p.tagline}</Keep>}
                   </span>
                 </span>
-                <span className="shrink-0 text-sm font-bold text-seal">{p.free ? "무료 →" : "맛보기 →"}</span>
+                <span className="shrink-0 text-sm font-bold text-seal">{isOpen(p) ? "무료 →" : "맛보기 →"}</span>
               </Link>
             </li>
           );
