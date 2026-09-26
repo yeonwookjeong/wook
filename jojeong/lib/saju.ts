@@ -73,13 +73,13 @@ export function resolveLateZi(input: BirthInput): BirthInput {
 
 // Clock time and birthplace → the day pillar's solar date, the hour (시) and the exact instant, with Korea's
 // past standard times, summer time and the birthplace's longitude all accounted for (lib/birthtime.ts).
-export function resolveBirthTime(input: BirthInput, clock: { hour: number; minute: number }, lon: number) {
+export function resolveBirthTime(input: BirthInput, clock: { hour: number; minute: number }, place: { lon: number; tz: string }) {
   const { year, month, day, calendar } = input;
   const solar =
     calendar === "solar"
       ? Solar.fromYmdHms(year, month, day, 12, 0, 0)
       : Lunar.fromYmdHms(year, calendar === "lunar-leap" ? -month : month, day, 12, 0, 0).getSolar();
-  const c = correctBirth(solar.getYear(), solar.getMonth(), solar.getDay(), clock.hour, clock.minute, lon);
+  const c = correctBirth(solar.getYear(), solar.getMonth(), solar.getDay(), clock.hour, clock.minute, place);
   const dayOf = c.dayShift ? solar.next(c.dayShift) : solar;
   const resolved: BirthInput = {
     year: dayOf.getYear(),

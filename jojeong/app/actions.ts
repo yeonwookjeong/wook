@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { computeProfile, type Gender } from "@/lib/profile";
-import { cityById } from "@/lib/birthtime";
+import { cityById, parseClock } from "@/lib/birthtime";
 import { BirthInputError, computePillars, LATE_ZI, resolveBirthTime, resolveLateZi, type BirthInput, type Pillars } from "@/lib/saju";
 import { addMinister, createCourt, CourtFullError, getCourt, listMinisters, MAX_MINISTERS, removeMinister, setProfile } from "@/lib/store";
 import { OWNER_COOKIE, MINISTER_COOKIE } from "@/lib/cookies";
@@ -33,10 +33,11 @@ function parseBirth(formData: FormData): Omit<Parsed, "name"> {
   if (calendar !== "solar" && calendar !== "lunar" && calendar !== "lunar-leap")
     throw new BirthInputError("양력·음력을 골라주시옵소서.");
 
-  // The clock time ("HH:MM"), or nothing when unknown. An hour slot ("hour") is still accepted from older pages.
+  // The clock time as typed ("0930", "오후 9시 30분"…), or nothing when unknown. An hour slot ("hour") is still
+  // accepted from older pages.
   const timeRaw = String(formData.get("time") ?? "").trim();
-  const clock = /^([01]?\d|2[0-3]):([0-5]\d)$/.exec(timeRaw);
-  if (timeRaw && !clock) throw new BirthInputError("태어난 시각을 다시 확인해 주시옵소서. (예: 09:30)");
+  const clock = timeRaw ? parseClock(timeRaw) : null;
+  if (timeRaw && !clock) throw new BirthInputError("태어난 시각을 알아보지 못했사옵니다. (예: 0930, 오후 9시 30분)");
   const hourRaw = String(formData.get("hour") ?? "");
   const hour = clock || hourRaw === "" ? null : Number(hourRaw);
   if (hour !== null && !(Number.isInteger(hour) && hour >= 0 && hour <= LATE_ZI))
@@ -57,7 +58,7 @@ function parseBirth(formData: FormData): Omit<Parsed, "name"> {
   // Validate the date as entered first; only then correct the time (which can move the day).
   computePillars({ ...raw, hourBranch: null });
   const input = clock
-    ? resolveBirthTime(raw, { hour: Number(clock[1]), minute: Number(clock[2]) }, city.lon).input
+    ? resolveBirthTime(raw, clock, city).input
     : resolveLateZi(raw);
   return { pillars: computePillars(input), input, gender };
 }
