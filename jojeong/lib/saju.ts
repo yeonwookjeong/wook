@@ -214,10 +214,19 @@ export function matchPillars(king: Pillars, minister: Pillars): Match {
   return { score, role: assignRole(score, facts), facts };
 }
 
+// Harmony between two people: a stem combination, or the day branches (the seat of everyday life) meeting in
+// a 육합 or a 삼합 (half 삼합 included).
+export const hasHarmony = (f: Facts) => f.stemCombine || f.daySix || f.dayThree;
+
 function assignRole(score: number, f: Facts): RoleKey {
-  const harmony = f.stemCombine || f.daySix;
-  if (f.group === "관성" && !harmony) return "gansin";
-  if (f.group === "비겁" && !f.sameYinYang && f.dayClash) return "gansin";
+  const harmony = hasHarmony(f);
+  // 간신: someone whose day master attacks the king's as 편관 (칠살, same yin/yang — the hostile kind), or as
+  // 정관 (the lawful check, otherwise 대사헌) while their day branches clash or bear a grudge (충·원진), or a
+  // 겁재 whose day branch clashes the king's — with nothing tying the two together. A pair this compatible
+  // overall (70+) is not read as treachery.
+  const hostile =
+    (f.group === "관성" && (f.sameYinYang || f.dayClash || f.dayWonjin)) || (f.group === "비겁" && !f.sameYinYang && f.dayClash);
+  if (hostile && !harmony && score < 70) return "gansin";
   if ((f.dayClash || f.dayWonjin) && score < 55) return "yubae";
   if (score >= 80) return "jwa";
   const byGroup: Record<RelationGroup, RoleKey> = {
@@ -278,14 +287,16 @@ export function roleReasons(king: Pillars, minister: Pillars, match: Match, role
   const f = match.facts;
   const m = `${name}의 일간 ${dayMasterLabel(minister)}`;
   const k = `전하의 일간 ${dayMasterLabel(king)}`;
-  const harmony = f.stemCombine || f.daySix;
+  const harmony = hasHarmony(f);
   const lines: string[] = [];
 
   if (role === "gansin") {
     if (f.group === "관성") {
       lines.push(
-        `${josa(m, "이/가")} ${josa(k, "을/를")} 극(剋)하옵니다. 관성(官星)은 본디 전하를 다스리려 드는 기운이라, 겉으로는 받드는 척해도 속으로는 전하 위에 서려 하옵니다.`,
-        "둘 사이를 이어 줄 천간합도 일지 육합도 없사옵니다. 누르는 기운을 달래 줄 인연의 끈이 없으니, 틈만 나면 제 뜻대로 움직이옵니다.",
+        f.sameYinYang
+          ? `${josa(m, "이/가")} ${josa(k, "을/를")} 극(剋)하는데, 음양까지 같아 편관(偏官), 곧 칠살(七殺)이옵니다. 칠살은 전하를 다스리려 드는 사나운 기운이라, 겉으로는 받드는 척해도 속으로는 전하 위에 서려 하옵니다.`
+          : `${josa(m, "이/가")} ${josa(k, "을/를")} 극(剋)하는 정관(正官)이옵니다. 본디 바른말로 견제하는 사이이나, 일지가 ${f.dayClash ? "충(沖)" : "원진(怨嗔)"}이라 그 견제가 원망으로 변하기 쉽사옵니다.`,
+        "둘 사이를 이어 줄 천간합도, 일지의 육합·삼합도 없사옵니다. 누르는 기운을 달래 줄 인연의 끈이 없으니, 틈만 나면 제 뜻대로 움직이옵니다.",
       );
     } else {
       lines.push(
@@ -310,7 +321,9 @@ export function roleReasons(king: Pillars, minister: Pillars, match: Match, role
       비겁: "전하와 같은 기운인 비겁(比劫)이라, 등을 맡길 병조판서에 천거하였사옵니다.",
       재성: "전하가 다스리는 기운인 재성(財星)이라, 곳간을 맡길 호조판서에 천거하였사옵니다.",
       식상: "전하의 재주가 흘러가는 식상(食傷)이라, 잔치와 예를 맡길 예조판서에 천거하였사옵니다.",
-      관성: "전하를 누르는 관성(官星)이나 합(合)이 있어 선을 지키니, 바른말 하는 대사헌에 천거하였사옵니다.",
+      관성: harmony
+        ? `전하를 누르는 관성(官星)이나, ${f.stemCombine ? "천간합" : f.daySix ? "일지 육합" : "일지 삼합"}이 둘을 이어 선을 지키니, 바른말 하는 대사헌에 천거하였사옵니다.`
+        : "전하를 바르게 견제하는 정관(正官)이라, 쓴소리로 전하를 지키는 대사헌에 천거하였사옵니다.",
     };
     lines.push(`${josa(m, "은/는")} ${why[f.group]}`);
   }
@@ -318,7 +331,7 @@ export function roleReasons(king: Pillars, minister: Pillars, match: Match, role
   if (f.yong && f.yong.giCount >= 3 && (role === "gansin" || role === "yubae"))
     lines.push(`게다가 전하의 용신을 누르는 ${ELEMENT_KO[(f.yong.el + 3) % 5]} 기운을 ${f.yong.giCount}개나 지녔사옵니다.`);
   if (role === "gansin" && match.score >= 65)
-    lines.push(`궁합이 ${match.score}점으로 높은 것이 오히려 수상하옵니다. 그만큼 전하의 마음을 잘 파고든다는 뜻이옵니다.`);
+    lines.push(`궁합이 ${match.score}점으로 나쁘지 않은 것이 오히려 수상하옵니다. 그만큼 전하의 마음을 잘 파고든다는 뜻이옵니다.`);
   if (!harmony && role === "gansin" && f.yearSix) lines.push("다만 띠끼리는 합이라 겉으로는 사이가 좋아 보이니, 더욱 알아보기 어렵사옵니다.");
   return lines;
 }
