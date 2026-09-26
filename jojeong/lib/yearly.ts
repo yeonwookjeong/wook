@@ -216,7 +216,7 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
       ...natalSals.slice(0, 2).map((s) => NATAL_SAL[s]),
     ],
     basis: [
-      `지장간까지 따진 오행 비율 · ${[0, 1, 2, 3, 4].map((e) => `${ELEMENT_KO[e]} ${pct(r.weights, e)}%`).join(" · ")}`,
+      `궁성·조후 보정 오행 비율 · ${[0, 1, 2, 3, 4].map((e) => `${ELEMENT_KO[e]} ${pct(r.weights, e)}%`).join(" · ")}`,
       `일간을 돕는 기운 ${Math.round(r.support * 100)}% → ${r.balanced ? "중화에 가까운 " : ""}${r.strength}`,
       `용신 ${EL(r.yong)} (${r.method === "조후" ? `조후 우선, 억부로는 ${EL(r.eokbu)}` : "억부"}) · 희신 ${EL(r.hee)} · 기신 ${EL(r.gi)}`,
       `물상으로 빛을 내는 기운 · ${img.cure.map((c) => `${STEMS[c]}${ELEMENT_HANJA[stemEl(c)]}`).join(" · ")}`,

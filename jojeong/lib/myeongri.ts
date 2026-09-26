@@ -74,13 +74,15 @@ export const HIDDEN: [stem: number, days: number][][] = [
   [[4, 7], [0, 7], [8, 16]], // 亥 戊甲壬
 ];
 
-// How much each position counts toward the day master's strength. The month branch (월령, 득령) outweighs
-// everything, the day branch (득지) comes next; stems count less than the branches they sit on.
-const POS_WEIGHT = { stem: { 연: 8, 월: 12, 시: 10 }, branch: { 연: 10, 월: 30, 일: 16, 시: 12 } } as const;
+// 궁성 보정: how much each position counts, as in the common Korean 만세력 (포스텔러 and the like): every
+// stem 2, the month branch 7 (월령, 득령), the day branch 3 (득지), the year and hour branches 2 — 22 in
+// all, scaled ×5 here. Each branch counts as its main element (본기); hidden stems are read for 격국 and
+// the chart table, not for the balance.
+const POS_WEIGHT = { stem: { 연: 10, 월: 10, 일: 10, 시: 10 }, branch: { 연: 10, 월: 35, 일: 15, 시: 10 } } as const;
 
 // Strength cut points on the share of weight that backs the day master. As in the classical 득령·득지·득세
 // count, the day master is strong only when more than half of the chart backs it; the outer bands mark the
-// extremes. (Weak charts are the majority in real births, about seven in ten, as the classics note.)
+// extremes. The day master itself counts on its own side, as 만세력 do (real births: about 53% weak).
 const CUTS = { weak: 0.25, mid: 0.5, strong: 0.7 };
 
 export type Reading = {
@@ -108,16 +110,14 @@ export type Reading = {
 // summer, 戌 late autumn, 丑 late winter): a 未 month is the hottest of the year, not a neutral one.
 const SEASON_OF = ["겨울", "겨울", "봄", "봄", "봄", "여름", "여름", "여름", "가을", "가을", "가을", "겨울"] as const;
 
-// 조후 보정: an earth branch in the month (and, less, the hour) carries its season's climate, so part of its
-// weight goes to the season's own stem hidden inside it (辰→乙, 未→丁, 戌→辛, 丑→癸). A summer 未 reads
-// half as fire, a winter 丑 half as water.
-const SEASON_STEM: Record<number, number> = { 4: 1, 7: 3, 10: 7, 1: 9 };
-const SEASON_SHARE = { 월: 0.5, 시: 0.25, 일: 0, 연: 0 } as const;
+// 조후 보정: an earth branch in the month carries the climate of its season. The high-summer 未 reads as
+// fire (丁) and the deep-winter 丑 as water (癸); 戌 on the way into winter turns partly to cold water (壬),
+// and 辰 on the way out of spring partly to wood (乙). Matches 포스텔러's corrected values.
+const SEASON_TURN: Record<number, [stem: number, share: number]> = { 7: [3, 1], 1: [9, 1], 10: [8, 4 / 7], 4: [1, 4 / 7] };
 function branchParts(branch: number, pos: Slot["pos"]): [stem: number, share: number][] {
-  const s = branch in SEASON_STEM ? SEASON_SHARE[pos] : 0;
-  const parts: [number, number][] = HIDDEN[branch].map(([stem, days]) => [stem, ((1 - s) * days) / 30]);
-  if (s) parts.push([SEASON_STEM[branch], s]);
-  return parts;
+  const main = BRANCH_MAIN_STEM[branch];
+  const turn = pos === "월" ? SEASON_TURN[branch] : undefined;
+  return turn ? [[main, 1 - turn[1]], [turn[0], turn[1]]] : [[main, 1]];
 }
 
 // 격국: the hidden stem of the month branch that shows itself among the heavenly stems (투출) sets the frame;
@@ -145,8 +145,12 @@ export function readChart(p: Pillars): Reading | null {
   for (const slot of chartOf(full)) {
     if (slot.stem !== null) {
       elements[stemEl(slot.stem)]++;
-      if (slot.pos === "일") weights[dayEl] += 10;
-      else {
+      if (slot.pos === "일") {
+        // The day master counts toward the balance and backs itself (득세 counts it, as 만세력 do).
+        weights[dayEl] += POS_WEIGHT.stem.일;
+        support += POS_WEIGHT.stem.일;
+        total += POS_WEIGHT.stem.일;
+      } else {
         const w = POS_WEIGHT.stem[slot.pos];
         const g = tenGod(full.dayStem, slot.stem);
         godList.push(g);
@@ -161,8 +165,7 @@ export function readChart(p: Pillars): Reading | null {
       elements[BRANCH_EL[slot.branch]]++;
       godList.push(tenGod(full.dayStem, BRANCH_MAIN_STEM[slot.branch]));
       gods[GROUP_OF[tenGod(full.dayStem, BRANCH_MAIN_STEM[slot.branch])]]++;
-      // A branch counts through every stem hidden in it, each by the share of the month it rules, with the
-      // season's correction for earth branches in the month and hour.
+      // A branch counts as its main element, with the season's correction for an earth month branch.
       const w = POS_WEIGHT.branch[slot.pos];
       for (const [stem, share] of branchParts(slot.branch, slot.pos)) {
         const part = w * share;
