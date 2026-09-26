@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ELEMENT_HANJA, ELEMENT_KO } from "@/lib/myeongri";
 import type { YearReading } from "@/lib/yearly";
 import { MONTHS } from "@/lib/yearly";
+import AiReport from "./AiReport";
 import DeepenForm from "./DeepenForm";
 import Keep from "./Keep";
 import RoyalDoc from "./RoyalDoc";
@@ -31,13 +32,147 @@ export default function YearReport({
   heading,
   deepen,
   query,
+  ai,
 }: {
   reading: YearReading;
   heading: string;
   deepen: { courtId: string; who: string } | null;
   query: string;
+  // The written report (components/AiReport.tsx) replaces the engine's sections when given.
+  ai?: { request: Record<string, string>; chapters: string[] };
 }) {
   const { verdict, headline, keywords, sections, months, best, worst, lucky, advice, missing } = reading;
+  // The engine's own sections: shown as they are, or as the fallback when the written report is unavailable.
+  const ruleBody = (
+    <>
+        <p className="mt-6 text-center text-xs text-ink-soft">각 제목을 누르면 풀이가 펼쳐지옵니다</p>
+        <div className="mt-2 flex flex-col gap-2">
+          {sections.map((s, i) => (
+            <details key={s.id} open={i < 2} className="group doc-paper px-5 py-4">
+              <summary className="flex cursor-pointer list-none items-start gap-3 [&::-webkit-details-marker]:hidden">
+                <span className="flex size-9 shrink-0 items-center justify-center border-2 border-seal/60 font-myeongjo font-extrabold text-seal">{s.hanja}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[11px] font-extrabold text-seal">{s.label}</span>
+                  <span className="block font-myeongjo text-[17px] leading-snug font-extrabold">{s.headline}</span>
+                </span>
+                <span className="mt-1 shrink-0 text-ink-soft transition group-open:rotate-180" aria-hidden="true">
+                  ▾
+                </span>
+              </summary>
+              <div className="mt-3 border-t border-seal/15 pt-3">
+                {s.id === "core" && (
+                  <div className="-mt-1 mb-3">
+                    <SajuChart {...reading.chart} kingdom={false} />
+                  </div>
+                )}
+                {s.paras.map((t) => (
+                  <p key={t} className="mt-2 text-[15px] leading-relaxed first:mt-0">
+                    {t}
+                  </p>
+                ))}
+                {s.basis.length > 0 && (
+                  <div className="mt-3 bg-ink/5 px-3 py-2 text-[11px] leading-relaxed text-ink-soft">
+                    <p className="font-bold">정 훈도가 이렇게 본 까닭</p>
+                    {s.basis.map((b) => (
+                      <p key={b}>· {b}</p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </details>
+          ))}
+
+          {/* Month by month */}
+          <details className="group doc-paper px-5 py-4">
+            <summary className="flex cursor-pointer list-none items-start gap-3 [&::-webkit-details-marker]:hidden">
+              <span className="flex size-9 shrink-0 items-center justify-center border-2 border-seal/60 font-myeongjo font-extrabold text-seal">月</span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[11px] font-extrabold text-seal">월별 흐름</span>
+                <span className="block font-myeongjo text-[17px] leading-snug font-extrabold">
+                  승부처는 {best.map(monthLabel).join("과 ")}, 숨 고를 달은 {worst.map(monthLabel).join("과 ")}
+                </span>
+              </span>
+              <span className="mt-1 shrink-0 text-ink-soft transition group-open:rotate-180" aria-hidden="true">
+                ▾
+              </span>
+            </summary>
+            <ol className="mt-3 flex flex-col divide-y divide-seal/10 border-t border-seal/15">
+              {months.map((m, i) => (
+                <li key={m.from} className="flex items-start gap-3 py-2.5">
+                  <span className="w-14 shrink-0">
+                    <span className="block text-sm font-extrabold">{monthLabel(i)}</span>
+                    <span className="block text-[11px] text-ink-soft">
+                      {i === 11 && "'27 "}
+                      {m.from}~ {m.gz}
+                    </span>
+                  </span>
+                  <span className={`mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${RATING[m.rating].cls}`}>
+                    {RATING[m.rating].mark}
+                  </span>
+                  <span className="min-w-0 text-[14px] leading-snug">
+                    {m.line}
+                    {m.tags.map((t) => (
+                      <span key={t} className="ml-1 text-xs font-bold whitespace-nowrap text-seal">
+                        #{t}
+                      </span>
+                    ))}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </details>
+
+          {/* 개운 */}
+          <details className="group doc-paper px-5 py-4">
+            <summary className="flex cursor-pointer list-none items-start gap-3 [&::-webkit-details-marker]:hidden">
+              <span className="flex size-9 shrink-0 items-center justify-center border-2 border-seal/60 font-myeongjo font-extrabold text-seal">福</span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[11px] font-extrabold text-seal">정 훈도의 개운법</span>
+                <span className="block font-myeongjo text-[17px] leading-snug font-extrabold">
+                  <Keep>{`${lucky.color}을 곁에 두고 ${lucky.dir}으로 향하시옵소서`}</Keep>
+                </span>
+              </span>
+              <span className="mt-1 shrink-0 text-ink-soft transition group-open:rotate-180" aria-hidden="true">
+                ▾
+              </span>
+            </summary>
+            <p className="mt-3 border-t border-seal/15 pt-3 text-[15px] leading-relaxed">
+              그대의 용신은 {ELEMENT_KO[lucky.element]}({ELEMENT_HANJA[lucky.element]})이옵니다. 이 기운을 가까이할수록 올해의 흐름이 그대 쪽으로 기울고,{" "}
+              {lucky.avoid}처럼 기신의 색은 큰일 앞에서 멀리하시옵소서.
+            </p>
+            <dl className="mt-3 grid grid-cols-2 gap-1.5 text-sm">
+              {[
+                ["색", lucky.color],
+                ["숫자", lucky.numbers],
+                ["방위", lucky.dir],
+                ["기운이 도는 곳", lucky.place],
+                ["힘이 되는 일", lucky.act],
+                ["음식", lucky.food],
+              ].map(([k, v]) => (
+                <div key={k} className="border border-seal/20 px-3 py-2">
+                  <dt className="text-[11px] text-ink-soft">{k}</dt>
+                  <dd className="mt-0.5 font-bold">{v}</dd>
+                </div>
+              ))}
+            </dl>
+          </details>
+        </div>
+
+        <section className="mt-5 border-l-[3px] border-seal/60 py-1 pl-4">
+          <p className="text-xs font-extrabold text-seal">정 훈도의 당부</p>
+          <ol className="mt-2 flex flex-col gap-1.5 text-[15px] leading-relaxed">
+            {advice.map((a, i) => (
+              <li key={a} className="flex gap-2">
+                <span className="font-myeongjo font-extrabold text-seal">{"一二三"[i]}</span>
+                <span>{a}</span>
+              </li>
+            ))}
+          </ol>
+          <p className="mt-3 text-right font-myeongjo text-sm text-ink-soft">— 관상감 명과학 훈도 정가, 삼가 적음</p>
+        </section>
+    </>
+  );
+
   return (
     <>
       <RoyalDoc className="mt-3" paperClassName="px-5">
@@ -83,131 +218,22 @@ export default function YearReport({
         </div>
       </RoyalDoc>
 
-      <p className="mt-6 text-center text-xs text-ink-soft">각 제목을 누르면 풀이가 펼쳐지옵니다</p>
-      <div className="mt-2 flex flex-col gap-2">
-        {sections.map((s, i) => (
-          <details key={s.id} open={i < 2} className="group doc-paper px-5 py-4">
-            <summary className="flex cursor-pointer list-none items-start gap-3 [&::-webkit-details-marker]:hidden">
-              <span className="flex size-9 shrink-0 items-center justify-center border-2 border-seal/60 font-myeongjo font-extrabold text-seal">{s.hanja}</span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-[11px] font-extrabold text-seal">{s.label}</span>
-                <span className="block font-myeongjo text-[17px] leading-snug font-extrabold">{s.headline}</span>
-              </span>
-              <span className="mt-1 shrink-0 text-ink-soft transition group-open:rotate-180" aria-hidden="true">
+      {ai ? (
+        <>
+          <details className="group doc-paper mt-4 px-5 py-4">
+            <summary className="flex cursor-pointer list-none items-center justify-between [&::-webkit-details-marker]:hidden">
+              <span className="font-myeongjo font-extrabold">사주 원국 · 여덟 글자 보기</span>
+              <span className="text-ink-soft transition group-open:rotate-180" aria-hidden="true">
                 ▾
               </span>
             </summary>
-            <div className="mt-3 border-t border-seal/15 pt-3">
-              {s.id === "core" && (
-                <div className="-mt-1 mb-3">
-                  <SajuChart {...reading.chart} kingdom={false} />
-                </div>
-              )}
-              {s.paras.map((t) => (
-                <p key={t} className="mt-2 text-[15px] leading-relaxed first:mt-0">
-                  {t}
-                </p>
-              ))}
-              {s.basis.length > 0 && (
-                <div className="mt-3 bg-ink/5 px-3 py-2 text-[11px] leading-relaxed text-ink-soft">
-                  <p className="font-bold">정 훈도가 이렇게 본 까닭</p>
-                  {s.basis.map((b) => (
-                    <p key={b}>· {b}</p>
-                  ))}
-                </div>
-              )}
-            </div>
+            <SajuChart {...reading.chart} kingdom={false} />
           </details>
-        ))}
-
-        {/* Month by month */}
-        <details className="group doc-paper px-5 py-4">
-          <summary className="flex cursor-pointer list-none items-start gap-3 [&::-webkit-details-marker]:hidden">
-            <span className="flex size-9 shrink-0 items-center justify-center border-2 border-seal/60 font-myeongjo font-extrabold text-seal">月</span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-[11px] font-extrabold text-seal">월별 흐름</span>
-              <span className="block font-myeongjo text-[17px] leading-snug font-extrabold">
-                승부처는 {best.map(monthLabel).join("과 ")}, 숨 고를 달은 {worst.map(monthLabel).join("과 ")}
-              </span>
-            </span>
-            <span className="mt-1 shrink-0 text-ink-soft transition group-open:rotate-180" aria-hidden="true">
-              ▾
-            </span>
-          </summary>
-          <ol className="mt-3 flex flex-col divide-y divide-seal/10 border-t border-seal/15">
-            {months.map((m, i) => (
-              <li key={m.from} className="flex items-start gap-3 py-2.5">
-                <span className="w-14 shrink-0">
-                  <span className="block text-sm font-extrabold">{monthLabel(i)}</span>
-                  <span className="block text-[11px] text-ink-soft">
-                    {i === 11 && "'27 "}
-                    {m.from}~ {m.gz}
-                  </span>
-                </span>
-                <span className={`mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold ${RATING[m.rating].cls}`}>
-                  {RATING[m.rating].mark}
-                </span>
-                <span className="min-w-0 text-[14px] leading-snug">
-                  {m.line}
-                  {m.tags.map((t) => (
-                    <span key={t} className="ml-1 text-xs font-bold whitespace-nowrap text-seal">
-                      #{t}
-                    </span>
-                  ))}
-                </span>
-              </li>
-            ))}
-          </ol>
-        </details>
-
-        {/* 개운 */}
-        <details className="group doc-paper px-5 py-4">
-          <summary className="flex cursor-pointer list-none items-start gap-3 [&::-webkit-details-marker]:hidden">
-            <span className="flex size-9 shrink-0 items-center justify-center border-2 border-seal/60 font-myeongjo font-extrabold text-seal">福</span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-[11px] font-extrabold text-seal">정 훈도의 개운법</span>
-              <span className="block font-myeongjo text-[17px] leading-snug font-extrabold">
-                <Keep>{`${lucky.color}을 곁에 두고 ${lucky.dir}으로 향하시옵소서`}</Keep>
-              </span>
-            </span>
-            <span className="mt-1 shrink-0 text-ink-soft transition group-open:rotate-180" aria-hidden="true">
-              ▾
-            </span>
-          </summary>
-          <p className="mt-3 border-t border-seal/15 pt-3 text-[15px] leading-relaxed">
-            그대의 용신은 {ELEMENT_KO[lucky.element]}({ELEMENT_HANJA[lucky.element]})이옵니다. 이 기운을 가까이할수록 올해의 흐름이 그대 쪽으로 기울고,{" "}
-            {lucky.avoid}처럼 기신의 색은 큰일 앞에서 멀리하시옵소서.
-          </p>
-          <dl className="mt-3 grid grid-cols-2 gap-1.5 text-sm">
-            {[
-              ["색", lucky.color],
-              ["숫자", lucky.numbers],
-              ["방위", lucky.dir],
-              ["기운이 도는 곳", lucky.place],
-              ["힘이 되는 일", lucky.act],
-              ["음식", lucky.food],
-            ].map(([k, v]) => (
-              <div key={k} className="border border-seal/20 px-3 py-2">
-                <dt className="text-[11px] text-ink-soft">{k}</dt>
-                <dd className="mt-0.5 font-bold">{v}</dd>
-              </div>
-            ))}
-          </dl>
-        </details>
-      </div>
-
-      <section className="mt-5 border-l-[3px] border-seal/60 py-1 pl-4">
-        <p className="text-xs font-extrabold text-seal">정 훈도의 당부</p>
-        <ol className="mt-2 flex flex-col gap-1.5 text-[15px] leading-relaxed">
-          {advice.map((a, i) => (
-            <li key={a} className="flex gap-2">
-              <span className="font-myeongjo font-extrabold text-seal">{"一二三"[i]}</span>
-              <span>{a}</span>
-            </li>
-          ))}
-        </ol>
-        <p className="mt-3 text-right font-myeongjo text-sm text-ink-soft">— 관상감 명과학 훈도 정가, 삼가 적음</p>
-      </section>
+          <AiReport request={ai.request} chapters={ai.chapters} fallback={ruleBody} />
+        </>
+      ) : (
+        ruleBody
+      )}
 
       {deepen && (missing.daeun || missing.palaces) && (
         <section className="doc-paper mt-6 px-6 pt-7 pb-6">

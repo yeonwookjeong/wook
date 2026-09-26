@@ -19,6 +19,7 @@ export type Profile = {
   daeun?: Daeun[];
   palaces?: Palace[]; // 명궁 first, then 형제 부처 자녀 재백 질액 천이 노복 관록 전택 복덕 부모
   natal?: Record<string, "록" | "권" | "과" | "기">; // the birth year's four transformations, by star
+  birthYear?: number; // for the reader's age and stage of life in the written reports (the full date is not kept)
 };
 
 function solarOf(input: BirthInput) {
@@ -30,7 +31,7 @@ function solarOf(input: BirthInput) {
 
 export function computeProfile(input: BirthInput, gender: Gender | null): Profile {
   const solar = solarOf(input);
-  const profile: Profile = {};
+  const profile: Profile = { birthYear: solar.getYear() };
   if (gender) {
     profile.gender = gender;
     const hour = input.hourBranch === null ? 12 : input.hourBranch * 2;

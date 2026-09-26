@@ -97,5 +97,9 @@ export const PRODUCTS: Product[] = [
 
 export const productById = (id: string) => PRODUCTS.find((p) => p.id === id);
 
+// 무료 공개 기간: every report opens in full while the writing is being polished and payments are not live.
+export const OPEN_ALL = true;
+export const isOpen = (p: Product) => OPEN_ALL || Boolean(p.free);
+
 export const PRICE_STEPS = [990, 890, 790, 690];
 export const priceFor = (purchases: number) => PRICE_STEPS[Math.min(purchases, PRICE_STEPS.length - 1)];
