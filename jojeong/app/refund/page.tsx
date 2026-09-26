@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import LegalDoc, { biz } from "@/components/LegalDoc";
 
 export const metadata: Metadata = { title: "환불 규정" };
@@ -23,8 +24,9 @@ export default function RefundPage() {
       </ul>
       <h2>3. 환불 방법</h2>
       <p>
-        {biz("email", "이메일")} 또는 {biz("phone", "전화")}로 결제일, 결제 금액, 보고서 이름을 알려 주시면 영업일 기준 3일 이내에
-        처리합니다. 환불은 결제한 수단으로 취소되며, 카드사 사정에 따라 3~7영업일이 걸릴 수 있습니다.
+        {biz("email", "이메일")}으로 결제일, 결제 금액, 보고서 이름을 알려 주시면 영업일 기준 3일 이내에 처리합니다(
+        <Link href="/contact">문의하기</Link>에서 양식이 채워진 메일을 바로 쓸 수 있습니다). 전화 상담은 운영하지 않으며, 대표
+        번호({biz("phone", "전화")})로 걸려 온 전화는 이메일 문의로 안내합니다. 환불은 결제한 수단으로 취소되며, 카드사 사정에 따라 3~7영업일이 걸릴 수 있습니다.
       </p>
       <h2>4. 복채 단골 할인</h2>
       <p>환불된 구매는 할인 횟수에서 제외됩니다.</p>

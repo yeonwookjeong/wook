@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BUSINESS, hasBusinessInfo } from "@/lib/business";
+import { BUSINESS, ftcLookupUrl, hasBusinessInfo } from "@/lib/business";
 
 // The brand mark: a red 訓導 seal beside the character's name. Used at the top and bottom of every page.
 function Seal({ size = 30 }: { size?: number }) {
@@ -52,6 +52,8 @@ export function SiteFooter() {
         <span aria-hidden="true">·</span>
         <Link href="/refund">환불 규정</Link>
         <span aria-hidden="true">·</span>
+        <Link href="/contact">문의하기</Link>
+        <span aria-hidden="true">·</span>
         <Link href="/privacy" className="font-bold">
           개인정보처리방침
         </Link>
@@ -63,10 +65,21 @@ export function SiteFooter() {
               상호 {BUSINESS.name} · 대표 {BUSINESS.ceo} · 사업자등록번호 {BUSINESS.regNo}
             </p>
             <p>
-              통신판매업 신고 {BUSINESS.mailOrderNo} · {BUSINESS.address}
+              통신판매업 신고 {BUSINESS.mailOrderNo}{" "}
+              <a href={ftcLookupUrl()} target="_blank" rel="noopener noreferrer" className="underline">
+                사업자정보 확인
+              </a>
+            </p>
+            <p>{BUSINESS.address}</p>
+            <p>
+              고객센터 {BUSINESS.phone} · {BUSINESS.email} · 호스팅 {BUSINESS.hosting}
             </p>
             <p>
-              고객문의 {BUSINESS.phone} · {BUSINESS.email} · 호스팅 {BUSINESS.hosting}
+              전화 상담은 하지 않사옵니다.{" "}
+              <Link href="/contact" className="underline">
+                이메일로 문의
+              </Link>
+              해 주시면 영업일 1~2일 안에 답을 올리겠사옵니다.
             </p>
           </>
         ) : (
