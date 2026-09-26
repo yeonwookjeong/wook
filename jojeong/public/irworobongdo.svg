@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="420" viewBox="0 0 390 420" preserveAspectRatio="xMidYMax slice">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1b3550"/>
+      <stop offset="0.7" stop-color="#2d5b6b"/>
+      <stop offset="1" stop-color="#3a6d73"/>
+    </linearGradient>
+    <linearGradient id="peak" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8cc3a0"/>
+      <stop offset="0.35" stop-color="#3f8a6d"/>
+      <stop offset="1" stop-color="#1c4b40"/>
+    </linearGradient>
+    <linearGradient id="peakShade" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0f2e28" stop-opacity="0"/>
+      <stop offset="1" stop-color="#0f2e28" stop-opacity="0.35"/>
+    </linearGradient>
+    <linearGradient id="peakFar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5f9e86"/>
+      <stop offset="1" stop-color="#21504a"/>
+    </linearGradient>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a5d82"/>
+      <stop offset="1" stop-color="#173a5a"/>
+    </linearGradient>
+    <radialGradient id="sunGlow">
+      <stop offset="0.5" stop-color="#e5563f" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#e5563f" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="moonGlow">
+      <stop offset="0.5" stop-color="#f6edd2" stop-opacity="0.4"/>
+      <stop offset="1" stop-color="#f6edd2" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="waves" width="26" height="15" patternUnits="userSpaceOnUse">
+      <path d="M0 15 Q6.5 1 13 15 Q19.5 1 26 15" fill="none" stroke="#e9f2f0" stroke-width="1.5" opacity="0.9"/>
+      <path d="M3.5 15 Q6.5 7 9.5 15 M16.5 15 Q19.5 7 22.5 15" fill="none" stroke="#e9f2f0" stroke-width="0.9" opacity="0.55"/>
+    </pattern>
+    <g id="pine">
+      <path d="M0 330 C8 290 -4 250 8 214 C15 192 9 176 20 156" fill="none" stroke="#8e3b24" stroke-width="7" stroke-linecap="round"/>
+      <path d="M8 246 C20 238 32 236 46 238" fill="none" stroke="#8e3b24" stroke-width="3.5" stroke-linecap="round"/>
+      <path d="M13 196 C24 188 36 186 50 188" fill="none" stroke="#8e3b24" stroke-width="3" stroke-linecap="round"/>
+      <path d="M4 222 C-6 216 -14 216 -22 218" fill="none" stroke="#8e3b24" stroke-width="3" stroke-linecap="round"/>
+      <g>
+        <path d="M-14 158 Q20 136 54 158 Q20 170 -14 158 Z" fill="#1d4a33"/>
+        <path d="M-10 156 Q20 140 50 156" fill="none" stroke="#3f7a57" stroke-width="2"/>
+        <path d="M20 186 Q44 170 68 186 Q44 196 20 186 Z" fill="#1d4a33"/>
+        <path d="M24 184 Q44 174 64 184" fill="none" stroke="#3f7a57" stroke-width="2"/>
+        <path d="M22 236 Q46 220 70 236 Q46 246 22 236 Z" fill="#1d4a33"/>
+        <path d="M26 234 Q46 224 66 234" fill="none" stroke="#3f7a57" stroke-width="2"/>
+        <path d="M-34 216 Q-12 202 10 216 Q-12 226 -34 216 Z" fill="#1d4a33"/>
+        <path d="M-30 214 Q-12 206 6 214" fill="none" stroke="#3f7a57" stroke-width="2"/>
+      </g>
+    </g>
+  </defs>
+
+  <rect width="390" height="420" fill="url(#sky)"/>
+
+  <!-- 달(왼쪽)과 해(오른쪽) -->
+  <circle cx="118" cy="184" r="40" fill="url(#moonGlow)"/>
+  <circle cx="118" cy="184" r="20" fill="#f4ebd1"/>
+  <circle cx="272" cy="184" r="40" fill="url(#sunGlow)"/>
+  <circle cx="272" cy="184" r="20" fill="#d33f2c"/>
+
+  <!-- 다섯 봉우리: 가운데가 가장 높고 양옆으로 낮아진다 -->
+  <path d="M-20 338 C4 280 22 258 38 255 C56 259 74 286 96 338 Z" fill="url(#peakFar)"/>
+  <path d="M294 338 C316 286 334 259 352 255 C368 258 386 280 410 338 Z" fill="url(#peakFar)"/>
+  <path d="M104 338 C140 222 168 170 195 158 C222 170 250 222 286 338 Z" fill="url(#peak)" stroke="#143a31" stroke-width="1.2"/>
+  <path d="M195 158 C222 170 250 222 286 338 L195 338 Z" fill="url(#peakShade)"/>
+  <path d="M26 338 C52 268 78 226 100 220 C124 228 150 272 176 338 Z" fill="url(#peak)" stroke="#143a31" stroke-width="1.2"/>
+  <path d="M100 220 C124 228 150 272 176 338 L100 338 Z" fill="url(#peakShade)"/>
+  <path d="M214 338 C240 272 266 228 290 220 C312 226 338 268 364 338 Z" fill="url(#peak)" stroke="#143a31" stroke-width="1.2"/>
+  <path d="M290 220 C312 226 338 268 364 338 L290 338 Z" fill="url(#peakShade)"/>
+  <g fill="none" stroke="#b9e2c6" stroke-width="1" opacity="0.5">
+    <path d="M195 166 C188 196 182 232 176 276"/>
+    <path d="M185 196 C178 214 172 236 168 262"/>
+    <path d="M100 228 C94 250 88 276 84 306"/>
+    <path d="M290 228 C296 250 302 276 306 306"/>
+  </g>
+
+  <!-- 폭포 -->
+  <g stroke="#eaf3f1" stroke-linecap="round" opacity="0.8">
+    <path d="M150 276 V336" stroke-width="3"/>
+    <path d="M156 288 V336" stroke-width="1.4"/>
+    <path d="M240 276 V336" stroke-width="3"/>
+    <path d="M234 288 V336" stroke-width="1.4"/>
+  </g>
+
+  <!-- 소나무 -->
+  <use href="#pine" transform="translate(26 0)"/>
+  <use href="#pine" transform="translate(364 0) scale(-1 1)"/>
+
+  <!-- 물결 -->
+  <rect y="334" width="390" height="86" fill="url(#sea)"/>
+  <rect y="334" width="390" height="86" fill="url(#waves)"/>
+  <g fill="#f3f8f6" opacity="0.9">
+    <circle cx="62" cy="340" r="2.2"/><circle cx="70" cy="337" r="1.6"/><circle cx="170" cy="341" r="2"/>
+    <circle cx="178" cy="338" r="1.4"/><circle cx="262" cy="340" r="2.2"/><circle cx="330" cy="338" r="1.8"/>
+  </g>
+
+  <!-- 병풍 틀: 네 폭으로 나뉜 붉은 옻칠 틀 -->
+  <g fill="none">
+    <rect x="3" y="3" width="384" height="414" stroke="#7a2016" stroke-width="6"/>
+    <rect x="7.5" y="7.5" width="375" height="405" stroke="#d6a84e" stroke-width="1.2"/>
+    <!-- 폭이 접히는 자리: 옅은 그림자와 가는 금선 -->
+    <g stroke="#0d1f2c" stroke-width="5" opacity="0.18">
+      <path d="M97.5 8 V412 M195 8 V412 M292.5 8 V412"/>
+    </g>
+    <g stroke="#d6a84e" stroke-width="0.9" opacity="0.55">
+      <path d="M97.5 8 V412 M195 8 V412 M292.5 8 V412"/>
+    </g>
+  </g>
+</svg>

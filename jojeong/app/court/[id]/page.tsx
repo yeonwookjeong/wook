@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
-import { SERVICE_NAME } from "@/lib/brand";
 import Link from "next/link";
 import BirthForm from "@/components/BirthForm";
 import Hundo from "@/components/Hundo";
+import ReportShelf from "@/components/ReportShelf";
+import RoyalDoc from "@/components/RoyalDoc";
 import KingCard from "@/components/KingCard";
 import Sillok from "@/components/Sillok";
+import SinbunCard from "@/components/SinbunCard";
 import PairHighlights from "@/components/PairHighlights";
 import SeatRow from "@/components/SeatRow";
 import { SaveImageButton, ShareLinkButton } from "@/components/ShareButtons";
@@ -12,6 +14,7 @@ import { loadCourt, viewerOf } from "@/lib/load";
 import { KING_TYPES } from "@/lib/kingTypes";
 import { reignTier, TIERS } from "@/lib/reign";
 import { castOf } from "@/lib/sillok";
+import { yearPreview } from "@/lib/yearly";
 import { EMPTY_SEATS, ROLES } from "@/lib/roles";
 
 export async function generateMetadata({ params }: PageProps<"/court/[id]">): Promise<Metadata> {
@@ -38,11 +41,8 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
 
   return (
     <>
-      <header className="animate-rise pt-8 text-center">
-        <Link href="/" className="text-xs font-bold tracking-widest text-seal">
-          {SERVICE_NAME}
-        </Link>
-        <p className="mt-3 text-sm font-bold text-gold">
+      <header className="animate-rise pt-6 text-center">
+        <p className="text-sm font-bold text-gold">
           {kingType.title} · <span className={tier.dark ? "text-seal" : ""}>{tier.label}</span>
         </p>
         <h1 className="mt-0.5 font-myeongjo text-3xl font-extrabold">{court.kingName} 전하의 조정</h1>
@@ -71,6 +71,7 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
                 <Hundo mood="bow">전하, 즉위를 경하드리옵니다. 소신이 전하의 사주로 실록과 즉위 교서를 지어 올리옵니다.</Hundo>
               </section>
               <Sillok kingName={court.kingName} pillars={court.king} cast={cast} />
+              <SinbunCard pillars={court.king} heading="전하가 왕이 아니었다면" reportQuery={`court=${court.id}`} />
               <KingCard kingName={court.kingName} pillars={court.king} />
               <section className="mt-6">
                 <Hundo mood="face">
@@ -99,7 +100,10 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
           )}
 
           {seats.length > 0 && (
-            <ol className="mt-6 flex flex-col gap-2">
+            <p className="mt-6 text-right text-[11px] text-ink-soft">오른쪽 숫자는 전하와의 궁합 점수 · 평균 68점</p>
+          )}
+          {seats.length > 0 && (
+            <ol className="mt-1.5 flex flex-col gap-2">
               {seats.map((seat) => (
                 <SeatRow
                   key={seat.minister.id}
@@ -146,6 +150,9 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
             <>
               <Sillok kingName={court.kingName} pillars={court.king} cast={cast} />
               {isOwner && (
+                <SinbunCard pillars={court.king} heading="전하가 왕이 아니었다면" reportQuery={`court=${court.id}`} />
+              )}
+              {isOwner && (
                 <details className="group mt-3 rounded-2xl border border-ink/15 bg-white/40">
                   <summary className="cursor-pointer list-none py-3 text-center text-sm font-bold text-ink-soft [&::-webkit-details-marker]:hidden">
                     즉위 교서 다시 보기
@@ -174,6 +181,14 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
                 )}
               </div>
             </section>
+          )}
+
+          {isOwner && (
+            <ReportShelf
+              ids={["gukjeong", "yeonae", "jaemul", "dwitjosa"]}
+              query={`court=${court.id}`}
+              highlight={{ id: "gukjeong", text: `병오년 운세 ‘${yearPreview(court.king).verdict}’ · 첫 장 무료` }}
+            />
           )}
 
           {isOwner && (
@@ -217,7 +232,7 @@ function Invitation({
 }) {
   return (
     <>
-      <section className="relative mt-6 overflow-hidden rounded-3xl border-4 border-double border-seal/60 bg-white/70 px-6 pt-8 pb-24 text-center">
+      <RoyalDoc paperClassName="pb-24 text-center">
         <p className="font-myeongjo text-sm font-extrabold tracking-[0.3em] text-seal">敎 旨</p>
         <p className="mt-4 text-sm font-bold text-gold">{kingTitle}</p>
         <p className="mt-1 font-myeongjo text-2xl font-extrabold leading-snug">
@@ -232,7 +247,7 @@ function Invitation({
           御
           <br />寶
         </span>
-      </section>
+      </RoyalDoc>
 
       <section className="mt-6">
         <Hundo mood="decree">
@@ -241,7 +256,9 @@ function Invitation({
         </Hundo>
       </section>
 
-      <section className="mt-5 rounded-3xl border border-ink/10 bg-hanji-deep/60 p-5">
+      <section className="doc-paper mt-5 px-6 pt-8 pb-7">
+        <p className="text-center font-myeongjo text-sm font-extrabold tracking-[0.4em] text-seal">入 闕</p>
+        <p className="mt-1 mb-4 text-center font-myeongjo font-extrabold">그대의 사주를 올리시옵소서</p>
         <BirthForm mode="minister" courtId={courtId} />
       </section>
     </>

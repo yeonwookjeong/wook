@@ -1,13 +1,18 @@
 import type { Metadata } from "next";
-import { SERVICE_NAME } from "@/lib/brand";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Hundo from "@/components/Hundo";
+import ReportShelf from "@/components/ReportShelf";
+import RoyalDoc from "@/components/RoyalDoc";
 import { SaveImageButton, ShareLinkButton } from "@/components/ShareButtons";
 import { bragLine, decreeLine, summonLine } from "@/lib/decree";
 import { loadCourt, viewerOf } from "@/lib/load";
 import { moodFor, ROLES } from "@/lib/roles";
-import { factLines, relationSentence } from "@/lib/saju";
+import { factLines, GANSIN_SIGNS, relationSentence, roleReasons, type Pillars } from "@/lib/saju";
+import { josa } from "@/lib/josa";
+import { chartOf, readChart } from "@/lib/myeongri";
+import SajuChart from "@/components/SajuChart";
+import SinbunCard from "@/components/SinbunCard";
 
 async function loadSeat(id: string, mid: string) {
   const { court, seats } = await loadCourt(id);
@@ -31,7 +36,11 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
   const isSelf = myMinisterId === seat.minister.id;
   const role = ROLES[seat.role];
   const danger = role.tone === "red" || role.tone === "gray";
-  const facts = factLines(court.king, seat.minister.pillars, seat.match.facts);
+  const reasons = roleReasons(court.king, seat.minister.pillars, seat.match, seat.role, seat.minister.name);
+  // The 기신 line is already part of the reasons for 간신 and 유배.
+  const facts = factLines(court.king, seat.minister.pillars, seat.match.facts, seat.role).filter(
+    (line) => !(danger && line.startsWith("기신(")),
+  );
 
   return (
     <>
@@ -39,14 +48,9 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
         <Link href={`/court/${court.id}`} className="font-bold text-ink-soft">
           ← {court.kingName} 전하의 조정
         </Link>
-        <Link href="/" className="font-bold text-seal">
-          {SERVICE_NAME}
-        </Link>
       </nav>
 
-      <section
-        className={`animate-rise relative mt-5 overflow-hidden rounded-3xl border-4 border-double bg-white/75 px-6 pt-8 pb-10 text-center ${danger ? "border-seal/70" : "border-gold/70"}`}
-      >
+      <RoyalDoc className="mt-5" paperClassName="pb-24 text-center">
         <p className="font-myeongjo text-sm font-extrabold tracking-[0.3em] text-seal">敎 旨</p>
         <p className="mt-5 text-sm text-ink-soft">{court.kingName} 전하께서</p>
         <p className="mt-1 font-myeongjo text-xl font-extrabold">{decreeLine(seat.minister.name, seat.role)}</p>
@@ -60,15 +64,42 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
         <div className="mx-auto mt-6 w-fit rounded-full bg-hanji-deep px-4 py-1.5 text-sm">
           궁합 <b className="font-myeongjo text-lg">{seat.match.score}</b>점
         </div>
+        <p className="mt-1.5 text-[11px] text-ink-soft">평균 68점 · 조정 1등(75점 이상)은 영의정 · 80점 넘으면 좌의정</p>
 
         <span className="animate-stamp absolute right-5 bottom-5 flex size-16 items-center justify-center rounded-lg border-[3px] border-seal font-myeongjo text-sm font-extrabold leading-tight text-seal">
           御
           <br />寶
         </span>
-      </section>
+      </RoyalDoc>
 
       <section className="mt-6">
         <Hundo mood={moodFor(seat.role)}>{role.report}</Hundo>
+      </section>
+
+      <section
+        className={`mt-5 rounded-3xl border px-5 py-4 ${danger ? "border-seal/40 bg-seal/5" : "border-gold/40 bg-white/60"}`}
+      >
+        <h2 className={`font-myeongjo text-lg font-extrabold ${danger ? "text-seal" : ""}`}>
+          {seat.role === "gansin" ? "간신 판정 사유" : seat.role === "yubae" ? "유배 사유" : `${role.title} 천거 사유`}
+        </h2>
+        <ol className="mt-2 flex flex-col gap-2 text-[15px] leading-relaxed">
+          {reasons.map((line, i) => (
+            <li key={line} className="flex gap-2">
+              <span className={`font-myeongjo font-extrabold ${danger ? "text-seal" : "text-gold"}`}>{"一二三四"[i]}</span>
+              <span>{line}</span>
+            </li>
+          ))}
+        </ol>
+        {seat.role === "gansin" && (
+          <div className="mt-3 rounded-2xl bg-white/70 px-4 py-3">
+            <p className="text-xs font-extrabold text-seal">이런 간신은 이렇게 티가 나옵니다</p>
+            <ul className="mt-1.5 flex flex-col gap-1 text-sm leading-relaxed">
+              {GANSIN_SIGNS.map((line) => (
+                <li key={line}>· {line}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </section>
 
       <section className="mt-5 rounded-3xl border border-ink/10 bg-hanji-deep/60 p-5">
@@ -91,6 +122,16 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
         </p>
       </section>
 
+      {isSelf && (
+        <SinbunCard
+          pillars={seat.minister.pillars}
+          heading={`${josa(seat.minister.name, "이/가")} 조선에 태어났다면`}
+          reportQuery={`court=${court.id}&m=${seat.minister.id}`}
+        />
+      )}
+      {isSelf && <MyChartTeaser pillars={seat.minister.pillars} name={seat.minister.name} />}
+      {isSelf && <ReportShelf ids={["gukjeong", "yeonae", "insa"]} query={`court=${court.id}&m=${seat.minister.id}`} />}
+
       <section className="mt-6 flex flex-col gap-3">
         {isSelf && (
           <>
@@ -105,12 +146,6 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
               label="결과 자랑하기"
               primary={false}
             />
-            <Link
-              href="/"
-              className="mt-2 w-full rounded-2xl bg-seal py-4 text-center font-myeongjo text-lg font-extrabold text-hanji shadow-[0_6px_0_#7d1a14]"
-            >
-              나는 어떤 왕일까? 즉위하기
-            </Link>
           </>
         )}
         {isOwner && (
@@ -153,5 +188,46 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
         )}
       </section>
     </>
+  );
+}
+
+// The minister already gave a birth date, so show them their own chart and keep the verdict locked behind
+// enthronement: that curiosity is what turns a guest into the next king.
+function MyChartTeaser({ pillars, name }: { pillars: Pillars; name: string }) {
+  const reading = readChart(pillars);
+  return (
+    <section className="mt-6">
+      <h2 className="text-center font-myeongjo text-lg font-extrabold">{name}의 사주 여덟 글자</h2>
+      {reading && (
+        <SajuChart
+          slots={chartOf(pillars as Parameters<typeof chartOf>[0])}
+          elements={reading.elements}
+          strength={reading.strength}
+          yong={reading.yong}
+          missing={reading.missing}
+        />
+      )}
+      <div className="relative mt-3 overflow-hidden border border-seal/30 bg-[#f9f1de] px-5 py-5 text-center">
+        <div className="pointer-events-none flex justify-center gap-2 blur-[3px] select-none" aria-hidden="true">
+          {["聖君", "明君", "暗君", "暴君"].map((t) => (
+            <span key={t} className="border-2 border-gold/60 px-3 py-1 font-myeongjo text-xl font-extrabold text-gold">
+              {t}
+            </span>
+          ))}
+        </div>
+        <p className="mt-3 font-myeongjo text-lg leading-snug font-extrabold">
+          🔒 그대가 왕이었다면
+          <br />
+          성군이었을까, 폭군이었을까?
+        </p>
+        <p className="mt-1.5 text-sm text-ink-soft">즉위하면 그대의 등급과 가상 실록 일곱 장이 열리옵니다</p>
+        <Link
+          href="/#enthrone"
+          className="mt-4 block w-full rounded-2xl bg-seal py-3.5 font-myeongjo text-lg font-extrabold text-hanji shadow-[0_5px_0_#7d1a14]"
+        >
+          내 실록 열기 · 즉위하기
+        </Link>
+      </div>
+    </section>
   );
 }

@@ -47,7 +47,7 @@ export default function SajuChart({
 }) {
   const max = Math.max(...elements, 1);
   return (
-    <div className="mt-3 rounded-2xl bg-white/60 px-4 py-3">
+    <div className="mt-4 border border-seal/25 px-4 py-3">
       <p className="text-xs font-extrabold text-ink-soft">사주 원국 · 여덟 글자</p>
       <div className="mt-2 grid grid-cols-4 gap-1.5 text-center">
         {slots.map((s) => (
