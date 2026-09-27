@@ -1,6 +1,7 @@
 import { gongmang, isBaekho, isGoegang, meetings, salsAt, stageOf, stemClash, stemCombine } from "./deep";
 import { chartOf, ELEMENT_HANJA, ELEMENT_KO, GYEOK_NAME, HIDDEN, readChart, stemEl, tenGod } from "./myeongri";
 import { selfStars, type Profile } from "./profile";
+import { distinctOf, perHundred } from "./rarity";
 import { BRANCHES, isFull, matchPillars, STEMS, type Pillars } from "./saju";
 import { MONTHS, YEAR, yearReading } from "./yearly";
 
@@ -35,6 +36,7 @@ export function chartBrief(name: string, p: Pillars, profile: Profile | null): s
       by ? `${by.year}년생${by.certain ? "" : "(추정)"}, 2026년 만 ${2026 - by.year - 1}~${2026 - by.year}세` : "나이 미상"
     }, 태어난 시각 ${p.hourBranch === null ? "모름(시주 없음)" : "앎"}`,
   );
+  lines.push(...distinctLines(p, profile));
   const slots = chartOf(p);
   lines.push("- 원국 (시·일·월·연):");
   for (const s of slots) {
@@ -127,6 +129,51 @@ export function chartBrief(name: string, p: Pillars, profile: Profile | null): s
   // Element flow of the year for balance
   lines.push(`- 참고: 2026년 화(火) 기운은 이 사람에게 ${FIRE_ROLE(r.yong, r.hee, r.gi)}`);
   return lines.join("\n");
+}
+
+// What sets this chart apart from others with the same day pillar, rarest first, and past years worth naming.
+function distinctLines(p: Pillars, profile: Profile | null): string[] {
+  const d = distinctOf(p, profile?.gender ?? null);
+  if (!d) return [];
+  const lines = ["- ★ 이 사람만의 특징 (드문 순. 보고서는 이것부터 풀 것. '가이드'는 방향일 뿐, 이 사람의 다른 글자와 엮어 구체적으로 쓸 것):"];
+  d.patterns.forEach((x, i) =>
+    lines.push(`  ${i + 1}. [${x.term}] ${x.plain} — ${perHundred(x.rate)} · 영역 ${x.area} · 가이드: ${x.meaning}`),
+  );
+  if (d.extremes.length)
+    lines.push(
+      `- ★ 극단값: ${d.extremes
+        .map((x) => `${x.label} ${Math.round(x.value * 100)}% (${x.side === "high" ? "상위" : "하위"} ${Math.max(1, Math.round(x.rate * 100))}%)`)
+        .join(", ")}`,
+    );
+  if (d.ilju)
+    lines.push(`- ★ 같은 일주 안에서: ${d.ilju.build} ${d.ilju.name}일주는 ${d.ilju.name}일주 가운데 약 ${Math.max(1, Math.round(d.ilju.rate * 100))}%`);
+  const past = pastYears(p, profile);
+  if (past.length) lines.push(`- ★ 과거 확인용 연도 (이 가운데 2~3개를 골라 '이 무렵 이런 일이 있었을 가능성이 커요'로 짚을 것):\n${past.map((x) => `  · ${x}`).join("\n")}`);
+  return lines;
+}
+
+// Years since the late teens when the chart was shaken: a new decade (대운), the spouse seat or the
+// month seat clashed, the spouse seat combined.
+function pastYears(p: Pillars, profile: Profile | null): string[] {
+  const by = birthYearOf(p, profile);
+  if (!by) return [];
+  const from = by.year + 16;
+  const to = 2025;
+  const gz = (y: number) => `${STEMS[(y - 4) % 10]}${BRANCHES[(y - 4) % 12]}`;
+  const years = (branch: number) => {
+    const out: number[] = [];
+    for (let y = from; y <= to; y++) if ((y - 4) % 12 === branch) out.push(y);
+    return out;
+  };
+  const marks: [number, string][] = [];
+  for (const d of profile?.daeun ?? [])
+    if (d.from >= from && d.from <= to)
+      marks.push([d.from, `${d.from}년: 10년 대운이 ${GZ(d.stem, d.branch)}(${tenGod(p.dayStem, d.stem)}/${tenGod(p.dayStem, HIDDEN[d.branch].at(-1)![0])})로 바뀜. 일·관계·사는 곳 같은 삶의 판이 바뀌기 쉬운 해`]);
+  for (const y of years((p.dayBranch + 6) % 12).slice(-2)) marks.push([y, `${y}년 ${gz(y)}: 배우자 자리(일지)를 충. 연애·결혼·가까운 관계에 큰 변화`]);
+  for (const y of years((13 - p.dayBranch) % 12).slice(-1)) marks.push([y, `${y}년 ${gz(y)}: 배우자 자리와 육합. 인연이 들어오거나 관계가 깊어지기 쉬운 해`]);
+  if (p.monthBranch !== undefined)
+    for (const y of years((p.monthBranch + 6) % 12).slice(-1)) marks.push([y, `${y}년 ${gz(y)}: 일터·집 자리(월지)를 충. 이직·이사·환경 변화`]);
+  return marks.sort((a, b) => a[0] - b[0]).map(([, t]) => t + (by.certain ? "" : " (출생년 추정)"));
 }
 
 function FIRE_ROLE(yong: number, hee: number, gi: number) {

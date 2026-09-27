@@ -3,6 +3,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import AiReport from "@/components/AiReport";
+import ChartIntro from "@/components/ChartIntro";
 import DeepenForm from "@/components/DeepenForm";
 import Keep from "@/components/Keep";
 import RoyalDoc from "@/components/RoyalDoc";
@@ -14,6 +15,7 @@ import { PURCHASES_COOKIE } from "@/lib/cookies";
 import { ownedCourts } from "@/lib/load";
 import { isOpen, OPEN_ALL, PRICE_STEPS, priceFor, productById, type Product, type ProductId } from "@/lib/products";
 import { REPORT_SPECS } from "@/lib/reportPrompts";
+import { distinctOf } from "@/lib/rarity";
 import { courtOfReader, subjectFor } from "@/lib/subject";
 import { getProfile } from "@/lib/store";
 import { yearReading } from "@/lib/yearly";
@@ -157,6 +159,8 @@ async function OpenReport({ product, courtId, ministerId, targetId }: { product:
       </>
     );
   const request = { product: product.id, ...(courtId && { court: subject.courtId }), ...(ministerId && { m: ministerId }) };
+  const distinct = subject.self ? distinctOf(subject.pillars, profile?.gender ?? null) : null;
+  const intro = distinct && <ChartIntro name={subject.name} d={distinct} />;
   if (product.id === "gukjeong")
     return (
       <YearReport
@@ -164,7 +168,7 @@ async function OpenReport({ product, courtId, ministerId, targetId }: { product:
         heading={`${subject.name}님의 2026년 운세`}
         deepen={subject.self ? { courtId: subject.courtId, who: subject.who } : null}
         query={query}
-        ai={subject.self ? { request, chapters: chaptersOf(product.id) } : undefined}
+        ai={subject.self ? { request, chapters: chaptersOf(product.id), intro } : undefined}
       />
     );
   if (!subject.self)
@@ -172,6 +176,7 @@ async function OpenReport({ product, courtId, ministerId, targetId }: { product:
   return (
     <>
       <Header product={product} subjectName={`${subject.name}님`} />
+      {intro}
       <details className="group doc-paper mt-4 px-5 py-4">
         <summary className="flex cursor-pointer list-none items-center justify-between [&::-webkit-details-marker]:hidden">
           <span className="font-myeongjo font-extrabold">사주 원국 · 여덟 글자 보기</span>
