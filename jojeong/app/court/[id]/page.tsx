@@ -201,13 +201,14 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
             />
           )}
 
-          <AdSlot />
-
           {isOwner && (
             <div className="sticky bottom-4 z-10 mt-6">
               <ShareLinkButton path={`/court/${court.id}`} text={inviteText} label={seats.length > 0 ? "신하 더 부르기" : "신하 부르기"} />
             </div>
           )}
+
+          {/* Below the floating share button, so the button never sits over the ad (AdSense disallows that). */}
+          <AdSlot />
 
           {!isOwner && (
             <section className="mt-8 flex flex-col gap-3">
