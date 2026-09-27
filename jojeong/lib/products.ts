@@ -1,7 +1,7 @@
 // 정 훈도의 비밀 보고서. One free report (조선 신분 감정) opens the shelf; the paid ones all cost the same fixed
 // price, lowered only on the special days listed in SALES.
 
-export type ProductId = "sinbun" | "pyeongsaeng" | "gunghap" | "sokgunghap" | "jaehoe" | "gukjeong" | "yeonae" | "jaemul" | "jikup" | "dwitjosa" | "gwangye" | "insa";
+export type ProductId = "sinbun" | "pyeongsaeng" | "gunghap" | "sokgunghap" | "jaehoe" | "taekil" | "gukjeong" | "yeonae" | "jaemul" | "jikup" | "dwitjosa" | "gwangye" | "insa";
 
 export type Product = {
   id: ProductId;
@@ -83,6 +83,16 @@ export const PRODUCTS: Product[] = [
     tagline: "그 사람, 다시 올까? 왜 멀어졌는지, 다시 이어질 수 있는지, 언제가 기회인지",
     toc: ["우리가 멀어진 진짜 이유", "그 사람 마음에 남아 있는 것", "다시 이어질 수 있는 인연일까", "연락이 닿기 좋은 때", "다시 만난다면 꼭 달라져야 할 것", "놓아 주는 게 나을 때"],
     teaser: "두 사람의 사주와 앞으로 몇 해의 흐름으로 다시 이어질 인연인지, 언제가 기회인지 풀어 드려요.",
+    modern: true,
+  },
+  {
+    id: "taekil",
+    title: "택일 · 좋은 날 받기",
+    hanja: "擇日",
+    for: "anyone",
+    tagline: "결혼, 이사, 개업·계약. 책력과 내 사주로 고른 좋은 날",
+    toc: ["기간 안의 좋은 날 세 개", "기간 전체 길일 달력", "날짜마다 좋은 이유와 조심할 점", "그날 좋은 시간대"],
+    teaser: "관상감 명과학 훈도의 본업, 택일이에요. 책력이 권하는 날에 내 사주와 부딪히지 않는 날을 골라 드려요.",
     modern: true,
   },
   {

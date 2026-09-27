@@ -7,6 +7,8 @@ import ChartIntro from "@/components/ChartIntro";
 import GunghapForm from "@/components/GunghapForm";
 import MeForm from "@/components/MeForm";
 import PairIntro from "@/components/PairIntro";
+import TaekilForm from "@/components/TaekilForm";
+import TaekilResult from "@/components/TaekilResult";
 import Paywall from "@/components/Paywall";
 import OrderLink from "@/components/OrderLink";
 import DeepenForm from "@/components/DeepenForm";
@@ -27,6 +29,7 @@ import { distinctOf } from "@/lib/rarity";
 import { courtOfReader, subjectFor } from "@/lib/subject";
 import { getProfile } from "@/lib/store";
 import { getOrder, ownedOrderFor, type Order } from "@/lib/pay";
+import { KINDS, parseSearch, pickDays, startMonths } from "@/lib/taekil";
 import { yearReading } from "@/lib/yearly";
 
 export async function generateMetadata({ params }: PageProps<"/reports/[id]">): Promise<Metadata> {
@@ -70,6 +73,7 @@ const chaptersOf = (id: ProductId) => REPORT_SPECS[id]?.chapters ?? [];
 // (`locked`) shows everything computed for free and puts the payment where the written report would start;
 // a paid order (`paid`, from its link) or one this browser bought for the same chart opens it.
 type Pair = { a?: string; b?: string; rel?: string };
+type Search = { kind?: string; from?: string; n?: string };
 
 async function OpenReport({
   product,
@@ -79,6 +83,7 @@ async function OpenReport({
   pair,
   locked = false,
   paid,
+  search = {},
 }: {
   product: Product;
   courtId?: string;
@@ -87,8 +92,51 @@ async function OpenReport({
   pair: Pair;
   locked?: boolean;
   paid?: Order;
+  search?: Search;
 }) {
   const query = new URLSearchParams({ ...(courtId && { court: courtId }), ...(ministerId && { m: ministerId }) }).toString();
+
+  // 택일: the search and chart(s) in the link (or the order), the three best days free, the rest when bought.
+  if (product.id === "taekil") {
+    const src = paid ? paid.req : { ...search, a: pair.a, b: pair.b };
+    const found = parseSearch(src.kind, src.from, src.n, !paid);
+    const a = decodePerson(src.a);
+    const b = found && KINDS[found.kind].people === 2 ? decodePerson(src.b) : null;
+    if (!found || !a || (KINDS[found.kind].people === 2 && !b)) {
+      const saved = (await readMe())?.person.name ?? null;
+      return (
+        <>
+          <Header product={product} />
+          <section className="doc-paper mt-4 px-5 pt-6 pb-6">
+            <p className="mb-4 text-center text-sm leading-relaxed text-ink-soft">{product.teaser}</p>
+            <TaekilForm savedName={saved} months={startMonths()} />
+          </section>
+        </>
+      );
+    }
+    const req = { product: product.id, kind: found.kind, from: src.from!, n: String(found.n), a: src.a!, ...(b && { b: src.b! }) };
+    const unlock = paid ?? (locked ? await ownedOrderFor(product.id, req) : null);
+    const days = pickDays(found.kind, b ? [a, b] : [a], found.from, found.n);
+    return (
+      <>
+        <Header product={product} subjectName={b ? `${a.name}님과 ${b.name}님` : `${a.name}님`} />
+        {unlock && <OrderLink id={unlock.id} />}
+        <TaekilResult kind={found.kind} days={days} label={found.label} full={!locked || Boolean(unlock)} />
+        {locked && !unlock && (
+          <Paywall
+            product={product}
+            request={req}
+            chapters={["기간 전체 택일 달력 (◎ ○ △)", "써도 좋은 날 모두와 날짜별 이유", "날마다 좋은 시간대", "사주와 부딪히는 날 표시"]}
+            heading="기간 전체 택일 달력"
+            sub="좋은 날 세 개 말고도, 기간 안의 모든 날을 풀어 드려요"
+          />
+        )}
+        <Link href="/reports/taekil" className="mt-6 block border border-seal/40 py-3 text-center text-sm font-bold text-seal">
+          다른 날짜로 다시 찾기 →
+        </Link>
+      </>
+    );
+  }
 
   // 궁합·속궁합·재회운: two people typed in (or the reader's own saved chart and one typed in), carried in the link.
   if (isPair(product)) {
@@ -361,6 +409,11 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
           }}
           locked={!isOpen(product) && !paid}
           paid={paid}
+          search={{
+            kind: typeof search.kind === "string" ? search.kind : undefined,
+            from: typeof search.from === "string" ? search.from : undefined,
+            n: typeof search.n === "string" ? search.n : undefined,
+          }}
         />
       </>
     );

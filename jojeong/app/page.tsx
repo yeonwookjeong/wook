@@ -169,6 +169,17 @@ export default async function Home() {
         </ul>
       </section>
 
+      {/* 택일 was the 명과학 훈도's own work at 관상감: the brand, as a product. */}
+      <Link href="/reports/taekil" className="doc-paper mt-3 flex items-center gap-4 px-5 py-4">
+        <Seal hanja="擇日" />
+        <span className="min-w-0 flex-1">
+          <span className="block text-[11px] font-extrabold text-seal">명과학 훈도의 본업</span>
+          <span className="block font-myeongjo text-lg leading-tight font-extrabold">택일 · 좋은 날 받기</span>
+          <span className="mt-0.5 block text-[13px] leading-snug text-ink-soft">결혼, 이사, 개업·계약 날짜를 책력과 내 사주로</span>
+        </span>
+        <span className="text-seal">→</span>
+      </Link>
+
       <section className="mt-9">
         <h2 className="text-center font-myeongjo text-lg font-extrabold">요즘 이런 고민 있으세요?</h2>
         <ul className="mt-4 flex flex-col gap-2.5">

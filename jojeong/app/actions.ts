@@ -12,6 +12,7 @@ import { encodePerson, relationOf, type Person } from "@/lib/pairToken";
 import { forgetMe, readMe, rememberMe } from "@/lib/me";
 import { ADULT_ONLY, FIXED_RELATION, isAdult, isPair, productById, type ProductId } from "@/lib/products";
 import { CHOOSABLE } from "@/lib/relations";
+import { KINDS, parseSearch } from "@/lib/taekil";
 import { subjectFor } from "@/lib/subject";
 
 export type FormState = { error: string | null };
@@ -252,4 +253,23 @@ export async function forgetMeAction(formData: FormData) {
   await forgetMe();
   const next = String(formData.get("next") ?? "");
   redirect(/^\/reports\/[a-z]+$/.test(next) ? next : "/");
+}
+
+// ── 택일: what for, when, and whose chart (two for a wedding). Carried in the link like a 궁합.
+export async function taekilAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  let url: string;
+  try {
+    const search = parseSearch(formData.get("kind"), formData.get("from"), formData.get("n"));
+    if (!search) throw new BirthInputError("무엇을 할지와 기간을 다시 골라 주세요.");
+    const me = await readMe();
+    const a = formData.get("a_use") === "saved" && me ? me.person : await personOf(formData, "a_", "나");
+    const params = new URLSearchParams({ kind: search.kind, from: formData.get("from") as string, n: String(search.n), a: encodePerson(a) });
+    if (KINDS[search.kind].people === 2) params.set("b", encodePerson(await personOf(formData, "b_", "상대")));
+    url = `/reports/taekil?${params}`;
+  } catch (e) {
+    if (e instanceof BirthInputError) return { error: e.message };
+    console.error(e);
+    return { error: "날짜를 고르다 문제가 생겼어요. 잠시 후 다시 시도해 주세요." };
+  }
+  redirect(url);
 }
