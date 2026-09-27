@@ -1,7 +1,7 @@
 // 정 훈도의 비밀 보고서. One free report (조선 신분 감정) opens the shelf; the paid ones all cost the same fixed
 // price, lowered only on the special days listed in SALES.
 
-export type ProductId = "sinbun" | "pyeongsaeng" | "gunghap" | "gukjeong" | "yeonae" | "jaemul" | "jikup" | "dwitjosa" | "gwangye" | "insa";
+export type ProductId = "sinbun" | "pyeongsaeng" | "gunghap" | "sokgunghap" | "jaehoe" | "gukjeong" | "yeonae" | "jaemul" | "jikup" | "dwitjosa" | "gwangye" | "insa";
 
 export type Product = {
   id: ProductId;
@@ -63,6 +63,26 @@ export const PRODUCTS: Product[] = [
     tagline: "우리 둘, 진짜 잘 맞을까? 왜 끌리고 왜 부딪히는지, 오래 가려면 뭘 지켜야 하는지",
     toc: ["우리 둘, 첫인상과 끌림의 정체", "서로에게 채워 주는 것, 부딪히는 것", "싸울 때 우리는 어떻게 될까", "돈과 생활, 잘 맞을까", "오래 가려면 꼭 지킬 것", "우리에게 좋은 때와 조심할 때"],
     teaser: "두 사람의 사주를 나란히 놓고, 왜 끌리고 어디서 부딪히는지 풀어 드려요.",
+    modern: true,
+  },
+  {
+    id: "sokgunghap",
+    title: "속궁합",
+    hanja: "合歡",
+    for: "anyone",
+    tagline: "말로는 다 모르는 우리 둘의 온도. 끌림, 스킨십, 애정 표현이 얼마나 잘 맞는지",
+    toc: ["우리 둘의 온도, 첫 끌림의 정체", "다가가는 속도와 방식", "애정 표현, 누가 먼저 어떻게", "잘 맞는 순간과 엇갈리는 순간", "더 가까워지는 법", "관계가 깊어지는 때"],
+    teaser: "두 사람 사주의 열기와 촉촉함, 끌어당기는 기운으로 친밀감의 궁합을 풀어 드려요. 만 19세 이상만 볼 수 있어요.",
+    modern: true,
+  },
+  {
+    id: "jaehoe",
+    title: "재회운",
+    hanja: "再會",
+    for: "anyone",
+    tagline: "그 사람, 다시 올까? 왜 멀어졌는지, 다시 이어질 수 있는지, 언제가 기회인지",
+    toc: ["우리가 멀어진 진짜 이유", "그 사람 마음에 남아 있는 것", "다시 이어질 수 있는 인연일까", "연락이 닿기 좋은 때", "다시 만난다면 꼭 달라져야 할 것", "놓아 주는 게 나을 때"],
+    teaser: "두 사람의 사주와 앞으로 몇 해의 흐름으로 다시 이어질 인연인지, 언제가 기회인지 풀어 드려요.",
     modern: true,
   },
   {
@@ -136,6 +156,15 @@ export const PRODUCTS: Product[] = [
 ];
 
 export const productById = (id: string) => PRODUCTS.find((p) => p.id === id);
+
+// Reports about two people typed in together (lib/pairToken.ts), and the relation some of them fix.
+export const PAIR_PRODUCTS: ProductId[] = ["gunghap", "sokgunghap", "jaehoe"];
+export const isPair = (p: Product | ProductId) => PAIR_PRODUCTS.includes(typeof p === "string" ? p : p.id);
+export const FIXED_RELATION: Partial<Record<ProductId, "lover" | "ex">> = { sokgunghap: "lover", jaehoe: "ex" };
+// 속궁합 is for adults only (만 19세 이상, by birth year).
+export const ADULT_ONLY: ProductId[] = ["sokgunghap"];
+// 청소년보호법: 19세가 되는 해의 1월 1일부터 성인으로 본다.
+export const isAdult = (birthYear: number | null) => birthYear !== null && new Date().getFullYear() - birthYear >= 19;
 
 // 무료 공개 기간: every report opens in full until selling starts. OPEN_ALL=0 in the environment ends it.
 export const OPEN_ALL = process.env.OPEN_ALL !== "0";

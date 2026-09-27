@@ -17,7 +17,7 @@ import SinbunReport from "@/components/SinbunReport";
 import YearReport from "@/components/YearReport";
 import { josa } from "@/lib/josa";
 import { ownedCourts } from "@/lib/load";
-import { isOpen, OPEN_ALL, PRICE, productById, saleLabel, saleNow, type Product, type ProductId } from "@/lib/products";
+import { ADULT_ONLY, FIXED_RELATION, isAdult, isOpen, isPair, OPEN_ALL, PRICE, productById, saleLabel, saleNow, type Product, type ProductId } from "@/lib/products";
 import { REPORT_SPECS } from "@/lib/reportPrompts";
 import { coupleOf } from "@/lib/couple";
 import { forgetMeAction } from "@/app/actions";
@@ -90,8 +90,8 @@ async function OpenReport({
 }) {
   const query = new URLSearchParams({ ...(courtId && { court: courtId }), ...(ministerId && { m: ministerId }) }).toString();
 
-  // 궁합: two people typed in (or the reader's own saved chart and one typed in), carried in the link.
-  if (product.id === "gunghap") {
+  // 궁합·속궁합·재회운: two people typed in (or the reader's own saved chart and one typed in), carried in the link.
+  if (isPair(product)) {
     if (paid) pair = { a: paid.req.a, b: paid.req.b, rel: paid.req.rel };
     const a = decodePerson(pair.a);
     const b = decodePerson(pair.b);
@@ -102,13 +102,15 @@ async function OpenReport({
           <Header product={product} />
           <section className="doc-paper mt-4 px-5 pt-6 pb-6">
             <p className="mb-4 text-center text-sm leading-relaxed text-ink-soft">{product.teaser}</p>
-            <GunghapForm savedName={saved} />
+            <GunghapForm savedName={saved} product={product.id} />
           </section>
         </>
       );
     }
+    if (ADULT_ONLY.includes(product.id) && !(isAdult(a.birthYear) && isAdult(b.birthYear)))
+      return (<><Header product={product} /><Notice href={`/reports/${product.id}`} cta="다시 입력하기">만 19세 이상 두 사람만 볼 수 있는 보고서예요.</Notice></>);
     const couple = coupleOf(a, b);
-    const req = { product: product.id, a: pair.a, b: pair.b, rel: relationOf(pair.rel) };
+    const req = { product: product.id, a: pair.a, b: pair.b, rel: FIXED_RELATION[product.id] ?? relationOf(pair.rel) };
     const unlock = paid ?? (locked ? await ownedOrderFor(product.id, req) : null);
     return (
       <>
@@ -122,8 +124,8 @@ async function OpenReport({
             <AiReport request={unlock ? { product: product.id, order: unlock.id } : req} chapters={chaptersOf(product.id)} modern />
           </>
         )}
-        <Link href="/reports/gunghap" className="mt-6 block border border-seal/40 py-3 text-center text-sm font-bold text-seal">
-          다른 사람과 궁합 보기 →
+        <Link href={`/reports/${product.id}`} className="mt-6 block border border-seal/40 py-3 text-center text-sm font-bold text-seal">
+          {product.id === "jaehoe" ? "다른 사람으로 재회운 보기" : `다른 사람과 ${product.title} 보기`} →
         </Link>
       </>
     );

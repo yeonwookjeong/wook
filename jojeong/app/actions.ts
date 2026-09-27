@@ -10,7 +10,8 @@ import { addMinister, createCourt, CourtFullError, getCourt, getProfile, listMin
 import { OWNER_COOKIE, MINISTER_COOKIE } from "@/lib/cookies";
 import { encodePerson, relationOf, type Person } from "@/lib/pairToken";
 import { forgetMe, readMe, rememberMe } from "@/lib/me";
-import { productById } from "@/lib/products";
+import { ADULT_ONLY, FIXED_RELATION, isAdult, isPair, productById, type ProductId } from "@/lib/products";
+import { CHOOSABLE } from "@/lib/relations";
 import { subjectFor } from "@/lib/subject";
 
 export type FormState = { error: string | null };
@@ -218,9 +219,14 @@ export async function gunghapAction(_prev: FormState, formData: FormData): Promi
       const profile = await getProfile(subject.courtId, subject.who);
       a = { name: subject.name, pillars: subject.pillars, gender: profile?.gender ?? null, birthYear: profile?.birthYear ?? null, daeun: profile?.daeun ?? [] };
     } else a = await personOf(formData, "a_", "나");
-    const b = await personOf(formData, "b_", "상대");
-    const rel = relationOf(formData.get("rel"));
-    url = `/reports/gunghap?rel=${rel}&a=${encodePerson(a)}&b=${encodePerson(b)}`;
+    const product = String(formData.get("product") ?? "gunghap") as ProductId;
+    if (!isPair(product)) throw new BirthInputError("보고서를 다시 골라 주세요.");
+    const b = await personOf(formData, "b_", product === "jaehoe" ? "그 사람" : "상대");
+    if (ADULT_ONLY.includes(product) && !(isAdult(a.birthYear) && isAdult(b.birthYear)))
+      throw new BirthInputError("속궁합은 만 19세 이상 두 사람만 볼 수 있어요.");
+    const chosen = relationOf(formData.get("rel"));
+    const rel = FIXED_RELATION[product] ?? (CHOOSABLE.includes(chosen) ? chosen : "lover");
+    url = `/reports/${product}?rel=${rel}&a=${encodePerson(a)}&b=${encodePerson(b)}`;
   } catch (e) {
     if (e instanceof BirthInputError) return { error: e.message };
     console.error(e);
