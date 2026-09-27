@@ -4,6 +4,8 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import AiReport from "@/components/AiReport";
 import ChartIntro from "@/components/ChartIntro";
+import GunghapForm from "@/components/GunghapForm";
+import PairIntro from "@/components/PairIntro";
 import DeepenForm from "@/components/DeepenForm";
 import Keep from "@/components/Keep";
 import RoyalDoc from "@/components/RoyalDoc";
@@ -15,6 +17,8 @@ import { PURCHASES_COOKIE } from "@/lib/cookies";
 import { ownedCourts } from "@/lib/load";
 import { isOpen, OPEN_ALL, PRICE_STEPS, priceFor, productById, type Product, type ProductId } from "@/lib/products";
 import { REPORT_SPECS } from "@/lib/reportPrompts";
+import { coupleOf } from "@/lib/couple";
+import { decodePerson, relationOf } from "@/lib/pairToken";
 import { distinctOf } from "@/lib/rarity";
 import { courtOfReader, subjectFor } from "@/lib/subject";
 import { getProfile } from "@/lib/store";
@@ -58,8 +62,51 @@ function Notice({ children, href, cta }: { children: React.ReactNode; href?: str
 const chaptersOf = (id: ProductId) => REPORT_SPECS[id]?.chapters ?? [];
 
 // Every report, open in full (무료 공개 기간 or a free report).
-async function OpenReport({ product, courtId, ministerId, targetId }: { product: Product; courtId?: string; ministerId?: string; targetId?: string }) {
+type Pair = { a?: string; b?: string; rel?: string };
+
+async function OpenReport({
+  product,
+  courtId,
+  ministerId,
+  targetId,
+  pair,
+}: {
+  product: Product;
+  courtId?: string;
+  ministerId?: string;
+  targetId?: string;
+  pair: Pair;
+}) {
   const query = new URLSearchParams({ ...(courtId && { court: courtId }), ...(ministerId && { m: ministerId }) }).toString();
+
+  // 궁합: two people typed in (or the reader's own saved chart and one typed in), carried in the link.
+  if (product.id === "gunghap") {
+    const a = decodePerson(pair.a);
+    const b = decodePerson(pair.b);
+    if (!a || !b || !pair.a || !pair.b) {
+      const me = await subjectFor(product);
+      return (
+        <>
+          <Header product={product} />
+          <section className="doc-paper mt-4 px-5 pt-6 pb-6">
+            <p className="mb-4 text-center text-sm leading-relaxed text-ink-soft">{product.teaser}</p>
+            <GunghapForm savedName={me?.self ? me.name : null} />
+          </section>
+        </>
+      );
+    }
+    const couple = coupleOf(a, b);
+    return (
+      <>
+        <Header product={product} subjectName={`${a.name}님과 ${b.name}님`} />
+        {couple && <PairIntro a={a} b={b} c={couple} />}
+        <AiReport request={{ product: product.id, a: pair.a, b: pair.b, rel: relationOf(pair.rel) }} chapters={chaptersOf(product.id)} modern />
+        <Link href="/reports/gunghap" className="mt-6 block border border-seal/40 py-3 text-center text-sm font-bold text-seal">
+          다른 사람과 궁합 보기 →
+        </Link>
+      </>
+    );
+  }
 
   // Reports about the people of one court.
   if (product.id === "dwitjosa" || product.id === "gwangye" || product.id === "insa") {
@@ -218,7 +265,17 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
         {OPEN_ALL && !product.free && (
           <p className="mt-3 rounded-full bg-gold/15 px-4 py-2 text-center text-xs font-bold text-gold">{product.modern ? "무료 공개 기간 · 지금은 모든 보고서를 무료로 보실 수 있어요" : "무료 공개 기간 · 지금은 모든 보고서를 그냥 보실 수 있사옵니다"}</p>
         )}
-        <OpenReport product={product} courtId={courtId} ministerId={ministerId} targetId={typeof search.t === "string" ? search.t : undefined} />
+        <OpenReport
+          product={product}
+          courtId={courtId}
+          ministerId={ministerId}
+          targetId={typeof search.t === "string" ? search.t : undefined}
+          pair={{
+            a: typeof search.a === "string" ? search.a : undefined,
+            b: typeof search.b === "string" ? search.b : undefined,
+            rel: typeof search.rel === "string" ? search.rel : undefined,
+          }}
+        />
       </>
     );
 

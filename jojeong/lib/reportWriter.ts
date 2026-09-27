@@ -3,6 +3,8 @@ import { createHash } from "node:crypto";
 import Anthropic from "@anthropic-ai/sdk";
 import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 import { chartBrief, pairBrief } from "./brief";
+import { coupleBrief } from "./couple";
+import { decodePerson, profileOf, RELATIONS, relationOf } from "./pairToken";
 import { productById, type ProductId } from "./products";
 import { REPORT_SPECS, systemPromptFor, userPrompt } from "./reportPrompts";
 import type { Pillars } from "./saju";
@@ -22,7 +24,7 @@ export const aiEnabled = () =>
   Boolean(isGemini ? process.env.GEMINI_API_KEY : process.env.ANTHROPIC_API_KEY) || process.env.REPORT_MOCK === "1";
 
 export type ReportJob = { key: string; system: string; prompt: string; title: string; modern: boolean };
-export type JobRequest = { product: string; court?: string; m?: string; t?: string };
+export type JobRequest = { product: string; court?: string; m?: string; t?: string; a?: string; b?: string; rel?: string };
 
 export async function jobFor(req: JobRequest): Promise<ReportJob | { error: string; status: number }> {
   const product = productById(req.product);
@@ -31,7 +33,14 @@ export async function jobFor(req: JobRequest): Promise<ReportJob | { error: stri
 
   let subjectLine = "";
   let briefs = "";
-  if (product.id === "gwangye" || product.id === "dwitjosa" || product.id === "insa") {
+  if (product.id === "gunghap") {
+    // Two people carried in the link (lib/pairToken.ts), no court needed.
+    const a = decodePerson(req.a);
+    const b = decodePerson(req.b);
+    if (!a || !b) return { error: "두 사람의 사주를 다시 입력해 주세요.", status: 400 };
+    subjectLine = `[대상] 읽는 사람: ${a.name} ('${a.name}님'이라 부를 것) / 상대: ${b.name} / 관계: ${RELATIONS[relationOf(req.rel)]}`;
+    briefs = [chartBrief(a.name, a.pillars, profileOf(a)), chartBrief(b.name, b.pillars, profileOf(b)), pairBrief(a.name, a.pillars, b.name, b.pillars), coupleBrief(a, b)].join("\n\n");
+  } else if (product.id === "gwangye" || product.id === "dwitjosa" || product.id === "insa") {
     if (!req.court) return { error: "조정을 찾을 수 없사옵니다.", status: 400 };
     const room = await courtOfReader(req.court);
     if (!room) return { error: "이 조정의 전하나 신하만 볼 수 있사옵니다.", status: 403 };

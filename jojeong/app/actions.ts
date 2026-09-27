@@ -6,8 +6,11 @@ import { redirect } from "next/navigation";
 import { computeProfile, type Gender } from "@/lib/profile";
 import { cityById, parseClock } from "@/lib/birthtime";
 import { BirthInputError, computePillars, LATE_ZI, resolveBirthTime, resolveLateZi, type BirthInput, type Pillars } from "@/lib/saju";
-import { addMinister, createCourt, CourtFullError, getCourt, listMinisters, MAX_MINISTERS, removeMinister, setProfile } from "@/lib/store";
+import { addMinister, createCourt, CourtFullError, getCourt, getProfile, listMinisters, MAX_MINISTERS, removeMinister, setProfile } from "@/lib/store";
 import { OWNER_COOKIE, MINISTER_COOKIE } from "@/lib/cookies";
+import { encodePerson, relationOf, type Person } from "@/lib/pairToken";
+import { productById } from "@/lib/products";
+import { subjectFor } from "@/lib/subject";
 
 export type FormState = { error: string | null };
 
@@ -181,4 +184,44 @@ export async function deepenAction(_prev: FormState, formData: FormData): Promis
   }
   refresh();
   return { error: null };
+}
+
+// ── 궁합: two people in one form (fields prefixed a_ and b_). The first may be the reader's own saved chart.
+// Nothing is stored; both charts travel in the report link (lib/pairToken.ts).
+function fieldsOf(formData: FormData, prefix: string): FormData {
+  const out = new FormData();
+  for (const [k, v] of formData) if (k.startsWith(prefix)) out.set(k.slice(prefix.length), v);
+  return out;
+}
+
+async function personOf(formData: FormData, prefix: string, label: string): Promise<Person> {
+  try {
+    const p = parseForm(fieldsOf(formData, prefix));
+    const profile = computeProfile(p.input, p.gender);
+    return { name: p.name, pillars: p.pillars, gender: p.gender, birthYear: profile.birthYear ?? null, daeun: profile.daeun ?? [] };
+  } catch (e) {
+    if (e instanceof BirthInputError) throw new BirthInputError(`${label}: ${e.message}`);
+    throw e;
+  }
+}
+
+export async function gunghapAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  let url: string;
+  try {
+    let a: Person;
+    if (formData.get("a_use") === "saved") {
+      const subject = await subjectFor(productById("gunghap")!);
+      if (!subject?.self) throw new BirthInputError("저장된 내 사주를 찾지 못했어요. 직접 입력해 주세요.");
+      const profile = await getProfile(subject.courtId, subject.who);
+      a = { name: subject.name, pillars: subject.pillars, gender: profile?.gender ?? null, birthYear: profile?.birthYear ?? null, daeun: profile?.daeun ?? [] };
+    } else a = await personOf(formData, "a_", "나");
+    const b = await personOf(formData, "b_", "상대");
+    const rel = relationOf(formData.get("rel"));
+    url = `/reports/gunghap?rel=${rel}&a=${encodePerson(a)}&b=${encodePerson(b)}`;
+  } catch (e) {
+    if (e instanceof BirthInputError) return { error: e.message };
+    console.error(e);
+    return { error: "궁합을 준비하다 문제가 생겼어요. 잠시 후 다시 시도해 주세요." };
+  }
+  redirect(url);
 }
