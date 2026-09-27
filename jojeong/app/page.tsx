@@ -212,7 +212,7 @@ export default async function Home() {
             <span className="text-gold">→</span>
           </Link>
           <div className="doc-paper px-5 py-4">
-            <p className="text-[12px] font-extrabold text-seal">친구를 부르면 조정에서 열리는 보고서</p>
+            <p className="text-[12px] font-extrabold text-seal">친구를 부르면 조정에서 열리는 보고서 · 무료</p>
             <ul className="mt-2 flex flex-col gap-1.5 text-[13px]">
               {COURT_REPORTS.map(([title, line]) => (
                 <li key={title} className="flex gap-2">

@@ -17,7 +17,7 @@ export default function ReportShelf({
     <section className="mt-8">
       <p className="text-center font-myeongjo text-xs font-extrabold tracking-[0.4em] text-seal">秘 密 報 告</p>
       <h2 className="mt-1 text-center font-myeongjo text-xl font-extrabold">정 훈도의 비밀 보고서</h2>
-      <p className="mt-1 text-center text-xs text-ink-soft">{OPEN_ALL ? "지금은 무료 공개 기간이라 모든 보고서가 열려 있사옵니다" : <>신분 감정과 2026 운세는 무료, 나머지는 첫&nbsp;장을 먼저 읽어 보시옵소서</>}</p>
+      <p className="mt-1 text-center text-xs text-ink-soft">{OPEN_ALL ? "지금은 무료 공개 기간이라 모든 보고서가 열려 있사옵니다" : <>신분 감정·2026 운세·조정 보고서는 무료, 나머지는 첫&nbsp;장을 먼저 읽어 보시옵소서</>}</p>
       <ul className="mt-3 flex flex-col gap-2">
         {ids.map((id) => {
           const p = productById(id)!;
