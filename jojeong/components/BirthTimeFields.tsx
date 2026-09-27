@@ -9,8 +9,29 @@ const field = "w-full rounded-xl border border-ink/15 bg-white/70 px-4 py-3 text
 // Birth time (typed however people write it, or unknown) and birthplace (searched by name, anywhere in the
 // world), with the reading of both shown back live: the time as understood, and the correction for the
 // clock of the day (summer time, old standard time) and the birthplace's longitude.
-// `prefix` names the fields (a_time, b_city…) when one form holds two people.
-export default function BirthTimeFields({ unknownLabel, prefix = "" }: { unknownLabel: string; prefix?: string }) {
+// `prefix` names the fields (a_time, b_city…) when one form holds two people. `modern` speaks 해요체 (the
+// present-day reports); without it the court voice of the Joseon game.
+const WORDS = {
+  modern: {
+    unread: "시각을 알아보지 못했어요. 0930, 21:30, 오후 9시 30분처럼 적어 주세요.",
+    understood: "알아들었어요",
+    later: "서머타임과 경도는 날짜에 맞춰 보정해요.",
+    noCity: "찾는 도시가 없으면 가장 가까운 큰 도시를 골라 주세요.",
+    hint: "출생증명서의 시각 그대로 적어 주세요. 서머타임과 지역 경도는 자동으로 보정해요.",
+    lateZi: "밤 11시대에 태어나셨어요. 이 한 시간은 학파에 따라 태어난 날이 갈려요. 대부분은 밤 11시에 날이 바뀐다고 보고 다음 날로 세워요.",
+  },
+  joseon: {
+    unread: "시각을 알아보지 못했사옵니다. 0930, 21:30, 오후 9시 30분처럼 적어 주시옵소서.",
+    understood: "알아들었사옵니다",
+    later: "서머타임과 경도는 날짜에 맞춰 보정하옵니다.",
+    noCity: "찾는 도시가 없으면 가장 가까운 큰 도시를 골라 주시옵소서.",
+    hint: "출생증명서의 시각 그대로 적으시옵소서. 서머타임과 지역 경도는 소신이 보정하옵니다.",
+    lateZi: "밤 11시대에 태어나셨사옵니다. 이 한 시간은 학파에 따라 태어난 날이 갈리옵니다. 대부분은 밤 11시에 날이 바뀐다고 보아 다음 날로 세우옵니다.",
+  },
+};
+
+export default function BirthTimeFields({ unknownLabel, prefix = "", modern = false }: { unknownLabel: string; prefix?: string; modern?: boolean }) {
+  const w = modern ? WORDS.modern : WORDS.joseon;
   const ref = useRef<HTMLDivElement>(null);
   const cityInput = useRef<HTMLInputElement>(null);
   const listId = useId();
@@ -59,16 +80,16 @@ export default function BirthTimeFields({ unknownLabel, prefix = "" }: { unknown
   // Without a solar date the correction is unknown, so any clock time around 23–00시 gets the choice.
   let lateZi = false;
   if (!unknown && time.trim()) {
-    if (!clock) note = { text: "시각을 알아보지 못했사옵니다. 0930, 21:30, 오후 9시 30분처럼 적어 주시옵소서.", ok: false };
+    if (!clock) note = { text: w.unread, ok: false };
     else {
       const b = date.birth.replace(/\D/g, "");
-      const understood = `${josa(clockLabel(clock), "으로/로")} 알아들었사옵니다`;
+      const understood = `${josa(clockLabel(clock), "으로/로")} ${w.understood}`;
       if (b.length === 8 && date.calendar === "solar") {
         const c = correctBirth(Number(b.slice(0, 4)), Number(b.slice(4, 6)), Number(b.slice(6, 8)), clock.hour, clock.minute, city);
         note = { text: `${understood}. ${describeCorrection(c, city.name)}`, ok: true };
         lateZi = c.lateZi;
       } else {
-        note = { text: `${understood}. 서머타임과 경도는 날짜에 맞춰 보정하옵니다.`, ok: true };
+        note = { text: `${understood}. ${w.later}`, ok: true };
         lateZi = clock.hour === 23 || clock.hour === 0;
       }
     }
@@ -160,7 +181,7 @@ export default function BirthTimeFields({ unknownLabel, prefix = "" }: { unknown
                 </li>
               ))
             ) : (
-              <li className="px-4 py-2.5 text-sm text-ink-soft">찾는 도시가 없으면 가장 가까운 큰 도시를 골라 주시옵소서.</li>
+              <li className="px-4 py-2.5 text-sm text-ink-soft">{w.noCity}</li>
             )}
           </ul>
         )}
@@ -170,15 +191,12 @@ export default function BirthTimeFields({ unknownLabel, prefix = "" }: { unknown
         <p className={`rounded-lg px-3 py-2 text-xs leading-relaxed ${note.ok ? "bg-gold/10 text-ink" : "bg-seal/10 text-seal"}`}>{note.text}</p>
       ) : (
         <p className="text-xs leading-relaxed text-ink-soft">
-          출생증명서의 시각 그대로 적으시옵소서. 서머타임과 지역 경도는 소신이 보정하옵니다.
+          {w.hint}
         </p>
       )}
       {lateZi && (
         <div className="rounded-lg border border-gold/40 px-3 py-2 text-xs leading-relaxed">
-          <p>
-            밤 11시대에 태어나셨사옵니다. 이 한 시간은 학파에 따라 태어난 날이 갈리옵니다. 대부분은 밤 11시에 날이 바뀐다고 보아 다음 날로
-            세우옵니다.
-          </p>
+          <p>{w.lateZi}</p>
           <label className="mt-1.5 flex cursor-pointer items-center gap-1.5 font-bold">
             <input type="checkbox" name={`${prefix}yaja`} value="1" checked={yaja} onChange={(e) => setYaja(e.target.checked)} className="size-4 accent-seal" />
             자정에 날이 바뀌는 방식(야자시)으로 보기

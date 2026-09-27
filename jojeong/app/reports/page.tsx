@@ -1,78 +1,103 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
-import Hundo from "@/components/Hundo";
-import { priceNow, PRODUCTS, isOpen, OPEN_ALL, saleLabel, saleNow } from "@/lib/products";
 import Keep from "@/components/Keep";
+import { isOpen, OPEN_ALL, PRICE, priceNow, PRODUCTS, saleLabel, saleNow, type Product } from "@/lib/products";
 
-export const metadata: Metadata = { title: "정 훈도의 비밀 보고서" };
+export const metadata: Metadata = { title: "전체 보고서" };
 
-const FOR_LABEL = { king: "전하용", minister: "신하용", anyone: "누구나" } as const;
+// Every report on one shelf: the present-day readings first, then the Joseon play that opens from the court.
+const WHERE: Record<Product["for"], string | null> = { king: "왕이 보는 보고서", minister: "신하가 보는 보고서", anyone: null };
+
+function Row({ p, price }: { p: Product; price: number }) {
+  const where = p.modern ? null : WHERE[p.for];
+  return (
+    <li>
+      <Link href={`/reports/${p.id}`} className="doc-paper flex items-center gap-4 px-5 py-5">
+        <span
+          className={`flex h-14 min-w-14 shrink-0 items-center justify-center border-2 border-seal/60 px-1 font-myeongjo font-extrabold text-seal ${p.hanja.length > 2 ? "text-sm" : "text-lg"}`}
+        >
+          {p.hanja}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-myeongjo text-lg leading-snug font-extrabold">{p.title}</span>
+          <span className="mt-0.5 block text-[13px] leading-snug text-ink-soft">
+            <Keep clauses>{p.tagline}</Keep>
+          </span>
+          {where && <span className="mt-1 inline-block border border-gold/60 px-1.5 text-[10px] font-bold text-gold">{where}</span>}
+        </span>
+        <span className="shrink-0 text-right font-myeongjo font-extrabold text-seal">
+          {p.free ? (
+            "무료"
+          ) : isOpen(p) ? (
+            <>
+              <s className="block text-xs font-normal text-ink-soft">{PRICE.toLocaleString("ko-KR")}원</s>무료
+            </>
+          ) : price < PRICE ? (
+            <>
+              <s className="block text-xs font-normal text-ink-soft">{PRICE.toLocaleString("ko-KR")}원</s>
+              {price.toLocaleString("ko-KR")}원
+            </>
+          ) : (
+            `${price.toLocaleString("ko-KR")}원`
+          )}
+        </span>
+      </Link>
+    </li>
+  );
+}
 
 export default async function ReportsPage() {
   // Rendered per request, so a sale starts and ends on its dates without a redeploy.
   await connection();
   const price = priceNow();
   const sale = saleNow();
+  const modern = PRODUCTS.filter((p) => p.modern);
+  const joseon = PRODUCTS.filter((p) => !p.modern);
 
   return (
     <>
       <section className="mt-6 text-center">
-        <p className="font-myeongjo text-sm font-extrabold tracking-[0.4em] text-seal">秘 密 報 告</p>
-        <h1 className="mt-2 font-myeongjo text-3xl font-extrabold">정 훈도의 비밀 보고서</h1>
-        <p className="mt-2 text-[15px] leading-relaxed">
-          조선 최고의 사주쟁이가{" "}
-          <span className="inline-block">
-            봐 드리는 <b>지금 그대의 운명</b>
-          </span>
-        </p>
-        <p className="mt-1 text-sm text-ink-soft">
+        <p className="font-myeongjo text-sm font-extrabold tracking-[0.4em] text-seal">報 告</p>
+        <h1 className="mt-2 font-myeongjo text-3xl font-extrabold">전체 보고서</h1>
+        <p className="mt-2 text-[15px] leading-relaxed">궁금한 것부터 골라 보세요</p>
+        <p className="mt-1 text-sm">
           {OPEN_ALL ? (
-            <b className="text-gold">지금은 무료 공개 기간, 모든 보고서를 그냥 보실 수 있사옵니다</b>
+            <b className="text-gold">지금은 무료 공개 기간이라 모든 보고서를 무료로 볼 수 있어요</b>
+          ) : sale ? (
+            <b className="text-seal">{saleLabel(sale)}</b>
           ) : (
-            <>
-              <span className="inline-block">신분 감정과 2026 운세는 무료,</span>{" "}
-              <span className="inline-block">
-                지금의 운세는 복채 한 닢 <b className="text-ink">{price.toLocaleString("ko-KR")}원</b>
-              </span>
-            </>
+            <span className="text-ink-soft">
+              보고서 한 편 <b className="text-ink">{price.toLocaleString("ko-KR")}원</b> · 첫 장은 무료로 먼저 읽어 볼 수 있어요
+            </span>
           )}
         </p>
-        {!OPEN_ALL && sale && <p className="mt-1 text-xs font-bold text-seal">{saleLabel(sale)}</p>}
       </section>
 
-      <section className="mt-5">
-        <Hundo mood="decree">
-          {OPEN_ALL
-            ? "왜 돈이 안 모이는지, 누구랑 맞는지, 올해 뭘 조심해야 하는지. 그대가 궁금한 것부터 골라 보시옵소서. 지금은 복채 없이 다 풀어 드리옵니다."
-            : "조선의 왕실 사주를 봐 온 눈으로 이번에는 그대의 지금을 보아 드리옵니다. 첫 장은 누구나 먼저 읽어 보시고, 마음에 드시면 그때 복채를 주시옵소서."}
-        </Hundo>
+      <section className="mt-6">
+        <h2 className="font-myeongjo text-lg font-extrabold">내 사주 보고서</h2>
+        <ul className="mt-3 flex flex-col gap-3">
+          {modern.map((p) => (
+            <Row key={p.id} p={p} price={price} />
+          ))}
+        </ul>
       </section>
 
-      <ul className="mt-6 flex flex-col gap-3">
-        {PRODUCTS.map((p) => (
-          <li key={p.id}>
-            <Link href={`/reports/${p.id}`} className="doc-paper flex items-center gap-4 px-5 py-5">
-              <span className={`flex h-14 min-w-14 shrink-0 items-center justify-center border-2 border-seal/60 px-1 font-myeongjo font-extrabold text-seal ${p.hanja.length > 2 ? "text-sm" : "text-lg"}`}>
-                {p.hanja}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block font-myeongjo text-lg leading-snug font-extrabold">{p.title}</span>
-                <span className="mt-0.5 block text-[13px] leading-snug text-ink-soft">
-                  <Keep clauses>{p.tagline}</Keep>
-                </span>
-              </span>
-              <span className="flex shrink-0 flex-col items-end gap-1">
-                <span className="font-myeongjo font-extrabold text-seal">
-                  {isOpen(p) && !p.free && <s className="mr-1 text-xs font-normal text-ink-soft">{price}원</s>}
-                  {isOpen(p) ? "무료" : `${price}원`}
-                </span>
-                <span className="border border-gold/60 px-1.5 text-[10px] font-bold whitespace-nowrap text-gold">{FOR_LABEL[p.for]}</span>
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
+      <section className="mt-9">
+        <h2 className="font-myeongjo text-lg font-extrabold">재미로 보는 조선 사주</h2>
+        <p className="mt-1 text-xs leading-relaxed text-ink-soft">
+          조선 시대로 가 보는 보고서예요. 왕·신하 표시가 붙은 건{" "}
+          <Link href="/king" className="font-bold text-seal underline">
+            왕이 될 사주
+          </Link>
+          의 조정에서 열려요.
+        </p>
+        <ul className="mt-3 flex flex-col gap-3">
+          {joseon.map((p) => (
+            <Row key={p.id} p={p} price={price} />
+          ))}
+        </ul>
+      </section>
     </>
   );
 }

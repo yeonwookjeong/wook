@@ -303,7 +303,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
       <>
         <nav className="pt-4 text-sm">
           <Link href="/reports" className="font-bold text-ink-soft">
-            ← 보고서 목록
+            ← 전체 보고서
           </Link>
         </nav>
         {OPEN_ALL && !product.free && (
@@ -323,14 +323,16 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
       </>
     );
 
-  const subject = await subjectFor(product, courtId, ministerId);
+  // Present-day reports are read for the saved chart first (the same order as when they are open).
+  const me = product.modern ? await readMe() : null;
+  const subject = me ? { name: me.person.name } : await subjectFor(product, courtId, ministerId);
   const sale = saleNow();
 
   return (
     <>
       <nav className="pt-4 text-sm">
         <Link href="/reports" className="font-bold text-ink-soft">
-          ← 비밀 보고서 목록
+          ← 전체 보고서
         </Link>
       </nav>
 
@@ -362,20 +364,25 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
           <p className="mt-2 text-[15px] leading-relaxed">{product.teaser}</p>
         </div>
 
-        {!subject && (
-          <p className="mt-4 bg-seal/5 px-4 py-3 text-center text-sm leading-relaxed">
-            {product.for === "minister"
-              ? "전하의 조정에 입궐한 신하만 볼 수 있는 보고서이옵니다. 받으신 교지에서 이 보고서를 여시옵소서."
-              : product.modern
-                ? "먼저 즉위하시면 내 사주로 맛보기를 보여 드려요."
+        {!subject &&
+          (product.modern ? (
+            // The report is written for one chart, so the chart comes before the payment.
+            <div className="mt-5 border-t border-seal/20 pt-5">
+              <p className="mb-4 text-center text-sm leading-relaxed text-ink-soft">먼저 누구의 사주로 볼지 알려 주세요.</p>
+              <MeForm next={`/reports/${product.id}`} />
+            </div>
+          ) : (
+            <p className="mt-4 bg-seal/5 px-4 py-3 text-center text-sm leading-relaxed">
+              {product.for === "minister"
+                ? "전하의 조정에 입궐한 신하만 볼 수 있는 보고서이옵니다. 받으신 교지에서 이 보고서를 여시옵소서."
                 : "먼저 즉위하시면 전하의 사주로 맛보기를 지어 올리옵니다."}
-            {product.for !== "minister" && (
-              <Link href="/king#enthrone" className="mt-2 block font-myeongjo font-extrabold text-seal">
-                즉위하러 가기 →
-              </Link>
-            )}
-          </p>
-        )}
+              {product.for !== "minister" && (
+                <Link href="/king#enthrone" className="mt-2 block font-myeongjo font-extrabold text-seal">
+                  즉위하러 가기 →
+                </Link>
+              )}
+            </p>
+          ))}
 
         {/* The rest stays locked until payment; placeholder lines only, so nothing paid is in the page source. */}
         <div className="relative mt-5 overflow-hidden" aria-hidden="true">
@@ -385,7 +392,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
             ))}
           </div>
           <span className="absolute inset-0 flex items-center justify-center font-myeongjo text-sm font-extrabold text-seal">
-            🔒 나머지 {product.toc.length - 1}장은 {product.modern ? "결제하시면 열려요" : "복채를 주시면 열리옵니다"}
+            🔒 나머지 {product.toc.length - 1}장은 {product.modern ? "결제하면 열려요" : "복채를 주시면 열리옵니다"}
           </span>
         </div>
 
@@ -406,16 +413,16 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
             disabled
             className="mt-4 w-full rounded-2xl bg-seal/60 py-4 font-myeongjo text-lg font-extrabold text-hanji"
           >
-            결제 준비 중 · 곧 열리옵니다
+            결제 준비 중이에요
           </button>
           <p className="mt-3 text-left text-[11px] leading-relaxed text-ink-soft">
-            보고서는 결제 즉시 열리는 디지털 콘텐츠라, 열람을 시작한 뒤에는 전자상거래법에 따라 청약철회가 제한되옵니다.
-            결제 전 위의 목차와 맛보기로 내용을 확인해 주시옵소서. 보고서가 안내한 내용과 다르게 제공된 경우에는 받은 날부터
-            3개월 이내에 환불을 요청하실 수 있사옵니다. 자세한 내용은{" "}
+            보고서는 결제 즉시 열리는 디지털 콘텐츠라, 열람을 시작한 뒤에는 전자상거래법에 따라 청약철회가 제한돼요. 결제 전에
+            위의 목차와 맛보기로 내용을 확인해 주세요. 보고서가 안내한 내용과 다르게 제공된 경우에는 받은 날부터 3개월 이내에
+            환불을 요청할 수 있어요. 자세한 내용은{" "}
             <Link href="/refund" className="whitespace-nowrap underline">
               환불 규정
             </Link>
-            을 보시옵소서.
+            을 확인해 주세요.
           </p>
         </div>
       </RoyalDoc>

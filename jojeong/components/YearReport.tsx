@@ -249,7 +249,7 @@ export default function YearReport({
       )}
 
       <section className="mt-6 text-center">
-        <p className="text-sm text-ink-soft">더 깊은 이야기는 비밀 보고서에서</p>
+        <p className="text-sm text-ink-soft">더 깊은 이야기는 이 보고서에서</p>
         <div className="mt-2 grid grid-cols-3 gap-2 text-sm font-bold">
           {[
             ["yeonae", "연애·결혼"],
