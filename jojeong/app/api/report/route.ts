@@ -1,3 +1,5 @@
+import { getOrder } from "@/lib/pay";
+import { isOpen, productById } from "@/lib/products";
 import { aiEnabled, jobFor, writeReport, type JobRequest } from "@/lib/reportWriter";
 import { countReportToday, getReportText, setReportText } from "@/lib/store";
 
@@ -7,11 +9,20 @@ export const maxDuration = 300;
 const DAILY_LIMIT = Number(process.env.REPORT_DAILY_LIMIT ?? 1000);
 const MARK_ERROR = "\n\n[[error]]";
 
-// POST { product, court?, m?, t? } → the report as plain text, streamed while it is being written (or all at
+// POST { product, court?, m?, t?, p?, a?, b?, rel?, order? } → the report as plain text, streamed while it is being written (or all at
 // once when it was written before). A failure midway ends the stream with MARK_ERROR.
 export async function POST(request: Request) {
-  const body = (await request.json().catch(() => ({}))) as JobRequest;
-  const job = await jobFor(body);
+  const body = (await request.json().catch(() => ({}))) as JobRequest & { order?: string };
+  // A paid report is written only for a confirmed order, and exactly for what was bought.
+  const product = productById(body.product);
+  let req: JobRequest = body;
+  if (product && !isOpen(product)) {
+    const order = await getOrder(body.order);
+    if (!order || order.status !== "paid" || order.product !== product.id)
+      return Response.json({ error: product.modern ? "결제한 뒤에 열 수 있어요." : "복채를 주신 뒤에 열리옵니다." }, { status: 402 });
+    req = order.req;
+  }
+  const job = await jobFor(req);
   if ("error" in job) return Response.json({ error: job.error }, { status: job.status });
 
   const cached = await getReportText(job.key);

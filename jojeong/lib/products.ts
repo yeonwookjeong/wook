@@ -137,8 +137,8 @@ export const PRODUCTS: Product[] = [
 
 export const productById = (id: string) => PRODUCTS.find((p) => p.id === id);
 
-// 무료 공개 기간: every report opens in full while the writing is being polished and payments are not live.
-export const OPEN_ALL = true;
+// 무료 공개 기간: every report opens in full until selling starts. OPEN_ALL=0 in the environment ends it.
+export const OPEN_ALL = process.env.OPEN_ALL !== "0";
 export const isOpen = (p: Product) => OPEN_ALL || Boolean(p.free);
 
 export const PRICE = 990;

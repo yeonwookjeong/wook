@@ -43,6 +43,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 
 const FOOTER_LINKS: { href: string; label: string; strong?: boolean }[] = [
   { href: "/reports", label: "전체 보고서" },
+  { href: "/my", label: "내 보고서" },
   { href: "/terms", label: "이용약관" },
   { href: "/refund", label: "환불 규정" },
   { href: "/contact", label: "문의하기" },
