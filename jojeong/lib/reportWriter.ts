@@ -5,7 +5,8 @@ import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 import { chartBrief, pairBrief } from "./brief";
 import { coupleBrief } from "./couple";
 import { decodePerson, profileOf, RELATIONS, relationOf } from "./pairToken";
-import { productById, type ProductId } from "./products";
+import { ADULT_ONLY, FIXED_RELATION, isAdult, isPair, productById, type ProductId } from "./products";
+import { intimacyBrief } from "./intimacy";
 import { REPORT_SPECS, systemPromptFor, userPrompt } from "./reportPrompts";
 import type { Pillars } from "./saju";
 import { getProfile } from "./store";
@@ -33,13 +34,25 @@ export async function jobFor(req: JobRequest): Promise<ReportJob | { error: stri
 
   let subjectLine = "";
   let briefs = "";
-  if (product.id === "gunghap") {
+  if (isPair(product)) {
     // Two people carried in the link (lib/pairToken.ts), no court needed.
     const a = decodePerson(req.a);
     const b = decodePerson(req.b);
     if (!a || !b) return { error: "두 사람의 사주를 다시 입력해 주세요.", status: 400 };
-    subjectLine = `[대상] 읽는 사람: ${a.name} ('${a.name}님'이라 부를 것) / 상대: ${b.name} / 관계: ${RELATIONS[relationOf(req.rel)]}`;
-    briefs = [chartBrief(a.name, a.pillars, profileOf(a)), chartBrief(b.name, b.pillars, profileOf(b)), pairBrief(a.name, a.pillars, b.name, b.pillars), coupleBrief(a, b)].join("\n\n");
+    if (ADULT_ONLY.includes(product.id) && !(isAdult(a.birthYear) && isAdult(b.birthYear)))
+      return { error: "만 19세 이상 두 사람만 볼 수 있는 보고서예요.", status: 403 };
+    const rel = FIXED_RELATION[product.id] ?? relationOf(req.rel);
+    subjectLine =
+      product.id === "jaehoe"
+        ? `[대상] 읽는 사람: ${a.name} ('${a.name}님'이라 부를 것) / 헤어진 상대: ${b.name}`
+        : `[대상] 읽는 사람: ${a.name} ('${a.name}님'이라 부를 것) / 상대: ${b.name} / 관계: ${RELATIONS[rel]}`;
+    briefs = [
+      chartBrief(a.name, a.pillars, profileOf(a)),
+      chartBrief(b.name, b.pillars, profileOf(b)),
+      pairBrief(a.name, a.pillars, b.name, b.pillars),
+      coupleBrief(a, b),
+      ...(product.id === "sokgunghap" ? [intimacyBrief(a, b)] : []),
+    ].join("\n\n");
   } else if (product.id === "gwangye" || product.id === "dwitjosa" || product.id === "insa") {
     if (!req.court) return { error: "조정을 찾을 수 없사옵니다.", status: 400 };
     const room = await courtOfReader(req.court);

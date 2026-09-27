@@ -3,12 +3,13 @@
 import { useActionState } from "react";
 import { saveMeAction, type FormState } from "@/app/actions";
 import PersonFields from "./PersonFields";
+import { keepValues } from "@/lib/keepForm";
 
 // "내 사주" for the reports: entered once, remembered in this browser.
 export default function MeForm({ next, submit = "내 사주로 보기" }: { next: string; submit?: string }) {
   const [state, formAction, pending] = useActionState<FormState, FormData>(saveMeAction, { error: null });
   return (
-    <form action={formAction} className="flex flex-col gap-4">
+    <form onSubmit={keepValues(formAction)} className="flex flex-col gap-4">
       <input type="hidden" name="next" value={next} />
       <PersonFields nameLabel="이름" unknownHour="모름" genderLabel="성별 (선택 · 10년 대운 풀이에 쓰여요)" modern />
       {state.error && (

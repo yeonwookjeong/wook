@@ -2,32 +2,51 @@
 
 import { useActionState, useState } from "react";
 import { gunghapAction, type FormState } from "@/app/actions";
-import { RELATIONS } from "@/lib/relations";
+import { CHOOSABLE, RELATIONS } from "@/lib/relations";
+import type { ProductId } from "@/lib/products";
 import PersonFields from "./PersonFields";
+import { keepValues } from "@/lib/keepForm";
 
 const choice =
   "block rounded-xl border border-ink/15 bg-white/50 py-2.5 text-center text-sm peer-checked:border-ink peer-checked:bg-ink peer-checked:text-hanji peer-focus-visible:ring-2 peer-focus-visible:ring-seal";
 
-// Two people and how they know each other. The reader's own saved chart can stand in for the first.
-export default function GunghapForm({ savedName }: { savedName: string | null }) {
+// The words that change between the two-person reports.
+const COPY: Partial<Record<ProductId, { other: string; otherName: string; submit: string; pending: string; note: string }>> = {
+  gunghap: { other: "상대", otherName: "상대 이름", submit: "궁합 보기", pending: "두 사주를 맞춰 보는 중이에요…", note: "상대의 사주는 본인에게 허락받고 넣어 주세요." },
+  sokgunghap: {
+    other: "상대",
+    otherName: "상대 이름",
+    submit: "속궁합 보기",
+    pending: "두 사람의 온도를 재는 중이에요…",
+    note: "만 19세 이상 두 사람만 볼 수 있어요. 상대의 사주는 본인에게 허락받고 넣어 주세요.",
+  },
+  jaehoe: { other: "그 사람", otherName: "그 사람 이름 (별명도 괜찮아요)", submit: "재회운 보기", pending: "두 사람의 흐름을 살피는 중이에요…", note: "그 사람의 정보는 보고서 링크 안에만 담기고 따로 저장하지 않아요." },
+};
+
+// Two people and, for 궁합, how they know each other. The reader's own saved chart can stand in for the first.
+export default function GunghapForm({ savedName, product = "gunghap" }: { savedName: string | null; product?: ProductId }) {
+  const copy = COPY[product] ?? COPY.gunghap!;
   const [state, formAction, pending] = useActionState<FormState, FormData>(gunghapAction, { error: null });
   const [useSaved, setUseSaved] = useState(savedName !== null);
 
   return (
-    <form action={formAction} className="flex flex-col gap-4">
-      <fieldset className="flex flex-col gap-1.5">
-        <legend className="mb-1.5 text-sm font-semibold text-ink-soft">두 사람은 어떤 사이인가요?</legend>
-        <div className="grid grid-cols-2 gap-2">
-          {Object.entries(RELATIONS).map(([value, label], i) => (
-            <label key={value} className="cursor-pointer">
-              <input type="radio" name="rel" value={value} defaultChecked={i === 0} className="peer sr-only" />
-              <span className={choice}>{label}</span>
-            </label>
-          ))}
-        </div>
-      </fieldset>
+    <form onSubmit={keepValues(formAction)} className="flex flex-col gap-4">
+      <input type="hidden" name="product" value={product} />
+      {product === "gunghap" && (
+        <fieldset className="flex flex-col gap-1.5">
+          <legend className="mb-1.5 text-sm font-semibold text-ink-soft">두 사람은 어떤 사이인가요?</legend>
+          <div className="grid grid-cols-2 gap-2">
+            {CHOOSABLE.map((value, i) => (
+              <label key={value} className="cursor-pointer">
+                <input type="radio" name="rel" value={value} defaultChecked={i === 0} className="peer sr-only" />
+                <span className={choice}>{RELATIONS[value]}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      )}
 
-      <h3 className="mt-2 border-t border-seal/20 pt-4 font-myeongjo font-extrabold">나</h3>
+      <h3 className={`font-myeongjo font-extrabold ${product === "gunghap" ? "mt-2 border-t border-seal/20 pt-4" : ""}`}>나</h3>
       {savedName !== null && (
         <div className="grid grid-cols-2 gap-2">
           <label className="cursor-pointer">
@@ -42,8 +61,8 @@ export default function GunghapForm({ savedName }: { savedName: string | null })
       )}
       {!useSaved && <PersonFields prefix="a_" nameLabel="내 이름" unknownHour="모름" genderLabel="성별 (선택)" modern />}
 
-      <h3 className="mt-2 border-t border-seal/20 pt-4 font-myeongjo font-extrabold">상대</h3>
-      <PersonFields prefix="b_" nameLabel="상대 이름" unknownHour="모름" genderLabel="성별 (선택)" modern />
+      <h3 className="mt-2 border-t border-seal/20 pt-4 font-myeongjo font-extrabold">{copy.other}</h3>
+      <PersonFields prefix="b_" nameLabel={copy.otherName} unknownHour="모름" genderLabel="성별 (선택)" modern />
 
       {state.error && (
         <p role="alert" className="rounded-xl bg-seal/10 px-4 py-3 text-sm text-seal">
@@ -56,9 +75,9 @@ export default function GunghapForm({ savedName }: { savedName: string | null })
         disabled={pending}
         className="mt-1 rounded-2xl bg-seal py-4 font-myeongjo text-lg font-extrabold text-hanji shadow-[0_6px_0_#7d1a14] transition active:translate-y-1 active:shadow-[0_2px_0_#7d1a14] disabled:opacity-60"
       >
-        {pending ? "두 사주를 맞춰 보는 중이에요…" : "궁합 보기"}
+        {pending ? copy.pending : copy.submit}
       </button>
-      <p className="text-center text-xs text-ink-soft">생년월일은 사주 계산에만 쓰고 저장하지 않아요. 상대의 사주는 본인에게 허락받고 넣어 주세요.</p>
+      <p className="text-center text-xs text-ink-soft">생년월일은 사주 계산에만 쓰고 저장하지 않아요. {copy.note}</p>
     </form>
   );
 }

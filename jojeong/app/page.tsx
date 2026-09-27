@@ -12,9 +12,19 @@ import { todayFor } from "@/lib/today";
 // (왕이 될 사주, /king) is the free, shareable side door.
 
 // Short names for the grid; the full titles stay on the report pages.
-const SHORT: Partial<Record<ProductId, string>> = { gunghap: "궁합", gukjeong: "2026 운세", yeonae: "연애·결혼", jaemul: "재물·돈", jikup: "직업·적성" };
+const SHORT: Partial<Record<ProductId, string>> = {
+  gunghap: "궁합",
+  sokgunghap: "속궁합",
+  jaehoe: "재회운",
+  gukjeong: "2026 운세",
+  yeonae: "연애·결혼",
+  jaemul: "재물·돈",
+  jikup: "직업·적성",
+};
 const PITCH: Partial<Record<ProductId, string>> = {
   gunghap: "우리 둘, 진짜 잘 맞을까?",
+  sokgunghap: "말로는 다 모르는 우리 둘의 온도",
+  jaehoe: "그 사람, 다시 올까?",
   gukjeong: "남은 올해, 언제 움직이고 언제 쉴까?",
   yeonae: "나랑 맞는 사람은 언제 올까?",
   jaemul: "돈이 왜 안 모일까?",
@@ -42,7 +52,13 @@ const EXCERPTS: { id: ProductId; chapter: string; headline: string; body: string
     body: "미뤄 둔 연락이 있다면 그때 먼저 하세요. 10월은 숨을 고르고, 큰 결정은 11월로 넘기는 편이 좋아요.",
   },
 ];
-const GRID: ProductId[] = ["gunghap", "gukjeong", "yeonae", "jaemul", "jikup"];
+// The court's own reports (they open from a court, with friends in it).
+const COURT_REPORTS = [
+  ["현실 궁합 뒷조사", "이 친구, 일·여행·돈으로 엮여도 될까"],
+  ["모임 관계도", "우리 모임 찰떡 짝과 숨은 실세"],
+  ["내 인사기록 열람", "왕(친구)은 나를 어떻게 볼까"],
+] as const;
+const GRID: ProductId[] = ["gunghap", "yeonae", "jaehoe", "sokgunghap", "jaemul", "jikup", "gukjeong"];
 
 function Price({ product }: { product: Product }) {
   if (product.free) return <span className="text-[13px] font-extrabold text-seal">무료</span>;
@@ -80,6 +96,12 @@ export default async function Home() {
     <>
       <StoreHero />
       <TodayCard today={todayFor(me?.person ?? null)} name={me?.person.name ?? null} />
+      <Link href="/samjae" className="mt-2 flex items-center justify-between rounded-2xl border border-seal/20 bg-white/40 px-5 py-3 text-[13px]">
+        <span>
+          <b className="font-myeongjo">2026 삼재 띠</b> <span className="text-ink-soft">· 토끼·양·돼지띠 눌삼재</span>
+        </span>
+        <span className="font-bold text-seal">무료 확인 →</span>
+      </Link>
 
       {me && (
         <form action={forgetMeAction} className="mx-auto mt-4 flex w-fit items-center gap-2 rounded-full bg-gold/15 px-4 py-2 text-xs">
@@ -178,6 +200,20 @@ export default async function Home() {
             </span>
             <span className="text-gold">→</span>
           </Link>
+          <div className="doc-paper px-5 py-4">
+            <p className="text-[12px] font-extrabold text-seal">친구를 부르면 조정에서 열리는 보고서</p>
+            <ul className="mt-2 flex flex-col gap-1.5 text-[13px]">
+              {COURT_REPORTS.map(([title, line]) => (
+                <li key={title} className="flex gap-2">
+                  <b className="shrink-0 font-myeongjo">{title}</b>
+                  <span className="text-ink-soft">{line}</span>
+                </li>
+              ))}
+            </ul>
+            <Link href="/king" className="mt-3 block text-right text-[13px] font-bold text-seal">
+              왕이 될 사주 시작하기 →
+            </Link>
+          </div>
           <Link href="/reports/sinbun" className="doc-paper flex items-center gap-4 px-5 py-4">
             <Seal hanja="身分" />
             <span className="min-w-0 flex-1">

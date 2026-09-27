@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { appointMinisterAction, enthroneAction, joinCourtAction, type FormState } from "@/app/actions";
 import PersonFields from "./PersonFields";
+import { keepValues } from "@/lib/keepForm";
 
 const MODES = {
   king: { action: enthroneAction, nameLabel: "전하의 존함", submit: "즉위하기", unknownHour: "모르겠노라" },
@@ -15,7 +16,7 @@ export default function BirthForm({ mode, courtId }: { mode: keyof typeof MODES;
   const [state, formAction, pending] = useActionState<FormState, FormData>(action, { error: null });
 
   return (
-    <form action={formAction} className="flex flex-col gap-4">
+    <form onSubmit={keepValues(formAction)} className="flex flex-col gap-4">
       {courtId && <input type="hidden" name="courtId" value={courtId} />}
 
       <PersonFields nameLabel={nameLabel} unknownHour={unknownHour} />

@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { deepenAction, type FormState } from "@/app/actions";
 import BirthTimeFields from "./BirthTimeFields";
+import { keepValues } from "@/lib/keepForm";
 
 const field = "rounded-xl border border-ink/15 bg-white/70 px-4 py-3 text-base outline-none focus:border-seal";
 const chip =
@@ -13,7 +14,7 @@ const chip =
 export default function DeepenForm({ courtId, who }: { courtId: string; who: string; needs?: { daeun: boolean; palaces: boolean } }) {
   const [state, action, pending] = useActionState<FormState, FormData>(deepenAction, { error: null });
   return (
-    <form action={action} className="flex flex-col gap-3">
+    <form onSubmit={keepValues(action)} className="flex flex-col gap-3">
       <input type="hidden" name="courtId" value={courtId} />
       <input type="hidden" name="who" value={who} />
       <input name="birth" required inputMode="numeric" pattern="[0-9]{8}" maxLength={8} placeholder="생년월일 8자리 (19950312)" className={`${field} tracking-widest`} />
