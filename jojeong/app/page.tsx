@@ -5,7 +5,7 @@ import RoyalDoc from "@/components/RoyalDoc";
 import StoreHero from "@/components/StoreHero";
 import TodayCard from "@/components/TodayCard";
 import { readMe } from "@/lib/me";
-import { OPEN_ALL, PRICE_STEPS, productById, type Product, type ProductId } from "@/lib/products";
+import { OPEN_ALL, PRICE, priceNow, productById, type Product, type ProductId } from "@/lib/products";
 import { todayFor } from "@/lib/today";
 
 // The main page: 정 훈도's present-day readings, picked and opened with one's own chart. The Joseon game
@@ -50,10 +50,18 @@ function Price({ product }: { product: Product }) {
     return (
       <span className="flex items-baseline gap-1.5">
         <span className="text-[13px] font-extrabold text-seal">무료 공개</span>
-        <s className="text-[11px] text-ink-soft">{PRICE_STEPS[0].toLocaleString("ko-KR")}원</s>
+        <s className="text-[11px] text-ink-soft">{PRICE.toLocaleString("ko-KR")}원</s>
       </span>
     );
-  return <span className="text-[13px] font-extrabold text-seal">{PRICE_STEPS[0].toLocaleString("ko-KR")}원</span>;
+  const price = priceNow();
+  if (price < PRICE)
+    return (
+      <span className="flex items-baseline gap-1.5">
+        <span className="text-[13px] font-extrabold text-seal">{price.toLocaleString("ko-KR")}원</span>
+        <s className="text-[11px] text-ink-soft">{PRICE.toLocaleString("ko-KR")}원</s>
+      </span>
+    );
+  return <span className="text-[13px] font-extrabold text-seal">{PRICE.toLocaleString("ko-KR")}원</span>;
 }
 
 function Seal({ hanja }: { hanja: string }) {

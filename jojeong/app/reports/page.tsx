@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { cookies } from "next/headers";
+import { connection } from "next/server";
 import Hundo from "@/components/Hundo";
-import { PURCHASES_COOKIE } from "@/lib/cookies";
-import { PRICE_STEPS, priceFor, PRODUCTS, isOpen, OPEN_ALL } from "@/lib/products";
+import { priceNow, PRODUCTS, isOpen, OPEN_ALL, saleLabel, saleNow } from "@/lib/products";
 import Keep from "@/components/Keep";
 
 export const metadata: Metadata = { title: "정 훈도의 비밀 보고서" };
@@ -11,8 +10,10 @@ export const metadata: Metadata = { title: "정 훈도의 비밀 보고서" };
 const FOR_LABEL = { king: "전하용", minister: "신하용", anyone: "누구나" } as const;
 
 export default async function ReportsPage() {
-  const bought = Number((await cookies()).get(PURCHASES_COOKIE)?.value ?? 0);
-  const price = priceFor(bought);
+  // Rendered per request, so a sale starts and ends on its dates without a redeploy.
+  await connection();
+  const price = priceNow();
+  const sale = saleNow();
 
   return (
     <>
@@ -37,12 +38,7 @@ export default async function ReportsPage() {
             </>
           )}
         </p>
-        {!OPEN_ALL && (
-          <p className="mt-1 text-xs text-ink-soft">
-            <span className="inline-block">복채 단골 할인: 살 때마다 100원씩</span>{" "}
-            <span className="inline-block">{PRICE_STEPS.map((p) => p.toLocaleString("ko-KR")).join(" → ")}원</span>
-          </p>
-        )}
+        {!OPEN_ALL && sale && <p className="mt-1 text-xs font-bold text-seal">{saleLabel(sale)}</p>}
       </section>
 
       <section className="mt-5">
