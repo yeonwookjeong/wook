@@ -230,12 +230,20 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
     ],
   };
 
+  // The day stem's image of the year, with a promise that matches the verdict (a 조심 year never reads as a
+  // triumph on the cover).
+  const [image] = sy.headline.split(", ");
+  const headline =
+    verdict === "대길" || verdict === "길"
+      ? sy.headline
+      : `${image}, ${verdict === "평" ? "준비한 만큼 딱 그만큼 돌아와요" : verdict === "조심" ? "다만 기세에 휩쓸리면 데기 쉬워요" : "올해는 버티는 쪽이 결국 이겨요"}`;
+
   // ── 병오년 총운
   const overall: YearSection = {
     id: "year",
     hanja: "歲",
     label: "병오년 총운",
-    headline: sy.headline,
+    headline,
     paras: [
       sy.gods,
       likesDrain ? sy.strong : sy.weak,
@@ -414,7 +422,7 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
 
   return {
     verdict,
-    headline: sy.headline,
+    headline,
     keywords,
     sections,
     months: months.map(({ from, gz, rating, line, tags }) => ({ from, gz, rating, line, tags })),

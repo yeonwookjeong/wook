@@ -1,19 +1,47 @@
-import { ELEMENT_HANJA, ELEMENT_KO } from "@/lib/myeongri";
+import { BRANCH_EL, ELEMENT_HANJA, ELEMENT_KO, POS_WEIGHT, stemEl, type Slot } from "@/lib/myeongri";
 import { perHundred, type Distinct } from "@/lib/rarity";
+import { BRANCHES, STEMS } from "@/lib/saju";
+import { Cell } from "./SajuChart";
+
+const POS_ROLE = { 시: "자녀·말년", 일: "나·배우자", 월: "부모·일터", 연: "뿌리·어린 시절" } as const;
 
 // Before the written report: how the chart was read (weighted, not eight equal letters) and what sets it apart
 // from others with the same day pillar, in numbers the engine worked out (lib/rarity.ts).
-export default function ChartIntro({ name, d }: { name: string; d: Distinct }) {
+export default function ChartIntro({ name, d, slots }: { name: string; d: Distinct; slots: Slot[] }) {
   const top = d.patterns.filter((x) => x.rate < 0.3).slice(0, 4);
+  // Each character's share of the whole weight: what the chart table below shows instead of 12.5% apiece.
+  const known = slots.filter((s) => s.stem !== null);
+  const total = known.reduce((a, s) => a + POS_WEIGHT.stem[s.pos] + POS_WEIGHT.branch[s.pos], 0);
+  const pct = (w: number) => Math.round((100 * w) / total);
+  const even = (100 / (known.length * 2)).toFixed(1).replace(/\.0$/, "");
   return (
     <section className="doc-paper mt-4 px-5 py-5">
       <p className="text-center font-myeongjo text-xs font-extrabold tracking-[0.4em] text-seal">讀 法</p>
       <h2 className="mt-1 text-center font-myeongjo text-lg font-extrabold">{name}님의 사주를 이렇게 읽었어요</h2>
 
-      <h3 className="mt-5 text-sm font-extrabold">여덟 글자를 똑같이 세지 않아요</h3>
+      <h3 className="mt-5 text-sm font-extrabold">{name}님의 사주팔자</h3>
+      <div className="mt-2 grid grid-cols-4 gap-1.5 text-center">
+        {slots.map((s) => (
+          <div key={s.pos} className="flex flex-col gap-1">
+            <span className="text-[11px] font-bold">{s.pos}주</span>
+            <span className="text-[10px] leading-tight text-ink-soft">{POS_ROLE[s.pos]}</span>
+            <Cell value={s.stem === null ? null : STEMS[s.stem]} el={s.stem === null ? null : stemEl(s.stem)} />
+            <span className="text-[10px] font-bold text-ink-soft">{s.stem === null ? "\u00a0" : s.pos === "일" ? `나 · ${pct(POS_WEIGHT.stem[s.pos])}%` : `${pct(POS_WEIGHT.stem[s.pos])}%`}</span>
+            <Cell value={s.branch === null ? null : BRANCHES[s.branch]} el={s.branch === null ? null : BRANCH_EL[s.branch]} />
+            <span className={`text-[10px] font-bold ${s.pos === "월" ? "text-seal" : "text-ink-soft"}`}>
+              {s.branch === null ? "모름" : `${pct(POS_WEIGHT.branch[s.pos])}%${s.pos === "월" ? " · 계절" : ""}`}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <h3 className="mt-5 text-sm font-extrabold">
+        여덟 글자를 <span className="whitespace-nowrap">{even}%씩</span> 똑같이 세지 않아요
+      </h3>
       <p className="mt-1.5 text-[14px] leading-relaxed">
-        사주는 여덟 글자지만 무게가 다 달라요. 계절을 쥔 태어난 달의 지지를 가장 무겁게(35%), 나와 가장 가까운 태어난 날의 지지를 그다음(15%)으로,
-        나머지는 10%씩 봐요. 계절 보정과 글자끼리의 합(서로 묶이거나 성질이 바뀌는 것)까지 반영하면, 글자 수로만 센 것과 이만큼 달라져요.
+        글자 아래 숫자가 각 글자의 무게예요. 계절을 쥔 태어난 달의 지지가 가장 무겁고({pct(POS_WEIGHT.branch.월)}%), 나와 가장 가까운 태어난 날의 지지가
+        그다음({pct(POS_WEIGHT.branch.일)}%)이에요. 여기에 계절 보정과 글자끼리의 합(서로 묶이거나 성질이 바뀌는 것)까지 반영하면, 글자 수로만 센 것과 이만큼
+        달라져요.
       </p>
       <div className="mt-3 flex flex-col gap-1.5" aria-label="오행 비율: 글자 수 기준과 무게 기준">
         {[0, 1, 2, 3, 4].map((e) => (

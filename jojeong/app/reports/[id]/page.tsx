@@ -160,7 +160,7 @@ async function OpenReport({ product, courtId, ministerId, targetId }: { product:
     );
   const request = { product: product.id, ...(courtId && { court: subject.courtId }), ...(ministerId && { m: ministerId }) };
   const distinct = subject.self ? distinctOf(subject.pillars, profile?.gender ?? null) : null;
-  const intro = distinct && <ChartIntro name={subject.name} d={distinct} />;
+  const intro = distinct && <ChartIntro name={subject.name} d={distinct} slots={reading.chart.slots} />;
   if (product.id === "gukjeong")
     return (
       <YearReport
