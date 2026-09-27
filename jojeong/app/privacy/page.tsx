@@ -1,3 +1,4 @@
+import { adsAccount } from "@/lib/ads";
 import type { Metadata } from "next";
 import LegalDoc, { biz } from "@/components/LegalDoc";
 
@@ -50,6 +51,12 @@ export default function PrivacyPage() {
           보고서를 처음 열 때 위의 AI 사업자로 전송되며, 생년월일 자체는 저장하지도 전송하지도 않습니다. 상대의 정보는 본인의 동의를 받아
           입력해 주세요.
         </li>
+        {adsAccount && (
+          <li>
+            광고: 무료 페이지(왕이 될 사주, 조정, 신분 감정)에 Google AdSense 광고를 보여 줍니다. Google과 광고 파트너는 쿠키를 사용해 이 사이트와 다른 사이트 방문 기록을 바탕으로 광고를 고를 수 있으며,
+            맞춤 광고는 Google 광고 설정(adssettings.google.com)에서 끌 수 있습니다. 회사는 이 과정에서 사주나 생년월일을 광고 사업자에게 넘기지 않습니다.
+          </li>
+        )}
         <li>결제 처리(유료 서비스 시작 시): 전자결제대행사 (대한민국)</li>
       </ul>
       <h2>4. 이용자의 권리</h2>

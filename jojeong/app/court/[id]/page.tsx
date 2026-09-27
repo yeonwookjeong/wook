@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import AdSlot from "@/components/AdSlot";
 import BirthForm from "@/components/BirthForm";
 import Hundo from "@/components/Hundo";
 import ReportShelf from "@/components/ReportShelf";
@@ -199,6 +200,8 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
               }}
             />
           )}
+
+          <AdSlot />
 
           {isOwner && (
             <div className="sticky bottom-4 z-10 mt-6">

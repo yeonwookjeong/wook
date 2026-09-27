@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Hundo from "@/components/Hundo";
+import AdSlot from "@/components/AdSlot";
 import ReportShelf from "@/components/ReportShelf";
 import RoyalDoc from "@/components/RoyalDoc";
 import { SaveImageButton, ShareLinkButton } from "@/components/ShareButtons";
@@ -137,6 +138,8 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
           }}
         />
       )}
+
+      <AdSlot />
 
       <section className="mt-6 flex flex-col gap-3">
         {isSelf && (
