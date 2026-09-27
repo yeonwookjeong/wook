@@ -125,8 +125,7 @@ export default async function Home() {
       </section>
 
       <section className="mt-9">
-        <h2 className="text-center font-myeongjo text-lg font-extrabold">정 훈도와 마주 앉으면</h2>
-        <p className="mt-1 text-center text-[13px] text-ink-soft">이런 이야기가 오가요</p>
+        <h2 className="text-center font-myeongjo text-lg font-extrabold">요즘 이런 고민 있으세요?</h2>
         <div className="doc-paper mt-4 flex flex-col gap-5 px-5 py-6">
           {TALKS.map((t) => (
             <div key={t.ask} className="flex flex-col gap-2">
@@ -140,6 +139,9 @@ export default async function Home() {
               </div>
             </div>
           ))}
+          <Link href="/reports/pyeongsaeng" className="mt-1 block rounded-2xl bg-seal py-3.5 text-center font-myeongjo font-extrabold text-hanji shadow-[0_4px_0_#7d1a14]">
+            내 고민도 물어보기 →
+          </Link>
         </div>
         <p className="mt-2 text-center text-[11px] text-ink-soft">예시 대화예요. 실제 이야기는 사주마다 달라요.</p>
       </section>
