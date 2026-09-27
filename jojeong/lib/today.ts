@@ -19,8 +19,25 @@ function advice(s: number, b: number): string {
   return "누르는 기운이 있는 날이에요. 무리하지 말고 하던 대로 가면 탈이 없어요.";
 }
 
-// `personal` reads after "{name}님에게는".
-export type Today = { date: string; gz: string; image: string; advice: string; personal: string | null };
+// `personal` reads after "{name}님에게는". `rating` (0 조심 · 1 무난 · 2 좋음) and `lucky` come with the chart.
+export type Today = {
+  date: string;
+  gz: string;
+  image: string;
+  advice: string;
+  personal: string | null;
+  rating: 0 | 1 | 2 | null;
+  lucky: { color: string; direction: string; time: string } | null;
+};
+
+// What the needed element (용신) looks like in a day: its color, its direction, its hours (시진).
+const LUCKY = [
+  { color: "초록", direction: "동쪽", time: "새벽 3시~아침 7시" },
+  { color: "빨강", direction: "남쪽", time: "오전 9시~오후 1시" },
+  { color: "노랑·베이지", direction: "가운데(집 근처)", time: "오전 7~9시, 오후 1~3시" },
+  { color: "흰색·은색", direction: "서쪽", time: "오후 3~7시" },
+  { color: "검정·남색", direction: "북쪽", time: "밤 9시~새벽 1시" },
+];
 
 export function todayFor(me: Person | null, now = new Date()): Today {
   const kst = new Date(now.getTime() + 9 * 3600000);
@@ -35,6 +52,7 @@ export function todayFor(me: Person | null, now = new Date()): Today {
   const EL = (e: number) => `${ELEMENT_KO[e]}(${ELEMENT_HANJA[e]})`;
 
   let personal: string | null = null;
+  let rating: Today["rating"] = null;
   const r = me ? readChart(me.pillars) : null;
   if (me && r) {
     const hit = [s, b].find((e) => e === r.yong);
@@ -44,10 +62,17 @@ export function todayFor(me: Person | null, now = new Date()): Today {
         ? `꼭 필요한 ${EL(hit)} 기운이 들어오는 날이에요. 중요한 일은 오늘 하세요.`
         : bad !== undefined
           ? `버거운 ${EL(bad)} 기운의 날이에요. 큰 결정은 하루 미루세요.`
-          : "크게 치우치지 않는 무난한 날이에요.";
+          : "기운이 어느 한쪽으로 크게 치우치지 않는 날이에요.";
     const meet = meetings(branch, me.pillars.dayBranch);
-    if (meet.includes("충")) personal += " 가까운 사람과 부딪히기 쉬우니 말은 한 번 더 고르세요.";
-    else if (meet.includes("육합")) personal += " 가까운 사람과 마음이 잘 통하는 날이에요.";
+    let score = hit !== undefined ? 2 : bad !== undefined ? 0 : 1;
+    if (meet.includes("충")) {
+      personal += " 가까운 사람과 부딪히기 쉬우니 말은 한 번 더 고르세요.";
+      score -= 1;
+    } else if (meet.includes("육합")) {
+      personal += " 가까운 사람과 마음이 잘 통하는 날이에요.";
+      score += 1;
+    }
+    rating = Math.max(0, Math.min(2, score)) as 0 | 1 | 2;
   }
   return {
     date: `${m}월 ${d}일 ${"일월화수목금토"[kst.getUTCDay()]}요일`,
@@ -55,5 +80,7 @@ export function todayFor(me: Person | null, now = new Date()): Today {
     image: `${BRANCH_SCENE[branch]}의 ${STEM_IMAGE[stem]}`,
     advice: advice(s, b),
     personal,
+    rating,
+    lucky: r ? LUCKY[r.yong] : null,
   };
 }
