@@ -8,6 +8,8 @@ import { OPEN_ALL, PRICE_STEPS, productById, type Product, type ProductId } from
 // The main page: 정 훈도's present-day readings, picked and opened with one's own chart. The Joseon game
 // (왕이 될 사주, /king) is the free, shareable side door.
 
+// Short names for the grid; the full titles stay on the report pages.
+const SHORT: Partial<Record<ProductId, string>> = { gunghap: "궁합", gukjeong: "2026 운세", yeonae: "연애·결혼", jaemul: "재물·돈", jikup: "직업·적성" };
 const PITCH: Partial<Record<ProductId, string>> = {
   gunghap: "우리 둘, 진짜 잘 맞을까?",
   gukjeong: "2026년, 나한테 무슨 일이?",
@@ -15,18 +17,24 @@ const PITCH: Partial<Record<ProductId, string>> = {
   jaemul: "돈이 왜 안 모일까?",
   jikup: "지금 일, 나랑 맞을까?",
 };
+// What a report actually says, so the difference shows in the sentences rather than in the method.
+const SAYINGS = [
+  { label: "같은 일주라도", line: "같은 丁未일주 중에서도 이 구조는 100명 중 6명뿐이에요." },
+  { label: "지나온 해를 짚어요", line: "2019년 무렵, 일하는 방식이 통째로 바뀌었을 거예요." },
+  { label: "앞으로 할 일까지", line: "11월엔 먼저 연락하세요. 올해 인연이 들어오는 달이에요." },
+];
 const GRID: ProductId[] = ["gunghap", "gukjeong", "yeonae", "jaemul", "jikup"];
 
 function Price({ product }: { product: Product }) {
-  if (product.free) return <span className="text-sm font-extrabold text-seal">무료</span>;
+  if (product.free) return <span className="text-[13px] font-extrabold text-seal">무료</span>;
   if (OPEN_ALL)
     return (
-      <span className="flex items-baseline gap-1">
+      <span className="flex items-baseline gap-1.5">
+        <span className="text-[13px] font-extrabold text-seal">무료 공개</span>
         <s className="text-[11px] text-ink-soft">{PRICE_STEPS[0].toLocaleString("ko-KR")}원</s>
-        <span className="text-sm font-extrabold text-seal">무료 공개 중</span>
       </span>
     );
-  return <span className="text-sm font-extrabold text-seal">{PRICE_STEPS[0].toLocaleString("ko-KR")}원</span>;
+  return <span className="text-[13px] font-extrabold text-seal">{PRICE_STEPS[0].toLocaleString("ko-KR")}원</span>;
 }
 
 function Seal({ hanja }: { hanja: string }) {
@@ -100,51 +108,41 @@ export default async function Home() {
             const p = productById(id)!;
             return (
               <li key={id}>
-                <Link href={`/reports/${id}`} className="doc-paper flex h-full flex-col gap-2 px-3 py-4">
-                  <span className="flex items-center gap-2">
-                    <span className="flex size-9 shrink-0 items-center justify-center border-2 border-seal/60 font-myeongjo text-xs font-extrabold text-seal">
-                      {p.hanja}
+                <Link href={`/reports/${id}`} className="doc-paper flex h-full flex-col px-4 pt-4 pb-3">
+                  <span className="font-myeongjo text-[11px] font-extrabold tracking-[0.3em] text-seal">{p.hanja}</span>
+                  <span className="mt-1 font-myeongjo text-lg leading-tight font-extrabold">{SHORT[id]}</span>
+                  <span className="mt-1.5 flex-1 text-[13px] leading-snug text-ink-soft">{PITCH[id]}</span>
+                  <span className="mt-3 flex items-center justify-between border-t border-seal/15 pt-2.5">
+                    <Price product={p} />
+                    <span className="text-seal" aria-hidden="true">
+                      →
                     </span>
-                    <span className="font-myeongjo text-[15px] leading-tight font-extrabold">{p.title}</span>
                   </span>
-                  <span className="flex-1 text-[13px] leading-snug text-ink-soft">{PITCH[id]}</span>
-                  <Price product={p} />
                 </Link>
               </li>
             );
           })}
           <li>
-            <Link href="/reports" className="doc-paper flex h-full flex-col items-center justify-center gap-1 px-3 py-4 text-center">
-              <span className="font-myeongjo text-[15px] font-extrabold">전체 보고서</span>
+            <Link href="/reports" className="doc-paper flex h-full flex-col items-center justify-center gap-1 px-4 py-4 text-center">
+              <span className="font-myeongjo text-lg font-extrabold">전체 보고서</span>
               <span className="text-[13px] text-seal">모두 보기 →</span>
             </Link>
           </li>
         </ul>
       </section>
 
-      <section className="doc-paper mt-8 px-5 py-6">
-        <h2 className="text-center font-myeongjo text-lg font-extrabold">정 훈도는 이렇게 봐요</h2>
-        <ol className="mt-4 flex flex-col gap-3 text-[14px] leading-relaxed">
-          <li className="flex gap-3">
-            <span className="font-myeongjo font-extrabold text-seal">一</span>
-            <span>
-              <b>여덟 글자를 12.5%씩 똑같이 세지 않아요.</b> 계절을 쥔 태어난 달이 가장 무겁고, 나와 가장 가까운 태어난 날이 그다음이에요. 계절 보정과
-              글자끼리의 합·충까지 반영해요.
-            </span>
-          </li>
-          <li className="flex gap-3">
-            <span className="font-myeongjo font-extrabold text-seal">二</span>
-            <span>
-              <b>같은 일주라도 다 달라요.</b> 25만여 개의 사주와 비교해서, 같은 일주 가운데서도 몇 %만 가진 구조인지 짚어 드려요.
-            </span>
-          </li>
-          <li className="flex gap-3">
-            <span className="font-myeongjo font-extrabold text-seal">三</span>
-            <span>
-              <b>누구에게나 맞는 말은 쓰지 않아요.</b> 지나온 해를 짚고, 앞으로 몇 월에 무엇을 할지까지 그 사람의 사주로만 풀어요.
-            </span>
-          </li>
-        </ol>
+      <section className="mt-9">
+        <h2 className="text-center font-myeongjo text-lg font-extrabold">뻔한 말 대신, 이런 말을 해요</h2>
+        <p className="mt-1 text-center text-[13px] text-ink-soft">&ldquo;따뜻하고 배려심이 깊으시네요&rdquo; 같은 말은 하지 않아요</p>
+        <ul className="mt-4 flex flex-col gap-2.5">
+          {SAYINGS.map((x) => (
+            <li key={x.label} className="doc-paper px-5 py-4">
+              <p className="text-[11px] font-extrabold text-seal">{x.label}</p>
+              <p className="mt-1 font-myeongjo text-[17px] leading-snug font-extrabold">&ldquo;{x.line}&rdquo;</p>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-2 text-center text-[11px] text-ink-soft">보고서 속 문장 예시예요. 실제 문장은 사람마다 모두 달라요.</p>
       </section>
 
       <section className="mt-8">
