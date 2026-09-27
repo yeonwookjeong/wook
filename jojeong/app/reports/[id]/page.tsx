@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import AiReport from "@/components/AiReport";
 import ChartIntro from "@/components/ChartIntro";
 import GunghapForm from "@/components/GunghapForm";
+import MeForm from "@/components/MeForm";
 import PairIntro from "@/components/PairIntro";
 import DeepenForm from "@/components/DeepenForm";
 import Keep from "@/components/Keep";
@@ -18,7 +19,9 @@ import { ownedCourts } from "@/lib/load";
 import { isOpen, OPEN_ALL, PRICE_STEPS, priceFor, productById, type Product, type ProductId } from "@/lib/products";
 import { REPORT_SPECS } from "@/lib/reportPrompts";
 import { coupleOf } from "@/lib/couple";
-import { decodePerson, relationOf } from "@/lib/pairToken";
+import { forgetMeAction } from "@/app/actions";
+import { readMe } from "@/lib/me";
+import { decodePerson, profileOf, relationOf } from "@/lib/pairToken";
 import { distinctOf } from "@/lib/rarity";
 import { courtOfReader, subjectFor } from "@/lib/subject";
 import { getProfile } from "@/lib/store";
@@ -84,13 +87,13 @@ async function OpenReport({
     const a = decodePerson(pair.a);
     const b = decodePerson(pair.b);
     if (!a || !b || !pair.a || !pair.b) {
-      const me = await subjectFor(product);
+      const saved = (await readMe())?.person.name ?? (await subjectFor(product))?.name ?? null;
       return (
         <>
           <Header product={product} />
           <section className="doc-paper mt-4 px-5 pt-6 pb-6">
             <p className="mb-4 text-center text-sm leading-relaxed text-ink-soft">{product.teaser}</p>
-            <GunghapForm savedName={me?.self ? me.name : null} />
+            <GunghapForm savedName={saved} />
           </section>
         </>
       );
@@ -116,7 +119,7 @@ async function OpenReport({
       return (
         <>
           <Header product={product} />
-          <Notice href="/#enthrone" cta="즉위하러 가기 →">
+          <Notice href="/king#enthrone" cta="즉위하러 가기 →">
             조정에서 여는 보고서이옵니다. 즉위하시거나 받으신 초대 링크로 입궐한 뒤, 조정 화면에서 여시옵소서.
           </Notice>
         </>
@@ -174,55 +177,95 @@ async function OpenReport({
     );
   }
 
-  const subject = await subjectFor(product, courtId, ministerId);
-  if (!subject)
+  // Whose chart: a court's person named in the link; else the chart remembered in this browser (lib/me.ts);
+  // else a court this browser enthroned. With none, the reader enters one right here.
+  const me = courtId ? null : await readMe();
+  const subject = me ? null : await subjectFor(product, courtId, ministerId);
+  const next = `/reports/${product.id}`;
+  if (!me && !subject)
     return (
       <>
         <Header product={product} />
-        <Notice href="/#enthrone" cta="즉위하고 무료로 보기 →">
-          {product.teaser}
-        </Notice>
+        <section className="doc-paper mt-4 px-5 pt-6 pb-6">
+          <p className="mb-4 text-center text-sm leading-relaxed text-ink-soft">{product.teaser}</p>
+          <MeForm next={next} />
+        </section>
       </>
     );
+  const name = me ? me.person.name : subject!.name;
+  const pillars = me ? me.person.pillars : subject!.pillars;
+  const self = me ? true : subject!.self;
+  // Someone else's chart can be entered instead; the remembered one is then replaced.
+  const other = me && (
+    <form action={forgetMeAction} className="mt-2 text-center">
+      <input type="hidden" name="next" value={next} />
+      <button type="submit" className="text-xs text-ink-soft underline">
+        다른 사람 사주로 보기
+      </button>
+    </form>
+  );
 
   if (product.id === "sinbun")
     return (
-      <SinbunReport
-        pillars={subject.pillars}
-        heading={subject.king ? `${subject.name} 전하가 왕이 아니었다면` : `${josa(subject.name, "이/가")} 조선에 태어났다면`}
-        query={query}
-      />
+      <>
+        <SinbunReport
+          pillars={pillars}
+          heading={subject?.king ? `${name} 전하가 왕이 아니었다면` : `${josa(name, "이/가")} 조선에 태어났다면`}
+          query={query}
+        />
+        {other}
+      </>
     );
 
-  const profile = subject.self ? await getProfile(subject.courtId, subject.who) : null;
-  const reading = yearReading(subject.pillars, profile);
+  const profile = me ? profileOf(me.person) : subject!.self ? await getProfile(subject!.courtId, subject!.who) : null;
+  const reading = yearReading(pillars, profile);
   if (!reading)
     return (
       <>
         <Header product={product} />
-        <Notice href="/#enthrone" cta="새로 즉위하기 →">
-          예전 방식으로 올리신 사주라 여덟 글자가 다 갖춰지지 않았어요. 새로 즉위하시면 온전히 풀어 드려요.
-        </Notice>
+        <section className="doc-paper mt-4 px-5 pt-6 pb-6">
+          <p className="mb-4 text-center text-sm leading-relaxed text-ink-soft">
+            예전 방식으로 올리신 사주라 여덟 글자가 다 갖춰지지 않았어요. 한 번만 다시 넣어 주시면 온전히 풀어 드려요.
+          </p>
+          <MeForm next={next} />
+        </section>
       </>
     );
-  const request = { product: product.id, ...(courtId && { court: subject.courtId }), ...(ministerId && { m: ministerId }) };
-  const distinct = subject.self ? distinctOf(subject.pillars, profile?.gender ?? null) : null;
-  const intro = distinct && <ChartIntro name={subject.name} d={distinct} slots={reading.chart.slots} />;
+  const request: Record<string, string> = me
+    ? { product: product.id, p: me.token }
+    : { product: product.id, ...(courtId && { court: subject!.courtId }), ...(ministerId && { m: ministerId }) };
+  const distinct = self ? distinctOf(pillars, profile?.gender ?? null) : null;
+  const intro = distinct && <ChartIntro name={name} d={distinct} slots={reading.chart.slots} />;
+  // Without gender or the hour, the remembered chart is simply entered again with them.
+  const meDeepen = me && (reading.missing.daeun || reading.missing.palaces) && (
+    <section className="doc-paper mt-6 px-6 pt-7 pb-6">
+      <h2 className="text-center font-myeongjo text-lg font-extrabold">더 깊이 봐 드릴 수 있어요</h2>
+      <p className="mt-2 mb-4 text-center text-sm leading-relaxed text-ink-soft">
+        성별과 태어난 시각을 알려 주시면 10년 대운과 영역별 흐름까지 넣어 다시 써 드려요.
+      </p>
+      <MeForm next={next} submit="더 깊이 보기" />
+    </section>
+  );
   if (product.id === "gukjeong")
     return (
-      <YearReport
-        reading={reading}
-        heading={`${subject.name}님의 2026년 운세`}
-        deepen={subject.self ? { courtId: subject.courtId, who: subject.who } : null}
-        query={query}
-        ai={subject.self ? { request, chapters: chaptersOf(product.id), intro } : undefined}
-      />
+      <>
+        <YearReport
+          reading={reading}
+          heading={`${name}님의 2026년 운세`}
+          deepen={!me && subject!.self ? { courtId: subject!.courtId, who: subject!.who } : null}
+          query={query}
+          ai={self ? { request, chapters: chaptersOf(product.id), intro } : undefined}
+        />
+        {meDeepen}
+        {other}
+      </>
     );
-  if (!subject.self)
+  if (!self)
     return (<><Header product={product} /><Notice>본인의 사주로만 열 수 있는 보고서예요.</Notice></>);
   return (
     <>
-      <Header product={product} subjectName={`${subject.name}님`} />
+      <Header product={product} subjectName={`${name}님`} />
+      {other}
       {intro}
       <details className="group doc-paper mt-4 px-5 py-4">
         <summary className="flex cursor-pointer list-none items-center justify-between [&::-webkit-details-marker]:hidden">
@@ -234,13 +277,14 @@ async function OpenReport({
         <SajuChart {...reading.chart} kingdom={false} />
       </details>
       <AiReport request={request} chapters={chaptersOf(product.id)} modern />
-      {subject.self && (reading.missing.daeun || reading.missing.palaces) && (
+      {meDeepen}
+      {!me && subject!.self && (reading.missing.daeun || reading.missing.palaces) && (
         <section className="doc-paper mt-6 px-6 pt-7 pb-6">
           <h2 className="text-center font-myeongjo text-lg font-extrabold">더 깊이 봐 드릴 수 있어요</h2>
           <p className="mt-2 mb-4 text-center text-sm leading-relaxed text-ink-soft">
             성별과 태어난 시각을 알려 주시면 10년 대운과 영역별 흐름까지 넣어 다시 써 드려요.
           </p>
-          <DeepenForm courtId={subject.courtId} who={subject.who} />
+          <DeepenForm courtId={subject!.courtId} who={subject!.who} />
         </section>
       )}
     </>
@@ -327,7 +371,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
                 ? "먼저 즉위하시면 내 사주로 맛보기를 보여 드려요."
                 : "먼저 즉위하시면 전하의 사주로 맛보기를 지어 올리옵니다."}
             {product.for !== "minister" && (
-              <Link href="/#enthrone" className="mt-2 block font-myeongjo font-extrabold text-seal">
+              <Link href="/king#enthrone" className="mt-2 block font-myeongjo font-extrabold text-seal">
                 즉위하러 가기 →
               </Link>
             )}

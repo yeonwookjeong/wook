@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Nanum_Myeongjo } from "next/font/google";
-import { SERVICE_NAME, TAGLINE, siteUrl } from "@/lib/brand";
+import { SITE_NAME, SITE_TAGLINE, siteUrl } from "@/lib/brand";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import "./globals.css";
 
@@ -12,8 +12,8 @@ const myeongjo = Nanum_Myeongjo({
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
-  title: { default: `${SERVICE_NAME} · ${TAGLINE}`, template: `%s · ${SERVICE_NAME}` },
-  description: "생년월일만 넣으면 전하가 됩니다. 친구를 부르면 사주가 영의정부터 간신까지 관직을 내려드립니다.",
+  title: { default: `${SITE_NAME} · ${SITE_TAGLINE}`, template: `%s · ${SITE_NAME}` },
+  description: "평생 사주, 궁합, 2026 운세, 연애·재물·직업까지. 같은 일주라도 다 다른 당신만의 사주를 정 훈도가 풀어 드려요.",
 };
 
 export const viewport: Viewport = {

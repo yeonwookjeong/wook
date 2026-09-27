@@ -9,6 +9,7 @@ import { BirthInputError, computePillars, LATE_ZI, resolveBirthTime, resolveLate
 import { addMinister, createCourt, CourtFullError, getCourt, getProfile, listMinisters, MAX_MINISTERS, removeMinister, setProfile } from "@/lib/store";
 import { OWNER_COOKIE, MINISTER_COOKIE } from "@/lib/cookies";
 import { encodePerson, relationOf, type Person } from "@/lib/pairToken";
+import { forgetMe, readMe, rememberMe } from "@/lib/me";
 import { productById } from "@/lib/products";
 import { subjectFor } from "@/lib/subject";
 
@@ -209,7 +210,9 @@ export async function gunghapAction(_prev: FormState, formData: FormData): Promi
   let url: string;
   try {
     let a: Person;
-    if (formData.get("a_use") === "saved") {
+    const me = await readMe();
+    if (formData.get("a_use") === "saved" && me) a = me.person;
+    else if (formData.get("a_use") === "saved") {
       const subject = await subjectFor(productById("gunghap")!);
       if (!subject?.self) throw new BirthInputError("저장된 내 사주를 찾지 못했어요. 직접 입력해 주세요.");
       const profile = await getProfile(subject.courtId, subject.who);
@@ -224,4 +227,23 @@ export async function gunghapAction(_prev: FormState, formData: FormData): Promi
     return { error: "궁합을 준비하다 문제가 생겼어요. 잠시 후 다시 시도해 주세요." };
   }
   redirect(url);
+}
+
+// ── 내 사주: entered once on any report page, remembered in this browser (lib/me.ts).
+export async function saveMeAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const next = String(formData.get("next") ?? "");
+  try {
+    await rememberMe(await personOf(formData, "", "내 사주"));
+  } catch (e) {
+    if (e instanceof BirthInputError) return { error: e.message.replace(/^내 사주: /, "") };
+    console.error(e);
+    return { error: "사주를 준비하다 문제가 생겼어요. 잠시 후 다시 시도해 주세요." };
+  }
+  redirect(/^\/reports\/[a-z]+$/.test(next) ? next : "/");
+}
+
+export async function forgetMeAction(formData: FormData) {
+  await forgetMe();
+  const next = String(formData.get("next") ?? "");
+  redirect(/^\/reports\/[a-z]+$/.test(next) ? next : "/");
 }

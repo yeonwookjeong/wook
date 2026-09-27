@@ -1,9 +1,9 @@
-import { landingImage } from "@/lib/og";
+import { storeImage } from "@/lib/og";
 
-export const alt = "왕이 될 사주 · 옥좌의 주인을 찾사옵니다";
+export const alt = "관상감 정 훈도 · 조선 최고의 사주쟁이가 봐 주는 지금의 나";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export default function Image() {
-  return landingImage();
+  return storeImage();
 }

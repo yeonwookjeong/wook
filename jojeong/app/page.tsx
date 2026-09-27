@@ -1,137 +1,174 @@
 import Link from "next/link";
-import BirthForm from "@/components/BirthForm";
-import Hero from "@/components/Hero";
+import { forgetMeAction } from "@/app/actions";
 import Hundo from "@/components/Hundo";
-import { ROLES } from "@/lib/roles";
-import { ownedCourts } from "@/lib/load";
-import { courtCount } from "@/lib/store";
-import type { RoleKey } from "@/lib/saju";
+import RoyalDoc from "@/components/RoyalDoc";
+import { readMe } from "@/lib/me";
+import { OPEN_ALL, PRICE_STEPS, productById, type Product, type ProductId } from "@/lib/products";
 
-const SHOWCASE: RoleKey[] = ["yeong", "byeongjo", "hojo", "yejo", "gansin", "yubae"];
+// The main page: 정 훈도's present-day readings, picked and opened with one's own chart. The Joseon game
+// (왕이 될 사주, /king) is the free, shareable side door.
 
+const PITCH: Partial<Record<ProductId, string>> = {
+  gunghap: "우리 둘, 진짜 잘 맞을까?",
+  gukjeong: "2026년, 나한테 무슨 일이?",
+  yeonae: "나랑 맞는 사람은 언제 올까?",
+  jaemul: "돈이 왜 안 모일까?",
+  jikup: "지금 일, 나랑 맞을까?",
+};
+const GRID: ProductId[] = ["gunghap", "gukjeong", "yeonae", "jaemul", "jikup"];
+
+function Price({ product }: { product: Product }) {
+  if (product.free) return <span className="text-sm font-extrabold text-seal">무료</span>;
+  if (OPEN_ALL)
+    return (
+      <span className="flex items-baseline gap-1">
+        <s className="text-[11px] text-ink-soft">{PRICE_STEPS[0].toLocaleString("ko-KR")}원</s>
+        <span className="text-sm font-extrabold text-seal">무료 공개 중</span>
+      </span>
+    );
+  return <span className="text-sm font-extrabold text-seal">{PRICE_STEPS[0].toLocaleString("ko-KR")}원</span>;
+}
+
+function Seal({ hanja }: { hanja: string }) {
+  return (
+    <span className="flex size-12 shrink-0 items-center justify-center border-2 border-seal/70 font-myeongjo text-sm font-extrabold text-seal">
+      {hanja}
+    </span>
+  );
+}
 
 export default async function Home() {
-  const [courts, count] = await Promise.all([ownedCourts(), courtCount()]);
+  const me = await readMe();
+  const main = productById("pyeongsaeng")!;
 
   return (
     <>
-      <Hero />
-      <p className="mt-5 text-center text-[15px] leading-relaxed text-ink-soft">
-        {/* Each phrase wraps as a unit, so narrow screens break after "넣으면"/"부르면" and not mid-phrase. */}
-        생년월일을 넣으면{" "}
-        <span className="inline-block">
-          <b className="text-ink">전하가 어떤 왕이었을지</b> 알려드리옵니다.
-        </span>
-        <br />
-        벗들을 부르면{" "}
-        <span className="inline-block">
-          <b className="text-ink">사주가 관직을 내려드리옵니다.</b>
-        </span>
-      </p>
-      {count > 0 && (
-        <p className="mx-auto mt-3 w-fit border-y border-seal/30 px-3 py-1 text-center text-sm">
-          지금까지 <b className="font-myeongjo text-base text-seal">{count.toLocaleString("ko-KR")}</b>명의 전하가 즉위하셨사옵니다
-        </p>
-      )}
-
-      <div className="mt-6 grid grid-cols-2 gap-1.5 text-center">
-        <div className="border border-seal/25 bg-[#f9f1de] px-3 py-3">
-          <p className="text-[11px] font-extrabold text-seal">무료로 전부</p>
-          <p className="mt-1.5 text-[13px] leading-snug">
-            왕 등급과 가상 실록
-            <br />
-            조선 신분 · 벗들의 관직
-            <br />
-            <b>2026 신년 운세 전편</b>
-          </p>
-        </div>
-        <Link href="/reports" className="border border-seal/50 bg-seal/5 px-3 py-3">
-          <p className="text-[11px] font-extrabold text-seal">비밀 보고서 · 지금의 나</p>
-          <p className="mt-1.5 text-[13px] leading-snug">
-            연애·결혼운
-            <br />
-            재물·직업
-            <br />
-            정 훈도가 봐 드림
-          </p>
-        </Link>
-      </div>
-
-      <p className="mt-7 text-center font-myeongjo text-xs font-extrabold tracking-[0.4em] text-seal">官 職</p>
-      <ul className="mt-2 grid grid-cols-3 gap-1.5">
-        {SHOWCASE.map((key) => {
-          const role = ROLES[key];
-          const danger = role.tone === "red" || role.tone === "gray";
-          return (
-            <li
-              key={key}
-              className={`border px-2 py-3 text-center ${danger ? "border-seal/40 bg-seal/5" : "border-seal/20 bg-[#f9f1de]"}`}
-            >
-              <p className={`font-myeongjo text-lg font-extrabold ${danger ? "text-seal" : ""}`}>{role.title}</p>
-              <p className="mt-0.5 text-[11px] leading-tight text-ink-soft">{role.tagline}</p>
-            </li>
-          );
-        })}
-      </ul>
-
-      <section className="mt-8 border-l-[3px] border-seal/60 py-1 pl-4">
-        <p className="text-xs font-extrabold tracking-wider text-seal">알고 계셨사옵니까?</p>
-        <p className="mt-2 text-[15px] leading-relaxed">
-          조선 왕실에는 사주를 보는 관직이 있었사옵니다. <b>관상감 명과학(命課學)</b>의 관원들은 왕자와 공주의 궁합을
-          심사하고 왕실의 길일을 택했으며, 오늘날 사주와 같은 <b>자평명리</b>로 시험을 치렀사옵니다.
+      <section className="mt-6 text-center">
+        <p className="font-myeongjo text-sm font-extrabold tracking-[0.5em] text-seal">觀 象 監</p>
+        <h1 className="mt-2 font-myeongjo text-[32px] leading-tight font-extrabold">정 훈도의 사주</h1>
+        <p className="mt-2 text-[15px] leading-relaxed text-ink-soft">
+          조선 최고의 사주쟁이가
+          <br />
+          <b className="text-ink">지금의 나</b>를 봐 드려요
         </p>
       </section>
 
       <section className="mt-5">
-        <Hundo>
-          관상감 막내, 명과학 훈도 정가이옵니다. 다들 정 훈도라 부르옵니다. 품계는 말단 정9품이오나 사주 보는 눈만큼은 조선
-          제일이옵니다. 먼저
-          즉위하시면 전하가 어떤 왕이신지 아뢰고, 벗들을 부르시면 누가 영의정이고 누가 간신인지 가려 천거하겠사옵니다.
+        <Hundo mood="bow">
+          어서 오시옵소서. 같은 일주라도 다 같은 사주가 아니옵니다. 생년월일을 주시면 그대만의 여덟 글자를 끝까지 풀어 올리겠사옵니다.
         </Hundo>
       </section>
 
-      {/* Only this browser's own courts (owner cookie), so a returning king can pick up where they left off. */}
-      {courts.length > 0 && (
-        <section className="mt-5 border border-seal/25 bg-[#f9f1de] px-4 py-3">
-          <p className="text-[11px] font-bold text-ink-soft">이 기기에서 즉위하신 조정</p>
-          <ul className="mt-1 flex flex-col divide-y divide-ink/10">
-            {courts.map((court) => (
-              <li key={court.id}>
-                <Link href={`/court/${court.id}`} className="flex items-center justify-between py-2 text-[15px] font-bold">
-                  <span>{court.kingName} 전하의 조정</span>
-                  <span className="text-sm text-gold">입궐 →</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
+      {me && (
+        <form action={forgetMeAction} className="mx-auto mt-4 flex w-fit items-center gap-2 rounded-full bg-gold/15 px-4 py-2 text-xs">
+          <span className="font-bold text-gold">{me.person.name}님의 사주로 보고 있어요</span>
+          <button type="submit" className="text-ink-soft underline">
+            다른 사람으로
+          </button>
+        </form>
       )}
 
-      <section id="enthrone" className="doc-paper mt-5 scroll-mt-4 px-6 pt-8 pb-7">
-        <p className="text-center font-myeongjo text-sm font-extrabold tracking-[0.4em] text-seal">卽 位</p>
-        <p className="mt-1 mb-4 text-center font-myeongjo font-extrabold">{courts.length > 0 ? "새로 즉위하기" : "전하의 사주를 올리시옵소서"}</p>
-        <BirthForm mode="king" />
+      {/* The flagship: the whole life in one report */}
+      <RoyalDoc className="mt-5" paperClassName="px-5">
+        <p className="text-center text-xs font-extrabold text-seal">대표 보고서</p>
+        <div className="mt-2 flex items-center justify-center gap-3">
+          <Seal hanja={main.hanja} />
+          <h2 className="font-myeongjo text-2xl font-extrabold">{main.title}</h2>
+        </div>
+        <p className="mt-2 text-center text-sm leading-relaxed text-ink-soft">{main.tagline}</p>
+        <ol className="mt-4 flex flex-col divide-y divide-seal/15 border-y-[3px] border-double border-seal/40 px-1 text-[14px]">
+          {main.toc.slice(0, 4).map((item, i) => (
+            <li key={item} className="flex gap-2 py-2">
+              <span className="font-myeongjo font-extrabold text-seal">{"一二三四"[i]}</span>
+              {item}
+            </li>
+          ))}
+          <li className="py-2 text-center text-xs text-ink-soft">…모두 {main.toc.length}장</li>
+        </ol>
+        <div className="mt-4 flex items-center justify-center">
+          <Price product={main} />
+        </div>
+        <Link href="/reports/pyeongsaeng" className="mt-3 block rounded-2xl bg-seal py-4 text-center font-myeongjo text-lg font-extrabold text-hanji shadow-[0_6px_0_#7d1a14]">
+          {me ? `${me.person.name}님의 평생 사주 보기` : "내 평생 사주 보기"}
+        </Link>
+      </RoyalDoc>
+
+      <section className="mt-8">
+        <h2 className="text-center font-myeongjo text-lg font-extrabold">궁금한 것부터 골라 보세요</h2>
+        <ul className="mt-3 grid grid-cols-2 gap-2">
+          {GRID.map((id) => {
+            const p = productById(id)!;
+            return (
+              <li key={id}>
+                <Link href={`/reports/${id}`} className="doc-paper flex h-full flex-col gap-2 px-3 py-4">
+                  <span className="flex items-center gap-2">
+                    <span className="flex size-9 shrink-0 items-center justify-center border-2 border-seal/60 font-myeongjo text-xs font-extrabold text-seal">
+                      {p.hanja}
+                    </span>
+                    <span className="font-myeongjo text-[15px] leading-tight font-extrabold">{p.title}</span>
+                  </span>
+                  <span className="flex-1 text-[13px] leading-snug text-ink-soft">{PITCH[id]}</span>
+                  <Price product={p} />
+                </Link>
+              </li>
+            );
+          })}
+          <li>
+            <Link href="/reports" className="doc-paper flex h-full flex-col items-center justify-center gap-1 px-3 py-4 text-center">
+              <span className="font-myeongjo text-[15px] font-extrabold">전체 보고서</span>
+              <span className="text-[13px] text-seal">모두 보기 →</span>
+            </Link>
+          </li>
+        </ul>
       </section>
 
-      <ol className="mt-8 grid grid-cols-3 gap-2 text-center text-xs text-ink-soft">
-        {[
-          ["즉위하고", "왕 유형 확인"],
-          ["벗들에게", "링크 보내기"],
-          ["관직 발표와", "교지 공유"],
-        ].map(([a, b], i) => (
-          <li key={a} className="flex flex-col items-center gap-1.5">
-            <span className="flex size-7 items-center justify-center border border-seal/50 font-myeongjo text-sm font-extrabold text-seal">
-              {"一二三"[i]}
-            </span>
+      <section className="doc-paper mt-8 px-5 py-6">
+        <h2 className="text-center font-myeongjo text-lg font-extrabold">정 훈도는 이렇게 봐요</h2>
+        <ol className="mt-4 flex flex-col gap-3 text-[14px] leading-relaxed">
+          <li className="flex gap-3">
+            <span className="font-myeongjo font-extrabold text-seal">一</span>
             <span>
-              {a}
-              <br />
-              {b}
+              <b>여덟 글자를 12.5%씩 똑같이 세지 않아요.</b> 계절을 쥔 태어난 달이 가장 무겁고, 나와 가장 가까운 태어난 날이 그다음이에요. 계절 보정과
+              글자끼리의 합·충까지 반영해요.
             </span>
           </li>
-        ))}
-      </ol>
+          <li className="flex gap-3">
+            <span className="font-myeongjo font-extrabold text-seal">二</span>
+            <span>
+              <b>같은 일주라도 다 달라요.</b> 25만여 개의 사주와 비교해서, 같은 일주 가운데서도 몇 %만 가진 구조인지 짚어 드려요.
+            </span>
+          </li>
+          <li className="flex gap-3">
+            <span className="font-myeongjo font-extrabold text-seal">三</span>
+            <span>
+              <b>누구에게나 맞는 말은 쓰지 않아요.</b> 지나온 해를 짚고, 앞으로 몇 월에 무엇을 할지까지 그 사람의 사주로만 풀어요.
+            </span>
+          </li>
+        </ol>
+      </section>
 
+      <section className="mt-8">
+        <h2 className="text-center font-myeongjo text-lg font-extrabold">재미로 보는 조선 사주</h2>
+        <p className="mt-1 text-center text-xs text-ink-soft">무료 · 친구와 같이 하면 더 재밌어요</p>
+        <div className="mt-3 flex flex-col gap-2">
+          <Link href="/king" className="flex items-center gap-4 rounded-2xl bg-[#17304a] px-5 py-5 text-hanji">
+            <span className="flex size-12 shrink-0 items-center justify-center border-2 border-gold font-myeongjo text-sm font-extrabold text-gold">王</span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-myeongjo text-lg font-extrabold">왕이 될 사주</span>
+              <span className="block text-[13px] leading-snug text-hanji/80">내가 왕이었다면 성군일까 폭군일까? 친구를 부르면 사주로 관직을 내려요</span>
+            </span>
+            <span className="text-gold">→</span>
+          </Link>
+          <Link href="/reports/sinbun" className="doc-paper flex items-center gap-4 px-5 py-4">
+            <Seal hanja="身分" />
+            <span className="min-w-0 flex-1">
+              <span className="block font-myeongjo font-extrabold">조선 신분 감정</span>
+              <span className="block text-[13px] leading-snug text-ink-soft">조선에 태어났다면 어떤 신분, 어떤 일을 했을까</span>
+            </span>
+            <span className="text-sm font-extrabold text-seal">무료</span>
+          </Link>
+        </div>
+      </section>
     </>
   );
 }

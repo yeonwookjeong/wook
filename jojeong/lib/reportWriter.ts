@@ -24,7 +24,7 @@ export const aiEnabled = () =>
   Boolean(isGemini ? process.env.GEMINI_API_KEY : process.env.ANTHROPIC_API_KEY) || process.env.REPORT_MOCK === "1";
 
 export type ReportJob = { key: string; system: string; prompt: string; title: string; modern: boolean };
-export type JobRequest = { product: string; court?: string; m?: string; t?: string; a?: string; b?: string; rel?: string };
+export type JobRequest = { product: string; court?: string; m?: string; t?: string; a?: string; b?: string; rel?: string; p?: string };
 
 export async function jobFor(req: JobRequest): Promise<ReportJob | { error: string; status: number }> {
   const product = productById(req.product);
@@ -67,6 +67,12 @@ export async function jobFor(req: JobRequest): Promise<ReportJob | { error: stri
       const mp = await getProfile(court.id, mine.id);
       briefs = [chartBrief(mine.name, mine.pillars, mp), chartBrief(`${court.kingName}(왕)`, court.king, null), pairBrief(court.kingName, court.king, mine.name, mine.pillars)].join("\n\n");
     }
+  } else if (req.p) {
+    // The reader's own chart remembered in the browser (lib/me.ts), carried like one person of a 궁합.
+    const me = decodePerson(req.p);
+    if (!me) return { error: "사주를 다시 입력해 주세요.", status: 400 };
+    subjectLine = product.modern ? `[대상] ${me.name} ('${me.name}님'이라 부를 것)` : `[대상] ${me.name} ('그대'라 부를 것)`;
+    briefs = chartBrief(me.name, me.pillars, profileOf(me));
   } else {
     const subject = await subjectFor(product, req.court, req.m);
     if (!subject || !subject.self) return { error: "본인의 사주로만 보실 수 있어요. 먼저 즉위하거나 입궐해 주세요.", status: 403 };

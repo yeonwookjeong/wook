@@ -2,7 +2,7 @@ import "server-only";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
-import { CHARACTER, SERVICE_NAME, TAGLINE, type Mood } from "./brand";
+import { CHARACTER, SERVICE_NAME, SITE_NAME, SITE_TAGLINE, TAGLINE, type Mood } from "./brand";
 import type { Seat } from "./court";
 import { decreeLine } from "./decree";
 import { kingLinkText } from "./kings";
@@ -380,6 +380,28 @@ export function landingImage() {
       <img src={throne} width={585} height={630} alt="" style={{ position: "absolute", right: 0, top: 0 }} />
       <div style={{ position: "absolute", right: 28, bottom: 28, display: "flex" }}>
         <Portrait mood="bow" size={120} />
+      </div>
+    </div>,
+    1200,
+    630,
+  );
+}
+
+// Share image for the main page: 정 훈도's present-day readings.
+export function storeImage() {
+  return render(
+    <div style={{ width: 1200, height: 630, display: "flex", background: "#f4ecdb", fontFamily: "Myeongjo", position: "relative" }}>
+      <div style={{ width: 820, height: 630, display: "flex", flexDirection: "column", justifyContent: "center", paddingLeft: 80 }}>
+        <div style={{ display: "flex", fontSize: 30, fontWeight: 800, color: "#b3261e", letterSpacing: 12 }}>觀象監</div>
+        <div style={{ marginTop: 18, fontSize: 88, fontWeight: 800, color: "#1f1a14", whiteSpace: "nowrap" }}>{SITE_NAME}</div>
+        <div style={{ marginTop: 8, fontSize: 38, fontWeight: 800, color: "#8a6d1f" }}>{SITE_TAGLINE}</div>
+        <div style={{ marginTop: 34, fontSize: 30, color: "#5c5247", display: "flex", flexDirection: "column", lineHeight: 1.5 }}>
+          <div>평생 사주 · 궁합 · 2026 운세 · 연애 · 재물 · 직업</div>
+          <div>같은 일주라도 다 다른, 나만의 여덟 글자</div>
+        </div>
+      </div>
+      <div style={{ position: "absolute", right: 60, bottom: 40, display: "flex" }}>
+        <Portrait mood="bow" size={300} />
       </div>
     </div>,
     1200,
