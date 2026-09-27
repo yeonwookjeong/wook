@@ -138,7 +138,7 @@ export const PRODUCTS: Product[] = [
 export const productById = (id: string) => PRODUCTS.find((p) => p.id === id);
 
 // 무료 공개 기간: every report opens in full while the writing is being polished and payments are not live.
-export const OPEN_ALL = false;
+export const OPEN_ALL = true;
 export const isOpen = (p: Product) => OPEN_ALL || Boolean(p.free);
 
 export const PRICE = 990;
@@ -146,7 +146,7 @@ export const PRICE = 990;
 // Special-day sales, in KST dates, both ends inclusive. Outside them every report is PRICE.
 // e.g. { name: "설날 행사", from: "2027-02-05", to: "2027-02-09", price: 590 }
 type Sale = { name: string; from: string; to: string; price: number };
-const SALES: Sale[] = [{ name: "추석 행사", from: "2026-09-20", to: "2026-10-09", price: 590 }];
+const SALES: Sale[] = [];
 
 const kstDate = (now: Date) => new Date(now.getTime() + 9 * 3600_000).toISOString().slice(0, 10);
 export function saleNow(now = new Date()): Sale | null {
