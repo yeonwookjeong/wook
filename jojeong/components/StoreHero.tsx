@@ -57,9 +57,9 @@ export default function StoreHero() {
           정 훈도의 사주
         </h1>
         <p className="mt-2 text-[15px] leading-relaxed text-[#f3ead0]/80">
-          조선 최고의 사주쟁이가
+          생년월일 하나로
           <br />
-          <b className="text-[#f7efd9]">지금의 나</b>를 봐 드려요
+          <b className="text-[#f7efd9]">나도 몰랐던 나</b>를 읽어 드려요
         </p>
 
         <div className="mt-8 flex w-full items-end gap-3 text-left">
@@ -69,7 +69,7 @@ export default function StoreHero() {
           </div>
           <p className="relative mb-2 flex-1 rounded-2xl rounded-bl-sm bg-[#f7efd9]/95 px-4 py-3 text-[13px] leading-relaxed text-ink">
             <span className="block text-[11px] font-extrabold text-seal">관상감 막내 · 정 훈도</span>
-            같은 일주라도 다 같은 사주가 아니옵니다. 그대만의 여덟 글자를 끝까지 풀어 올리겠사옵니다.
+            소신, 관상감에서 왕실의 사주를 보던 몸이옵니다. 그대의 여덟 글자, 한 글자도 허투루 읽지 않겠사옵니다.
           </p>
         </div>
       </div>
