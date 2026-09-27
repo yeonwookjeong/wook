@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SERVICE_NAME, TAGLINE } from "@/lib/brand";
+import AdSlot from "@/components/AdSlot";
 import BirthForm from "@/components/BirthForm";
 import Hero from "@/components/Hero";
 import Hundo from "@/components/Hundo";
@@ -140,6 +141,7 @@ export default async function KingHome() {
         ))}
       </ol>
 
+      <AdSlot />
     </>
   );
 }

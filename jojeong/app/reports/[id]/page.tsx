@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
+import AdSlot from "@/components/AdSlot";
 import AiReport from "@/components/AiReport";
 import ChartIntro from "@/components/ChartIntro";
 import GunghapForm from "@/components/GunghapForm";
@@ -214,6 +215,7 @@ async function OpenReport({
           query={query}
         />
         {other}
+        <AdSlot />
       </>
     );
 
