@@ -185,7 +185,7 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
               </Link>
             )}
             <Link
-              href="/"
+              href="/king"
               className="w-full rounded-2xl bg-seal py-4 text-center font-myeongjo text-lg font-extrabold text-hanji shadow-[0_6px_0_#7d1a14]"
             >
               나는 어떤 왕일까? 즉위하기
@@ -230,7 +230,7 @@ function MyChartTeaser({ pillars, name }: { pillars: Pillars; name: string }) {
         </p>
         <p className="mt-1.5 text-sm text-ink-soft">즉위하면 그대의 등급과 가상 실록 일곱 장이 열리옵니다</p>
         <Link
-          href="/#enthrone"
+          href="/king#enthrone"
           className="mt-4 block w-full rounded-2xl bg-seal py-3.5 font-myeongjo text-lg font-extrabold text-hanji shadow-[0_5px_0_#7d1a14]"
         >
           내 실록 열기 · 즉위하기

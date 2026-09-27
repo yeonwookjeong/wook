@@ -215,7 +215,7 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
                 내 관직 다시 보기
               </Link>
               <Link
-                href="/"
+                href="/king"
                 className="w-full rounded-2xl bg-seal py-4 text-center font-myeongjo text-lg font-extrabold text-hanji shadow-[0_6px_0_#7d1a14]"
               >
                 나는 어떤 왕일까? 즉위하기

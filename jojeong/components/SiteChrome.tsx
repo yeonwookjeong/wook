@@ -58,7 +58,7 @@ export function SiteFooter() {
           <span className="font-myeongjo text-base font-extrabold">관상감 정 훈도</span>
         </Link>
         <Link href="/" className="mt-4 rounded-full bg-seal px-5 py-2.5 font-myeongjo text-sm font-extrabold text-hanji">
-          왕이 될 사주 처음으로
+          정 훈도 사주 처음으로
         </Link>
       </div>
 
