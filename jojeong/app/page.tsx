@@ -124,7 +124,7 @@ export default async function Home() {
       </section>
 
       <section className="mt-9">
-        <h2 className="text-center font-myeongjo text-lg font-extrabold">뻔한 말 대신, 이런 말을 해요</h2>
+        <h2 className="text-center font-myeongjo text-lg font-extrabold">보고서엔 이런 문장이 들어가요</h2>
         <p className="mt-1 text-center text-[13px] text-ink-soft">&ldquo;따뜻하고 배려심이 깊으시네요&rdquo; 같은 말은 하지 않아요</p>
         <ul className="mt-4 flex flex-col gap-2.5">
           {SAYINGS.map((x) => (
