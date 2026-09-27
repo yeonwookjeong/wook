@@ -9,6 +9,30 @@ const DIGITS = "一二三四五六七八九";
 const hanjaNum = (n: number) => (n < 10 ? DIGITS[n - 1] : `十${n > 10 ? DIGITS[n - 11] : ""}`);
 const MARK_ERROR = "[[error]]";
 
+// Present-day reports speak plain 해요체; the Joseon ones keep 정 훈도's court speech.
+const WORDS = {
+  modern: {
+    failed: "보고서를 불러오지 못했어요.",
+    cut: "보고서를 불러오다 연결이 끊겼어요. 새로고침해 주세요.",
+    stopped: "보고서 작성이 멈췄어요. 새로고침해 주세요.",
+    stoppedMidway: "작성이 중간에 멈췄어요. 새로고침하시면 다시 써 드려요.",
+    reading: "정 훈도가 사주를 읽고 있어요…",
+    writing: "정 훈도가 보고서를 쓰고 있어요…",
+    wait: "처음 한 번만 1~2분 걸리고, 다음부터는 바로 열려요.",
+    sign: "— 정 훈도 드림",
+  },
+  joseon: {
+    failed: "보고서를 불러오지 못했사옵니다.",
+    cut: "보고서를 불러오는 중 길이 끊겼사옵니다. 새로고침해 주시옵소서.",
+    stopped: "붓이 멈췄사옵니다. 새로고침해 주시옵소서.",
+    stoppedMidway: "붓이 중간에 멈췄사옵니다. 새로고침하시면 다시 적어 올리옵니다.",
+    reading: "정 훈도가 사주를 펼쳐 보는 중이옵니다…",
+    writing: "붓을 들어 적는 중이옵니다…",
+    wait: "처음 한 번만 1~2분 걸리고, 다음부터는 바로 열리옵니다.",
+    sign: "— 관상감 명과학 훈도 정가, 삼가 적음",
+  },
+};
+
 // "## [장 이름] 헤드라인" + paragraphs → sections. Works on partial text while it streams in.
 function parse(text: string): { sections: Section[]; failed: boolean } {
   const failed = text.includes(MARK_ERROR);
@@ -31,7 +55,18 @@ function parse(text: string): { sections: Section[]; failed: boolean } {
 }
 
 // A report written by 정 훈도 (lib/reportWriter.ts): fetched once, rendered chapter by chapter as it arrives.
-export default function AiReport({ request, chapters, fallback }: { request: Record<string, string>; chapters: string[]; fallback?: React.ReactNode }) {
+export default function AiReport({
+  request,
+  chapters,
+  fallback,
+  modern = false,
+}: {
+  request: Record<string, string>;
+  chapters: string[];
+  fallback?: React.ReactNode;
+  modern?: boolean;
+}) {
+  const w = WORDS[modern ? "modern" : "joseon"];
   const [text, setText] = useState("");
   const [state, setState] = useState<"loading" | "writing" | "done" | "error">("loading");
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +81,7 @@ export default function AiReport({ request, chapters, fallback }: { request: Rec
         const res = await fetch("/api/report", { method: "POST", headers: { "content-type": "application/json" }, body });
         if (!res.ok || !res.body) {
           const data = (await res.json().catch(() => ({}))) as { error?: string };
-          setError(data.error ?? "보고서를 불러오지 못했사옵니다.");
+          setError(data.error ?? w.failed);
           setState("error");
           return;
         }
@@ -62,10 +97,12 @@ export default function AiReport({ request, chapters, fallback }: { request: Rec
         }
         setState(all.includes(MARK_ERROR) ? "error" : "done");
       } catch {
-        setError("보고서를 불러오는 중 길이 끊겼사옵니다. 새로고침해 주시옵소서.");
+        setError(w.cut);
         setState("error");
       }
     })();
+    // w only changes with `modern`, which never changes for one report.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [body]);
 
   const { sections, failed } = parse(text);
@@ -73,7 +110,7 @@ export default function AiReport({ request, chapters, fallback }: { request: Rec
   if (state === "error" && !sections.length)
     return (
       <div className="mt-4">
-        <p className="rounded-xl bg-seal/10 px-4 py-3 text-center text-sm text-seal">{error ?? "붓이 멈췄사옵니다. 새로고침해 주시옵소서."}</p>
+        <p className="rounded-xl bg-seal/10 px-4 py-3 text-center text-sm text-seal">{error ?? w.stopped}</p>
         {fallback}
       </div>
     );
@@ -108,15 +145,15 @@ export default function AiReport({ request, chapters, fallback }: { request: Rec
         <div className="doc-paper flex flex-col items-center gap-2 px-5 py-6 text-center">
           <span className="size-6 animate-spin rounded-full border-2 border-seal/30 border-t-seal" aria-hidden="true" />
           <p className="font-myeongjo text-sm font-extrabold text-seal">
-            {state === "loading" ? "정 훈도가 사주를 펼쳐 보는 중이옵니다…" : `붓을 들어 적는 중이옵니다… (${Math.min(sections.length, chapters.length)}/${chapters.length}장)`}
+            {state === "loading" ? w.reading : `${w.writing} (${Math.min(sections.length, chapters.length)}/${chapters.length}장)`}
           </p>
-          <p className="text-xs text-ink-soft">처음 한 번만 1~2분 걸리고, 다음부터는 바로 열리옵니다.</p>
+          <p className="text-xs text-ink-soft">{w.wait}</p>
         </div>
       )}
       {(failed || state === "error") && sections.length > 0 && (
-        <p className="rounded-xl bg-seal/10 px-4 py-3 text-center text-sm text-seal">붓이 중간에 멈췄사옵니다. 새로고침하시면 이어서 다시 적어 올리옵니다.</p>
+        <p className="rounded-xl bg-seal/10 px-4 py-3 text-center text-sm text-seal">{w.stoppedMidway}</p>
       )}
-      {state === "done" && <p className="mt-2 text-right font-myeongjo text-sm text-ink-soft">— 관상감 명과학 훈도 정가, 삼가 적음</p>}
+      {state === "done" && <p className="mt-2 text-right font-myeongjo text-sm text-ink-soft">{w.sign}</p>}
     </div>
   );
 }

@@ -45,7 +45,7 @@ export default function YearReport({
   // The engine's own sections: shown as they are, or as the fallback when the written report is unavailable.
   const ruleBody = (
     <>
-        <p className="mt-6 text-center text-xs text-ink-soft">각 제목을 누르면 풀이가 펼쳐지옵니다</p>
+        <p className="mt-6 text-center text-xs text-ink-soft">각 제목을 누르면 풀이가 펼쳐져요</p>
         <div className="mt-2 flex flex-col gap-2">
           {sections.map((s, i) => (
             <details key={s.id} open={i < 2} className="group doc-paper px-5 py-4">
@@ -129,7 +129,7 @@ export default function YearReport({
               <span className="min-w-0 flex-1">
                 <span className="block text-[11px] font-extrabold text-seal">정 훈도의 개운법</span>
                 <span className="block font-myeongjo text-[17px] leading-snug font-extrabold">
-                  <Keep>{`${lucky.color}을 곁에 두고 ${lucky.dir}으로 향하시옵소서`}</Keep>
+                  <Keep>{`${lucky.color}을 곁에 두고 ${lucky.dir}으로 향하세요`}</Keep>
                 </span>
               </span>
               <span className="mt-1 shrink-0 text-ink-soft transition group-open:rotate-180" aria-hidden="true">
@@ -137,8 +137,8 @@ export default function YearReport({
               </span>
             </summary>
             <p className="mt-3 border-t border-seal/15 pt-3 text-[15px] leading-relaxed">
-              그대의 용신은 {ELEMENT_KO[lucky.element]}({ELEMENT_HANJA[lucky.element]})이옵니다. 이 기운을 가까이할수록 올해의 흐름이 그대 쪽으로 기울고,{" "}
-              {lucky.avoid}처럼 기신의 색은 큰일 앞에서 멀리하시옵소서.
+              용신은 {ELEMENT_KO[lucky.element]}({ELEMENT_HANJA[lucky.element]}) 기운이에요. 이 기운을 가까이할수록 올해의 흐름이 내 쪽으로 기울고,{" "}
+              {lucky.avoid}처럼 기신의 색은 큰일 앞에서 멀리하세요.
             </p>
             <dl className="mt-3 grid grid-cols-2 gap-1.5 text-sm">
               {[
@@ -168,7 +168,7 @@ export default function YearReport({
               </li>
             ))}
           </ol>
-          <p className="mt-3 text-right font-myeongjo text-sm text-ink-soft">— 관상감 명과학 훈도 정가, 삼가 적음</p>
+          <p className="mt-3 text-right font-myeongjo text-sm text-ink-soft">— 정 훈도 드림</p>
         </section>
     </>
   );
@@ -229,7 +229,7 @@ export default function YearReport({
             </summary>
             <SajuChart {...reading.chart} kingdom={false} />
           </details>
-          <AiReport request={ai.request} chapters={ai.chapters} fallback={ruleBody} />
+          <AiReport request={ai.request} chapters={ai.chapters} fallback={ruleBody} modern />
         </>
       ) : (
         ruleBody
@@ -238,10 +238,10 @@ export default function YearReport({
       {deepen && (missing.daeun || missing.palaces) && (
         <section className="doc-paper mt-6 px-6 pt-7 pb-6">
           <p className="text-center font-myeongjo text-xs font-extrabold tracking-[0.4em] text-seal">更 深</p>
-          <h2 className="mt-1 text-center font-myeongjo text-lg font-extrabold">더 깊이 보아 드릴 수 있사옵니다</h2>
+          <h2 className="mt-1 text-center font-myeongjo text-lg font-extrabold">더 깊이 봐 드릴 수 있어요</h2>
           <p className="mt-2 mb-4 text-center text-sm leading-relaxed text-ink-soft">
             {missing.daeun && "성별을 알려 주시면 10년 대운과 올해의 자리를, "}
-            {missing.palaces && "태어난 시간을 알려 주시면 돈·일·연애·건강 영역별 운을 "}더 정밀하게 풀어 드리옵니다.
+            {missing.palaces && "태어난 시간을 알려 주시면 돈·일·연애·건강 영역별 운을 "}더 정밀하게 풀어 드려요.
           </p>
           <DeepenForm courtId={deepen.courtId} who={deepen.who} needs={missing} />
         </section>
@@ -260,7 +260,7 @@ export default function YearReport({
             </Link>
           ))}
         </div>
-        <p className="mt-4 text-[11px] text-ink-soft/80">사주로 풀어 올린 한 해의 흐름이옵니다. 큰 결정은 그대의 판단으로 내리시옵소서.</p>
+        <p className="mt-4 text-[11px] text-ink-soft/80">사주로 풀어 본 한 해의 흐름이에요. 큰 결정은 본인의 판단으로 내리세요.</p>
       </section>
     </>
   );

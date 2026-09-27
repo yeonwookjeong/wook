@@ -31,7 +31,11 @@ function Header({ product, subjectName }: { product: Product; subjectName?: stri
       <p className="mt-2 text-center text-sm leading-snug text-ink-soft">
         <Keep clauses>{product.tagline}</Keep>
       </p>
-      {subjectName && <p className="mt-3 text-center text-xs font-bold text-gold">{subjectName}의 사주로 지어 올리옵니다</p>}
+      {subjectName && (
+        <p className="mt-3 text-center text-xs font-bold text-gold">
+          {product.modern ? `${subjectName}의 사주로 풀었어요` : `${subjectName}의 사주로 지어 올리옵니다`}
+        </p>
+      )}
     </RoyalDoc>
   );
 }
@@ -148,7 +152,7 @@ async function OpenReport({ product, courtId, ministerId, targetId }: { product:
       <>
         <Header product={product} />
         <Notice href="/#enthrone" cta="새로 즉위하기 →">
-          예전 방식으로 올리신 사주라 여덟 글자가 다 갖춰지지 않았사옵니다. 새로 즉위하시면 온전히 풀어 드리옵니다.
+          예전 방식으로 올리신 사주라 여덟 글자가 다 갖춰지지 않았어요. 새로 즉위하시면 온전히 풀어 드려요.
         </Notice>
       </>
     );
@@ -157,17 +161,17 @@ async function OpenReport({ product, courtId, ministerId, targetId }: { product:
     return (
       <YearReport
         reading={reading}
-        heading={subject.king ? `${subject.name} 전하의 병오년 운세` : `${subject.name} 님의 병오년 운세`}
+        heading={`${subject.name}님의 2026년 운세`}
         deepen={subject.self ? { courtId: subject.courtId, who: subject.who } : null}
         query={query}
         ai={subject.self ? { request, chapters: chaptersOf(product.id) } : undefined}
       />
     );
   if (!subject.self)
-    return (<><Header product={product} /><Notice>본인의 사주로만 여실 수 있는 보고서이옵니다.</Notice></>);
+    return (<><Header product={product} /><Notice>본인의 사주로만 열 수 있는 보고서예요.</Notice></>);
   return (
     <>
-      <Header product={product} subjectName={subject.king ? `${subject.name} 전하` : `${subject.name} 님`} />
+      <Header product={product} subjectName={`${subject.name}님`} />
       <details className="group doc-paper mt-4 px-5 py-4">
         <summary className="flex cursor-pointer list-none items-center justify-between [&::-webkit-details-marker]:hidden">
           <span className="font-myeongjo font-extrabold">사주 원국 · 여덟 글자 보기</span>
@@ -177,12 +181,12 @@ async function OpenReport({ product, courtId, ministerId, targetId }: { product:
         </summary>
         <SajuChart {...reading.chart} kingdom={false} />
       </details>
-      <AiReport request={request} chapters={chaptersOf(product.id)} />
+      <AiReport request={request} chapters={chaptersOf(product.id)} modern />
       {subject.self && (reading.missing.daeun || reading.missing.palaces) && (
         <section className="doc-paper mt-6 px-6 pt-7 pb-6">
-          <h2 className="text-center font-myeongjo text-lg font-extrabold">더 깊이 보아 드릴 수 있사옵니다</h2>
+          <h2 className="text-center font-myeongjo text-lg font-extrabold">더 깊이 봐 드릴 수 있어요</h2>
           <p className="mt-2 mb-4 text-center text-sm leading-relaxed text-ink-soft">
-            성별과 태어난 시각을 알려 주시면 10년 대운과 영역별 흐름까지 넣어 다시 적어 올리옵니다.
+            성별과 태어난 시각을 알려 주시면 10년 대운과 영역별 흐름까지 넣어 다시 써 드려요.
           </p>
           <DeepenForm courtId={subject.courtId} who={subject.who} />
         </section>
@@ -207,7 +211,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
           </Link>
         </nav>
         {OPEN_ALL && !product.free && (
-          <p className="mt-3 rounded-full bg-gold/15 px-4 py-2 text-center text-xs font-bold text-gold">무료 공개 기간 · 지금은 모든 보고서를 그냥 보실 수 있사옵니다</p>
+          <p className="mt-3 rounded-full bg-gold/15 px-4 py-2 text-center text-xs font-bold text-gold">{product.modern ? "무료 공개 기간 · 지금은 모든 보고서를 무료로 보실 수 있어요" : "무료 공개 기간 · 지금은 모든 보고서를 그냥 보실 수 있사옵니다"}</p>
         )}
         <OpenReport product={product} courtId={courtId} ministerId={ministerId} targetId={typeof search.t === "string" ? search.t : undefined} />
       </>
@@ -231,7 +235,11 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
         <p className="mt-2 text-center text-sm leading-snug text-ink-soft">
           <Keep clauses>{product.tagline}</Keep>
         </p>
-        {subject && <p className="mt-3 text-center text-xs font-bold text-gold">{subject.name} 님의 사주로 지어 올리옵니다</p>}
+        {subject && (
+          <p className="mt-3 text-center text-xs font-bold text-gold">
+            {product.modern ? `${subject.name}님의 사주로 풀어 드려요` : `${subject.name} 님의 사주로 지어 올리옵니다`}
+          </p>
+        )}
 
         <ol className="mt-5 flex flex-col divide-y divide-seal/15 border-y-[3px] border-double border-seal/40 px-1">
           {product.toc.map((item, i) => (
@@ -253,7 +261,9 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
           <p className="mt-4 bg-seal/5 px-4 py-3 text-center text-sm leading-relaxed">
             {product.for === "minister"
               ? "전하의 조정에 입궐한 신하만 볼 수 있는 보고서이옵니다. 받으신 교지에서 이 보고서를 여시옵소서."
-              : "먼저 즉위하시면 전하의 사주로 맛보기를 지어 올리옵니다."}
+              : product.modern
+                ? "먼저 즉위하시면 내 사주로 맛보기를 보여 드려요."
+                : "먼저 즉위하시면 전하의 사주로 맛보기를 지어 올리옵니다."}
             {product.for !== "minister" && (
               <Link href="/#enthrone" className="mt-2 block font-myeongjo font-extrabold text-seal">
                 즉위하러 가기 →
@@ -270,7 +280,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
             ))}
           </div>
           <span className="absolute inset-0 flex items-center justify-center font-myeongjo text-sm font-extrabold text-seal">
-            🔒 나머지 {product.toc.length - 1}장은 복채를 주시면 열리옵니다
+            🔒 나머지 {product.toc.length - 1}장은 {product.modern ? "결제하시면 열려요" : "복채를 주시면 열리옵니다"}
           </span>
         </div>
 

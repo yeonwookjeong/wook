@@ -107,14 +107,14 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
   const why: string[] = [];
   why.push(
     FIRE === r.yong
-      ? `병오년의 불(火)이 그대의 용신이옵니다`
+      ? `병오년의 불(火)이 용신이에요`
       : FIRE === r.hee
-        ? `병오년의 불(火)이 용신을 돕는 희신이옵니다`
+        ? `병오년의 불(火)이 용신을 돕는 희신이에요`
         : FIRE === r.gi
-          ? `병오년의 불(火)이 용신 ${EL(r.yong)}을 누르는 기신이옵니다`
+          ? `병오년의 불(火)이 용신 ${EL(r.yong)}을 누르는 기신이에요`
           : FIRE === (r.gi + 4) % 5
-            ? `병오년의 불(火)이 기신을 부추기는 기운이옵니다`
-            : `병오년의 불(火)은 그대의 용신과 크게 얽히지 않사옵니다`,
+            ? `병오년의 불(火)이 기신을 부추기는 기운이에요`
+            : `병오년의 불(火)은 용신과 크게 얽히지 않아요`,
   );
 
   const meetLines: string[] = [];
@@ -179,7 +179,7 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
       ? `${johu}의 ${img.thing}, ${JOHU_NEED[r.johu]} 사주`
       : tipped
         ? `${excess}, ${EL(r.yong)} 기운을 만나야 빛이 나는 사주`
-        : `${excess}처럼 제 모양을 지킨 사주, ${EL(r.yong)} 기운이 들면 더 빛나옵니다`;
+        : `${excess}처럼 제 모양을 지킨 사주, ${EL(r.yong)} 기운이 들면 더 빛나요`;
   const palaces = profile?.palaces;
   const stars = palaces ? selfStars(palaces) : [];
   const temper = stars.map((s) => STAR_TEMPER[s]).filter(Boolean);
@@ -196,22 +196,22 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
     label: "타고난 그릇",
     headline: coreHeadline,
     paras: [
-      `그대는 ${img.thing}의 기운(${STEMS[p.dayStem]}${ELEMENT_HANJA[dayEl]})을 타고났사옵니다. ${
+      `${img.thing}의 기운(${STEMS[p.dayStem]}${ELEMENT_HANJA[dayEl]})을 타고났어요. ${
         tipped
-          ? `그런데 사주에 ${GOD_GLOSS[r.godList.find((g) => GROUP_OF[g] === heavy) ?? "비견"].replace(/\(.*\)/, "")}의 기운(${heavy})이 유난히 두터워, ${josa(excess, "과/와")} 같은 형국이옵니다.`
-          : "사주의 기운이 어느 한쪽으로 크게 쏠리지 않아 제 모양을 잘 지키고 있사옵니다."
+          ? `그런데 사주에 ${GOD_GLOSS[r.godList.find((g) => GROUP_OF[g] === heavy) ?? "비견"].replace(/\(.*\)/, "")}의 기운(${heavy})이 유난히 두터워, ${josa(excess, "과/와")} 같은 형국이에요.`
+          : "사주의 기운이 어느 한쪽으로 크게 쏠리지 않아 제 모양을 잘 지키고 있어요."
       }`,
-      `${img.cureText}. ${cureHave.length ? `다행히 그대의 사주에는 ${cureHave.map((c) => STEMS[c]).join("·")}의 기운이 이미 있어 제 빛을 낼 재료를 갖추었사옵니다.` : "그대의 사주에는 이 재료가 드러나 있지 않아, 운에서 들어올 때 비로소 크게 빛나옵니다."}`,
+      `${img.cureText}. ${cureHave.length ? `다행히 사주에 ${cureHave.map((c) => STEMS[c]).join("·")}의 기운이 이미 있어 제 빛을 낼 재료를 갖췄어요.` : "사주에 이 재료가 드러나 있지 않아, 운에서 들어올 때 비로소 크게 빛나요."}`,
       r.johu !== null
-        ? `${r.season}에 태어나 ${r.johu === 4 ? "사주가 메마르고 뜨거우니" : "사주가 차고 습하니"}, 무엇보다 ${EL(r.johu)} 기운이 들어와야 숨통이 트이옵니다. 그래서 그대의 용신은 ${EL(r.yong)}이옵니다.`
-        : `${r.balanced ? "기운이 중화에 가까운 " : ""}${r.strength}한 사주라, ${EL(r.yong)} 기운이 들어올 때 일이 풀리고, ${EL(r.gi)} 기운이 몰릴 때 막히옵니다.${
+        ? `${r.season}에 태어나 ${r.johu === 4 ? "사주가 메마르고 뜨거우니" : "사주가 차고 습하니"}, 무엇보다 ${EL(r.johu)} 기운이 들어와야 숨통이 트여요. 그래서 용신은 ${EL(r.yong)} 기운이에요.`
+        : `${r.balanced ? "기운이 중화에 가까운 " : ""}${r.strength}한 사주라, ${EL(r.yong)} 기운이 들어올 때 일이 풀리고, ${EL(r.gi)} 기운이 몰릴 때 막혀요.${
             // The classical image (물상) can call for a different element than 억부; say so rather than hide it.
             cureEl !== r.yong && cureEl !== r.gi
-              ? ` 다만 ${josa(img.thing, "이/가")} 제 빛을 내려면 ${EL(cureEl)} 기운도 함께 들어와야 하니, 두 기운이 겹치는 때가 그대의 가장 좋은 때이옵니다.`
+              ? ` 다만 ${josa(img.thing, "이/가")} 제 빛을 내려면 ${EL(cureEl)} 기운도 함께 들어와야 하니, 두 기운이 겹치는 때가 가장 좋은 때예요.`
               : ""
           }`,
-      `${GYEOK_NAME[r.gyeok]}의 사주이옵니다. ${GYEOK_TEXT[r.gyeok]}`,
-      `일주 ${STEMS[p.dayStem]}${BRANCHES[p.dayBranch]}는 ${stageOf(p.dayStem, p.dayBranch)}의 자리에 앉아 있사옵니다. ${STAGE_TEXT[stageOf(p.dayStem, p.dayBranch)]}`,
+      `${GYEOK_NAME[r.gyeok]}의 사주예요. ${GYEOK_TEXT[r.gyeok]}`,
+      `일주 ${STEMS[p.dayStem]}${BRANCHES[p.dayBranch]}는 ${stageOf(p.dayStem, p.dayBranch)}의 자리에 앉아 있어요. ${STAGE_TEXT[stageOf(p.dayStem, p.dayBranch)]}`,
       ...(temper.length ? [`타고난 기질을 보면, ${temper[0]}${selfNatal ? ` ${NATAL_SELF[selfNatal]}` : ""}`] : []),
       ...natalSals.slice(0, 2).map((s) => NATAL_SAL[s]),
     ],
@@ -235,10 +235,10 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
       strong ? sy.strong : sy.weak,
       `${why[0]}. ${
         verdict === "대길" || verdict === "길"
-          ? "올해의 흐름이 그대 편이니, 미뤄 둔 일을 올해 시작하시옵소서."
+          ? "올해의 흐름이 내 편이니, 미뤄 둔 일을 올해 시작하세요."
           : verdict === "평"
-            ? "하늘이 크게 밀어주지도 막지도 않는 해이니, 그대의 준비가 곧 결과가 되옵니다."
-            : "올해는 넓히기보다 지키는 해이옵니다. 무리한 확장보다 내실을 다지면, 다음 해에 크게 돌려받사옵니다."
+            ? "하늘이 크게 밀어주지도 막지도 않는 해이니, 준비가 곧 결과가 돼요."
+            : "올해는 넓히기보다 지키는 해예요. 무리한 확장보다 내실을 다지면, 다음 해에 크게 돌려받아요."
       }`,
       ...meetLines,
       ...yearSals.map((s) => SAL_YEAR[s]),
@@ -263,15 +263,15 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
       label: "10년 대운",
       headline: turning
         ? now.to === 2026
-          ? "10년 대운이 바뀌는 문턱의 해, 올해의 선택이 다음 10년을 정하옵니다"
-          : "새 10년 대운이 막 열린 해, 판이 바뀌는 첫걸음이옵니다"
-        : `${now.from}년부터 이어진 ${g}의 10년, 그 한가운데를 지나고 있사옵니다`,
+          ? "10년 대운이 바뀌는 문턱의 해, 올해의 선택이 다음 10년을 정해요"
+          : "새 10년 대운이 막 열린 해, 판이 바뀌는 첫걸음이에요"
+        : `${now.from}년부터 이어진 ${g}의 10년, 그 한가운데를 지나고 있어요`,
       paras: [
-        `지금의 대운은 ${STEMS[now.stem]}${BRANCHES[now.branch]}(${now.from}~${now.to}년)이옵니다. ${DAEUN_GROUP[g]}`,
+        `지금의 대운은 ${STEMS[now.stem]}${BRANCHES[now.branch]}(${now.from}~${now.to}년)이에요. ${DAEUN_GROUP[g]}`,
         fit >= 2 ? DAEUN_FIT.good : fit <= -2 ? DAEUN_FIT.bad : DAEUN_FIT.mid,
         ...(turning && next
           ? [
-              `${next.from}년부터는 ${STEMS[next.stem]}${BRANCHES[next.branch]} 대운으로 넘어가옵니다. ${DAEUN_GROUP[GROUP_OF[tenGod(p.dayStem, next.stem)]].replace("지금 그대는", "앞으로 그대는").replace("지나고 있사옵니다", "맞게 되옵니다")} 대운이 바뀌는 해 앞뒤로는 이사, 이직, 관계처럼 삶의 판이 흔들리기 쉬우니, 버릴 것과 가져갈 것을 올해 가려 두시옵소서.`,
+              `${next.from}년부터는 ${STEMS[next.stem]}${BRANCHES[next.branch]} 대운으로 넘어가요. ${DAEUN_GROUP[GROUP_OF[tenGod(p.dayStem, next.stem)]].replace("지금은", "앞으로는").replace("지나고 있어요", "맞게 돼요")} 대운이 바뀌는 해 앞뒤로는 이사, 이직, 관계처럼 삶의 판이 흔들리기 쉬우니, 버릴 것과 가져갈 것을 올해 가려 두세요.`,
             ]
           : []),
       ],
@@ -289,7 +289,7 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
   const hits: Record<string, string> = Object.fromEntries(Object.entries(kinds).map(([at, k]) => [at, palaceLine(at, k)]));
   const hitsFor = (...names: string[]) => names.flatMap((n) => (hits[n] ? [hits[n]] : []));
 
-  const wealthNatal = r.gods.재성 === 0 ? "그대의 원국에는 재성이 드러나 있지 않사옵니다. 돈을 좇기보다 실력과 이름을 쌓을 때 재물이 뒤따라오는 팔자이옵니다." : r.gods.재성 >= 3 ? "원국에 재성이 두터워 돈 냄새를 잘 맡는 사람이옵니다. 문제는 버는 것이 아니라 지키는 것이옵니다." : "";
+  const wealthNatal = r.gods.재성 === 0 ? "원국에 재성이 드러나 있지 않아요. 돈을 좇기보다 실력과 이름을 쌓을 때 재물이 뒤따라오는 팔자예요." : r.gods.재성 >= 3 ? "원국에 재성이 두터워 돈 냄새를 잘 맡는 사람이에요. 문제는 버는 것이 아니라 지키는 것이에요." : "";
   sections.push({
     id: "money",
     hanja: "財",
@@ -311,14 +311,14 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
   const spouseGroup: GodGroup | null = profile?.gender === "m" ? "재성" : profile?.gender === "f" ? "관성" : null;
   const loveExtra = [
     ...(dayMeet === "육합" || dayMeet === "삼합" || dayMeet === "방합"
-      ? ["올해의 기운이 그대의 배우자 자리와 손을 잡으니, 짝을 만나거나 관계가 한층 깊어지기 좋은 해이옵니다."]
+      ? ["올해의 기운이 배우자 자리와 손을 잡으니, 짝을 만나거나 관계가 한층 깊어지기 좋은 해예요."]
       : dayMeet === "충"
-        ? ["올해의 기운이 그대의 배우자 자리를 흔드니, 관계가 크게 바뀌는 해이옵니다. 오래 묵은 문제는 올해 터지기 쉬우니 미리 풀어 두시옵소서."]
+        ? ["올해의 기운이 배우자 자리를 흔드니, 관계가 크게 바뀌는 해예요. 오래 묵은 문제는 올해 터지기 쉬우니 미리 풀어 두세요."]
         : []),
     ...(spouseGroup && (yearGroup === spouseGroup || GROUP_OF[yearGods[1]] === spouseGroup)
-      ? [`그대에게 인연의 별(${spouseGroup})이 올해 직접 들어오니, 새 인연이든 결혼이든 짝의 일이 움직이는 해이옵니다.`]
+      ? [`나에게 인연의 별(${spouseGroup})이 올해 직접 들어오니, 새 인연이든 결혼이든 짝의 일이 움직이는 해예요.`]
       : []),
-    ...(yearSals.includes("도화") ? ["게다가 올해는 도화까지 들어 인기가 오르니, 좋은 사람을 고르는 눈만 있으면 되옵니다."] : []),
+    ...(yearSals.includes("도화") ? ["게다가 올해는 도화까지 들어 인기가 오르니, 좋은 사람을 고르는 눈만 있으면 돼요."] : []),
   ];
   sections.push({
     id: "love",
@@ -346,15 +346,15 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
     headline: sy.health.h,
     paras: [
       sy.health.t,
-      `사주 전체로 보면 ${EL(weakest)} 기운이 가장 여리니, ${ELEMENT_HEALTH[weakest]}이 평생의 약한 고리이옵니다.${hot ? " 원국에 이미 불이 많은데 불의 해가 겹치니, 올해는 특히 열과 염증을 다스리셔야 하옵니다." : ""}`,
+      `사주 전체로 보면 ${EL(weakest)} 기운이 가장 여리니, ${ELEMENT_HEALTH[weakest]}이 평생의 약한 고리예요.${hot ? " 원국에 이미 불이 많은데 불의 해가 겹치니, 올해는 특히 열과 염증을 다스리셔야 해요." : ""}`,
       ...hitsFor("질액", "복덕"),
     ],
     basis: [`가장 약한 오행 ${EL(weakest)} · 원국 화(火) 비율 ${pct(r.weights, FIRE)}%`],
   });
 
   const moveLines = [
-    ...(meetTags.has("충") ? ["올해는 원국과 부딪치는 기운이 있어, 한자리에 머물기보다 움직이며 길을 찾게 되옵니다."] : []),
-    ...(natalSals.includes("역마") ? ["사주에 역마가 있으니, 올해의 변동을 두려워 말고 먼 곳, 새 무대로 나서 보시옵소서."] : []),
+    ...(meetTags.has("충") ? ["올해는 원국과 부딪치는 기운이 있어, 한자리에 머물기보다 움직이며 길을 찾게 돼요."] : []),
+    ...(natalSals.includes("역마") ? ["사주에 역마가 있으니, 올해의 변동을 두려워 말고 먼 곳, 새 무대로 나서 보세요."] : []),
     ...hitsFor("천이"),
   ];
   if (moveLines.length)
@@ -392,9 +392,9 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
   // The one warning worth repeating: where the year's 忌 lands, if the palace chart is known.
   const warn = Object.entries(kinds).find(([, k]) => k.includes("기"));
   const advice = [
-    `승부는 ${best.map(monthName).join("과 ")}에 거시옵소서. 기운이 가장 그대 편인 달이옵니다.`,
-    `${worst.map(monthName).join("과 ")}에는 큰 결정을 미루고 숨을 고르시옵소서.`,
-    warn ? hits[warn[0]].replace(/^다만 /, "") : `${lucky.color}을 가까이하고 ${lucky.act}에 힘쓰시면 올해의 기운이 그대 쪽으로 기우옵니다.`,
+    `승부는 ${best.map(monthName).join("과 ")}에 거세요. 기운이 가장 내 편인 달이에요.`,
+    `${worst.map(monthName).join("과 ")}에는 큰 결정을 미루고 숨을 고르세요.`,
+    warn ? hits[warn[0]].replace(/^다만 /, "") : `${lucky.color}을 가까이하고 ${lucky.act}에 힘쓰시면 올해의 기운이 내 쪽으로 기울어요.`,
   ];
 
   const keywords = [
