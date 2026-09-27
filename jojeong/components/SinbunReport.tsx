@@ -51,6 +51,15 @@ export default function SinbunReport({ pillars, heading, query }: { pillars: Pil
         </Stat>
       </div>
 
+      {s.basis.length > 0 && (
+        <div className="mt-3 bg-ink/5 px-3 py-2 text-[11px] leading-relaxed text-ink-soft">
+          <p className="font-bold">정 훈도가 이렇게 본 까닭</p>
+          {s.basis.map((b) => (
+            <p key={b}>· {b}</p>
+          ))}
+        </div>
+      )}
+
       <div className="mt-6 flex flex-col border-t-[3px] border-double border-seal/40 pt-2">
         {s.chapters.map((c, i) => (
           <article key={c.title} className="border-t border-ink/10 py-4 first:border-t-0">

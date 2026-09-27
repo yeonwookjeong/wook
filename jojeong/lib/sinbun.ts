@@ -1,11 +1,18 @@
-import { ELEMENT_HANJA, ELEMENT_KO, readChart, stemEl, type GodGroup, type Strength } from "./myeongri";
-import type { Pillars } from "./saju";
+import { meetings, salsAt } from "./deep";
+import { ELEMENT_HANJA, ELEMENT_KO, HIDDEN, readChart, stemEl, type GodGroup, type Strength } from "./myeongri";
+import { josa } from "./josa";
+import { hourStemOf, type Pillars } from "./saju";
 
-// 조선 신분 감정 (free): what someone would have been in Joseon, read from the chart's heaviest ten-god
-// group (hidden stems included) and the day master's yin or yang. Ends with a bridge to the present-day paid reports.
+// 조선 신분 감정 (free): what someone would have been in Joseon. The calling comes from the chart's heaviest
+// ten-god group (hidden stems included); the rank from how well the chart is built (its 그릇): balance, whether
+// the element it needs is there, whether its frame stands, 귀인 and clashes. 6 callings × 4 ranks = 24 lives.
+// Ends with a bridge to the present-day paid reports.
+
+export type Rank = "양반" | "중인" | "상민" | "천민";
+type Calling = GodGroup | "고른";
 
 export type Sinbun = {
-  rank: "양반" | "중인" | "상민" | "천민";
+  rank: Rank;
   job: string;
   line: string;
   origin: string; // 태어난 집
@@ -17,8 +24,8 @@ export type Sinbun = {
   now: string;
 };
 
-const JOBS: Record<string, Sinbun> = {
-  "인성-강": {
+const JOBS: Record<`${Calling}-${Rank}`, Sinbun> = {
+  "인성-양반": {
     rank: "양반",
     job: "홍문관 교리",
     line: "임금 곁에서 경연을 준비하던 학자 관리",
@@ -34,11 +41,11 @@ const JOBS: Record<string, Sinbun> = {
     ending: "말년에는 벼슬을 내려놓고 고향에 서원을 열었다. 제자들이 엮은 문집은 백 년 뒤까지 읽혔다.",
     now: "지금으로 치면 연구·기획·전문 강의 쪽 기질이다.",
   },
-  "인성-약": {
-    rank: "양반",
+  "인성-상민": {
+    rank: "상민",
     job: "시골 서당 훈장",
-    line: "벼슬은 못 했지만 동네에서 글을 제일 잘 쓰던 몰락 양반",
-    origin: "할아버지 대에 벼슬이 끊긴 시골 양반가에서 태어났다. 집에 남은 것은 책 몇 수레와 족보뿐이었으나, 글 읽는 소리만큼은 끊긴 적이 없었다.",
+    line: "벼슬은 없어도 동네에서 글을 제일 잘 쓰던 사람",
+    origin: "글 읽는 소리를 좋아하던 시골 농사꾼 집에서 태어났다. 집에 책이라곤 아버지가 장에서 얻어 온 천자문 한 권뿐이었으나, 그 한 권을 백 번 넘게 읽었다.",
     day: [
       "코흘리개 아이들에게 천자문을 외우게 하며 하루를 열었다.",
       "이웃의 편지와 소장을 대신 써 주고 곡식 한 됫박을 받았다.",
@@ -50,7 +57,7 @@ const JOBS: Record<string, Sinbun> = {
     ending: "여든까지 서당을 지켰다. 제자들이 세운 비석에는 ‘글보다 사람을 가르친 이’라고 새겨졌다.",
     now: "지금으로 치면 교육·상담·글쓰기 쪽 기질이다.",
   },
-  "관성-강": {
+  "관성-양반": {
     rank: "양반",
     job: "사헌부 감찰",
     line: "관리들의 비리를 캐던 조선의 감사관",
@@ -66,7 +73,7 @@ const JOBS: Record<string, Sinbun> = {
     ending: "물러난 뒤에도 매일 아침 조보를 읽으며 혀를 찼다. 장례 날, 그를 미워하던 이들도 조용히 문상을 왔다.",
     now: "지금으로 치면 법·감사·품질 관리 쪽 기질이다.",
   },
-  "관성-약": {
+  "관성-중인": {
     rank: "중인",
     job: "관상감 명과학 훈도",
     line: "왕실의 사주와 택일을 맡던 관원, 정 훈도의 동료",
@@ -82,7 +89,7 @@ const JOBS: Record<string, Sinbun> = {
     ending: "평생 관상감을 떠나지 않았다. 그가 남긴 택일 기록은 두고두고 후배들의 교본이 되었다.",
     now: "지금으로 치면 데이터 분석·컨설팅·꼼꼼한 전문직 기질이다.",
   },
-  "재성-강": {
+  "재성-중인": {
     rank: "중인",
     job: "사역원 역관",
     line: "청나라를 오가며 통역하고 슬쩍 무역도 하던 조선의 부자",
@@ -98,7 +105,7 @@ const JOBS: Record<string, Sinbun> = {
     ending: "한양에 기와집 세 채를 남기고 눈을 감았다. 유언은 ‘장부는 태우고, 말은 가르쳐라’였다.",
     now: "지금으로 치면 무역·영업·재테크 쪽 기질이다.",
   },
-  "재성-약": {
+  "재성-상민": {
     rank: "상민",
     job: "보부상",
     line: "등짐 하나로 팔도 장터를 누비던 장돌뱅이",
@@ -114,7 +121,7 @@ const JOBS: Record<string, Sinbun> = {
     ending: "쉰 무렵 마포나루에 객주를 차려 보부상들의 쉼터가 되었다. 팔도의 장돌뱅이들이 그의 이름만 대면 외상을 받아 주었다.",
     now: "지금으로 치면 영업·유통·프리랜서 기질이다.",
   },
-  "식상-강": {
+  "식상-중인": {
     rank: "중인",
     job: "도화서 화원",
     line: "임금의 초상(어진)을 그리던 궁중 화가",
@@ -130,7 +137,7 @@ const JOBS: Record<string, Sinbun> = {
     ending: "눈이 침침해진 뒤에도 하루 한 장씩 저잣거리를 그렸다. 이름 없이 남은 그 그림들이 훗날 조선 풍속화의 보물이 되었다.",
     now: "지금으로 치면 디자인·영상·크리에이터 기질이다.",
   },
-  "식상-약": {
+  "식상-천민": {
     rank: "천민",
     job: "남사당패 광대",
     line: "줄 위에서 양반을 풍자하던 재주꾼",
@@ -146,7 +153,7 @@ const JOBS: Record<string, Sinbun> = {
     ending: "늙어서는 줄에서 내려와 어린 광대들을 가르쳤다. 그가 지은 재담은 주인이 바뀌어도 오래도록 장터에서 불렸다.",
     now: "지금으로 치면 방송·공연·유튜버 기질이다.",
   },
-  "비겁-강": {
+  "비겁-양반": {
     rank: "양반",
     job: "훈련도감 무관",
     line: "군사를 호령하던 무인",
@@ -162,7 +169,7 @@ const JOBS: Record<string, Sinbun> = {
     ending: "훈련대장으로 물러난 뒤에도 새벽 활터를 떠나지 않았다. 그가 적어 둔 병법 쪽지는 군영에서 몰래 돌려 읽혔다.",
     now: "지금으로 치면 스포츠·현장 리더·창업 기질이다.",
   },
-  "비겁-약": {
+  "관성-상민": {
     rank: "상민",
     job: "포도청 포졸",
     line: "한양 골목을 지키던 순라꾼",
@@ -178,7 +185,7 @@ const JOBS: Record<string, Sinbun> = {
     ending: "끝내 포교에 올라 한양 골목의 대장이 되었다. 그가 순라를 돌던 동네는 밤에도 문을 걸지 않았다고 한다.",
     now: "지금으로 치면 현장직·보안·몸 쓰는 일 기질이다.",
   },
-  "고른-양": {
+  "고른-상민": {
     rank: "상민",
     job: "운종가 주막 주인",
     line: "사람과 소문이 모이던 한양 한복판의 주막을 꾸리던 사람",
@@ -194,7 +201,7 @@ const JOBS: Record<string, Sinbun> = {
     ending: "주막 세 채를 자식들에게 나누어 주고, 자신은 가장 작은 첫 주막에 남았다. 마지막 날까지 국밥 간은 직접 보았다.",
     now: "지금으로 치면 자영업·서비스·커뮤니티 운영 기질이다.",
   },
-  "고른-음": {
+  "고른-중인": {
     rank: "중인",
     job: "내의원 의관",
     line: "임금의 맥을 짚던 궁중 의사",
@@ -210,27 +217,281 @@ const JOBS: Record<string, Sinbun> = {
     ending: "내의원에서 물러난 뒤 성 밖에 약방을 열어 가난한 이들을 공짜로 보았다. 그가 남긴 처방 공책은 제자들이 베껴 나누어 가졌다.",
     now: "지금으로 치면 의료·돌봄·전문 상담 기질이다.",
   },
+  "인성-중인": {
+    rank: "중인",
+    job: "규장각 검서관",
+    line: "임금의 도서관에서 책을 고르고 교정하던 서얼 출신 학자",
+    origin: "학문으로 이름난 양반 아버지와 첩 어머니 사이에서 서얼로 태어났다. 과거 길은 막혀 있었지만, 아버지 서재의 책은 형들보다 먼저 다 읽어 치웠다.",
+    day: [
+      "해 뜨기 전 규장각에 들어 어제 교정한 원고를 다시 훑었다.",
+      "임금이 보낸 쪽지 질문에 답하느라 서고를 몇 번이나 오르내렸다.",
+      "퇴청길에 책방에 들러 녹봉을 거의 다 책값으로 썼다.",
+    ],
+    crisis: "임금이 아끼던 책에서 틀린 글자를 찾아내 아뢰었는데, 그 책을 엮은 사람이 판서였다. 서얼 주제에 감히 판서의 글을 고치느냐는 말이 돌았지만, 임금은 ‘글에는 적서가 없다’며 그의 교정본을 새로 찍게 했다.",
+    rise: 3,
+    riseText: "서얼이라 오를 수 있는 자리는 정해져 있었다. 대신 임금이 이름을 기억하는 몇 안 되는 사람이었다.",
+    ending: "물러난 뒤 평생 읽은 책의 요점을 엮어 수십 권의 문집을 남겼다. 신분은 넘지 못했으나, 이름은 판서들보다 오래 남았다.",
+    now: "지금으로 치면 편집·연구·리서치 기질이다.",
+  },
+  "인성-천민": {
+    rank: "천민",
+    job: "산사의 학승",
+    line: "도성 문턱도 넘지 못하던 시절, 깊은 산 절에서 경전을 파고든 스님",
+    origin: "흉년에 입 하나 덜려고 부모가 산사 앞에 맡기고 간 아이였다. 울다 지쳐 잠든 곳이 하필 경전 창고였는데, 깨어 보니 그 글자들이 그렇게 좋았다.",
+    day: [
+      "새벽 예불을 마치고 경전 한 권을 소리 내어 외웠다.",
+      "낮에는 장작을 패고 밭을 매며 외운 구절을 되새겼다.",
+      "밤이면 호롱불 아래 닳은 경전을 새 종이에 옮겨 적었다.",
+    ],
+    crisis: "관아에서 절의 땅을 빼앗으려 들자, 스님들 가운데 옛 문서를 읽을 줄 아는 이는 그뿐이었다. 사흘 밤을 새워 땅의 내력을 밝힌 소장을 올렸고, 사또는 결국 손을 뗐다. 그 뒤로 절의 대소사는 모두 그를 거쳤다.",
+    rise: 2,
+    riseText: "승려는 도성에 들어가지도 못하는 신분이었다. 그러나 절 안에서는 큰스님 소리를 들었다.",
+    ending: "여든이 넘도록 경전을 옮겨 적었다. 그가 남긴 필사본은 지금도 어느 절 서고에 잠들어 있을지 모른다.",
+    now: "지금으로 치면 연구·수행·한 우물을 깊이 파는 전문가 기질이다.",
+  },
+  "관성-천민": {
+    rank: "천민",
+    job: "고을 관아의 관노",
+    line: "사또보다 관아 사정을 더 잘 알던 관아의 종",
+    origin: "대대로 관아에 딸린 관노 집안에서 태어났다. 걸음마를 뗀 곳이 동헌 마당이었고, 첫 심부름은 사또의 담뱃대 가져오기였다.",
+    day: [
+      "새벽같이 동헌 마당을 쓸고 사또의 세숫물을 데웠다.",
+      "송사가 열리면 문 앞에 서서 누가 이길지 먼저 알아챘다.",
+      "밤이면 아전들 술자리 심부름을 하며 고을의 비밀을 주워 담았다.",
+    ],
+    crisis: "새로 온 사또가 아전들의 장부 조작에 속아 억울한 백성을 가두려 했다. 종의 몸으로 입을 열었다가 곤장을 맞을 뻔했으나, 장부의 어긋난 곳을 정확히 짚어 내자 사또가 그 자리에서 아전들을 불러 세웠다.",
+    rise: 1,
+    riseText: "천인의 몸이라 벼슬은 꿈도 못 꿨다. 대신 사또가 바뀔 때마다 새 사또가 가장 먼저 찾는 사람이 되었다.",
+    ending: "늘그막에 공을 인정받아 천인의 굴레를 벗었다. 관아를 떠나던 날, 아전들보다 백성들이 더 많이 배웅을 나왔다.",
+    now: "지금으로 치면 행정·조직 운영·실무 해결사 기질이다.",
+  },
+  "재성-양반": {
+    rank: "양반",
+    job: "호조 정랑",
+    line: "나라의 곳간과 세금 장부를 맡던 관리",
+    origin: "셈에 밝기로 소문난 양반가에서 태어났다. 서당에서 글보다 산가지 셈을 먼저 좋아해, 훈장에게 ‘선비 집 아들이 장사꾼 흉내를 낸다’며 꾸중을 들었다.",
+    day: [
+      "새벽부터 팔도에서 올라온 세곡 장부를 맞춰 보았다.",
+      "창고 관리들과 쌀 한 섬, 베 한 필의 행방을 두고 입씨름을 했다.",
+      "밤에는 흉년에 쓸 곡식을 어디서 끌어올지 셈을 거듭했다.",
+    ],
+    crisis: "큰 흉년이 들어 나라 곳간이 바닥을 드러냈다. 모두가 세금을 더 걷자고 할 때, 그는 부잣집 곳간을 빌려 쓰고 갚을 길을 따로 마련하자는 셈법을 내놓았다. 욕도 많이 먹었지만, 그해 굶어 죽은 백성이 가장 적었다.",
+    rise: 4,
+    riseText: "나라 살림을 맡는 자리라 호조 판서까지 바라볼 수 있었다. 돈을 다루는 만큼 뒷말도 늘 따라다녔다.",
+    ending: "물러날 때 그의 집 곳간은 의외로 비어 있었다. 대신 남긴 회계 장부는 후임들이 ‘이대로만 하면 된다’며 베껴 썼다.",
+    now: "지금으로 치면 재무·회계·경영 관리 기질이다.",
+  },
+  "재성-천민": {
+    rank: "천민",
+    job: "대갓집 수노",
+    line: "주인집 곳간 열쇠를 쥐고 있던 노비들의 우두머리",
+    origin: "한양 대갓집에 딸린 노비의 아들로 태어났다. 곳간을 드나드는 쌀가마 숫자를 한 번 보면 잊지 않아, 어릴 적부터 집사가 몰래 셈을 시키곤 했다.",
+    day: [
+      "새벽에 곳간 문을 열고 쌀과 베의 수를 셌다.",
+      "주인 대신 장터에 나가 논밭에서 나온 곡식을 제값에 팔았다.",
+      "밤이면 주인도 모르는 작은 장부에 그날의 이문을 적었다.",
+    ],
+    crisis: "주인집이 역모에 휘말려 재산을 몰수당할 판이었다. 그는 미리 빼돌려 둔 곡식과 땅문서를 숨겨 두었다가, 풀려난 주인에게 고스란히 돌려주었다. 주인은 울면서 그의 노비 문서를 불태웠다.",
+    rise: 2,
+    riseText: "노비의 몸이었지만 곳간 열쇠를 쥔 사람이었다. 주인보다 셈이 밝다는 소문이 온 동네에 났다.",
+    ending: "노비에서 풀려난 뒤 작은 쌀가게를 차려 한양에서 손꼽히는 쌀장수가 되었다. 옛 주인집 제삿날이면 가장 좋은 쌀을 보냈다.",
+    now: "지금으로 치면 자산 관리·유통·살림의 달인 기질이다.",
+  },
+  "식상-양반": {
+    rank: "양반",
+    job: "예문관 사관",
+    line: "임금 곁에서 모든 말과 행동을 적던 기록관",
+    origin: "글 잘 짓기로 이름난 양반가에서 태어났다. 여섯 살에 할아버지 제삿날 풍경을 글로 적었는데, 어른들이 읽다 말고 웃다 울다 했다.",
+    day: [
+      "임금이 눈을 뜨는 순간부터 곁에 붙어 붓을 들었다.",
+      "대신들의 말다툼을 한 글자도 빼지 않고 받아 적었다.",
+      "밤이면 낮에 적은 사초를 다시 정리하며 혼자 한숨을 쉬었다.",
+    ],
+    crisis: "임금이 사냥터에서 말에서 떨어지고는 ‘이 일은 적지 말라’고 했다. 그는 붓을 멈추지 않고, 적지 말라 하신 말씀까지 적었다. 임금의 얼굴이 붉어졌지만, 그 일로 조정에서 가장 믿을 만한 붓이라는 평을 얻었다.",
+    rise: 4,
+    riseText: "사관은 품계는 낮아도 앞길이 트인 자리였다. 글솜씨 하나로 대제학까지 넘볼 수 있었다.",
+    ending: "물러난 뒤 세상 이야기를 모은 잡록을 썼다. 실록에 못 담은 뒷이야기들이 거기 다 있었다.",
+    now: "지금으로 치면 기자·작가·콘텐츠 기획 기질이다.",
+  },
+  "식상-상민": {
+    rank: "상민",
+    job: "종로 전기수",
+    line: "종로 담뱃가게 앞에서 소설을 읽어 주던 이야기꾼",
+    origin: "종로 뒷골목 짚신 장수의 아들로 태어났다. 아버지 가게 앞에서 들은 옛날이야기를 동네 아이들에게 부풀려 들려주다 보니, 어른들까지 모여들었다.",
+    day: [
+      "아침에는 세책방에서 새로 들어온 소설책을 빌렸다.",
+      "오후에는 종로 담뱃가게 앞에 자리를 펴고 목청을 가다듬었다.",
+      "제일 재미있는 대목에서 입을 딱 다물면, 엽전이 우수수 떨어졌다.",
+    ],
+    crisis: "영웅이 억울하게 죽는 대목을 너무 실감 나게 읽은 날, 흥분한 구경꾼 하나가 그를 악역으로 착각해 담뱃대를 휘둘렀다. 이마에 혹을 달고도 다음 날 같은 자리에 나타나자, 구경꾼이 두 배로 늘었다.",
+    rise: 2,
+    riseText: "신분은 평민 그대로였지만, 종로에서 그의 이름을 모르는 사람은 없었다.",
+    ending: "늙어서는 목소리가 갈라졌지만 제자 셋을 길렀다. 그들이 팔도 장터로 흩어져 그의 이야기를 이어 갔다.",
+    now: "지금으로 치면 방송·강연·스토리텔러 기질이다.",
+  },
+  "비겁-중인": {
+    rank: "중인",
+    job: "무예청 별감",
+    line: "임금 곁을 지키던 호위 무사",
+    origin: "무예로 이름난 서얼 집안에서 태어났다. 여덟 살에 동네 씨름판에서 열다섯 살 형들을 차례로 눕혀, 소문이 궁궐 무관의 귀에까지 들어갔다.",
+    day: [
+      "새벽마다 동료들과 창칼을 맞대며 몸을 풀었다.",
+      "임금의 행차 때는 한 발짝 뒤에서 사방을 살폈다.",
+      "비번인 밤에는 동료들과 국밥을 나누며 서로의 뒤를 봐주기로 맹세했다.",
+    ],
+    crisis: "행차 중 한 사내가 품에 무언가를 숨긴 채 임금에게 달려들었다. 몸을 날려 막아 내다 팔을 크게 다쳤다. 알고 보니 억울함을 적은 상소를 품은 백성이었는데, 그는 피를 흘리면서도 ‘벌하지 말고 사연을 들어 주시옵소서’ 하고 아뢰었다.",
+    rise: 3,
+    riseText: "무예로는 누구에게도 지지 않았다. 다만 서얼이라 장수의 자리까지는 오르지 못했다.",
+    ending: "물러난 뒤 동네 젊은이들에게 무예를 가르쳤다. 제자 가운데 무과에 급제한 이가 열이 넘었다.",
+    now: "지금으로 치면 경호·체육·팀을 지키는 리더 기질이다.",
+  },
+  "비겁-상민": {
+    rank: "상민",
+    job: "단오 씨름판 장사",
+    line: "씨름판에서 황소를 타 가던 고을 장사",
+    origin: "황해도 농사꾼 집에서 태어났다. 열두 살에 쟁기를 끌던 소가 주저앉자 대신 쟁기를 끌어, 온 동네가 그 밭을 구경하러 왔다.",
+    day: [
+      "새벽에는 남의 논을 갈아 주고 품삯을 받았다.",
+      "낮에는 동네 장정들과 모래판에서 힘을 겨루었다.",
+      "밤에는 막걸리 한 사발에 형님 아우를 맺으며 떠들썩하게 놀았다.",
+    ],
+    crisis: "단오 씨름 결승에서 만난 상대가 어릴 적 의형제였다. 형제의 집이 빚에 몰린 걸 알던 그는 마지막 판에서 일부러 넘어졌다. 황소는 형제에게 갔고, 그 사실은 둘만 알았다. 이듬해 형제가 황소를 몰고 그의 집에 찾아왔다.",
+    rise: 2,
+    riseText: "힘으로 이름을 떨쳐 고을에서 모르는 이가 없었다. 신분은 오르지 않았지만 사람 복은 넘쳤다.",
+    ending: "나이가 들어서는 씨름판 심판이 되었다. 그가 ‘됐다’ 하면 아무도 판정에 토를 달지 않았다.",
+    now: "지금으로 치면 운동선수·현장 팀장·몸으로 부딪히는 창업 기질이다.",
+  },
+  "비겁-천민": {
+    rank: "천민",
+    job: "조운선 사공",
+    line: "세금 곡식을 싣고 거친 바닷길을 오가던 뱃사람",
+    origin: "나라에 매인 뱃사람 집안에서 태어났다. 걷기보다 헤엄을 먼저 배웠고, 열 살에 벌써 파도 소리만 듣고 물때를 맞혔다.",
+    day: [
+      "새벽 물때에 맞춰 곡식 가마를 배에 실었다.",
+      "하루 종일 동료들과 노를 저으며 뱃노래로 박자를 맞췄다.",
+      "포구에 닿으면 동료들과 생선 한 마리를 나눠 구우며 뱃길 이야기를 했다.",
+    ],
+    crisis: "안흥량의 험한 물목에서 배가 암초에 걸려 기울었다. 곡식을 버려야 사람이 산다는 걸 알면서도 모두 머뭇거릴 때, 그가 먼저 가마를 바다에 던졌다. 곡식을 잃은 죄로 벌을 받았지만, 그 배의 뱃사람은 한 명도 죽지 않았다.",
+    rise: 1,
+    riseText: "대를 이어 매인 고된 일이라 벗어나기 어려웠다. 그래도 뱃사람들 사이에서는 그가 곧 선장이었다.",
+    ending: "늙어서는 포구에 눌러앉아 젊은 뱃사람들에게 물길을 가르쳤다. 그가 그려 준 물때 지도는 오래도록 뱃사람들의 부적이었다.",
+    now: "지금으로 치면 현장 팀워크·물류·거친 환경을 이끄는 기질이다.",
+  },
+  "고른-양반": {
+    rank: "양반",
+    job: "고을 현감",
+    line: "작은 고을의 살림과 송사를 두루 맡던 사또",
+    origin: "크게 이름나지도 몰락하지도 않은 평범한 양반가에서 태어났다. 형제들 싸움을 말리는 건 늘 그의 몫이었고, 누구 편도 들지 않아 양쪽 모두에게 신임을 얻었다.",
+    day: [
+      "아침에는 동헌에 앉아 백성들의 송사를 들었다.",
+      "낮에는 논둑을 돌며 올해 농사가 어떤지 직접 살폈다.",
+      "밤에는 한양에 올릴 보고서와 고을 장부를 번갈아 들여다보았다.",
+    ],
+    crisis: "가뭄에 두 마을이 물길을 두고 낫을 들고 맞섰다. 그는 한쪽 편을 드는 대신 두 마을 장정들을 한데 불러 새 보를 함께 쌓게 했다. 석 달 뒤 보가 완성되자, 두 마을은 혼인까지 맺는 사이가 되었다.",
+    rise: 4,
+    riseText: "큰 공은 없어도 흠도 없어, 가는 고을마다 선정비가 섰다. 차근차근 올라 목사까지 지냈다.",
+    ending: "물러날 때 백성들이 길을 막고 가지 말라며 울었다. 그 고을에는 그의 이름을 딴 보가 오래도록 남았다.",
+    now: "지금으로 치면 관리자·공공 부문·조율형 리더 기질이다.",
+  },
+  "고른-천민": {
+    rank: "천민",
+    job: "수라간 숙수",
+    line: "궁궐 잔치 음식을 도맡던 남자 요리사",
+    origin: "궁궐 부엌에 딸린 천인 집안에서 태어났다. 어머니 등에 업혀 부뚜막 옆에서 자랐고, 다섯 살에 벌써 간장 맛만 보고 몇 해 묵은 것인지 맞혔다.",
+    day: [
+      "새벽부터 수백 명 잔치 음식의 재료를 고르고 다듬었다.",
+      "낮에는 수십 개의 솥을 오가며 불 조절을 호령했다.",
+      "밤에는 남은 음식을 궁궐 하인들과 나눠 먹으며 내일 상차림을 궁리했다.",
+    ],
+    crisis: "큰 잔치 전날, 준비해 둔 떡이 모두 쉬어 버렸다. 모두 벌 받을 걱정에 발만 동동 구를 때, 그는 남은 재료로 밤새 새 떡을 빚었다. 잔치 날 임금이 그 떡을 가장 칭찬했고, 그 떡은 이후 궁중 잔치의 단골이 되었다.",
+    rise: 2,
+    riseText: "천인이라 품계는 없었다. 그러나 그가 빠진 잔치는 잔치가 아니라는 말을 들었다.",
+    ending: "나이 들어 궁을 나와 도성 밖에 작은 국숫집을 열었다. 소문을 들은 대감들이 몰래 줄을 섰다.",
+    now: "지금으로 치면 요리·서비스·어떤 판에서도 제 몫을 하는 실무 기질이다.",
+  },
 };
 
 // Four-character charts (made before the full chart was stored) fall back to the day stem.
-const LEGACY: string[] = ["비겁-강", "재성-약", "식상-강", "인성-약", "관성-강", "고른-음", "비겁-강", "관성-약", "재성-강", "인성-강"];
+const LEGACY: `${Calling}-${Rank}`[] = ["비겁-양반", "재성-상민", "식상-중인", "인성-상민", "관성-양반", "고른-중인", "비겁-양반", "관성-중인", "재성-중인", "인성-양반"];
 
-function keyOf(p: Pillars): { key: string; group: GodGroup | "고른" } {
+const CALLING_WHY: Record<Calling, string> = {
+  인성: "배움과 문서의 기운(인성)",
+  관성: "규율과 책임의 기운(관성)",
+  재성: "재물과 셈의 기운(재성)",
+  식상: "재주와 표현의 기운(식상)",
+  비겁: "자립과 의리의 기운(비겁)",
+  고른: "",
+};
+
+// The chart's 그릇, scored from how it is built. Cut points put about 27% of real births (1950–2008) among the
+// 양반, 32% 중인, 28% 상민 and 12% 천민.
+function vessel(p: Pillars): { score: number; notes: string[] } | null {
+  const r = readChart(p);
+  if (!r) return null;
+  const hourStem = p.hourBranch === null ? null : hourStemOf(p.dayStem, p.hourBranch);
+  const stems = [p.yearStem!, p.monthStem!, ...(hourStem === null ? [] : [hourStem])];
+  const branches = [p.yearBranch, p.monthBranch!, p.dayBranch, ...(p.hourBranch === null ? [] : [p.hourBranch])];
+  const sum = r.weights.reduce((a, b) => a + b, 0);
+  const yong = `${ELEMENT_KO[r.yong]}(${ELEMENT_HANJA[r.yong]})`;
+  let score = 0;
+  const notes: string[] = [];
+  if (r.balanced) {
+    score += 3;
+    notes.push("기운이 한쪽으로 기울지 않은 중화의 사주라 그릇이 넉넉하옵니다");
+  } else if (r.strength === "신강" || r.strength === "신약") score += 1.5;
+  else notes.push(`기운이 한쪽으로 크게 치우친 ${r.strength}이라 그릇이 좁사옵니다`);
+  if (stems.some((s) => stemEl(s) === r.yong)) {
+    score += 2;
+    notes.push(`꼭 필요한 기운인 ${josa(yong, "이/가")} 천간에 드러나 쓰임이 분명하옵니다`);
+  } else if (branches.some((b) => HIDDEN[b].some(([h]) => stemEl(h) === r.yong))) {
+    score += 1;
+    notes.push(`꼭 필요한 기운인 ${josa(yong, "이/가")} 지지 속에 숨어 있어, 때를 만나야 드러나옵니다`);
+  } else notes.push(`꼭 필요한 기운인 ${josa(yong, "이/가")} 사주에 없어, 늘 남의 손을 빌려야 했사옵니다`);
+  if (r.weights[r.hee] > 0) score += 0.5;
+  if (HIDDEN[p.monthBranch!].some(([h]) => stems.includes(h))) {
+    score += 1;
+    notes.push("태어난 달의 기운이 천간에 드러나 격이 반듯이 섰사옵니다");
+  }
+  if (r.weights[r.gi] / sum >= 0.4) {
+    score -= 1.5;
+    notes.push("발목을 잡는 기운(기신)이 사주의 4할을 넘사옵니다");
+  }
+  if (branches.some((b) => salsAt(p, b).includes("천을귀인"))) {
+    score += 1;
+    notes.push("천을귀인이 있어 윗사람의 손길을 받사옵니다");
+  }
+  if (branches.some((b) => b !== p.monthBranch && meetings(p.monthBranch!, b).includes("충"))) {
+    score -= 1;
+    notes.push("태어난 달의 자리가 충을 받아 뿌리가 흔들리옵니다");
+  }
+  return { score, notes };
+}
+
+const rankOf = (score: number): Rank => (score >= 5 ? "양반" : score >= 3.5 ? "중인" : score >= 2 ? "상민" : "천민");
+
+function keyOf(p: Pillars): { key: `${Calling}-${Rank}`; group: Calling; basis: string[] } {
   const chart = readChart(p);
-  if (!chart) {
+  const v = vessel(p);
+  if (!chart || !v) {
     const key = LEGACY[p.dayStem];
-    return { key, group: key.split("-")[0] as GodGroup | "고른" };
+    return { key, group: key.split("-")[0] as Calling, basis: [] };
   }
   // The group that weighs most once every hidden stem is counted (지장간) sets the calling.
   const entries = Object.entries(chart.godWeights) as [GodGroup, number][];
   const total = entries.reduce((a, [, w]) => a + w, 0);
-  const [group, weight] = entries.reduce((a, b) => (b[1] > a[1] ? b : a));
-  const yang = p.dayStem % 2 === 0;
-  // No group stands out (the heaviest at 35% or less, about one chart in five): an evenly spread chart, split
-  // evenly between the two even-handed callings by the day branch.
-  if (weight / total <= 0.35) return { key: (p.dayBranch >> 1) % 2 === 0 ? "고른-양" : "고른-음", group: "고른" };
-  // A yang day master takes the outward, louder calling of its group; a yin one the quieter one.
-  return { key: `${group}-${yang ? "강" : "약"}`, group };
+  const [heaviest, weight] = entries.reduce((a, b) => (b[1] > a[1] ? b : a));
+  // No group stands out (the heaviest at 35% or less, about one chart in five): an evenly spread chart.
+  const group: Calling = weight / total <= 0.35 ? "고른" : heaviest;
+  const rank = rankOf(v.score);
+  const pct = Math.round((100 * weight) / total);
+  const basis = [
+    group === "고른"
+      ? `어느 기운도 3할 반을 넘지 않아(가장 큰 것이 ${pct}%), 어디에 둬도 제 몫을 하는 길로 들어섰사옵니다`
+      : `사주에서 ${CALLING_WHY[group]}이 ${pct}%로 가장 두터워 이 길로 들어섰사옵니다`,
+    ...v.notes,
+    `이를 모두 따져 그릇을 헤아리니 ${rank}으로 났사옵니다`,
+  ];
+  return { key: `${group}-${rank}`, group, basis };
 }
 
 export function sinbunOf(p: Pillars): Sinbun {
@@ -285,10 +546,12 @@ export type SinbunStory = Sinbun & {
   yong: number;
   gi: number;
   strength: Strength | null;
+  // Why this life: the calling and the 그릇, in 정 훈도's words.
+  basis: string[];
 };
 
 export function sinbunStory(p: Pillars): SinbunStory {
-  const { key, group } = keyOf(p);
+  const { key, group, basis } = keyOf(p);
   const s = JOBS[key];
   const chart = readChart(p);
   // Four-character charts have no strength reading; fall back to the element that feeds the day master.
@@ -302,6 +565,7 @@ export function sinbunStory(p: Pillars): SinbunStory {
     yong,
     gi,
     strength: chart?.strength ?? null,
+    basis,
     chapters: [
       { title: "태어난 집", paras: [s.origin] },
       { title: `${s.job}의 하루`, paras: [...s.day], labels: ["새벽", "낮", "밤"] },
