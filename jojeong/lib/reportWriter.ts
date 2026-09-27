@@ -17,7 +17,7 @@ import { courtOfReader, subjectFor } from "./subject";
 export const REPORT_MODEL =
   process.env.REPORT_MODEL ?? (process.env.ANTHROPIC_API_KEY || !process.env.GEMINI_API_KEY ? "claude-opus-5" : "gemini-3.8-flash");
 const isGemini = REPORT_MODEL.startsWith("gemini");
-const PROMPT_VERSION = "v3";
+const PROMPT_VERSION = "v4";
 export const aiEnabled = () =>
   Boolean(isGemini ? process.env.GEMINI_API_KEY : process.env.ANTHROPIC_API_KEY) || process.env.REPORT_MOCK === "1";
 

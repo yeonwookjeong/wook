@@ -39,7 +39,7 @@ export default function YearReport({
   deepen: { courtId: string; who: string } | null;
   query: string;
   // The written report (components/AiReport.tsx) replaces the engine's sections when given.
-  ai?: { request: Record<string, string>; chapters: string[] };
+  ai?: { request: Record<string, string>; chapters: string[]; intro?: React.ReactNode };
 }) {
   const { verdict, headline, keywords, sections, months, best, worst, lucky, advice, missing } = reading;
   // The engine's own sections: shown as they are, or as the fallback when the written report is unavailable.
@@ -220,6 +220,7 @@ export default function YearReport({
 
       {ai ? (
         <>
+          {ai.intro}
           <details className="group doc-paper mt-4 px-5 py-4">
             <summary className="flex cursor-pointer list-none items-center justify-between [&::-webkit-details-marker]:hidden">
               <span className="font-myeongjo font-extrabold">사주 원국 · 여덟 글자 보기</span>
