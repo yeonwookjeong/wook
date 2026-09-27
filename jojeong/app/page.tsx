@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { forgetMeAction } from "@/app/actions";
-import { CHARACTER } from "@/lib/brand";
 import Keep from "@/components/Keep";
 import RoyalDoc from "@/components/RoyalDoc";
 import StoreHero from "@/components/StoreHero";
@@ -21,11 +20,27 @@ const PITCH: Partial<Record<ProductId, string>> = {
   jaemul: "돈이 왜 안 모일까?",
   jikup: "지금 일, 나랑 맞을까?",
 };
-// A few exchanges at 정 훈도's table: what people bring, what they hear back. Shown, not claimed.
-const TALKS = [
-  { ask: "연애만 하면 왜 이렇게 꼬일까요?", answer: "끌리는 사람과 편한 사람이 늘 다른 사주예요. 세 번째로 만난 사람 쪽이 인연일 때가 많아요." },
-  { ask: "요즘 일이 손에 안 잡혀요.", answer: "2019년 즈음 일하는 방식이 한 번 크게 바뀌었죠? 그 흐름이 2028년까지 이어져요. 지금은 버틸 때가 아니라 방향을 고를 때예요." },
-  { ask: "올해 안에 뭘 해 보면 좋을까요?", answer: "11월이 문이 열리는 달이에요. 미뤄 둔 연락이 있다면 그때 먼저 하세요." },
+// A page torn from three reports, laid out the way the reports are (a chapter question, a one-line answer,
+// the reading), each opening its report. Real report form, so nothing suggests a chat.
+const EXCERPTS: { id: ProductId; chapter: string; headline: string; body: string }[] = [
+  {
+    id: "yeonae",
+    chapter: "왜 늘 비슷한 사람에게 끌릴까",
+    headline: "끌리는 사람과 편한 사람이 늘 달라요",
+    body: "첫눈에 반한 사람보다 세 번째로 만난 사람 쪽이 인연일 때가 많아요. 설렘이 먼저 오는 사람일수록 한 번은 멈춰서 보세요.",
+  },
+  {
+    id: "jikup",
+    chapter: "지금 일이 버겁게 느껴진다면",
+    headline: "버틸 때가 아니라, 방향을 고를 때예요",
+    body: "2019년 즈음 일하는 방식이 한 번 크게 바뀌었을 거예요. 그 흐름이 2028년까지 이어지니, 지금 고르는 방향이 다음 10년을 정해요.",
+  },
+  {
+    id: "gukjeong",
+    chapter: "언제 움직이고 언제 쉴까 (하반기)",
+    headline: "11월이 문이 열리는 달이에요",
+    body: "미뤄 둔 연락이 있다면 그때 먼저 하세요. 10월은 숨을 고르고, 큰 결정은 11월로 넘기는 편이 좋아요.",
+  },
 ];
 const GRID: ProductId[] = ["gunghap", "gukjeong", "yeonae", "jaemul", "jikup"];
 
@@ -126,24 +141,21 @@ export default async function Home() {
 
       <section className="mt-9">
         <h2 className="text-center font-myeongjo text-lg font-extrabold">요즘 이런 고민 있으세요?</h2>
-        <div className="doc-paper mt-4 flex flex-col gap-5 px-5 py-6">
-          {TALKS.map((t) => (
-            <div key={t.ask} className="flex flex-col gap-2">
-              <p className="max-w-[80%] self-end rounded-2xl rounded-br-sm bg-ink/8 px-4 py-2.5 text-[14px] leading-snug">{t.ask}</p>
-              <div className="flex items-end gap-2">
-                <span className="size-9 shrink-0 overflow-hidden rounded-full border-2 border-[#d9ad52] bg-[#f7efd9]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={CHARACTER.face} alt="" width={36} height={36} className="size-full object-cover" />
-                </span>
-                <p className="max-w-[85%] rounded-2xl rounded-bl-sm border border-seal/20 bg-white/70 px-4 py-2.5 text-[14px] leading-relaxed">{t.answer}</p>
-              </div>
-            </div>
+        <ul className="mt-4 flex flex-col gap-2.5">
+          {EXCERPTS.map((x) => (
+            <li key={x.id}>
+              <Link href={`/reports/${x.id}`} className="doc-paper block px-6 py-5">
+                <span className="block text-[11px] text-ink-soft">{productById(x.id)!.title} 보고서 중에서</span>
+                <span className="mt-2 block text-[12px] font-extrabold text-seal">{x.chapter}</span>
+                <span className="mt-0.5 block font-myeongjo text-[17px] leading-snug font-extrabold">{x.headline}</span>
+                {/* The reading fades out: a taste, not the page */}
+                <span className="mt-2 block [mask-image:linear-gradient(to_bottom,black_40%,transparent)] text-[14px] leading-relaxed text-ink-soft">{x.body}</span>
+                <span className="mt-1 block text-right text-[13px] font-bold text-seal">이 보고서 보기 →</span>
+              </Link>
+            </li>
           ))}
-          <Link href="/reports/pyeongsaeng" className="mt-1 block rounded-2xl bg-seal py-3.5 text-center font-myeongjo font-extrabold text-hanji shadow-[0_4px_0_#7d1a14]">
-            내 고민도 물어보기 →
-          </Link>
-        </div>
-        <p className="mt-2 text-center text-[11px] text-ink-soft">예시 대화예요. 실제 이야기는 사주마다 달라요.</p>
+        </ul>
+        <p className="mt-2 text-center text-[11px] text-ink-soft">보고서 속 한 장면을 옮긴 예시예요. 실제 내용은 사주마다 달라요.</p>
       </section>
 
       <section className="mt-8">
