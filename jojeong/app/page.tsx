@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { forgetMeAction } from "@/app/actions";
+import { CHARACTER } from "@/lib/brand";
 import Keep from "@/components/Keep";
 import RoyalDoc from "@/components/RoyalDoc";
 import StoreHero from "@/components/StoreHero";
@@ -20,11 +21,11 @@ const PITCH: Partial<Record<ProductId, string>> = {
   jaemul: "돈이 왜 안 모일까?",
   jikup: "지금 일, 나랑 맞을까?",
 };
-// What a report actually says, so the difference shows in the sentences rather than in the method.
-const SAYINGS = [
-  { label: "나만의 구조", line: "같은 丁未일주 중에서도 이 구조는 100명 중 6명뿐이에요." },
-  { label: "지나온 해", line: "2019년 무렵, 일하는 방식이 통째로 바뀌었을 거예요." },
-  { label: "다가올 달", line: "11월엔 먼저 연락하세요. 올해 인연이 들어오는 달이에요." },
+// A few exchanges at 정 훈도's table: what people bring, what they hear back. Shown, not claimed.
+const TALKS = [
+  { ask: "연애만 하면 왜 이렇게 꼬일까요?", answer: "끌리는 사람과 편한 사람이 늘 다른 사주예요. 세 번째로 만난 사람 쪽이 인연일 때가 많아요." },
+  { ask: "요즘 일이 손에 안 잡혀요.", answer: "2019년 즈음 일하는 방식이 한 번 크게 바뀌었죠? 그 흐름이 2028년까지 이어져요. 지금은 버틸 때가 아니라 방향을 고를 때예요." },
+  { ask: "올해 안에 뭘 해 보면 좋을까요?", answer: "11월이 문이 열리는 달이에요. 미뤄 둔 연락이 있다면 그때 먼저 하세요." },
 ];
 const GRID: ProductId[] = ["gunghap", "gukjeong", "yeonae", "jaemul", "jikup"];
 
@@ -124,17 +125,23 @@ export default async function Home() {
       </section>
 
       <section className="mt-9">
-        <h2 className="text-center font-myeongjo text-lg font-extrabold">보고서엔 이런 문장이 들어가요</h2>
-        <p className="mt-1 text-center text-[13px] text-ink-soft">&ldquo;따뜻하고 배려심이 깊으시네요&rdquo; 같은 말은 하지 않아요</p>
-        <ul className="mt-4 flex flex-col gap-2.5">
-          {SAYINGS.map((x) => (
-            <li key={x.label} className="doc-paper px-6 py-5">
-              <p className="text-[11px] font-extrabold text-seal">{x.label}</p>
-              <p className="mt-1 font-myeongjo text-[17px] leading-snug font-extrabold">&ldquo;{x.line}&rdquo;</p>
-            </li>
+        <h2 className="text-center font-myeongjo text-lg font-extrabold">정 훈도와 마주 앉으면</h2>
+        <p className="mt-1 text-center text-[13px] text-ink-soft">이런 이야기가 오가요</p>
+        <div className="doc-paper mt-4 flex flex-col gap-5 px-5 py-6">
+          {TALKS.map((t) => (
+            <div key={t.ask} className="flex flex-col gap-2">
+              <p className="max-w-[80%] self-end rounded-2xl rounded-br-sm bg-ink/8 px-4 py-2.5 text-[14px] leading-snug">{t.ask}</p>
+              <div className="flex items-end gap-2">
+                <span className="size-9 shrink-0 overflow-hidden rounded-full border-2 border-[#d9ad52] bg-[#f7efd9]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={CHARACTER.face} alt="" width={36} height={36} className="size-full object-cover" />
+                </span>
+                <p className="max-w-[85%] rounded-2xl rounded-bl-sm border border-seal/20 bg-white/70 px-4 py-2.5 text-[14px] leading-relaxed">{t.answer}</p>
+              </div>
+            </div>
           ))}
-        </ul>
-        <p className="mt-2 text-center text-[11px] text-ink-soft">보고서 속 문장 예시예요. 실제 문장은 사람마다 모두 달라요.</p>
+        </div>
+        <p className="mt-2 text-center text-[11px] text-ink-soft">예시 대화예요. 실제 이야기는 사주마다 달라요.</p>
       </section>
 
       <section className="mt-8">
