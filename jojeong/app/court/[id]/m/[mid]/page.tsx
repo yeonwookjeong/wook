@@ -212,6 +212,7 @@ function MyChartTeaser({ pillars, name }: { pillars: Pillars; name: string }) {
           yong={reading.yong}
           missing={reading.missing}
           gyeok={GYEOK_NAME[reading.gyeok]}
+          kingdom={false}
         />
       )}
       <div className="relative mt-3 overflow-hidden border border-seal/30 bg-[#f9f1de] px-5 py-5 text-center">

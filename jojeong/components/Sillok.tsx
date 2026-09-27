@@ -104,7 +104,7 @@ export default function Sillok({ kingName, pillars, cast = {} }: { kingName: str
           <li className="flex gap-1 font-bold text-ink">
             <span aria-hidden="true">·</span>
             <span>
-              하여 {s.tierLabel}의 사주이며, {s.lifeVerdict}이옵니다.
+              하여 {s.tierLabel}의 사주이옵니다. {s.lifeVerdict}.
             </span>
           </li>
         </ul>

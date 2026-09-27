@@ -75,7 +75,7 @@ export function lifespan(p: Pillars) {
   const jitter = (hashOf(p, 1) % 17) - 8;
   const death = Math.max(14, Math.min(90, (readChart(p) ? 49 : 47) + score * 7 + jitter));
   const verdict =
-    score >= 2 ? "천수를 누릴 사주" : score >= 0 ? "명이 무난한 사주" : score >= -2 ? "명이 짧은 편인 사주" : "명이 매우 짧은 사주";
+    score >= 2 ? "실록 속 임금은 천수를 누렸사옵니다" : score >= 0 ? "실록 속 임금은 명이 무난했사옵니다" : score >= -2 ? "실록 속 임금은 명이 짧은 편이었사옵니다" : "실록 속 임금은 일찍 승하했사옵니다";
   const reasons =
     score >= 0
       ? reasonsFor(factors, 1, "명을 해치는 충(沖)이 없어 큰 탈 없이 사옵니다")

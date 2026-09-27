@@ -80,7 +80,7 @@ export const HIDDEN: [stem: number, days: number][][] = [
 // stem 2, the month branch 7 (월령, 득령), the day branch 3 (득지), the year and hour branches 2 — 22 in
 // all, scaled ×5 here. Each branch counts as its main element (본기); hidden stems are read for 격국 and
 // the chart table, not for the balance.
-const POS_WEIGHT = { stem: { 연: 10, 월: 10, 일: 10, 시: 10 }, branch: { 연: 10, 월: 35, 일: 15, 시: 10 } } as const;
+export const POS_WEIGHT = { stem: { 연: 10, 월: 10, 일: 10, 시: 10 }, branch: { 연: 10, 월: 35, 일: 15, 시: 10 } } as const;
 
 // Strength cut points on the share of weight that backs the day master. As in the classical 득령·득지·득세
 // count, the day master is strong only when more than half of the chart backs it; the outer bands mark the

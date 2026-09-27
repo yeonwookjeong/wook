@@ -3,7 +3,7 @@ import { ELEMENT_HANJA, ELEMENT_KO, BRANCH_EL, HIDDEN, stemEl, tenGod, type Slot
 import { BRANCHES, STEMS } from "@/lib/saju";
 
 // Element colours follow the traditional 오방색 loosely: 木 green, 火 red, 土 ochre, 金 grey-white, 水 black-blue.
-const EL_STYLE = [
+export const EL_STYLE = [
   "bg-[#3d6656] text-white",
   "bg-seal text-white",
   "bg-gold text-white",
@@ -21,7 +21,7 @@ const MISSING_LINE = [
   "물(水)이 없어 지혜로운 신하가 귀한 나라",
 ];
 
-function Cell({ value, el }: { value: string | null; el: number | null }) {
+export function Cell({ value, el }: { value: string | null; el: number | null }) {
   if (value === null || el === null) {
     return <div className="flex aspect-square items-center justify-center rounded-lg border border-dashed border-ink/20 text-ink-soft">?</div>;
   }
