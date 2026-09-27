@@ -11,6 +11,7 @@ import TaekilForm from "@/components/TaekilForm";
 import TaekilResult from "@/components/TaekilResult";
 import Paywall from "@/components/Paywall";
 import OrderLink from "@/components/OrderLink";
+import DecadeTable from "@/components/DecadeTable";
 import DeepenForm from "@/components/DeepenForm";
 import Keep from "@/components/Keep";
 import RoyalDoc from "@/components/RoyalDoc";
@@ -25,6 +26,7 @@ import { coupleOf } from "@/lib/couple";
 import { forgetMeAction } from "@/app/actions";
 import { readMe } from "@/lib/me";
 import { decodePerson, profileOf, relationOf } from "@/lib/pairToken";
+import { decadeOf, isDomain } from "@/lib/domains";
 import { distinctOf } from "@/lib/rarity";
 import { courtOfReader, subjectFor } from "@/lib/subject";
 import { getProfile } from "@/lib/store";
@@ -355,6 +357,14 @@ async function OpenReport({
         </summary>
         <SajuChart {...reading.chart} kingdom={false} />
       </details>
+      {isDomain(product.id) && (
+        <DecadeTable
+          name={name}
+          domain={product.id}
+          years={decadeOf(product.id, pillars, me ? me.person.gender : (profile?.gender ?? null))}
+          locked={locked && !unlock}
+        />
+      )}
       {locked && !unlock ? (
         // A bought report is written for exactly this chart, so the missing details come before the payment.
         <>
