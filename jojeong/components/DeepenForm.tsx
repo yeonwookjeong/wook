@@ -30,7 +30,7 @@ export default function DeepenForm({ courtId, who }: { courtId: string; who: str
           </label>
         ))}
       </fieldset>
-      <BirthTimeFields unknownLabel="모름" />
+      <BirthTimeFields unknownLabel="모름" modern />
       <fieldset className="grid grid-cols-3 gap-2">
         <legend className="sr-only">성별</legend>
         {[

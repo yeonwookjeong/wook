@@ -10,7 +10,7 @@ export default function MeForm({ next, submit = "내 사주로 보기" }: { next
   return (
     <form action={formAction} className="flex flex-col gap-4">
       <input type="hidden" name="next" value={next} />
-      <PersonFields nameLabel="이름" unknownHour="모름" genderLabel="성별 (선택 · 10년 대운 풀이에 쓰여요)" />
+      <PersonFields nameLabel="이름" unknownHour="모름" genderLabel="성별 (선택 · 10년 대운 풀이에 쓰여요)" modern />
       {state.error && (
         <p role="alert" className="rounded-xl bg-seal/10 px-4 py-3 text-sm text-seal">
           {state.error}

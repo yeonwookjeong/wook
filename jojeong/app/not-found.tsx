@@ -3,13 +3,16 @@ import Hundo from "@/components/Hundo";
 
 export default function NotFound() {
   return (
-    <section className="flex flex-1 flex-col justify-center gap-6">
-      <Hundo mood="shock">전하, 그런 조정은 찾을 수 없사옵니다. 링크가 잘못되었거나 사라진 조정이옵니다.</Hundo>
+    <section className="flex flex-1 flex-col justify-center gap-4">
+      <Hundo mood="shock">찾으시는 페이지가 없어요. 링크가 잘못됐거나 사라진 페이지예요.</Hundo>
       <Link
-        href="/king"
-        className="w-full rounded-2xl bg-seal py-4 text-center font-myeongjo text-lg font-extrabold text-hanji shadow-[0_6px_0_#7d1a14]"
+        href="/"
+        className="mt-2 w-full rounded-2xl bg-seal py-4 text-center font-myeongjo text-lg font-extrabold text-hanji shadow-[0_6px_0_#7d1a14]"
       >
-        새로 즉위하기
+        훈도사주 처음으로
+      </Link>
+      <Link href="/king" className="w-full rounded-2xl border-2 border-ink/30 py-3.5 text-center font-myeongjo font-extrabold text-ink-soft">
+        왕이 될 사주 하러 가기
       </Link>
     </section>
   );

@@ -26,7 +26,7 @@ export function SiteHeader() {
         </span>
       </Link>
       <Link href="/reports" className="border border-seal/40 px-2.5 py-1 font-myeongjo text-xs font-extrabold text-seal">
-        비밀 보고서
+        전체 보고서
       </Link>
     </header>
   );
@@ -42,7 +42,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 }
 
 const FOOTER_LINKS: { href: string; label: string; strong?: boolean }[] = [
-  { href: "/reports", label: "비밀 보고서" },
+  { href: "/reports", label: "전체 보고서" },
   { href: "/terms", label: "이용약관" },
   { href: "/refund", label: "환불 규정" },
   { href: "/contact", label: "문의하기" },
@@ -84,16 +84,16 @@ export function SiteFooter() {
             </p>
             <p>{BUSINESS.phone}</p>
             <p className="mt-1 text-xs text-ink-soft/70">
-              전화 상담은 하지 않사옵니다.{" "}
+              전화 상담은 하지 않아요.{" "}
               <Link href="/contact" className="underline">
                 문의하기
               </Link>
-              로 남겨 주시옵소서.
+              로 남겨 주세요.
             </p>
           </section>
         </div>
       ) : (
-        <p className="mt-8 text-center text-xs text-ink-soft/80">사업자 정보는 유료 보고서 판매를 시작할 때 이곳에 표시되옵니다.</p>
+        <p className="mt-8 text-center text-xs text-ink-soft/80">사업자 정보는 유료 보고서 판매를 시작할 때 이곳에 표시돼요.</p>
       )}
 
       <nav className="mt-7 flex flex-wrap justify-center gap-x-4 gap-y-2 border-t border-ink/10 pt-5 text-[13px] text-ink-soft">
@@ -104,7 +104,7 @@ export function SiteFooter() {
         ))}
       </nav>
       <p className="mt-5 text-center text-[11px] leading-relaxed text-ink-soft/70">
-        재미로 보는 사주 콘텐츠이옵니다. 진짜 간신은 행동으로 가려내시옵소서.
+        사주 풀이는 나를 돌아보는 참고용이에요. 중요한 결정은 스스로 내려 주세요.
         <br />© {new Date().getFullYear()} {BUSINESS.name || "훈도사주"}. All rights reserved.
       </p>
     </footer>

@@ -40,10 +40,10 @@ export default function GunghapForm({ savedName }: { savedName: string | null })
           </label>
         </div>
       )}
-      {!useSaved && <PersonFields prefix="a_" nameLabel="내 이름" unknownHour="모름" genderLabel="성별 (선택)" />}
+      {!useSaved && <PersonFields prefix="a_" nameLabel="내 이름" unknownHour="모름" genderLabel="성별 (선택)" modern />}
 
       <h3 className="mt-2 border-t border-seal/20 pt-4 font-myeongjo font-extrabold">상대</h3>
-      <PersonFields prefix="b_" nameLabel="상대 이름" unknownHour="모름" genderLabel="성별 (선택)" />
+      <PersonFields prefix="b_" nameLabel="상대 이름" unknownHour="모름" genderLabel="성별 (선택)" modern />
 
       {state.error && (
         <p role="alert" className="rounded-xl bg-seal/10 px-4 py-3 text-sm text-seal">

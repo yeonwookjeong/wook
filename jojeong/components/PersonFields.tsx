@@ -21,8 +21,10 @@ export default function PersonFields({
   nameLabel,
   unknownHour,
   genderLabel = "성별 (선택 · 10년 대운 풀이에 쓰이옵니다)",
+  modern = false,
 }: {
   prefix?: string;
+  modern?: boolean;
   nameLabel: string;
   unknownHour: string;
   genderLabel?: string;
@@ -64,7 +66,7 @@ export default function PersonFields({
         ))}
       </fieldset>
 
-      <BirthTimeFields unknownLabel={unknownHour} prefix={prefix} />
+      <BirthTimeFields unknownLabel={unknownHour} prefix={prefix} modern={modern} />
 
       <fieldset className="flex flex-col gap-1.5">
         <legend className="mb-1.5 text-sm font-semibold text-ink-soft">{genderLabel}</legend>
