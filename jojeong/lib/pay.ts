@@ -2,7 +2,7 @@ import "server-only";
 import { randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { ORDERS_COOKIE } from "./cookies";
-import type { ProductId } from "./products";
+import type { ProductId, SetId } from "./products";
 import type { JobRequest } from "./reportWriter";
 import { getOrderRaw, setOrderRaw } from "./store";
 
@@ -20,6 +20,9 @@ export type Order = {
   req: JobRequest;
   // Whose report, for the order list: "지은" or "지은님과 민호님".
   who: string;
+  // A set covers several reports for the same chart; `product` is then the first of them.
+  set?: SetId;
+  bundle?: ProductId[];
   amount: number;
   // "canceled": refunded in the Toss admin (learned through the webhook); the report closes again.
   status: "ready" | "paid" | "canceled";
@@ -49,9 +52,9 @@ export async function getOrder(orderId: string | undefined | null): Promise<Orde
   return raw ? (JSON.parse(raw) as Order) : null;
 }
 
-export async function createOrder(product: ProductId, req: JobRequest, who: string, amount: number): Promise<Order> {
+export async function createOrder(product: ProductId, req: JobRequest, who: string, amount: number, set?: { set: SetId; bundle: ProductId[] }): Promise<Order> {
   // Toss wants 6–64 characters of [A-Za-z0-9_-=]; unguessable, since the id is also the link to the report.
-  const order: Order = { id: `hd${randomBytes(15).toString("base64url")}`, product, req, who, amount, status: "ready", createdAt: Date.now() };
+  const order: Order = { id: `hd${randomBytes(15).toString("base64url")}`, product, req, who, amount, ...set, status: "ready", createdAt: Date.now() };
   await setOrderRaw(order.id, JSON.stringify(order));
   return order;
 }
@@ -100,6 +103,9 @@ export async function syncPayment(paymentKey: string): Promise<Order | null> {
   return order;
 }
 
+// Whether a paid order opens this report (its own product, or one of its set).
+export const covers = (o: Order, product: ProductId) => o.status === "paid" && (o.product === product || Boolean(o.bundle?.includes(product)));
+
 // Orders this browser bought, newest first.
 export async function ownedOrderIds(): Promise<string[]> {
   const raw = (await cookies()).get(ORDERS_COOKIE)?.value ?? "";
@@ -115,6 +121,6 @@ export async function ownedOrders(): Promise<Order[]> {
 // A paid order in this browser for exactly this report request (same product, same chart or pair).
 export async function ownedOrderFor(product: ProductId, req: JobRequest): Promise<Order | null> {
   const fields = ["p", "a", "b", "rel", "kind", "from", "n"] as const;
-  const same = (o: Order) => o.product === product && fields.every((f) => (o.req[f] ?? "") === (req[f] ?? ""));
+  const same = (o: Order) => covers(o, product) && fields.every((f) => (o.req[f] ?? "") === (req[f] ?? ""));
   return (await ownedOrders()).find(same) ?? null;
 }

@@ -1,13 +1,27 @@
 import { decodePerson, relationOf } from "@/lib/pairToken";
 import { createOrder, payClientKey, payEnabled, payMock } from "@/lib/pay";
-import { FIXED_RELATION, isOpen, isPair, priceNow, productById } from "@/lib/products";
+import { FIXED_RELATION, isOpen, isPair, priceNow, productById, SETS, setOf } from "@/lib/products";
 import { jobFor, type JobRequest } from "@/lib/reportWriter";
 import { KINDS, parseSearch } from "@/lib/taekil";
 
 // POST { product, p } or, for a two-person report, { product, a, b, rel } → a new order for that exact report, priced here.
 export async function POST(request: Request) {
   if (!payEnabled()) return Response.json({ error: "결제 준비 중이에요." }, { status: 503 });
-  const body = (await request.json().catch(() => ({}))) as JobRequest;
+  const body = (await request.json().catch(() => ({}))) as JobRequest & { set?: string };
+
+  // A set: its reports for one saved chart, at the set's price.
+  const set = setOf(body.set);
+  if (set) {
+    const [lead, ...rest] = SETS[set].products;
+    const leadProduct = productById(lead)!;
+    if (isOpen(leadProduct)) return Response.json({ error: "지금은 무료로 볼 수 있어요." }, { status: 400 });
+    const req: JobRequest = { product: lead, p: body.p };
+    const job = await jobFor(req);
+    if ("error" in job) return Response.json({ error: job.error }, { status: job.status });
+    const order = await createOrder(lead, req, `${decodePerson(req.p)?.name}님`, SETS[set].price, { set, bundle: [lead, ...rest] });
+    return Response.json({ orderId: order.id, amount: order.amount, orderName: SETS[set].title, clientKey: payClientKey(), mock: payMock() });
+  }
+
   const product = productById(body.product);
   if (!product || !product.modern || isOpen(product)) return Response.json({ error: "결제할 수 없는 보고서예요." }, { status: 400 });
 
