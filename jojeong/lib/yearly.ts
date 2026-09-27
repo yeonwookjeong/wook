@@ -101,6 +101,9 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
   const yearGods = [tenGod(p.dayStem, YEAR.stem), tenGod(p.dayStem, 3)] as const; // 午's 본기 is 丁
   const yearGroup = GROUP_OF[yearGods[0]];
   const strong = r.strength === "신강" || r.strength === "극신강";
+  // 종격 reverses the preference: a chart following a draining force likes what a strong chart likes, and one
+  // following its own side likes what a weak chart likes.
+  const likesDrain = r.outer ? r.outer !== "종왕격" && r.outer !== "종강격" : strong;
 
   // ── The year against the chart.
   let score = elScore(r, FIRE) * 1.5;
@@ -202,8 +205,10 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
           : "사주의 기운이 어느 한쪽으로 크게 쏠리지 않아 제 모양을 잘 지키고 있어요."
       }`,
       `${img.cureText}. ${cureHave.length ? `다행히 사주에 ${cureHave.map((c) => STEMS[c]).join("·")}의 기운이 이미 있어 제 빛을 낼 재료를 갖췄어요.` : "사주에 이 재료가 드러나 있지 않아, 운에서 들어올 때 비로소 크게 빛나요."}`,
-      r.johu !== null
-        ? `${r.season}에 태어나 ${r.johu === 4 ? "사주가 메마르고 뜨거우니" : "사주가 차고 습하니"}, 무엇보다 ${EL(r.johu)} 기운이 들어와야 숨통이 트여요. 그래서 용신은 ${EL(r.yong)} 기운이에요.`
+      r.method === "종격"
+        ? `${r.strength}을 넘어 한 기운이 사주를 통째로 채운 특별한 구조(${r.outer})예요. 이런 사주는 억지로 균형을 맞추기보다 강한 흐름을 타야 풀려서, 용신이 보통과 반대로 ${EL(r.yong)} 기운이 돼요. ${EL(r.gi)} 기운이 몰릴 때 오히려 막혀요.`
+        : r.method === "조후"
+        ? `${r.season}에 태어나 ${r.johu === 4 ? "사주가 메마르고 뜨거우니" : "사주가 차고 습하니"}, 무엇보다 ${EL(r.johu!)} 기운이 들어와야 숨통이 트여요. 그래서 용신은 ${EL(r.yong)} 기운이에요.`
         : `${r.balanced ? "기운이 중화에 가까운 " : ""}${r.strength}한 사주라, ${EL(r.yong)} 기운이 들어올 때 일이 풀리고, ${EL(r.gi)} 기운이 몰릴 때 막혀요.${
             // The classical image (물상) can call for a different element than 억부; say so rather than hide it.
             cureEl !== r.yong && cureEl !== r.gi
@@ -218,7 +223,8 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
     basis: [
       `궁성·조후 보정 오행 비율 · ${[0, 1, 2, 3, 4].map((e) => `${ELEMENT_KO[e]} ${pct(r.weights, e)}%`).join(" · ")}`,
       `일간을 돕는 기운 ${Math.round(r.support * 100)}% → ${r.balanced ? "중화에 가까운 " : ""}${r.strength}`,
-      `용신 ${EL(r.yong)} (${r.method === "조후" ? `조후 우선, 억부로는 ${EL(r.eokbu)}` : "억부"}) · 희신 ${EL(r.hee)} · 기신 ${EL(r.gi)}`,
+      `용신 ${EL(r.yong)} (${r.method === "종격" ? `${r.outer}, 억부로는 ${EL(r.eokbu)}` : r.method === "조후" ? `조후 우선, 억부로는 ${EL(r.eokbu)}` : "억부"}) · 희신 ${EL(r.hee)} · 기신 ${EL(r.gi)}`,
+      ...(r.bonds.length ? [`합 · ${r.bonds.join(" · ")}`] : []),
       `물상으로 빛을 내는 기운 · ${img.cure.map((c) => `${STEMS[c]}${ELEMENT_HANJA[stemEl(c)]}`).join(" · ")}`,
       `격국 ${GYEOK_NAME[r.gyeok]} · 일지 12운성 ${stageOf(p.dayStem, p.dayBranch)} · 공망 ${gongmang(p).map((b) => BRANCHES[b]).join("")}`,
     ],
@@ -232,7 +238,7 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
     headline: sy.headline,
     paras: [
       sy.gods,
-      strong ? sy.strong : sy.weak,
+      likesDrain ? sy.strong : sy.weak,
       `${why[0]}. ${
         verdict === "대길" || verdict === "길"
           ? "올해의 흐름이 내 편이니, 미뤄 둔 일을 올해 시작하세요."
@@ -417,7 +423,7 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
     lucky,
     advice,
     missing: { daeun: !daeun, palaces: !palaces },
-    chart: { slots: chartOf(full), elements: r.elements, strength: r.strength, yong: r.yong, missing: r.missing, gyeok: GYEOK_NAME[r.gyeok] },
+    chart: { slots: chartOf(full), elements: r.elements, strength: r.outer ?? r.strength, yong: r.yong, missing: r.missing, gyeok: GYEOK_NAME[r.gyeok] },
   };
 }
 

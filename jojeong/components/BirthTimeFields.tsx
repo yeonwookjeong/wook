@@ -21,6 +21,7 @@ export default function BirthTimeFields({ unknownLabel }: { unknownLabel: string
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
   const [date, setDate] = useState<{ birth: string; calendar: string }>({ birth: "", calendar: "solar" });
+  const [yaja, setYaja] = useState(false);
 
   // The date fields live elsewhere in the same form; follow them for the preview.
   useEffect(() => {
@@ -53,6 +54,9 @@ export default function BirthTimeFields({ unknownLabel }: { unknownLabel: string
   };
 
   let note: { text: string; ok: boolean } | null = null;
+  // Born in the last hour of the day (after correction), where the schools part on the day: offer 야자시.
+  // Without a solar date the correction is unknown, so any clock time around 23–00시 gets the choice.
+  let lateZi = false;
   if (!unknown && time.trim()) {
     if (!clock) note = { text: "시각을 알아보지 못했사옵니다. 0930, 21:30, 오후 9시 30분처럼 적어 주시옵소서.", ok: false };
     else {
@@ -61,7 +65,11 @@ export default function BirthTimeFields({ unknownLabel }: { unknownLabel: string
       if (b.length === 8 && date.calendar === "solar") {
         const c = correctBirth(Number(b.slice(0, 4)), Number(b.slice(4, 6)), Number(b.slice(6, 8)), clock.hour, clock.minute, city);
         note = { text: `${understood}. ${describeCorrection(c, city.name)}`, ok: true };
-      } else note = { text: `${understood}. 서머타임과 경도는 날짜에 맞춰 보정하옵니다.`, ok: true };
+        lateZi = c.lateZi;
+      } else {
+        note = { text: `${understood}. 서머타임과 경도는 날짜에 맞춰 보정하옵니다.`, ok: true };
+        lateZi = clock.hour === 23 || clock.hour === 0;
+      }
     }
   }
 
@@ -163,6 +171,18 @@ export default function BirthTimeFields({ unknownLabel }: { unknownLabel: string
         <p className="text-xs leading-relaxed text-ink-soft">
           출생증명서의 시각 그대로 적으시옵소서. 서머타임과 지역 경도는 소신이 보정하옵니다.
         </p>
+      )}
+      {lateZi && (
+        <div className="rounded-lg border border-gold/40 px-3 py-2 text-xs leading-relaxed">
+          <p>
+            밤 11시대에 태어나셨사옵니다. 이 한 시간은 학파에 따라 태어난 날이 갈리옵니다. 대부분은 밤 11시에 날이 바뀐다고 보아 다음 날로
+            세우옵니다.
+          </p>
+          <label className="mt-1.5 flex cursor-pointer items-center gap-1.5 font-bold">
+            <input type="checkbox" name="yaja" value="1" checked={yaja} onChange={(e) => setYaja(e.target.checked)} className="size-4 accent-seal" />
+            자정에 날이 바뀌는 방식(야자시)으로 보기
+          </label>
+        </div>
       )}
     </div>
   );

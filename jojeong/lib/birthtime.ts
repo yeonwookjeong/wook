@@ -51,6 +51,8 @@ export type Corrected = {
   shift: number; // local mean time minus the clock, in minutes
   hourBranch: number; // 0 = 자 … 11 = 해
   dayShift: -1 | 0 | 1; // the day pillar's date relative to the certificate date
+  lateZi: boolean; // born 23:00–23:59 local mean time, where the schools part on which day it is
+  yaja: boolean; // read by 야자시: the day kept, not moved to the next
 };
 
 // Clock time at a birthplace (a solar date) → the instant and the local mean time there.
@@ -61,6 +63,7 @@ export function correctBirth(
   hour: number,
   minute: number,
   place: { lon: number; tz: string },
+  yaja = false,
 ): Corrected {
   const wall = Date.UTC(year, month - 1, day, hour, minute);
   // Find the offset in force at that wall time (two passes settle it, including around the changeovers).
@@ -76,9 +79,11 @@ export function correctBirth(
     minute: lmt.getUTCMinutes(),
   };
   const mins = local.hour * 60 + local.minute;
-  // 자시 runs 23:00–00:59 and opens the new day (정자시): a birth from 23:00 counts on the next day.
+  // 자시 runs 23:00–00:59 and opens the new day: a birth from 23:00 counts on the next day. Read by 야자시
+  // instead, the day turns at midnight and 23:00–23:59 stays on the day it fell on (see lib/saju.ts).
   const hourBranch = Math.floor(((mins + 60) % 1440) / 120);
-  const localDate = Date.UTC(local.year, local.month - 1, local.day) + (mins >= 23 * 60 ? 86400000 : 0);
+  const lateZi = mins >= 23 * 60;
+  const localDate = Date.UTC(local.year, local.month - 1, local.day) + (lateZi && !yaja ? 86400000 : 0);
   const dayShift = Math.round((localDate - Date.UTC(year, month - 1, day)) / 86400000) as -1 | 0 | 1;
   const standard = standardOffset(utcMs, place.tz);
   return {
@@ -90,6 +95,8 @@ export function correctBirth(
     shift: Math.round((lmt.getTime() - wall) / 60000),
     hourBranch,
     dayShift,
+    lateZi,
+    yaja: yaja && lateZi,
     korea: place.tz === "Asia/Seoul",
   };
 }
