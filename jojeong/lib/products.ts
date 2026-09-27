@@ -1,5 +1,5 @@
-// 정 훈도의 비밀 보고서. One free report (조선 신분 감정) opens the shelf; the paid ones all cost the same and get
-// cheaper with each purchase (복채 단골 할인): 990 → 890 → 790 → 690, then 690 for good.
+// 정 훈도의 비밀 보고서. One free report (조선 신분 감정) opens the shelf; the paid ones all cost the same fixed
+// price, lowered only on the special days listed in SALES.
 
 export type ProductId = "sinbun" | "pyeongsaeng" | "gunghap" | "gukjeong" | "yeonae" | "jaemul" | "jikup" | "dwitjosa" | "gwangye" | "insa";
 
@@ -138,8 +138,21 @@ export const PRODUCTS: Product[] = [
 export const productById = (id: string) => PRODUCTS.find((p) => p.id === id);
 
 // 무료 공개 기간: every report opens in full while the writing is being polished and payments are not live.
-export const OPEN_ALL = true;
+export const OPEN_ALL = false;
 export const isOpen = (p: Product) => OPEN_ALL || Boolean(p.free);
 
-export const PRICE_STEPS = [990, 890, 790, 690];
-export const priceFor = (purchases: number) => PRICE_STEPS[Math.min(purchases, PRICE_STEPS.length - 1)];
+export const PRICE = 990;
+
+// Special-day sales, in KST dates, both ends inclusive. Outside them every report is PRICE.
+// e.g. { name: "설날 행사", from: "2027-02-05", to: "2027-02-09", price: 590 }
+type Sale = { name: string; from: string; to: string; price: number };
+const SALES: Sale[] = [{ name: "추석 행사", from: "2026-09-20", to: "2026-10-09", price: 590 }];
+
+const kstDate = (now: Date) => new Date(now.getTime() + 9 * 3600_000).toISOString().slice(0, 10);
+export function saleNow(now = new Date()): Sale | null {
+  const today = kstDate(now);
+  return SALES.find((s) => s.from <= today && today <= s.to && s.price > 0 && s.price < PRICE) ?? null;
+}
+export const priceNow = (now = new Date()) => saleNow(now)?.price ?? PRICE;
+// "설날 행사 · 2월 9일까지"
+export const saleLabel = (s: Sale) => `${s.name} · ${Number(s.to.slice(5, 7))}월 ${Number(s.to.slice(8))}일까지`;

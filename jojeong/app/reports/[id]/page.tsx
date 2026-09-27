@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import AdSlot from "@/components/AdSlot";
 import AiReport from "@/components/AiReport";
@@ -15,9 +14,8 @@ import SajuChart from "@/components/SajuChart";
 import SinbunReport from "@/components/SinbunReport";
 import YearReport from "@/components/YearReport";
 import { josa } from "@/lib/josa";
-import { PURCHASES_COOKIE } from "@/lib/cookies";
 import { ownedCourts } from "@/lib/load";
-import { isOpen, OPEN_ALL, PRICE_STEPS, priceFor, productById, type Product, type ProductId } from "@/lib/products";
+import { isOpen, OPEN_ALL, PRICE, productById, saleLabel, saleNow, type Product, type ProductId } from "@/lib/products";
 import { REPORT_SPECS } from "@/lib/reportPrompts";
 import { coupleOf } from "@/lib/couple";
 import { forgetMeAction } from "@/app/actions";
@@ -326,8 +324,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
     );
 
   const subject = await subjectFor(product, courtId, ministerId);
-  const bought = Number((await cookies()).get(PURCHASES_COOKIE)?.value ?? 0);
-  const price = priceFor(bought);
+  const sale = saleNow();
 
   return (
     <>
@@ -393,11 +390,17 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
         </div>
 
         <div className="mt-6 border-t border-seal/20 pt-5 text-center">
-          <p className="font-myeongjo text-3xl font-extrabold text-seal">{price.toLocaleString("ko-KR")}원</p>
-          <p className="mt-1 text-xs text-ink-soft">
-            <span className="inline-block">복채 단골 할인 ·</span>{" "}
-            <span className="inline-block">살 때마다 100원씩 내려가 {PRICE_STEPS[PRICE_STEPS.length - 1]}원까지</span>
-          </p>
+          {sale ? (
+            <>
+              <p className="text-xs font-extrabold text-seal">{saleLabel(sale)}</p>
+              <p className="mt-1 flex items-baseline justify-center gap-2">
+                <s className="text-base text-ink-soft">{PRICE.toLocaleString("ko-KR")}원</s>
+                <span className="font-myeongjo text-3xl font-extrabold text-seal">{sale.price.toLocaleString("ko-KR")}원</span>
+              </p>
+            </>
+          ) : (
+            <p className="font-myeongjo text-3xl font-extrabold text-seal">{PRICE.toLocaleString("ko-KR")}원</p>
+          )}
           <button
             type="button"
             disabled
