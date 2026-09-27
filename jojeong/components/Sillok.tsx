@@ -90,36 +90,37 @@ export default function Sillok({ kingName, pillars, cast = {} }: { kingName: str
         </div>
       </dl>
 
-      {s.chart && <SajuChart {...s.chart} />}
-
-      <div className="mt-4 border-l-[3px] border-seal/60 py-1 pl-3">
-        <p className="text-xs font-extrabold text-seal">정 훈도의 소견</p>
-        <ul className="mt-1.5 flex flex-col gap-1 text-[13px] leading-snug text-ink-soft">
-          {s.reasons.map((r) => (
-            <li key={r} className="flex gap-1">
-              <span aria-hidden="true">·</span>
-              <span>{r}</span>
-            </li>
-          ))}
-          <li className="flex gap-1 font-bold text-ink">
-            <span aria-hidden="true">·</span>
-            <span>
-              하여 {s.tierLabel}의 사주이옵니다. {s.lifeVerdict}.
-            </span>
-          </li>
-        </ul>
-      </div>
-
-      {/* 실록 본문: folded so the verdict above stays the first thing people see */}
+      {/* 사주 풀이 and 실록 본문: folded so the verdict above stays the first thing people see */}
       <details className="group mt-6">
         <summary className="flex cursor-pointer list-none items-center gap-3 [&::-webkit-details-marker]:hidden">
           <span className="h-px flex-1 bg-ink/15" />
           <span className="rounded-full border border-seal/40 bg-white/70 px-4 py-2 font-myeongjo text-sm font-extrabold text-seal">
-            <span className="group-open:hidden">실록 본문 펼쳐 보기 · 7장</span>
-            <span className="hidden group-open:inline">실록 본문 접기</span>
+            <span className="group-open:hidden">사주 풀이 · 실록 본문 펼쳐 보기</span>
+            <span className="hidden group-open:inline">사주 풀이 · 실록 본문 접기</span>
           </span>
           <span className="h-px flex-1 bg-ink/15" />
         </summary>
+        <div className="mt-2 mb-4">
+          {s.chart && <SajuChart {...s.chart} />}
+
+          <div className="mt-4 border-l-[3px] border-seal/60 py-1 pl-3">
+            <p className="text-xs font-extrabold text-seal">정 훈도의 소견</p>
+            <ul className="mt-1.5 flex flex-col gap-1 text-[13px] leading-snug text-ink-soft">
+              {s.reasons.map((r) => (
+                <li key={r} className="flex gap-1">
+                  <span aria-hidden="true">·</span>
+                  <span>{r}</span>
+                </li>
+              ))}
+              <li className="flex gap-1 font-bold text-ink">
+                <span aria-hidden="true">·</span>
+                <span>
+                  하여 {s.tierLabel}의 사주이옵니다. {s.lifeVerdict}.
+                </span>
+              </li>
+            </ul>
+          </div>
+        </div>
         <div className="mt-4 flex flex-col">
           {s.chapters.map((c, i) => (
             <article key={c.title} className="border-t border-ink/10 py-4 first:border-t-0 first:pt-0">

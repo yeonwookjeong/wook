@@ -71,7 +71,16 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
                 <Hundo mood="bow">전하, 즉위를 경하드리옵니다. 소신이 전하의 사주로 실록과 즉위 교서를 지어 올리옵니다.</Hundo>
               </section>
               <Sillok kingName={court.kingName} pillars={court.king} cast={cast} />
-              <KingCard kingName={court.kingName} pillars={court.king} />
+              {/* Folded like the chronicle's body, so inviting friends and the reports are a short scroll away. */}
+              <details className="group mt-3 rounded-2xl border border-ink/15 bg-white/40">
+                <summary className="cursor-pointer list-none py-3 text-center text-sm font-bold text-ink-soft [&::-webkit-details-marker]:hidden">
+                  즉위 교서 펼쳐 보기 · {KING_TYPES[court.king.dayStem].title}
+                  <span className="ml-1 inline-block transition group-open:rotate-180">▾</span>
+                </summary>
+                <div className="px-1 pb-3">
+                  <KingCard kingName={court.kingName} pillars={court.king} />
+                </div>
+              </details>
               <YearCallout href={`/reports/gukjeong?court=${court.id}`} verdict={yearPreview(court.king).verdict} />
               <section className="mt-6">
                 <Hundo mood="face">
@@ -182,7 +191,7 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
 
           {isOwner && (
             <ReportShelf
-              ids={["sinbun", "pyeongsaeng", "gukjeong", "yeonae", "jaemul", "dwitjosa"]}
+              ids={["sinbun", "pyeongsaeng", "gunghap", "gukjeong", "yeonae", "dwitjosa"]}
               query={`court=${court.id}`}
               highlights={{
                 sinbun: `왕이 아니었다면 ‘${sinbunOf(court.king).job}’`,

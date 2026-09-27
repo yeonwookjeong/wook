@@ -1,7 +1,7 @@
 // 정 훈도의 비밀 보고서. One free report (조선 신분 감정) opens the shelf; the paid ones all cost the same and get
 // cheaper with each purchase (복채 단골 할인): 990 → 890 → 790 → 690, then 690 for good.
 
-export type ProductId = "sinbun" | "pyeongsaeng" | "gukjeong" | "yeonae" | "jaemul" | "jikup" | "dwitjosa" | "gwangye" | "insa";
+export type ProductId = "sinbun" | "pyeongsaeng" | "gunghap" | "gukjeong" | "yeonae" | "jaemul" | "jikup" | "dwitjosa" | "gwangye" | "insa";
 
 export type Product = {
   id: ProductId;
@@ -53,6 +53,16 @@ export const PRODUCTS: Product[] = [
       "정 훈도가 드리는 평생의 처방",
     ],
     teaser: "사주를 처음부터 끝까지, 한 권의 책처럼 풀어 드려요.",
+    modern: true,
+  },
+  {
+    id: "gunghap",
+    title: "궁합",
+    hanja: "宮合",
+    for: "anyone",
+    tagline: "우리 둘, 진짜 잘 맞을까? 왜 끌리고 왜 부딪히는지, 오래 가려면 뭘 지켜야 하는지",
+    toc: ["우리 둘, 첫인상과 끌림의 정체", "서로에게 채워 주는 것, 부딪히는 것", "싸울 때 우리는 어떻게 될까", "돈과 생활, 잘 맞을까", "오래 가려면 꼭 지킬 것", "우리에게 좋은 때와 조심할 때"],
+    teaser: "두 사람의 사주를 나란히 놓고, 왜 끌리고 어디서 부딪히는지 풀어 드려요.",
     modern: true,
   },
   {

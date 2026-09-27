@@ -9,7 +9,8 @@ const field = "w-full rounded-xl border border-ink/15 bg-white/70 px-4 py-3 text
 // Birth time (typed however people write it, or unknown) and birthplace (searched by name, anywhere in the
 // world), with the reading of both shown back live: the time as understood, and the correction for the
 // clock of the day (summer time, old standard time) and the birthplace's longitude.
-export default function BirthTimeFields({ unknownLabel }: { unknownLabel: string }) {
+// `prefix` names the fields (a_time, b_city…) when one form holds two people.
+export default function BirthTimeFields({ unknownLabel, prefix = "" }: { unknownLabel: string; prefix?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const cityInput = useRef<HTMLInputElement>(null);
   const listId = useId();
@@ -29,7 +30,7 @@ export default function BirthTimeFields({ unknownLabel }: { unknownLabel: string
     if (!form) return;
     const read = () => {
       const data = new FormData(form);
-      setDate({ birth: String(data.get("birth") ?? ""), calendar: String(data.get("calendar") ?? "solar") });
+      setDate({ birth: String(data.get(`${prefix}birth`) ?? ""), calendar: String(data.get(`${prefix}calendar`) ?? "solar") });
     };
     read();
     form.addEventListener("input", read);
@@ -38,7 +39,7 @@ export default function BirthTimeFields({ unknownLabel }: { unknownLabel: string
       form.removeEventListener("input", read);
       form.removeEventListener("change", read);
     };
-  }, []);
+  }, [prefix]);
 
   const clock = unknown ? null : parseClock(time);
   const results = searchCities(query);
@@ -78,7 +79,7 @@ export default function BirthTimeFields({ unknownLabel }: { unknownLabel: string
       <span className="text-sm font-semibold text-ink-soft">태어난 시각 (선택)</span>
       <div className="flex items-center gap-2">
         <input
-          name="time"
+          name={`${prefix}time`}
           defaultValue=""
           onChange={(e) => setTime(e.target.value)}
           disabled={unknown}
@@ -94,7 +95,7 @@ export default function BirthTimeFields({ unknownLabel }: { unknownLabel: string
       </div>
 
       <span className="mt-2 text-sm font-semibold text-ink-soft">태어난 곳</span>
-      <input type="hidden" name="city" value={city.id} />
+      <input type="hidden" name={`${prefix}city`} value={city.id} />
       <div className="relative">
         <input
           role="combobox"
@@ -179,7 +180,7 @@ export default function BirthTimeFields({ unknownLabel }: { unknownLabel: string
             세우옵니다.
           </p>
           <label className="mt-1.5 flex cursor-pointer items-center gap-1.5 font-bold">
-            <input type="checkbox" name="yaja" value="1" checked={yaja} onChange={(e) => setYaja(e.target.checked)} className="size-4 accent-seal" />
+            <input type="checkbox" name={`${prefix}yaja`} value="1" checked={yaja} onChange={(e) => setYaja(e.target.checked)} className="size-4 accent-seal" />
             자정에 날이 바뀌는 방식(야자시)으로 보기
           </label>
         </div>
