@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { connection } from "next/server";
 import Hundo from "@/components/Hundo";
 import { priceNow, PRODUCTS, isOpen, OPEN_ALL, saleLabel, saleNow } from "@/lib/products";
 import Keep from "@/components/Keep";
@@ -9,6 +10,8 @@ export const metadata: Metadata = { title: "정 훈도의 비밀 보고서" };
 const FOR_LABEL = { king: "전하용", minister: "신하용", anyone: "누구나" } as const;
 
 export default async function ReportsPage() {
+  // Rendered per request, so a sale starts and ends on its dates without a redeploy.
+  await connection();
   const price = priceNow();
   const sale = saleNow();
 
