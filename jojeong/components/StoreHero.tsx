@@ -52,11 +52,15 @@ export default function StoreHero() {
       </svg>
 
       <div className="relative flex flex-col items-center px-6 pt-10 pb-6 text-center">
-        <p className="font-myeongjo text-sm font-extrabold tracking-[0.5em] text-[#e2bc68]">觀 象 監</p>
-        {/* Most visitors have never heard of 관상감: say what it was, in one line, right under the name. */}
-        <p className="mt-1 rounded-full border border-[#e2bc68]/40 px-3 py-0.5 text-[11px] text-[#f3ead0]/85">관상감 · 조선 왕실의 하늘과 운명을 보던 관청</p>
-        <h1 className="mt-3 font-myeongjo text-[34px] leading-tight font-extrabold text-[#f7efd9] drop-shadow-[0_2px_6px_rgb(0_0_0/0.4)]">
-          정 훈도의 사주
+        {/* Few visitors know what a 훈도 was: say it first, then the name built on it. */}
+        <p className="font-myeongjo text-sm font-extrabold tracking-[0.4em] text-[#e2bc68]">命課學 訓導</p>
+        <p className="mt-2 max-w-[17rem] text-[12px] leading-relaxed text-[#f3ead0]/85">
+          <b className="text-[#f7efd9]">명과학 훈도</b>는 조선 관상감에서
+          <br />
+          사주와 길일을 가르치던 관원이에요
+        </p>
+        <h1 className="mt-4 font-myeongjo text-[38px] leading-tight font-extrabold text-[#f7efd9] drop-shadow-[0_2px_6px_rgb(0_0_0/0.4)]">
+          훈도사주
         </h1>
         <p className="mt-2 text-[15px] leading-relaxed text-[#f3ead0]/80">
           누구에게나 맞는 말 말고,
@@ -71,7 +75,7 @@ export default function StoreHero() {
           </div>
           <p className="relative mb-2 flex-1 rounded-2xl rounded-bl-sm bg-[#f7efd9]/95 px-4 py-3 text-[13px] leading-relaxed text-ink">
             <span className="block text-[11px] font-extrabold text-seal">관상감 명과학 훈도 · 정가</span>
-            소신, 관상감에서 왕실의 사주와 궁합을 봐 드리던 훈도이옵니다. 임금의 사주도 봤으니, 이제 그대 차례이옵니다.
+            소신이 그 훈도, 정가이옵니다. 왕실의 사주와 궁합을 보던 눈으로, 이제 그대의 여덟 글자를 보겠사옵니다.
           </p>
         </div>
       </div>

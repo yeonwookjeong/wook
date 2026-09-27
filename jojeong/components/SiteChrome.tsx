@@ -21,8 +21,8 @@ export function SiteHeader() {
       <Link href="/" className="flex items-center gap-2">
         <Seal />
         <span className="flex flex-col">
-          <span className="font-myeongjo text-[15px] leading-tight font-extrabold">관상감 정 훈도</span>
-          <span className="text-[10px] leading-tight text-ink-soft">조선 최고의 사주쟁이</span>
+          <span className="font-myeongjo text-[15px] leading-tight font-extrabold">훈도사주</span>
+          <span className="text-[10px] leading-tight text-ink-soft">관상감 명과학 훈도 정가</span>
         </span>
       </Link>
       <Link href="/reports" className="border border-seal/40 px-2.5 py-1 font-myeongjo text-xs font-extrabold text-seal">
@@ -55,7 +55,7 @@ export function SiteFooter() {
       <div className="flex flex-col items-center">
         <Link href="/" className="inline-flex items-center gap-2">
           <Seal size={34} />
-          <span className="font-myeongjo text-base font-extrabold">관상감 정 훈도</span>
+          <span className="font-myeongjo text-base font-extrabold">훈도사주</span>
         </Link>
         <Link href="/" className="mt-4 rounded-full bg-seal px-5 py-2.5 font-myeongjo text-sm font-extrabold text-hanji">
           정 훈도 사주 처음으로
@@ -105,7 +105,7 @@ export function SiteFooter() {
       </nav>
       <p className="mt-5 text-center text-[11px] leading-relaxed text-ink-soft/70">
         재미로 보는 사주 콘텐츠이옵니다. 진짜 간신은 행동으로 가려내시옵소서.
-        <br />© {new Date().getFullYear()} {BUSINESS.name || "관상감 정 훈도"}. All rights reserved.
+        <br />© {new Date().getFullYear()} {BUSINESS.name || "훈도사주"}. All rights reserved.
       </p>
     </footer>
   );
