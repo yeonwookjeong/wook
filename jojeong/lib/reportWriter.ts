@@ -4,7 +4,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 import { chartBrief, pairBrief } from "./brief";
 import { productById, type ProductId } from "./products";
-import { REPORT_SPECS, SYSTEM_PROMPT, userPrompt } from "./reportPrompts";
+import { REPORT_SPECS, systemPromptFor, userPrompt } from "./reportPrompts";
 import type { Pillars } from "./saju";
 import { getProfile } from "./store";
 import { courtOfReader, subjectFor } from "./subject";
@@ -17,17 +17,17 @@ import { courtOfReader, subjectFor } from "./subject";
 export const REPORT_MODEL =
   process.env.REPORT_MODEL ?? (process.env.ANTHROPIC_API_KEY || !process.env.GEMINI_API_KEY ? "claude-opus-5" : "gemini-3.8-flash");
 const isGemini = REPORT_MODEL.startsWith("gemini");
-const PROMPT_VERSION = "v2";
+const PROMPT_VERSION = "v3";
 export const aiEnabled = () =>
   Boolean(isGemini ? process.env.GEMINI_API_KEY : process.env.ANTHROPIC_API_KEY) || process.env.REPORT_MOCK === "1";
 
-export type ReportJob = { key: string; system: string; prompt: string; title: string };
+export type ReportJob = { key: string; system: string; prompt: string; title: string; modern: boolean };
 export type JobRequest = { product: string; court?: string; m?: string; t?: string };
 
 export async function jobFor(req: JobRequest): Promise<ReportJob | { error: string; status: number }> {
   const product = productById(req.product);
   const spec = product && REPORT_SPECS[product.id as ProductId];
-  if (!product || !spec) return { error: "없는 보고서이옵니다.", status: 404 };
+  if (!product || !spec) return { error: "없는 보고서예요.", status: 404 };
 
   let subjectLine = "";
   let briefs = "";
@@ -60,15 +60,18 @@ export async function jobFor(req: JobRequest): Promise<ReportJob | { error: stri
     }
   } else {
     const subject = await subjectFor(product, req.court, req.m);
-    if (!subject || !subject.self) return { error: "본인의 사주로만 보실 수 있사옵니다. 먼저 즉위하거나 입궐해 주시옵소서.", status: 403 };
+    if (!subject || !subject.self) return { error: "본인의 사주로만 보실 수 있어요. 먼저 즉위하거나 입궐해 주세요.", status: 403 };
     const profile = await getProfile(subject.courtId, subject.who);
-    subjectLine = `[대상] ${subject.name}${subject.king ? " (조정의 왕이므로 '전하'라 부를 것)" : " ('그대'라 부를 것)"}`;
+    subjectLine = product.modern
+      ? `[대상] ${subject.name} ('${subject.name}님'이라 부를 것)`
+      : `[대상] ${subject.name}${subject.king ? " (조정의 왕이므로 '전하'라 부를 것)" : " ('그대'라 부를 것)"}`;
     briefs = chartBrief(subject.name, subject.pillars, profile);
   }
 
+  const system = systemPromptFor(product);
   const prompt = userPrompt(spec, subjectLine, briefs);
-  const key = createHash("sha256").update([PROMPT_VERSION, REPORT_MODEL, product.id, SYSTEM_PROMPT, prompt].join("\n")).digest("base64url");
-  return { key, system: SYSTEM_PROMPT, prompt, title: product.title };
+  const key = createHash("sha256").update([PROMPT_VERSION, REPORT_MODEL, product.id, system, prompt].join("\n")).digest("base64url");
+  return { key, system, prompt, title: product.title, modern: Boolean(product.modern) };
 }
 
 let client: Anthropic | null = null;

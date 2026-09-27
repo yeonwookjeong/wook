@@ -50,9 +50,9 @@ export default function DeepenForm({ courtId, who }: { courtId: string; who: str
         </p>
       )}
       <button type="submit" disabled={pending} className="rounded-2xl bg-seal py-3.5 font-myeongjo font-extrabold text-hanji disabled:opacity-60">
-        {pending ? "살펴보는 중이옵니다…" : "더 깊이 보기"}
+        {pending ? "살펴보는 중이에요…" : "더 깊이 보기"}
       </button>
-      <p className="text-center text-[11px] text-ink-soft">처음 올리신 사주와 같은지 확인한 뒤, 계산에만 쓰고 생년월일은 저장하지 않사옵니다.</p>
+      <p className="text-center text-[11px] text-ink-soft">처음 올리신 사주와 같은지 확인한 뒤, 계산에만 쓰고 생년월일은 저장하지 않아요.</p>
     </form>
   );
 }

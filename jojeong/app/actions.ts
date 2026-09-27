@@ -147,17 +147,17 @@ export async function deepenAction(_prev: FormState, formData: FormData): Promis
   const who = String(formData.get("who") ?? "");
   try {
     const court = await getCourt(courtId);
-    if (!court) return { error: "이미 사라진 조정이옵니다." };
+    if (!court) return { error: "이미 사라진 조정이에요." };
     const jar = await cookies();
     let stored: Pillars | undefined;
     if (who === "king") {
-      if (jar.get(OWNER_COOKIE(court.id))?.value !== court.ownerToken) return { error: "전하만 보강하실 수 있사옵니다." };
+      if (jar.get(OWNER_COOKIE(court.id))?.value !== court.ownerToken) return { error: "왕 본인만 보강할 수 있어요." };
       stored = court.king;
     } else {
-      if (jar.get(MINISTER_COOKIE(court.id))?.value !== who) return { error: "본인만 보강하실 수 있사옵니다." };
+      if (jar.get(MINISTER_COOKIE(court.id))?.value !== who) return { error: "본인만 보강할 수 있어요." };
       stored = (await listMinisters(court.id)).find((m) => m.id === who)?.pillars;
     }
-    if (!stored) return { error: "사주를 찾을 수 없사옵니다." };
+    if (!stored) return { error: "사주를 찾을 수 없어요." };
     const parsed = parseBirth(formData);
     const same =
       parsed.pillars.dayStem === stored.dayStem &&
@@ -169,13 +169,13 @@ export async function deepenAction(_prev: FormState, formData: FormData): Promis
       stored.hourBranch !== null &&
       parsed.input.hourBranch !== null &&
       ![0, 1, 11].includes((parsed.input.hourBranch - stored.hourBranch + 12) % 12);
-    if (!same || hourDiffers) return { error: "처음 올리신 생년월일시와 사주가 다르옵니다. 다시 확인해 주시옵소서." };
-    if (!parsed.gender && parsed.input.hourBranch === null) return { error: "성별이나 태어난 시간 중 하나는 알려 주시옵소서." };
+    if (!same || hourDiffers) return { error: "처음 올리신 생년월일시와 사주가 달라요. 다시 확인해 주세요." };
+    if (!parsed.gender && parsed.input.hourBranch === null) return { error: "성별이나 태어난 시간 중 하나는 알려 주세요." };
     await setProfile(court.id, who, computeProfile(parsed.input, parsed.gender));
   } catch (e) {
     if (e instanceof BirthInputError) return { error: e.message };
     console.error(e);
-    return { error: "보강 중 문제가 생겼사옵니다. 잠시 후 다시 시도해 주시옵소서." };
+    return { error: "보강 중 문제가 생겼어요. 잠시 후 다시 시도해 주세요." };
   }
   refresh();
   return { error: null };

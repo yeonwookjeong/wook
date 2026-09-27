@@ -14,6 +14,8 @@ export type Product = {
   teaser: string;
   // Free reports open in full with no price.
   free?: boolean;
+  // Present-day reports speak plain 해요체 to "○○님"; the Joseon ones keep 정 훈도's court speech.
+  modern?: boolean;
 };
 
 // The Joseon fantasy (king grade, chronicle, 신분 감정) is free. What is sold is the present day: the finest
@@ -50,7 +52,8 @@ export const PRODUCTS: Product[] = [
       "앞으로 10년, 꼭 잡아야 할 기회",
       "정 훈도가 드리는 평생의 처방",
     ],
-    teaser: "그대의 사주를 처음부터 끝까지, 한 권의 책처럼 풀어 올리옵니다.",
+    teaser: "사주를 처음부터 끝까지, 한 권의 책처럼 풀어 드려요.",
+    modern: true,
   },
   {
     id: "gukjeong",
@@ -58,9 +61,10 @@ export const PRODUCTS: Product[] = [
     hanja: "國運",
     for: "anyone",
     tagline: "2026년 나한테 어떤 일이 생길까? 돈·일·사랑·건강부터 달마다 할 일까지",
-    toc: ["그대는 이런 사람이옵니다", "2026년, 어떤 해가 될까", "돈은 들어올까, 새어 나갈까", "일: 버틸까, 옮길까", "올해 인연은 들어올까", "누구를 곁에 두고, 누구를 조심할까", "몸과 마음, 어디부터 챙길까", "언제 움직이고 언제 쉴까 (상반기)", "언제 움직이고 언제 쉴까 (하반기)", "올해를 내 편으로 만드는 법"],
-    teaser: "그대의 사주로 병오년 한 해를 처음부터 끝까지 풀어 올리옵니다.",
+    toc: ["나는 어떤 사람일까", "2026년, 어떤 해가 될까", "돈은 들어올까, 새어 나갈까", "일: 버틸까, 옮길까", "올해 인연은 들어올까", "누구를 곁에 두고, 누구를 조심할까", "몸과 마음, 어디부터 챙길까", "언제 움직이고 언제 쉴까 (상반기)", "언제 움직이고 언제 쉴까 (하반기)", "올해를 내 편으로 만드는 법"],
+    teaser: "사주로 2026년 한 해를 처음부터 끝까지 풀어 드려요.",
     free: true,
+    modern: true,
   },
   {
     id: "yeonae",
@@ -69,7 +73,8 @@ export const PRODUCTS: Product[] = [
     for: "anyone",
     tagline: "왜 늘 비슷한 사람에게 끌릴까? 나랑 진짜 맞는 사람, 결혼은 언제 누구와",
     toc: ["나는 연애할 때 어떤 사람일까", "왜 늘 비슷한 사람에게 끌릴까", "나랑 진짜 잘 맞는 사람", "연애가 자꾸 꼬이는 이유", "결혼은 언제, 어떤 사람과", "올해 연애운과 인연이 오는 달", "지금 만나는 사람이 있다면"],
-    teaser: "그대의 사주에서 배우자 자리와 인연의 흐름을 살펴 올리옵니다.",
+    teaser: "사주에서 배우자 자리와 인연의 흐름을 살펴 드려요.",
+    modern: true,
   },
   {
     id: "jaemul",
@@ -78,7 +83,8 @@ export const PRODUCTS: Product[] = [
     for: "anyone",
     tagline: "돈이 왜 안 모일까? 월급형인지 사업형인지, 투자해도 되는지, 돈이 트이는 때",
     toc: ["나는 돈을 어떻게 버는 사람일까", "돈이 모이지 않는 진짜 이유", "월급이 맞을까, 내 일이 맞을까", "투자해도 되는 사람일까", "돈이 트이는 때", "지갑을 두둑하게 하는 습관"],
-    teaser: "그대의 사주에 재물이 어떤 모양으로 들어 있는지 살펴 올리옵니다.",
+    teaser: "사주에 재물이 어떤 모양으로 들어 있는지 살펴 드려요.",
+    modern: true,
   },
   {
     id: "jikup",
@@ -87,7 +93,8 @@ export const PRODUCTS: Product[] = [
     for: "anyone",
     tagline: "지금 일이 나랑 맞을까? 어울리는 직업 세\u00a0가지, 회사형인지 독립형인지, 옮길 때",
     toc: ["나는 어떤 일을 할 때 빛날까", "지금 일이 버겁게 느껴진다면", "어울리는 일 세 가지", "회사형일까, 독립형일까", "이직·창업, 언제가 좋을까", "일이 술술 풀리는 습관"],
-    teaser: "조선이었다면 어떤 일을 했을지는 무료로 보셨사옵니다. 이번에는 지금 이 시대의 일을 봐 드리옵니다.",
+    teaser: "조선이었다면 어떤 일을 했을지는 무료로 보셨죠? 이번에는 지금 이 시대의 일을 봐 드려요.",
+    modern: true,
   },
   {
     id: "dwitjosa",

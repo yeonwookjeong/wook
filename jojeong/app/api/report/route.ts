@@ -17,9 +17,16 @@ export async function POST(request: Request) {
   const cached = await getReportText(job.key);
   if (cached) return new Response(cached, { headers: { "content-type": "text/plain; charset=utf-8", "x-report": "cached" } });
 
-  if (!aiEnabled()) return Response.json({ error: "정 훈도가 붓을 준비하는 중이옵니다. 잠시 뒤 다시 찾아 주시옵소서." }, { status: 503 });
+  if (!aiEnabled())
+    return Response.json(
+      { error: job.modern ? "정 훈도가 보고서를 쓸 준비를 하고 있어요. 잠시 뒤 다시 열어 주세요." : "정 훈도가 붓을 준비하는 중이옵니다. 잠시 뒤 다시 찾아 주시옵소서." },
+      { status: 503 },
+    );
   if ((await countReportToday()) > DAILY_LIMIT)
-    return Response.json({ error: "오늘은 붓을 너무 많이 들어 손목이 저리옵니다. 내일 다시 찾아 주시옵소서." }, { status: 429 });
+    return Response.json(
+      { error: job.modern ? "오늘 쓸 수 있는 보고서가 모두 찼어요. 내일 다시 열어 주세요." : "오늘은 붓을 너무 많이 들어 손목이 저리옵니다. 내일 다시 찾아 주시옵소서." },
+      { status: 429 },
+    );
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
