@@ -47,8 +47,8 @@ export default function YearReport({
     <>
         <p className="mt-6 text-center text-xs text-ink-soft">각 제목을 누르면 풀이가 펼쳐져요</p>
         <div className="mt-2 flex flex-col gap-2">
-          {sections.map((s, i) => (
-            <details key={s.id} open={i < 2} className="group doc-paper px-5 py-4">
+          {sections.map((s) => (
+            <details key={s.id} className="group doc-paper px-5 py-4">
               <summary className="flex cursor-pointer list-none items-start gap-3 [&::-webkit-details-marker]:hidden">
                 <span className="flex size-9 shrink-0 items-center justify-center border-2 border-seal/60 font-myeongjo font-extrabold text-seal">{s.hanja}</span>
                 <span className="min-w-0 flex-1">

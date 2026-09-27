@@ -20,6 +20,7 @@ const WORDS = {
     writing: "정 훈도가 보고서를 쓰고 있어요…",
     wait: "처음 한 번만 1~2분 걸리고, 다음부터는 바로 열려요.",
     sign: "— 정 훈도 드림",
+    tap: "제목을 누르면 풀이가 펼쳐져요",
   },
   joseon: {
     failed: "보고서를 불러오지 못했사옵니다.",
@@ -30,6 +31,7 @@ const WORDS = {
     writing: "붓을 들어 적는 중이옵니다…",
     wait: "처음 한 번만 1~2분 걸리고, 다음부터는 바로 열리옵니다.",
     sign: "— 관상감 명과학 훈도 정가, 삼가 적음",
+    tap: "제목을 누르시면 풀이가 펼쳐지옵니다",
   },
 };
 
@@ -117,8 +119,10 @@ export default function AiReport({
 
   return (
     <div className="mt-4 flex flex-col gap-2">
+      {sections.length > 0 && <p className="text-center text-xs text-ink-soft">{w.tap}</p>}
       {sections.map((s, i) => (
-        <details key={i} open className="group doc-paper px-5 py-4">
+        // Closed by default: the headlines read as a table of contents, and each opens on a tap.
+        <details key={i} className="group doc-paper px-5 py-4">
           <summary className="flex cursor-pointer list-none items-start gap-3 [&::-webkit-details-marker]:hidden">
             <span className="flex size-9 shrink-0 items-center justify-center border-2 border-seal/60 font-myeongjo font-extrabold text-seal">
               {hanjaNum(i + 1)}
