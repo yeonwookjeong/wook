@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { forgetMeAction } from "@/app/actions";
-import Hundo from "@/components/Hundo";
 import RoyalDoc from "@/components/RoyalDoc";
+import StoreHero from "@/components/StoreHero";
+import TodayCard from "@/components/TodayCard";
 import { readMe } from "@/lib/me";
 import { OPEN_ALL, PRICE_STEPS, productById, type Product, type ProductId } from "@/lib/products";
+import { todayFor } from "@/lib/today";
 
 // The main page: 정 훈도's present-day readings, picked and opened with one's own chart. The Joseon game
 // (왕이 될 사주, /king) is the free, shareable side door.
@@ -51,21 +53,8 @@ export default async function Home() {
 
   return (
     <>
-      <section className="mt-6 text-center">
-        <p className="font-myeongjo text-sm font-extrabold tracking-[0.5em] text-seal">觀 象 監</p>
-        <h1 className="mt-2 font-myeongjo text-[32px] leading-tight font-extrabold">정 훈도의 사주</h1>
-        <p className="mt-2 text-[15px] leading-relaxed text-ink-soft">
-          조선 최고의 사주쟁이가
-          <br />
-          <b className="text-ink">지금의 나</b>를 봐 드려요
-        </p>
-      </section>
-
-      <section className="mt-5">
-        <Hundo mood="bow">
-          어서 오시옵소서. 같은 일주라도 다 같은 사주가 아니옵니다. 생년월일을 주시면 그대만의 여덟 글자를 끝까지 풀어 올리겠사옵니다.
-        </Hundo>
-      </section>
+      <StoreHero />
+      <TodayCard today={todayFor(me?.person ?? null)} name={me?.person.name ?? null} />
 
       {me && (
         <form action={forgetMeAction} className="mx-auto mt-4 flex w-fit items-center gap-2 rounded-full bg-gold/15 px-4 py-2 text-xs">
