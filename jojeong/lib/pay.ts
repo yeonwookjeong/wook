@@ -21,7 +21,8 @@ export type Order = {
   // Whose report, for the order list: "지은" or "지은님과 민호님".
   who: string;
   amount: number;
-  status: "ready" | "paid";
+  // "canceled": refunded in the Toss admin (learned through the webhook); the report closes again.
+  status: "ready" | "paid" | "canceled";
   createdAt: number;
   paidAt?: number;
   paymentKey?: string;
@@ -77,6 +78,26 @@ export async function confirmOrder(order: Order, paymentKey: string, amount: num
   const paid: Order = { ...order, status: "paid", paidAt: Date.now(), paymentKey, method };
   await setOrderRaw(order.id, JSON.stringify(paid));
   return { ok: true };
+}
+
+// The Toss webhook only says that something changed; the payment itself is read back from Toss with the secret
+// key, so a forged call cannot close anyone's report. A cancelled payment closes its order.
+export async function syncPayment(paymentKey: string): Promise<Order | null> {
+  if (payMock() || !/^[\w-]{10,200}$/.test(paymentKey)) return null;
+  const res = await fetch(`https://api.tosspayments.com/v1/payments/${encodeURIComponent(paymentKey)}`, {
+    headers: { Authorization: `Basic ${Buffer.from(`${secretKey()}:`).toString("base64")}` },
+    cache: "no-store",
+  }).catch(() => null);
+  if (!res?.ok) return null;
+  const payment = (await res.json()) as { orderId?: string; paymentKey?: string; status?: string };
+  const order = await getOrder(payment.orderId);
+  if (!order || order.paymentKey !== payment.paymentKey) return null;
+  if (order.status === "paid" && (payment.status === "CANCELED" || payment.status === "PARTIAL_CANCELED")) {
+    const canceled: Order = { ...order, status: "canceled" };
+    await setOrderRaw(order.id, JSON.stringify(canceled));
+    return canceled;
+  }
+  return order;
 }
 
 // Orders this browser bought, newest first.

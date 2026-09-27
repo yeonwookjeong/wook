@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Hahmlet } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { adsAccount } from "@/lib/ads";
 import { SITE_NAME, SITE_TAGLINE, siteUrl } from "@/lib/brand";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
@@ -17,6 +18,11 @@ export const metadata: Metadata = {
   description: "평생 사주, 궁합, 2026 운세, 연애·재물·직업까지. 같은 일주라도 다 다른 당신만의 사주를 정 훈도가 풀어 드려요.",
   // Lets AdSense verify the site once the account is set (lib/ads.ts).
   ...(adsAccount && { other: { "google-adsense-account": adsAccount } }),
+  // Search Console and 네이버 서치어드바이저 ownership, from the codes each gives (only the content value).
+  verification: {
+    ...(process.env.GOOGLE_SITE_VERIFICATION && { google: process.env.GOOGLE_SITE_VERIFICATION }),
+    ...(process.env.NAVER_SITE_VERIFICATION && { other: { "naver-site-verification": process.env.NAVER_SITE_VERIFICATION } }),
+  },
 };
 
 export const viewport: Viewport = {
@@ -40,6 +46,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {children}
           <SiteFooter />
         </main>
+        {/* Page views and visitors, cookieless (Vercel Web Analytics; enable it in the Vercel project). */}
+        <Analytics />
       </body>
     </html>
   );
