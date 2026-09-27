@@ -23,6 +23,14 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ko" className={`${myeongjo.variable} h-full antialiased`}>
+      <head>
+        {/* Pretendard for body text, split by character range so a page loads only the glyphs it uses. */}
+        <link
+          rel="stylesheet"
+          crossOrigin="anonymous"
+          href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+        />
+      </head>
       <body className="min-h-full">
         <main className="mx-auto flex min-h-dvh w-full max-w-[440px] flex-col px-4 pb-8">
           <SiteHeader />
