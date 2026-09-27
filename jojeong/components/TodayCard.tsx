@@ -19,7 +19,7 @@ export default function TodayCard({ today, name }: { today: Today; name: string 
         </p>
       ) : (
         <Link href="/reports/gukjeong" className="mt-3 block text-[13px] font-bold text-seal">
-          내 사주를 넣으면, 오늘이 나에게 좋은 날인지 알려 드려요 →
+          오늘, 나한테도 좋은 날일까? →
         </Link>
       )}
     </section>
