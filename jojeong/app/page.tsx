@@ -108,7 +108,7 @@ export default async function Home() {
             const p = productById(id)!;
             return (
               <li key={id}>
-                <Link href={`/reports/${id}`} className="doc-paper flex h-full flex-col px-4 pt-4 pb-3">
+                <Link href={`/reports/${id}`} className="doc-paper flex h-full flex-col px-5 pt-5 pb-4">
                   <span className="font-myeongjo text-[11px] font-extrabold tracking-[0.3em] text-seal">{p.hanja}</span>
                   <span className="mt-1 font-myeongjo text-lg leading-tight font-extrabold">{SHORT[id]}</span>
                   <span className="mt-1.5 flex-1 text-[13px] leading-snug text-ink-soft">{PITCH[id]}</span>
@@ -123,7 +123,7 @@ export default async function Home() {
             );
           })}
           <li>
-            <Link href="/reports" className="doc-paper flex h-full flex-col items-center justify-center gap-1 px-4 py-4 text-center">
+            <Link href="/reports" className="doc-paper flex h-full flex-col items-center justify-center gap-1 px-5 py-5 text-center">
               <span className="font-myeongjo text-lg font-extrabold">전체 보고서</span>
               <span className="text-[13px] text-seal">모두 보기 →</span>
             </Link>
@@ -136,7 +136,7 @@ export default async function Home() {
         <p className="mt-1 text-center text-[13px] text-ink-soft">&ldquo;따뜻하고 배려심이 깊으시네요&rdquo; 같은 말은 하지 않아요</p>
         <ul className="mt-4 flex flex-col gap-2.5">
           {SAYINGS.map((x) => (
-            <li key={x.label} className="doc-paper px-5 py-4">
+            <li key={x.label} className="doc-paper px-6 py-5">
               <p className="text-[11px] font-extrabold text-seal">{x.label}</p>
               <p className="mt-1 font-myeongjo text-[17px] leading-snug font-extrabold">&ldquo;{x.line}&rdquo;</p>
             </li>
