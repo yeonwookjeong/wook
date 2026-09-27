@@ -1,9 +1,11 @@
 import { josa } from "./josa";
-import type { FullPillars, Pillars } from "./saju";
+import { BRANCHES, hourStemFor, STEMS, type FullPillars, type Pillars } from "./saju";
 
 // 자평명리 reading of the full eight-character chart: the five elements weighed through every hidden stem
 // (지장간), the ten gods (십신), how strong the day master is (득령·득지·득세, the month branch weighing most),
 // the frame of the chart (격국), and the balancing element (용신) by 억부 checked against the season (조후).
+// Combinations (합) move or bind elements before the balance is taken, and a chart that has given itself over
+// to one force is read as following it (종격).
 // Only charts saved with the month pillar get this; older ones fall back.
 
 export const ELEMENT_KO = ["목", "화", "토", "금", "수"] as const;
@@ -47,7 +49,7 @@ export function tenGod(dayStem: number, otherStem: number): TenGod {
 export type Slot = { pos: "시" | "일" | "월" | "연"; stem: number | null; branch: number | null };
 
 export function chartOf(p: FullPillars): Slot[] {
-  const hourStem = p.hourBranch === null ? null : ((p.dayStem % 5) * 2 + p.hourBranch) % 10;
+  const hourStem = hourStemFor(p);
   return [
     { pos: "시", stem: hourStem, branch: p.hourBranch },
     { pos: "일", stem: p.dayStem, branch: p.dayBranch },
@@ -97,7 +99,9 @@ export type Reading = {
   yong: number; // 용신 element
   hee: number; // 희신: feeds the 용신
   gi: number; // 기신: attacks the 용신
-  method: "억부" | "조후";
+  method: "억부" | "조후" | "종격";
+  outer: Outer | null; // 종격: the chart follows one overwhelming force instead of being balanced
+  bonds: string[]; // the combinations (합) that moved or bound elements, in words
   eokbu: number; // the 억부 answer, even when 조후 wins
   johu: number | null; // element the season calls for, when it calls urgently
   season: "봄" | "여름" | "가을" | "겨울";
@@ -120,10 +124,34 @@ function branchParts(branch: number, pos: Slot["pos"]): [stem: number, share: nu
   return turn ? [[main, 1 - turn[1]], [turn[0], turn[1]]] : [[main, 1]];
 }
 
+// ── 합 (combinations), applied before the balance is taken.
+// 삼합·방합: all three branches present make one element (국). The element's yin stem stands for it.
+const TRIADS: [branches: number[], el: number, name: string][] = [
+  [[8, 0, 4], 4, "申子辰 삼합 수국"],
+  [[2, 6, 10], 1, "寅午戌 삼합 화국"],
+  [[5, 9, 1], 3, "巳酉丑 삼합 금국"],
+  [[11, 3, 7], 0, "亥卯未 삼합 목국"],
+  [[2, 3, 4], 0, "寅卯辰 방합 목국"],
+  [[5, 6, 7], 1, "巳午未 방합 화국"],
+  [[8, 9, 10], 3, "申酉戌 방합 금국"],
+  [[11, 0, 1], 4, "亥子丑 방합 수국"],
+];
+const EL_STEM = [1, 3, 5, 7, 9];
+// 육합 of two neighbouring branches, and the element the pair makes.
+const SIX_HAP: Record<string, number> = { "0-1": 2, "2-11": 0, "3-10": 1, "4-9": 3, "5-8": 4, "6-7": 1 };
+const pairKey = (a: number, b: number) => (a < b ? `${a}-${b}` : `${b}-${a}`);
+// 천간합 甲己 土, 乙庚 金, 丙辛 水, 丁壬 木, 戊癸 火.
+const stemHapEl = (a: number, b: number) => (Math.abs(a - b) === 5 ? [2, 3, 4, 0, 1][Math.min(a, b)] : null);
+// A bound character (합거·기반) keeps its element but loses part of its force.
+const BOUND = { stem: 0.5, branch: 0.7 };
+
+export type Outer = "종아격" | "종재격" | "종살격" | "종왕격" | "종강격";
+const OUTER_OF: Record<GodGroup, Outer> = { 식상: "종아격", 재성: "종재격", 관성: "종살격", 비겁: "종왕격", 인성: "종강격" };
+
 // 격국: the hidden stem of the month branch that shows itself among the heavenly stems (투출) sets the frame;
 // with none showing, the main hidden stem (본기) does.
 function gyeokOf(p: FullPillars): TenGod {
-  const hourStem = p.hourBranch === null ? null : ((p.dayStem % 5) * 2 + p.hourBranch) % 10;
+  const hourStem = hourStemFor(p);
   const shown = [p.yearStem, p.monthStem, hourStem];
   const hidden = [...HIDDEN[p.monthBranch]].reverse(); // 본기 first
   const out = hidden.find(([s]) => shown.includes(s) && s !== p.dayStem) ?? hidden[0];
@@ -142,39 +170,103 @@ export function readChart(p: Pillars): Reading | null {
   let support = 0;
   let total = 0;
 
+  // Every character as a unit: its element parts (a branch by its main element, the month's earth by its
+  // season) and a force factor. Combinations then move a unit to another element or bind it.
+  type Unit = { pos: Slot["pos"]; stem: boolean; char: number; w: number; parts: [stem: number, share: number][]; factor: number };
+  const units: Unit[] = [];
   for (const slot of chartOf(full)) {
     if (slot.stem !== null) {
       elements[stemEl(slot.stem)]++;
-      if (slot.pos === "일") {
-        // The day master counts toward the balance and backs itself (득세 counts it, as 만세력 do).
-        weights[dayEl] += POS_WEIGHT.stem.일;
-        support += POS_WEIGHT.stem.일;
-        total += POS_WEIGHT.stem.일;
-      } else {
-        const w = POS_WEIGHT.stem[slot.pos];
+      if (slot.pos !== "일") {
         const g = tenGod(full.dayStem, slot.stem);
         godList.push(g);
         gods[GROUP_OF[g]]++;
-        godWeights[GROUP_OF[g]] += w;
-        weights[stemEl(slot.stem)] += w;
-        total += w;
-        if (GROUP_OF[g] === "비겁" || GROUP_OF[g] === "인성") support += w;
       }
+      units.push({ pos: slot.pos, stem: true, char: slot.stem, w: POS_WEIGHT.stem[slot.pos], parts: [[slot.stem, 1]], factor: 1 });
     }
     if (slot.branch !== null) {
       elements[BRANCH_EL[slot.branch]]++;
       godList.push(tenGod(full.dayStem, BRANCH_MAIN_STEM[slot.branch]));
       gods[GROUP_OF[tenGod(full.dayStem, BRANCH_MAIN_STEM[slot.branch])]]++;
-      // A branch counts as its main element, with the season's correction for an earth month branch.
-      const w = POS_WEIGHT.branch[slot.pos];
-      for (const [stem, share] of branchParts(slot.branch, slot.pos)) {
-        const part = w * share;
-        const g = GROUP_OF[tenGod(full.dayStem, stem)];
-        godWeights[g] += part;
-        weights[stemEl(stem)] += part;
-        total += part;
-        if (g === "비겁" || g === "인성") support += part;
-      }
+      units.push({ pos: slot.pos, stem: false, char: slot.branch, w: POS_WEIGHT.branch[slot.pos], parts: branchParts(slot.branch, slot.pos), factor: 1 });
+    }
+  }
+  const at = (pos: Slot["pos"], stem: boolean) => units.find((u) => u.pos === pos && u.stem === stem);
+  const branchUnits = units.filter((u) => !u.stem);
+  const monthEl = BRANCH_EL[full.monthBranch];
+  const EL_NAME = (e: number) => `${ELEMENT_KO[e]}(${ELEMENT_HANJA[e]})`;
+  const bonds: string[] = [];
+  const moved = new Set<Unit>();
+  const become = (u: Unit, el: number) => {
+    u.parts = [[EL_STEM[el], 1]];
+    moved.add(u);
+  };
+  // 삼합·방합: a full set anywhere in the chart turns its branches to one element.
+  for (const [set, el, name] of TRIADS) {
+    if (!set.every((b) => branchUnits.some((u) => u.char === b && !moved.has(u)))) continue;
+    for (const u of branchUnits) if (set.includes(u.char) && !moved.has(u)) become(u, el);
+    bonds.push(`${name}: 세 지지가 모여 ${EL_NAME(el)} 기운으로 뭉침`);
+  }
+  // 육합 of neighbouring branches, unless a clash from another branch breaks it. With the month on the side
+  // of the element it makes, the pair turns into it (합화); otherwise the two only bind each other, the month
+  // branch keeping its hold on the season.
+  const NEIGHBOURS: [Slot["pos"], Slot["pos"]][] = [["연", "월"], ["월", "일"], ["일", "시"]];
+  const paired = new Set<Unit>();
+  for (const [a, b] of NEIGHBOURS) {
+    const x = at(a, false);
+    const y = at(b, false);
+    if (!x || !y || moved.has(x) || moved.has(y) || paired.has(x) || paired.has(y)) continue;
+    const el = SIX_HAP[pairKey(x.char, y.char)];
+    if (el === undefined) continue;
+    if (branchUnits.some((o) => o !== x && o !== y && (Math.abs(o.char - x.char) === 6 || Math.abs(o.char - y.char) === 6))) continue;
+    paired.add(x);
+    paired.add(y);
+    const name = `${a}지 ${BRANCHES[x.char]}·${b}지 ${BRANCHES[y.char]} 육합`;
+    if (el === monthEl) {
+      become(x, el);
+      become(y, el);
+      bonds.push(`${name}: 태어난 달이 ${EL_NAME(el)} 기운이라 합이 이루어져 ${EL_NAME(el)}로 변함(합화)`);
+    } else {
+      for (const u of [x, y]) if (u.pos !== "월") u.factor = BOUND.branch;
+      bonds.push(`${name}: 서로 묶여 제 힘을 다 쓰지 못함`);
+    }
+  }
+  // 천간합 of neighbouring stems. The day master never changes: a stem combining with it is bound to it in
+  // affection (유정), not weakened. The year and month stems combining turn with the month, or bind.
+  for (const [a, b] of NEIGHBOURS) {
+    const x = at(a, true);
+    const y = at(b, true);
+    if (!x || !y) continue;
+    const el = stemHapEl(x.char, y.char);
+    if (el === null) continue;
+    const name = `${a}간 ${STEMS[x.char]}·${b}간 ${STEMS[y.char]} 천간합`;
+    if (a === "일" || b === "일") bonds.push(`${name}: 일간과 정으로 묶임(유정), 힘은 그대로`);
+    else if (el === monthEl) {
+      become(x, el);
+      become(y, el);
+      bonds.push(`${name}: 태어난 달이 ${EL_NAME(el)} 기운이라 ${EL_NAME(el)}로 변함(합화)`);
+    } else {
+      x.factor = BOUND.stem;
+      y.factor = BOUND.stem;
+      bonds.push(`${name}: 서로 묶여 제 힘을 다 쓰지 못함`);
+    }
+  }
+
+  for (const u of units) {
+    if (u.stem && u.pos === "일") {
+      // The day master counts toward the balance and backs itself (득세 counts it, as 만세력 do).
+      weights[dayEl] += u.w;
+      support += u.w;
+      total += u.w;
+      continue;
+    }
+    for (const [stem, share] of u.parts) {
+      const part = u.w * share * u.factor;
+      const g = GROUP_OF[tenGod(full.dayStem, stem)];
+      godWeights[g] += part;
+      weights[stemEl(stem)] += part;
+      total += part;
+      if (g === "비겁" || g === "인성") support += part;
     }
   }
 
@@ -182,6 +274,26 @@ export function readChart(p: Pillars): Reading | null {
   const strength: Strength = share >= CUTS.strong ? "극신강" : share >= CUTS.mid ? "신강" : share > CUTS.weak ? "신약" : "극신약";
   const balanced = Math.abs(share - CUTS.mid) < 0.06; // 중화에 가까움
   const strong = share >= CUTS.mid;
+
+  // 종격: a day master with no root, no help showing and one draining force filling the chart gives itself
+  // over to that force; one backed by nearly everything, with no officer or wealth to check it, follows its
+  // own side. Kept strict (진종 only).
+  const helps = (e: number) => e === dayEl || e === (dayEl + 4) % 5;
+  const rooted = branchUnits.some((u) => (moved.has(u) ? u.parts.some(([st]) => stemEl(st) === dayEl) : HIDDEN[u.char].some(([h]) => stemEl(h) === dayEl)));
+  const helpShows = units.some((u) => u.stem && u.pos !== "일" && u.factor === 1 && helps(stemEl(u.parts[0][0])));
+  // An officer anywhere, even hidden in a branch, keeps a strong chart from following itself.
+  const officerAnywhere =
+    godWeights.관성 > 0 || branchUnits.some((u) => !moved.has(u) && HIDDEN[u.char].some(([h]) => stemEl(h) === (dayEl + 3) % 5));
+  let outer: Outer | null = null;
+  if (share < 0.15 && !rooted && !helpShows) {
+    const drains: GodGroup[] = ["식상", "재성", "관성"];
+    const lead = drains.reduce((a, b) => (godWeights[b] > godWeights[a] ? b : a));
+    // Following the officer fails when the output that attacks it is also strong.
+    const attacked = lead === "관성" && godWeights.식상 / total >= 0.15;
+    if (godWeights[lead] / total >= 0.45 && !attacked) outer = OUTER_OF[lead];
+  } else if (share >= 0.85 && godWeights.재성 / total < 0.06 && !officerAnywhere) {
+    outer = OUTER_OF[godWeights.비겁 >= godWeights.인성 ? "비겁" : "인성"];
+  }
 
   // 억부: a strong day master wants what drains or checks it, a weak one what feeds or backs it — and which
   // one depends on what made it strong or weak. An element the chart is already heavy in is no cure, so the
@@ -211,14 +323,14 @@ export function readChart(p: Pillars): Reading | null {
   // The season wins when it pulls the same way as 억부 (or the element is all but absent); otherwise 억부 stands.
   const backs = (e: number) => e === dayEl || e === el("인성");
   const aligned = johu !== null && (strong ? !backs(johu) : backs(johu));
-  const method = johu !== null && johu !== eokbu && (aligned || weights[johu] < 4) ? "조후" : "억부";
-  const yong = method === "조후" ? johu! : eokbu;
+  const followed = outer ? (Object.keys(OUTER_OF) as GodGroup[]).find((g) => OUTER_OF[g] === outer)! : null;
+  const method = followed ? "종격" : johu !== null && johu !== eokbu && (aligned || weights[johu] < 4) ? "조후" : "억부";
+  const yong = followed ? el(followed) : method === "조후" ? johu! : eokbu;
   const hee = (yong + 4) % 5;
   const gi = (yong + 3) % 5;
   const missing = elements.flatMap((n, i) => (n === 0 ? [i] : []));
   const gyeok = gyeokOf(full);
 
-  const monthEl = BRANCH_EL[full.monthBranch];
   const dayName = `${ELEMENT_KO[dayEl]}(${ELEMENT_HANJA[dayEl]})`;
   const yongName = `${ELEMENT_KO[yong]}(${ELEMENT_HANJA[yong]})`;
   const reasons = [
@@ -228,11 +340,13 @@ export function readChart(p: Pillars): Reading | null {
         ? `${season}의 달이 ${dayName} 일간을 생(生)해 주니 뿌리가 든든하옵니다`
         : `${season}의 달에 태어난 ${dayName} 일간이라 제철을 벗어나 기운이 여위옵니다`,
     `태어난 달의 기운이 ${josa(GOD_GLOSS[gyeok], "으로/로")} 드러나니 ${GYEOK_NAME[gyeok]}의 그릇이옵니다`,
-    method === "조후"
+    method === "종격"
+      ? `일간이 기댈 뿌리 없이 한 기운이 사주를 채우니, 버티지 않고 그 흐름을 따르는 ${outer}이옵니다. ${yongName} 기운이 용신이옵니다`
+      : method === "조후"
       ? `${season}에 태어나 ${johu === 4 ? "물이 말라 조열하니" : "불이 꺼져 한습하니"}, 무엇보다 ${yongName} 기운이 급한 용신이옵니다`
       : `하여 ${balanced ? "중화에 가까운 " : ""}${strength}한 사주이니, ${yongName} 기운이 전하를 돕는 용신이옵니다`,
   ];
-  return { elements, weights, gods, godWeights, godList, strength, balanced, support: share, yong, hee, gi, method, eokbu, johu, season, gyeok, missing, reasons };
+  return { elements, weights, gods, godWeights, godList, strength, balanced, support: share, yong, hee, gi, method, outer, bonds, eokbu, johu, season, gyeok, missing, reasons };
 }
 
 // A plain-words gloss of each ten god, for sentences that name one.
@@ -264,7 +378,7 @@ export const GYEOK_NAME: Record<TenGod, string> = {
 
 // How much of a given element someone's chart carries (6 or 8 characters; 4-character legacy charts count what they have).
 export function elementCount(p: Pillars, el: number): number {
-  const stems = [p.dayStem, p.monthStem, p.yearStem, p.hourBranch === null ? undefined : ((p.dayStem % 5) * 2 + p.hourBranch) % 10];
+  const stems = [p.dayStem, p.monthStem, p.yearStem, hourStemFor(p) ?? undefined];
   const branches = [p.dayBranch, p.monthBranch, p.yearBranch, p.hourBranch ?? undefined];
   return (
     stems.filter((s): s is number => s !== undefined && stemEl(s) === el).length +

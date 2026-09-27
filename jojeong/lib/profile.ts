@@ -34,7 +34,8 @@ export function computeProfile(input: BirthInput, gender: Gender | null): Profil
   const profile: Profile = { birthYear: solar.getYear() };
   if (gender) {
     profile.gender = gender;
-    const hour = input.hourBranch === null ? 12 : input.hourBranch * 2;
+    // A 야자시 birth is still on its own day, at 23:30.
+    const hour = input.hourBranch === null ? 12 : input.yaja ? 23 : input.hourBranch * 2;
     const ec = Solar.fromYmdHms(solar.getYear(), solar.getMonth(), solar.getDay(), hour, 30, 0).getLunar().getEightChar();
     profile.daeun = ec
       .getYun(gender === "m" ? 1 : 0)
@@ -53,7 +54,8 @@ export function computeProfile(input: BirthInput, gender: Gender | null): Profil
   if (input.hourBranch !== null) {
     const date = `${solar.getYear()}-${solar.getMonth()}-${solar.getDay()}`;
     // Gender only turns the palace chart's own decade cycle, which is not used; the palaces and stars are the same.
-    const chart = astro.bySolar(date, input.hourBranch, gender === "f" ? "female" : "male", true, "ko-KR");
+    // iztro's hour index 12 is the late 子 hour (23:00–24:00) of the same day.
+    const chart = astro.bySolar(date, input.yaja ? 12 : input.hourBranch, gender === "f" ? "female" : "male", true, "ko-KR");
     const order = ["명궁", "형제", "부처", "자녀", "재백", "질액", "천이", "노복", "관록", "전택", "복덕", "부모"];
     profile.palaces = order.map((name) => {
       const p = chart.palaces.find((x) => x.name === name)!;

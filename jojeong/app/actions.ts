@@ -57,8 +57,10 @@ function parseBirth(formData: FormData): Omit<Parsed, "name"> {
   if (raw.month < 1 || raw.month > 12 || raw.day < 1 || raw.day > 31) throw new BirthInputError("존재하지 않는 날짜이옵니다.");
   // Validate the date as entered first; only then correct the time (which can move the day).
   computePillars({ ...raw, hourBranch: null });
+  // 야자시 is asked for only for a birth in the last hour of the day (components/BirthTimeFields.tsx).
+  const yaja = formData.get("yaja") === "1";
   const input = clock
-    ? resolveBirthTime(raw, clock, city).input
+    ? resolveBirthTime(raw, clock, city, yaja).input
     : resolveLateZi(raw);
   return { pillars: computePillars(input), input, gender };
 }

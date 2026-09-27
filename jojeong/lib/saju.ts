@@ -36,6 +36,8 @@ export type Pillars = {
   dayBranch: number;
   yearBranch: number;
   hourBranch: number | null;
+  // Set only for a 야자시 birth, whose hour takes the next day's 子 hour stem; otherwise it follows the day.
+  hourStem?: number;
   yearStem?: number;
   monthStem?: number;
   monthBranch?: number;
@@ -46,6 +48,8 @@ export const isFull = (p: Pillars): p is FullPillars => p.monthBranch !== undefi
 
 // Hour stem follows from the day stem (甲己 days start the day at 甲子, 乙庚 at 丙子, ...).
 export const hourStemOf = (dayStem: number, hourBranch: number) => ((dayStem % 5) * 2 + hourBranch) % 10;
+// The hour stem of a chart, or null when the hour is unknown.
+export const hourStemFor = (p: Pillars) => (p.hourBranch === null ? null : (p.hourStem ?? hourStemOf(p.dayStem, p.hourBranch)));
 
 export type BirthInput = {
   year: number;
@@ -55,6 +59,8 @@ export type BirthInput = {
   hourBranch: number | null;
   // The actual instant of birth (UTC ms) when the clock time is known; year and month are read at it.
   instant?: number;
+  // 야자시: born 23:00–23:59 and read on that day (the day turns at midnight), with the next day's 子 hour.
+  yaja?: boolean;
 };
 
 export class BirthInputError extends Error {}
@@ -73,13 +79,13 @@ export function resolveLateZi(input: BirthInput): BirthInput {
 
 // Clock time and birthplace → the day pillar's solar date, the hour (시) and the exact instant, with Korea's
 // past standard times, summer time and the birthplace's longitude all accounted for (lib/birthtime.ts).
-export function resolveBirthTime(input: BirthInput, clock: { hour: number; minute: number }, place: { lon: number; tz: string }) {
+export function resolveBirthTime(input: BirthInput, clock: { hour: number; minute: number }, place: { lon: number; tz: string }, yaja = false) {
   const { year, month, day, calendar } = input;
   const solar =
     calendar === "solar"
       ? Solar.fromYmdHms(year, month, day, 12, 0, 0)
       : Lunar.fromYmdHms(year, calendar === "lunar-leap" ? -month : month, day, 12, 0, 0).getSolar();
-  const c = correctBirth(solar.getYear(), solar.getMonth(), solar.getDay(), clock.hour, clock.minute, place);
+  const c = correctBirth(solar.getYear(), solar.getMonth(), solar.getDay(), clock.hour, clock.minute, place, yaja);
   const dayOf = c.dayShift ? solar.next(c.dayShift) : solar;
   const resolved: BirthInput = {
     year: dayOf.getYear(),
@@ -88,6 +94,7 @@ export function resolveBirthTime(input: BirthInput, clock: { hour: number; minut
     calendar: "solar",
     hourBranch: c.hourBranch,
     instant: c.utcMs,
+    ...(c.yaja && { yaja: true }),
   };
   return { input: resolved, correction: c };
 }
@@ -127,11 +134,14 @@ export function computePillars(input: BirthInput): Pillars {
       : Solar.fromYmdHms(solar.getYear(), solar.getMonth(), solar.getDay(), hourBranch * 2, 30, 0).getLunar().getEightChar();
   const stem = (s: string) => STEMS.indexOf(s as (typeof STEMS)[number]);
   const branch = (b: string) => BRANCHES.indexOf(b as (typeof BRANCHES)[number]);
+  const dayStem = stem(ec.getDayGan());
   return {
-    dayStem: stem(ec.getDayGan()),
+    dayStem,
     dayBranch: branch(ec.getDayZhi()),
     yearBranch: branch(exact.getYearZhi()),
     hourBranch,
+    // 야자시 takes the 子 hour of the day that is about to begin.
+    ...(input.yaja && hourBranch === 0 && { hourStem: hourStemOf((dayStem + 1) % 10, 0) }),
     yearStem: stem(exact.getYearGan()),
     monthStem: stem(exact.getMonthGan()),
     monthBranch: branch(exact.getMonthZhi()),

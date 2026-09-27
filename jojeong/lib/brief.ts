@@ -54,7 +54,16 @@ export function chartBrief(name: string, p: Pillars, profile: Profile | null): s
   lines.push(`- 십신 비중: ${Object.entries(r.godWeights).map(([g, w]) => `${g} ${Math.round((100 * w) / gsum)}%`).join(", ")}`);
   lines.push(`- 일간: ${STEMS[p.dayStem]}${ELEMENT_HANJA[stemEl(p.dayStem)]} / 태어난 계절: ${r.season}`);
   lines.push(`- 신강약: ${r.balanced ? "중화에 가까운 " : ""}${r.strength} (일간을 돕는 기운 ${Math.round(r.support * 100)}%)`);
-  lines.push(`- 용신 ${EL(r.yong)} (${r.method === "조후" ? `조후 우선, 억부로는 ${EL(r.eokbu)}` : "억부"}), 희신 ${EL(r.hee)}, 기신 ${EL(r.gi)}`);
+  lines.push(
+    `- 용신 ${EL(r.yong)} (${
+      r.method === "종격"
+        ? `${r.outer}: 일간이 뿌리 없이 한 기운에 압도되어 그 흐름을 따르는 외격. 억부로는 ${EL(r.eokbu)}였으나 종격으로 봄`
+        : r.method === "조후"
+          ? `조후 우선, 억부로는 ${EL(r.eokbu)}`
+          : "억부"
+    }), 희신 ${EL(r.hee)}, 기신 ${EL(r.gi)}`,
+  );
+  lines.push(`- 합(오행 계산에 반영됨): ${r.bonds.length ? r.bonds.join("; ") : "없음"}`);
   lines.push(`- 격국: ${GYEOK_NAME[r.gyeok]}`);
   const sals = [
     ...new Set(slots.flatMap((s) => (s.branch === null ? [] : salsAt(p, s.branch).map((x) => `${x}(${s.pos}지)`)))),

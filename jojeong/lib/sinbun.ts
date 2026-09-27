@@ -1,7 +1,7 @@
 import { meetings, salsAt } from "./deep";
 import { ELEMENT_HANJA, ELEMENT_KO, HIDDEN, readChart, stemEl, type GodGroup, type Strength } from "./myeongri";
 import { josa } from "./josa";
-import { hourStemOf, type Pillars } from "./saju";
+import { hourStemFor, type Pillars } from "./saju";
 
 // 조선 신분 감정 (free): what someone would have been in Joseon. The calling comes from the chart's heaviest
 // ten-god group (hidden stems included); the rank from how well the chart is built (its 그릇): balance, whether
@@ -428,14 +428,17 @@ const CALLING_WHY: Record<Calling, string> = {
 function vessel(p: Pillars): { score: number; notes: string[] } | null {
   const r = readChart(p);
   if (!r) return null;
-  const hourStem = p.hourBranch === null ? null : hourStemOf(p.dayStem, p.hourBranch);
+  const hourStem = hourStemFor(p);
   const stems = [p.yearStem!, p.monthStem!, ...(hourStem === null ? [] : [hourStem])];
   const branches = [p.yearBranch, p.monthBranch!, p.dayBranch, ...(p.hourBranch === null ? [] : [p.hourBranch])];
   const sum = r.weights.reduce((a, b) => a + b, 0);
   const yong = `${ELEMENT_KO[r.yong]}(${ELEMENT_HANJA[r.yong]})`;
   let score = 0;
   const notes: string[] = [];
-  if (r.balanced) {
+  if (r.outer) {
+    score += 3;
+    notes.push(`한 기운을 온전히 따르는 외격(${r.outer})이라, 치우쳤어도 그릇이 크옵니다`);
+  } else if (r.balanced) {
     score += 3;
     notes.push("기운이 한쪽으로 기울지 않은 중화의 사주라 그릇이 넉넉하옵니다");
   } else if (r.strength === "신강" || r.strength === "신약") score += 1.5;
