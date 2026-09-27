@@ -28,7 +28,7 @@ import { decodePerson, profileOf, relationOf } from "@/lib/pairToken";
 import { distinctOf } from "@/lib/rarity";
 import { courtOfReader, subjectFor } from "@/lib/subject";
 import { getProfile } from "@/lib/store";
-import { getOrder, ownedOrderFor, type Order } from "@/lib/pay";
+import { covers, getOrder, ownedOrderFor, type Order } from "@/lib/pay";
 import { KINDS, parseSearch, pickDays, startMonths } from "@/lib/taekil";
 import { yearReading } from "@/lib/yearly";
 
@@ -165,7 +165,12 @@ async function OpenReport({
         <Header product={product} subjectName={`${a.name}님과 ${b.name}님`} />
         {couple && <PairIntro a={a} b={b} c={couple} />}
         {locked && !unlock ? (
-          <Paywall product={product} request={req} chapters={product.toc} />
+          <Paywall
+            product={product}
+            request={req}
+            chapters={product.toc}
+            note="두 사람의 태어난 시각을 알면 먼저 넣어 주세요. 결제한 뒤 입력을 바꾸면 다른 보고서로 봐요."
+          />
         ) : (
           <>
             {unlock && <OrderLink id={unlock.id} />}
@@ -358,7 +363,14 @@ async function OpenReport({
         </>
       ) : (
         <>
-          {unlock && <OrderLink id={unlock.id} />}
+          {unlock && (
+            <OrderLink
+              id={unlock.id}
+              others={(unlock.bundle ?? [])
+                .filter((id) => id !== product.id)
+                .map((id) => ({ href: `/reports/${id}?order=${unlock.id}`, title: productById(id)!.title }))}
+            />
+          )}
           <AiReport request={unlock ? { product: product.id, order: unlock.id } : request} chapters={chaptersOf(product.id)} modern />
           {!unlock && meDeepen}
         </>
@@ -385,7 +397,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
 
   const orderId = typeof search.order === "string" ? search.order : undefined;
   const order = orderId ? await getOrder(orderId) : null;
-  const paid = order?.status === "paid" && order.product === product.id ? order : undefined;
+  const paid = order && covers(order, product.id) ? order : undefined;
   if (isOpen(product) || product.modern || paid)
     return (
       <>

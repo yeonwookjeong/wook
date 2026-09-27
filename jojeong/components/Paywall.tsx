@@ -1,7 +1,8 @@
 import Link from "next/link";
 import PayButton from "./PayButton";
+import { josa } from "@/lib/josa";
 import { payEnabled } from "@/lib/pay";
-import { PRICE, saleLabel, saleNow, type Product } from "@/lib/products";
+import { PRICE, productById, saleLabel, saleNow, SETS, setsWith, type Product } from "@/lib/products";
 
 // Where the written report would begin, before it is bought: its chapters, the price, and the payment.
 // Everything above it (the chart and how it was read) stays free.
@@ -11,15 +12,19 @@ export default function Paywall({
   chapters,
   heading = `이 사주로 쓴 ${product.title} 보고서`,
   sub = `위의 풀이를 바탕으로 ${chapters.length}장에 걸쳐 써 드려요`,
+  note,
 }: {
   product: Product;
   request: Record<string, string>;
   chapters: string[];
   heading?: string;
   sub?: string;
+  note?: string;
 }) {
   const sale = saleNow();
   const price = sale?.price ?? PRICE;
+  // Sets are offered for a one-person report bought for a saved chart.
+  const sets = request.p ? setsWith(product.id) : [];
   return (
     <section className="doc-paper mt-6 px-5 pt-6 pb-6">
       <h2 className="text-center font-myeongjo text-lg font-extrabold">{heading}</h2>
@@ -42,8 +47,25 @@ export default function Paywall({
           {sale && <s className="text-base text-ink-soft">{PRICE.toLocaleString("ko-KR")}원</s>}
           <span className="font-myeongjo text-3xl font-extrabold text-seal">{price.toLocaleString("ko-KR")}원</span>
         </p>
+        {note && <p className="mt-3 rounded-xl bg-gold/10 px-3 py-2 text-left text-[12px] leading-relaxed">{note}</p>}
         {payEnabled() ? (
-          <PayButton request={request} label={`${price.toLocaleString("ko-KR")}원 결제하고 보기`} />
+          <>
+            <PayButton request={request} label={`${price.toLocaleString("ko-KR")}원 결제하고 보기`} />
+            {sets.map((s) => {
+              const list = SETS[s].products;
+              const regular = list.length * PRICE;
+              return (
+                <div key={s}>
+                  <PayButton
+                    secondary
+                    request={{ set: s, p: request.p }}
+                    label={`${SETS[s].title} ${SETS[s].price.toLocaleString("ko-KR")}원 (정가 ${regular.toLocaleString("ko-KR")}원)`}
+                  />
+                  <p className="mt-1 text-[11px] text-ink-soft">{josa(list.map((id) => productById(id)!.title).join(" · "), "을/를")} 이 사주로 한 번에</p>
+                </div>
+              );
+            })}
+          </>
         ) : (
           <button type="button" disabled className="mt-4 w-full rounded-2xl bg-seal/60 py-4 font-myeongjo text-lg font-extrabold text-hanji">
             결제 준비 중이에요

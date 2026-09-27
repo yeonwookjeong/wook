@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 import Keep from "@/components/Keep";
-import { isOpen, OPEN_ALL, PRICE, priceNow, PRODUCTS, saleLabel, saleNow, type Product } from "@/lib/products";
+import { isOpen, OPEN_ALL, PRICE, priceNow, productById, PRODUCTS, saleLabel, saleNow, SETS, type Product, type SetId } from "@/lib/products";
 
 export const metadata: Metadata = { title: "전체 보고서" };
 
@@ -82,6 +82,22 @@ export default async function ReportsPage() {
           ))}
         </ul>
       </section>
+
+      {!OPEN_ALL && (
+        <section className="doc-paper mt-4 px-5 py-4">
+          <h2 className="font-myeongjo font-extrabold">세트로 보면 더 저렴해요</h2>
+          <ul className="mt-2 flex flex-col gap-1.5 text-[13px]">
+            {(Object.keys(SETS) as SetId[]).map((s) => (
+              <li key={s} className="flex items-baseline gap-2">
+                <b className="shrink-0 font-myeongjo">{SETS[s].title}</b>
+                <span className="flex-1 text-ink-soft">{SETS[s].products.map((id) => productById(id)!.title).join(" · ")}</span>
+                <b className="shrink-0 text-seal">{SETS[s].price.toLocaleString("ko-KR")}원</b>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-[11px] text-ink-soft">세트에 든 보고서 아무거나 열면 결제 화면에서 고를 수 있어요</p>
+        </section>
+      )}
 
       <section className="mt-9">
         <h2 className="font-myeongjo text-lg font-extrabold">재미로 보는 조선 사주</h2>

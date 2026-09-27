@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ownedOrders } from "@/lib/pay";
-import { productById } from "@/lib/products";
+import { productById, SETS } from "@/lib/products";
 
 export const metadata: Metadata = { title: "내 보고서", robots: { index: false } };
 
@@ -40,7 +40,8 @@ export default async function MyReportsPage() {
                     {p?.hanja}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block font-myeongjo text-lg font-extrabold">{p?.title}</span>
+                    <span className="block font-myeongjo text-lg font-extrabold">{o.set ? SETS[o.set].title : p?.title}</span>
+                    {o.bundle && <span className="block text-[12px] text-seal">{o.bundle.map((id) => productById(id)?.title).join(" · ")}</span>}
                     <span className="block text-[13px] text-ink-soft">
                       {o.who} · {new Date(o.paidAt ?? o.createdAt).toLocaleDateString("ko-KR", { timeZone: "Asia/Seoul" })}
                     </span>

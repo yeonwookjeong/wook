@@ -167,6 +167,16 @@ export const PRODUCTS: Product[] = [
 
 export const productById = (id: string) => PRODUCTS.find((p) => p.id === id);
 
+// Sets: several one-person reports for the same chart, bought at once. Two-person reports stay out, since a
+// set must be fixed when it is paid for (a credit to spend later would be a prepaid voucher).
+export const SETS = {
+  life: { title: "인생 세트", products: ["pyeongsaeng", "jaemul", "jikup"] as ProductId[], price: 2490 },
+  all: { title: "전부 세트", products: ["pyeongsaeng", "yeonae", "jaemul", "jikup"] as ProductId[], price: 2990 },
+};
+export type SetId = keyof typeof SETS;
+export const setOf = (v: unknown): SetId | null => (typeof v === "string" && v in SETS ? (v as SetId) : null);
+export const setsWith = (id: ProductId) => (Object.keys(SETS) as SetId[]).filter((s) => SETS[s].products.includes(id));
+
 // Reports about two people typed in together (lib/pairToken.ts), and the relation some of them fix.
 export const PAIR_PRODUCTS: ProductId[] = ["gunghap", "sokgunghap", "jaehoe"];
 export const isPair = (p: Product | ProductId) => PAIR_PRODUCTS.includes(typeof p === "string" ? p : p.id);

@@ -1,4 +1,4 @@
-import { getOrder } from "@/lib/pay";
+import { covers, getOrder } from "@/lib/pay";
 import { isOpen, productById } from "@/lib/products";
 import { aiEnabled, jobFor, writeReport, type JobRequest } from "@/lib/reportWriter";
 import { countReportToday, getReportText, setReportText } from "@/lib/store";
@@ -18,9 +18,9 @@ export async function POST(request: Request) {
   let req: JobRequest = body;
   if (product && !isOpen(product)) {
     const order = await getOrder(body.order);
-    if (!order || order.status !== "paid" || order.product !== product.id)
+    if (!order || !covers(order, product.id))
       return Response.json({ error: product.modern ? "결제한 뒤에 열 수 있어요." : "복채를 주신 뒤에 열리옵니다." }, { status: 402 });
-    req = order.req;
+    req = { ...order.req, product: product.id };
   }
   const job = await jobFor(req);
   if ("error" in job) return Response.json({ error: job.error }, { status: job.status });
