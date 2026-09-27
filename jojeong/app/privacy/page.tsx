@@ -60,6 +60,7 @@ export default function PrivacyPage() {
           </li>
         )}
         <li>결제 처리: 토스페이먼츠 주식회사 (대한민국) · 카드 등 결제 수단 정보는 토스페이먼츠가 직접 받아 처리합니다</li>
+        <li>방문 통계: Vercel Inc.(Web Analytics) · 쿠키 없이 페이지 방문 수와 유입 경로 같은 집계 정보만 수집하며, 사주나 이름은 보내지 않습니다</li>
       </ul>
       <h2>4. 이용자의 권리</h2>
       <p>
