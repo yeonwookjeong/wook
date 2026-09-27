@@ -16,9 +16,28 @@ declare module "lunar-javascript" {
     getStartYear(): number;
     getEndYear(): number;
   }
+  interface LunarTime {
+    getZhi(): string;
+    getTianShenType(): "黄道" | "黑道";
+    getMinHm(): string;
+    getMaxHm(): string;
+  }
   interface LunarDate {
     getEightChar(): EightChar;
     getSolar(): SolarDate;
+    // The almanac (通書) for the day, used by lib/taekil.ts.
+    getMonth(): number; // negative for a leap month
+    getDay(): number;
+    getDayGan(): string;
+    getDayZhi(): string;
+    getDayYi(): string[];
+    getDayJi(): string[];
+    getDayTianShen(): string;
+    getDayTianShenType(): "黄道" | "黑道";
+    getZhiXing(): string;
+    getXiu(): string;
+    getXiuLuck(): "吉" | "凶";
+    getTimes(): LunarTime[];
   }
   interface SolarDate {
     getLunar(): LunarDate;
@@ -26,9 +45,12 @@ declare module "lunar-javascript" {
     getMonth(): number;
     getDay(): number;
     next(days: number): SolarDate;
+    getWeek(): number; // 0 = Sunday
+    isBefore(other: SolarDate): boolean;
   }
   export const Solar: {
     fromYmdHms(y: number, m: number, d: number, h: number, mi: number, s: number): SolarDate;
+    fromYmd(y: number, m: number, d: number): SolarDate;
   };
   export const Lunar: {
     fromYmdHms(y: number, m: number, d: number, h: number, mi: number, s: number): LunarDate;

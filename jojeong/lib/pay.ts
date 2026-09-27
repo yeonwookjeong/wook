@@ -114,7 +114,7 @@ export async function ownedOrders(): Promise<Order[]> {
 
 // A paid order in this browser for exactly this report request (same product, same chart or pair).
 export async function ownedOrderFor(product: ProductId, req: JobRequest): Promise<Order | null> {
-  const same = (o: Order) =>
-    o.product === product && (o.req.p ?? "") === (req.p ?? "") && (o.req.a ?? "") === (req.a ?? "") && (o.req.b ?? "") === (req.b ?? "") && (o.req.rel ?? "") === (req.rel ?? "");
+  const fields = ["p", "a", "b", "rel", "kind", "from", "n"] as const;
+  const same = (o: Order) => o.product === product && fields.every((f) => (o.req[f] ?? "") === (req[f] ?? ""));
   return (await ownedOrders()).find(same) ?? null;
 }
