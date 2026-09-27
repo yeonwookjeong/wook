@@ -8,7 +8,7 @@ export default function TermsPage() {
     <LegalDoc title="이용약관" updated="2026년 10월 1일">
       <h2>제1조 (목적)</h2>
       <p>
-        이 약관은 {biz("name", "상호")}(이하 &ldquo;회사&rdquo;)가 운영하는 &lsquo;관상감 정 훈도&rsquo; 웹사이트(이하
+        이 약관은 {biz("name", "상호")}(이하 &ldquo;회사&rdquo;)가 운영하는 &lsquo;훈도사주&rsquo; 웹사이트(이하
         &ldquo;서비스&rdquo;)의 이용 조건과 절차, 회사와 이용자의 권리·의무를 정합니다.
       </p>
       <h2>제2조 (서비스의 내용)</h2>
