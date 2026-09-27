@@ -239,7 +239,7 @@ export async function saveMeAction(_prev: FormState, formData: FormData): Promis
     console.error(e);
     return { error: "사주를 준비하다 문제가 생겼어요. 잠시 후 다시 시도해 주세요." };
   }
-  redirect(/^\/reports\/[a-z]+$/.test(next) ? next : "/");
+  redirect(/^\/reports\/[a-z]+$/.test(next) ? next : next === "/#today" ? "/#today" : "/");
 }
 
 export async function forgetMeAction(formData: FormData) {
