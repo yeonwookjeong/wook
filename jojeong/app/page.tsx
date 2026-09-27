@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { forgetMeAction } from "@/app/actions";
-import Hundo from "@/components/Hundo";
+import Keep from "@/components/Keep";
 import RoyalDoc from "@/components/RoyalDoc";
+import StoreHero from "@/components/StoreHero";
+import TodayCard from "@/components/TodayCard";
 import { readMe } from "@/lib/me";
 import { OPEN_ALL, PRICE_STEPS, productById, type Product, type ProductId } from "@/lib/products";
+import { todayFor } from "@/lib/today";
 
 // The main page: 정 훈도's present-day readings, picked and opened with one's own chart. The Joseon game
 // (왕이 될 사주, /king) is the free, shareable side door.
@@ -12,16 +15,16 @@ import { OPEN_ALL, PRICE_STEPS, productById, type Product, type ProductId } from
 const SHORT: Partial<Record<ProductId, string>> = { gunghap: "궁합", gukjeong: "2026 운세", yeonae: "연애·결혼", jaemul: "재물·돈", jikup: "직업·적성" };
 const PITCH: Partial<Record<ProductId, string>> = {
   gunghap: "우리 둘, 진짜 잘 맞을까?",
-  gukjeong: "2026년, 나한테 무슨 일이?",
+  gukjeong: "남은 올해, 언제 움직이고 언제 쉴까?",
   yeonae: "나랑 맞는 사람은 언제 올까?",
   jaemul: "돈이 왜 안 모일까?",
   jikup: "지금 일, 나랑 맞을까?",
 };
 // What a report actually says, so the difference shows in the sentences rather than in the method.
 const SAYINGS = [
-  { label: "같은 일주라도", line: "같은 丁未일주 중에서도 이 구조는 100명 중 6명뿐이에요." },
-  { label: "지나온 해를 짚어요", line: "2019년 무렵, 일하는 방식이 통째로 바뀌었을 거예요." },
-  { label: "앞으로 할 일까지", line: "11월엔 먼저 연락하세요. 올해 인연이 들어오는 달이에요." },
+  { label: "나만의 구조", line: "같은 丁未일주 중에서도 이 구조는 100명 중 6명뿐이에요." },
+  { label: "지나온 해", line: "2019년 무렵, 일하는 방식이 통째로 바뀌었을 거예요." },
+  { label: "다가올 달", line: "11월엔 먼저 연락하세요. 올해 인연이 들어오는 달이에요." },
 ];
 const GRID: ProductId[] = ["gunghap", "gukjeong", "yeonae", "jaemul", "jikup"];
 
@@ -51,39 +54,28 @@ export default async function Home() {
 
   return (
     <>
-      <section className="mt-6 text-center">
-        <p className="font-myeongjo text-sm font-extrabold tracking-[0.5em] text-seal">觀 象 監</p>
-        <h1 className="mt-2 font-myeongjo text-[32px] leading-tight font-extrabold">정 훈도의 사주</h1>
-        <p className="mt-2 text-[15px] leading-relaxed text-ink-soft">
-          조선 최고의 사주쟁이가
-          <br />
-          <b className="text-ink">지금의 나</b>를 봐 드려요
-        </p>
-      </section>
-
-      <section className="mt-5">
-        <Hundo mood="bow">
-          어서 오시옵소서. 같은 일주라도 다 같은 사주가 아니옵니다. 생년월일을 주시면 그대만의 여덟 글자를 끝까지 풀어 올리겠사옵니다.
-        </Hundo>
-      </section>
+      <StoreHero />
+      <TodayCard today={todayFor(me?.person ?? null)} name={me?.person.name ?? null} />
 
       {me && (
         <form action={forgetMeAction} className="mx-auto mt-4 flex w-fit items-center gap-2 rounded-full bg-gold/15 px-4 py-2 text-xs">
-          <span className="font-bold text-gold">{me.person.name}님의 사주로 보고 있어요</span>
+          <span className="font-bold text-gold">{me.person.name}님 사주로 보는 중</span>
           <button type="submit" className="text-ink-soft underline">
-            다른 사람으로
+            다른 사람 보기
           </button>
         </form>
       )}
 
       {/* The flagship: the whole life in one report */}
       <RoyalDoc className="mt-5" paperClassName="px-5">
-        <p className="text-center text-xs font-extrabold text-seal">대표 보고서</p>
+        <p className="text-center text-xs font-extrabold text-seal">정 훈도의 대표 보고서</p>
         <div className="mt-2 flex items-center justify-center gap-3">
           <Seal hanja={main.hanja} />
           <h2 className="font-myeongjo text-2xl font-extrabold">{main.title}</h2>
         </div>
-        <p className="mt-2 text-center text-sm leading-relaxed text-ink-soft">{main.tagline}</p>
+        <p className="mt-2 text-center text-sm leading-relaxed text-ink-soft">
+          <Keep clauses>{main.tagline}</Keep>
+        </p>
         <ol className="mt-4 flex flex-col divide-y divide-seal/15 border-y-[3px] border-double border-seal/40 px-1 text-[14px]">
           {main.toc.slice(0, 4).map((item, i) => (
             <li key={item} className="flex gap-2 py-2">
@@ -91,7 +83,7 @@ export default async function Home() {
               {item}
             </li>
           ))}
-          <li className="py-2 text-center text-xs text-ink-soft">…모두 {main.toc.length}장</li>
+          <li className="py-2 text-center text-xs text-ink-soft">그리고 {main.toc.length - 4}장 더</li>
         </ol>
         <div className="mt-4 flex items-center justify-center">
           <Price product={main} />

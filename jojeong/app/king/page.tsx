@@ -54,7 +54,7 @@ export default async function KingHome() {
           </p>
         </div>
         <Link href="/reports" className="border border-seal/50 bg-seal/5 px-3 py-3">
-          <p className="text-[11px] font-extrabold text-seal">비밀 보고서 · 지금의 나</p>
+          <p className="text-[11px] font-extrabold text-seal">비밀 보고서 · 현대판 사주</p>
           <p className="mt-1.5 text-[13px] leading-snug">
             연애·결혼운
             <br />
