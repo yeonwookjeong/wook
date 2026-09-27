@@ -12,7 +12,7 @@
   --color-seal: #b3261e;
   --color-gold: #a87a22;
   --color-jade: #3d6656;
-  --font-myeongjo: var(--font-nanum-myeongjo);
+  --font-myeongjo: var(--font-heading);
   --font-sans: "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
 }
 

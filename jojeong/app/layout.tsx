@@ -1,12 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Nanum_Myeongjo } from "next/font/google";
+import { Hahmlet } from "next/font/google";
 import { SITE_NAME, SITE_TAGLINE, siteUrl } from "@/lib/brand";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import "./globals.css";
 
-const myeongjo = Nanum_Myeongjo({
-  weight: ["400", "800"],
-  variable: "--font-nanum-myeongjo",
+// Headings: Hahmlet, a modern Korean serif (variable weight), for 정 훈도's Joseon-meets-now voice.
+const myeongjo = Hahmlet({
+  variable: "--font-heading",
   preload: false,
 });
 
