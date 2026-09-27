@@ -7,6 +7,8 @@ import ChartIntro from "@/components/ChartIntro";
 import GunghapForm from "@/components/GunghapForm";
 import MeForm from "@/components/MeForm";
 import PairIntro from "@/components/PairIntro";
+import Paywall from "@/components/Paywall";
+import OrderLink from "@/components/OrderLink";
 import DeepenForm from "@/components/DeepenForm";
 import Keep from "@/components/Keep";
 import RoyalDoc from "@/components/RoyalDoc";
@@ -24,6 +26,7 @@ import { decodePerson, profileOf, relationOf } from "@/lib/pairToken";
 import { distinctOf } from "@/lib/rarity";
 import { courtOfReader, subjectFor } from "@/lib/subject";
 import { getProfile } from "@/lib/store";
+import { getOrder, ownedOrderFor, type Order } from "@/lib/pay";
 import { yearReading } from "@/lib/yearly";
 
 export async function generateMetadata({ params }: PageProps<"/reports/[id]">): Promise<Metadata> {
@@ -63,7 +66,9 @@ function Notice({ children, href, cta }: { children: React.ReactNode; href?: str
 
 const chaptersOf = (id: ProductId) => REPORT_SPECS[id]?.chapters ?? [];
 
-// Every report, open in full (무료 공개 기간 or a free report).
+// Every report, open in full (무료 공개 기간, a free report, or a bought one). A present-day report on sale
+// (`locked`) shows everything computed for free and puts the payment where the written report would start;
+// a paid order (`paid`, from its link) or one this browser bought for the same chart opens it.
 type Pair = { a?: string; b?: string; rel?: string };
 
 async function OpenReport({
@@ -72,17 +77,22 @@ async function OpenReport({
   ministerId,
   targetId,
   pair,
+  locked = false,
+  paid,
 }: {
   product: Product;
   courtId?: string;
   ministerId?: string;
   targetId?: string;
   pair: Pair;
+  locked?: boolean;
+  paid?: Order;
 }) {
   const query = new URLSearchParams({ ...(courtId && { court: courtId }), ...(ministerId && { m: ministerId }) }).toString();
 
   // 궁합: two people typed in (or the reader's own saved chart and one typed in), carried in the link.
   if (product.id === "gunghap") {
+    if (paid) pair = { a: paid.req.a, b: paid.req.b, rel: paid.req.rel };
     const a = decodePerson(pair.a);
     const b = decodePerson(pair.b);
     if (!a || !b || !pair.a || !pair.b) {
@@ -98,11 +108,20 @@ async function OpenReport({
       );
     }
     const couple = coupleOf(a, b);
+    const req = { product: product.id, a: pair.a, b: pair.b, rel: relationOf(pair.rel) };
+    const unlock = paid ?? (locked ? await ownedOrderFor(product.id, req) : null);
     return (
       <>
         <Header product={product} subjectName={`${a.name}님과 ${b.name}님`} />
         {couple && <PairIntro a={a} b={b} c={couple} />}
-        <AiReport request={{ product: product.id, a: pair.a, b: pair.b, rel: relationOf(pair.rel) }} chapters={chaptersOf(product.id)} modern />
+        {locked && !unlock ? (
+          <Paywall product={product} request={req} chapters={product.toc} />
+        ) : (
+          <>
+            {unlock && <OrderLink id={unlock.id} />}
+            <AiReport request={unlock ? { product: product.id, order: unlock.id } : req} chapters={chaptersOf(product.id)} modern />
+          </>
+        )}
         <Link href="/reports/gunghap" className="mt-6 block border border-seal/40 py-3 text-center text-sm font-bold text-seal">
           다른 사람과 궁합 보기 →
         </Link>
@@ -178,8 +197,10 @@ async function OpenReport({
 
   // Whose chart: a court's person named in the link; else the chart remembered in this browser (lib/me.ts);
   // else a court this browser enthroned. With none, the reader enters one right here.
-  const me = courtId ? null : await readMe();
-  const subject = me ? null : await subjectFor(product, courtId, ministerId);
+  const fromOrder = paid?.req.p ? decodePerson(paid.req.p) : null;
+  const me = fromOrder ? { person: fromOrder, token: paid!.req.p! } : courtId ? null : await readMe();
+  // A report on sale is bought for the chart remembered here (the order carries it), not a court's.
+  const subject = me || locked ? null : await subjectFor(product, courtId, ministerId);
   const next = `/reports/${product.id}`;
   if (!me && !subject)
     return (
@@ -195,7 +216,7 @@ async function OpenReport({
   const pillars = me ? me.person.pillars : subject!.pillars;
   const self = me ? true : subject!.self;
   // Someone else's chart can be entered instead; the remembered one is then replaced.
-  const other = me && (
+  const other = me && !paid && (
     <form action={forgetMeAction} className="mt-2 text-center">
       <input type="hidden" name="next" value={next} />
       <button type="submit" className="text-xs text-ink-soft underline">
@@ -237,11 +258,13 @@ async function OpenReport({
   const distinct = self ? distinctOf(pillars, profile?.gender ?? null) : null;
   const intro = distinct && <ChartIntro name={name} d={distinct} slots={reading.chart.slots} />;
   // Without gender or the hour, the remembered chart is simply entered again with them.
-  const meDeepen = me && (reading.missing.daeun || reading.missing.palaces) && (
+  const meDeepen = me && !paid && (reading.missing.daeun || reading.missing.palaces) && (
     <section className="doc-paper mt-6 px-6 pt-7 pb-6">
       <h2 className="text-center font-myeongjo text-lg font-extrabold">더 깊이 봐 드릴 수 있어요</h2>
       <p className="mt-2 mb-4 text-center text-sm leading-relaxed text-ink-soft">
-        성별과 태어난 시각을 알려 주시면 10년 대운과 영역별 흐름까지 넣어 다시 써 드려요.
+        {locked
+          ? "결제 전에 성별과 태어난 시각을 알려 주시면 10년 대운과 영역별 흐름까지 넣어 써 드려요."
+          : "성별과 태어난 시각을 알려 주시면 10년 대운과 영역별 흐름까지 넣어 다시 써 드려요."}
       </p>
       <MeForm next={next} submit="더 깊이 보기" />
     </section>
@@ -262,6 +285,7 @@ async function OpenReport({
     );
   if (!self)
     return (<><Header product={product} /><Notice>본인의 사주로만 열 수 있는 보고서예요.</Notice></>);
+  const unlock = paid ?? (locked ? await ownedOrderFor(product.id, { product: product.id, p: me?.token }) : null);
   return (
     <>
       <Header product={product} subjectName={`${name}님`} />
@@ -276,8 +300,19 @@ async function OpenReport({
         </summary>
         <SajuChart {...reading.chart} kingdom={false} />
       </details>
-      <AiReport request={request} chapters={chaptersOf(product.id)} modern />
-      {meDeepen}
+      {locked && !unlock ? (
+        // A bought report is written for exactly this chart, so the missing details come before the payment.
+        <>
+          {meDeepen}
+          <Paywall product={product} request={request} chapters={product.toc} />
+        </>
+      ) : (
+        <>
+          {unlock && <OrderLink id={unlock.id} />}
+          <AiReport request={unlock ? { product: product.id, order: unlock.id } : request} chapters={chaptersOf(product.id)} modern />
+          {!unlock && meDeepen}
+        </>
+      )}
       {!me && subject!.self && (reading.missing.daeun || reading.missing.palaces) && (
         <section className="doc-paper mt-6 px-6 pt-7 pb-6">
           <h2 className="text-center font-myeongjo text-lg font-extrabold">더 깊이 봐 드릴 수 있어요</h2>
@@ -298,7 +333,10 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
   const courtId = typeof search.court === "string" ? search.court : undefined;
   const ministerId = typeof search.m === "string" ? search.m : undefined;
 
-  if (isOpen(product))
+  const orderId = typeof search.order === "string" ? search.order : undefined;
+  const order = orderId ? await getOrder(orderId) : null;
+  const paid = order?.status === "paid" && order.product === product.id ? order : undefined;
+  if (isOpen(product) || product.modern || paid)
     return (
       <>
         <nav className="pt-4 text-sm">
@@ -319,13 +357,14 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
             b: typeof search.b === "string" ? search.b : undefined,
             rel: typeof search.rel === "string" ? search.rel : undefined,
           }}
+          locked={!isOpen(product) && !paid}
+          paid={paid}
         />
       </>
     );
 
-  // Present-day reports are read for the saved chart first (the same order as when they are open).
-  const me = product.modern ? await readMe() : null;
-  const subject = me ? { name: me.person.name } : await subjectFor(product, courtId, ministerId);
+  // Left here: the Joseon reports of a court, on sale. They are not sold yet, so this is the preview.
+  const subject = await subjectFor(product, courtId, ministerId);
   const sale = saleNow();
 
   return (
@@ -344,7 +383,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
         </p>
         {subject && (
           <p className="mt-3 text-center text-xs font-bold text-gold">
-            {product.modern ? `${subject.name}님의 사주로 풀어 드려요` : `${subject.name} 님의 사주로 지어 올리옵니다`}
+            {subject.name} 님의 사주로 지어 올리옵니다
           </p>
         )}
 
@@ -364,14 +403,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
           <p className="mt-2 text-[15px] leading-relaxed">{product.teaser}</p>
         </div>
 
-        {!subject &&
-          (product.modern ? (
-            // The report is written for one chart, so the chart comes before the payment.
-            <div className="mt-5 border-t border-seal/20 pt-5">
-              <p className="mb-4 text-center text-sm leading-relaxed text-ink-soft">먼저 누구의 사주로 볼지 알려 주세요.</p>
-              <MeForm next={`/reports/${product.id}`} />
-            </div>
-          ) : (
+        {!subject && (
             <p className="mt-4 bg-seal/5 px-4 py-3 text-center text-sm leading-relaxed">
               {product.for === "minister"
                 ? "전하의 조정에 입궐한 신하만 볼 수 있는 보고서이옵니다. 받으신 교지에서 이 보고서를 여시옵소서."
@@ -382,7 +414,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
                 </Link>
               )}
             </p>
-          ))}
+          )}
 
         {/* The rest stays locked until payment; placeholder lines only, so nothing paid is in the page source. */}
         <div className="relative mt-5 overflow-hidden" aria-hidden="true">
@@ -392,7 +424,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
             ))}
           </div>
           <span className="absolute inset-0 flex items-center justify-center font-myeongjo text-sm font-extrabold text-seal">
-            🔒 나머지 {product.toc.length - 1}장은 {product.modern ? "결제하면 열려요" : "복채를 주시면 열리옵니다"}
+            🔒 나머지 {product.toc.length - 1}장은 복채를 주시면 열리옵니다
           </span>
         </div>
 

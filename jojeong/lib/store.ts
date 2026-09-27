@@ -174,3 +174,12 @@ export async function setReportText(key: string, text: string) {
 export async function countReportToday(): Promise<number> {
   return backend().incr(`stats:reports:${new Date().toISOString().slice(0, 10)}`);
 }
+
+// Report orders (lib/pay.ts), kept for good: the order id is the buyer's permanent link to the report.
+export async function getOrderRaw(orderId: string): Promise<string | null> {
+  if (!/^[\w-]{6,64}$/.test(orderId)) return null;
+  return backend().get(`order:${orderId}`);
+}
+export async function setOrderRaw(orderId: string, raw: string) {
+  await backend().set(`order:${orderId}`, raw);
+}
