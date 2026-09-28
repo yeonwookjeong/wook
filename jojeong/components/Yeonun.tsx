@@ -48,7 +48,7 @@ function Row({ r, href, owned }: { r: YearRow; href: string; owned: boolean }) {
   );
 }
 
-type Decade = { from: number; to: number; mood: "기회" | "무난" | "다지기"; theme: string };
+type Decade = { from: number; to: number; age: string; mood: "기회" | "무난" | "다지기"; theme: string; now: boolean };
 const MOOD_MARK = { 기회: "◎", 무난: "○", 다지기: "△" } as const;
 
 // A decade header: the ground the years below stand on, as the free life flow grades it.
@@ -56,10 +56,70 @@ function DecadeHead({ d }: { d: Decade }) {
   return (
     <li className="mt-3 mb-1 flex items-baseline gap-2 rounded-lg bg-ink/5 px-2 py-1.5 text-[12px]">
       <b className={d.mood === "기회" ? "text-seal" : "text-ink"}>
-        {MOOD_MARK[d.mood]} {d.from}~{d.to} 대운
+        {MOOD_MARK[d.mood]} {d.from}~{d.to}{d.age ? ` (${d.age})` : ""}
       </b>
       <span className="text-ink-soft">{d.theme}</span>
     </li>
+  );
+}
+
+const MOOD_WORD = { 기회: "좋은 10년", 무난: "무난한 10년", 다지기: "다지는 10년" } as const;
+
+// "When is my 대운?": every ten-year stretch of the life at a glance, with the good ones named in one sentence.
+// In everyday speech 대운 means the big lucky stretch, so the ◎ decades are called that plainly.
+function DecadeStrip({ name, decades }: { name: string; decades: Decade[] }) {
+  const good = decades.filter((d) => d.mood === "기회");
+  const now = decades.find((d) => d.now);
+  const nextGood = good.find((d) => now && d.from > now.to);
+  return (
+    <div className="mt-4 rounded-2xl border border-seal/25 bg-white/60 px-4 py-4">
+      <h3 className="font-myeongjo text-[16px] font-extrabold">{name}님의 대운은 언제일까</h3>
+      <p className="mt-1.5 text-[14px] leading-[1.75]">
+        {good.length ? (
+          <>
+            흔히 &lsquo;대운이 들어왔다&rsquo;고 하는 좋은 10년은{" "}
+            {good.map((d, i) => (
+              <span key={d.from}>
+                {i > 0 && ", "}
+                <b className="text-seal">
+                  {d.from}~{d.to}년{d.age ? `(${d.age})` : ""}
+                </b>
+              </span>
+            ))}
+            이에요.{" "}
+            {now?.mood === "기회"
+              ? "지금이 바로 그 10년 안이에요."
+              : nextGood
+                ? `다음 좋은 10년은 ${nextGood.from}년 무렵부터 열려요.`
+                : "좋은 10년은 이미 지나왔지만, 그 안에서도 좋은 해는 따로 와요."}
+          </>
+        ) : (
+          "평생 크게 치우친 10년 없이 고르게 흘러가는 사주예요. 그래서 한 해 한 해의 운이 더 크게 드러나요."
+        )}
+      </p>
+      <ul className="mt-3 flex flex-col gap-1">
+        {decades.map((d) => (
+          <li
+            key={d.from}
+            className={`flex items-baseline gap-2 rounded-lg px-2 py-1 text-[13px] ${d.now ? "bg-gold/15 font-bold" : ""} ${d.mood === "기회" ? "text-seal" : ""}`}
+          >
+            <span className="w-4 shrink-0">{MOOD_MARK[d.mood]}</span>
+            <span className="w-[5.5rem] shrink-0 tabular-nums">
+              {d.from}~{d.to}
+            </span>
+            <span className="w-14 shrink-0 text-ink-soft">{d.age}</span>
+            <span className="min-w-0 flex-1">
+              {MOOD_WORD[d.mood]}
+              {d.now ? " · 지금" : ""}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-3 text-[12px] leading-relaxed text-ink-soft">
+        대운은 10년마다 바뀌는 인생의 큰 흐름(기후)이고, 아래 해마다의 운은 그 위의 날씨예요. 좋은 10년 안에도 조심할 해가 있고, 그래도 바탕이 받쳐 줘서 덜
+        흔들려요. 대운은 1월 1일이 아니라 태어난 날 무렵에 바뀌어요.
+      </p>
+    </div>
   );
 }
 
@@ -100,12 +160,7 @@ export function YearList({
       <p className="mt-1 text-center text-[12px] leading-relaxed text-ink-soft">
         해마다의 판정과 그 이유는 무료예요. 궁금한 해를 누르면 달마다의 흐름까지 보여 드려요.
       </p>
-      {decades && (
-        <p className="mt-3 rounded-xl bg-gold/10 px-3 py-2 text-[12px] leading-relaxed">
-          10년 대운은 그 시기의 바탕(기후)이고, 한 해의 운은 그 위의 날씨예요. 좋은 대운 안에서도 사주와 맞지 않는 기운이 드는 해는 조심으로 나와요. 대신
-          바탕이 받쳐 줘서 같은 해라도 덜 흔들려요.
-        </p>
-      )}
+      {decades && <DecadeStrip name={name} decades={decades} />}
       <h3 className="mt-5 text-[12px] font-bold text-seal">올해와 앞으로</h3>
       <Rows rows={ahead} decades={decades} hrefOf={hrefOf} owned={owned} />
       {past.length > 0 && (
@@ -173,7 +228,7 @@ export function YearTop({ d, name, prev, next, list }: { d: YearDetail; name: st
 
       <section className="doc-paper mt-4 px-5 pt-6 pb-5">
         <h3 className="text-center font-myeongjo font-extrabold">{d.when === "past" ? "그해를 움직인 것" : "이 해를 움직이는 것"}</h3>
-        <ul className="mt-3 flex flex-col gap-2 text-[13px] leading-relaxed">
+        <ul className="mt-3 flex flex-col gap-3 text-[15px] leading-[1.8]">
           {d.points.map((x) => (
             <li key={x} className="flex gap-2">
               <span className="text-seal">·</span>

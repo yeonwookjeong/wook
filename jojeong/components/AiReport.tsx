@@ -137,7 +137,7 @@ export default function AiReport({
           </summary>
           <div className="mt-3 border-t border-seal/15 pt-3">
             {s.paras.map((p, j) => (
-              <p key={j} className="mt-2 text-[15px] leading-relaxed first:mt-0">
+              <p key={j} className="mt-4 text-[16px] leading-[1.85] tracking-[-0.005em] first:mt-0">
                 {p}
               </p>
             ))}

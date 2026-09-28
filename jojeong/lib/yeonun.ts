@@ -371,7 +371,7 @@ export function yearDetail(p: Pillars, profile: Profile | null, y: number, now: 
     points.push(
       turning
         ? `이해에 10년 대운이 ${dz}로 바뀌어요. 태어난 날 무렵부터 삶의 판이 새로 짜여요. 새 대운은 ${ground}`
-        : `${dz} 대운(${s.daeun.from}~${s.daeun.to}년) 안의 한 해예요. ${ground}`,
+        : `${dz} 대운(${s.daeun.from}~${s.daeun.to}년${profile?.birthYear ? `, ${s.daeun.from - profile.birthYear}~${s.daeun.to - profile.birthYear}세` : ""}) 안의 한 해예요. ${ground}`,
     );
     if (meetings(branch, s.daeun.branch).includes("충"))
       points.push(

@@ -29,29 +29,14 @@ body {
   background-attachment: fixed;
 }
 
-/* Headings split into even lines. Body text is justified (below), so it wraps plainly: "pretty" wrapping
-   moves line breaks to spare the last line, and in Safari, which applies it to the whole paragraph, the
-   justified lines it shortens open wide gaps between words. */
+/* Headings split into even lines; paragraphs avoid leaving a single word alone on the last line. Body text is
+   left-aligned and breaks between words: justified Korean has to split words across lines, which reads worse
+   on a phone than a ragged edge. */
 h1, h2, h3 {
   text-wrap: balance;
 }
-/* Body text is set justified, like a printed page. It sits in the base layer so a utility on the element
-   (text-center, text-left) still wins, and text inside a centered or right-aligned block keeps that alignment.
-   A last line (and so any one-line caption) stays left, as justify leaves it. */
-@layer base {
-  p, li, dd, blockquote {
-    text-align: justify;
-    /* Justified Korean needs to break between syllables, as a printed page does; between words only
-       (keep-all) it opens wide gaps in narrow columns. */
-    word-break: normal;
-  }
-  :where(.text-center, .text-right, .text-left) :is(p, li, dd, blockquote),
-  :is(p, li, dd, blockquote):where(.text-center, .text-right, .text-left) {
-    word-break: keep-all;
-  }
-  :where(.text-center, .text-right, .text-left) :is(p, li, dd, blockquote) {
-    text-align: inherit;
-  }
+p, li, dd, blockquote {
+  text-wrap: pretty;
 }
 /* Short centered captions read best as even lines. */
 .text-center p, p.text-center {
