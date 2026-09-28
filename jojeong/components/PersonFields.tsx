@@ -22,9 +22,11 @@ export default function PersonFields({
   unknownHour,
   genderLabel = "성별 (선택 · 10년 대운 풀이에 쓰이옵니다)",
   modern = false,
+  defaultName,
 }: {
   prefix?: string;
   modern?: boolean;
+  defaultName?: string;
   nameLabel: string;
   unknownHour: string;
   genderLabel?: string;
@@ -38,6 +40,7 @@ export default function PersonFields({
           required
           maxLength={10}
           autoComplete="nickname"
+          defaultValue={defaultName}
           placeholder="이름 또는 별명 (10자 이내)"
           className="rounded-xl border border-ink/15 bg-white/70 px-4 py-3 text-base outline-none focus:border-seal"
         />
