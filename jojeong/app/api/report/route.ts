@@ -1,3 +1,4 @@
+import { isAdmin } from "@/lib/admin";
 import { covers, getOrder } from "@/lib/pay";
 import { isOpen, productById } from "@/lib/products";
 import { aiEnabled, jobFor, writeReport, type JobRequest } from "@/lib/reportWriter";
@@ -16,7 +17,8 @@ export async function POST(request: Request) {
   // A paid report is written only for a confirmed order, and exactly for what was bought.
   const product = productById(body.product);
   let req: JobRequest = body;
-  if (product && !isOpen(product)) {
+  // The owner (lib/admin.ts) reads any report without an order.
+  if (product && !isOpen(product) && !(body.order === undefined && (await isAdmin()))) {
     const order = await getOrder(body.order);
     if (!order || !covers(order, product.id))
       return Response.json({ error: product.modern ? "결제한 뒤에 열 수 있어요." : "복채를 주신 뒤에 열리옵니다." }, { status: 402 });
