@@ -1,6 +1,6 @@
 import { isAdmin } from "@/lib/admin";
 import { covers, getOrder } from "@/lib/pay";
-import { isOpen, productById } from "@/lib/products";
+import { productById } from "@/lib/products";
 import { aiEnabled, jobFor, writeReport, type JobRequest } from "@/lib/reportWriter";
 import { countReportToday, getReportText, setReportText } from "@/lib/store";
 
@@ -14,11 +14,12 @@ const MARK_ERROR = "\n\n[[error]]";
 // once when it was written before). A failure midway ends the stream with MARK_ERROR.
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => ({}))) as JobRequest & { order?: string };
-  // A paid report is written only for a confirmed order, and exactly for what was bought.
+  // Every written report costs a model call, so one is written only for a confirmed order, exactly for what was
+  // bought. The owner (lib/admin.ts) reads any report without an order. Free reports have no writer at all.
   const product = productById(body.product);
+  if (!product) return Response.json({ error: "없는 보고서예요." }, { status: 404 });
   let req: JobRequest = body;
-  // The owner (lib/admin.ts) reads any report without an order.
-  if (product && !isOpen(product) && !(body.order === undefined && (await isAdmin()))) {
+  if (!(body.order === undefined && (await isAdmin()))) {
     const order = await getOrder(body.order);
     if (!order || !covers(order, product.id))
       return Response.json({ error: product.modern ? "결제한 뒤에 열 수 있어요." : "복채를 주신 뒤에 열리옵니다." }, { status: 402 });

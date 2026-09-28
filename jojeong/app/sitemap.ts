@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { siteUrl } from "@/lib/brand";
-import { PRODUCTS } from "@/lib/products";
+import { SHELF } from "@/lib/products";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = siteUrl();
@@ -8,7 +8,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     page("/", 1),
     page("/reports", 0.8),
-    ...PRODUCTS.filter((p) => p.modern || p.free).map((p) => page(`/reports/${p.id}`, 0.8)),
+    ...SHELF.filter((p) => p.modern || p.free).map((p) => page(`/reports/${p.id}`, 0.8)),
     page("/king", 0.7),
     page("/samjae", 0.6),
     page("/terms", 0.2),

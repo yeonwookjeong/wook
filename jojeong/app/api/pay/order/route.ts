@@ -2,7 +2,7 @@ import { decodePerson, relationOf } from "@/lib/pairToken";
 import { createOrder, payClientKey, payEnabled, payMock } from "@/lib/pay";
 import { FIXED_RELATION, isOpen, isPair, priceNow, productById, SETS, setOf } from "@/lib/products";
 import { jobFor, type JobRequest } from "@/lib/reportWriter";
-import { KINDS, parseSearch } from "@/lib/taekil";
+import { KINDS, parseSearch, searchDay } from "@/lib/taekil";
 
 // POST { product, p } or, for a two-person report, { product, a, b, rel } → a new order for that exact report, priced here.
 export async function POST(request: Request) {
@@ -31,7 +31,8 @@ export async function POST(request: Request) {
     const a = decodePerson(body.a);
     const b = search && KINDS[search.kind].people === 2 ? decodePerson(body.b) : null;
     if (!search || !a || (KINDS[search.kind].people === 2 && !b)) return Response.json({ error: "날짜 조건을 다시 골라 주세요." }, { status: 400 });
-    const req: JobRequest = { product: product.id, kind: search.kind, from: body.from, n: String(search.n), a: body.a, ...(b && { b: body.b }) };
+    // The search date is set here, not by the browser: the days (and the written note) stay as they were bought.
+    const req: JobRequest = { product: product.id, kind: search.kind, from: body.from, n: String(search.n), a: body.a, ...(b && { b: body.b }), d: searchDay(undefined) };
     const order = await createOrder(product.id, req, `${b ? `${a.name}님과 ${b.name}님` : `${a.name}님`} · ${KINDS[search.kind].title}`, priceNow());
     return Response.json({ orderId: order.id, amount: order.amount, orderName: KINDS[search.kind].title, clientKey: payClientKey(), mock: payMock() });
   }

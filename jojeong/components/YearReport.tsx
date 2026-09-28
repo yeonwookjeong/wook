@@ -2,7 +2,6 @@ import Link from "next/link";
 import { ELEMENT_HANJA, ELEMENT_KO } from "@/lib/myeongri";
 import type { YearReading } from "@/lib/yearly";
 import { MONTHS } from "@/lib/yearly";
-import AiReport from "./AiReport";
 import DeepenForm from "./DeepenForm";
 import Keep from "./Keep";
 import RoyalDoc from "./RoyalDoc";
@@ -32,17 +31,18 @@ export default function YearReport({
   heading,
   deepen,
   query,
-  ai,
+  intro,
 }: {
   reading: YearReading;
   heading: string;
   deepen: { courtId: string; who: string } | null;
   query: string;
-  // The written report (components/AiReport.tsx) replaces the engine's sections when given.
-  ai?: { request: Record<string, string>; chapters: string[]; intro?: React.ReactNode };
+  // Shown above the engine's sections (the free chart analysis). The 2026 reading is free, so it is computed
+  // only: no written report.
+  intro?: React.ReactNode;
 }) {
   const { verdict, headline, keywords, sections, months, best, worst, lucky, advice, missing } = reading;
-  // The engine's own sections: shown as they are, or as the fallback when the written report is unavailable.
+  // The engine's own sections.
   const ruleBody = (
     <>
         <p className="mt-6 text-center text-xs text-ink-soft">각 제목을 누르면 풀이가 펼쳐져요</p>
@@ -218,23 +218,8 @@ export default function YearReport({
         </div>
       </RoyalDoc>
 
-      {ai ? (
-        <>
-          {ai.intro}
-          <details className="group doc-paper mt-4 px-5 py-4">
-            <summary className="flex cursor-pointer list-none items-center justify-between [&::-webkit-details-marker]:hidden">
-              <span className="font-myeongjo font-extrabold">사주 원국 · 여덟 글자 보기</span>
-              <span className="text-ink-soft transition group-open:rotate-180" aria-hidden="true">
-                ▾
-              </span>
-            </summary>
-            <SajuChart {...reading.chart} kingdom={false} />
-          </details>
-          <AiReport request={ai.request} chapters={ai.chapters} fallback={ruleBody} modern />
-        </>
-      ) : (
-        ruleBody
-      )}
+      {intro}
+      {ruleBody}
 
       {deepen && (missing.daeun || missing.palaces) && (
         <section className="doc-paper mt-6 px-6 pt-7 pb-6">

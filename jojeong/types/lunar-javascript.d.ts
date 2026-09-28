@@ -18,6 +18,7 @@ declare module "lunar-javascript" {
   }
   interface LunarTime {
     getZhi(): string;
+    getTianShen(): string;
     getTianShenType(): "黄道" | "黑道";
     getMinHm(): string;
     getMaxHm(): string;
@@ -38,6 +39,8 @@ declare module "lunar-javascript" {
     getXiu(): string;
     getXiuLuck(): "吉" | "凶";
     getTimes(): LunarTime[];
+    getYearZhiByLiChun(): string;
+    getYearGanByLiChun(): string;
   }
   interface SolarDate {
     getLunar(): LunarDate;

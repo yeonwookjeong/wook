@@ -105,7 +105,95 @@ export function domainBrief(domain: Domain, pillars: Pillars, gender: Gender | n
       `- 일터 자리(월지 ${BRANCHES[p.monthBranch]}): 원국과 ${month.length ? month.join(", ") : "합충 없음"}`,
     );
   }
+  const card = domainCard(domain, pillars, gender);
+  if (card) lines.push(`- 무료 화면에서 읽는 사람이 이미 본 판정: '${card.type}' — ${card.line} (이 판정과 같은 방향으로, 되풀이하지 말고 장면과 근거로 넓혀 쓸 것)`);
   return lines.join("\n");
+}
+
+// The free card at the top of a deep report: the subject's own verdict and three findings in plain words,
+// none of which the life report shows. The written report builds on the same evidence (domainBrief).
+export type DomainCard = { type: string; line: string; facts: { label: string; value: string; note: string }[] };
+
+const WORK_SAL: Record<string, string> = {
+  역마: "움직이는 일, 출장·해외·이동이 잦은 일과 인연이 있어요",
+  문창귀인: "글·공부·기획처럼 머리로 하는 일에서 빛나요",
+  화개: "연구·예술·전문 분야처럼 깊이 파고드는 일이 맞아요",
+  양인: "승부가 나는 일, 전문 기술로 버티는 일에 강해요",
+  천을귀인: "일이 막힐 때 도와주는 윗사람 복이 있어요",
+};
+
+export function domainCard(domain: Domain, pillars: Pillars, gender: Gender | null): DomainCard | null {
+  const c = ctxOf(pillars, gender);
+  if (!c) return null;
+  const { p, r, share } = c;
+  if (domain === "jaemul") {
+    const wealthEl = (stemEl(p.dayStem) + 2) % 5;
+    const craft = share("식상");
+    const money = share("재성");
+    const store = chartOf(p).some((s) => s.branch === STORE[wealthEl]);
+    const rival = share("비겁") >= 30 && money < 20;
+    const weak = (r.strength === "신약" || r.strength === "극신약") && money >= 30;
+    const [type, line] =
+      craft >= 10 && money >= 10
+        ? ["재주로 버는 사람", "잘하는 것이 그대로 돈이 되는 흐름이 살아 있어요. 내 이름을 걸고 파는 일에서 돈이 붙어요."]
+        : money >= 10
+          ? ["기회를 잡아 버는 사람", "돈의 흐름을 읽는 눈은 있는데, 스스로 만들어 내는 재주가 약해요. 좋은 판과 사람을 고르는 게 돈이에요."]
+          : craft >= 10
+            ? ["재주가 먼저인 사람", "재주는 넉넉한데 돈으로 잇는 고리가 약해요. 값을 매기고 파는 연습이 돈을 불러요."]
+            : ["차곡차곡 쌓는 사람", "돈 기운이 크게 드러나지 않아 한 방보다 꾸준함이 맞아요. 월급과 저축이 가장 큰 무기예요."];
+    return {
+      type,
+      line,
+      facts: [
+        { label: "돈 기운", value: `${money}%`, note: money >= 30 ? "돈 기운이 많은 편이에요" : money >= 10 ? "보통이에요" : "적은 편이에요" },
+        { label: "재물 창고", value: store ? "있음" : "없음", note: store ? "들어온 돈을 모아 두는 힘이 있어요" : "들어와도 머물게 하는 장치(자동이체·적금)가 필요해요" },
+        {
+          label: "새는 구멍",
+          value: rival ? "있음" : weak ? "주의" : "작음",
+          note: rival ? "나눠 가져가는 기운이 강해요. 동업·보증·돈 빌려주기에서 새요" : weak ? "돈이 몸보다 커요. 큰돈보다 꾸준한 돈이 맞아요" : "크게 새는 구조는 아니에요",
+        },
+      ],
+    };
+  }
+  if (domain === "yeonae") {
+    const groups = spouseGroups(c.gender);
+    const spouse = groups.reduce((a, g) => a + share(g), 0) / groups.length;
+    const seat = p.dayBranch;
+    const shaken = chartOf(p).some((s) => s.branch !== null && s.pos !== "일" && meetings(seat, s.branch).some((m) => m === "충" || m === "형" || m === "원진"));
+    const bound = chartOf(p).some((s) => s.branch !== null && s.pos !== "일" && meetings(seat, s.branch).includes("육합"));
+    const dohwa = chartOf(p).some((s) => s.branch !== null && salsAt(p, s.branch).includes("도화"));
+    const [type, line] = shaken
+      ? ["늦게 피는 인연", "배우자 자리가 흔들리는 구조예요. 일찍 만난 인연보다, 한 번 겪고 난 뒤 만나는 사람이 오래가요."]
+      : spouse >= 25
+        ? ["인연이 많은 사람", "배우자 기운이 넉넉해 사람이 자주 들어와요. 고르는 눈이 연애의 전부예요."]
+        : spouse < 8
+          ? ["스스로 찾아가야 하는 사람", "배우자 기운이 적어 기다리면 늦어져요. 내가 먼저 움직일 때 인연이 와요."]
+          : ["한 사람과 깊어지는 사람", "배우자 자리가 안정돼 있어요. 넓게보다 한 사람과 깊게 가는 연애가 맞아요."];
+    return {
+      type,
+      line,
+      facts: [
+        { label: "배우자 기운", value: `${Math.round(spouse)}%`, note: spouse >= 25 ? "사람이 잘 들어오는 편이에요" : spouse >= 8 ? "보통이에요" : "적은 편이라 먼저 움직여야 해요" },
+        { label: "배우자 자리", value: shaken ? "흔들림" : bound ? "묶임" : "안정", note: shaken ? "부딪히는 글자가 있어 시기를 고르는 게 중요해요" : bound ? "합으로 묶여 정이 깊은 대신 쉽게 못 놓아요" : "큰 흔들림 없이 안정적이에요" },
+        { label: "도화", value: dohwa ? "있음" : "없음", note: dohwa ? "사람을 끄는 매력이 있어 먼저 다가오는 사람이 많아요" : "첫눈보다 알수록 끌리는 매력이에요" },
+      ],
+    };
+  }
+  const scores: [string, number, string][] = [
+    ["조직형", share("관성") + share("인성"), "조직 안에서 인정받아 올라가는 일"],
+    ["창작·기술형", share("식상"), "내 손과 머리로 만들어 내는 일"],
+    ["사업형", share("재성") + Math.round(share("식상") / 2), "판을 벌이고 사람과 돈을 굴리는 일"],
+  ];
+  scores.sort((a, b) => b[1] - a[1]);
+  const sals = [...new Set(chartOf(p).flatMap((s) => (s.branch === null ? [] : salsAt(p, s.branch).filter((x) => x in WORK_SAL))))];
+  return {
+    type: `${scores[0][0]} 인재`,
+    line: `${scores[0][2]}에서 가장 빛나요. 두 번째는 ${scores[1][0]}이라, 둘을 섞은 자리가 가장 오래 가요.`,
+    facts: [
+      ...scores.map(([k, v]) => ({ label: k, value: `${v}점`, note: "" })),
+      ...(sals.length ? [{ label: "일복 신호", value: sals[0], note: WORK_SAL[sals[0]] }] : []),
+    ],
+  };
 }
 
 export type DecadeYear = { year: number; gz: string; grade: 2 | 1 | 0 | -1; tag: string; why: string[] };

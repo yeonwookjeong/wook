@@ -7,8 +7,10 @@ import { coupleBrief } from "./couple";
 import { decodePerson, profileOf, RELATIONS, relationOf } from "./pairToken";
 import { ADULT_ONLY, FIXED_RELATION, isAdult, isPair, productById, type ProductId } from "./products";
 import { intimacyBrief } from "./intimacy";
+import { reunionBrief } from "./reunion";
 import { decadeBrief, decadeOf, domainBrief, isDomain } from "./domains";
 import { REPORT_SPECS, systemPromptFor, userPrompt } from "./reportPrompts";
+import { dayStart, KINDS, parseSearch, pickDays, searchDay, taekilBrief } from "./taekil";
 import type { Gender } from "./profile";
 import type { Pillars } from "./saju";
 import { getProfile } from "./store";
@@ -27,16 +29,30 @@ export const aiEnabled = () =>
   Boolean(isGemini ? process.env.GEMINI_API_KEY : process.env.ANTHROPIC_API_KEY) || process.env.REPORT_MOCK === "1";
 
 export type ReportJob = { key: string; system: string; prompt: string; title: string; modern: boolean };
-export type JobRequest = { product: string; court?: string; m?: string; t?: string; a?: string; b?: string; rel?: string; p?: string; kind?: string; from?: string; n?: string };
+export type JobRequest = { product: string; court?: string; m?: string; t?: string; a?: string; b?: string; rel?: string; p?: string; kind?: string; from?: string; n?: string; d?: string };
 
 export async function jobFor(req: JobRequest): Promise<ReportJob | { error: string; status: number }> {
   const product = productById(req.product);
   const spec = product && REPORT_SPECS[product.id as ProductId];
-  if (!product || !spec) return { error: "없는 보고서예요.", status: 404 };
+  // A free report is never written (no spec either): free means no AI cost.
+  if (!product || product.free || !spec) return { error: "없는 보고서예요.", status: 404 };
 
   let subjectLine = "";
   let briefs = "";
-  if (isPair(product)) {
+  if (product.id === "taekil") {
+    // The computed days and the chart(s): the writer explains the choice, it does not choose.
+    const found = parseSearch(req.kind, req.from, req.n, false);
+    const a = decodePerson(req.a);
+    const b = found && KINDS[found.kind].people === 2 ? decodePerson(req.b) : null;
+    if (!found || !a || (KINDS[found.kind].people === 2 && !b)) return { error: "날짜 조건을 다시 골라 주세요.", status: 400 };
+    const days = pickDays(found.kind, b ? [a, b] : [a], found.from, found.n, dayStart(searchDay(req.d)));
+    subjectLine = `[대상] 읽는 사람: ${a.name} ('${a.name}님'이라 부를 것)${b ? ` / 함께하는 사람: ${b.name}` : ""} / 택일: ${KINDS[found.kind].title}`;
+    briefs = [
+      chartBrief(a.name, a.pillars, profileOf(a)),
+      ...(b ? [chartBrief(b.name, b.pillars, profileOf(b)), coupleBrief(a, b)] : []),
+      taekilBrief(found.kind, days, found.label),
+    ].join("\n\n");
+  } else if (isPair(product)) {
     // Two people carried in the link (lib/pairToken.ts), no court needed.
     const a = decodePerson(req.a);
     const b = decodePerson(req.b);
@@ -54,6 +70,7 @@ export async function jobFor(req: JobRequest): Promise<ReportJob | { error: stri
       pairBrief(a.name, a.pillars, b.name, b.pillars),
       coupleBrief(a, b),
       ...(product.id === "sokgunghap" ? [intimacyBrief(a, b)] : []),
+      ...(product.id === "jaehoe" ? [reunionBrief(a, b)] : []),
     ].join("\n\n");
   } else if (product.id === "gwangye" || product.id === "dwitjosa" || product.id === "insa") {
     if (!req.court) return { error: "조정을 찾을 수 없사옵니다.", status: 400 };

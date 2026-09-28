@@ -16,6 +16,8 @@ export type Product = {
   free?: boolean;
   // Present-day reports speak plain 해요체 to "○○님"; the Joseon ones keep 정 훈도's court speech.
   modern?: boolean;
+  // Taken off the shelf for now (kept for a later, better version): not listed, not sold, its page is gone.
+  shelved?: boolean;
 };
 
 // The Joseon fantasy (king grade, chronicle, 신분 감정) is free. What is sold is the present day: the finest
@@ -74,6 +76,7 @@ export const PRODUCTS: Product[] = [
     toc: ["우리 둘의 온도, 첫 끌림의 정체", "다가가는 속도와 방식", "애정 표현, 누가 먼저 어떻게", "잘 맞는 순간과 엇갈리는 순간", "더 가까워지는 법", "관계가 깊어지는 때"],
     teaser: "두 사람 사주의 열기와 촉촉함, 끌어당기는 기운으로 친밀감의 궁합을 풀어 드려요. 만 19세 이상만 볼 수 있어요.",
     modern: true,
+    shelved: true,
   },
   {
     id: "jaehoe",
@@ -84,6 +87,7 @@ export const PRODUCTS: Product[] = [
     toc: ["우리가 멀어진 진짜 이유", "그 사람 마음에 남아 있는 것", "다시 이어질 수 있는 인연일까", "연락이 닿기 좋은 때", "다시 만난다면 꼭 달라져야 할 것", "놓아 주는 게 나을 때"],
     teaser: "두 사람의 사주와 앞으로 몇 해의 흐름으로 다시 이어질 인연인지, 언제가 기회인지 풀어 드려요.",
     modern: true,
+    shelved: true,
   },
   {
     id: "taekil",
@@ -91,8 +95,8 @@ export const PRODUCTS: Product[] = [
     hanja: "擇日",
     for: "anyone",
     tagline: "결혼, 이사, 개업·계약. 책력과 내 사주로 고른 좋은 날",
-    toc: ["기간 안의 좋은 날 세 개", "기간 전체 길일 달력", "날짜마다 좋은 이유와 조심할 점", "그날 좋은 시간대"],
-    teaser: "관상감 명과학 훈도의 본업, 택일이에요. 책력이 권하는 날에 내 사주와 부딪히지 않는 날을 골라 드려요.",
+    toc: ["정 훈도가 고른 날", "왜 하필 이 날일까", "그날, 몇 시에 무엇을", "흔한 길일표와 다른 점", "날짜가 사정에 안 맞을 때"],
+    teaser: "관상감 명과학 훈도의 본업, 택일이에요. 책력이 권하는 날 가운데 내 사주와 부딪히지 않고 필요한 기운이 드는 날을 골라, 날짜마다 이유와 시간까지 풀어 드려요.",
     modern: true,
   },
   {
@@ -145,6 +149,7 @@ export const PRODUCTS: Product[] = [
     toc: ["이 사람, 겉과 속이 같을까", "같이 일하면 어떨까", "같이 여행 가면 어떨까", "돈 빌려줘도 될까", "이 사람과 잘 지내는 법"],
     teaser: "조정에 입궐한 신하 가운데 한 명을 골라, 교지에는 적지 못한 속사정을 캐어 올리옵니다.",
     free: true,
+    shelved: true,
   },
   {
     id: "gwangye",
@@ -155,6 +160,7 @@ export const PRODUCTS: Product[] = [
     toc: ["우리 모임은 어떤 모임일까", "누가 누구랑 찰떡이고, 누가 삐걱일까", "숨은 실세와 분위기 메이커", "팀을 나눈다면", "이 모임이 오래 가려면"],
     teaser: "조정의 모든 신하끼리 궁합을 맞춰 한 장의 관계도로 그려 올리옵니다.",
     free: true,
+    shelved: true,
   },
   {
     id: "insa",
@@ -165,10 +171,13 @@ export const PRODUCTS: Product[] = [
     toc: ["전하께 올라간 나의 인사기록", "전하는 나를 어떻게 볼까", "이 친구가 서운해하는 포인트", "이 친구 기분 푸는 법", "더 가까워지려면"],
     teaser: "정 훈도가 전하께 올린 그대에 대한 비밀 보고를 그대에게도 보여 드리옵니다.",
     free: true,
+    shelved: true,
   },
 ];
 
-export const productById = (id: string) => PRODUCTS.find((p) => p.id === id);
+// Everything on sale or free today; a shelved report is looked up nowhere, so its page and payment are gone.
+export const SHELF = PRODUCTS.filter((p) => !p.shelved);
+export const productById = (id: string) => SHELF.find((p) => p.id === id);
 
 // Sets: several one-person reports for the same chart, bought at once. Two-person reports stay out, since a
 // set must be fixed when it is paid for (a credit to spend later would be a prepaid voucher).
@@ -189,9 +198,9 @@ export const ADULT_ONLY: ProductId[] = ["sokgunghap"];
 // 청소년보호법: 19세가 되는 해의 1월 1일부터 성인으로 본다.
 export const isAdult = (birthYear: number | null) => birthYear !== null && new Date().getFullYear() - birthYear >= 19;
 
-// 무료 공개 기간: every report opens in full until selling starts. OPEN_ALL=0 in the environment ends it.
-export const OPEN_ALL = process.env.OPEN_ALL !== "0";
-export const isOpen = (p: Product) => OPEN_ALL || Boolean(p.free);
+// Free means computed only: a free report never calls the writer (lib/reportPrompts.ts gives it no spec, and
+// /api/report writes only for a paid order or the owner).
+export const isOpen = (p: Product) => Boolean(p.free);
 
 export const PRICE = 990;
 

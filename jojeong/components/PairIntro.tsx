@@ -4,7 +4,7 @@ import type { Person } from "@/lib/pairToken";
 import { BRANCHES, isFull, STEMS } from "@/lib/saju";
 import { Cell } from "./SajuChart";
 
-function MiniChart({ person }: { person: Person }) {
+export function MiniChart({ person }: { person: Person }) {
   if (!isFull(person.pillars)) return null;
   const slots = chartOf(person.pillars);
   return (
