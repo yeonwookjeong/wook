@@ -119,6 +119,13 @@ export async function ownedOrders(): Promise<Order[]> {
   return orders.filter((o): o is Order => o?.status === "paid");
 }
 
+// The newest paid order in this browser for each report it opens (a set opens several), with the link to it.
+export function ownedByProduct(orders: Order[]): Partial<Record<ProductId, { order: Order; href: string }>> {
+  const out: Partial<Record<ProductId, { order: Order; href: string }>> = {};
+  for (const o of orders) for (const id of o.bundle ?? [o.product]) out[id] ??= { order: o, href: `/reports/${id}?order=${o.id}` };
+  return out;
+}
+
 // A paid order in this browser for exactly this report request (same product, same chart or pair).
 export async function ownedOrderFor(product: ProductId, req: JobRequest): Promise<Order | null> {
   const fields = ["p", "a", "b", "rel", "kind", "from", "n"] as const;

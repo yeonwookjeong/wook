@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 import Keep from "@/components/Keep";
+import { ownedByProduct, ownedOrders } from "@/lib/pay";
 import { PRICE, priceNow, productById, SHELF, saleLabel, saleNow, SETS, type Product, type SetId } from "@/lib/products";
 
 export const metadata: Metadata = { title: "전체 보고서" };
@@ -9,11 +10,11 @@ export const metadata: Metadata = { title: "전체 보고서" };
 // Every report on one shelf: the present-day readings first, then the Joseon play that opens from the court.
 const WHERE: Record<Product["for"], string | null> = { king: "왕이 보는 보고서", minister: "신하가 보는 보고서", anyone: null };
 
-function Row({ p, price }: { p: Product; price: number }) {
+function Row({ p, price, mine }: { p: Product; price: number; mine?: string }) {
   const where = p.modern ? null : WHERE[p.for];
   return (
     <li>
-      <Link href={`/reports/${p.id}`} className="doc-paper flex items-center gap-4 px-5 py-5">
+      <Link href={mine ?? `/reports/${p.id}`} className="doc-paper flex items-center gap-4 px-5 py-5">
         <span
           className={`flex h-14 min-w-14 shrink-0 items-center justify-center border-2 border-seal/60 px-1 font-myeongjo font-extrabold text-seal ${p.hanja.length > 2 ? "text-sm" : "text-lg"}`}
         >
@@ -27,7 +28,9 @@ function Row({ p, price }: { p: Product; price: number }) {
           {where && <span className="mt-1 inline-block border border-gold/60 px-1.5 text-[10px] font-bold text-gold">{where}</span>}
         </span>
         <span className="shrink-0 text-right font-myeongjo font-extrabold text-seal">
-          {p.free ? (
+          {mine ? (
+            <span className="text-sm">결제함</span>
+          ) : p.free ? (
             "무료"
           ) : price < PRICE ? (
             <>
@@ -47,6 +50,7 @@ export default async function ReportsPage() {
   // Rendered per request, so a sale starts and ends on its dates without a redeploy.
   await connection();
   const price = priceNow();
+  const owned = ownedByProduct(await ownedOrders().catch(() => []));
   const sale = saleNow();
   const modern = SHELF.filter((p) => p.modern);
   const joseon = SHELF.filter((p) => !p.modern);
@@ -72,7 +76,7 @@ export default async function ReportsPage() {
         <h2 className="font-myeongjo text-lg font-extrabold">내 사주 보고서</h2>
         <ul className="mt-3 flex flex-col gap-3">
           {modern.map((p) => (
-            <Row key={p.id} p={p} price={price} />
+            <Row key={p.id} p={p} price={price} mine={owned[p.id]?.href} />
           ))}
         </ul>
       </section>

@@ -403,6 +403,47 @@ async function OpenReport({
   const domain = isDomain(product.id) ? product.id : null;
   const gender = me ? me.person.gender : (profile?.gender ?? null);
   const card = domain && domainCard(domain, pillars, gender);
+  const chartFold = (
+    <details className="group doc-paper mt-4 px-5 py-4">
+      <summary className="flex cursor-pointer list-none items-center justify-between [&::-webkit-details-marker]:hidden">
+        <span className="font-myeongjo font-extrabold">사주 원국 · 여덟 글자 보기</span>
+        <span className="text-ink-soft transition group-open:rotate-180" aria-hidden="true">
+          ▾
+        </span>
+      </summary>
+      <SajuChart {...reading.chart} kingdom={false} />
+    </details>
+  );
+  // A bought report opens on what was bought: the link, the (full) calendar and the written report first; the
+  // free analysis seen before paying folds away at the bottom.
+  if (unlock)
+    return (
+      <>
+        <Header product={product} subjectName={`${name}님`} />
+        <OrderLink
+          id={unlock.id}
+          others={(unlock.bundle ?? [])
+            .filter((id) => id !== product.id)
+            .map((id) => ({ href: `/reports/${id}?order=${unlock.id}`, title: productById(id)!.title }))}
+        />
+        {domain && card && <DecadeTable name={name} domain={domain} years={decadeOf(domain, pillars, gender)} locked={false} />}
+        <AiReport request={{ product: product.id, order: unlock.id }} chapters={chaptersOf(product.id)} modern />
+        <details className="group mt-6">
+          <summary className="doc-paper flex cursor-pointer list-none items-center justify-between px-5 py-4 [&::-webkit-details-marker]:hidden">
+            <span>
+              <b className="block font-myeongjo">결제 전에 본 무료 분석 다시 보기</b>
+              <span className="text-[12px] text-ink-soft">여덟 글자의 무게, 드문 특징{domain ? ", 주제 판정" : ""}</span>
+            </span>
+            <span className="text-ink-soft transition group-open:rotate-180" aria-hidden="true">
+              ▾
+            </span>
+          </summary>
+          {domain && card && <DomainCard name={name} domain={domain} card={card} />}
+          {intro}
+          {chartFold}
+        </details>
+      </>
+    );
   return (
     <>
       <Header product={product} subjectName={`${name}님`} />
@@ -410,7 +451,7 @@ async function OpenReport({
       {domain && card ? (
         <>
           <DomainCard name={name} domain={domain} card={card} />
-          <DecadeTable name={name} domain={domain} years={decadeOf(domain, pillars, gender)} locked={locked && !unlock} />
+          <DecadeTable name={name} domain={domain} years={decadeOf(domain, pillars, gender)} locked={locked} />
           {intro && (
             <details className="group mt-4">
               <summary className="doc-paper flex cursor-pointer list-none items-center justify-between px-5 py-4 [&::-webkit-details-marker]:hidden">
@@ -429,16 +470,8 @@ async function OpenReport({
       ) : (
         intro
       )}
-      <details className="group doc-paper mt-4 px-5 py-4">
-        <summary className="flex cursor-pointer list-none items-center justify-between [&::-webkit-details-marker]:hidden">
-          <span className="font-myeongjo font-extrabold">사주 원국 · 여덟 글자 보기</span>
-          <span className="text-ink-soft transition group-open:rotate-180" aria-hidden="true">
-            ▾
-          </span>
-        </summary>
-        <SajuChart {...reading.chart} kingdom={false} />
-      </details>
-      {locked && !unlock ? (
+      {chartFold}
+      {locked ? (
         // A bought report is written for exactly this chart, so the missing details come before the payment.
         <>
           {meDeepen}
@@ -446,16 +479,8 @@ async function OpenReport({
         </>
       ) : (
         <>
-          {unlock && (
-            <OrderLink
-              id={unlock.id}
-              others={(unlock.bundle ?? [])
-                .filter((id) => id !== product.id)
-                .map((id) => ({ href: `/reports/${id}?order=${unlock.id}`, title: productById(id)!.title }))}
-            />
-          )}
-          <AiReport request={unlock ? { product: product.id, order: unlock.id } : request} chapters={chaptersOf(product.id)} modern />
-          {!unlock && meDeepen}
+          <AiReport request={request} chapters={chaptersOf(product.id)} modern />
+          {meDeepen}
         </>
       )}
       {!me && subject!.self && (reading.missing.daeun || reading.missing.palaces) && (

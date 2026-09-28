@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BUSINESS, ftcLookupUrl, hasBusinessInfo } from "@/lib/business";
+import { ownedOrderIds } from "@/lib/pay";
 
 // The brand mark: a red 訓導 seal beside the character's name. Used at the top and bottom of every page.
 function Seal({ size = 30 }: { size?: number }) {
@@ -15,7 +16,9 @@ function Seal({ size = 30 }: { size?: number }) {
   );
 }
 
-export function SiteHeader() {
+// 내 보고서 sits at the top of every page, with how many this browser bought: a buyer must find them again.
+export async function SiteHeader() {
+  const bought = (await ownedOrderIds().catch(() => [])).length;
   return (
     <header className="flex items-center justify-between pt-4">
       <Link href="/" className="flex items-center gap-2">
@@ -25,9 +28,18 @@ export function SiteHeader() {
           <span className="text-[10px] leading-tight text-ink-soft">관상감 명과학 훈도 정가</span>
         </span>
       </Link>
-      <Link href="/reports" className="border border-seal/40 px-2.5 py-1 font-myeongjo text-xs font-extrabold text-seal">
-        전체 보고서
-      </Link>
+      <nav className="flex items-center gap-1.5">
+        <Link
+          href="/my"
+          className={`flex items-center gap-1 px-2.5 py-1 font-myeongjo text-xs font-extrabold ${bought ? "bg-seal text-hanji" : "border border-ink/20 text-ink-soft"}`}
+        >
+          내 보고서
+          {bought > 0 && <span className="rounded-full bg-hanji px-1.5 text-[10px] leading-4 text-seal">{bought}</span>}
+        </Link>
+        <Link href="/reports" className="border border-seal/40 px-2.5 py-1 font-myeongjo text-xs font-extrabold text-seal">
+          전체 보고서
+        </Link>
+      </nav>
     </header>
   );
 }
