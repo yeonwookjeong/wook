@@ -3,14 +3,14 @@
 import { useActionState, useState } from "react";
 import { taekilAction, type FormState } from "@/app/actions";
 import { keepValues } from "@/lib/keepForm";
-import { KINDS, SPANS, type Kind } from "@/lib/taekilKinds";
+import { KINDS, OFFERED, SPANS, type Kind } from "@/lib/taekilKinds";
 import PersonFields from "./PersonFields";
 
 const choice =
-  "block rounded-xl border border-ink/15 bg-white/50 py-2.5 text-center text-sm peer-checked:border-ink peer-checked:bg-ink peer-checked:text-hanji peer-focus-visible:ring-2 peer-focus-visible:ring-seal";
+  "block rounded-full border border-ink/15 bg-white/50 px-3.5 py-2 text-center text-sm peer-checked:border-ink peer-checked:bg-ink peer-checked:text-hanji peer-focus-visible:ring-2 peer-focus-visible:ring-seal";
 const select = "w-full rounded-xl border border-ink/15 bg-white/70 px-4 py-3 text-base outline-none focus:border-seal";
 
-// What for, from which month, for how long, and whose chart; a wedding also asks for the partner.
+// What for, from which month, for how long, and whose chart; a wedding or a betrothal also asks for the partner.
 export default function TaekilForm({ savedName, months }: { savedName: string | null; months: { value: string; label: string }[] }) {
   const [state, formAction, pending] = useActionState<FormState, FormData>(taekilAction, { error: null });
   const [kind, setKind] = useState<Kind>("wedding");
@@ -20,8 +20,8 @@ export default function TaekilForm({ savedName, months }: { savedName: string | 
     <form onSubmit={keepValues(formAction)} className="flex flex-col gap-4">
       <fieldset className="flex flex-col gap-1.5">
         <legend className="mb-1.5 text-sm font-semibold text-ink-soft">무엇을 할 날인가요?</legend>
-        <div className="grid grid-cols-3 gap-2">
-          {(Object.keys(KINDS) as Kind[]).map((k) => (
+        <div className="flex flex-wrap gap-2">
+          {OFFERED.map((k) => (
             <label key={k} className="cursor-pointer">
               <input type="radio" name="kind" value={k} checked={kind === k} onChange={() => setKind(k)} className="peer sr-only" />
               <span className={choice}>{KINDS[k].label}</span>
@@ -70,7 +70,7 @@ export default function TaekilForm({ savedName, months }: { savedName: string | 
 
       {KINDS[kind].people === 2 && (
         <>
-          <h3 className="mt-2 border-t border-seal/20 pt-4 font-myeongjo font-extrabold">결혼할 상대</h3>
+          <h3 className="mt-2 border-t border-seal/20 pt-4 font-myeongjo font-extrabold">{kind === "wedding" ? "결혼할 상대" : "함께하는 사람 (예비 배우자)"}</h3>
           <PersonFields prefix="b_" nameLabel="상대 이름" unknownHour="모름" genderLabel="성별 (선택)" modern />
         </>
       )}

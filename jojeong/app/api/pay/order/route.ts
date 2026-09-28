@@ -37,14 +37,16 @@ export async function POST(request: Request) {
     return Response.json({ orderId: order.id, amount: order.amount, orderName: KINDS[search.kind].title, clientKey: payClientKey(), mock: payMock() });
   }
 
-  // Only what identifies the report goes into the order.
-  const req: JobRequest =
-    isPair(product) ? { product: product.id, a: body.a, b: body.b, rel: FIXED_RELATION[product.id] ?? relationOf(body.rel) } : { product: product.id, p: body.p };
+  // Only what identifies the report goes into the order (연운: the chart and the year).
+  const req: JobRequest = isPair(product)
+    ? { product: product.id, a: body.a, b: body.b, rel: FIXED_RELATION[product.id] ?? relationOf(body.rel) }
+    : { product: product.id, p: body.p, ...(product.id === "yeonun" && { y: body.y }) };
   const job = await jobFor(req);
   if ("error" in job) return Response.json({ error: job.error }, { status: job.status });
 
   const who =
     isPair(product) ? `${decodePerson(req.a)?.name}님과 ${decodePerson(req.b)?.name}님` : `${decodePerson(req.p)?.name}님`;
-  const order = await createOrder(product.id, req, who, priceNow());
-  return Response.json({ orderId: order.id, amount: order.amount, orderName: product.title, clientKey: payClientKey(), mock: payMock() });
+  const order = await createOrder(product.id, req, product.id === "yeonun" ? `${who} · ${req.y}년 운세` : who, priceNow());
+  const orderName = product.id === "yeonun" ? `${req.y}년 운세 (연운)` : product.title;
+  return Response.json({ orderId: order.id, amount: order.amount, orderName, clientKey: payClientKey(), mock: payMock() });
 }

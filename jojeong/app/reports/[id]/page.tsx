@@ -23,6 +23,8 @@ import RoyalDoc from "@/components/RoyalDoc";
 import SajuChart from "@/components/SajuChart";
 import SinbunReport from "@/components/SinbunReport";
 import YearReport from "@/components/YearReport";
+import { YearList, YearTop } from "@/components/Yeonun";
+import { thisYear, yearDetail, yearOf, yearRange, yearRows } from "@/lib/yeonun";
 import { josa } from "@/lib/josa";
 import { ownedCourts } from "@/lib/load";
 import { ADULT_ONLY, FIXED_RELATION, isAdult, isOpen, isPair, PRICE, productById, saleLabel, saleNow, type Product, type ProductId } from "@/lib/products";
@@ -36,7 +38,7 @@ import { decadeOf, domainCard, isDomain } from "@/lib/domains";
 import { distinctOf } from "@/lib/rarity";
 import { courtOfReader, subjectFor } from "@/lib/subject";
 import { getProfile } from "@/lib/store";
-import { covers, getOrder, ownedOrderFor, type Order } from "@/lib/pay";
+import { covers, getOrder, ownedOrderFor, ownedOrders, type Order } from "@/lib/pay";
 import { isAdmin } from "@/lib/admin";
 import { KINDS, parseSearch, pickDays, searchDay, startMonths } from "@/lib/taekil";
 import { yearReading } from "@/lib/yearly";
@@ -89,7 +91,7 @@ const PAIR_FREE: Partial<Record<ProductId, string>> = {
 // (`locked`) shows everything computed for free and puts the payment where the written report would start;
 // a paid order (`paid`, from its link) or one this browser bought for the same chart opens it.
 type Pair = { a?: string; b?: string; rel?: string };
-type Search = { kind?: string; from?: string; n?: string };
+type Search = { kind?: string; from?: string; n?: string; y?: string };
 
 async function OpenReport({
   product,
@@ -155,7 +157,7 @@ async function OpenReport({
             chapters={[
               "가장 좋은 날 세 개와 한눈에 고르기 (가장 빠른 날·주말·평일)",
               "날짜마다 좋은 이유를 쉬운 말로",
-              `좋은 시간${found.kind === "wedding" ? "과 예식 시간" : found.kind === "move" ? "과 손 방향, 그해 피할 방향" : "과 계약 시간"}`,
+              KINDS[found.kind].hours,
               "기간 전체 택일 달력과 써도 좋은 날 모두",
               "책력에는 좋다는데 사주와 부딪혀 빼 둔 날",
               "정 훈도의 택일 소견서 (왜 이 날인지, 그날 할 일)",
@@ -414,6 +416,64 @@ async function OpenReport({
     );
   if (!self)
     return (<><Header product={product} /><Notice>본인의 사주로만 열 수 있는 보고서예요.</Notice></>);
+
+  // 연운: the list of years (free), then one year (its verdict, what moves it and its months free; the written
+  // report bought for that chart and that year).
+  if (product.id === "yeonun") {
+    const now = thisYear();
+    const y = yearOf(paid ? paid.req.y : search.y, profile, now);
+    const token = me?.token;
+    const link = (year?: number) => `${next}?${new URLSearchParams({ ...(courtId && { court: courtId }), ...(year && { y: String(year) }) })}`;
+    if (y === null) {
+      const { from, to } = yearRange(profile, now);
+      const rows = yearRows(pillars, profile, from, to, now);
+      const owned = (await ownedOrders().catch(() => []))
+        .filter((o) => covers(o, product.id) && o.req.p === token && o.req.y)
+        .map((o) => Number(o.req.y));
+      return (
+        <>
+          <Header product={product} subjectName={`${name}님`} />
+          {other}
+          {noGender && (
+            <p className="doc-paper mt-4 px-5 py-3 text-center text-[12px] leading-relaxed">
+              성별을 넣으면 해마다의 판정에 10년 대운까지 반영해 드려요.
+            </p>
+          )}
+          {rows && <YearList name={name} rows={rows} hrefOf={(year) => link(year)} owned={owned} />}
+          {meDeepen}
+        </>
+      );
+    }
+    const d = yearDetail(pillars, profile, y, now);
+    if (!d) return (<><Header product={product} /><Notice>이 사주로는 연운을 풀 수 없어요. 다시 넣어 주세요.</Notice></>);
+    const { from, to } = yearRange(profile, now);
+    const yreq = { product: product.id, p: token ?? "", y: String(y) };
+    const unlock = paid ?? (locked && token ? await ownedOrderFor(product.id, yreq) : null);
+    return (
+      <>
+        <Header product={product} subjectName={`${name}님`} />
+        {unlock && <OrderLink id={unlock.id} />}
+        <YearTop d={d} name={name} prev={!paid && y > from ? link(y - 1) : null} next={!paid && y < to ? link(y + 1) : null} list={link()} />
+        {unlock ? (
+          <AiReport request={{ product: product.id, order: unlock.id }} chapters={chaptersOf(product.id)} modern />
+        ) : locked ? (
+          <>
+            {meDeepen}
+            <Paywall
+              product={product}
+              request={yreq}
+              chapters={product.toc}
+              heading={`${y}년 운세 보고서`}
+              sub={`${d.when === "past" ? "그해 있었을 일과 그 이유" : "이 해에 벌어질 일과 할 일"}를 돈·일·사랑·몸, 달마다 흐름까지 ${product.toc.length}장에 풀어 드려요`}
+            />
+          </>
+        ) : (
+          <AiReport request={yreq} chapters={chaptersOf(product.id)} modern />
+        )}
+        {other}
+      </>
+    );
+  }
   const unlock = paid ?? (locked ? await ownedOrderFor(product.id, { product: product.id, p: me?.token }) : null);
   const domain = isDomain(product.id) ? product.id : null;
   const gender = me ? me.person.gender : (profile?.gender ?? null);
@@ -556,6 +616,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
             kind: typeof search.kind === "string" ? search.kind : undefined,
             from: typeof search.from === "string" ? search.from : undefined,
             n: typeof search.n === "string" ? search.n : undefined,
+            y: typeof search.y === "string" ? search.y : undefined,
           }}
         />
       </>

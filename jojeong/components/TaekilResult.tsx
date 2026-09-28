@@ -1,3 +1,4 @@
+import TaekilCompare from "./TaekilCompare";
 import { bestDays, KINDS, picksOf, ruledOut, verdictOf, weekendBest, yearDirections, type DayPick, type Kind, type Note } from "@/lib/taekil";
 
 const MARK = { 2: "◎", 1: "○", 0: "△", [-1]: "✕" } as const;
@@ -32,14 +33,14 @@ function Head({ d, rank }: { d: DayPick; rank?: number }) {
 }
 
 // The practical lines of a day: good hours by name, the ceremony hour, where 손 is.
-function Practical({ d }: { d: DayPick }) {
+function Practical({ d, kind }: { d: DayPick; kind: Kind }) {
   return (
     <dl className="mt-2 grid grid-cols-[4.5rem_1fr] gap-x-2 gap-y-1 rounded-xl bg-gold/10 px-3 py-2 text-[12px] leading-relaxed">
       <dt className="font-bold">좋은 시간</dt>
       <dd>{d.hours.length ? d.hours.join(", ") : "낮에는 황도시가 없어요. 오전 일찍 시작하세요"}</dd>
       {d.ceremony && (
         <>
-          <dt className="font-bold">예식 시간</dt>
+          <dt className="font-bold">{kind === "meet" ? "모임 시간" : "예식 시간"}</dt>
           <dd>{d.ceremony}</dd>
         </>
       )}
@@ -61,7 +62,7 @@ function DayCard({ d, kind, rank }: { d: DayPick; kind: Kind; rank?: number }) {
       <p className="mt-2 text-[13px] leading-relaxed font-bold">{verdictOf(d, kind)}</p>
       <Why notes={d.reasons} />
       {d.warns.length > 0 && <Why notes={d.warns} bad />}
-      <Practical d={d} />
+      <Practical d={d} kind={kind} />
     </li>
   );
 }
@@ -85,7 +86,7 @@ function FoldCard({ d, kind }: { d: DayPick; kind: Kind }) {
         <p className="mt-2 text-[13px] leading-relaxed font-bold">{verdictOf(d, kind)}</p>
         <Why notes={d.reasons} />
         {d.warns.length > 0 && <Why notes={d.warns} bad />}
-        <Practical d={d} />
+        <Practical d={d} kind={kind} />
       </details>
     </li>
   );
@@ -126,7 +127,8 @@ function Month({ days }: { days: DayPick[] }) {
 }
 
 const HOW = [
-  "책력(통서)이 이 일에 맞다고 한 날만 후보로 올려요.",
+  "책력(통서)이 이 일에 맞다고 한 날만 후보로 올려요. 면접·시험은 책력에 정한 글자가 없어, 책력이 쉬라고 한 날만 빼고 모두 후보로 올려요.",
+  "면접·시험은 그날이 나에게 관성(인정받는 기운)·인성(합격·문서의 기운)인지, 문창귀인·천을귀인이 드는지로 점수를 더해요.",
   "그날을 지키는 신이 황도(길한 신)인지 흑도인지, 건제십이신과 28수 별자리가 무엇인지로 점수를 매겨요.",
   "사주와 부딪히는(충) 날은 빼고, 사주에 필요한 기운이 들어오거나 합이 드는 날에 점수를 더해요.",
   "좋은 시간은 그날의 황도시 가운데 낮 시간이고, 사주와 부딪히는 시간은 뺐어요.",
@@ -151,7 +153,7 @@ function Preview({ kind, days, label, names }: { kind: Kind; days: DayPick[]; la
   const count = (g: number) => days.filter((d) => d.grade === g).length;
   const out = ruledOut(days).length;
   const stats = [
-    { k: "책력 후보", v: days.filter((d) => d.fit).length },
+    { k: KINDS[kind].yi.length ? "책력 후보" : "후보 날", v: days.filter((d) => d.fit).length },
     { k: "◎ 길일", v: count(2) },
     { k: "○ 무난", v: count(1) },
     { k: "사주로 뺀 날", v: out },
@@ -199,7 +201,7 @@ export default function TaekilResult({ kind, days, label, names, full }: { kind:
   const best = bestDays(days, kind);
   const picks = picksOf(days, kind);
   const good = days.filter((d) => d.grade >= 1).sort((a, b) => a.date.localeCompare(b.date));
-  const weekend = kind === "open" ? [] : weekendBest(days);
+  const weekend = KINDS[kind].weekend ? weekendBest(days) : [];
   const out = ruledOut(days);
   const months = [...new Set(days.map((d) => d.date.slice(0, 7)))].map((ym) => days.filter((d) => d.date.startsWith(ym)));
   const fit = days.filter((d) => d.fit).length;
@@ -214,7 +216,7 @@ export default function TaekilResult({ kind, days, label, names, full }: { kind:
         <section className="doc-paper mt-4 px-5 pt-6 pb-5">
           <h2 className="text-center font-myeongjo text-lg font-extrabold">한눈에 고르기</h2>
           <p className="mt-1 text-center text-xs text-ink-soft">
-            {label} · 책력상 {KINDS[kind].label}에 맞는 날 {fit}일 가운데 {names} 사주로 골랐어요
+            {label} · {KINDS[kind].yi.length ? `책력상 ${KINDS[kind].label}에 맞는 날 ${fit}일` : `${fit}일`} 가운데 {names} 사주로 골랐어요
           </p>
           <ul className="mt-4 flex flex-col gap-1.5">
             {picks.map((p) => (
@@ -241,6 +243,10 @@ export default function TaekilResult({ kind, days, label, names, full }: { kind:
         )}
         <How />
       </section>
+
+      <TaekilCompare
+        days={days.map((d) => ({ date: d.date, label: d.label, grade: d.grade, score: d.score, reasons: d.reasons.map((r) => r.tag), warns: d.warns.map((w) => w.tag), verdict: verdictOf(d, kind) }))}
+      />
 
       {dirs.length > 0 && (
         <section className="doc-paper mt-4 px-5 pt-6 pb-5">

@@ -1,7 +1,7 @@
 // 정 훈도의 비밀 보고서. One free report (조선 신분 감정) opens the shelf; the paid ones all cost the same fixed
 // price, lowered only on the special days listed in SALES.
 
-export type ProductId = "sinbun" | "pyeongsaeng" | "gunghap" | "sokgunghap" | "jaehoe" | "taekil" | "gukjeong" | "yeonae" | "jaemul" | "jikup" | "dwitjosa" | "gwangye" | "insa";
+export type ProductId = "sinbun" | "pyeongsaeng" | "gunghap" | "sokgunghap" | "jaehoe" | "taekil" | "gukjeong" | "yeonun" | "yeonae" | "jaemul" | "jikup" | "dwitjosa" | "gwangye" | "insa";
 
 export type Product = {
   id: ProductId;
@@ -94,7 +94,7 @@ export const PRODUCTS: Product[] = [
     title: "택일 · 좋은 날 받기",
     hanja: "擇日",
     for: "anyone",
-    tagline: "결혼, 이사, 개업·계약. 책력과 내 사주로 고른 좋은 날",
+    tagline: "결혼·상견례·이사·개업·계약·공사·여행·면접. 책력과 내 사주로 고른 좋은 날",
     toc: ["정 훈도가 고른 날", "왜 하필 이 날일까", "그날, 몇 시에 무엇을", "흔한 길일표와 다른 점", "날짜가 사정에 안 맞을 때"],
     teaser: "관상감 명과학 훈도의 본업, 택일이에요. 책력이 권하는 날 가운데 내 사주와 부딪히지 않고 필요한 기운이 드는 날을 골라, 날짜마다 이유와 시간까지 풀어 드려요.",
     modern: true,
@@ -108,6 +108,16 @@ export const PRODUCTS: Product[] = [
     toc: ["나는 어떤 사람일까", "2026년, 어떤 해가 될까", "돈은 들어올까, 새어 나갈까", "일: 버틸까, 옮길까", "올해 인연은 들어올까", "누구를 곁에 두고, 누구를 조심할까", "몸과 마음, 어디부터 챙길까", "언제 움직이고 언제 쉴까 (상반기)", "언제 움직이고 언제 쉴까 (하반기)", "올해를 내 편으로 만드는 법"],
     teaser: "사주로 2026년 한 해를 처음부터 끝까지 풀어 드려요.",
     free: true,
+    modern: true,
+  },
+  {
+    id: "yeonun",
+    title: "연운 · 그해 운세",
+    hanja: "年運",
+    for: "anyone",
+    tagline: "그해 나에게 무슨 일이 있었을까, 있을까? 지난해도 앞으로의 해도 한 해씩 깊게",
+    toc: ["이 해는 나에게 어떤 해일까", "돈: 들어올까, 새어 나갈까", "일과 자리: 오를까, 옮길까", "사랑과 사람", "몸과 마음", "달마다 흐름: 상반기", "달마다 흐름: 하반기", "이 해를 내 편으로 만드는 법"],
+    teaser: "태어난 해부터 10년 뒤까지, 궁금한 해를 골라 한 해를 통째로 풀어 드려요. 연도별 판정과 달마다의 흐름은 무료로 먼저 보여 드려요.",
     modern: true,
   },
   {

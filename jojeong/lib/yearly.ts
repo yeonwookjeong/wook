@@ -1,6 +1,6 @@
 import { gongmang, isBaekho, isGoegang, meetings, salsAt, stageOf, stemClash, stemCombine, type Meeting } from "./deep";
 import { josa } from "./josa";
-import { BRANCH_EL, chartOf, ELEMENT_HANJA, ELEMENT_KO, GOD_GLOSS, type GodGroup, GROUP_OF, GYEOK_NAME, HIDDEN, readChart, type Reading, type Slot, stemEl, tenGod } from "./myeongri";
+import { BRANCH_EL, chartOf, elScore, ELEMENT_HANJA, ELEMENT_KO, GOD_GLOSS, type GodGroup, GROUP_OF, GYEOK_NAME, HIDDEN, readChart, type Reading, type Slot, stemEl, tenGod } from "./myeongri";
 import { palaceOf, selfStars, type Profile } from "./profile";
 import { BRANCHES, STEMS, type FullPillars, type Pillars } from "./saju";
 import {
@@ -27,7 +27,9 @@ import {
   STEM_YEAR,
   YEAR_MUTAGEN,
 } from "./yearText";
-import { Solar } from "lunar-javascript";
+import { monthMarks, monthsOf, yearScore } from "./yeonun";
+
+export { elScore };
 
 // The 2026 (丙午) reading: the chart itself (물상, 격국, 신강약, 용신 by 억부 and 조후, 12운성, 신살), the year
 // against it (ten gods, 합·충·형·파·해·원진 with every natal branch, 신살 the year brings), the ten-year luck it
@@ -38,24 +40,7 @@ export const YEAR = { stem: 2, branch: 6, label: "병오년" };
 const FIRE = 1;
 
 // Month pillars of 2026 and the solar date each starts (the 절기), read from the calendar itself.
-export const MONTHS: { stem: number; branch: number; from: string }[] = (() => {
-  const out: { stem: number; branch: number; from: string }[] = [];
-  let prev = "";
-  for (let t = Date.UTC(2026, 1, 1); t <= Date.UTC(2027, 0, 10); t += 86400000) {
-    const d = new Date(t);
-    const ec = Solar.fromYmdHms(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(), 12, 0, 0).getLunar().getEightChar();
-    const gz = ec.getMonthGan() + ec.getMonthZhi();
-    if (gz !== prev) {
-      prev = gz;
-      out.push({
-        stem: STEMS.indexOf(ec.getMonthGan() as (typeof STEMS)[number]),
-        branch: BRANCHES.indexOf(ec.getMonthZhi() as (typeof BRANCHES)[number]),
-        from: `${d.getUTCMonth() + 1}/${d.getUTCDate()}`,
-      });
-    }
-  }
-  return out.filter((m) => m.branch !== 1 || out.indexOf(m) > 0).slice(0, 12); // 寅月 → 丑月
-})();
+export const MONTHS = monthsOf(2026);
 
 export type Verdict = "대길" | "길" | "평" | "조심" | "인내";
 export type YearSection = { id: string; hanja: string; label: string; headline: string; paras: string[]; basis: string[] };
@@ -76,16 +61,6 @@ export type YearReading = {
 
 const EL = (e: number) => `${ELEMENT_KO[e]}(${ELEMENT_HANJA[e]})`;
 const pct = (w: number[], i: number) => Math.round((100 * w[i]) / w.reduce((a, b) => a + b, 0));
-
-// How welcome an element is to this chart: 용신 +2, 희신 +1, 기신 −2, 구신 (feeds the 기신) −1.
-export function elScore(r: Reading, e: number) {
-  if (e === r.yong) return 2;
-  if (e === r.hee) return 1;
-  if (e === r.gi) return -2;
-  if (e === (r.gi + 4) % 5) return -1;
-  if (e === r.burden) return -1;
-  return 0;
-}
 
 // How welcome a ten-year luck pillar is. The branch carries the decade, so it weighs twice the stem. Beyond the
 // 용신 and 기신, the 억부 direction decides: a strong day master welcomes what drains or restrains it and not
@@ -132,7 +107,6 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
   const fireGood = elScore(r, FIRE) > 0 ? true : elScore(r, FIRE) < 0 ? false : drainFire === likesDrain;
 
   // ── The year against the chart.
-  let score = elScore(r, FIRE) * 1.5;
   const fireBad = elScore(r, FIRE) < 0;
   const why: string[] = [];
   why.push(
@@ -158,11 +132,6 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
     if (!main) continue;
     meetTags.add(main);
     byMeeting.set(main, [...(byMeeting.get(main) ?? []), `${BRANCHES[branch]}(${POS_TEXT[pos]})`]);
-    const w = pos === "일" ? 1.5 : pos === "월" ? 1 : 0.5;
-    // 삼합·방합 with 午 gather fire (寅午戌, 巳午未): a plus only when fire helps the chart. When fire is
-    // unwelcome the meeting still brings people and events, but it feeds that fire, so the two cancel out.
-    const gathers = (main === "삼합" || main === "방합") && fireBad;
-    score += w * (gathers ? 0 : ({ 육합: 1, 삼합: 0.8, 방합: 0.5, 충: -1.5, 형: -0.7, 원진: -0.7, 해: -0.5, 파: -0.5 } as Record<string, number>)[main]);
   }
   // Several meetings in a row read better with the subject varied after the first.
   const lead = ["올해의 午火가", "또 午火가", "한편 午火가", "그리고 午火가"];
@@ -177,25 +146,19 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
     const pos = POS_TEXT[s.pos];
     if (stemCombine(YEAR.stem, s.stem)) {
       meetLines.push(STEM_MEET.합(pos));
-      score += 0.5;
     } else if (stemClash(YEAR.stem, s.stem)) {
       meetLines.push(STEM_MEET.충(pos));
-      score -= 0.5;
     }
   }
-  if (stemCombine(YEAR.stem, p.dayStem)) score += 1;
-  if (stemClash(YEAR.stem, p.dayStem)) score -= 1;
   const yearSals = salsAt(p, YEAR.branch).filter((s) => s in SAL_YEAR);
-  if (yearSals.includes("천을귀인")) score += 1;
-  if (yearSals.includes("공망")) score -= 0.5;
 
   // ── 대운 around 2026.
   const daeun = profile?.daeun;
   const now = daeun?.find((d) => d.from <= 2026 && 2026 <= d.to);
   const next = daeun?.find((d) => d.from === (now?.to ?? 0) + 1);
-  if (now) score += (elScore(r, stemEl(now.stem)) + elScore(r, BRANCH_EL[now.branch])) * 0.35;
 
-  const verdict: Verdict = score >= 3.5 ? "대길" : score >= 1 ? "길" : score > -1 ? "평" : score > -3 ? "조심" : "인내";
+  // The verdict comes from the one scoring every year uses (lib/yeonun.ts), so 2026 reads the same here and in 연운.
+  const verdict: Verdict = yearScore(full, r, profile, 2026).verdict;
   const stage = stageOf(p.dayStem, YEAR.branch);
 
   // ── 타고난 그릇 (the chart itself)
@@ -428,28 +391,15 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
 
   // ── Months
   const seen: Record<string, number> = {};
-  const months: MonthRow[] = MONTHS.map((m) => {
-    const s = elScore(r, stemEl(m.stem)) + elScore(r, BRANCH_EL[m.branch]) * 1.2;
-    const ms = meetings(m.branch, p.dayBranch);
-    const tags: string[] = [];
-    let adj = 0;
-    const mark = (tag: string, delta: number) => {
-      tags.push(tag);
-      adj += delta;
-    };
-    if (ms.includes("충")) mark("변동", -1.2);
-    if (ms.includes("육합") || ms.includes("삼합")) mark("인연·약속", 0.8);
-    if (salsAt(p, m.branch).includes("천을귀인")) mark("귀인", 1);
-    if (stemCombine(m.stem, p.dayStem)) mark("합", 0.5);
-    const total = s + adj;
-    const rating = (total >= 2 ? 3 : total >= 0 ? 2 : total > -2.5 ? 1 : 0) as MonthRow["rating"];
+  const marks = monthMarks(p, r, 2026);
+  const months = marks.map((m) => {
     const g = GROUP_OF[tenGod(p.dayStem, m.stem)];
     // The second month of the same kind gets the other wording.
-    const tone = rating >= 2 ? "good" : "bad";
+    const tone = m.rating >= 2 ? "good" : "bad";
     const n = (seen[g + tone] = (seen[g + tone] ?? -1) + 1);
-    return { from: m.from, gz: `${STEMS[m.stem]}${BRANCHES[m.branch]}`, rating, line: MONTH_LINE[g][tone][n % 2], tags, score: total } as MonthRow & { score: number };
+    return { from: m.from, gz: m.gz, rating: m.rating, line: MONTH_LINE[g][tone][n % 2], tags: m.tags, score: m.score };
   });
-  const order = months.map((m, i) => ({ i, s: (m as MonthRow & { score: number }).score })).sort((a, b) => b.s - a.s);
+  const order = months.map((m, i) => ({ i, s: m.score })).sort((a, b) => b.s - a.s);
   const best = order.slice(0, 2).map((o) => o.i).sort((a, b) => a - b);
   const worst = order.slice(-2).map((o) => o.i).sort((a, b) => a - b);
 
