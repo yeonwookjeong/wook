@@ -8,6 +8,7 @@ import { decodePerson, profileOf, RELATIONS, relationOf } from "./pairToken";
 import { ADULT_ONLY, FIXED_RELATION, isAdult, isPair, productById, type ProductId } from "./products";
 import { intimacyBrief } from "./intimacy";
 import { reunionBrief } from "./reunion";
+import { freeBrief } from "./freeReading";
 import { decadeBrief, decadeOf, domainBrief, isDomain } from "./domains";
 import { REPORT_SPECS, systemPromptFor, userPrompt } from "./reportPrompts";
 import { dayStart, KINDS, parseSearch, pickDays, searchDay, taekilBrief } from "./taekil";
@@ -104,7 +105,7 @@ export async function jobFor(req: JobRequest): Promise<ReportJob | { error: stri
     const me = decodePerson(req.p);
     if (!me) return { error: "사주를 다시 입력해 주세요.", status: 400 };
     subjectLine = product.modern ? `[대상] ${me.name} ('${me.name}님'이라 부를 것)` : `[대상] ${me.name} ('그대'라 부를 것)`;
-    briefs = [chartBrief(me.name, me.pillars, profileOf(me)), ...deep(product.id, me.pillars, me.gender)].join("\n\n");
+    briefs = [chartBrief(me.name, me.pillars, profileOf(me)), freeBrief(me.pillars, profileOf(me)), ...deep(product.id, me.pillars, me.gender)].join("\n\n");
   } else {
     const subject = await subjectFor(product, req.court, req.m);
     if (!subject || !subject.self) return { error: "본인의 사주로만 보실 수 있어요. 먼저 즉위하거나 입궐해 주세요.", status: 403 };
@@ -112,7 +113,7 @@ export async function jobFor(req: JobRequest): Promise<ReportJob | { error: stri
     subjectLine = product.modern
       ? `[대상] ${subject.name} ('${subject.name}님'이라 부를 것)`
       : `[대상] ${subject.name}${subject.king ? " (조정의 왕이므로 '전하'라 부를 것)" : " ('그대'라 부를 것)"}`;
-    briefs = [chartBrief(subject.name, subject.pillars, profile), ...deep(product.id, subject.pillars, profile?.gender ?? null)].join("\n\n");
+    briefs = [chartBrief(subject.name, subject.pillars, profile), freeBrief(subject.pillars, profile), ...deep(product.id, subject.pillars, profile?.gender ?? null)].join("\n\n");
   }
 
   const system = systemPromptFor(product);
