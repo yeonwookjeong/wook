@@ -83,14 +83,7 @@ export function domainBrief(domain: Domain, pillars: Pillars, gender: Gender | n
       ...(mixed ? ["- 관살혼잡: 정관과 편관이 함께 — 끌리는 사람이 두 부류로 갈림"] : []),
     );
   } else {
-    const officer = share("관성") + share("인성");
-    const creator = share("식상");
-    const business = share("재성") + Math.round(share("식상") / 2);
-    const top = [
-      ["조직형(관·인)", officer],
-      ["창작·기술형(식상)", creator],
-      ["사업형(재·식상)", business],
-    ].sort((a, b) => Number(b[1]) - Number(a[1]));
+    const top = workTypes(share).map((w) => [`${w.name}(${w.basis})`, w.score]);
     const sals = [...new Set(chartOf(p).flatMap((s) => (s.branch === null ? [] : salsAt(p, s.branch).filter((x) => ["역마", "문창귀인", "화개", "양인", "천을귀인"].includes(x)).map((x) => `${x}(${s.pos}지)`))))];
     const month = chartOf(p).filter((s) => s.branch !== null && s.pos !== "월").flatMap((s) => {
       const m = meetings(p.monthBranch, s.branch!);
@@ -121,6 +114,19 @@ const WORK_SAL: Record<string, string> = {
   양인: "승부가 나는 일, 전문 기술로 버티는 일에 강해요",
   천을귀인: "일이 막힐 때 도와주는 윗사람 복이 있어요",
 };
+
+// How one works best, by which force leads the chart. Each type rests on its own group, helped by the one that
+// feeds it; an organisation needs the officer itself (a chart with no 관성 is not an 조직형, however much 인성).
+function workTypes(share: (g: GodGroup) => number) {
+  const types = [
+    { name: "조직형", basis: "관성", score: share("관성") + Math.round(share("재성") / 3), where: "조직 안에서 자리와 책임을 맡아 올라가는 일" },
+    { name: "전문·자격형", basis: "인성", score: share("인성") + Math.round(share("관성") / 3), where: "공부와 자격으로 인정받는 전문 분야" },
+    { name: "창작·기술형", basis: "식상", score: share("식상") + Math.round(share("비겁") / 3), where: "내 손과 머리로 만들어 내는 일" },
+    { name: "사업형", basis: "재성", score: share("재성") + Math.round(share("식상") / 3), where: "판을 벌이고 사람과 돈을 굴리는 일" },
+    { name: "독립형", basis: "비겁", score: share("비겁") + Math.round(share("인성") / 3), where: "내 이름으로 혼자 서는 일, 프리랜서나 자영업" },
+  ];
+  return types.sort((a, b) => b.score - a.score).slice(0, 3);
+}
 
 export function domainCard(domain: Domain, pillars: Pillars, gender: Gender | null): DomainCard | null {
   const c = ctxOf(pillars, gender);
@@ -179,12 +185,7 @@ export function domainCard(domain: Domain, pillars: Pillars, gender: Gender | nu
       ],
     };
   }
-  const scores: [string, number, string][] = [
-    ["조직형", share("관성") + share("인성"), "조직 안에서 인정받아 올라가는 일"],
-    ["창작·기술형", share("식상"), "내 손과 머리로 만들어 내는 일"],
-    ["사업형", share("재성") + Math.round(share("식상") / 2), "판을 벌이고 사람과 돈을 굴리는 일"],
-  ];
-  scores.sort((a, b) => b[1] - a[1]);
+  const scores = workTypes(share).map((w) => [w.name, w.score, w.where] as [string, number, string]);
   const sals = [...new Set(chartOf(p).flatMap((s) => (s.branch === null ? [] : salsAt(p, s.branch).filter((x) => x in WORK_SAL))))];
   return {
     type: `${scores[0][0]} 인재`,
