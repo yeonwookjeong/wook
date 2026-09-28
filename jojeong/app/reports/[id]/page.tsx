@@ -28,7 +28,6 @@ import { REPORT_SPECS } from "@/lib/reportPrompts";
 import { coupleOf } from "@/lib/couple";
 import { intimacyOf } from "@/lib/intimacy";
 import { reunionOf } from "@/lib/reunion";
-import { forgetMeAction } from "@/app/actions";
 import { readMe } from "@/lib/me";
 import { decodePerson, profileOf, relationOf } from "@/lib/pairToken";
 import { decadeOf, domainCard, isDomain } from "@/lib/domains";
@@ -84,7 +83,7 @@ const PAIR_FREE: Partial<Record<ProductId, string>> = {
   jaehoe: "두 사람 사이에 남은 끈과 다시 닿기 좋은 해는 무료로 바로 보여 드려요",
 };
 
-// Every report, open in full (무료 공개 기간, a free report, or a bought one). A present-day report on sale
+// Every report, open in full (a free report, or a bought one). A present-day report on sale
 // (`locked`) shows everything computed for free and puts the payment where the written report would start;
 // a paid order (`paid`, from its link) or one this browser bought for the same chart opens it.
 type Pair = { a?: string; b?: string; rel?: string };
@@ -99,6 +98,7 @@ async function OpenReport({
   locked = false,
   paid,
   search = {},
+  fresh = false,
 }: {
   product: Product;
   courtId?: string;
@@ -108,6 +108,7 @@ async function OpenReport({
   locked?: boolean;
   paid?: Order;
   search?: Search;
+  fresh?: boolean;
 }) {
   const query = new URLSearchParams({ ...(courtId && { court: courtId }), ...(ministerId && { m: ministerId }) }).toString();
 
@@ -288,9 +289,10 @@ async function OpenReport({
   // Whose chart: a court's person named in the link; else the chart remembered in this browser (lib/me.ts);
   // else a court this browser enthroned. With none, the reader enters one right here.
   const fromOrder = paid?.req.p ? decodePerson(paid.req.p) : null;
-  const me = fromOrder ? { person: fromOrder, token: paid!.req.p! } : courtId ? null : await readMe();
+  // `fresh` (?new=1, "다른 사람 사주로 보기"): skip the remembered chart and the enthroned court, and ask.
+  const me = fromOrder ? { person: fromOrder, token: paid!.req.p! } : courtId || fresh ? null : await readMe();
   // A report on sale is bought for the chart remembered here (the order carries it), not a court's.
-  const subject = me || locked ? null : await subjectFor(product, courtId, ministerId);
+  const subject = me || locked || fresh ? null : await subjectFor(product, courtId, ministerId);
   const next = `/reports/${product.id}`;
   if (!me && !subject)
     return (
@@ -312,14 +314,14 @@ async function OpenReport({
   const name = me ? me.person.name : subject!.name;
   const pillars = me ? me.person.pillars : subject!.pillars;
   const self = me ? true : subject!.self;
-  // Someone else's chart can be entered instead; the remembered one is then replaced.
-  const other = me && !paid && (
-    <form action={forgetMeAction} className="mt-2 text-center">
-      <input type="hidden" name="next" value={next} />
-      <button type="submit" className="text-xs text-ink-soft underline">
+  // Someone else's chart can be entered instead, from a remembered chart or a court's; saving it replaces the
+  // remembered one.
+  const other = !paid && (
+    <p className="mt-2 text-center">
+      <Link href={`${next}?new=1`} className="text-xs text-ink-soft underline">
         다른 사람 사주로 보기
-      </button>
-    </form>
+      </Link>
+    </p>
   );
 
   if (product.id === "sinbun")
@@ -499,6 +501,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
           }}
           locked={!isOpen(product) && !paid && !(await isAdmin())}
           paid={paid}
+          fresh={search.new === "1"}
           search={{
             kind: typeof search.kind === "string" ? search.kind : undefined,
             from: typeof search.from === "string" ? search.from : undefined,

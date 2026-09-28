@@ -18,6 +18,7 @@ const WORDS = {
     later: "서머타임과 경도는 날짜에 맞춰 보정해요.",
     noCity: "찾는 도시가 없으면 가장 가까운 큰 도시를 골라 주세요.",
     hint: "출생증명서의 시각 그대로 적어 주세요. 서머타임과 지역 경도는 자동으로 보정해요.",
+    noHour: "시각을 모르면 태어난 곳은 필요 없어요. 태어난 시각을 뺀 여섯 글자로 풀어 드려요.",
     lateZi: "밤 11시대에 태어나셨어요. 이 한 시간은 학파에 따라 태어난 날이 갈려요. 대부분은 밤 11시에 날이 바뀐다고 보고 다음 날로 세워요.",
   },
   joseon: {
@@ -26,6 +27,7 @@ const WORDS = {
     later: "서머타임과 경도는 날짜에 맞춰 보정하옵니다.",
     noCity: "찾는 도시가 없으면 가장 가까운 큰 도시를 골라 주시옵소서.",
     hint: "출생증명서의 시각 그대로 적으시옵소서. 서머타임과 지역 경도는 소신이 보정하옵니다.",
+    noHour: "시각을 모르시면 태어난 곳은 여쭙지 않사옵니다. 시주를 뺀 여섯 글자로 풀어 올리옵니다.",
     lateZi: "밤 11시대에 태어나셨사옵니다. 이 한 시간은 학파에 따라 태어난 날이 갈리옵니다. 대부분은 밤 11시에 날이 바뀐다고 보아 다음 날로 세우옵니다.",
   },
 };
@@ -115,79 +117,85 @@ export default function BirthTimeFields({ unknownLabel, prefix = "", modern = fa
         </label>
       </div>
 
-      <span className="mt-2 text-sm font-semibold text-ink-soft">태어난 곳</span>
       <input type="hidden" name={`${prefix}city`} value={city.id} />
-      <div className="relative">
-        <input
-          role="combobox"
-          aria-expanded={open && results.length > 0}
-          aria-controls={listId}
-          aria-label="태어난 도시 검색"
-          ref={cityInput}
-          defaultValue={cityLabel(city)}
-          onFocus={(e) => {
-            e.currentTarget.value = "";
-            setOpen(true);
-            setQuery("");
-            setActive(0);
-          }}
-          onBlur={(e) => {
-            const el = e.currentTarget;
-            setTimeout(() => {
-              setOpen(false);
-              el.value = cityLabel(cityRef.current);
-            }, 150);
-          }}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setActive(0);
-          }}
-          onKeyDown={(e) => {
-            if (!open || !results.length) return;
-            if (e.key === "ArrowDown") {
-              e.preventDefault();
-              setActive((a) => Math.min(a + 1, results.length - 1));
-            } else if (e.key === "ArrowUp") {
-              e.preventDefault();
-              setActive((a) => Math.max(a - 1, 0));
-            } else if (e.key === "Enter") {
-              e.preventDefault();
-              pick(results[active]);
-            }
-          }}
-          disabled={unknown}
-          autoComplete="off"
-          placeholder="도시 이름 (예: 부산, 뉴욕, Tokyo)"
-          className={field}
-        />
-        {open && query && (
-          <ul id={listId} role="listbox" className="absolute inset-x-0 top-full z-20 mt-1 max-h-64 overflow-auto rounded-xl border border-ink/15 bg-hanji shadow-lg">
-            {results.length ? (
-              results.map((c, i) => (
-                <li
-                  key={c.id}
-                  role="option"
-                  aria-selected={i === active}
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    pick(c);
-                  }}
-                  className={`flex cursor-pointer items-baseline justify-between gap-2 px-4 py-2.5 ${i === active ? "bg-seal/10" : ""}`}
-                >
-                  <span className="font-bold">{c.name}</span>
-                  <span className="truncate text-xs text-ink-soft">
-                    {c.region} · {c.en}
-                  </span>
-                </li>
-              ))
-            ) : (
-              <li className="px-4 py-2.5 text-sm text-ink-soft">{w.noCity}</li>
+      {/* The birthplace only corrects the clock, so it is asked only when the hour is known. */}
+      {!unknown && (
+        <>
+          <span className="mt-2 text-sm font-semibold text-ink-soft">태어난 곳</span>
+          <div className="relative">
+            <input
+              role="combobox"
+              aria-expanded={open && results.length > 0}
+              aria-controls={listId}
+              aria-label="태어난 도시 검색"
+              ref={cityInput}
+              defaultValue={cityLabel(city)}
+              onFocus={(e) => {
+                e.currentTarget.value = "";
+                setOpen(true);
+                setQuery("");
+                setActive(0);
+              }}
+              onBlur={(e) => {
+                const el = e.currentTarget;
+                setTimeout(() => {
+                  setOpen(false);
+                  el.value = cityLabel(cityRef.current);
+                }, 150);
+              }}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setActive(0);
+              }}
+              onKeyDown={(e) => {
+                if (!open || !results.length) return;
+                if (e.key === "ArrowDown") {
+                  e.preventDefault();
+                  setActive((a) => Math.min(a + 1, results.length - 1));
+                } else if (e.key === "ArrowUp") {
+                  e.preventDefault();
+                  setActive((a) => Math.max(a - 1, 0));
+                } else if (e.key === "Enter") {
+                  e.preventDefault();
+                  pick(results[active]);
+                }
+              }}
+              autoComplete="off"
+              placeholder="도시 이름 (예: 부산, 뉴욕, Tokyo)"
+              className={field}
+            />
+            {open && query && (
+              <ul id={listId} role="listbox" className="absolute inset-x-0 top-full z-20 mt-1 max-h-64 overflow-auto rounded-xl border border-ink/15 bg-hanji shadow-lg">
+                {results.length ? (
+                  results.map((c, i) => (
+                    <li
+                      key={c.id}
+                      role="option"
+                      aria-selected={i === active}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        pick(c);
+                      }}
+                      className={`flex cursor-pointer items-baseline justify-between gap-2 px-4 py-2.5 ${i === active ? "bg-seal/10" : ""}`}
+                    >
+                      <span className="font-bold">{c.name}</span>
+                      <span className="truncate text-xs text-ink-soft">
+                        {c.region} · {c.en}
+                      </span>
+                    </li>
+                  ))
+                ) : (
+                  <li className="px-4 py-2.5 text-sm text-ink-soft">{w.noCity}</li>
+                )}
+              </ul>
             )}
-          </ul>
-        )}
-      </div>
+          </div>
+        </>
+      )}
 
-      {note ? (
+      {unknown ? (
+        <p className="text-xs leading-relaxed text-ink-soft">{w.noHour}</p>
+      ) : note ? (
         <p className={`rounded-lg px-3 py-2 text-xs leading-relaxed ${note.ok ? "bg-gold/10 text-ink" : "bg-seal/10 text-seal"}`}>{note.text}</p>
       ) : (
         <p className="text-xs leading-relaxed text-ink-soft">
