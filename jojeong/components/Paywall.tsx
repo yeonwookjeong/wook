@@ -2,7 +2,8 @@ import Link from "next/link";
 import PayButton from "./PayButton";
 import { josa } from "@/lib/josa";
 import { payEnabled } from "@/lib/pay";
-import { PRICE, productById, saleLabel, saleNow, SETS, setsWith, type Product } from "@/lib/products";
+import { PRICE, productById, saleLabel, saleNow, SETS, setsWith, type Product, type ProductId } from "@/lib/products";
+import { newYearOf } from "@/lib/yeonun";
 
 // Where the written report would begin, before it is bought: its chapters, the price, and the payment.
 // Everything above it (the chart and how it was read) stays free.
@@ -24,7 +25,10 @@ export default function Paywall({
   const sale = saleNow();
   const price = sale?.price ?? PRICE;
   // Sets are offered for a one-person report bought for a saved chart.
-  const sets = request.p ? setsWith(product.id) : [];
+  // 새해 준비 세트 only while there is a coming year, and on a 연운 page only for that year.
+  const ny = newYearOf();
+  const sets = request.p ? setsWith(product.id).filter((s) => s !== "ny" || (ny !== null && (request.y === undefined || request.y === String(ny)))) : [];
+  const titleIn = (id: ProductId) => (id === "yeonun" && ny !== null ? `${ny} 신년운세` : productById(id)!.title);
   return (
     <section className="doc-paper mt-6 px-5 pt-6 pb-6">
       <h2 className="text-center font-myeongjo text-lg font-extrabold">{heading}</h2>
@@ -61,7 +65,7 @@ export default function Paywall({
                     request={{ set: s, p: request.p }}
                     label={`${SETS[s].title} ${SETS[s].price.toLocaleString("ko-KR")}원 (정가 ${regular.toLocaleString("ko-KR")}원)`}
                   />
-                  <p className="mt-1 text-[11px] text-ink-soft">{josa(list.map((id) => productById(id)!.title).join(" · "), "을/를")} 이 사주로 한 번에</p>
+                  <p className="mt-1 text-[11px] text-ink-soft">{josa(list.map(titleIn).join(" · "), "을/를")} 이 사주로 한 번에</p>
                 </div>
               );
             })}

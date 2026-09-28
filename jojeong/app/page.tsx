@@ -66,7 +66,7 @@ export default async function Home() {
   const ny = newYearOf();
   const nyProduct = ny ? newYearProduct(productById("yeonun")!, ny) : null;
   const nyTheme = ny && me ? yearDetail(me.person.pillars, profileOf(me.person), ny, thisYear())?.theme : null;
-  const nyOwned = ny && me ? orders.find((o) => o.product === "yeonun" && o.req.y === String(ny) && o.req.p === me.token) : undefined;
+  const nyOwned = ny && me ? orders.find((o) => (o.bundle ?? [o.product]).includes("yeonun") && o.req.y === String(ny) && o.req.p === me.token) : undefined;
 
   return (
     <>
@@ -110,7 +110,7 @@ export default async function Home() {
             {ny}년 판정과 달마다 흐름은 무료로 먼저 · 한 해 전체 풀이 <Price />
           </p>
           <Link
-            href={nyOwned ? `/r/${nyOwned.id}` : `/reports/yeonun?y=${ny}`}
+            href={nyOwned ? `/reports/yeonun?order=${nyOwned.id}` : `/reports/yeonun?y=${ny}`}
             className="mt-3 block rounded-2xl bg-seal py-4 text-center font-myeongjo text-lg font-extrabold text-hanji shadow-[0_6px_0_#7d1a14]"
           >
             {nyOwned ? "결제한 신년운세 바로 보기" : me ? `${me.person.name}님의 ${ny}년 ${isPreview(ny) ? "미리 보기" : "보기"}` : `내 ${ny}년 운세 ${isPreview(ny) ? "미리 보기" : "보기"}`}

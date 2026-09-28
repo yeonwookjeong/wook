@@ -222,7 +222,10 @@ export const productById = (id: string) => SHELF.find((p) => p.id === id);
 // set must be fixed when it is paid for (a credit to spend later would be a prepaid voucher).
 export const SETS = {
   life: { title: "인생 세트", products: ["pyeongsaeng", "jaemul", "jikup"] as ProductId[], price: 2490 },
-  all: { title: "전부 세트", products: ["pyeongsaeng", "yeonae", "jaemul", "jikup"] as ProductId[], price: 2990 },
+  all: { title: "내 사주 4종 세트", products: ["pyeongsaeng", "yeonae", "jaemul", "jikup"] as ProductId[], price: 2990 },
+  // In season (September to February): the whole life, the coming year's 신년운세 (연운 for that year, set on the
+  // order) and money. Offered only while there is a coming year to sell (lib/yeonun.ts newYearOf).
+  ny: { title: "새해 준비 세트", products: ["pyeongsaeng", "yeonun", "jaemul"] as ProductId[], price: 2490 },
 };
 export type SetId = keyof typeof SETS;
 export const setOf = (v: unknown): SetId | null => (typeof v === "string" && v in SETS ? (v as SetId) : null);
