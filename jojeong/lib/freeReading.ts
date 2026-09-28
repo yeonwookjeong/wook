@@ -126,3 +126,23 @@ export function freeReadingOf(p: Pillars, profile: Profile | null, now = 2026): 
     : null;
   return { powers, strong, weak, sals, domains, flow };
 }
+
+// The same verdicts for the writer: a paid report must never say otherwise than the free screen the reader has
+// already seen (the decade marks above all).
+export function freeBrief(p: Pillars, profile: Profile | null, now = 2026): string {
+  const r = freeReadingOf(p, profile, now);
+  if (!r) return "";
+  const cur = r.flow?.find((f) => f.now);
+  return [
+    "■ ★ 무료 화면에서 읽는 사람이 이미 본 판정 (보고서는 반드시 이 판정과 같은 방향으로 쓴다. 되풀이하지 말고 이유와 장면으로 넓힌다. 어긋나는 말은 금지)",
+    `- 성향 지도: ${r.powers.map((x) => `${x.name} ${x.pct}%${x.rank ? `(${x.rank})` : ""}`).join(", ")} / 가장 강한 힘 ${r.strong.name}, 가장 약한 힘 ${r.weak.name}`,
+    `- 사주 속 별: ${r.sals.length ? r.sals.map((x) => `${x.name}(${x.plain})`).join(", ") : "두드러진 신살 없음"}`,
+    `- 돈·사랑·일 판정: ${r.domains.map((d) => `${d.domain === "jaemul" ? "돈" : d.domain === "yeonae" ? "사랑" : "일"} '${d.card.type}'`).join(", ")}`,
+    ...(r.flow
+      ? [
+          `- 인생 흐름(10년 대운, ◎기회 ○무난 △다지기): ${r.flow.map((f) => `${f.from}~${f.to}${f.age ? `(${f.age})` : ""} ${f.mood === "기회" ? "◎" : f.mood === "무난" ? "○" : "△"} ${f.theme}${f.now ? "←지금" : ""}`).join(" / ")}`,
+          ...(cur ? [`- 지금의 10년은 ${cur.from}~${cur.to}년 '${cur.mood}'. 대운은 해가 바뀌는 첫머리가 아니라 태어난 날 무렵에 넘어가므로, 바뀌는 해를 말할 때는 "${cur.from}년 무렵부터"처럼 쓴다.`] : []),
+        ]
+      : ["- 인생 흐름: 성별을 몰라 대운을 계산하지 않음(대운 이야기는 하지 않는다)"]),
+  ].join("\n");
+}

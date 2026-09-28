@@ -120,6 +120,7 @@ export default function FreeReading({ name, r, query, addGender }: { name: strin
                 </div>
               ))}
             </dl>
+            <p className="mt-2 text-[11px] leading-relaxed text-ink-soft">대운은 1월 1일이 아니라 태어난 날 무렵에 넘어가요. 바뀌는 해 앞뒤 1년쯤은 두 흐름이 섞여 느껴져요.</p>
             <Link href={`/reports/pyeongsaeng${q}`} className="mt-3 block text-right text-[12px] font-bold text-seal">
               시기마다 무슨 일이 생기는지 · 평생 사주 →
             </Link>
