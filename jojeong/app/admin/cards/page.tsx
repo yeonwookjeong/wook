@@ -626,9 +626,9 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
           궁금하다면?
         </p>
         <p style={{ marginTop: 30, fontSize: 38, lineHeight: 1.6, color: "rgba(244,236,219,.9)" }}>
-          평생 사주부터 궁합 · 택일까지,
+          생년월일만 넣으면,
           <br />
-          여덟 글자로 풀어 드리옵니다
+          정 훈도가 풀어 드리옵니다
         </p>
         <p style={{ marginTop: 34, display: "inline-block", padding: "18px 44px", borderRadius: 999, background: GOLD, color: INK, fontSize: 36, fontWeight: 800 }}>
           프로필 링크에서 보기
