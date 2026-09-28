@@ -310,7 +310,9 @@ export function readChart(p: Pillars): Reading | null {
     const heaviest = drains.reduce((a, b) => (godWeights[b] > godWeights[a] ? b : a));
     remedies = heaviest === "재성" ? ["비겁", "인성"] : ["인성", "비겁"]; // 재다신약 wants peers; 관살·식상 wants resource
   }
-  const pick = remedies.find((g) => weights[el(g)] / sum < 0.25) ?? remedies.reduce((a, b) => (weights[el(b)] < weights[el(a)] ? b : a));
+  // Only an element that already dominates the chart is passed over: a remedy that is present and working is
+  // still the 용신 (in 토다금매 the wood that breaks the earth, not the water the earth would bury).
+  const pick = remedies.find((g) => weights[el(g)] / sum < 0.4) ?? remedies.reduce((a, b) => (weights[el(b)] < weights[el(a)] ? b : a));
   const eokbu = el(pick);
 
   // 조후: a chart born deep in summer with no water, or deep in winter with no fire, needs that first.
@@ -326,7 +328,11 @@ export function readChart(p: Pillars): Reading | null {
   const followed = outer ? (Object.keys(OUTER_OF) as GodGroup[]).find((g) => OUTER_OF[g] === outer)! : null;
   const method = followed ? "종격" : johu !== null && johu !== eokbu && (aligned || weights[johu] < 4) ? "조후" : "억부";
   const yong = followed ? el(followed) : method === "조후" ? johu! : eokbu;
-  const hee = (yong + 4) % 5;
+  // 희신 is what feeds the 용신, unless that would feed the wrong side: a strong chart's 식상 용신 is fed by the
+  // day master's own element, so its 희신 is what the 용신 feeds (식상생재); a weak chart's 인성 용신 is fed by
+  // the officer that attacks the day master, so its 희신 is the day master's own element.
+  const feeds = (yong + 4) % 5;
+  const hee = followed || method === "조후" ? feeds : strong && backs(feeds) ? (yong + 1) % 5 : !strong && !backs(feeds) ? dayEl : feeds;
   const gi = (yong + 3) % 5;
   const missing = elements.flatMap((n, i) => (n === 0 ? [i] : []));
   const gyeok = gyeokOf(full);
