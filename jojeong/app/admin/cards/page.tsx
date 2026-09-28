@@ -47,31 +47,33 @@ function Frame({ children, dark = false }: { children: React.ReactNode; dark?: b
 
 function Brand({ dark = false }: { dark?: boolean }) {
   return (
-    <div style={{ position: "absolute", left: 0, right: 0, bottom: 86, display: "flex", justifyContent: "center", alignItems: "center", gap: 18 }}>
-      <span
-        style={{
-          width: 64,
-          height: 64,
-          border: `4px solid ${SEAL}`,
-          color: SEAL,
-          background: dark ? HANJI : "transparent",
-          display: "grid",
-          placeItems: "center",
-          fontSize: 24,
-          fontWeight: 800,
-          lineHeight: 1,
-          transform: "rotate(-4deg)",
-        }}
-      >
-        訓<br />導
-      </span>
-      <span style={{ fontSize: 36, fontWeight: 800 }}>훈도사주</span>
-      <span style={{ fontSize: 26, color: dark ? "rgba(244,236,219,.7)" : SOFT }}>· hundosaju.com</span>
+    <div style={{ position: "absolute", left: 0, right: 0, bottom: 64, textAlign: "center" }}>
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 16 }}>
+        <span
+          style={{
+            width: 58,
+            height: 58,
+            border: `4px solid ${SEAL}`,
+            color: SEAL,
+            background: dark ? HANJI : "transparent",
+            display: "grid",
+            placeItems: "center",
+            fontSize: 22,
+            fontWeight: 800,
+            lineHeight: 1,
+            transform: "rotate(-4deg)",
+          }}
+        >
+          訓<br />導
+        </span>
+        <span style={{ fontSize: 38, fontWeight: 800 }}>훈도사주</span>
+      </div>
+      <p style={{ marginTop: 8, fontSize: 30, letterSpacing: "0.04em", color: dark ? "rgba(244,236,219,.85)" : SOFT }}>hundosaju.com</p>
     </div>
   );
 }
 
-function Hundo({ src, size = 300, bottom = 190 }: { src: string; size?: number; bottom?: number }) {
+function Hundo({ src, size = 300, bottom = 210 }: { src: string; size?: number; bottom?: number }) {
   return (
     <div
       style={{
@@ -563,7 +565,7 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
             이제 그대의 여덟 글자를 보겠사옵니다
           </p>
         </div>
-        <Hundo src="/hundo-face.png" size={320} bottom={180} />
+        <Hundo src="/hundo-face.png" size={320} bottom={205} />
         <Brand dark />
       </Frame>
     );
@@ -620,7 +622,7 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
           프로필 링크에서 보기
         </p>
       </div>
-      <Hundo src="/hundo-bow.png" size={280} bottom={200} />
+      <Hundo src="/hundo-bow.png" size={280} bottom={220} />
       <Brand dark />
     </Frame>
   );
