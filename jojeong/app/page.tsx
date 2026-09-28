@@ -5,7 +5,7 @@ import RoyalDoc from "@/components/RoyalDoc";
 import StoreHero from "@/components/StoreHero";
 import TodayCard from "@/components/TodayCard";
 import { readMe } from "@/lib/me";
-import { OPEN_ALL, PRICE, priceNow, productById, type Product, type ProductId } from "@/lib/products";
+import { PRICE, priceNow, productById, type Product, type ProductId } from "@/lib/products";
 import { todayFor } from "@/lib/today";
 
 // The main page: 정 훈도's present-day readings, picked and opened with one's own chart. The Joseon game
@@ -53,22 +53,10 @@ const EXCERPTS: { id: ProductId; chapter: string; headline: string; body: string
   },
 ];
 // The court's own reports (they open from a court, with friends in it).
-const COURT_REPORTS = [
-  ["현실 궁합 뒷조사", "이 친구, 일·여행·돈으로 엮여도 될까"],
-  ["모임 관계도", "우리 모임 찰떡 짝과 숨은 실세"],
-  ["내 인사기록 열람", "왕(친구)은 나를 어떻게 볼까"],
-] as const;
 const GRID: ProductId[] = ["gunghap", "yeonae", "jaemul", "jikup", "gukjeong"];
 
 function Price({ product }: { product: Product }) {
   if (product.free) return <span className="text-[13px] font-extrabold text-seal">무료</span>;
-  if (OPEN_ALL)
-    return (
-      <span className="flex items-baseline gap-1.5">
-        <span className="text-[13px] font-extrabold text-seal">무료 공개</span>
-        <s className="text-[11px] text-ink-soft">{PRICE.toLocaleString("ko-KR")}원</s>
-      </span>
-    );
   const price = priceNow();
   if (price < PRICE)
     return (
@@ -217,20 +205,6 @@ export default async function Home() {
             </span>
             <span className="text-gold">→</span>
           </Link>
-          <div className="doc-paper px-5 py-4">
-            <p className="text-[12px] font-extrabold text-seal">친구를 부르면 조정에서 열리는 보고서 · 무료</p>
-            <ul className="mt-2 flex flex-col gap-1.5 text-[13px]">
-              {COURT_REPORTS.map(([title, line]) => (
-                <li key={title} className="flex gap-2">
-                  <b className="shrink-0 font-myeongjo">{title}</b>
-                  <span className="text-ink-soft">{line}</span>
-                </li>
-              ))}
-            </ul>
-            <Link href="/king" className="mt-3 block text-right text-[13px] font-bold text-seal">
-              왕이 될 사주 시작하기 →
-            </Link>
-          </div>
           <Link href="/reports/sinbun" className="doc-paper flex items-center gap-4 px-5 py-4">
             <Seal hanja="身分" />
             <span className="min-w-0 flex-1">

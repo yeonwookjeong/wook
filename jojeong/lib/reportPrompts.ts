@@ -77,7 +77,10 @@ const FOCUS: Partial<Record<ProductId, string>> = {
 };
 
 export const REPORT_SPECS: Partial<Record<ProductId, ReportSpec>> = Object.fromEntries(
-  Object.entries(FOCUS).map(([id, focus]) => [id, { chapters: PRODUCTS.find((p) => p.id === id)!.toc, focus }]),
+  // Only what is sold is written: a free report stays computed, with no writer and no cost.
+  Object.entries(FOCUS)
+    .filter(([id]) => !PRODUCTS.find((p) => p.id === id)!.free)
+    .map(([id, focus]) => [id, { chapters: PRODUCTS.find((p) => p.id === id)!.toc, focus }]),
 );
 
 // What makes a report this person's and no one else's. Shared by both voices.

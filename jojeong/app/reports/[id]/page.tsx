@@ -23,7 +23,7 @@ import SinbunReport from "@/components/SinbunReport";
 import YearReport from "@/components/YearReport";
 import { josa } from "@/lib/josa";
 import { ownedCourts } from "@/lib/load";
-import { ADULT_ONLY, FIXED_RELATION, isAdult, isOpen, isPair, OPEN_ALL, PRICE, productById, saleLabel, saleNow, type Product, type ProductId } from "@/lib/products";
+import { ADULT_ONLY, FIXED_RELATION, isAdult, isOpen, isPair, PRICE, productById, saleLabel, saleNow, type Product, type ProductId } from "@/lib/products";
 import { REPORT_SPECS } from "@/lib/reportPrompts";
 import { coupleOf } from "@/lib/couple";
 import { intimacyOf } from "@/lib/intimacy";
@@ -389,7 +389,7 @@ async function OpenReport({
           heading={`${name}님의 2026년 운세`}
           deepen={!me && subject!.self ? { courtId: subject!.courtId, who: subject!.who } : null}
           query={query}
-          ai={self ? { request, chapters: chaptersOf(product.id), intro } : undefined}
+          intro={self ? intro : undefined}
         />
         {meDeepen}
         {other}
@@ -487,9 +487,6 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
             ← 전체 보고서
           </Link>
         </nav>
-        {OPEN_ALL && !product.free && (
-          <p className="mt-3 rounded-full bg-gold/15 px-4 py-2 text-center text-xs font-bold text-gold">{product.modern ? "무료 공개 기간 · 지금은 모든 보고서를 무료로 보실 수 있어요" : "무료 공개 기간 · 지금은 모든 보고서를 그냥 보실 수 있사옵니다"}</p>
-        )}
         <OpenReport
           product={product}
           courtId={courtId}

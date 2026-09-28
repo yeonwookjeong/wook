@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { adminConfigured, isAdmin } from "@/lib/admin";
 import { getOrder, type Order } from "@/lib/pay";
-import { OPEN_ALL, productById, SETS } from "@/lib/products";
+import { productById, SETS } from "@/lib/products";
 import { paidOrderIds } from "@/lib/store";
 import { adminSignOut } from "./actions";
 import SignInForm from "./SignInForm";
@@ -43,7 +43,7 @@ export default async function AdminPage() {
       <section className="mt-6 text-center">
         <h1 className="font-myeongjo text-2xl font-extrabold">관리자</h1>
         <p className="mt-1 text-sm text-ink-soft">
-          이 브라우저에서는 모든 보고서를 결제 없이 볼 수 있어요 · 지금 {OPEN_ALL ? "무료 공개 중" : "판매 중"}
+          이 브라우저에서는 모든 보고서를 결제 없이 볼 수 있어요 · 무료 보고서는 AI 없이 계산만 보여 줘요
         </p>
       </section>
 

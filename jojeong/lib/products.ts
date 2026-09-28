@@ -149,6 +149,7 @@ export const PRODUCTS: Product[] = [
     toc: ["이 사람, 겉과 속이 같을까", "같이 일하면 어떨까", "같이 여행 가면 어떨까", "돈 빌려줘도 될까", "이 사람과 잘 지내는 법"],
     teaser: "조정에 입궐한 신하 가운데 한 명을 골라, 교지에는 적지 못한 속사정을 캐어 올리옵니다.",
     free: true,
+    shelved: true,
   },
   {
     id: "gwangye",
@@ -159,6 +160,7 @@ export const PRODUCTS: Product[] = [
     toc: ["우리 모임은 어떤 모임일까", "누가 누구랑 찰떡이고, 누가 삐걱일까", "숨은 실세와 분위기 메이커", "팀을 나눈다면", "이 모임이 오래 가려면"],
     teaser: "조정의 모든 신하끼리 궁합을 맞춰 한 장의 관계도로 그려 올리옵니다.",
     free: true,
+    shelved: true,
   },
   {
     id: "insa",
@@ -169,6 +171,7 @@ export const PRODUCTS: Product[] = [
     toc: ["전하께 올라간 나의 인사기록", "전하는 나를 어떻게 볼까", "이 친구가 서운해하는 포인트", "이 친구 기분 푸는 법", "더 가까워지려면"],
     teaser: "정 훈도가 전하께 올린 그대에 대한 비밀 보고를 그대에게도 보여 드리옵니다.",
     free: true,
+    shelved: true,
   },
 ];
 
@@ -195,9 +198,9 @@ export const ADULT_ONLY: ProductId[] = ["sokgunghap"];
 // 청소년보호법: 19세가 되는 해의 1월 1일부터 성인으로 본다.
 export const isAdult = (birthYear: number | null) => birthYear !== null && new Date().getFullYear() - birthYear >= 19;
 
-// 무료 공개 기간: every report opens in full until selling starts. OPEN_ALL=0 in the environment ends it.
-export const OPEN_ALL = process.env.OPEN_ALL !== "0";
-export const isOpen = (p: Product) => OPEN_ALL || Boolean(p.free);
+// Free means computed only: a free report never calls the writer (lib/reportPrompts.ts gives it no spec, and
+// /api/report writes only for a paid order or the owner).
+export const isOpen = (p: Product) => Boolean(p.free);
 
 export const PRICE = 990;
 

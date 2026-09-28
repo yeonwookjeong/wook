@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 import Keep from "@/components/Keep";
-import { isOpen, OPEN_ALL, PRICE, priceNow, productById, SHELF, saleLabel, saleNow, SETS, type Product, type SetId } from "@/lib/products";
+import { PRICE, priceNow, productById, SHELF, saleLabel, saleNow, SETS, type Product, type SetId } from "@/lib/products";
 
 export const metadata: Metadata = { title: "전체 보고서" };
 
@@ -29,10 +29,6 @@ function Row({ p, price }: { p: Product; price: number }) {
         <span className="shrink-0 text-right font-myeongjo font-extrabold text-seal">
           {p.free ? (
             "무료"
-          ) : isOpen(p) ? (
-            <>
-              <s className="block text-xs font-normal text-ink-soft">{PRICE.toLocaleString("ko-KR")}원</s>무료
-            </>
           ) : price < PRICE ? (
             <>
               <s className="block text-xs font-normal text-ink-soft">{PRICE.toLocaleString("ko-KR")}원</s>
@@ -62,13 +58,11 @@ export default async function ReportsPage() {
         <h1 className="mt-2 font-myeongjo text-3xl font-extrabold">전체 보고서</h1>
         <p className="mt-2 text-[15px] leading-relaxed">궁금한 것부터 골라 보세요</p>
         <p className="mt-1 text-sm">
-          {OPEN_ALL ? (
-            <b className="text-gold">지금은 무료 공개 기간이라 모든 보고서를 무료로 볼 수 있어요</b>
-          ) : sale ? (
+          {sale ? (
             <b className="text-seal">{saleLabel(sale)}</b>
           ) : (
             <span className="text-ink-soft">
-              보고서 한 편 <b className="text-ink">{price.toLocaleString("ko-KR")}원</b> · 첫 장은 무료로 먼저 읽어 볼 수 있어요
+              보고서 한 편 <b className="text-ink">{price.toLocaleString("ko-KR")}원</b> · 내 사주 분석은 무료로 먼저 볼 수 있어요
             </span>
           )}
         </p>
@@ -83,30 +77,28 @@ export default async function ReportsPage() {
         </ul>
       </section>
 
-      {!OPEN_ALL && (
-        <section className="doc-paper mt-4 px-5 py-4">
-          <h2 className="font-myeongjo font-extrabold">세트로 보면 더 저렴해요</h2>
-          <ul className="mt-2 flex flex-col gap-1.5 text-[13px]">
-            {(Object.keys(SETS) as SetId[]).map((s) => (
-              <li key={s} className="flex items-baseline gap-2">
-                <b className="shrink-0 font-myeongjo">{SETS[s].title}</b>
-                <span className="flex-1 text-ink-soft">{SETS[s].products.map((id) => productById(id)!.title).join(" · ")}</span>
-                <b className="shrink-0 text-seal">{SETS[s].price.toLocaleString("ko-KR")}원</b>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-2 text-[11px] text-ink-soft">세트에 든 보고서 아무거나 열면 결제 화면에서 고를 수 있어요</p>
-        </section>
-      )}
+      <section className="doc-paper mt-4 px-5 py-4">
+        <h2 className="font-myeongjo font-extrabold">세트로 보면 더 저렴해요</h2>
+        <ul className="mt-2 flex flex-col gap-1.5 text-[13px]">
+          {(Object.keys(SETS) as SetId[]).map((s) => (
+            <li key={s} className="flex items-baseline gap-2">
+              <b className="shrink-0 font-myeongjo">{SETS[s].title}</b>
+              <span className="flex-1 text-ink-soft">{SETS[s].products.map((id) => productById(id)!.title).join(" · ")}</span>
+              <b className="shrink-0 text-seal">{SETS[s].price.toLocaleString("ko-KR")}원</b>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-2 text-[11px] text-ink-soft">세트에 든 보고서 아무거나 열면 결제 화면에서 고를 수 있어요</p>
+      </section>
 
       <section className="mt-9">
         <h2 className="font-myeongjo text-lg font-extrabold">재미로 보는 조선 사주</h2>
         <p className="mt-1 text-xs leading-relaxed text-ink-soft">
-          조선 시대로 가 보는 보고서예요. 왕·신하 표시가 붙은 건{" "}
+          조선 시대로 가 보는 무료 보고서예요. 친구와 함께라면{" "}
           <Link href="/king" className="font-bold text-seal underline">
             왕이 될 사주
           </Link>
-          의 조정에서 열려요.
+          도 해 보세요.
         </p>
         <ul className="mt-3 flex flex-col gap-3">
           {joseon.map((p) => (

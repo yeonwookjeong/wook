@@ -34,7 +34,8 @@ export type JobRequest = { product: string; court?: string; m?: string; t?: stri
 export async function jobFor(req: JobRequest): Promise<ReportJob | { error: string; status: number }> {
   const product = productById(req.product);
   const spec = product && REPORT_SPECS[product.id as ProductId];
-  if (!product || !spec) return { error: "없는 보고서예요.", status: 404 };
+  // A free report is never written (no spec either): free means no AI cost.
+  if (!product || product.free || !spec) return { error: "없는 보고서예요.", status: 404 };
 
   let subjectLine = "";
   let briefs = "";
