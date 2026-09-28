@@ -52,7 +52,7 @@ const SAL: Partial<Record<Sal | "괴강" | "백호", { plain: string; line: stri
   백호: { plain: "강한 추진력", line: "밀어붙이는 힘이 큰 만큼 급한 일과 부상은 조심해야 해요." },
 };
 
-// ④ 인생 흐름: each ten-year luck pillar, graded by how welcome it is (lib/yearly.ts luckFit) and named by what its
+// ④ 인생 흐름: each ten-year luck pillar, graded by how welcome it is (lib/myeongri.ts luckFit) and named by what its
 // branch brings, which carries the decade, in words for the age it falls in.
 type Stage = "young" | "adult" | "late";
 const DECADE_OF: Record<GodGroup, Record<Stage, string>> = {

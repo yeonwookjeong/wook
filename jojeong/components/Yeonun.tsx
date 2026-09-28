@@ -48,7 +48,48 @@ function Row({ r, href, owned }: { r: YearRow; href: string; owned: boolean }) {
   );
 }
 
-export function YearList({ name, rows, hrefOf, owned }: { name: string; rows: YearRow[]; hrefOf: (y: number) => string; owned: number[] }) {
+type Decade = { from: number; to: number; mood: "기회" | "무난" | "다지기"; theme: string };
+const MOOD_MARK = { 기회: "◎", 무난: "○", 다지기: "△" } as const;
+
+// A decade header: the ground the years below stand on, as the free life flow grades it.
+function DecadeHead({ d }: { d: Decade }) {
+  return (
+    <li className="mt-3 mb-1 flex items-baseline gap-2 rounded-lg bg-ink/5 px-2 py-1.5 text-[12px]">
+      <b className={d.mood === "기회" ? "text-seal" : "text-ink"}>
+        {MOOD_MARK[d.mood]} {d.from}~{d.to} 대운
+      </b>
+      <span className="text-ink-soft">{d.theme}</span>
+    </li>
+  );
+}
+
+// Rows with a decade header wherever a new decade begins (or at the top of the list).
+function Rows({ rows, decades, hrefOf, owned }: { rows: YearRow[]; decades: Decade[] | null; hrefOf: (y: number) => string; owned: number[] }) {
+  const decadeOf = (y: number) => decades?.find((x) => x.from <= y && y <= x.to);
+  return (
+    <ul className="mt-1">
+      {rows.flatMap((r, i) => {
+        const d = decadeOf(r.year);
+        const head = d && (i === 0 || decadeOf(rows[i - 1].year) !== d) ? [<DecadeHead key={`d${d.from}`} d={d} />] : [];
+        return [...head, <Row key={r.year} r={r} href={hrefOf(r.year)} owned={owned.includes(r.year)} />];
+      })}
+    </ul>
+  );
+}
+
+export function YearList({
+  name,
+  rows,
+  decades,
+  hrefOf,
+  owned,
+}: {
+  name: string;
+  rows: YearRow[];
+  decades: Decade[] | null;
+  hrefOf: (y: number) => string;
+  owned: number[];
+}) {
   const past = rows.filter((r) => r.when === "past");
   const ahead = rows.filter((r) => r.when !== "past");
   const recent = past.slice(-3);
@@ -59,30 +100,24 @@ export function YearList({ name, rows, hrefOf, owned }: { name: string; rows: Ye
       <p className="mt-1 text-center text-[12px] leading-relaxed text-ink-soft">
         해마다의 판정과 그 이유는 무료예요. 궁금한 해를 누르면 달마다의 흐름까지 보여 드려요.
       </p>
+      {decades && (
+        <p className="mt-3 rounded-xl bg-gold/10 px-3 py-2 text-[12px] leading-relaxed">
+          10년 대운은 그 시기의 바탕(기후)이고, 한 해의 운은 그 위의 날씨예요. 좋은 대운 안에서도 사주와 맞지 않는 기운이 드는 해는 조심으로 나와요. 대신
+          바탕이 받쳐 줘서 같은 해라도 덜 흔들려요.
+        </p>
+      )}
       <h3 className="mt-5 text-[12px] font-bold text-seal">올해와 앞으로</h3>
-      <ul className="mt-1">
-        {ahead.map((r) => (
-          <Row key={r.year} r={r} href={hrefOf(r.year)} owned={owned.includes(r.year)} />
-        ))}
-      </ul>
+      <Rows rows={ahead} decades={decades} hrefOf={hrefOf} owned={owned} />
       {past.length > 0 && (
         <>
           <h3 className="mt-5 text-[12px] font-bold text-ink-soft">지나온 해</h3>
-          <ul className="mt-1">
-            {[...recent].reverse().map((r) => (
-              <Row key={r.year} r={r} href={hrefOf(r.year)} owned={owned.includes(r.year)} />
-            ))}
-          </ul>
+          <Rows rows={[...recent].reverse()} decades={decades} hrefOf={hrefOf} owned={owned} />
           {older.length > 0 && (
             <details className="group mt-1">
               <summary className="cursor-pointer list-none py-2 text-center text-[12px] font-bold text-ink-soft [&::-webkit-details-marker]:hidden">
                 {older[0].year}~{older.at(-1)!.year}년 더 보기 <span className="inline-block transition group-open:rotate-180">▾</span>
               </summary>
-              <ul>
-                {[...older].reverse().map((r) => (
-                  <Row key={r.year} r={r} href={hrefOf(r.year)} owned={owned.includes(r.year)} />
-                ))}
-              </ul>
+              <Rows rows={[...older].reverse()} decades={decades} hrefOf={hrefOf} owned={owned} />
             </details>
           )}
         </>

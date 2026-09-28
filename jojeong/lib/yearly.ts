@@ -1,6 +1,6 @@
 import { gongmang, isBaekho, isGoegang, meetings, salsAt, stageOf, stemClash, stemCombine, type Meeting } from "./deep";
 import { josa } from "./josa";
-import { BRANCH_EL, chartOf, elScore, ELEMENT_HANJA, ELEMENT_KO, GOD_GLOSS, type GodGroup, GROUP_OF, GYEOK_NAME, HIDDEN, readChart, type Reading, type Slot, stemEl, tenGod } from "./myeongri";
+import { chartOf, elScore, luckFit, ELEMENT_HANJA, ELEMENT_KO, GOD_GLOSS, type GodGroup, GROUP_OF, GYEOK_NAME, HIDDEN, readChart, type Slot, stemEl, tenGod } from "./myeongri";
 import { palaceOf, selfStars, type Profile } from "./profile";
 import { BRANCHES, STEMS, type FullPillars, type Pillars } from "./saju";
 import {
@@ -29,7 +29,7 @@ import {
 } from "./yearText";
 import { monthMarks, monthsOf, yearScore } from "./yeonun";
 
-export { elScore };
+export { elScore, luckFit };
 
 // The 2026 (丙午) reading: the chart itself (물상, 격국, 신강약, 용신 by 억부 and 조후, 12운성, 신살), the year
 // against it (ten gods, 합·충·형·파·해·원진 with every natal branch, 신살 the year brings), the ten-year luck it
@@ -61,26 +61,6 @@ export type YearReading = {
 
 const EL = (e: number) => `${ELEMENT_KO[e]}(${ELEMENT_HANJA[e]})`;
 const pct = (w: number[], i: number) => Math.round((100 * w[i]) / w.reduce((a, b) => a + b, 0));
-
-// How welcome a ten-year luck pillar is. The branch carries the decade, so it weighs twice the stem. Beyond the
-// 용신 and 기신, the 억부 direction decides: a strong day master welcomes what drains or restrains it and not
-// more of itself or its backers, a weak one the reverse (elScore alone counts the 희신 as help, which for a
-// strong chart is more of the day master's own metal). 종격 follows its own 용신. About −9…9.
-export function luckFit(r: Reading, dayStem: number, stem: number, branch: number): number {
-  const me = stemEl(dayStem);
-  const strong = r.strength === "신강" || r.strength === "극신강";
-  const one = (e: number) => {
-    if (r.method === "종격") return elScore(r, e);
-    const backs = e === me || e === (me + 4) % 5; // 비겁, 인성
-    let s = strong ? (backs ? -1 : 1) : backs ? 1 : -1;
-    if (e === r.burden) s = Math.min(s, -1);
-    if (e === r.yong) s += 1;
-    if (e === r.gi) s -= 1;
-    if (r.johu !== null && e === r.johu) s += 1;
-    return s;
-  };
-  return one(stemEl(stem)) + 2 * one(BRANCH_EL[branch]);
-}
 
 function natalBranches(p: FullPillars) {
   return chartOf(p)

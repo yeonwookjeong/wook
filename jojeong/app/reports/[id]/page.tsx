@@ -439,7 +439,7 @@ async function OpenReport({
               성별을 넣으면 해마다의 판정에 10년 대운까지 반영해 드려요.
             </p>
           )}
-          {rows && <YearList name={name} rows={rows} hrefOf={(year) => link(year)} owned={owned} />}
+          {rows && <YearList name={name} rows={rows} decades={freeReadingOf(pillars, profile)?.flow ?? null} hrefOf={(year) => link(year)} owned={owned} />}
           {meDeepen}
         </>
       );
