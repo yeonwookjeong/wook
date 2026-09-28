@@ -155,6 +155,24 @@ export async function setProfile(courtId: string, who: string, profile: Profile)
   await backend().set(`profile:${courtId}:${who}`, JSON.stringify(profile));
 }
 
+// Real count of free readings (a chart entered for the first time in a browser, or changed), kept from launch
+// so the number exists by the time it is worth showing. Nothing about the person is stored.
+export async function noteReading(): Promise<void> {
+  await backend()
+    .incr("stats:readings")
+    .catch(() => {});
+}
+
+// Every chart read so far: free readings and enthronements (/king). Counts readings, not distinct people.
+export async function readingCount(): Promise<number> {
+  try {
+    const [r, c] = await Promise.all([backend().get("stats:readings"), backend().get("stats:courts")]);
+    return Number(r ?? 0) + Number(c ?? 0);
+  } catch {
+    return 0;
+  }
+}
+
 export async function courtCount(): Promise<number> {
   try {
     return Number((await backend().get("stats:courts")) ?? 0);

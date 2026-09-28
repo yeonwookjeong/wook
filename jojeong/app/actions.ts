@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { computeProfile, type Gender } from "@/lib/profile";
 import { cityById, parseClock } from "@/lib/birthtime";
 import { BirthInputError, computePillars, LATE_ZI, resolveBirthTime, resolveLateZi, type BirthInput, type Pillars } from "@/lib/saju";
-import { addMinister, createCourt, CourtFullError, getCourt, getProfile, listMinisters, MAX_MINISTERS, removeMinister, setProfile } from "@/lib/store";
+import { addMinister, createCourt, CourtFullError, getCourt, getProfile, listMinisters, MAX_MINISTERS, noteReading, removeMinister, setProfile } from "@/lib/store";
 import { OWNER_COOKIE, MINISTER_COOKIE } from "@/lib/cookies";
 import { encodePerson, relationOf, type Person } from "@/lib/pairToken";
 import { forgetMe, readMe, rememberMe } from "@/lib/me";
@@ -240,7 +240,12 @@ export async function gunghapAction(_prev: FormState, formData: FormData): Promi
 export async function saveMeAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const next = String(formData.get("next") ?? "");
   try {
-    await rememberMe(await personOf(formData, "", "내 사주"));
+    const before = await readMe();
+    const person = await personOf(formData, "", "내 사주");
+    await rememberMe(person);
+    // Counted once per chart: adding the hour or gender to the same birth date is not a new reading.
+    if (!before || before.person.birthYear !== person.birthYear || before.person.pillars.dayStem !== person.pillars.dayStem || before.person.pillars.dayBranch !== person.pillars.dayBranch)
+      await noteReading();
   } catch (e) {
     if (e instanceof BirthInputError) return { error: e.message.replace(/^내 사주: /, "") };
     console.error(e);

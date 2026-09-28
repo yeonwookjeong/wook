@@ -24,7 +24,7 @@ const DIPPER = [
 ] as const;
 
 // `cta`: the first thing to do here — the free reading of one's own chart.
-export default function StoreHero({ cta }: { cta?: { href: string; label: string; sub: string } }) {
+export default function StoreHero({ cta, count }: { cta?: { href: string; label: string; sub: string }; count?: number | null }) {
   const cx = 300;
   const cy = 118;
   return (
@@ -78,6 +78,11 @@ export default function StoreHero({ cta }: { cta?: { href: string; label: string
               {cta.label}
             </Link>
             <p className="mt-2 text-[11px] text-[#f3ead0]/75">{cta.sub}</p>
+            {count && (
+              <p className="mt-3 rounded-full bg-[#f7efd9]/10 px-3 py-1 text-[12px] text-[#f3ead0]">
+                지금까지 <b className="font-myeongjo text-[#e2bc68]">{count.toLocaleString("ko-KR")}</b>건의 사주를 풀어 드렸어요
+              </p>
+            )}
           </>
         )}
 

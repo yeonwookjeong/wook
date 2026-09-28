@@ -3,7 +3,7 @@ import Link from "next/link";
 import { adminConfigured, isAdmin } from "@/lib/admin";
 import { getOrder, type Order } from "@/lib/pay";
 import { productById, SETS } from "@/lib/products";
-import { paidOrderIds } from "@/lib/store";
+import { paidOrderIds, readingCount } from "@/lib/store";
 import { adminSignOut } from "./actions";
 import SignInForm from "./SignInForm";
 
@@ -60,6 +60,10 @@ export default async function AdminPage() {
       </section>
       <p className="mt-2 text-center text-[11px] text-ink-soft">
         최근 200건 기준 · 테스트 결제도 포함돼요 · 정확한 정산은 토스 상점관리자에서 확인하세요
+      </p>
+      <p className="mt-3 text-center text-[13px]">
+        지금까지 풀어 드린 사주 <b className="font-myeongjo text-seal">{(await readingCount()).toLocaleString("ko-KR")}</b>건
+        <span className="block text-[11px] text-ink-soft">무료 분석 + 즉위 · 100건부터 홈에 표시돼요</span>
       </p>
 
       <section className="doc-paper mt-4 px-4 py-4">
