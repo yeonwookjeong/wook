@@ -94,7 +94,13 @@ export default async function Home() {
 
   return (
     <>
-      <StoreHero />
+      <StoreHero
+        cta={
+          me
+            ? { href: "/reports/pyeongsaeng", label: `${me.person.name}님 사주 분석 보기`, sub: "여덟 글자의 무게와 드문 특징까지 · 무료" }
+            : { href: "/reports/pyeongsaeng", label: "내 사주 무료 분석", sub: "생년월일만 넣으면 여덟 글자의 무게와 드문 특징을 바로 보여 드려요" }
+        }
+      />
       <TodayCard today={todayFor(me?.person ?? null)} name={me?.person.name ?? null} />
       <Link href="/samjae" className="mt-2 flex items-center justify-between rounded-2xl border border-seal/20 bg-white/40 px-5 py-3 text-[13px]">
         <span>

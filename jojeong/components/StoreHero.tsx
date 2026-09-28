@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { CHARACTER, CHARACTER_NAME } from "@/lib/brand";
 
 // Main-page hero: a night sky with a round star chart in gold, the way 관상감 mapped the heavens (the circles
@@ -22,7 +23,8 @@ const DIPPER = [
   [108, 128],
 ] as const;
 
-export default function StoreHero() {
+// `cta`: the first thing to do here — the free reading of one's own chart.
+export default function StoreHero({ cta }: { cta?: { href: string; label: string; sub: string } }) {
   const cx = 300;
   const cy = 118;
   return (
@@ -67,6 +69,17 @@ export default function StoreHero() {
           <br />
           <b className="text-[#f7efd9]">나한테만 맞는 말</b>
         </p>
+        {cta && (
+          <>
+            <Link
+              href={cta.href}
+              className="mt-6 block w-full max-w-[18rem] rounded-2xl bg-[#e2bc68] py-3.5 font-myeongjo text-[17px] font-extrabold text-[#17304a] shadow-[0_5px_0_#9c7a2e]"
+            >
+              {cta.label}
+            </Link>
+            <p className="mt-2 text-[11px] text-[#f3ead0]/75">{cta.sub}</p>
+          </>
+        )}
 
         <div className="mt-8 flex w-full items-end gap-3 text-left">
           <div className="size-20 shrink-0 overflow-hidden rounded-full border-[3px] border-[#d9ad52] bg-[#f7efd9] shadow-lg">
