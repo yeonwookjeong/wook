@@ -24,6 +24,12 @@ export function godRank(group: GodGroup, share: number): { side: "high" | "low";
   return tail(`god:${group}` as Metric, share);
 }
 
+// Share of births holding this 신살 anywhere in the chart.
+export const salRate = (name: string): number | null => {
+  const n = (data.sals as Record<string, number>)[name];
+  return n === undefined ? null : n / data.total;
+};
+
 export const patternRate = (id: string, gender: Gender | null) => {
   const m = data.patterns.m[id as keyof typeof data.patterns.m] / data.n.m;
   const f = data.patterns.f[id as keyof typeof data.patterns.f] / data.n.f;

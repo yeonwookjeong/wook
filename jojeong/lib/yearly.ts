@@ -1,6 +1,6 @@
 import { gongmang, isBaekho, isGoegang, meetings, salsAt, stageOf, stemClash, stemCombine, type Meeting } from "./deep";
 import { josa } from "./josa";
-import { BRANCH_EL, chartOf, ELEMENT_HANJA, ELEMENT_KO, GOD_GLOSS, GROUP_OF, GYEOK_NAME, readChart, stemEl, tenGod, type GodGroup, type Reading, type Slot } from "./myeongri";
+import { BRANCH_EL, chartOf, ELEMENT_HANJA, ELEMENT_KO, GOD_GLOSS, type GodGroup, GROUP_OF, GYEOK_NAME, HIDDEN, readChart, type Reading, type Slot, stemEl, tenGod } from "./myeongri";
 import { palaceOf, selfStars, type Profile } from "./profile";
 import { BRANCHES, STEMS, type FullPillars, type Pillars } from "./saju";
 import {
@@ -83,6 +83,7 @@ export function elScore(r: Reading, e: number) {
   if (e === r.hee) return 1;
   if (e === r.gi) return -2;
   if (e === (r.gi + 4) % 5) return -1;
+  if (e === r.burden) return -1;
   return 0;
 }
 
@@ -97,6 +98,7 @@ export function luckFit(r: Reading, dayStem: number, stem: number, branch: numbe
     if (r.method === "종격") return elScore(r, e);
     const backs = e === me || e === (me + 4) % 5; // 비겁, 인성
     let s = strong ? (backs ? -1 : 1) : backs ? 1 : -1;
+    if (e === r.burden) s = Math.min(s, -1);
     if (e === r.yong) s += 1;
     if (e === r.gi) s -= 1;
     if (r.johu !== null && e === r.johu) s += 1;
@@ -123,9 +125,15 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
   // 종격 reverses the preference: a chart following a draining force likes what a strong chart likes, and one
   // following its own side likes what a weak chart likes.
   const likesDrain = r.outer ? r.outer !== "종왕격" && r.outer !== "종강격" : strong;
+  // STEM_YEAR's strong/weak texts are written as "fire helps" or "fire is too much" for each day stem: for
+  // 甲乙庚辛壬癸 fire drains the day master, so its strong text is the welcoming one; for 丙丁戊己 fire backs it,
+  // so the weak text is. Pick by what fire actually is for this chart (용신·기신·부담), falling back to strength.
+  const drainFire = p.dayStem < 2 || p.dayStem > 5;
+  const fireGood = elScore(r, FIRE) > 0 ? true : elScore(r, FIRE) < 0 ? false : drainFire === likesDrain;
 
   // ── The year against the chart.
   let score = elScore(r, FIRE) * 1.5;
+  const fireBad = elScore(r, FIRE) < 0;
   const why: string[] = [];
   why.push(
     FIRE === r.yong
@@ -136,7 +144,9 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
           ? `병오년의 불(火)이 용신 ${EL(r.yong)}을 누르는 기신이에요`
           : FIRE === (r.gi + 4) % 5
             ? `병오년의 불(火)이 기신을 부추기는 기운이에요`
-            : `병오년의 불(火)은 용신과 크게 얽히지 않아요`,
+            : FIRE === r.burden
+              ? `병오년의 불(火)은 사주에 넘치는 기운을 더 키우는 부담이에요`
+              : `병오년의 불(火)은 용신과 크게 얽히지 않아요`,
   );
 
   const meetLines: string[] = [];
@@ -149,12 +159,18 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
     meetTags.add(main);
     byMeeting.set(main, [...(byMeeting.get(main) ?? []), `${BRANCHES[branch]}(${POS_TEXT[pos]})`]);
     const w = pos === "일" ? 1.5 : pos === "월" ? 1 : 0.5;
-    score += w * ({ 육합: 1, 삼합: 0.8, 방합: 0.5, 충: -1.5, 형: -0.7, 원진: -0.7, 해: -0.5, 파: -0.5 } as Record<string, number>)[main];
+    // 삼합·방합 with 午 gather fire (寅午戌, 巳午未): a plus only when fire helps the chart. When fire is
+    // unwelcome the meeting still brings people and events, but it feeds that fire, so the two cancel out.
+    const gathers = (main === "삼합" || main === "방합") && fireBad;
+    score += w * (gathers ? 0 : ({ 육합: 1, 삼합: 0.8, 방합: 0.5, 충: -1.5, 형: -0.7, 원진: -0.7, 해: -0.5, 파: -0.5 } as Record<string, number>)[main]);
   }
   // Several meetings in a row read better with the subject varied after the first.
   const lead = ["올해의 午火가", "또 午火가", "한편 午火가", "그리고 午火가"];
   [...byMeeting].forEach(([m, places], i) =>
-    meetLines.push(MEET_TEXT[m](`사주의 ${places.join(", ")}`).replace("올해의 午火가", lead[Math.min(i, lead.length - 1)])),
+    meetLines.push(
+      MEET_TEXT[m](`사주의 ${places.join(", ")}`).replace("올해의 午火가", lead[Math.min(i, lead.length - 1)]) +
+        ((m === "삼합" || m === "방합") && fireBad ? " 다만 불이 부담인 사주라, 커지는 만큼 과열되지 않게 속도를 조절해야 해요." : ""),
+    ),
   );
   for (const s of chartOf(full)) {
     if (s.stem === null || s.pos === "일") continue;
@@ -265,13 +281,22 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
     headline,
     paras: [
       sy.gods,
-      likesDrain ? sy.strong : sy.weak,
+      fireGood === drainFire ? sy.strong : sy.weak,
       `${why[0]}. ${
+        // The element and the verdict can point different ways (the meetings or the decade tip it); say which.
         verdict === "대길" || verdict === "길"
-          ? "올해의 흐름이 내 편이니, 미뤄 둔 일을 올해 시작하세요."
+          ? fireBad
+            ? "불 자체는 부담이지만, 원국과의 합과 지금의 대운이 받쳐 줘 한 해 전체로는 좋은 흐름이에요. 속도만 조절하며 미뤄 둔 일을 시작하세요."
+            : "올해의 흐름이 내 편이니, 미뤄 둔 일을 올해 시작하세요."
           : verdict === "평"
-            ? "하늘이 크게 밀어주지도 막지도 않는 해이니, 준비가 곧 결과가 돼요."
-            : "올해는 넓히기보다 지키는 해예요. 무리한 확장보다 내실을 다지면, 다음 해에 크게 돌려받아요."
+            ? fireBad
+              ? "불 자체는 부담이지만 다른 기운이 받쳐 줘, 한 해 전체로는 크게 밀어주지도 막지도 않아요. 준비가 곧 결과가 돼요."
+              : elScore(r, FIRE) > 0
+                ? "기운 자체는 반갑지만 원국과 부딪히는 자리도 있어, 한 해 전체로는 크게 밀어주지도 막지도 않아요. 준비가 곧 결과가 돼요."
+                : "하늘이 크게 밀어주지도 막지도 않는 해이니, 준비가 곧 결과가 돼요."
+            : elScore(r, FIRE) > 0
+              ? "기운 자체는 반갑지만 원국과 부딪히는 자리가 있어, 올해는 넓히기보다 지키는 해예요. 내실을 다지면 다음 해에 크게 돌려받아요."
+              : "올해는 넓히기보다 지키는 해예요. 무리한 확장보다 내실을 다지면, 다음 해에 크게 돌려받아요."
       }`,
       ...meetLines,
       ...yearSals.map((s) => SAL_YEAR[s]),
@@ -287,7 +312,8 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
 
   // ── 대운
   if (now) {
-    const g = GROUP_OF[tenGod(p.dayStem, now.stem)];
+    // A decade is named by its branch, which carries the ten years (as the free 인생 흐름 does).
+    const g = GROUP_OF[tenGod(p.dayStem, HIDDEN[now.branch].at(-1)![0])];
     const fit = luckFit(r, p.dayStem, now.stem, now.branch);
     const turning = now.to === 2026 || now.from === 2026;
     sections.push({
@@ -302,13 +328,20 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
       paras: [
         `지금의 대운은 ${STEMS[now.stem]}${BRANCHES[now.branch]}(${now.from}~${now.to}년)이에요. ${DAEUN_GROUP[g]}`,
         fit >= 3 ? DAEUN_FIT.good : fit <= -3 ? DAEUN_FIT.bad : DAEUN_FIT.mid,
-        ...(turning && next
+        ...(now.from === 2026
+          ? ["대운은 1월 1일이 아니라 태어난 날 무렵에 넘어가요. 바뀌는 때 앞뒤로는 이사, 이직, 관계처럼 삶의 판이 흔들리기 쉬우니, 새 10년에 가져갈 것과 내려놓을 것을 올해 가려 두세요."]
+          : []),
+        ...(now.to === 2026 && next
           ? [
-              `${next.from}년부터는 ${STEMS[next.stem]}${BRANCHES[next.branch]} 대운으로 넘어가요. ${DAEUN_GROUP[GROUP_OF[tenGod(p.dayStem, next.stem)]].replace("지금은", "앞으로는").replace("지나고 있어요", "맞게 돼요")} 대운이 바뀌는 해 앞뒤로는 이사, 이직, 관계처럼 삶의 판이 흔들리기 쉬우니, 버릴 것과 가져갈 것을 올해 가려 두세요.`,
+              `${next.from}년부터는 ${STEMS[next.stem]}${BRANCHES[next.branch]} 대운으로 넘어가요. ${
+                GROUP_OF[tenGod(p.dayStem, HIDDEN[next.branch].at(-1)![0])] === GROUP_OF[tenGod(p.dayStem, HIDDEN[now.branch].at(-1)![0])]
+                  ? "같은 결의 10년이 한 번 더 이어져, 지금 쌓는 것이 그대로 다음 10년의 밑천이 돼요."
+                  : DAEUN_GROUP[GROUP_OF[tenGod(p.dayStem, HIDDEN[next.branch].at(-1)![0])]].replace("지금은", "그다음에는").replace("지나고 있어요", "맞게 돼요")
+              } 대운이 바뀌는 해 앞뒤로는 이사, 이직, 관계처럼 삶의 판이 흔들리기 쉬우니, 버릴 것과 가져갈 것을 올해 가려 두세요.`,
             ]
           : []),
       ],
-      basis: [`대운 ${STEMS[now.stem]}${BRANCHES[now.branch]} · 천간 ${tenGod(p.dayStem, now.stem)} · ${now.from}~${now.to}년`],
+      basis: [`대운 ${STEMS[now.stem]}${BRANCHES[now.branch]} · 천간 ${tenGod(p.dayStem, now.stem)} · 지지 ${tenGod(p.dayStem, HIDDEN[now.branch].at(-1)![0])} · ${now.from}~${now.to}년`],
     });
   }
 
