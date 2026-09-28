@@ -183,3 +183,12 @@ export async function getOrderRaw(orderId: string): Promise<string | null> {
 export async function setOrderRaw(orderId: string, raw: string) {
   await backend().set(`order:${orderId}`, raw);
 }
+// Paid order ids, newest last, for the owner's dashboard.
+export async function notePaidOrder(orderId: string) {
+  await backend()
+    .push("orders:paid", orderId)
+    .catch(() => {});
+}
+export async function paidOrderIds(): Promise<string[]> {
+  return backend().list("orders:paid");
+}

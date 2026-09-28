@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { ORDERS_COOKIE } from "./cookies";
 import type { ProductId, SetId } from "./products";
 import type { JobRequest } from "./reportWriter";
-import { getOrderRaw, setOrderRaw } from "./store";
+import { getOrderRaw, notePaidOrder, setOrderRaw } from "./store";
 
 // Paying for a report with 토스페이먼츠 (결제창, API 개별 연동 키).
 //   1. /api/pay/order makes an order: the report request, whose chart, and the amount fixed on our side.
@@ -80,6 +80,7 @@ export async function confirmOrder(order: Order, paymentKey: string, amount: num
   }
   const paid: Order = { ...order, status: "paid", paidAt: Date.now(), paymentKey, method };
   await setOrderRaw(order.id, JSON.stringify(paid));
+  await notePaidOrder(order.id);
   return { ok: true };
 }
 

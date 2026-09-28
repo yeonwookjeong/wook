@@ -31,6 +31,7 @@ import { distinctOf } from "@/lib/rarity";
 import { courtOfReader, subjectFor } from "@/lib/subject";
 import { getProfile } from "@/lib/store";
 import { covers, getOrder, ownedOrderFor, type Order } from "@/lib/pay";
+import { isAdmin } from "@/lib/admin";
 import { KINDS, parseSearch, pickDays, startMonths } from "@/lib/taekil";
 import { yearReading } from "@/lib/yearly";
 
@@ -440,7 +441,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
             b: typeof search.b === "string" ? search.b : undefined,
             rel: typeof search.rel === "string" ? search.rel : undefined,
           }}
-          locked={!isOpen(product) && !paid}
+          locked={!isOpen(product) && !paid && !(await isAdmin())}
           paid={paid}
           search={{
             kind: typeof search.kind === "string" ? search.kind : undefined,
