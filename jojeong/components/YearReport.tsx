@@ -77,7 +77,7 @@ export default function YearReport({
                   </div>
                 )}
                 {s.paras.map((t) => (
-                  <p key={t} className="mt-2 text-[15px] leading-relaxed first:mt-0">
+                  <p key={t} className="mt-4 text-[16px] leading-[1.85] first:mt-0">
                     {t}
                   </p>
                 ))}
