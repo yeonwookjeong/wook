@@ -1,6 +1,7 @@
 import { Solar } from "lunar-javascript";
 import { meetings, salsAt, stageOf, stemClash, stemCombine, type Meeting } from "./deep";
-import { BRANCH_EL, chartOf, elScore, ELEMENT_HANJA, ELEMENT_KO, GROUP_OF, HIDDEN, readChart, type GodGroup, type Reading, stemEl, tenGod } from "./myeongri";
+import { BRANCH_EL, chartOf, elScore, ELEMENT_HANJA, luckFit, ELEMENT_KO, GROUP_OF, HIDDEN, readChart, type GodGroup, type Reading, stemEl, tenGod } from "./myeongri";
+import { josa } from "./josa";
 import type { Profile } from "./profile";
 import { BRANCHES, BRANCHES_KO, isFull, STEMS, STEMS_KO, type FullPillars, type Pillars } from "./saju";
 
@@ -38,6 +39,8 @@ export type YearScore = {
 
 export const verdictOf = (score: number): Verdict => (score >= 3.5 ? "대길" : score >= 1 ? "길" : score > -1 ? "평" : score > -3 ? "조심" : "인내");
 const EL = (e: number) => `${ELEMENT_KO[e]}(${ELEMENT_HANJA[e]})`;
+// A branch as 申(신), with the particle its Korean reading takes.
+const BJ = (b: number, pair: Parameters<typeof josa>[1]) => josa(`${BRANCHES[b]}(${BRANCHES_KO[b]})`, pair);
 const ROLE = (r: Reading, e: number) =>
   e === r.yong ? "용신" : e === r.hee ? "희신" : e === r.gi ? "기신" : e === (r.gi + 4) % 5 ? "구신" : e === r.burden ? "부담" : null;
 
@@ -97,8 +100,18 @@ export function yearScore(p: FullPillars, r: Reading, profile: Profile | null, y
   if (sals.includes("천을귀인")) add("천을귀인", 1);
   if (sals.includes("공망")) add("공망", -0.5);
 
+  // The decade is the ground a year stands on: graded exactly as the free life flow grades it (luckFit, its
+  // branch weighing twice its stem), so a ◎ decade lifts each of its years by about one step's worth. A year
+  // whose branch clashes the decade's branch shakes that ground: bad when the decade's branch is welcome,
+  // a relief when it is not.
   const d = profile?.daeun?.find((x) => x.from <= y && y <= x.to) ?? null;
-  if (d) add(`대운 ${STEMS[d.stem]}${BRANCHES[d.branch]}`, (elScore(r, stemEl(d.stem)) + elScore(r, BRANCH_EL[d.branch])) * 0.35);
+  if (d) {
+    add(`대운 ${STEMS[d.stem]}${BRANCHES[d.branch]}`, luckFit(r, p.dayStem, d.stem, d.branch) * 0.3);
+    if (meetings(branch, d.branch).includes("충")) {
+      const welcome = elScore(r, BRANCH_EL[d.branch]);
+      add(`대운 지지 ${BRANCHES[d.branch]}와 충`, welcome > 0 ? -1 : welcome < 0 ? 0.5 : -0.5);
+    }
+  }
 
   factors.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
   return { score, verdict: verdictOf(score), factors, meets, stemMeets, sals, daeun: d ? { stem: d.stem, branch: d.branch, from: d.from, to: d.to } : null };
@@ -311,19 +324,33 @@ export function yearDetail(p: Pillars, profile: Profile | null, y: number, now: 
     const plain = MEET_PLAIN[m.meeting];
     if (!plain) continue;
     const seats = ms.length === 1 ? SEAT[m.pos] : `${ms.map((x) => SEAT[x.pos].replace(/ 자리\(.*\)$/, "")).join(", ")} 자리(${ms.map((x) => `${x.pos}지`).join("·")})`;
-    points.push(`${n.ko}의 ${BRANCHES[branch]}가 ${seats}의 ${BRANCHES[m.branch]}와 ${plain.replace("그 자리의", ms.length > 1 ? "그 자리들의" : "그 자리의")}.${m.gathers ? " 다만 모이는 기운이 사주에 버거워 좋은 만큼 부담도 커요." : ""}`);
+    points.push(`${n.ko}의 ${BJ(branch, "이/가")} ${seats}의 ${BJ(m.branch, "과/와")} ${plain.replace("그 자리의", ms.length > 1 ? "그 자리들의" : "그 자리의")}.${m.gathers ? " 다만 모이는 기운이 사주에 버거워 좋은 만큼 부담도 커요." : ""}`);
   }
   for (const x of s.stemMeets) {
     if (x.pos === "일") points.push(x.kind === "합" ? `천간 ${STEMS[stem]}이 나(일간 ${STEMS[x.stem]})와 합해요. 나를 찾는 사람과 제안이 들어와요.` : `천간 ${STEMS[stem]}이 나(일간 ${STEMS[x.stem]})와 부딪혀요. 마음이 흔들리는 일이 생겨요.`);
   }
   for (const x of s.sals) if (SAL_PLAIN[x]) points.push(SAL_PLAIN[x]);
   if (s.daeun) {
+    const dz = `${STEMS[s.daeun.stem]}${BRANCHES[s.daeun.branch]}`;
     const turning = s.daeun.from === y && profile?.daeun?.[0].from !== y;
+    const fit = luckFit(r, p.dayStem, s.daeun.stem, s.daeun.branch);
+    const ground =
+      fit >= 3
+        ? "바탕이 든든한 10년(◎)이라, 이 해가 버거워도 크게 무너지지 않아요."
+        : fit <= -3
+          ? "기반을 다질 10년(△)이라, 좋은 해라도 욕심을 줄이는 편이 안전해요."
+          : "좋고 나쁨이 섞인 10년(○)이라, 한 해의 기운이 그대로 드러나요.";
     points.push(
       turning
-        ? `이해에 10년 대운이 ${STEMS[s.daeun.stem]}${BRANCHES[s.daeun.branch]}로 바뀌어요. 태어난 날 무렵부터 삶의 판이 새로 짜여요.`
-        : `${STEMS[s.daeun.stem]}${BRANCHES[s.daeun.branch]} 대운(${s.daeun.from}~${s.daeun.to}년) 안의 한 해예요.`,
+        ? `이해에 10년 대운이 ${dz}로 바뀌어요. 태어난 날 무렵부터 삶의 판이 새로 짜여요. 새 대운은 ${ground}`
+        : `${dz} 대운(${s.daeun.from}~${s.daeun.to}년) 안의 한 해예요. ${ground}`,
     );
+    if (meetings(branch, s.daeun.branch).includes("충"))
+      points.push(
+        elScore(r, BRANCH_EL[s.daeun.branch]) > 0
+          ? `${n.ko}의 ${BJ(branch, "이/가")} 대운의 ${BJ(s.daeun.branch, "을/를")} 충해요. 10년을 받치던 바탕이 한 번 흔들리는 해라, 큰 결정과 큰돈은 신중하게.`
+          : `${n.ko}의 ${BJ(branch, "이/가")} 대운의 ${BJ(s.daeun.branch, "을/를")} 충해요. 버겁던 바탕이 한 번 흔들리니, 묵은 것을 정리하고 바꾸기 좋은 해예요.`,
+      );
   }
   const months = monthMarks(p, r, y);
   const order = months.map((m, i) => ({ i, s: m.score })).sort((a, b) => b.s - a.s);

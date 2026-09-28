@@ -417,3 +417,23 @@ export function elScore(r: Reading, e: number): number {
   if (e === r.burden) return -1;
   return 0;
 }
+
+// How welcome a ten-year luck pillar is. The branch carries the decade, so it weighs twice the stem. Beyond the
+// 용신 and 기신, the 억부 direction decides: a strong day master welcomes what drains or restrains it and not
+// more of itself or its backers, a weak one the reverse (elScore alone counts the 희신 as help, which for a
+// strong chart is more of the day master's own metal). 종격 follows its own 용신. About −9…9.
+export function luckFit(r: Reading, dayStem: number, stem: number, branch: number): number {
+  const me = stemEl(dayStem);
+  const strong = r.strength === "신강" || r.strength === "극신강";
+  const one = (e: number) => {
+    if (r.method === "종격") return elScore(r, e);
+    const backs = e === me || e === (me + 4) % 5; // 비겁, 인성
+    let s = strong ? (backs ? -1 : 1) : backs ? 1 : -1;
+    if (e === r.burden) s = Math.min(s, -1);
+    if (e === r.yong) s += 1;
+    if (e === r.gi) s -= 1;
+    if (r.johu !== null && e === r.johu) s += 1;
+    return s;
+  };
+  return one(stemEl(stem)) + 2 * one(BRANCH_EL[branch]);
+}
