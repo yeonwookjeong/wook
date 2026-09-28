@@ -26,7 +26,7 @@ export default function OrderLink({
         <p className="min-w-0 flex-1 leading-snug">
           <b className="block text-gold">결제한 보고서예요</b>
           <span className="text-ink-soft">
-            이 링크로 다른 기기에서도 다시 볼 수 있어요
+            나중에는 맨 위 <b className="text-ink">내 보고서</b>에서 바로 열 수 있어요. 다른 기기에서는 이 링크로 열어요
           </span>
         </p>
         <button
