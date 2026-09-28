@@ -1,13 +1,13 @@
 import Link from "next/link";
 import type { Domain } from "@/lib/domains";
-import type { FreeReading as Reading } from "@/lib/freeReading";
+import { MOODS, type FreeReading as Reading } from "@/lib/freeReading";
 import { perHundred } from "@/lib/rarity";
 
 const TOPIC: Record<Domain, string> = { jaemul: "돈", yeonae: "사랑", jikup: "일" };
 const MOOD = {
-  오르막: "bg-seal text-hanji",
-  평지: "bg-gold/20 text-ink",
-  "쉬어 갈 때": "bg-ink/10 text-ink-soft",
+  기회: { mark: "◎ 기회", cls: "bg-seal text-hanji" },
+  무난: { mark: "○ 무난", cls: "bg-gold/20 text-ink" },
+  다지기: { mark: "△ 다지기", cls: "bg-ink/10 text-ink" },
 } as const;
 
 function Card({ hanja, title, children }: { hanja: string; title: string; children: React.ReactNode }) {
@@ -96,22 +96,30 @@ export default function FreeReading({ name, r, query, addGender }: { name: strin
       <Card hanja="運 路" title={`${name}님의 인생 흐름`}>
         {r.flow ? (
           <>
-            <p className="mt-1 text-center text-[12px] text-ink-soft">10년마다 바뀌는 큰 흐름(대운)이에요</p>
+            <p className="mt-1 text-center text-[12px] text-ink-soft">10년마다 바뀌는 큰 흐름(대운)이에요. 지나온 시기가 맞는지 먼저 확인해 보세요</p>
             <ol className="mt-4 flex flex-col gap-1.5">
               {r.flow.map((f) => (
-                <li key={f.from} className={`flex items-center gap-3 rounded-xl px-3 py-2 ${f.now ? "border-2 border-seal bg-seal/5" : ""}`}>
+                <li key={f.from} className={`flex items-center gap-3 rounded-xl px-3 py-2 ${f.now ? "border-2 border-seal bg-seal/5" : f.past ? "opacity-70" : ""}`}>
                   <span className="w-20 shrink-0 text-[12px] leading-tight">
                     <b className="block">{f.age || `${f.from}년~`}</b>
                     <span className="text-[10px] text-ink-soft">
                       {f.from}~{f.to}
                     </span>
                   </span>
-                  <span className={`shrink-0 rounded-md px-2 py-0.5 text-[11px] font-bold ${MOOD[f.mood]}`}>{f.mood}</span>
+                  <span className={`w-16 shrink-0 rounded-md py-0.5 text-center text-[11px] font-bold ${MOOD[f.mood].cls}`}>{MOOD[f.mood].mark}</span>
                   <span className="min-w-0 flex-1 text-[13px]">{f.theme}</span>
                   {f.now && <span className="shrink-0 text-[11px] font-extrabold text-seal">지금</span>}
                 </li>
               ))}
             </ol>
+            <dl className="mt-3 grid gap-1 text-[11px] leading-relaxed text-ink-soft">
+              {(Object.keys(MOODS) as (keyof typeof MOODS)[]).map((m) => (
+                <div key={m} className="flex gap-2">
+                  <dt className="w-14 shrink-0 font-bold text-ink">{MOOD[m].mark}</dt>
+                  <dd>{MOODS[m]}</dd>
+                </div>
+              ))}
+            </dl>
             <Link href={`/reports/pyeongsaeng${q}`} className="mt-3 block text-right text-[12px] font-bold text-seal">
               시기마다 무슨 일이 생기는지 · 평생 사주 →
             </Link>
