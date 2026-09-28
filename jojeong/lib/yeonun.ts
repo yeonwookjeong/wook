@@ -251,6 +251,14 @@ export function newYearOf(now = new Date()): number | null {
   const m = kst.getUTCMonth() + 1;
   return m >= 9 ? kst.getUTCFullYear() + 1 : m <= 2 ? kst.getUTCFullYear() : null;
 }
+// What a year is called: its 천간 color and its 띠 (丁未 → 붉은 양의 해).
+const STEM_COLOR = ["푸른", "푸른", "붉은", "붉은", "누런", "누런", "하얀", "하얀", "검은", "검은"];
+const ZODIAC = ["쥐", "소", "호랑이", "토끼", "용", "뱀", "말", "양", "원숭이", "닭", "개", "돼지"];
+export const yearNickname = (y: number) => {
+  const { stem, branch } = yearPillar(y);
+  return `${STEM_COLOR[stem]} ${ZODIAC[branch]}의 해`;
+};
+
 // The 연운 product dressed as that year's 신년운세, for its header. Before the year begins it is a preview
 // ("미리 보는"), said plainly so an early reader knows it is early on purpose.
 export const isPreview = (y: number, now = new Date()) => thisYear(now) < y;
@@ -259,7 +267,7 @@ export function newYearProduct<T extends { title: string; hanja: string; tagline
     ...product,
     title: isPreview(y, now) ? `미리 보는 ${y} 신년운세` : `${y} 신년운세`,
     hanja: yearName(y).hanja,
-    tagline: `${y}년 나한테 어떤 일이 생길까? 돈·일·사랑·몸부터 달마다 할 일까지`,
+    tagline: `${y}년에 잡을 기회와 피할 고비, 내 사주로 미리 짚어 드려요. 돈·일·사랑·몸부터 달마다 할 일까지`,
   };
 }
 
