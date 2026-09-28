@@ -3,6 +3,7 @@ import { forgetMeAction } from "@/app/actions";
 import Keep from "@/components/Keep";
 import RoyalDoc from "@/components/RoyalDoc";
 import StoreHero from "@/components/StoreHero";
+import { readingCount } from "@/lib/store";
 import TodayCard from "@/components/TodayCard";
 import { readMe } from "@/lib/me";
 import { PRICE, priceNow, productById, type Product, type ProductId } from "@/lib/products";
@@ -76,13 +77,17 @@ function Seal({ hanja }: { hanja: string }) {
   );
 }
 
+// The running count shows only once it means something; before that, a small number reads as an empty shop.
+const SHOW_COUNT_FROM = 100;
+
 export default async function Home() {
-  const me = await readMe();
+  const [me, count] = await Promise.all([readMe(), readingCount()]);
   const main = productById("pyeongsaeng")!;
 
   return (
     <>
       <StoreHero
+        count={count >= SHOW_COUNT_FROM ? count : null}
         cta={
           me
             ? { href: "/reports/pyeongsaeng", label: `${me.person.name}님 사주 분석 보기`, sub: "여덟 글자의 무게와 드문 특징까지 · 무료" }
