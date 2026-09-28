@@ -300,7 +300,11 @@ async function OpenReport({
         <Header product={product} />
         <section className="doc-paper mt-4 px-5 pt-6 pb-6">
           <p className="text-center text-sm leading-relaxed text-ink-soft">{product.teaser}</p>
-          {!isOpen(product) && (
+          {isOpen(product) ? (
+            <p className="mt-2 rounded-xl bg-gold/10 px-3 py-2 text-center text-[13px] leading-relaxed">
+              <b>결제 없이 무료</b>로 바로 보여 드려요
+            </p>
+          ) : (
             <p className="mt-2 rounded-xl bg-gold/10 px-3 py-2 text-center text-[13px] leading-relaxed">
               입력하면 <b>내 사주 분석</b>(여덟 글자의 무게, 같은 일주 속 비율, 드문 특징)은 <b>무료</b>로 바로 보여 드려요
             </p>
@@ -476,6 +480,16 @@ async function OpenReport({
         <>
           {meDeepen}
           <Paywall product={product} request={request} chapters={product.toc} />
+          {/* Not ready to pay: the free year reading is one tap away, not a dead end. */}
+          <Link href={`/reports/gukjeong${query ? `?${query}` : ""}`} className="doc-paper mt-4 flex items-center gap-3 px-5 py-4">
+            <span className="min-w-0 flex-1">
+              <b className="block font-myeongjo">결제 전에, 무료 2026년 운세부터</b>
+              <span className="block text-[12px] text-ink-soft">
+                {name}님의 올해 흐름과 달마다 좋은 때를 무료로 먼저 보세요
+              </span>
+            </span>
+            <span className="shrink-0 text-sm font-bold text-seal">무료 →</span>
+          </Link>
         </>
       ) : (
         <>

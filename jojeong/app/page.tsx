@@ -54,9 +54,11 @@ export default async function Home() {
       <StoreHero
         count={count >= SHOW_COUNT_FROM ? count : null}
         cta={
+          // The first stop is the free 2026 reading (a whole year, computed, no AI), not a report on sale:
+          // people read something complete before being asked to pay.
           me
-            ? { href: "/reports/pyeongsaeng", label: `${me.person.name}님 사주 분석 보기`, sub: "여덟 글자의 무게와 드문 특징까지 · 무료" }
-            : { href: "/reports/pyeongsaeng", label: "내 사주 무료 분석", sub: "생년월일만 넣으면 여덟 글자의 무게와 드문 특징을 바로 보여 드려요" }
+            ? { href: "/reports/gukjeong", label: `${me.person.name}님 무료 운세 보기`, sub: "2026년 운세와 사주 분석까지 · 무료" }
+            : { href: "/reports/gukjeong", label: "내 사주 무료로 보기", sub: "생년월일만 넣으면 2026년 운세와 사주 분석을 바로 보여 드려요" }
         }
       />
 

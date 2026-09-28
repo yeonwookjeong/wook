@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { priceNow, productById, type ProductId } from "@/lib/products";
 import { ELEMENT_HANJA, ELEMENT_KO } from "@/lib/myeongri";
 import type { YearReading } from "@/lib/yearly";
 import { MONTHS } from "@/lib/yearly";
@@ -21,6 +22,15 @@ const VERDICT_STYLE: Record<string, string> = {
   조심: "border-ink/70 text-ink",
   인내: "border-ink text-ink",
 };
+
+// After the free year: the paid reports, the whole life first.
+const NEXT: { id: ProductId; ask: string }[] = [
+  { id: "pyeongsaeng", ask: "성격·돈·일·사랑·가족·건강, 인생 전체를 한 권에" },
+  { id: "jaemul", ask: "돈이 왜 안 모일까, 언제 트일까" },
+  { id: "yeonae", ask: "나랑 맞는 사람은 언제 올까" },
+  { id: "jikup", ask: "지금 일, 나랑 맞을까" },
+  { id: "gunghap", ask: "우리 둘, 진짜 잘 맞을까" },
+];
 
 const monthLabel = (i: number) => `${MONTHS[i].from.split("/")[0]}월`;
 
@@ -47,8 +57,8 @@ export default function YearReport({
     <>
         <p className="mt-6 text-center text-xs text-ink-soft">각 제목을 누르면 풀이가 펼쳐져요</p>
         <div className="mt-2 flex flex-col gap-2">
-          {sections.map((s) => (
-            <details key={s.id} className="group doc-paper px-5 py-4">
+          {sections.map((s, i) => (
+            <details key={s.id} open={i === 0} className="group doc-paper px-5 py-4">
               <summary className="flex cursor-pointer list-none items-start gap-3 [&::-webkit-details-marker]:hidden">
                 <span className="flex size-9 shrink-0 items-center justify-center border-2 border-seal/60 font-myeongjo font-extrabold text-seal">{s.hanja}</span>
                 <span className="min-w-0 flex-1">
@@ -233,20 +243,28 @@ export default function YearReport({
         </section>
       )}
 
-      <section className="mt-6 text-center">
-        <p className="text-sm text-ink-soft">더 깊은 이야기는 이 보고서에서</p>
-        <div className="mt-2 grid grid-cols-3 gap-2 text-sm font-bold">
-          {[
-            ["yeonae", "연애·결혼"],
-            ["jaemul", "재물"],
-            ["jikup", "직업·적성"],
-          ].map(([id, label]) => (
-            <Link key={id} href={`/reports/${id}?${query}`} className="border border-seal/40 py-2.5 text-seal">
-              {label} →
-            </Link>
+      {/* The free reading ends here; what comes next is chosen, not pushed. */}
+      <section className="doc-paper mt-6 px-5 pt-6 pb-5">
+        <p className="text-center font-myeongjo text-xs font-extrabold tracking-[0.4em] text-seal">更 深</p>
+        <h2 className="mt-1 text-center font-myeongjo text-lg font-extrabold">여기까지가 무료 풀이예요</h2>
+        <p className="mt-1 text-center text-[13px] text-ink-soft">더 알고 싶은 것이 있다면, 한 편에 {priceNow().toLocaleString("ko-KR")}원으로 깊이 풀어 드려요</p>
+        <ul className="mt-4 flex flex-col gap-2">
+          {NEXT.map(({ id, ask }, i) => (
+            <li key={id}>
+              <Link
+                href={`/reports/${id}${query ? `?${query}` : ""}`}
+                className={`flex items-center gap-3 rounded-2xl px-4 py-3 ${i === 0 ? "bg-seal text-hanji" : "border border-seal/25 bg-white/50"}`}
+              >
+                <span className="min-w-0 flex-1">
+                  <b className="block font-myeongjo">{productById(id)!.title}</b>
+                  <span className={`block text-[12px] ${i === 0 ? "text-hanji/80" : "text-ink-soft"}`}>{ask}</span>
+                </span>
+                <span className="shrink-0 text-sm font-bold">→</span>
+              </Link>
+            </li>
           ))}
-        </div>
-        <p className="mt-4 text-[11px] text-ink-soft/80">사주로 풀어 본 한 해의 흐름이에요. 큰 결정은 본인의 판단으로 내리세요.</p>
+        </ul>
+        <p className="mt-4 text-center text-[11px] text-ink-soft/80">사주로 풀어 본 한 해의 흐름이에요. 큰 결정은 본인의 판단으로 내리세요.</p>
       </section>
     </>
   );
