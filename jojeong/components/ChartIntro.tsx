@@ -9,6 +9,11 @@ const POS_ROLE = { 시: "자녀·말년", 일: "나·배우자", 월: "부모·�
 // from others with the same day pillar, in numbers the engine worked out (lib/rarity.ts).
 export default function ChartIntro({ name, d, slots }: { name: string; d: Distinct; slots: Slot[] }) {
   const top = d.patterns.filter((x) => x.rate < 0.3).slice(0, 4);
+  // "So what": what the rarest features mean in a life, in plain sentences (lib/patterns.ts), no writer
+  // involved. A personality one first, then the rarest from another area.
+  const lead = top.find((x) => x.area === "성격") ?? top[0];
+  const second = lead && top.find((x) => x.id !== lead.id && x.area !== lead.area);
+  const sowhat = [lead, second].filter((x): x is (typeof top)[number] => Boolean(x));
   // Each character's share of the whole weight: what the chart table below shows instead of 12.5% apiece.
   const known = slots.filter((s) => s.stem !== null);
   const total = known.reduce((a, s) => a + POS_WEIGHT.stem[s.pos] + POS_WEIGHT.branch[s.pos], 0);
@@ -97,6 +102,16 @@ export default function ChartIntro({ name, d, slots }: { name: string; d: Distin
                 </span>
               ))}
             </p>
+          )}
+          {sowhat.length > 0 && (
+            <div className="mt-4 rounded-2xl border-l-[3px] border-seal bg-seal/5 px-4 py-3">
+              <p className="text-xs font-extrabold text-seal">그래서 {name}님은</p>
+              {sowhat.map((x) => (
+                <p key={x.id} className="mt-1.5 text-[15px] leading-relaxed">
+                  {x.meaning}
+                </p>
+              ))}
+            </div>
           )}
           <p className="mt-3 text-[11px] leading-relaxed text-ink-soft">
             숫자는 1950~2008년의 모든 날, 모든 시간으로 세운 사주 25만여 개와 비교한 값이에요. 아래 보고서는 이 특징들을 바탕으로 썼어요.
