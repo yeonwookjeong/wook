@@ -317,12 +317,16 @@ async function OpenReport({
   const intro = distinct && <ChartIntro name={name} d={distinct} slots={reading.chart.slots} />;
   // Without gender or the hour, the remembered chart is simply entered again with them.
   // Folded: one line to add what was left blank. The birth date is asked again because it is never stored.
-  const meDeepen = me && !paid && (reading.missing.daeun || reading.missing.palaces) && (
+  // What the remembered chart lacks: gender (for 대운) and the birth hour. The palace chart is not kept in
+  // the cookie, so the hour is read from the chart itself.
+  const noGender = reading.missing.daeun;
+  const noHour = me ? me.person.pillars.hourBranch === null : reading.missing.palaces;
+  const meDeepen = me && !paid && (noGender || noHour) && (
     <details className="group doc-paper mt-4 px-5 py-4">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 [&::-webkit-details-marker]:hidden">
         <span>
           <b className="block font-myeongjo">
-            {reading.missing.daeun && reading.missing.palaces ? "성별·태어난 시각" : reading.missing.daeun ? "성별" : "태어난 시각"} 추가하기
+            {noGender && noHour ? "성별·태어난 시각" : noGender ? "성별" : "태어난 시각"} 추가하기
           </b>
           <span className="text-[12px] text-ink-soft">
             {locked ? "결제 전에 넣으면 10년 대운까지 넣어 써 드려요" : "넣으면 10년 대운까지 넣어 다시 써 드려요"}
