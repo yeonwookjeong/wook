@@ -315,16 +315,27 @@ async function OpenReport({
   const distinct = self ? distinctOf(pillars, profile?.gender ?? null) : null;
   const intro = distinct && <ChartIntro name={name} d={distinct} slots={reading.chart.slots} />;
   // Without gender or the hour, the remembered chart is simply entered again with them.
+  // Folded: one line to add what was left blank. The birth date is asked again because it is never stored.
   const meDeepen = me && !paid && (reading.missing.daeun || reading.missing.palaces) && (
-    <section className="doc-paper mt-6 px-6 pt-7 pb-6">
-      <h2 className="text-center font-myeongjo text-lg font-extrabold">더 깊이 봐 드릴 수 있어요</h2>
-      <p className="mt-2 mb-4 text-center text-sm leading-relaxed text-ink-soft">
-        {locked
-          ? "결제 전에 성별과 태어난 시각을 알려 주시면 10년 대운과 영역별 흐름까지 넣어 써 드려요."
-          : "성별과 태어난 시각을 알려 주시면 10년 대운과 영역별 흐름까지 넣어 다시 써 드려요."}
+    <details className="group doc-paper mt-4 px-5 py-4">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 [&::-webkit-details-marker]:hidden">
+        <span>
+          <b className="block font-myeongjo">
+            {reading.missing.daeun && reading.missing.palaces ? "성별·태어난 시각" : reading.missing.daeun ? "성별" : "태어난 시각"} 추가하기
+          </b>
+          <span className="text-[12px] text-ink-soft">
+            {locked ? "결제 전에 넣으면 10년 대운까지 넣어 써 드려요" : "넣으면 10년 대운까지 넣어 다시 써 드려요"}
+          </span>
+        </span>
+        <span className="shrink-0 text-ink-soft transition group-open:rotate-180" aria-hidden="true">
+          ▾
+        </span>
+      </summary>
+      <p className="mt-4 mb-4 rounded-xl bg-gold/10 px-3 py-2 text-[12px] leading-relaxed">
+        생년월일은 개인정보라 저장하지 않고 사주 글자만 기억해 둬요. 그래서 한 번만 다시 넣어 주세요.
       </p>
-      <MeForm next={next} submit="더 깊이 보기" />
-    </section>
+      <MeForm next={next} submit="넣고 다시 보기" defaultName={me.person.name} />
+    </details>
   );
   if (product.id === "gukjeong")
     return (
