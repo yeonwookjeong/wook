@@ -10,7 +10,7 @@ import { PRICE, priceNow, productById, SETS, type ProductId } from "@/lib/produc
 import { readingCount } from "@/lib/store";
 import { todayFor } from "@/lib/today";
 import { profileOf } from "@/lib/pairToken";
-import { isPreview, newYearOf, newYearProduct, thisYear, yearDetail } from "@/lib/yeonun";
+import { isPreview, newYearOf, newYearProduct, thisYear, yearDetail, yearName, yearNickname } from "@/lib/yeonun";
 
 // The main page, one path: the free reading first; in season, next year's 신년운세 as the flagship; then what
 // the visitor wants to know, as plain choices; then the free extras, folded into short rows. A buyer finds
@@ -83,7 +83,9 @@ export default async function Home() {
 
       {ny && nyProduct && (
         <RoyalDoc className="mt-5" paperClassName="px-5">
-          <p className="text-center text-xs font-extrabold text-seal">{isPreview(ny) ? "조금 이르지만, 내년을 미리" : "새해 준비 · 정 훈도의 신년운세"}</p>
+          <p className="text-center text-xs font-extrabold text-seal">
+            {ny} {yearName(ny).ko.replace("년", "")}년({yearName(ny).hanja}年) · {yearNickname(ny)}
+          </p>
           <div className="mt-2 flex items-center justify-center gap-3">
             <Seal hanja={nyProduct.hanja} />
             <h2 className="font-myeongjo text-2xl font-extrabold">{nyProduct.title}</h2>
@@ -97,13 +99,12 @@ export default async function Home() {
             </p>
           )}
           <ol className="mt-4 flex flex-col divide-y divide-seal/15 border-y-[3px] border-double border-seal/40 px-1 text-[14px]">
-            {nyProduct.toc.slice(0, 4).map((item, i) => (
+            {nyProduct.toc.map((item, i) => (
               <li key={item} className="flex gap-2 py-2">
-                <span className="font-myeongjo font-extrabold text-seal">{"一二三四"[i]}</span>
+                <span className="font-myeongjo font-extrabold text-seal">{"一二三四五六七八九"[i]}</span>
                 {item}
               </li>
             ))}
-            <li className="py-2 text-center text-xs text-ink-soft">그리고 {nyProduct.toc.length - 4}장 더</li>
           </ol>
           <p className="mt-3 text-center text-[12px] text-ink-soft">
             {ny}년 판정과 달마다 흐름은 무료로 먼저 · 한 해 전체 풀이 <Price />
