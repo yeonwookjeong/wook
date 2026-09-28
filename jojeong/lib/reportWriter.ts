@@ -7,6 +7,7 @@ import { coupleBrief } from "./couple";
 import { decodePerson, profileOf, RELATIONS, relationOf } from "./pairToken";
 import { ADULT_ONLY, FIXED_RELATION, isAdult, isPair, productById, type ProductId } from "./products";
 import { intimacyBrief } from "./intimacy";
+import { reunionBrief } from "./reunion";
 import { decadeBrief, decadeOf, domainBrief, isDomain } from "./domains";
 import { REPORT_SPECS, systemPromptFor, userPrompt } from "./reportPrompts";
 import type { Gender } from "./profile";
@@ -54,6 +55,7 @@ export async function jobFor(req: JobRequest): Promise<ReportJob | { error: stri
       pairBrief(a.name, a.pillars, b.name, b.pillars),
       coupleBrief(a, b),
       ...(product.id === "sokgunghap" ? [intimacyBrief(a, b)] : []),
+      ...(product.id === "jaehoe" ? [reunionBrief(a, b)] : []),
     ].join("\n\n");
   } else if (product.id === "gwangye" || product.id === "dwitjosa" || product.id === "insa") {
     if (!req.court) return { error: "조정을 찾을 수 없사옵니다.", status: 400 };

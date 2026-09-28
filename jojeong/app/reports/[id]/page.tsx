@@ -6,12 +6,15 @@ import AiReport from "@/components/AiReport";
 import ChartIntro from "@/components/ChartIntro";
 import GunghapForm from "@/components/GunghapForm";
 import MeForm from "@/components/MeForm";
+import IntimacyIntro from "@/components/IntimacyIntro";
 import PairIntro from "@/components/PairIntro";
+import ReunionIntro from "@/components/ReunionIntro";
 import TaekilForm from "@/components/TaekilForm";
 import TaekilResult from "@/components/TaekilResult";
 import Paywall from "@/components/Paywall";
 import OrderLink from "@/components/OrderLink";
 import DecadeTable from "@/components/DecadeTable";
+import DomainCard from "@/components/DomainCard";
 import DeepenForm from "@/components/DeepenForm";
 import Keep from "@/components/Keep";
 import RoyalDoc from "@/components/RoyalDoc";
@@ -23,10 +26,12 @@ import { ownedCourts } from "@/lib/load";
 import { ADULT_ONLY, FIXED_RELATION, isAdult, isOpen, isPair, OPEN_ALL, PRICE, productById, saleLabel, saleNow, type Product, type ProductId } from "@/lib/products";
 import { REPORT_SPECS } from "@/lib/reportPrompts";
 import { coupleOf } from "@/lib/couple";
+import { intimacyOf } from "@/lib/intimacy";
+import { reunionOf } from "@/lib/reunion";
 import { forgetMeAction } from "@/app/actions";
 import { readMe } from "@/lib/me";
 import { decodePerson, profileOf, relationOf } from "@/lib/pairToken";
-import { decadeOf, isDomain } from "@/lib/domains";
+import { decadeOf, domainCard, isDomain } from "@/lib/domains";
 import { distinctOf } from "@/lib/rarity";
 import { courtOfReader, subjectFor } from "@/lib/subject";
 import { getProfile } from "@/lib/store";
@@ -72,6 +77,13 @@ function Notice({ children, href, cta }: { children: React.ReactNode; href?: str
 
 const chaptersOf = (id: ProductId) => REPORT_SPECS[id]?.chapters ?? [];
 
+// What a two-person report shows free, before the written part.
+const PAIR_FREE: Partial<Record<ProductId, string>> = {
+  gunghap: "궁합 점수와 서로에게 어떤 사람인지는 무료로 바로 보여 드려요",
+  sokgunghap: "두 사람의 애정 온도 유형과 끌림의 표시는 무료로 바로 보여 드려요",
+  jaehoe: "두 사람 사이에 남은 끈과 다시 닿기 좋은 해는 무료로 바로 보여 드려요",
+};
+
 // Every report, open in full (무료 공개 기간, a free report, or a bought one). A present-day report on sale
 // (`locked`) shows everything computed for free and puts the payment where the written report would start;
 // a paid order (`paid`, from its link) or one this browser bought for the same chart opens it.
@@ -111,7 +123,8 @@ async function OpenReport({
         <>
           <Header product={product} />
           <section className="doc-paper mt-4 px-5 pt-6 pb-6">
-            <p className="mb-4 text-center text-sm leading-relaxed text-ink-soft">{product.teaser}</p>
+            <p className="text-center text-sm leading-relaxed text-ink-soft">{product.teaser}</p>
+            {locked ? <p className="mt-2 mb-4 text-center text-[13px] font-bold text-seal">가장 좋은 날 세 개와 그 이유는 무료로 바로 보여 드려요</p> : <div className="mb-4" />}
             <TaekilForm savedName={saved} months={startMonths()} />
           </section>
         </>
@@ -124,14 +137,20 @@ async function OpenReport({
       <>
         <Header product={product} subjectName={b ? `${a.name}님과 ${b.name}님` : `${a.name}님`} />
         {unlock && <OrderLink id={unlock.id} />}
-        <TaekilResult kind={found.kind} days={days} label={found.label} full={!locked || Boolean(unlock)} />
+        <TaekilResult kind={found.kind} days={days} label={found.label} names={b ? `${a.name}님과 ${b.name}님` : `${a.name}님`} full={!locked || Boolean(unlock)} />
         {locked && !unlock && (
           <Paywall
             product={product}
             request={req}
-            chapters={["기간 전체 택일 달력 (◎ ○ △)", "써도 좋은 날 모두와 날짜별 이유", "날마다 좋은 시간대", "사주와 부딪히는 날 표시"]}
+            chapters={[
+              "기간 전체 택일 달력 (◎ ○ △)",
+              ...(found.kind === "open" ? [] : ["주말에 잡을 수 있는 좋은 날"]),
+              "써도 좋은 날 모두와 날짜마다 좋은 이유",
+              "날마다 좋은 시간대",
+              "책력에는 좋다는데 사주와 부딪혀 빼 둔 날",
+            ]}
             heading="기간 전체 택일 달력"
-            sub="좋은 날 세 개 말고도, 기간 안의 모든 날을 풀어 드려요"
+            sub="세 날이 사정에 안 맞을 때, 기간 안의 다른 좋은 날을 모두 이유와 함께 보여 드려요"
           />
         )}
         <Link href="/reports/taekil" className="mt-6 block border border-seal/40 py-3 text-center text-sm font-bold text-seal">
@@ -152,7 +171,8 @@ async function OpenReport({
         <>
           <Header product={product} />
           <section className="doc-paper mt-4 px-5 pt-6 pb-6">
-            <p className="mb-4 text-center text-sm leading-relaxed text-ink-soft">{product.teaser}</p>
+            <p className="text-center text-sm leading-relaxed text-ink-soft">{product.teaser}</p>
+            {locked ? <p className="mt-2 mb-4 text-center text-[13px] font-bold text-seal">{PAIR_FREE[product.id]}</p> : <div className="mb-4" />}
             <GunghapForm savedName={saved} product={product.id} />
           </section>
         </>
@@ -160,13 +180,17 @@ async function OpenReport({
     }
     if (ADULT_ONLY.includes(product.id) && !(isAdult(a.birthYear) && isAdult(b.birthYear)))
       return (<><Header product={product} /><Notice href={`/reports/${product.id}`} cta="다시 입력하기">만 19세 이상 두 사람만 볼 수 있는 보고서예요.</Notice></>);
-    const couple = coupleOf(a, b);
+    const couple = product.id === "gunghap" ? coupleOf(a, b) : null;
+    const closeness = product.id === "sokgunghap" ? intimacyOf(a, b) : null;
+    const reunion = product.id === "jaehoe" ? reunionOf(a, b) : null;
     const req = { product: product.id, a: pair.a, b: pair.b, rel: FIXED_RELATION[product.id] ?? relationOf(pair.rel) };
     const unlock = paid ?? (locked ? await ownedOrderFor(product.id, req) : null);
     return (
       <>
         <Header product={product} subjectName={`${a.name}님과 ${b.name}님`} />
         {couple && <PairIntro a={a} b={b} c={couple} />}
+        {closeness && <IntimacyIntro a={a} b={b} x={closeness} />}
+        {reunion && <ReunionIntro a={a} b={b} r={reunion} />}
         {locked && !unlock ? (
           <Paywall
             product={product}
@@ -366,11 +390,35 @@ async function OpenReport({
   if (!self)
     return (<><Header product={product} /><Notice>본인의 사주로만 열 수 있는 보고서예요.</Notice></>);
   const unlock = paid ?? (locked ? await ownedOrderFor(product.id, { product: product.id, p: me?.token }) : null);
+  const domain = isDomain(product.id) ? product.id : null;
+  const gender = me ? me.person.gender : (profile?.gender ?? null);
+  const card = domain && domainCard(domain, pillars, gender);
   return (
     <>
       <Header product={product} subjectName={`${name}님`} />
       {other}
-      {intro}
+      {domain && card ? (
+        <>
+          <DomainCard name={name} domain={domain} card={card} />
+          <DecadeTable name={name} domain={domain} years={decadeOf(domain, pillars, gender)} locked={locked && !unlock} />
+          {intro && (
+            <details className="group mt-4">
+              <summary className="doc-paper flex cursor-pointer list-none items-center justify-between px-5 py-4 [&::-webkit-details-marker]:hidden">
+                <span>
+                  <b className="block font-myeongjo">내 사주 전체 분석 보기</b>
+                  <span className="text-[12px] text-ink-soft">여덟 글자의 무게, 드문 특징 · 평생 사주와 같은 무료 분석</span>
+                </span>
+                <span className="text-ink-soft transition group-open:rotate-180" aria-hidden="true">
+                  ▾
+                </span>
+              </summary>
+              {intro}
+            </details>
+          )}
+        </>
+      ) : (
+        intro
+      )}
       <details className="group doc-paper mt-4 px-5 py-4">
         <summary className="flex cursor-pointer list-none items-center justify-between [&::-webkit-details-marker]:hidden">
           <span className="font-myeongjo font-extrabold">사주 원국 · 여덟 글자 보기</span>
@@ -380,14 +428,6 @@ async function OpenReport({
         </summary>
         <SajuChart {...reading.chart} kingdom={false} />
       </details>
-      {isDomain(product.id) && (
-        <DecadeTable
-          name={name}
-          domain={product.id}
-          years={decadeOf(product.id, pillars, me ? me.person.gender : (profile?.gender ?? null))}
-          locked={locked && !unlock}
-        />
-      )}
       {locked && !unlock ? (
         // A bought report is written for exactly this chart, so the missing details come before the payment.
         <>

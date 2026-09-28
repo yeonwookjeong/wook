@@ -1,6 +1,6 @@
 import { Solar } from "lunar-javascript";
 import { meetings } from "./deep";
-import { BRANCH_EL, ELEMENT_KO, readChart, stemEl } from "./myeongri";
+import { BRANCH_EL, ELEMENT_HANJA, ELEMENT_KO, readChart, stemEl } from "./myeongri";
 import type { Person } from "./pairToken";
 import { BRANCHES, STEMS } from "./saju";
 import { KINDS, kindOf, SPANS, type Kind } from "./taekilKinds";
@@ -26,12 +26,42 @@ const SPIRIT_KO: Record<string, string> = {
   勾陈: "구진",
 };
 const OFFICER_KO: Record<string, string> = { 建: "건", 除: "제", 满: "만", 平: "평", 定: "정", 执: "집", 破: "파", 危: "위", 成: "성", 收: "수", 开: "개", 闭: "폐" };
+// The almanac library writes the officers in simplified characters; the page shows the traditional ones.
+const OFFICER_HANJA: Record<string, string> = { 满: "滿", 执: "執", 开: "開", 闭: "閉" };
 // 건제십이신 for undertakings: 成·开 the best, 定·除·满 good, 破·闭 to avoid.
 const OFFICER_SCORE: Record<string, number> = { 成: 2, 开: 2, 定: 1, 除: 1, 满: 1, 破: -3, 闭: -2 };
+
+// What each sign means, in plain words, for the reader who has never opened a 책력.
+const SPIRIT_WHY: Record<string, string> = {
+  청룡: "청룡(靑龍)이 지키는 황도일이에요. 무슨 일이든 막힘없이 시작된다고 봐서, 황도일 가운데서도 첫손에 꼽는 날이에요.",
+  명당: "명당(明堂)이 드는 황도일이에요. 귀한 사람이 돕고 일이 밝게 드러난다고 보는 날이에요.",
+  금궤: "금궤(金匱), 곧 재물 창고를 지키는 신이 드는 황도일이에요. 살림을 차리고 재물을 들이는 일에 특히 좋다고 봐요.",
+  천덕: "천덕(天德)이 드는 황도일이에요. 하늘의 덕이 궂은 기운을 막아 준다고 보는 날이에요.",
+  옥당: "옥당(玉堂)이 드는 황도일이에요. 집과 문서, 이름을 얻는 일에 좋은 날로 쳐요.",
+  사명: "사명(司命)이 드는 황도일이에요. 일이 뜻대로 풀린다고 보고, 특히 낮 시간이 좋아요.",
+  천형: "형벌의 신 천형(天刑)이 드는 흑도일이에요. 다툼이나 법적인 일이 생기기 쉽다고 봐요.",
+  주작: "주작(朱雀)이 드는 흑도일이에요. 말실수와 구설을 조심하라는 날이에요.",
+  백호: "백호(白虎)가 드는 흑도일이에요. 다치거나 부딪히는 일을 조심하라는 날이에요.",
+  천뢰: "천뢰(天牢)가 드는 흑도일이에요. 일이 묶이고 더뎌지기 쉽다고 봐요.",
+  현무: "현무(玄武)가 드는 흑도일이에요. 잃어버리거나 속는 일을 조심하라는 날이에요.",
+  구진: "구진(勾陳)이 드는 흑도일이에요. 일이 얽히고 늦어지기 쉽다고 봐요.",
+};
+const OFFICER_WHY: Record<string, string> = {
+  成: "성일(成日)은 건제십이신에서 '일이 이루어지는 날'이에요. 결혼·개업·계약처럼 무언가를 맺는 일에 가장 좋은 날로 쳐요.",
+  开: "개일(開日)은 '문이 열리는 날'이에요. 새 출발, 가게 문 열기, 새 집 들어가기에 좋은 날로 쳐요.",
+  定: "정일(定日)은 '자리가 정해지는 날'이에요. 오래 갈 약속, 계약, 입주처럼 자리를 잡는 일에 좋아요.",
+  除: "제일(除日)은 '묵은 것을 덜어 내는 날'이에요. 옛것을 정리하고 새로 시작하는 일과 잘 맞아요.",
+  满: "만일(滿日)은 '가득 차는 날'이에요. 재물과 복이 들어차기를 바라는 일에 좋다고 봐요.",
+  破: "파일(破日)은 '깨지는 날'이에요. 무언가를 새로 맺는 일은 피하라고 해요.",
+  闭: "폐일(閉日)은 '닫히는 날'이에요. 새로 여는 일에는 맞지 않다고 봐요.",
+};
 const XIU_KO: Record<string, string> = {
   角: "각", 亢: "항", 氐: "저", 房: "방", 心: "심", 尾: "미", 箕: "기", 斗: "두", 牛: "우", 女: "여", 虚: "허", 危: "위", 室: "실", 壁: "벽",
   奎: "규", 娄: "루", 胃: "위", 昴: "묘", 毕: "필", 觜: "자", 参: "삼", 井: "정", 鬼: "귀", 柳: "류", 星: "성", 张: "장", 翼: "익", 轸: "진",
 };
+
+// One sign on a day: the short tag and what it means.
+export type Note = { tag: string; why: string };
 
 export type DayPick = {
   date: string; // YYYY-MM-DD
@@ -41,8 +71,8 @@ export type DayPick = {
   fit: boolean; // the almanac allows this undertaking on this day
   score: number;
   grade: 2 | 1 | 0 | -1; // ◎ 길일 · ○ 무난 · △ 애매 · ✕ 피할 날 (or not suited)
-  reasons: string[];
-  warns: string[];
+  reasons: Note[];
+  warns: Note[];
   hours: string[];
   weekend: boolean;
 };
@@ -69,50 +99,71 @@ export function pickDays(kind: Kind, people: Person[], from: { y: number; m: num
     const stem = STEMS.indexOf(l.getDayGan() as (typeof STEMS)[number]);
     const branch = BRANCHES.indexOf(l.getDayZhi() as (typeof BRANCHES)[number]);
     const fit = k.yi.some((x) => yi.includes(x)) && !k.yi.some((x) => ji.includes(x));
-    const reasons: string[] = [];
-    const warns: string[] = [];
+    const reasons: Note[] = [];
+    const warns: Note[] = [];
     let score = 0;
 
     const spirit = SPIRIT_KO[l.getDayTianShen()] ?? l.getDayTianShen();
+    const spiritNote = { tag: "", why: SPIRIT_WHY[spirit] ?? "" };
     if (l.getDayTianShenType() === "黄道") {
       score += 2;
-      reasons.push(`황도일(${spirit})`);
+      reasons.push({ ...spiritNote, tag: `황도일(${spirit})` });
     } else {
       score -= 2;
-      warns.push(`흑도일(${spirit})`);
+      warns.push({ ...spiritNote, tag: `흑도일(${spirit})` });
     }
     const officer = l.getZhiXing();
     const os = OFFICER_SCORE[officer] ?? 0;
     score += os;
-    if (os > 0) reasons.push(`${OFFICER_KO[officer]}일(${officer}日)`);
-    if (os < 0) warns.push(`${OFFICER_KO[officer]}일(${officer}日)`);
+    const officerNote = { tag: `${OFFICER_KO[officer]}일(${OFFICER_HANJA[officer] ?? officer}日)`, why: OFFICER_WHY[officer] ?? "" };
+    if (os > 0) reasons.push(officerNote);
+    if (os < 0) warns.push(officerNote);
     const xiu = l.getXiu();
     if (l.getXiuLuck() === "吉") {
       score += 1;
-      reasons.push(`${XIU_KO[xiu] ?? xiu}수(${xiu}宿)`);
+      const name = XIU_KO[xiu] ?? xiu;
+      reasons.push({ tag: `${name}수(${xiu}宿)`, why: `그날 하늘을 지키는 28수 별자리가 길한 별인 ${name}수(${xiu}宿)예요. 옛 책력은 별자리까지 좋은 날에 한 번 더 점수를 줬어요.` });
     } else score -= 1;
     if (kind === "move" && [9, 0].includes(l.getDay() % 10)) {
       score += 2;
-      reasons.push("손 없는 날");
+      reasons.push({ tag: "손 없는 날", why: "음력 날짜의 끝자리가 9나 0인 '손 없는 날'이에요. 사람을 따라다니며 해코지한다는 손(귀신)이 어느 방향에도 없다고 해서, 예부터 이사 날로 가장 많이 골라요." });
     }
 
+    // The 일지 is the spouse seat for a wedding, and one's own ground for anything else.
+    const seat = kind === "wedding" ? "배우자 자리(일지)" : "내 자리(일지)";
     for (const { p, r } of reads) {
       const who = people.length > 1 ? `${p.name}님 ` : "";
       const toSeat = meetings(branch, p.pillars.dayBranch);
       if (toSeat.includes("충")) {
         score -= 3;
-        warns.push(`${who}배우자 자리(일지)와 충`);
+        warns.push({
+          tag: `${who}${seat}와 충`,
+          why:
+            kind === "wedding"
+              ? `${p.name}님의 배우자 자리와 정면으로 부딪히는(충) 날이에요. 관계를 맺는 결혼 날로는 빼 두는 게 좋아요.`
+              : `${p.name}님 사주의 중심 자리와 정면으로 부딪히는(충) 날이에요. 몸과 마음이 어수선해지기 쉬워 큰일은 피하는 편이 좋아요.`,
+        });
       } else if (toSeat.includes("육합")) {
         score += 1;
-        reasons.push(`${who}일지와 육합`);
+        reasons.push({
+          tag: `${who}일지와 육합`,
+          why:
+            kind === "wedding"
+              ? `그날의 기운이 ${p.name}님의 배우자 자리와 짝을 이뤄요(육합). 곁에 있는 사람과의 인연을 단단히 묶어 주는 날로 봐요.`
+              : `그날의 기운이 ${p.name}님 사주의 중심 자리와 짝을 이뤄요(육합). 나와 손발이 맞는 날이라 일이 순하게 풀리기 쉬워요.`,
+        });
       }
       if (meetings(branch, p.pillars.yearBranch).includes("충")) {
         score -= 2;
-        warns.push(`${who}띠와 충`);
+        warns.push({ tag: `${who}띠와 충`, why: `${p.name}님의 띠와 부딪히는 날(띠충)이에요. 옛날부터 큰일은 피하라고 한 날이에요.` });
       }
       if (r && (stemEl(stem) === r.yong || BRANCH_EL[branch] === r.yong)) {
         score += 1;
-        reasons.push(`${who}필요한 ${ELEMENT_KO[r.yong]} 기운`);
+        const el = `${ELEMENT_KO[r.yong]}(${ELEMENT_HANJA[r.yong]})`;
+        reasons.push({
+          tag: `${who}필요한 ${ELEMENT_KO[r.yong]} 기운`,
+          why: `${p.name}님 사주에 가장 필요한 ${el} 기운이 그날 들어와요. 모자란 기운이 채워지는 날에 시작한 일은 힘을 덜 들이고 풀린다고 봐요.`,
+        });
       }
     }
 
@@ -124,9 +175,17 @@ export function pickDays(kind: Kind, people: Person[], from: { y: number; m: num
         const b = BRANCHES.indexOf(t.getZhi() as (typeof BRANCHES)[number]);
         return t.getTianShenType() === "黄道" && h >= 7 && h <= 19 && !people.some((p) => meetings(b, p.pillars.dayBranch).includes("충"));
       })
-      .map((t) => `${t.getMinHm()}~${Number(t.getMaxHm().slice(0, 2)) + 1}:00`.replace(/^0/, ""));
+      .map((t) => [Number(t.getMinHm().slice(0, 2)), Number(t.getMaxHm().slice(0, 2)) + 1])
+      // Back-to-back hours read as one span: 7:00~11:00, not 7:00~9:00, 9:00~11:00.
+      .reduce<number[][]>((acc, [from, to]) => {
+        const last = acc.at(-1);
+        if (last && last[1] === from) last[1] = to;
+        else acc.push([from, to]);
+        return acc;
+      }, [])
+      .map(([from, to]) => `${from}:00~${to}:00`);
 
-    const clashes = warns.some((w) => w.includes("충"));
+    const clashes = warns.some((w) => w.tag.includes("충"));
     const grade: DayPick["grade"] = !fit || (kind === "wedding" && clashes) ? -1 : score >= 4 ? 2 : score >= 1 ? 1 : score >= -1 ? 0 : -1;
     const week = day.getWeek();
     out.push({
@@ -154,6 +213,25 @@ export function bestDays(days: DayPick[], kind: Kind, n = 3): DayPick[] {
     .sort((a, b) => b.score - a.score || (kind === "wedding" ? Number(b.weekend) - Number(a.weekend) : 0) || a.date.localeCompare(b.date))
     .slice(0, n);
 }
+
+// One line on why the day stands where it does.
+export function verdictOf(d: DayPick, kind: Kind): string {
+  const mine = d.reasons.filter((r) => /일지|기운/.test(r.tag)).length;
+  const head = d.fit ? `책력이 ${KINDS[kind].label}에 맞다고 한 날이고, 좋은 표시 ${d.reasons.length}가지가 겹쳐요.` : `책력이 ${KINDS[kind].label}에는 권하지 않는 날이에요.`;
+  const personal = mine ? " 사주에도 보탬이 되는 날이에요." : "";
+  const tail = d.warns.length ? ` 다만 걸리는 표시도 ${d.warns.length}가지 있어요(${d.warns.map((w) => w.tag).join(", ")}).` : " 걸리는 표시가 하나도 없어요.";
+  return head + personal + tail;
+}
+
+// Days the almanac allows but the chart(s) rule out, with the reason: what a plain calendar would have offered.
+export const ruledOut = (days: DayPick[]) => days.filter((d) => d.fit && d.grade === -1 && d.warns.some((w) => w.tag.includes("충")));
+
+// Good days on a weekend, best first (a wedding or a move usually needs one).
+export const weekendBest = (days: DayPick[], n = 5) =>
+  days
+    .filter((d) => d.weekend && d.grade >= 1)
+    .sort((a, b) => b.score - a.score || a.date.localeCompare(b.date))
+    .slice(0, n);
 
 // The months a search may start from: this month and the next eleven.
 export function startMonths(now = new Date()): { value: string; label: string }[] {
