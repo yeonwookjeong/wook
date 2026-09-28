@@ -86,6 +86,25 @@ export function elScore(r: Reading, e: number) {
   return 0;
 }
 
+// How welcome a ten-year luck pillar is. The branch carries the decade, so it weighs twice the stem. Beyond the
+// 용신 and 기신, the 억부 direction decides: a strong day master welcomes what drains or restrains it and not
+// more of itself or its backers, a weak one the reverse (elScore alone counts the 희신 as help, which for a
+// strong chart is more of the day master's own metal). 종격 follows its own 용신. About −9…9.
+export function luckFit(r: Reading, dayStem: number, stem: number, branch: number): number {
+  const me = stemEl(dayStem);
+  const strong = r.strength === "신강" || r.strength === "극신강";
+  const one = (e: number) => {
+    if (r.method === "종격") return elScore(r, e);
+    const backs = e === me || e === (me + 4) % 5; // 비겁, 인성
+    let s = strong ? (backs ? -1 : 1) : backs ? 1 : -1;
+    if (e === r.yong) s += 1;
+    if (e === r.gi) s -= 1;
+    if (r.johu !== null && e === r.johu) s += 1;
+    return s;
+  };
+  return one(stemEl(stem)) + 2 * one(BRANCH_EL[branch]);
+}
+
 function natalBranches(p: FullPillars) {
   return chartOf(p)
     .filter((s) => s.branch !== null)
@@ -269,7 +288,7 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
   // ── 대운
   if (now) {
     const g = GROUP_OF[tenGod(p.dayStem, now.stem)];
-    const fit = elScore(r, stemEl(now.stem)) + elScore(r, BRANCH_EL[now.branch]);
+    const fit = luckFit(r, p.dayStem, now.stem, now.branch);
     const turning = now.to === 2026 || now.from === 2026;
     sections.push({
       id: "daeun",
@@ -282,7 +301,7 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
         : `${now.from}년부터 이어진 ${g}의 10년, 그 한가운데를 지나고 있어요`,
       paras: [
         `지금의 대운은 ${STEMS[now.stem]}${BRANCHES[now.branch]}(${now.from}~${now.to}년)이에요. ${DAEUN_GROUP[g]}`,
-        fit >= 2 ? DAEUN_FIT.good : fit <= -2 ? DAEUN_FIT.bad : DAEUN_FIT.mid,
+        fit >= 3 ? DAEUN_FIT.good : fit <= -3 ? DAEUN_FIT.bad : DAEUN_FIT.mid,
         ...(turning && next
           ? [
               `${next.from}년부터는 ${STEMS[next.stem]}${BRANCHES[next.branch]} 대운으로 넘어가요. ${DAEUN_GROUP[GROUP_OF[tenGod(p.dayStem, next.stem)]].replace("지금은", "앞으로는").replace("지나고 있어요", "맞게 돼요")} 대운이 바뀌는 해 앞뒤로는 이사, 이직, 관계처럼 삶의 판이 흔들리기 쉬우니, 버릴 것과 가져갈 것을 올해 가려 두세요.`,

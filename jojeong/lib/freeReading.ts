@@ -1,10 +1,10 @@
 import { domainCard, DOMAINS, type Domain, type DomainCard } from "./domains";
 import { isBaekho, isGoegang, salsAt, type Sal } from "./deep";
-import { BRANCH_EL, chartOf, GROUP_OF, readChart, stemEl, tenGod, type GodGroup } from "./myeongri";
+import { chartOf, GROUP_OF, HIDDEN, readChart, tenGod, type GodGroup } from "./myeongri";
 import type { Profile } from "./profile";
 import { godRank, patternRate } from "./rarity";
 import { isFull, type Pillars } from "./saju";
-import { elScore } from "./yearly";
+import { luckFit } from "./yearly";
 
 // The free reading's extra blocks, computed only (no writer, no cost): what the chart is, in numbers and one-line
 // verdicts. The paid reports tell how it plays out and when; these say what it is.
@@ -52,14 +52,22 @@ const SAL: Partial<Record<Sal | "괴강" | "백호", { plain: string; line: stri
   백호: { plain: "강한 추진력", line: "밀어붙이는 힘이 큰 만큼 급한 일과 부상은 조심해야 해요.", id: "baekho" },
 };
 
-// ④ 인생 흐름: each ten-year luck pillar as uphill, level or a time to rest, with what the decade is about.
-const DECADE_OF: Record<GodGroup, string> = {
-  비겁: "내 힘으로 밀고 나가는 10년",
-  식상: "재주를 펼치는 10년",
-  재성: "돈과 현실을 쌓는 10년",
-  관성: "자리와 책임이 커지는 10년",
-  인성: "배우고 준비하는 10년",
+// ④ 인생 흐름: each ten-year luck pillar, graded by how welcome it is (lib/yearly.ts luckFit) and named by what its
+// branch brings, which carries the decade, in words for the age it falls in.
+type Stage = "young" | "adult" | "late";
+const DECADE_OF: Record<GodGroup, Record<Stage, string>> = {
+  비겁: { young: "친구·형제와 부대끼며 자란 시기", adult: "내 힘으로 서고 독립하는 10년", late: "내 뜻대로 사는 10년" },
+  식상: { young: "재주와 끼가 드러난 시기", adult: "재주를 펼치고 결과를 내는 10년", late: "쌓은 것을 나누는 10년" },
+  재성: { young: "집안 형편과 환경이 크게 작용한 시기", adult: "돈과 기회를 잡는 10년", late: "모은 것을 지키고 굴리는 10년" },
+  관성: { young: "규칙과 기대 속에서 자란 시기", adult: "자리와 책임이 커지는 10년", late: "이름과 자리를 지키는 10년" },
+  인성: { young: "공부와 보살핌 속에 자란 시기", adult: "배우고 자격을 쌓는 10년", late: "마음이 편안해지는 10년" },
 };
+export const MOODS = {
+  기회: "사주에 필요한 기운이 들어와 힘이 붙는 10년",
+  무난: "좋고 나쁨이 섞여 흐름이 고른 10년",
+  다지기: "버거운 기운이 겹쳐, 크게 벌이기보다 기반을 다질 10년",
+} as const;
+export type Mood = keyof typeof MOODS;
 
 export type FreeReading = {
   powers: { group: GodGroup; name: string; pct: number; rank: string | null }[];
@@ -67,7 +75,7 @@ export type FreeReading = {
   weak: { name: string; line: string };
   sals: { name: string; plain: string; line: string; rate: number | null }[];
   domains: { domain: Domain; card: DomainCard }[];
-  flow: { from: number; to: number; age: string; mood: "오르막" | "평지" | "쉬어 갈 때"; theme: string; now: boolean }[] | null;
+  flow: { from: number; to: number; age: string; mood: Mood; theme: string; now: boolean; past: boolean }[] | null;
 };
 
 export function freeReadingOf(p: Pillars, profile: Profile | null, now = 2026): FreeReading | null {
@@ -101,15 +109,18 @@ export function freeReadingOf(p: Pillars, profile: Profile | null, now = 2026): 
   const by = profile?.birthYear;
   const flow = profile?.daeun?.length
     ? profile.daeun.map((d) => {
-        const fit = elScore(r, stemEl(d.stem)) + elScore(r, BRANCH_EL[d.branch]);
-        const g = GROUP_OF[tenGod(p.dayStem, d.stem)];
+        const fit = luckFit(r, p.dayStem, d.stem, d.branch);
+        const g = GROUP_OF[tenGod(p.dayStem, HIDDEN[d.branch].at(-1)![0])];
+        const age = by ? d.from - by : 30;
+        const stage: Stage = age < 18 ? "young" : age < 60 ? "adult" : "late";
         return {
           from: d.from,
           to: d.to,
           age: by ? `${d.from - by}~${d.to - by}세` : "",
-          mood: fit >= 2 ? ("오르막" as const) : fit <= -2 ? ("쉬어 갈 때" as const) : ("평지" as const),
-          theme: DECADE_OF[g],
+          mood: fit >= 3 ? ("기회" as const) : fit <= -3 ? ("다지기" as const) : ("무난" as const),
+          theme: DECADE_OF[g][stage],
           now: d.from <= now && now <= d.to,
+          past: d.to < now,
         };
       })
     : null;
