@@ -31,7 +31,7 @@ export default function Paywall({
       <p className="mt-1 text-center text-xs text-ink-soft">{sub}</p>
       <ol className="mt-4 flex flex-col divide-y divide-seal/15 border-y-[3px] border-double border-seal/40 px-1">
         {chapters.map((item, i) => (
-          <li key={item} className="flex items-center gap-2 py-2 text-[15px]">
+          <li key={item} className="flex items-center gap-2 py-2 text-left text-[15px]">
             <span className="font-myeongjo font-extrabold text-seal">{i < 9 ? "一二三四五六七八九"[i] : i + 1}</span>
             <span className="flex-1">{item}</span>
             <span className="text-xs text-ink-soft" aria-label="잠김">
