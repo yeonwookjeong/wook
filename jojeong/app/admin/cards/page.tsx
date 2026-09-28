@@ -591,7 +591,7 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
     ];
     return (
       <Frame>
-        <div style={{ position: "absolute", top: 110, left: 96, right: 96 }}>
+        <div style={{ position: "absolute", top: 150, left: 96, right: 96 }}>
           <div style={{ textAlign: "center" }}>
             <Label>훈도사주에서 볼 수 있는 것</Label>
             <p style={{ marginTop: 14, fontSize: 64, fontWeight: 800 }}>무엇이 궁금하시옵니까</p>
@@ -604,11 +604,7 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
               </div>
             ))}
           </div>
-          <div className="doc-paper" style={{ marginTop: 18, padding: "22px 30px", display: "flex", alignItems: "center", gap: 20 }}>
-            <span style={{ flexShrink: 0, padding: "6px 16px", background: SEAL, color: HANJI, fontSize: 26, fontWeight: 800 }}>무료</span>
-            <span style={{ fontSize: 26, lineHeight: 1.45, fontFamily: sans }}>사주 분석과 올해 운세 · 삼재 · 왕이 될 사주 · 조선 신분 감정</span>
-          </div>
-          <p style={{ marginTop: 26, textAlign: "center", fontSize: 28, color: SOFT }}>새로 익히는 대로, 하나씩 더 올리겠사옵니다</p>
+          <p style={{ marginTop: 40, textAlign: "center", fontSize: 30, color: SOFT }}>새로 익히는 대로, 하나씩 더 올리겠사옵니다</p>
         </div>
         <Brand />
       </Frame>
@@ -636,7 +632,7 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
       </div>
       <Hundo src="/hundo-bow.png" size={230} bottom={385} />
       <div style={{ position: "absolute", left: 150, right: 150, bottom: 200, paddingTop: 26, borderTop: "1.5px solid rgba(212,175,95,.45)", textAlign: "center" }}>
-        <p style={{ fontSize: 31, lineHeight: 1.55, color: GOLD, fontWeight: 800 }}>매일 한 분씩, 오늘 태어난 인물의 사주를 올리옵니다</p>
+        <p style={{ fontSize: 31, lineHeight: 1.55, color: GOLD, fontWeight: 800 }}>역사 속 인물의 사주를 꾸준히 올리옵니다</p>
         <p style={{ marginTop: 4, fontSize: 29, color: "rgba(244,236,219,.85)" }}>저장해 두고 팔로우하시옵소서</p>
       </div>
       <Brand dark />
