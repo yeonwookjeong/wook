@@ -251,9 +251,16 @@ export function newYearOf(now = new Date()): number | null {
   const m = kst.getUTCMonth() + 1;
   return m >= 9 ? kst.getUTCFullYear() + 1 : m <= 2 ? kst.getUTCFullYear() : null;
 }
-// The 연운 product dressed as that year's 신년운세, for its header.
-export function newYearProduct<T extends { title: string; hanja: string; tagline: string }>(product: T, y: number): T {
-  return { ...product, title: `${y} 신년운세`, hanja: yearName(y).hanja, tagline: `${y}년 나한테 어떤 일이 생길까? 돈·일·사랑·몸부터 달마다 할 일까지` };
+// The 연운 product dressed as that year's 신년운세, for its header. Before the year begins it is a preview
+// ("미리 보는"), said plainly so an early reader knows it is early on purpose.
+export const isPreview = (y: number, now = new Date()) => thisYear(now) < y;
+export function newYearProduct<T extends { title: string; hanja: string; tagline: string }>(product: T, y: number, now = new Date()): T {
+  return {
+    ...product,
+    title: isPreview(y, now) ? `미리 보는 ${y} 신년운세` : `${y} 신년운세`,
+    hanja: yearName(y).hanja,
+    tagline: `${y}년 나한테 어떤 일이 생길까? 돈·일·사랑·몸부터 달마다 할 일까지`,
+  };
 }
 
 // The range a reader can open: from the birth year (or twenty years back when it is unknown) to ten years ahead.

@@ -10,7 +10,7 @@ import { PRICE, priceNow, productById, SETS, type ProductId } from "@/lib/produc
 import { readingCount } from "@/lib/store";
 import { todayFor } from "@/lib/today";
 import { profileOf } from "@/lib/pairToken";
-import { newYearOf, newYearProduct, thisYear, yearDetail } from "@/lib/yeonun";
+import { isPreview, newYearOf, newYearProduct, thisYear, yearDetail } from "@/lib/yeonun";
 
 // The main page, one path: the free reading first; in season, next year's 신년운세 as the flagship; then what
 // the visitor wants to know, as plain choices; then the free extras, folded into short rows. A buyer finds
@@ -83,7 +83,7 @@ export default async function Home() {
 
       {ny && nyProduct && (
         <RoyalDoc className="mt-5" paperClassName="px-5">
-          <p className="text-center text-xs font-extrabold text-seal">새해 준비 · 정 훈도의 신년운세</p>
+          <p className="text-center text-xs font-extrabold text-seal">{isPreview(ny) ? "조금 이르지만, 내년을 미리" : "새해 준비 · 정 훈도의 신년운세"}</p>
           <div className="mt-2 flex items-center justify-center gap-3">
             <Seal hanja={nyProduct.hanja} />
             <h2 className="font-myeongjo text-2xl font-extrabold">{nyProduct.title}</h2>
@@ -112,7 +112,7 @@ export default async function Home() {
             href={nyOwned ? `/r/${nyOwned.id}` : `/reports/yeonun?y=${ny}`}
             className="mt-3 block rounded-2xl bg-seal py-4 text-center font-myeongjo text-lg font-extrabold text-hanji shadow-[0_6px_0_#7d1a14]"
           >
-            {nyOwned ? "결제한 신년운세 바로 보기" : me ? `${me.person.name}님의 ${ny}년 보기` : `내 ${ny}년 운세 보기`}
+            {nyOwned ? "결제한 신년운세 바로 보기" : me ? `${me.person.name}님의 ${ny}년 ${isPreview(ny) ? "미리 보기" : "보기"}` : `내 ${ny}년 운세 ${isPreview(ny) ? "미리 보기" : "보기"}`}
           </Link>
         </RoyalDoc>
       )}
