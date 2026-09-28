@@ -98,6 +98,7 @@ export type Reading = {
   support: number; // 0..1 share of weight that backs the day master
   yong: number; // 용신 element
   hee: number; // 희신: feeds the 용신
+  burden: number | null; // what feeds the chart's excess (병): a burden even when it is not the 기신
   gi: number; // 기신: attacks the 용신
   method: "억부" | "조후" | "종격";
   outer: Outer | null; // 종격: the chart follows one overwhelming force instead of being balanced
@@ -114,10 +115,11 @@ export type Reading = {
 // summer, 戌 late autumn, 丑 late winter): a 未 month is the hottest of the year, not a neutral one.
 const SEASON_OF = ["겨울", "겨울", "봄", "봄", "봄", "여름", "여름", "여름", "가을", "가을", "가을", "겨울"] as const;
 
-// 조후 보정: an earth branch in the month carries the climate of its season. The high-summer 未 reads as
-// fire (丁) and the deep-winter 丑 as water (癸); 戌 on the way into winter turns partly to cold water (壬),
-// and 辰 on the way out of spring partly to wood (乙). Matches 포스텔러's corrected values.
-const SEASON_TURN: Record<number, [stem: number, share: number]> = { 7: [3, 1], 1: [9, 1], 10: [8, 4 / 7], 4: [1, 4 / 7] };
+// 조후 보정: an earth branch in the month carries the climate of the season it closes, through its own 여기.
+// The high-summer 未 reads as fire (丁) and the deep-winter 丑 as water (癸); 辰 closing spring turns partly to
+// wood (乙) and 戌 closing autumn partly to metal (辛). 戌 holds 辛丁戊 and no water: it is dry earth, the
+// store of fire, so it is never read as 壬 (an earlier version did, after one app's corrected values).
+const SEASON_TURN: Record<number, [stem: number, share: number]> = { 7: [3, 1], 1: [9, 1], 10: [7, 4 / 7], 4: [1, 4 / 7] };
 function branchParts(branch: number, pos: Slot["pos"]): [stem: number, share: number][] {
   const main = BRANCH_MAIN_STEM[branch];
   const turn = pos === "월" ? SEASON_TURN[branch] : undefined;
@@ -334,6 +336,20 @@ export function readChart(p: Pillars): Reading | null {
   const feeds = (yong + 4) % 5;
   const hee = followed || method === "조후" ? feeds : strong && backs(feeds) ? (yong + 1) % 5 : !strong && !backs(feeds) ? dayEl : feeds;
   const gi = (yong + 3) % 5;
+  // 병약: the excess that tips the chart is fed by one more element, which is a burden too. A strong chart made
+  // strong by its resource (인성) is fed by the officer (관생인: 관성 only feeds the surplus); a weak chart
+  // drowned in wealth is fed by output (식상생재), one pressed by officers is fed by wealth (재생관).
+  let burden: number | null = null;
+  if (!followed && method === "억부") {
+    if (strong && godWeights.인성 > godWeights.비겁) burden = el("관성");
+    else if (!strong) {
+      const drains: GodGroup[] = ["식상", "재성", "관성"];
+      const heaviest = drains.reduce((a, b) => (godWeights[b] > godWeights[a] ? b : a));
+      if (heaviest === "재성") burden = el("식상");
+      else if (heaviest === "관성") burden = el("재성");
+    }
+    if (burden === yong || burden === hee) burden = null;
+  }
   const missing = elements.flatMap((n, i) => (n === 0 ? [i] : []));
   const gyeok = gyeokOf(full);
 
@@ -352,7 +368,7 @@ export function readChart(p: Pillars): Reading | null {
       ? `${season}에 태어나 ${johu === 4 ? "물이 말라 조열하니" : "불이 꺼져 한습하니"}, 무엇보다 ${yongName} 기운이 급한 용신이옵니다`
       : `하여 ${balanced ? "중화에 가까운 " : ""}${strength}한 사주이니, ${yongName} 기운이 전하를 돕는 용신이옵니다`,
   ];
-  return { elements, weights, gods, godWeights, godList, strength, balanced, support: share, yong, hee, gi, method, outer, bonds, eokbu, johu, season, gyeok, missing, reasons };
+  return { elements, weights, gods, godWeights, godList, strength, balanced, support: share, yong, hee, gi, burden, method, outer, bonds, eokbu, johu, season, gyeok, missing, reasons };
 }
 
 // A plain-words gloss of each ten god, for sentences that name one.

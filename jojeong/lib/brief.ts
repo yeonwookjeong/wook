@@ -63,7 +63,7 @@ export function chartBrief(name: string, p: Pillars, profile: Profile | null): s
         : r.method === "조후"
           ? `조후 우선, 억부로는 ${EL(r.eokbu)}`
           : "억부"
-    }), 희신 ${EL(r.hee)}, 기신 ${EL(r.gi)}`,
+    }), 희신 ${EL(r.hee)}, 기신 ${EL(r.gi)}${r.burden !== null ? `, 병을 키우는 부담 ${EL(r.burden)}` : ""}`,
   );
   lines.push(`- 합(오행 계산에 반영됨): ${r.bonds.length ? r.bonds.join("; ") : "없음"}`);
   lines.push(`- 격국: ${GYEOK_NAME[r.gyeok]}`);

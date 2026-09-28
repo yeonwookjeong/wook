@@ -1,5 +1,6 @@
 import { isBaekho, isGoegang, meetings, salsAt, stageOf, type Sal } from "./deep";
 import { chartOf, ELEMENT_HANJA, ELEMENT_KO, GROUP_OF, HIDDEN, readChart, stemEl, tenGod, type GodGroup, type Reading, type TenGod } from "./myeongri";
+import { josa } from "./josa";
 import type { Gender } from "./profile";
 import { isFull, type FullPillars, type Pillars } from "./saju";
 
@@ -36,6 +37,9 @@ const weak = (c: Ctx) => c.r.strength === "신약" || c.r.strength === "극신�
 const shows = (c: Ctx, ...gods: TenGod[]) => gods.some((g) => c.stemGods.includes(g));
 const has = (c: Ctx, ...gods: TenGod[]) => gods.some((g) => c.shownGods.includes(g));
 const pairClash = (a: number | null, b: number | null) => a !== null && b !== null && meetings(a, b).includes("충");
+// What each element brings, for a chart that lacks it, and the fields a whole 국 of it points to.
+const LACK_MEANS = ["새로 시작하고 뻗어 나가는 힘", "드러내고 표현하는 열정", "버티고 중심을 잡는 힘", "끊고 결단하는 힘", "쉬어 가며 깊이 생각하는 힘"];
+const GUK_FIELD = ["교육·기획·성장시키는 일", "표현·방송·사람 앞에 서는 일", "중개·부동산·신뢰를 쌓는 일", "기술·법·결단이 필요한 일", "연구·유통·사람과 정보를 잇는 일"];
 const ELEMENT_TRAIT = [
   "끝없이 뻗어 가려는 성장욕과 고집",
   "열정과 조급함, 뜨거운 감정",
@@ -198,7 +202,7 @@ const SPECS: Spec[] = [
     term: "편인도식",
     plain: txt("직감과 재능이 서로 발목을 잡음"),
     area: "성격",
-    meaning: txt("하고 싶은 걸 하려 할 때마다 걱정이나 주변의 반대가 발목을 잡아요. 먹고사는 문제에 예민하고, 입맛이 까다로운 편이에요."),
+    meaning: txt("하고 싶은 걸 하려 할 때마다 걱정이나 주변의 반대가 발목을 잡아요. 먹는 것과 먹고사는 문제에 유난히 예민한 편이에요."),
     test: (c) => shows(c, "편인") && has(c, "식신"),
   },
   {
@@ -322,13 +326,13 @@ const SPECS: Spec[] = [
     term: "괴강",
     plain: txt("우두머리 기질"),
     area: "성격",
-    meaning: txt("극과 극을 오가는 삶이에요. 판이 크고, 남 밑에 오래 있기 힘들며, 잘될 땐 크게 잘돼요."),
+    meaning: txt("기복이 큰 대신 판이 커요. 남 밑에 오래 있기 힘들고, 제 판을 잡으면 크게 잘돼요."),
     test: (c) => isGoegang(c.p),
   },
   {
     id: "baekho",
     term: "백호",
-    plain: txt("사나운 기세"),
+    plain: txt("강한 추진력"),
     area: "건강",
     meaning: txt("추진력이 강한 만큼 사고·수술·다툼 같은 급한 일을 한 번쯤 겪기 쉬워요. 운전과 몸 쓰는 일에서 조심성이 필요해요."),
     test: (c) => isBaekho(c.p),
@@ -349,7 +353,12 @@ const SPECS: Spec[] = [
     term: "오행 결핍",
     plain: (c) => `${c.r.missing.map((e) => `${ELEMENT_KO[e]}(${ELEMENT_HANJA[e]})`).join("·")} 기운이 비어 있음`,
     area: "성격",
-    meaning: txt("빈 기운이 필요한 순간에 늘 한 박자 늦어요. 그 기운을 가진 사람이나 환경을 곁에 두면 운이 채워져요."),
+    meaning: (c) => {
+      const m = c.r.missing;
+      const ko = m.map((e) => ELEMENT_KO[e]).join("·");
+      const means = m.map((e) => LACK_MEANS[e]);
+      return `여덟 글자에 ${ko}(${m.map((e) => ELEMENT_HANJA[e]).join("")}) 기운이 없어요. 그래서 ${josa(means.slice(0, -1).join(", "), "과/와")} ${josa(means.at(-1)!, "이/가")} 필요한 순간에 한 박자 늦기 쉬워요. ${ko} 기운이 강한 사람과 가까이 지내거나, 그 기운이 들어오는 해에 모자란 부분이 채워져요.`;
+    },
     test: (c) => c.r.missing.length >= 2,
   },
   {
@@ -373,7 +382,11 @@ const SPECS: Spec[] = [
     term: "삼합·방합 국",
     plain: (c) => c.r.bonds.find((b) => b.includes("국"))!.split(":")[0],
     area: "일",
-    meaning: txt("세 글자가 한 방향으로 뭉쳐 강한 흐름을 만들어요. 그 기운 쪽 분야에서 크게 쓰이거나, 한번 방향을 정하면 끝까지 가는 사람이에요."),
+    meaning: (c) => {
+      const name = c.r.bonds.find((b) => b.includes("국"))!;
+      const e = ["목국", "화국", "토국", "금국", "수국"].findIndex((k) => name.includes(k));
+      return `세 글자가 ${ELEMENT_KO[e]}(${ELEMENT_HANJA[e]}) 기운으로 뭉쳐 강한 흐름을 만들어요. ${GUK_FIELD[e]} 쪽에서 크게 쓰이고, 한번 방향을 정하면 끝까지 가는 사람이에요.`;
+    },
     test: (c) => c.r.bonds.some((b) => b.includes("국")),
   },
   {

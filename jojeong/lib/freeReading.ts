@@ -2,7 +2,7 @@ import { domainCard, DOMAINS, type Domain, type DomainCard } from "./domains";
 import { isBaekho, isGoegang, salsAt, type Sal } from "./deep";
 import { chartOf, GROUP_OF, HIDDEN, readChart, tenGod, type GodGroup } from "./myeongri";
 import type { Profile } from "./profile";
-import { godRank, patternRate } from "./rarity";
+import { godRank, salRate } from "./rarity";
 import { isFull, type Pillars } from "./saju";
 import { luckFit } from "./yearly";
 
@@ -41,15 +41,15 @@ const POWER: Record<GodGroup, { name: string; high: string; low: string }> = {
 const GROUPS: GodGroup[] = ["비겁", "식상", "재성", "관성", "인성"];
 
 // ② 신살 the chart holds, with what it means and, where counted, how many in 100 have it.
-const SAL: Partial<Record<Sal | "괴강" | "백호", { plain: string; line: string; id?: string }>> = {
-  천을귀인: { plain: "위기 때 돕는 사람", line: "막다른 길에서 꼭 누군가 손을 내밀어요.", id: "cheoneul" },
-  도화: { plain: "사람을 끄는 매력", line: "가만히 있어도 눈길을 끌고, 표현력과 센스가 무기가 돼요.", id: "dohwa" },
-  역마: { plain: "움직여야 풀리는 기운", line: "이사·출장·해외·이직처럼 움직일 때 운이 트여요.", id: "yeokma" },
+const SAL: Partial<Record<Sal | "괴강" | "백호", { plain: string; line: string }>> = {
+  천을귀인: { plain: "위기 때 돕는 사람", line: "막다른 길에서 꼭 누군가 손을 내밀어요." },
+  도화: { plain: "사람을 끄는 매력", line: "가만히 있어도 눈길을 끌고, 표현력과 센스가 무기가 돼요." },
+  역마: { plain: "움직여야 풀리는 기운", line: "이사·출장·해외·이직처럼 움직일 때 운이 트여요." },
   화개: { plain: "혼자 깊이 파고드는 힘", line: "공부·예술·연구처럼 한 우물을 깊이 파는 일과 인연이 있어요." },
   문창귀인: { plain: "글과 공부의 재주", line: "글, 시험, 기획처럼 머리로 하는 일에서 빛나요." },
-  양인: { plain: "칼 같은 결단력", line: "한번 정하면 밀어붙여요. 욱하는 순간만 조심하면 큰 무기예요.", id: "yangin" },
-  괴강: { plain: "우두머리 기질", line: "판이 크고 남 밑에 오래 있기 힘들어요. 잘될 땐 크게 잘돼요.", id: "goegang" },
-  백호: { plain: "강한 추진력", line: "밀어붙이는 힘이 큰 만큼 급한 일과 부상은 조심해야 해요.", id: "baekho" },
+  양인: { plain: "칼 같은 결단력", line: "한번 정하면 밀어붙여요. 욱하는 순간만 조심하면 큰 무기예요." },
+  괴강: { plain: "우두머리 기질", line: "판이 크고 남 밑에 오래 있기 힘들어요. 잘될 땐 크게 잘돼요." },
+  백호: { plain: "강한 추진력", line: "밀어붙이는 힘이 큰 만큼 급한 일과 부상은 조심해야 해요." },
 };
 
 // ④ 인생 흐름: each ten-year luck pillar, graded by how welcome it is (lib/yearly.ts luckFit) and named by what its
@@ -99,7 +99,7 @@ export function freeReadingOf(p: Pillars, profile: Profile | null, now = 2026): 
   if (isBaekho(p)) found.add("백호");
   const sals = Object.entries(SAL)
     .filter(([k]) => found.has(k))
-    .map(([k, v]) => ({ name: k, plain: v!.plain, line: v!.line, rate: v!.id ? patternRate(v!.id, gender) : null }));
+    .map(([k, v]) => ({ name: k, plain: v!.plain, line: v!.line, rate: salRate(k) }));
 
   const domains = DOMAINS.flatMap((d) => {
     const card = domainCard(d, p, gender);
