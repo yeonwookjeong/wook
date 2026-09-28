@@ -128,7 +128,7 @@ export function ownedByProduct(orders: Order[]): Partial<Record<ProductId, { ord
 
 // A paid order in this browser for exactly this report request (same product, same chart or pair).
 export async function ownedOrderFor(product: ProductId, req: JobRequest): Promise<Order | null> {
-  const fields = ["p", "a", "b", "rel", "kind", "from", "n"] as const;
+  const fields = ["p", "a", "b", "rel", "kind", "from", "n", "y"] as const;
   const same = (o: Order) => covers(o, product) && fields.every((f) => (o.req[f] ?? "") === (req[f] ?? ""));
   return (await ownedOrders()).find(same) ?? null;
 }

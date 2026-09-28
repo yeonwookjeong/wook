@@ -12,14 +12,15 @@ import { todayFor } from "@/lib/today";
 // choices; then the free extras, folded into short rows. A buyer finds what they bought at the top.
 // The Joseon game (왕이 될 사주, /king) is one row among the free extras.
 
-// What each report answers, in the visitor's words: a one-word topic, the report, the question.
-const TOPICS: { id: ProductId; topic: string; name: string; ask: string }[] = [
-  { id: "pyeongsaeng", topic: "나", name: "평생 사주", ask: "나는 어떤 사람이고 어떻게 살아갈까?" },
-  { id: "jaemul", topic: "돈", name: "재물·돈", ask: "돈이 왜 안 모일까, 언제 트일까?" },
-  { id: "yeonae", topic: "사랑", name: "연애·결혼", ask: "나랑 맞는 사람은 언제 올까?" },
-  { id: "jikup", topic: "일", name: "직업·적성", ask: "지금 일, 나랑 맞을까?" },
-  { id: "gunghap", topic: "우리 둘", name: "궁합", ask: "우리, 진짜 잘 맞을까?" },
-  { id: "taekil", topic: "좋은 날", name: "택일", ask: "결혼·이사·개업, 언제 할까?" },
+// What each report answers, in the visitor's words: the report and the question.
+const TOPICS: { id: ProductId; name: string; ask: string }[] = [
+  { id: "pyeongsaeng", name: "평생 사주", ask: "나는 어떤 사람이고 어떻게 살아갈까?" },
+  { id: "yeonun", name: "연운", ask: "그해 나한테 무슨 일이? 지난해도, 앞으로의 해도" },
+  { id: "jaemul", name: "재물운", ask: "돈이 왜 안 모일까, 언제 트일까?" },
+  { id: "yeonae", name: "연애·결혼", ask: "나랑 맞는 사람은 언제 올까?" },
+  { id: "jikup", name: "직업·적성", ask: "지금 일, 나랑 맞을까?" },
+  { id: "gunghap", name: "궁합", ask: "우리, 진짜 잘 맞을까?" },
+  { id: "taekil", name: "택일", ask: "결혼·이사·계약·면접, 언제 할까?" },
 ];
 
 // Free, computed, no payment: short rows under the choices.
@@ -100,14 +101,17 @@ export default async function Home() {
         <h2 className="text-center font-myeongjo text-xl font-extrabold">무엇이 궁금하세요?</h2>
         <p className="mt-1 text-center text-xs text-ink-soft">사주 분석은 무료로 먼저 보고, 풀이 보고서는 한 편에 <Price /></p>
         <ul className="mt-4 grid grid-cols-2 gap-2">
-          {TOPICS.map((t) => {
+          {TOPICS.map((t, i) => {
             const mine = owned[t.id];
+            // 연운 is bought a year at a time, so its tile opens the list of years (bought ones are marked there).
+            const href = t.id === "yeonun" ? "/reports/yeonun" : (mine?.href ?? `/reports/${t.id}`);
+            // An odd tile out closes the grid across both columns.
+            const wide = i === TOPICS.length - 1 && TOPICS.length % 2 === 1;
             return (
-              <li key={t.id}>
-                <Link href={mine?.href ?? `/reports/${t.id}`} className="doc-paper flex h-full flex-col px-4 pt-4 pb-3.5">
-                  <span className="font-myeongjo text-2xl leading-none font-extrabold text-seal">{t.topic}</span>
-                  <span className="mt-2 font-myeongjo text-[15px] leading-tight font-extrabold">{t.name}</span>
-                  <span className="mt-1 flex-1 text-[12px] leading-snug text-ink-soft">{t.ask}</span>
+              <li key={t.id} className={wide ? "col-span-2" : undefined}>
+                <Link href={href} className="doc-paper flex h-full flex-col px-4 pt-4 pb-3.5">
+                  <span className="font-myeongjo text-xl leading-tight font-extrabold">{t.name}</span>
+                  <span className="mt-1.5 flex-1 text-[12.5px] leading-snug text-ink-soft">{t.ask}</span>
                   <span className="mt-2.5 border-t border-seal/15 pt-2 text-right text-[12px] font-bold text-seal">{mine ? "결제함 · 바로 보기 →" : "보기 →"}</span>
                 </Link>
               </li>

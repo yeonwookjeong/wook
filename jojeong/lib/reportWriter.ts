@@ -10,6 +10,7 @@ import { intimacyBrief } from "./intimacy";
 import { reunionBrief } from "./reunion";
 import { freeBrief } from "./freeReading";
 import { decadeBrief, decadeOf, domainBrief, isDomain } from "./domains";
+import { thisYear, yearOf, yearName, yeonunBrief } from "./yeonun";
 import { REPORT_SPECS, systemPromptFor, userPrompt } from "./reportPrompts";
 import { dayStart, KINDS, parseSearch, pickDays, searchDay, taekilBrief } from "./taekil";
 import type { Gender } from "./profile";
@@ -30,7 +31,7 @@ export const aiEnabled = () =>
   Boolean(isGemini ? process.env.GEMINI_API_KEY : process.env.ANTHROPIC_API_KEY) || process.env.REPORT_MOCK === "1";
 
 export type ReportJob = { key: string; system: string; prompt: string; title: string; modern: boolean };
-export type JobRequest = { product: string; court?: string; m?: string; t?: string; a?: string; b?: string; rel?: string; p?: string; kind?: string; from?: string; n?: string; d?: string };
+export type JobRequest = { product: string; court?: string; m?: string; t?: string; a?: string; b?: string; rel?: string; p?: string; kind?: string; from?: string; n?: string; d?: string; y?: string };
 
 export async function jobFor(req: JobRequest): Promise<ReportJob | { error: string; status: number }> {
   const product = productById(req.product);
@@ -105,8 +106,18 @@ export async function jobFor(req: JobRequest): Promise<ReportJob | { error: stri
     const me = decodePerson(req.p);
     if (!me) return { error: "사주를 다시 입력해 주세요.", status: 400 };
     subjectLine = product.modern ? `[대상] ${me.name} ('${me.name}님'이라 부를 것)` : `[대상] ${me.name} ('그대'라 부를 것)`;
-    briefs = [chartBrief(me.name, me.pillars, profileOf(me)), freeBrief(me.pillars, profileOf(me)), ...deep(product.id, me.pillars, me.gender)].join("\n\n");
+    // 연운: the year chosen is part of what was bought.
+    const y = product.id === "yeonun" ? yearOf(req.y, profileOf(me), thisYear()) : null;
+    if (product.id === "yeonun" && y === null) return { error: "볼 해를 다시 골라 주세요.", status: 400 };
+    if (y !== null) subjectLine += ` / 연운: ${y}년(${yearName(y).ko})`;
+    briefs = [
+      chartBrief(me.name, me.pillars, profileOf(me)),
+      freeBrief(me.pillars, profileOf(me)),
+      ...deep(product.id, me.pillars, me.gender),
+      ...(y !== null ? [yeonunBrief(me.pillars, profileOf(me), y, thisYear())] : []),
+    ].join("\n\n");
   } else {
+    if (product.id === "yeonun") return { error: "볼 사람과 해를 다시 골라 주세요.", status: 400 };
     const subject = await subjectFor(product, req.court, req.m);
     if (!subject || !subject.self) return { error: "본인의 사주로만 보실 수 있어요. 먼저 즉위하거나 입궐해 주세요.", status: 403 };
     const profile = await getProfile(subject.courtId, subject.who);

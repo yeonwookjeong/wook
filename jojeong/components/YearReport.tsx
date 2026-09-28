@@ -26,6 +26,7 @@ const VERDICT_STYLE: Record<string, string> = {
 // After the free year: the paid reports, the whole life first.
 const NEXT: { id: ProductId; ask: string }[] = [
   { id: "pyeongsaeng", ask: "성격·돈·일·사랑·가족·건강, 인생 전체를 한 권에" },
+  { id: "yeonun", ask: "내년은? 그때 그 해는? 궁금한 해를 한 해씩" },
   { id: "jaemul", ask: "돈이 왜 안 모일까, 언제 트일까" },
   { id: "yeonae", ask: "나랑 맞는 사람은 언제 올까" },
   { id: "jikup", ask: "지금 일, 나랑 맞을까" },

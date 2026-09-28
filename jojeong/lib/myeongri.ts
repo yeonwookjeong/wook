@@ -407,3 +407,13 @@ export function elementCount(p: Pillars, el: number): number {
     branches.filter((b): b is number => b !== undefined && BRANCH_EL[b] === el).length
   );
 }
+
+// How welcome an element is to this chart: 용신 +2, 희신 +1, 기신 −2, 구신 (feeds the 기신) −1.
+export function elScore(r: Reading, e: number): number {
+  if (e === r.yong) return 2;
+  if (e === r.hee) return 1;
+  if (e === r.gi) return -2;
+  if (e === (r.gi + 4) % 5) return -1;
+  if (e === r.burden) return -1;
+  return 0;
+}
