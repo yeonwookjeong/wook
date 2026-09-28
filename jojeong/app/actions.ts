@@ -251,13 +251,13 @@ export async function saveMeAction(_prev: FormState, formData: FormData): Promis
     console.error(e);
     return { error: "사주를 준비하다 문제가 생겼어요. 잠시 후 다시 시도해 주세요." };
   }
-  redirect(/^\/reports\/[a-z]+$/.test(next) ? next : next === "/#today" ? "/#today" : "/");
+  redirect(/^\/reports\/[a-z]+(\?y=\d{4})?$/.test(next) ? next : next === "/#today" ? "/#today" : "/");
 }
 
 export async function forgetMeAction(formData: FormData) {
   await forgetMe();
   const next = String(formData.get("next") ?? "");
-  redirect(/^\/reports\/[a-z]+$/.test(next) ? next : "/");
+  redirect(/^\/reports\/[a-z]+(\?y=\d{4})?$/.test(next) ? next : "/");
 }
 
 // ── 택일: what for, when, and whose chart (two for a wedding). Carried in the link like a 궁합.

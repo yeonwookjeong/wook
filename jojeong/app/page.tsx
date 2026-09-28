@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { forgetMeAction } from "@/app/actions";
+import Keep from "@/components/Keep";
+import RoyalDoc from "@/components/RoyalDoc";
 import StoreHero from "@/components/StoreHero";
 import TodayCard from "@/components/TodayCard";
 import { readMe } from "@/lib/me";
@@ -7,9 +9,12 @@ import { ownedByProduct, ownedOrders } from "@/lib/pay";
 import { PRICE, priceNow, productById, SETS, type ProductId } from "@/lib/products";
 import { readingCount } from "@/lib/store";
 import { todayFor } from "@/lib/today";
+import { profileOf } from "@/lib/pairToken";
+import { newYearOf, newYearProduct, thisYear, yearDetail } from "@/lib/yeonun";
 
-// The main page, one path: the free reading first; then what the visitor wants to know, as six plain
-// choices; then the free extras, folded into short rows. A buyer finds what they bought at the top.
+// The main page, one path: the free reading first; in season, next year's 신년운세 as the flagship; then what
+// the visitor wants to know, as plain choices; then the free extras, folded into short rows. A buyer finds
+// what they bought at the top.
 // The Joseon game (왕이 될 사주, /king) is one row among the free extras.
 
 // What each report answers, in the visitor's words: the report and the question.
@@ -43,12 +48,25 @@ function Price() {
   );
 }
 
+function Seal({ hanja }: { hanja: string }) {
+  return (
+    <span className="flex size-12 shrink-0 items-center justify-center border-2 border-seal/70 font-myeongjo text-sm font-extrabold text-seal">
+      {hanja}
+    </span>
+  );
+}
+
 // The running count shows only once it means something; before that, a small number reads as an empty shop.
 const SHOW_COUNT_FROM = 100;
 
 export default async function Home() {
   const [me, count, orders] = await Promise.all([readMe(), readingCount(), ownedOrders().catch(() => [])]);
   const owned = ownedByProduct(orders);
+  // The season's flagship: next year's 신년운세 (the 연운 report for that year), from September to February.
+  const ny = newYearOf();
+  const nyProduct = ny ? newYearProduct(productById("yeonun")!, ny) : null;
+  const nyTheme = ny && me ? yearDetail(me.person.pillars, profileOf(me.person), ny, thisYear())?.theme : null;
+  const nyOwned = ny && me ? orders.find((o) => o.product === "yeonun" && o.req.y === String(ny) && o.req.p === me.token) : undefined;
 
   return (
     <>
@@ -62,6 +80,42 @@ export default async function Home() {
             : { href: "/reports/gukjeong", label: "내 사주 무료로 보기", sub: "생년월일만 넣으면 2026년 운세와 사주 분석을 바로 보여 드려요" }
         }
       />
+
+      {ny && nyProduct && (
+        <RoyalDoc className="mt-5" paperClassName="px-5">
+          <p className="text-center text-xs font-extrabold text-seal">새해 준비 · 정 훈도의 신년운세</p>
+          <div className="mt-2 flex items-center justify-center gap-3">
+            <Seal hanja={nyProduct.hanja} />
+            <h2 className="font-myeongjo text-2xl font-extrabold">{nyProduct.title}</h2>
+          </div>
+          <p className="mt-2 text-center text-sm leading-relaxed text-ink-soft">
+            <Keep clauses>{nyProduct.tagline}</Keep>
+          </p>
+          {nyTheme && (
+            <p className="mt-3 rounded-xl bg-gold/10 px-3 py-2 text-center text-[13px]">
+              {me!.person.name}님의 {ny}년은 <b className="text-seal">{nyTheme}</b>
+            </p>
+          )}
+          <ol className="mt-4 flex flex-col divide-y divide-seal/15 border-y-[3px] border-double border-seal/40 px-1 text-[14px]">
+            {nyProduct.toc.slice(0, 4).map((item, i) => (
+              <li key={item} className="flex gap-2 py-2">
+                <span className="font-myeongjo font-extrabold text-seal">{"一二三四"[i]}</span>
+                {item}
+              </li>
+            ))}
+            <li className="py-2 text-center text-xs text-ink-soft">그리고 {nyProduct.toc.length - 4}장 더</li>
+          </ol>
+          <p className="mt-3 text-center text-[12px] text-ink-soft">
+            {ny}년 판정과 달마다 흐름은 무료로 먼저 · 한 해 전체 풀이 <Price />
+          </p>
+          <Link
+            href={nyOwned ? `/r/${nyOwned.id}` : `/reports/yeonun?y=${ny}`}
+            className="mt-3 block rounded-2xl bg-seal py-4 text-center font-myeongjo text-lg font-extrabold text-hanji shadow-[0_6px_0_#7d1a14]"
+          >
+            {nyOwned ? "결제한 신년운세 바로 보기" : me ? `${me.person.name}님의 ${ny}년 보기` : `내 ${ny}년 운세 보기`}
+          </Link>
+        </RoyalDoc>
+      )}
 
       {/* A buyer's reports come first. */}
       {orders.length > 0 && (
