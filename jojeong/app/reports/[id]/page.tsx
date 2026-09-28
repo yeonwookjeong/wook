@@ -15,6 +15,8 @@ import Paywall from "@/components/Paywall";
 import OrderLink from "@/components/OrderLink";
 import DecadeTable from "@/components/DecadeTable";
 import DomainCard from "@/components/DomainCard";
+import FreeReading from "@/components/FreeReading";
+import { freeReadingOf } from "@/lib/freeReading";
 import DeepenForm from "@/components/DeepenForm";
 import Keep from "@/components/Keep";
 import RoyalDoc from "@/components/RoyalDoc";
@@ -359,7 +361,16 @@ async function OpenReport({
     ? { product: product.id, p: me.token }
     : { product: product.id, ...(courtId && { court: subject!.courtId }), ...(ministerId && { m: ministerId }) };
   const distinct = self ? distinctOf(pillars, profile?.gender ?? null) : null;
+  const free = self ? freeReadingOf(pillars, profile) : null;
+  // The free reading: the chart analysis, then the four computed blocks (powers, 신살, money·love·work, the
+  // flow of life). Shown on the free year reading and on the life report before purchase.
   const intro = distinct && <ChartIntro name={name} d={distinct} slots={reading.chart.slots} />;
+  const fullIntro = intro && (
+    <>
+      {intro}
+      {free && <FreeReading name={name} r={free} query={query} addGender={`${next}?new=1`} />}
+    </>
+  );
   // Without gender or the hour, the remembered chart is simply entered again with them.
   // Folded: one line to add what was left blank. The birth date is asked again because it is never stored.
   // What the remembered chart lacks: gender (for 대운) and the birth hour. The palace chart is not kept in
@@ -395,7 +406,7 @@ async function OpenReport({
           heading={`${name}님의 2026년 운세`}
           deepen={!me && subject!.self ? { courtId: subject!.courtId, who: subject!.who } : null}
           query={query}
-          intro={self ? intro : undefined}
+          intro={self ? fullIntro : undefined}
         />
         {meDeepen}
         {other}
@@ -472,7 +483,7 @@ async function OpenReport({
           )}
         </>
       ) : (
-        intro
+        fullIntro
       )}
       {chartFold}
       {locked ? (

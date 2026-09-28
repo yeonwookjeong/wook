@@ -19,6 +19,11 @@ function tail(metric: Metric, value: number): { side: "high" | "low"; rate: numb
   return above <= below ? { side: "high", rate: above } : { side: "low", rate: below };
 }
 
+// How a ten-god group's share stands among all births: "상위 12%" / "하위 8%".
+export function godRank(group: GodGroup, share: number): { side: "high" | "low"; rate: number } {
+  return tail(`god:${group}` as Metric, share);
+}
+
 export const patternRate = (id: string, gender: Gender | null) => {
   const m = data.patterns.m[id as keyof typeof data.patterns.m] / data.n.m;
   const f = data.patterns.f[id as keyof typeof data.patterns.f] / data.n.f;
