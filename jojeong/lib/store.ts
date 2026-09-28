@@ -210,3 +210,44 @@ export async function notePaidOrder(orderId: string) {
 export async function paidOrderIds(): Promise<string[]> {
   return backend().list("orders:paid");
 }
+
+// Questions sent from the contact page, kept for the owner's inbox (/admin): what it is about, what was
+// written, and an optional email to answer to. Newest last in the list.
+export type Inquiry = { id: string; topic: string; body: string; email: string; at: number; done: boolean };
+const INQUIRY_DAILY_CAP = 300;
+
+export async function addInquiry(topic: string, body: string, email: string): Promise<"ok" | "busy"> {
+  const day = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
+  // A plain cap on how many a day are kept, so a flood of junk cannot fill the store.
+  if ((await backend().incr(`inquiries:day:${day}`)) > INQUIRY_DAILY_CAP) return "busy";
+  const id = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
+  const inquiry: Inquiry = { id, topic, body, email, at: Date.now(), done: false };
+  await backend().set(`inquiry:${id}`, JSON.stringify(inquiry));
+  await backend().push("inquiries", id);
+  return "ok";
+}
+
+export async function listInquiries(limit = 100): Promise<Inquiry[]> {
+  const ids = (await backend().list("inquiries")).slice(-limit).reverse();
+  const raws = await Promise.all(ids.map((id) => backend().get(`inquiry:${id}`)));
+  return raws.flatMap((r) => {
+    if (!r) return [];
+    try {
+      return [JSON.parse(r) as Inquiry];
+    } catch {
+      return [];
+    }
+  });
+}
+
+export async function setInquiryDone(id: string, done: boolean) {
+  const raw = await backend().get(`inquiry:${id}`);
+  if (!raw) return;
+  await backend().set(`inquiry:${id}`, JSON.stringify({ ...(JSON.parse(raw) as Inquiry), done }));
+}
+
+// Deleted on request (or when no longer needed): the entry and its place in the list.
+export async function deleteInquiry(id: string) {
+  await backend().set(`inquiry:${id}`, "");
+  await backend().remove("inquiries", id);
+}

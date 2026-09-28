@@ -3,8 +3,8 @@ import Link from "next/link";
 import { adminConfigured, isAdmin } from "@/lib/admin";
 import { getOrder, type Order } from "@/lib/pay";
 import { productById, SETS } from "@/lib/products";
-import { paidOrderIds, readingCount } from "@/lib/store";
-import { adminSignOut } from "./actions";
+import { listInquiries, paidOrderIds, readingCount } from "@/lib/store";
+import { adminSignOut, inquiryDeleteAction, inquiryDoneAction } from "./actions";
 import SignInForm from "./SignInForm";
 import { isPreview, newYearOf } from "@/lib/yeonun";
 
@@ -39,6 +39,9 @@ export default async function AdminPage() {
   const todays = paid.filter((o) => day(o.paidAt ?? o.createdAt) === today);
   const won = (n: number) => `${n.toLocaleString("ko-KR")}원`;
   const ny = newYearOf();
+  const inquiries = await listInquiries().catch(() => []);
+  const open = inquiries.filter((q) => !q.done);
+  const when = (t: number) => new Date(t + 9 * 3600000).toISOString().slice(5, 16).replace("T", " ");
 
   return (
     <>
@@ -67,6 +70,50 @@ export default async function AdminPage() {
         지금까지 풀어 드린 사주 <b className="font-myeongjo text-seal">{(await readingCount()).toLocaleString("ko-KR")}</b>건
         <span className="block text-[11px] text-ink-soft">무료 분석 + 즉위 · 100건부터 홈에 표시돼요</span>
       </p>
+
+      <section className="doc-paper mt-4 px-4 py-4">
+        <h2 className="flex items-baseline justify-between font-myeongjo font-extrabold">
+          문의함
+          <span className={`text-sm ${open.length ? "text-seal" : "text-ink-soft"}`}>새 문의 {open.length}건</span>
+        </h2>
+        {inquiries.length === 0 ? (
+          <p className="mt-2 text-sm text-ink-soft">아직 문의가 없어요.</p>
+        ) : (
+          <ul className="mt-2 flex flex-col gap-2">
+            {inquiries.map((q) => (
+              <li key={q.id} className={`rounded-xl border px-3 py-3 text-[13px] ${q.done ? "border-ink/10 opacity-60" : "border-seal/30 bg-white/60"}`}>
+                <p className="flex items-baseline gap-2">
+                  <b className={q.done ? "" : "text-seal"}>{q.topic}</b>
+                  <span className="text-[11px] text-ink-soft">{when(q.at)}</span>
+                  {q.done && <span className="ml-auto text-[11px] text-ink-soft">처리함</span>}
+                </p>
+                <p className="mt-1.5 text-left whitespace-pre-wrap">{q.body}</p>
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-[12px]">
+                  {q.email ? (
+                    <a
+                      href={`mailto:${q.email}?subject=${encodeURIComponent(`[훈도사주] ${q.topic} 문의 답변`)}`}
+                      className="rounded-full bg-seal px-3 py-1 font-bold text-hanji"
+                    >
+                      답장하기 · {q.email}
+                    </a>
+                  ) : (
+                    <span className="text-ink-soft">이메일 없음</span>
+                  )}
+                  <form action={inquiryDoneAction} className="ml-auto">
+                    <input type="hidden" name="id" value={q.id} />
+                    <input type="hidden" name="done" value={q.done ? "0" : "1"} />
+                    <button className="rounded-full border border-ink/20 px-3 py-1">{q.done ? "다시 열기" : "처리 완료"}</button>
+                  </form>
+                  <form action={inquiryDeleteAction}>
+                    <input type="hidden" name="id" value={q.id} />
+                    <button className="rounded-full border border-ink/20 px-3 py-1 text-ink-soft">삭제</button>
+                  </form>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       <section className="doc-paper mt-4 px-4 py-4">
         <h2 className="font-myeongjo font-extrabold">보고서 바로 확인</h2>
