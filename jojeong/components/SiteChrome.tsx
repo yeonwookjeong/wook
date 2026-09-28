@@ -1,4 +1,5 @@
 import Link from "next/link";
+import FooterAd from "./FooterAd";
 import { BUSINESS, ftcLookupUrl, hasBusinessInfo } from "@/lib/business";
 import { ownedOrderIds } from "@/lib/pay";
 
@@ -75,6 +76,7 @@ export function SiteFooter() {
         <Link href="/" className="mt-4 rounded-full bg-seal px-5 py-2.5 font-myeongjo text-sm font-extrabold text-hanji">
           훈도사주 처음으로
         </Link>
+        <FooterAd />
       </div>
 
       {hasBusinessInfo() ? (
