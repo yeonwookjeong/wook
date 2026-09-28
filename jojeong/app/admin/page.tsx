@@ -6,6 +6,7 @@ import { productById, SETS } from "@/lib/products";
 import { paidOrderIds, readingCount } from "@/lib/store";
 import { adminSignOut } from "./actions";
 import SignInForm from "./SignInForm";
+import { isPreview, newYearOf } from "@/lib/yeonun";
 
 export const metadata: Metadata = { title: "관리자", robots: { index: false } };
 
@@ -37,6 +38,7 @@ export default async function AdminPage() {
   const sum = (list: Order[]) => list.reduce((a, o) => a + o.amount, 0);
   const todays = paid.filter((o) => day(o.paidAt ?? o.createdAt) === today);
   const won = (n: number) => `${n.toLocaleString("ko-KR")}원`;
+  const ny = newYearOf();
 
   return (
     <>
@@ -65,6 +67,32 @@ export default async function AdminPage() {
         지금까지 풀어 드린 사주 <b className="font-myeongjo text-seal">{(await readingCount()).toLocaleString("ko-KR")}</b>건
         <span className="block text-[11px] text-ink-soft">무료 분석 + 즉위 · 100건부터 홈에 표시돼요</span>
       </p>
+
+      <section className="doc-paper mt-4 px-4 py-4">
+        <h2 className="font-myeongjo font-extrabold">보고서 바로 확인</h2>
+        <p className="mt-1 text-[11px] leading-relaxed text-ink-soft">
+          결제 없이 열려요. 이 브라우저에 저장된 사주(없으면 입력)로 보여 주고, 유료 보고서는 실제 AI가 써요(한 편에 수십~수백 원). 한 번 쓴 보고서는 같은
+          사주·같은 조건이면 저장돼서 다시 쓰지 않아요.
+        </p>
+        <ul className="mt-3 grid grid-cols-2 gap-1.5 text-[13px]">
+          {[
+            ...(ny ? [[`/reports/yeonun?y=${ny}`, isPreview(ny) ? `미리 보는 ${ny} 신년운세` : `${ny} 신년운세`]] : []),
+            ["/reports/yeonun", "연운 (연도 목록)"],
+            ["/reports/pyeongsaeng", "평생 사주"],
+            ["/reports/jaemul", "재물운"],
+            ["/reports/yeonae", "연애·결혼"],
+            ["/reports/jikup", "직업·적성"],
+            ["/reports/gunghap", "궁합"],
+            ["/reports/taekil", "택일"],
+          ].map(([href, label]) => (
+            <li key={href}>
+              <Link href={href} className="block rounded-lg border border-seal/20 bg-white/60 px-3 py-2 font-bold">
+                {label} →
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       <section className="doc-paper mt-4 px-4 py-4">
         <h2 className="font-myeongjo font-extrabold">최근 결제</h2>
