@@ -3,6 +3,7 @@ import { createOrder, payClientKey, payEnabled, payMock } from "@/lib/pay";
 import { FIXED_RELATION, isOpen, isPair, priceNow, productById, SETS, setOf } from "@/lib/products";
 import { jobFor, type JobRequest } from "@/lib/reportWriter";
 import { KINDS, parseSearch, searchDay } from "@/lib/taekil";
+import { newYearOf } from "@/lib/yeonun";
 
 // POST { product, p } or, for a two-person report, { product, a, b, rel } → a new order for that exact report, priced here.
 export async function POST(request: Request) {
@@ -15,11 +16,14 @@ export async function POST(request: Request) {
     const [lead, ...rest] = SETS[set].products;
     const leadProduct = productById(lead)!;
     if (isOpen(leadProduct)) return Response.json({ error: "지금은 무료로 볼 수 있어요." }, { status: 400 });
-    const req: JobRequest = { product: lead, p: body.p };
+    // 새해 준비 세트 carries its year, so its 연운 opens on the coming year.
+    const ny = set === "ny" ? newYearOf() : null;
+    if (set === "ny" && ny === null) return Response.json({ error: "새해 준비 세트는 지금 팔지 않아요." }, { status: 400 });
+    const req: JobRequest = { product: lead, p: body.p, ...(ny !== null && { y: String(ny) }) };
     const job = await jobFor(req);
     if ("error" in job) return Response.json({ error: job.error }, { status: job.status });
     const order = await createOrder(lead, req, `${decodePerson(req.p)?.name}님`, SETS[set].price, { set, bundle: [lead, ...rest] });
-    return Response.json({ orderId: order.id, amount: order.amount, orderName: SETS[set].title, clientKey: payClientKey(), mock: payMock() });
+    return Response.json({ orderId: order.id, amount: order.amount, orderName: ny ? `${SETS[set].title} (${ny} 신년운세 포함)` : SETS[set].title, clientKey: payClientKey(), mock: payMock() });
   }
 
   const product = productById(body.product);
