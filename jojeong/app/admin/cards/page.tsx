@@ -552,77 +552,93 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
   if (c === "intro-1")
     return (
       <Frame dark>
-        <div style={{ position: "absolute", top: 150, left: 0, right: 0, textAlign: "center" }}>
-          <p style={{ fontSize: 34, letterSpacing: "0.3em", color: GOLD, fontWeight: 800 }}>觀象監 明課學 訓導</p>
-          <p style={{ marginTop: 50, fontSize: 70, fontWeight: 800, lineHeight: 1.35 }}>
-            소신, 조선 관상감
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/cards/gwansanggam.webp" alt="" style={{ position: "absolute", left: 0, top: -90, width: 1080, height: 1440, objectFit: "cover" }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(10,22,40,.55), transparent 38%, transparent 72%, rgba(10,22,40,.85))" }} />
+        <div style={{ position: "absolute", inset: 36, border: "3px solid rgba(212,175,95,.55)" }} />
+        <div style={{ position: "absolute", top: 104, left: 0, right: 0, textAlign: "center", textShadow: "0 2px 14px rgba(0,0,0,.6)" }}>
+          <p style={{ fontSize: 40, letterSpacing: "0.4em", color: GOLD, fontWeight: 800 }}>觀象監</p>
+          <p style={{ marginTop: 34, fontSize: 70, fontWeight: 800, lineHeight: 1.35 }}>
+            소신, 관상감
             <br />
             명과학 훈도 정가이옵니다
           </p>
-          <p style={{ marginTop: 36, fontSize: 40, lineHeight: 1.6, color: "rgba(244,236,219,.9)" }}>
+          <p style={{ marginTop: 30, fontSize: 38, lineHeight: 1.6, color: "rgba(244,236,219,.95)" }}>
             왕실의 사주와 길일을 보던 눈으로,
             <br />
             이제 그대의 여덟 글자를 보겠사옵니다
           </p>
         </div>
-        <Hundo src="/hundo-face.png" size={320} bottom={205} />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/cards/hundo-books.webp"
+          alt=""
+          style={{ position: "absolute", bottom: 176, left: "50%", transform: "translateX(-50%)", height: 580, filter: "drop-shadow(0 14px 24px rgba(0,0,0,.5))" }}
+        />
         <Brand dark />
       </Frame>
     );
   if (c === "intro-2") {
-    const items = [
-      { t: "오늘 태어난 인물의 사주", d: "그날 태어난 위인의 여덟 글자가 인생과 얼마나 닮았는지" },
-      { t: "일간 · 일주 도감", d: "갑목부터 계수까지, 나는 어떤 사람일까" },
-      { t: "이달의 좋은 날", d: "이사·결혼·계약, 책력으로 본 이달의 길일" },
-      { t: "조선 인물 사주", d: "세종, 정조… 기록에 남은 왕과 위인의 사주" },
+    // The home page's topic tiles, as they read on the site.
+    const topics = [
+      { t: "평생 사주", d: "나는 어떤 사람이고 어떻게 살아갈까?" },
+      { t: "연운", d: "그해 나한테 무슨 일이? 지난해도, 앞으로의 해도" },
+      { t: "재물운", d: "돈이 왜 안 모일까, 언제 트일까?" },
+      { t: "연애·결혼", d: "나랑 맞는 사람은 언제 올까?" },
+      { t: "직업·적성", d: "지금 일, 나랑 맞을까?" },
+      { t: "궁합", d: "우리, 진짜 잘 맞을까?" },
+      { t: "택일", d: "결혼·이사·계약·면접, 언제 할까?" },
     ];
     return (
       <Frame>
-        <div style={{ position: "absolute", top: 130, left: 100, right: 100 }}>
-          <Label>정 훈도가 올리는 것</Label>
-          <p style={{ marginTop: 22, fontSize: 72, fontWeight: 800, lineHeight: 1.3 }}>
-            매일, 여덟 글자로
-            <br />
-            사람을 읽사옵니다
-          </p>
-          <div style={{ marginTop: 50, display: "flex", flexDirection: "column", gap: 24 }}>
-            {items.map((x, i) => (
-              <div key={x.t} style={{ display: "flex", gap: 26 }}>
-                <span style={{ fontSize: 44, fontWeight: 800, color: SEAL, width: 50 }}>{NUM[i]}</span>
-                <div>
-                  <p style={{ fontSize: 42, fontWeight: 800 }}>{x.t}</p>
-                  <p style={{ marginTop: 6, fontSize: 30, color: SOFT, fontFamily: sans }}>{x.d}</p>
-                </div>
+        <div style={{ position: "absolute", top: 110, left: 96, right: 96 }}>
+          <div style={{ textAlign: "center" }}>
+            <Label>훈도사주에서 볼 수 있는 것</Label>
+            <p style={{ marginTop: 14, fontSize: 64, fontWeight: 800 }}>무엇이 궁금하시옵니까</p>
+          </div>
+          <div style={{ marginTop: 38, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+            {topics.map((x, i) => (
+              <div key={x.t} className="doc-paper" style={{ gridColumn: i === topics.length - 1 ? "span 2" : undefined, padding: "26px 30px 24px" }}>
+                <p style={{ fontSize: 42, fontWeight: 800, lineHeight: 1.1 }}>{x.t}</p>
+                <p style={{ marginTop: 10, fontSize: 25, lineHeight: 1.4, color: SOFT, fontFamily: sans }}>{x.d}</p>
               </div>
             ))}
           </div>
-          <Body style={{ marginTop: 40, fontSize: 28 }}>겁주지 않고, 쓰는 법을 알려 드리옵니다. 사주는 참고로, 결정은 그대가.</Body>
+          <div className="doc-paper" style={{ marginTop: 18, padding: "22px 30px", display: "flex", alignItems: "center", gap: 20 }}>
+            <span style={{ flexShrink: 0, padding: "6px 16px", background: SEAL, color: HANJI, fontSize: 26, fontWeight: 800 }}>무료</span>
+            <span style={{ fontSize: 26, lineHeight: 1.45, fontFamily: sans }}>사주 분석과 올해 운세 · 삼재 · 왕이 될 사주 · 조선 신분 감정</span>
+          </div>
+          <p style={{ marginTop: 26, textAlign: "center", fontSize: 28, color: SOFT }}>새로 익히는 대로, 하나씩 더 올리겠사옵니다</p>
         </div>
         <Brand />
       </Frame>
     );
   }
 
-  // The last slide of every carousel.
+  // The last slide of every carousel: the site for the reader's own chart, then a reason to follow.
   return (
     <Frame dark>
-      <div style={{ position: "absolute", top: 170, left: 0, right: 0, textAlign: "center" }}>
+      <div style={{ position: "absolute", top: 130, left: 0, right: 0, textAlign: "center" }}>
         <p style={{ fontSize: 34, letterSpacing: "0.3em", color: GOLD, fontWeight: 800 }}>明 課 學 訓 導</p>
-        <p style={{ marginTop: 50, fontSize: 76, fontWeight: 800, lineHeight: 1.3 }}>
+        <p style={{ marginTop: 40, fontSize: 76, fontWeight: 800, lineHeight: 1.3 }}>
           {q.who === "saju" ? "그대의 여덟 글자가" : "내 일간이"}
           <br />
           궁금하다면?
         </p>
-        <p style={{ marginTop: 36, fontSize: 40, lineHeight: 1.6, color: "rgba(244,236,219,.9)" }}>
-          생년월일만 넣으면 3초.
+        <p style={{ marginTop: 30, fontSize: 38, lineHeight: 1.6, color: "rgba(244,236,219,.9)" }}>
+          생년월일만 넣으면,
           <br />
-          사주 분석과 올해 운세까지 무료예요.
+          사주 분석과 올해 운세까지 무료예요
         </p>
-        <p style={{ marginTop: 40, display: "inline-block", padding: "18px 44px", borderRadius: 999, background: GOLD, color: INK, fontSize: 36, fontWeight: 800 }}>
+        <p style={{ marginTop: 34, display: "inline-block", padding: "18px 44px", borderRadius: 999, background: GOLD, color: INK, fontSize: 36, fontWeight: 800 }}>
           프로필 링크에서 보기
         </p>
       </div>
-      <Hundo src="/hundo-bow.png" size={280} bottom={220} />
+      <Hundo src="/hundo-bow.png" size={230} bottom={385} />
+      <div style={{ position: "absolute", left: 150, right: 150, bottom: 200, paddingTop: 26, borderTop: "1.5px solid rgba(212,175,95,.45)", textAlign: "center" }}>
+        <p style={{ fontSize: 31, lineHeight: 1.55, color: GOLD, fontWeight: 800 }}>매일 한 분씩, 오늘 태어난 인물의 사주를 올리옵니다</p>
+        <p style={{ marginTop: 4, fontSize: 29, color: "rgba(244,236,219,.85)" }}>저장해 두고 팔로우하시옵소서</p>
+      </div>
       <Brand dark />
     </Frame>
   );
