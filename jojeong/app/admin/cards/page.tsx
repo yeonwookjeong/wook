@@ -639,7 +639,7 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
   if (c === "intro-hundo") {
     const rows = [
       { k: "하는 일", v: "여덟 글자를 읽고,\n좋은 날을 고르옵니다" },
-      { k: "성격", v: "겁주지 않고,\n쓰는 법을 알려 드리옵니다" },
+      { k: "성격", v: "다정하지만,\n셈은 누구보다 꼼꼼하옵니다" },
       { k: "버릇", v: "틈만 나면 책을 펴옵니다" },
       { k: "좌우명", v: "사주는 참고로, 결정은 그대가" },
     ];
