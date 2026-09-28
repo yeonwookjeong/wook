@@ -29,12 +29,11 @@ body {
   background-attachment: fixed;
 }
 
-/* Headings split into even lines; paragraphs avoid leaving a single word alone on the last line. */
+/* Headings split into even lines. Body text is justified (below), so it wraps plainly: "pretty" wrapping
+   moves line breaks to spare the last line, and in Safari, which applies it to the whole paragraph, the
+   justified lines it shortens open wide gaps between words. */
 h1, h2, h3 {
   text-wrap: balance;
-}
-p, li, dd, blockquote {
-  text-wrap: pretty;
 }
 /* Body text is set justified, like a printed page. It sits in the base layer so a utility on the element
    (text-center, text-left) still wins, and text inside a centered or right-aligned block keeps that alignment.
