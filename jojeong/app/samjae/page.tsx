@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import AdSlot from "@/components/AdSlot";
 import { readMe } from "@/lib/me";
 import { samjaeOf, TTI } from "@/lib/samjae";
 
@@ -83,6 +84,7 @@ export default async function SamjaePage() {
           여덟 글자로 보는 내 {YEAR}년 운세 (무료) →
         </Link>
       </section>
+      <AdSlot />
     </>
   );
 }

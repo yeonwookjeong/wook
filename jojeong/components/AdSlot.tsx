@@ -11,7 +11,7 @@ declare global {
 }
 
 // One responsive display ad, labelled as such. Renders nothing while ads are off (lib/ads.ts).
-export default function AdSlot() {
+export default function AdSlot({ className = "mt-8" }: { className?: string }) {
   useEffect(() => {
     if (!adsOn) return;
     try {
@@ -22,7 +22,7 @@ export default function AdSlot() {
   }, []);
   if (!adsOn) return null;
   return (
-    <aside className="mt-8" aria-label="광고">
+    <aside className={className} aria-label="광고">
       <p className="mb-1 text-center text-[10px] text-ink-soft/70">광고</p>
       <Script
         id="adsbygoogle"

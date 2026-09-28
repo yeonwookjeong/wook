@@ -415,6 +415,7 @@ async function OpenReport({
         />
         {meDeepen}
         {other}
+        <AdSlot />
       </>
     );
   if (!self)
