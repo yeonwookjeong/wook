@@ -421,6 +421,19 @@ export function yeonunBrief(p: Pillars, profile: Profile | null, y: number, now:
     `- 무료 화면의 풀이: ${d.points.join(" / ")}`,
     `- 달별(절기 기준, ◎좋음 ○무난 △조심 ✕고비): ${d.months.map((m) => `${m.from.split("/")[0]}월(${m.from}~) ${m.gz} ${"✕△○◎"[m.rating]}${m.tags.length ? `(${m.tags.join(",")})` : ""}`).join(" / ")}`,
     `- 가장 좋은 달: ${d.best.map((i) => `${d.months[i].from.split("/")[0]}월`).join(", ")} / 조심할 달: ${d.worst.map((i) => `${d.months[i].from.split("/")[0]}월`).join(", ")}`,
-    ...(d.score.daeun ? [] : ["- 성별을 몰라 대운을 계산하지 않았다(대운 이야기는 하지 않는다)."]),
+    `- 원국 자리와의 만남(자리 = 삶의 영역: 연지 집안·부모, 월지 일터·생활, 일지 나·배우자, 시지 자녀·앞날): ${d.score.meets.map((m) => `${m.pos}지 ${BRANCHES[m.branch]}와 ${m.meeting}${m.gathers ? "(모이는 기운이 버거움)" : ""}`).join(", ") || "없음"} / 천간: ${d.score.stemMeets.map((x) => `${x.pos}간 ${STEMS[x.stem]}와 ${x.kind}`).join(", ") || "없음"}`,
+    `- 그해 신살: ${d.score.sals.join(", ") || "없음"}`,
+    ...(d.score.daeun
+      ? (() => {
+          const dz = d.score.daeun;
+          const r = readChart(p)!;
+          const fit = luckFit(r, p.dayStem, dz.stem, dz.branch);
+          const clash = meetings(yearPillar(y).branch, dz.branch).includes("충");
+          const turning = dz.from === y && profile?.daeun?.[0].from !== y;
+          return [
+            `- 이 해가 든 대운: ${STEMS[dz.stem]}${BRANCHES[dz.branch]}(${dz.from}~${dz.to}년) ${fit >= 3 ? "◎ 바탕이 든든한 10년" : fit <= -3 ? "△ 기반을 다질 10년" : "○ 좋고 나쁨이 섞인 10년"} (적합도 ${fit > 0 ? "+" : ""}${fit}) / 세운과 대운: ${clash ? `${BRANCHES[yearPillar(y).branch]}${BRANCHES[dz.branch]} 충(바탕이 흔들리는 해)` : "충 없음"} / ${turning ? "이 해에 대운이 바뀐다(태어난 날 무렵)" : "대운 한가운데의 해"}`,
+          ];
+        })()
+      : ["- 성별을 몰라 대운을 계산하지 않았다(2장은 원국의 흐름과 그해의 관계로 쓰고, 대운 이야기는 하지 않는다)."]),
   ].join("\n");
 }

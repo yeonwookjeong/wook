@@ -27,7 +27,7 @@ import { YearList, YearTop } from "@/components/Yeonun";
 import { newYearOf, newYearProduct, thisYear, yearDetail, yearOf, yearRange, yearRows } from "@/lib/yeonun";
 import { josa } from "@/lib/josa";
 import { ownedCourts } from "@/lib/load";
-import { ADULT_ONLY, FIXED_RELATION, isAdult, isOpen, isPair, PRICE, productById, saleLabel, saleNow, type Product, type ProductId } from "@/lib/products";
+import { ADULT_ONLY, FIXED_RELATION, isAdult, isOpen, isPair, PRICE, productById, saleLabel, saleNow, YEONUN_PAST_TOC, type Product, type ProductId } from "@/lib/products";
 import { REPORT_SPECS } from "@/lib/reportPrompts";
 import { coupleOf } from "@/lib/couple";
 import { intimacyOf } from "@/lib/intimacy";
@@ -465,7 +465,7 @@ async function OpenReport({
             <Paywall
               product={product}
               request={yreq}
-              chapters={product.toc}
+              chapters={d.when === "past" ? YEONUN_PAST_TOC : product.toc}
               heading={`${y}년 운세 보고서`}
               sub={`${d.when === "past" ? "그해 있었을 일과 그 이유" : "이 해에 벌어질 일과 할 일"}를 돈·일·사랑·몸, 달마다 흐름까지 ${product.toc.length}장에 풀어 드려요`}
             />

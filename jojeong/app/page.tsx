@@ -100,8 +100,8 @@ export default async function Home() {
           )}
           <ol className="mt-4 flex flex-col divide-y divide-seal/15 border-y-[3px] border-double border-seal/40 px-1 text-[14px]">
             {nyProduct.toc.map((item, i) => (
-              <li key={item} className="flex gap-2 py-2">
-                <span className="font-myeongjo font-extrabold text-seal">{"一二三四五六七八九"[i]}</span>
+              <li key={item} className="flex gap-2 py-1.5">
+                <span className="w-7 shrink-0 font-myeongjo font-extrabold text-seal">{["一", "二", "三", "四", "五", "六", "七", "八", "九", "十", "十一", "十二"][i]}</span>
                 {item}
               </li>
             ))}
