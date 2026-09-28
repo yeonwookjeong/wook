@@ -347,29 +347,100 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
             <p style={{ marginTop: 40, fontSize: 60, fontWeight: 800 }}>
               {m}월 {d}일
             </p>
-            <div
-              style={{
-                margin: "44px auto 0",
-                width: 300,
-                height: 300,
-                borderRadius: "50%",
-                border: `6px solid ${GOLD}`,
-                boxShadow: "0 0 0 12px rgba(212,175,95,.18)",
-                background: HANJI,
-                color: SEAL,
-                display: "grid",
-                placeItems: "center",
-              }}
-            >
-              <span style={{ fontSize: 118, fontWeight: 800, lineHeight: 1.05 }}>
-                {ch.day.hanja.split("").map((x) => (
-                  <span key={x} style={{ display: "block" }}>
-                    {x}
-                  </span>
-                ))}
-              </span>
-            </div>
-            <p style={{ marginTop: 46, fontSize: 84, fontWeight: 800 }}>{fig.name}</p>
+            {fig.photo ? (
+              // The person as a sticker (like the zodiac animals on 띠 cards), the day pillar as a seal on it.
+              <div style={{ position: "relative", margin: "40px auto 0", width: 420, height: 420 }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={fig.photo}
+                  alt=""
+                  style={{
+                    width: 420,
+                    height: 420,
+                    borderRadius: "50%",
+                    objectFit: "cover",
+                    border: "12px solid #fff",
+                    boxShadow: `0 0 0 6px ${GOLD}, 0 18px 40px rgba(0,0,0,.45)`,
+                  }}
+                />
+                <div
+                  style={{
+                    position: "absolute",
+                    right: -30,
+                    bottom: 6,
+                    transform: "rotate(-6deg)",
+                    padding: "10px 14px",
+                    background: SEAL,
+                    color: HANJI,
+                    border: `4px solid ${HANJI}`,
+                    borderRadius: 10,
+                    fontSize: 58,
+                    fontWeight: 800,
+                    lineHeight: 1.05,
+                    boxShadow: "0 8px 20px rgba(0,0,0,.35)",
+                  }}
+                >
+                  {ch.day.hanja.split("").map((x) => (
+                    <span key={x} style={{ display: "block" }}>
+                      {x}
+                    </span>
+                  ))}
+                </div>
+                {fig.bubble && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: -150,
+                      top: 30,
+                      padding: "18px 28px",
+                      background: "#fff",
+                      color: INK,
+                      borderRadius: 24,
+                      fontSize: 34,
+                      fontWeight: 800,
+                      whiteSpace: "nowrap",
+                      boxShadow: "0 8px 20px rgba(0,0,0,.3)",
+                    }}
+                  >
+                    {fig.bubble}
+                    <span
+                      style={{
+                        position: "absolute",
+                        right: 34,
+                        bottom: -20,
+                        borderLeft: "14px solid transparent",
+                        borderRight: "14px solid transparent",
+                        borderTop: "22px solid #fff",
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div
+                style={{
+                  margin: "44px auto 0",
+                  width: 300,
+                  height: 300,
+                  borderRadius: "50%",
+                  border: `6px solid ${GOLD}`,
+                  boxShadow: "0 0 0 12px rgba(212,175,95,.18)",
+                  background: HANJI,
+                  color: SEAL,
+                  display: "grid",
+                  placeItems: "center",
+                }}
+              >
+                <span style={{ fontSize: 118, fontWeight: 800, lineHeight: 1.05 }}>
+                  {ch.day.hanja.split("").map((x) => (
+                    <span key={x} style={{ display: "block" }}>
+                      {x}
+                    </span>
+                  ))}
+                </span>
+              </div>
+            )}
+            <p style={{ marginTop: fig.photo ? 40 : 46, fontSize: 84, fontWeight: 800 }}>{fig.name}</p>
             <p style={{ marginTop: 10, fontSize: 30, color: "rgba(244,236,219,.75)", fontFamily: sans }}>{fig.line}</p>
             <p style={{ marginTop: 34, padding: "0 110px", fontSize: 44, fontWeight: 800, lineHeight: 1.4, color: "#f0c9a0" }}>{fig.hook}</p>
           </div>

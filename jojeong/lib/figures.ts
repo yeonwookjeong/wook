@@ -14,6 +14,8 @@ export type Figure = {
   died?: number; // the decades shown stop at the one they died in
   line: string; // 1901 · 이탈리아 · 물리학자
   hook: string; // the cover's one line
+  photo?: string; // /figures/<id>.jpg, a square crop; kept out of git (rights are checked per post)
+  bubble?: string; // the cover's speech bubble, in the person's voice
   pairs: { sign: string; life: string }[]; // what the chart shows → what the life did
   events: { year: number; text: string }[];
   source: string;
@@ -28,6 +30,8 @@ export const FIGURES: Figure[] = [
     died: 1954,
     line: "1901 · 이탈리아 로마 · 물리학자",
     hook: "용광로를 품고 태어난 무쇠, 원자의 불을 켜다",
+    photo: "/figures/fermi.jpg",
+    bubble: "불이 필요했소.",
     pairs: [
       { sign: "일간 경금(庚金), 단단한 무쇠", life: "끝까지 파고들어 답을 내는 실험의 천재" },
       { sign: "태어난 달에 丁火, 쇠를 녹이는 용광로", life: "평생 원자를 쪼개는 '불'을 다룬 사람" },
