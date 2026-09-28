@@ -5,7 +5,7 @@ import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 import { chartBrief, pairBrief } from "./brief";
 import { coupleBrief } from "./couple";
 import { decodePerson, profileOf, RELATIONS, relationOf } from "./pairToken";
-import { ADULT_ONLY, FIXED_RELATION, isAdult, isPair, productById, type ProductId } from "./products";
+import { ADULT_ONLY, FIXED_RELATION, isAdult, isPair, productById, YEONUN_PAST_TOC, type ProductId } from "./products";
 import { intimacyBrief } from "./intimacy";
 import { reunionBrief } from "./reunion";
 import { freeBrief } from "./freeReading";
@@ -128,7 +128,9 @@ export async function jobFor(req: JobRequest): Promise<ReportJob | { error: stri
   }
 
   const system = systemPromptFor(product);
-  const prompt = userPrompt(spec, subjectLine, briefs);
+  // 연운 for a year already gone asks its twelve questions in the past tense.
+  const past = product.id === "yeonun" && req.y !== undefined && Number(req.y) < thisYear();
+  const prompt = userPrompt(past ? { ...spec, chapters: YEONUN_PAST_TOC } : spec, subjectLine, briefs);
   const key = createHash("sha256").update([PROMPT_VERSION, REPORT_MODEL, product.id, system, prompt].join("\n")).digest("base64url");
   return { key, system, prompt, title: product.title, modern: Boolean(product.modern) };
 }

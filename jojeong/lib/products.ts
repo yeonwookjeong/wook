@@ -116,7 +116,20 @@ export const PRODUCTS: Product[] = [
     hanja: "年運",
     for: "anyone",
     tagline: "그해 나에게 무슨 일이 있었을까, 있을까? 지난해도 앞으로의 해도 한 해씩 깊게",
-    toc: ["이 해는 나에게 어떤 해일까", "돈: 들어올까, 새어 나갈까", "일과 자리: 오를까, 옮길까", "사랑과 사람", "몸과 마음", "달마다 흐름: 상반기", "달마다 흐름: 하반기", "이 해를 내 편으로 만드는 법"],
+    toc: [
+      "한 줄로 보는 이 해, 그리고 그 이유",
+      "10년 대운 속의 이 해",
+      "돈: 들어올까, 새어 나갈까",
+      "일과 자리: 오를까, 옮길까",
+      "사랑과 연애",
+      "사람: 귀인과 조심할 사람",
+      "가족과 집안",
+      "몸과 마음",
+      "움직일 일과 도장 찍을 일",
+      "달마다 흐름: 상반기 (2~7월)",
+      "달마다 흐름: 하반기 (8월~이듬해 1월)",
+      "결정적인 세 번의 때, 그리고 내 편으로 만드는 법",
+    ],
     teaser: "태어난 해부터 10년 뒤까지, 궁금한 해를 골라 한 해를 통째로 풀어 드려요. 연도별 판정과 달마다의 흐름은 무료로 먼저 보여 드려요.",
     modern: true,
   },
@@ -187,6 +200,22 @@ export const PRODUCTS: Product[] = [
 
 // Everything on sale or free today; a shelved report is looked up nowhere, so its page and payment are gone.
 export const SHELF = PRODUCTS.filter((p) => !p.shelved);
+// 연운 bought for a year already gone reads back over it: the same twelve questions, asked in the past tense.
+export const YEONUN_PAST_TOC = [
+  "한 줄로 보는 그해, 그리고 그 이유",
+  "10년 대운 속의 그해",
+  "돈: 들어왔을까, 새어 나갔을까",
+  "일과 자리: 무엇이 달라졌을까",
+  "사랑과 연애: 그해의 인연",
+  "사람: 누가 곁에 왔고 누가 떠났을까",
+  "가족과 집안",
+  "몸과 마음",
+  "움직인 일과 도장 찍은 일",
+  "달마다 되짚기: 상반기 (2~7월)",
+  "달마다 되짚기: 하반기 (8월~이듬해 1월)",
+  "그해가 남긴 숙제, 지금 푸는 법",
+];
+
 export const productById = (id: string) => SHELF.find((p) => p.id === id);
 
 // Sets: several one-person reports for the same chart, bought at once. Two-person reports stay out, since a
