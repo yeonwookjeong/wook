@@ -4,6 +4,8 @@ import { isAdmin } from "@/lib/admin";
 import { ILGAN, ILJU_TAG_TEXT, iljuFacts, stemCure, stemMatches, stemName, stemThing } from "@/lib/cards";
 import { josa } from "@/lib/josa";
 import { pickDays } from "@/lib/taekil";
+import { figureById, figureChart } from "@/lib/figures";
+import { STEMS } from "@/lib/saju";
 
 export const metadata: Metadata = { title: "카드", robots: { index: false } };
 
@@ -323,13 +325,218 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
     );
   }
 
+  // ── 오늘 태어난 인물의 사주: a fixed cover (only the person changes), then the chart, the chart against the
+  // life, and the decades against the life.
+  const fig = figureById(q.id ?? "fermi");
+  if (fig && c.startsWith("fig")) {
+    const ch = figureChart(fig);
+    const { m, d } = fig.born;
+    const cols = [
+      { pos: "태어난 해", ...ch.year },
+      { pos: "태어난 달", ...ch.month },
+      { pos: "태어난 날", ...ch.day, me: true },
+      ch.hour ? { pos: "태어난 시", ...ch.hour } : { pos: "태어난 시", hanja: "?", ko: "기록 없음" },
+    ];
+    if (c === "fig-cover")
+      return (
+        <Frame dark>
+          <div style={{ position: "absolute", top: 120, left: 0, right: 0, textAlign: "center" }}>
+            <p style={{ display: "inline-block", padding: "14px 34px", background: GOLD, color: INK, fontSize: 36, fontWeight: 800, letterSpacing: "0.04em" }}>
+              오늘 태어난 인물의 사주
+            </p>
+            <p style={{ marginTop: 40, fontSize: 60, fontWeight: 800 }}>
+              {m}월 {d}일
+            </p>
+            <div
+              style={{
+                margin: "44px auto 0",
+                width: 300,
+                height: 300,
+                borderRadius: "50%",
+                border: `6px solid ${GOLD}`,
+                boxShadow: "0 0 0 12px rgba(212,175,95,.18)",
+                background: HANJI,
+                color: SEAL,
+                display: "grid",
+                placeItems: "center",
+              }}
+            >
+              <span style={{ fontSize: 118, fontWeight: 800, lineHeight: 1.05 }}>
+                {ch.day.hanja.split("").map((x) => (
+                  <span key={x} style={{ display: "block" }}>
+                    {x}
+                  </span>
+                ))}
+              </span>
+            </div>
+            <p style={{ marginTop: 46, fontSize: 84, fontWeight: 800 }}>{fig.name}</p>
+            <p style={{ marginTop: 10, fontSize: 30, color: "rgba(244,236,219,.75)", fontFamily: sans }}>{fig.line}</p>
+            <p style={{ marginTop: 34, padding: "0 110px", fontSize: 44, fontWeight: 800, lineHeight: 1.4, color: "#f0c9a0" }}>{fig.hook}</p>
+          </div>
+          <Brand dark />
+        </Frame>
+      );
+    if (c === "fig-chart") {
+      const r = ch.reading;
+      return (
+        <Frame>
+          <div style={{ position: "absolute", top: 120, left: 100, right: 100 }}>
+            <Label>오늘 태어난 인물의 사주 · {fig.name}</Label>
+            <p style={{ marginTop: 22, fontSize: 72, fontWeight: 800 }}>{ch.hour ? "여덟 글자" : "여섯 글자"}로 본 사주</p>
+            <div style={{ marginTop: 40, display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, textAlign: "center" }}>
+              {cols.map((x) => (
+                <div
+                  key={x.pos}
+                  style={{ padding: "22px 0", borderRadius: 20, border: "me" in x && x.me ? `3px solid ${SEAL}` : "3px solid rgba(33,27,23,.12)", background: "me" in x && x.me ? "rgba(179,38,30,.08)" : "transparent" }}
+                >
+                  <p style={{ fontSize: 22, color: SOFT, fontFamily: sans }}>{x.pos}</p>
+                  <p style={{ marginTop: 8, fontSize: 64, fontWeight: 800, color: "me" in x && x.me ? SEAL : INK, lineHeight: 1.1 }}>
+                    {x.hanja.split("").map((chr, i) => (
+                      <span key={i} style={{ display: "block" }}>
+                        {chr}
+                      </span>
+                    ))}
+                  </p>
+                  <p style={{ marginTop: 6, fontSize: 24, color: SOFT, fontFamily: sans }}>{x.ko}</p>
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: 40, display: "grid", gridTemplateColumns: "200px 1fr", rowGap: 20, fontSize: 38, lineHeight: 1.45 }}>
+              <b style={{ color: SEAL }}>일간</b>
+              <span style={{ fontFamily: sans }}>{stemName(STEMS.indexOf(ch.day.hanja[0] as (typeof STEMS)[number]))} · {stemThing(STEMS.indexOf(ch.day.hanja[0] as (typeof STEMS)[number]))}</span>
+              <b style={{ color: SEAL }}>일주</b>
+              <span style={{ fontFamily: sans }}>{ch.day.ko}일주{ch.sals.includes("괴강") ? " · 괴강" : ""}{ch.sals.includes("백호") ? " · 백호" : ""}</span>
+              <b style={{ color: SEAL }}>사주의 힘</b>
+              <span style={{ fontFamily: sans }}>{r?.strength ?? "-"}</span>
+              <b style={{ color: SEAL }}>별(신살)</b>
+              <span style={{ fontFamily: sans }}>{ch.sals.filter((x) => x !== "괴강" && x !== "백호").join(" · ") || "없음"}</span>
+            </div>
+            {!ch.hour && <Body style={{ marginTop: 34, fontSize: 24 }}>태어난 시각은 전하지 않아 여섯 글자로 봤어요 · 재미로 보는 인물 사주</Body>}
+          </div>
+          <Brand />
+        </Frame>
+      );
+    }
+    if (c === "fig-pairs")
+      return (
+        <Frame>
+          <div style={{ position: "absolute", top: 120, left: 100, right: 100 }}>
+            <Label>오늘 태어난 인물의 사주 · {fig.name}</Label>
+            <p style={{ marginTop: 22, fontSize: 72, fontWeight: 800, lineHeight: 1.25 }}>사주가 닮은 인생</p>
+            <div style={{ marginTop: 44, display: "flex", flexDirection: "column", gap: 26 }}>
+              {fig.pairs.map((x) => (
+                <div key={x.sign} style={{ padding: "26px 30px", borderRadius: 24, background: "rgba(33,27,23,.05)" }}>
+                  <p style={{ fontSize: 30, color: SEAL, fontWeight: 800 }}>사주 · {x.sign}</p>
+                  <p style={{ marginTop: 12, fontSize: 40, fontWeight: 800, lineHeight: 1.4 }}>→ {x.life}</p>
+                </div>
+              ))}
+            </div>
+            <p style={{ marginTop: 34, textAlign: "right", fontSize: 30, color: SOFT }}>정 훈도, 삼가 올리옵니다</p>
+          </div>
+          <Brand />
+        </Frame>
+      );
+    if (c === "fig-daeun")
+      return (
+        <Frame>
+          <div style={{ position: "absolute", top: 120, left: 100, right: 100 }}>
+            <Label>오늘 태어난 인물의 사주 · {fig.name}</Label>
+            <p style={{ marginTop: 22, fontSize: 72, fontWeight: 800, lineHeight: 1.25 }}>대운과 인생의 순간</p>
+            <div style={{ marginTop: 40, display: "flex", flexDirection: "column", gap: 14 }}>
+              {ch.decades.filter((x) => !fig.died || x.from <= fig.died).slice(0, 6).map((x) => (
+                <div
+                  key={x.gz}
+                  style={{
+                    padding: "18px 26px",
+                    borderRadius: 20,
+                    background: x.mark === "◎" ? "rgba(179,38,30,.1)" : "rgba(33,27,23,.05)",
+                    border: x.mark === "◎" ? `3px solid ${SEAL}` : "3px solid transparent",
+                  }}
+                >
+                  <p style={{ display: "flex", alignItems: "baseline", gap: 20, fontSize: 34 }}>
+                    <b style={{ width: 40, color: x.mark === "◎" ? SEAL : SOFT }}>{x.mark}</b>
+                    <b style={{ width: 210 }}>{x.ages}</b>
+                    <span style={{ color: SOFT, fontFamily: sans, fontSize: 28 }}>
+                      {x.from}~{x.to}
+                    </span>
+                  </p>
+                  {x.events.map((ev) => (
+                    <p key={ev.year} style={{ marginTop: 6, marginLeft: 60, fontSize: 32, fontWeight: 800, color: SEAL }}>
+                      {ev.year} {ev.text}
+                    </p>
+                  ))}
+                </div>
+              ))}
+            </div>
+            <Body style={{ marginTop: 24, fontSize: 24 }}>◎ 좋은 10년 · ○ 무난한 10년 · △ 다지는 10년 · 출처 {fig.source}</Body>
+          </div>
+          <Brand />
+        </Frame>
+      );
+  }
+
+  // ── The introduction post.
+  if (c === "intro-1")
+    return (
+      <Frame dark>
+        <div style={{ position: "absolute", top: 150, left: 0, right: 0, textAlign: "center" }}>
+          <p style={{ fontSize: 34, letterSpacing: "0.3em", color: GOLD, fontWeight: 800 }}>觀象監 明課學 訓導</p>
+          <p style={{ marginTop: 50, fontSize: 70, fontWeight: 800, lineHeight: 1.35 }}>
+            소신, 조선 관상감
+            <br />
+            명과학 훈도 정가이옵니다
+          </p>
+          <p style={{ marginTop: 36, fontSize: 40, lineHeight: 1.6, color: "rgba(244,236,219,.9)" }}>
+            왕실의 사주와 길일을 보던 눈으로,
+            <br />
+            이제 그대의 여덟 글자를 보겠사옵니다
+          </p>
+        </div>
+        <Hundo src="/hundo-face.png" size={320} bottom={180} />
+        <Brand dark />
+      </Frame>
+    );
+  if (c === "intro-2") {
+    const items = [
+      { t: "오늘 태어난 인물의 사주", d: "그날 태어난 위인의 여덟 글자가 인생과 얼마나 닮았는지" },
+      { t: "일간 · 일주 도감", d: "갑목부터 계수까지, 나는 어떤 사람일까" },
+      { t: "이달의 좋은 날", d: "이사·결혼·계약, 책력으로 본 이달의 길일" },
+      { t: "조선 인물 사주", d: "세종, 정조… 기록에 남은 왕과 위인의 사주" },
+    ];
+    return (
+      <Frame>
+        <div style={{ position: "absolute", top: 130, left: 100, right: 100 }}>
+          <Label>정 훈도가 올리는 것</Label>
+          <p style={{ marginTop: 22, fontSize: 72, fontWeight: 800, lineHeight: 1.3 }}>
+            매일, 여덟 글자로
+            <br />
+            사람을 읽사옵니다
+          </p>
+          <div style={{ marginTop: 50, display: "flex", flexDirection: "column", gap: 24 }}>
+            {items.map((x, i) => (
+              <div key={x.t} style={{ display: "flex", gap: 26 }}>
+                <span style={{ fontSize: 44, fontWeight: 800, color: SEAL, width: 50 }}>{NUM[i]}</span>
+                <div>
+                  <p style={{ fontSize: 42, fontWeight: 800 }}>{x.t}</p>
+                  <p style={{ marginTop: 6, fontSize: 30, color: SOFT, fontFamily: sans }}>{x.d}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <Body style={{ marginTop: 40, fontSize: 28 }}>겁주지 않고, 쓰는 법을 알려 드리옵니다. 사주는 참고로, 결정은 그대가.</Body>
+        </div>
+        <Brand />
+      </Frame>
+    );
+  }
+
   // The last slide of every carousel.
   return (
     <Frame dark>
       <div style={{ position: "absolute", top: 170, left: 0, right: 0, textAlign: "center" }}>
         <p style={{ fontSize: 34, letterSpacing: "0.3em", color: GOLD, fontWeight: 800 }}>明 課 學 訓 導</p>
         <p style={{ marginTop: 50, fontSize: 76, fontWeight: 800, lineHeight: 1.3 }}>
-          내 일간이
+          {q.who === "saju" ? "그대의 여덟 글자가" : "내 일간이"}
           <br />
           궁금하다면?
         </p>
