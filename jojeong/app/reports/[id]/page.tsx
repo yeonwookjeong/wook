@@ -24,7 +24,7 @@ import SajuChart from "@/components/SajuChart";
 import SinbunReport from "@/components/SinbunReport";
 import YearReport from "@/components/YearReport";
 import { YearList, YearTop } from "@/components/Yeonun";
-import { thisYear, yearDetail, yearOf, yearRange, yearRows } from "@/lib/yeonun";
+import { newYearOf, newYearProduct, thisYear, yearDetail, yearOf, yearRange, yearRows } from "@/lib/yeonun";
 import { josa } from "@/lib/josa";
 import { ownedCourts } from "@/lib/load";
 import { ADULT_ONLY, FIXED_RELATION, isAdult, isOpen, isPair, PRICE, productById, saleLabel, saleNow, type Product, type ProductId } from "@/lib/products";
@@ -297,11 +297,14 @@ async function OpenReport({
   const me = fromOrder ? { person: fromOrder, token: paid!.req.p! } : courtId || fresh ? null : await readMe();
   // A report on sale is bought for the chart remembered here (the order carries it), not a court's.
   const subject = me || locked || fresh ? null : await subjectFor(product, courtId, ministerId);
-  const next = `/reports/${product.id}`;
+  // 연운 opened on one year (the 신년운세 link) comes back to that year once the chart is entered.
+  const base = `/reports/${product.id}`;
+  const next = product.id === "yeonun" && /^\d{4}$/.test(search.y ?? "") ? `${base}?y=${search.y}` : base;
+  const newYear = product.id === "yeonun" ? newYearOf() : null;
   if (!me && !subject)
     return (
       <>
-        <Header product={product} />
+        <Header product={newYear !== null && search.y === String(newYear) ? newYearProduct(product, newYear) : product} />
         <section className="doc-paper mt-4 px-5 pt-6 pb-6">
           <p className="text-center text-sm leading-relaxed text-ink-soft">{product.teaser}</p>
           {isOpen(product) ? (
@@ -326,7 +329,7 @@ async function OpenReport({
   // remembered one.
   const other = !paid && (
     <p className="mt-2 text-center">
-      <Link href={`${next}?new=1`} className="text-xs text-ink-soft underline">
+      <Link href={`${next}${next.includes("?") ? "&" : "?"}new=1`} className="text-xs text-ink-soft underline">
         다른 사람 사주로 보기
       </Link>
     </p>
@@ -423,7 +426,7 @@ async function OpenReport({
     const now = thisYear();
     const y = yearOf(paid ? paid.req.y : search.y, profile, now);
     const token = me?.token;
-    const link = (year?: number) => `${next}?${new URLSearchParams({ ...(courtId && { court: courtId }), ...(year && { y: String(year) }) })}`;
+    const link = (year?: number) => `${base}?${new URLSearchParams({ ...(courtId && { court: courtId }), ...(year && { y: String(year) }) })}`;
     if (y === null) {
       const { from, to } = yearRange(profile, now);
       const rows = yearRows(pillars, profile, from, to, now);
@@ -451,7 +454,7 @@ async function OpenReport({
     const unlock = paid ?? (locked && token ? await ownedOrderFor(product.id, yreq) : null);
     return (
       <>
-        <Header product={product} subjectName={`${name}님`} />
+        <Header product={y === newYear ? newYearProduct(product, y) : product} subjectName={`${name}님`} />
         {unlock && <OrderLink id={unlock.id} />}
         <YearTop d={d} name={name} prev={!paid && y > from ? link(y - 1) : null} next={!paid && y < to ? link(y + 1) : null} list={link()} />
         {unlock ? (

@@ -243,6 +243,19 @@ export function yearRows(p: Pillars, profile: Profile | null, from: number, to: 
 // The current year in Korea.
 export const thisYear = (now = new Date()) => new Date(now.getTime() + 9 * 3600000).getUTCFullYear();
 
+// The coming year sold on its own as 신년운세 (the same 연운 report and order for that year): from September,
+// when people start asking about next year, through February, when the new year has turned at 입춘. Null in
+// between.
+export function newYearOf(now = new Date()): number | null {
+  const kst = new Date(now.getTime() + 9 * 3600000);
+  const m = kst.getUTCMonth() + 1;
+  return m >= 9 ? kst.getUTCFullYear() + 1 : m <= 2 ? kst.getUTCFullYear() : null;
+}
+// The 연운 product dressed as that year's 신년운세, for its header.
+export function newYearProduct<T extends { title: string; hanja: string; tagline: string }>(product: T, y: number): T {
+  return { ...product, title: `${y} 신년운세`, hanja: yearName(y).hanja, tagline: `${y}년 나한테 어떤 일이 생길까? 돈·일·사랑·몸부터 달마다 할 일까지` };
+}
+
 // The range a reader can open: from the birth year (or twenty years back when it is unknown) to ten years ahead.
 export function yearRange(profile: Profile | null, now: number): { from: number; to: number } {
   return { from: profile?.birthYear ?? now - 20, to: now + 10 };
