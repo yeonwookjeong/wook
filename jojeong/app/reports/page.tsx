@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 import Keep from "@/components/Keep";
-import { isOpen, OPEN_ALL, PRICE, priceNow, productById, PRODUCTS, saleLabel, saleNow, SETS, type Product, type SetId } from "@/lib/products";
+import { isOpen, OPEN_ALL, PRICE, priceNow, productById, SHELF, saleLabel, saleNow, SETS, type Product, type SetId } from "@/lib/products";
 
 export const metadata: Metadata = { title: "전체 보고서" };
 
@@ -52,8 +52,8 @@ export default async function ReportsPage() {
   await connection();
   const price = priceNow();
   const sale = saleNow();
-  const modern = PRODUCTS.filter((p) => p.modern);
-  const joseon = PRODUCTS.filter((p) => !p.modern);
+  const modern = SHELF.filter((p) => p.modern);
+  const joseon = SHELF.filter((p) => !p.modern);
 
   return (
     <>

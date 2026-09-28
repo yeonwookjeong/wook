@@ -58,7 +58,7 @@ const COURT_REPORTS = [
   ["모임 관계도", "우리 모임 찰떡 짝과 숨은 실세"],
   ["내 인사기록 열람", "왕(친구)은 나를 어떻게 볼까"],
 ] as const;
-const GRID: ProductId[] = ["gunghap", "yeonae", "jaehoe", "sokgunghap", "jaemul", "jikup", "gukjeong"];
+const GRID: ProductId[] = ["gunghap", "yeonae", "jaemul", "jikup", "gukjeong"];
 
 function Price({ product }: { product: Product }) {
   if (product.free) return <span className="text-[13px] font-extrabold text-seal">무료</span>;

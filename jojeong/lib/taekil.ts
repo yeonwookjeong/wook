@@ -2,7 +2,7 @@ import { Solar } from "lunar-javascript";
 import { meetings } from "./deep";
 import { BRANCH_EL, ELEMENT_HANJA, ELEMENT_KO, readChart, stemEl } from "./myeongri";
 import type { Person } from "./pairToken";
-import { BRANCHES, STEMS } from "./saju";
+import { BRANCHES, BRANCHES_KO, STEMS, STEMS_KO } from "./saju";
 import { KINDS, kindOf, SPANS, type Kind } from "./taekilKinds";
 
 export { KINDS, kindOf, SPANS, type Kind };
@@ -55,6 +55,21 @@ const OFFICER_WHY: Record<string, string> = {
   破: "파일(破日)은 '깨지는 날'이에요. 무언가를 새로 맺는 일은 피하라고 해요.",
   闭: "폐일(閉日)은 '닫히는 날'이에요. 새로 여는 일에는 맞지 않다고 봐요.",
 };
+// 손(損): by the last digit of the lunar day, where it goes. 9 and 0 are the days it is nowhere.
+const SON = [null, "동쪽", "동쪽", "남쪽", "남쪽", "서쪽", "서쪽", "북쪽", "북쪽", null];
+
+// Directions a move should avoid for the whole year (by the year's branch from 입춘): 대장군방 and 삼살방.
+const DAEJANGGUN: Record<string, string> = { 亥: "서쪽", 子: "서쪽", 丑: "서쪽", 寅: "북쪽", 卯: "북쪽", 辰: "북쪽", 巳: "동쪽", 午: "동쪽", 未: "동쪽", 申: "남쪽", 酉: "남쪽", 戌: "남쪽" };
+const SAMSAL: Record<string, string> = { 申: "남쪽", 子: "남쪽", 辰: "남쪽", 寅: "북쪽", 午: "북쪽", 戌: "북쪽", 巳: "동쪽", 酉: "동쪽", 丑: "동쪽", 亥: "서쪽", 卯: "서쪽", 未: "서쪽" };
+export function yearDirections(date: string): { year: string; daejanggun: string; samsal: string } {
+  const [y, m, d] = date.split("-").map(Number);
+  const l = Solar.fromYmd(y, m, d).getLunar();
+  const zhi = l.getYearZhiByLiChun();
+  const gan = l.getYearGanByLiChun();
+  const year = `${STEMS_KO[STEMS.indexOf(gan as (typeof STEMS)[number])]}${BRANCHES_KO[BRANCHES.indexOf(zhi as (typeof BRANCHES)[number])]}년`;
+  return { year, daejanggun: DAEJANGGUN[zhi], samsal: SAMSAL[zhi] };
+}
+
 const XIU_KO: Record<string, string> = {
   角: "각", 亢: "항", 氐: "저", 房: "방", 心: "심", 尾: "미", 箕: "기", 斗: "두", 牛: "우", 女: "여", 虚: "허", 危: "위", 室: "실", 壁: "벽",
   奎: "규", 娄: "루", 胃: "위", 昴: "묘", 毕: "필", 觜: "자", 参: "삼", 井: "정", 鬼: "귀", 柳: "류", 星: "성", 张: "장", 翼: "익", 轸: "진",
@@ -73,7 +88,9 @@ export type DayPick = {
   grade: 2 | 1 | 0 | -1; // ◎ 길일 · ○ 무난 · △ 애매 · ✕ 피할 날 (or not suited)
   reasons: Note[];
   warns: Note[];
-  hours: string[];
+  hours: string[]; // "7:00~11:00 청룡·명당시"
+  ceremony: string | null; // wedding: the 황도 hour nearest midday, for the ceremony
+  son: string | null; // move: where 손 is that day (null on a 손 없는 날)
   weekend: boolean;
 };
 
@@ -167,23 +184,27 @@ export function pickDays(kind: Kind, people: Person[], from: { y: number; m: num
       }
     }
 
-    // 황도 hours in the daytime that do not clash with anyone's 일지.
-    const hours = l
+    // 황도 hours in the daytime that do not clash with anyone's 일지, back-to-back ones read as one span.
+    const slots = l
       .getTimes()
-      .filter((t) => {
-        const h = Number(t.getMinHm().slice(0, 2));
+      .map((t) => ({ from: Number(t.getMinHm().slice(0, 2)), to: Number(t.getMaxHm().slice(0, 2)) + 1, spirit: SPIRIT_KO[t.getTianShen()] ?? t.getTianShen(), t }))
+      .filter(({ from, t }) => {
         const b = BRANCHES.indexOf(t.getZhi() as (typeof BRANCHES)[number]);
-        return t.getTianShenType() === "黄道" && h >= 7 && h <= 19 && !people.some((p) => meetings(b, p.pillars.dayBranch).includes("충"));
-      })
-      .map((t) => [Number(t.getMinHm().slice(0, 2)), Number(t.getMaxHm().slice(0, 2)) + 1])
-      // Back-to-back hours read as one span: 7:00~11:00, not 7:00~9:00, 9:00~11:00.
-      .reduce<number[][]>((acc, [from, to]) => {
+        return t.getTianShenType() === "黄道" && from >= 7 && from <= 19 && !people.some((p) => meetings(b, p.pillars.dayBranch).includes("충"));
+      });
+    const hours = slots
+      .reduce<{ from: number; to: number; spirits: string[] }[]>((acc, x) => {
         const last = acc.at(-1);
-        if (last && last[1] === from) last[1] = to;
-        else acc.push([from, to]);
+        if (last && last.to === x.from) {
+          last.to = x.to;
+          last.spirits.push(x.spirit);
+        } else acc.push({ from: x.from, to: x.to, spirits: [x.spirit] });
         return acc;
       }, [])
-      .map(([from, to]) => `${from}:00~${to}:00`);
+      .map((x) => `${x.from}:00~${x.to}:00 ${x.spirits.join("·")}시`);
+    const noon = [...slots].sort((x, y) => Math.abs(x.from + 1 - 12.5) - Math.abs(y.from + 1 - 12.5))[0];
+    const ceremony = kind === "wedding" && noon ? `${noon.from}:00~${noon.to}:00 (${noon.spirit}시)` : null;
+    const son = kind === "move" ? SON[l.getDay() % 10] : null;
 
     const clashes = warns.some((w) => w.tag.includes("충"));
     const grade: DayPick["grade"] = !fit || (kind === "wedding" && clashes) ? -1 : score >= 4 ? 2 : score >= 1 ? 1 : score >= -1 ? 0 : -1;
@@ -199,6 +220,8 @@ export function pickDays(kind: Kind, people: Person[], from: { y: number; m: num
       reasons,
       warns,
       hours,
+      ceremony,
+      son,
       weekend: week === 0 || week === 6,
     });
     day = day.next(1);
@@ -232,6 +255,56 @@ export const weekendBest = (days: DayPick[], n = 5) =>
     .filter((d) => d.weekend && d.grade >= 1)
     .sort((a, b) => b.score - a.score || a.date.localeCompare(b.date))
     .slice(0, n);
+
+// The search date (KST) carried in a 택일 request, so a bought one keeps the days it was bought with.
+export const searchDay = (d: unknown, now = new Date()) =>
+  typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : new Date(now.getTime() + 9 * 3600000).toISOString().slice(0, 10);
+export const dayStart = (d: string) => new Date(`${d}T00:00:00+09:00`);
+
+// Ways to choose when the best day does not suit: the best, the earliest, a weekend one, a weekday one.
+export function picksOf(days: DayPick[], kind: Kind): { label: string; day: DayPick }[] {
+  const good = days.filter((d) => d.grade >= 1);
+  const best = bestDays(days, kind, 1)[0];
+  const earliest = [...good].sort((a, b) => a.date.localeCompare(b.date))[0];
+  const weekend = weekendBest(days, 1)[0];
+  const weekday = good.filter((d) => !d.weekend).sort((a, b) => b.score - a.score || a.date.localeCompare(b.date))[0];
+  const out: { label: string; day: DayPick }[] = [];
+  const add = (label: string, day?: DayPick) => day && !out.some((x) => x.day.date === day.date) && out.push({ label, day });
+  add("가장 좋은 날", best);
+  add("가장 빠른 길일", earliest);
+  if (kind !== "open") add("주말 중 최선", weekend);
+  add("평일 중 최선", weekday);
+  return out;
+}
+
+// The computed search, for the writer of the 택일 소견서.
+export function taekilBrief(kind: Kind, days: DayPick[], label: string): string {
+  const good = days.filter((d) => d.grade >= 1);
+  const tags = (xs: Note[]) => xs.map((x) => x.tag).join(", ");
+  const line = (d: DayPick) =>
+    `${d.date.slice(0, 4)}년 ${d.label} ${d.gz} ${d.lunar} ${["✕", "△", "○", "◎"][d.grade + 1]}: 좋은 표시 [${tags(d.reasons)}]${d.warns.length ? `; 걸리는 표시 [${tags(d.warns)}]` : ""}; 좋은 시간 ${d.hours.join(", ") || "없음"}${d.ceremony ? `; 예식 시간 ${d.ceremony}` : ""}${kind === "move" ? `; 손 ${d.son ?? "없음(손 없는 날)"}` : ""}`;
+  const months = [...new Set(days.map((d) => d.date.slice(0, 7)))].map((ym) => {
+    const m = days.filter((d) => d.date.startsWith(ym));
+    return `${Number(ym.slice(5))}월 ◎${m.filter((d) => d.grade === 2).length} ○${m.filter((d) => d.grade === 1).length}`;
+  });
+  const out = ruledOut(days);
+  // Each month's first and last day: the year turns at 입춘 (early February), inside a month.
+  const firsts = [...new Set(days.map((d) => d.date.slice(0, 7)))].flatMap((ym) => {
+    const m = days.filter((d) => d.date.startsWith(ym));
+    return [m[0].date, m.at(-1)!.date];
+  });
+  const dirs = kind === "move" ? [...new Map(firsts.map((d) => yearDirections(d)).map((x) => [x.year, x])).values()] : [];
+  return [
+    "■ ★ 택일 계산 결과 (이 보고서의 뼈대. 날짜와 판정은 이미 계산됐다. 새로 고르거나 순위를 바꾸지 말 것)",
+    `- 무엇: ${KINDS[kind].title} / 기간: ${label} / 책력상 맞는 날 ${days.filter((d) => d.fit).length}일, ◎ ${days.filter((d) => d.grade === 2).length}일, ○ ${days.filter((d) => d.grade === 1).length}일, 사주와 부딪혀 뺀 날 ${out.length}일`,
+    `- 가장 좋은 날(순위대로): ${bestDays(days, kind, 5).map((d, i) => `\n  ${i + 1}. ${line(d)}`).join("") || "없음"}`,
+    `- 사정별로 고르기: ${picksOf(days, kind).map((x) => `${x.label} ${x.day.date.slice(0, 4)}년 ${x.day.label}`).join(" / ") || "없음"}`,
+    `- 달마다: ${months.join(", ")}`,
+    `- 사주 때문에 뺀 날(책력은 맞다고 한 날): ${out.slice(0, 4).map((d) => `${d.label} (${d.warns.filter((w) => w.tag.includes("충")).map((w) => w.tag).join(", ")})`).join(", ") || "없음"}`,
+    ...dirs.map((x) => `- ${x.year}(입춘부터) 이사 때 피하는 방향: 대장군방 ${x.daejanggun}, 삼살방 ${x.samsal}`),
+    `- 써도 좋은 날 모두: ${good.map((d) => d.label).join(", ") || "없음"}`,
+  ].join("\n");
+}
 
 // The months a search may start from: this month and the next eleven.
 export function startMonths(now = new Date()): { value: string; label: string }[] {

@@ -1,4 +1,4 @@
-import { productById, type Product, type ProductId } from "./products";
+import { PRODUCTS, type Product, type ProductId } from "./products";
 
 // How each written report reads. The chapters are the product's table of contents — the questions people
 // actually ask — and every chapter becomes one "## [question] headline" section on the page.
@@ -35,6 +35,13 @@ const FOCUS: Partial<Record<ProductId, string>> = {
 - 연락이 닿기 좋은 때는 다시 닿기 좋은 해와 2026 월운에서 두 사람의 일지에 합이 드는 달로 짚는다. 확률이나 장담은 하지 않는다.
 - 집착이나 연락 강요를 부추기지 않는다. 다시 만난다면 달라져야 할 것은 구체적인 행동으로.
 - 과거를 짚는 규칙(★ 과거 확인용 연도)은 두 사람이 만난 시기를 모르므로 쓰지 않는다.`,
+  taekil: `택일 소견서. 읽는 사람은 이미 계산된 택일 달력과 날짜별 풀이를 화면에서 봤다. 이 글은 그 위에 관상감 명과학 훈도가 직접 써 주는 소견이다. 궁금한 것은 "그래서 결국 어느 날로 하면 되고, 왜 그 날이며, 그날 무엇을 어떻게 하면 되나".
+- 날짜는 '★ 택일 계산 결과'에 있는 것만 쓴다. 새로 고르거나 순위를 바꾸지 않는다. 1위 날을 중심에 두고, 사정이 다를 때의 대안(사정별로 고르기)을 함께 짚는다.
+- 왜 좋은가는 책력의 표시(황도·건제십이신·28수·손 없는 날)와 이 사람(들)의 사주(필요한 기운이 드는 날, 일지와 합, 피한 충)를 엮어서, 이 사람(들)에게만 해당하는 말로 쓴다. 표시 이름은 한 번 쉬운 말로 풀고 넘어간다.
+- 결혼이면 두 사람의 배우자 자리와 서로 채워 주는 기운이 그 날과 어떻게 맞물리는지, 예식 시간. 이사·입주면 손 방향과 그해 피하는 방향, 짐이 들어가는 시간, 첫날 할 일. 개업·계약이면 도장 찍을 시간, 문을 여는 첫 시간과 첫 손님을 맞는 법.
+- 사주 때문에 뺀 날이 있으면 왜 뺐는지 짚어, 흔한 길일표와 무엇이 다른지 보여 준다. 없으면 두 사람(또는 이 사람)의 사주가 날을 고르기 편한 구조라는 점을 짚는다.
+- 날짜는 사람의 사정이 먼저라는 태도를 지킨다. 겁주지 않고, 미신을 강요하지 않고, 마음을 편하게 해 주는 준비로 권한다. ○ 무난한 날도 충분히 괜찮다는 점을 마지막 장에서 말한다.
+- 이 보고서에서는 같은 일주 비교와 과거를 짚는 규칙(★ 과거 확인용 연도)을 쓰지 않는다. 장은 짧게, 각 장 본문 2~3문단.`,
   gukjeong: `2026년(병오년) 한 해 운세. 읽는 사람이 제일 궁금한 것은 "올해 나 괜찮을까, 뭘 조심하고 뭘 해야 할까"다.
 - 첫 장은 타고난 성향을 "맞다, 나 그래" 싶게 그려서 신뢰를 얻는다(원국·격국·신강약·일주).
 - 한 해의 큰 그림: 세운과 원국·대운의 관계, 올해 신살, 엔진 판정.
@@ -70,7 +77,7 @@ const FOCUS: Partial<Record<ProductId, string>> = {
 };
 
 export const REPORT_SPECS: Partial<Record<ProductId, ReportSpec>> = Object.fromEntries(
-  Object.entries(FOCUS).map(([id, focus]) => [id, { chapters: productById(id)!.toc, focus }]),
+  Object.entries(FOCUS).map(([id, focus]) => [id, { chapters: PRODUCTS.find((p) => p.id === id)!.toc, focus }]),
 );
 
 // What makes a report this person's and no one else's. Shared by both voices.

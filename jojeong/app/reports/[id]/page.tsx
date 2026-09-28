@@ -37,7 +37,7 @@ import { courtOfReader, subjectFor } from "@/lib/subject";
 import { getProfile } from "@/lib/store";
 import { covers, getOrder, ownedOrderFor, type Order } from "@/lib/pay";
 import { isAdmin } from "@/lib/admin";
-import { KINDS, parseSearch, pickDays, startMonths } from "@/lib/taekil";
+import { KINDS, parseSearch, pickDays, searchDay, startMonths } from "@/lib/taekil";
 import { yearReading } from "@/lib/yearly";
 
 export async function generateMetadata({ params }: PageProps<"/reports/[id]">): Promise<Metadata> {
@@ -124,33 +124,41 @@ async function OpenReport({
           <Header product={product} />
           <section className="doc-paper mt-4 px-5 pt-6 pb-6">
             <p className="text-center text-sm leading-relaxed text-ink-soft">{product.teaser}</p>
-            {locked ? <p className="mt-2 mb-4 text-center text-[13px] font-bold text-seal">가장 좋은 날 세 개와 그 이유는 무료로 바로 보여 드려요</p> : <div className="mb-4" />}
+            {locked ? <p className="mt-2 mb-4 text-center text-[13px] font-bold text-seal">조건에 맞는 길일이 몇 날인지는 무료로 먼저 보여 드려요</p> : <div className="mb-4" />}
             <TaekilForm savedName={saved} months={startMonths()} />
           </section>
         </>
       );
     }
-    const req = { product: product.id, kind: found.kind, from: src.from!, n: String(found.n), a: src.a!, ...(b && { b: src.b! }) };
+    const req = { product: product.id, kind: found.kind, from: src.from!, n: String(found.n), a: src.a!, ...(b && { b: src.b! }), d: searchDay(paid?.req.d) };
     const unlock = paid ?? (locked ? await ownedOrderFor(product.id, req) : null);
     const days = pickDays(found.kind, b ? [a, b] : [a], found.from, found.n);
+    const full = !locked || Boolean(unlock);
     return (
       <>
         <Header product={product} subjectName={b ? `${a.name}님과 ${b.name}님` : `${a.name}님`} />
         {unlock && <OrderLink id={unlock.id} />}
-        <TaekilResult kind={found.kind} days={days} label={found.label} names={b ? `${a.name}님과 ${b.name}님` : `${a.name}님`} full={!locked || Boolean(unlock)} />
-        {locked && !unlock && (
+        <TaekilResult kind={found.kind} days={days} label={found.label} names={b ? `${a.name}님과 ${b.name}님` : `${a.name}님`} full={full} />
+        {full ? (
+          <>
+            <h2 className="mt-8 text-center font-myeongjo text-lg font-extrabold">정 훈도의 택일 소견서</h2>
+            <p className="mt-1 text-center text-xs text-ink-soft">위의 날짜를 두고, 왜 이 날인지와 그날 할 일을 직접 풀어 드려요</p>
+            <AiReport request={unlock ? { product: product.id, order: unlock.id } : req} chapters={chaptersOf(product.id)} modern />
+          </>
+        ) : (
           <Paywall
             product={product}
             request={req}
             chapters={[
-              "기간 전체 택일 달력 (◎ ○ △)",
-              ...(found.kind === "open" ? [] : ["주말에 잡을 수 있는 좋은 날"]),
-              "써도 좋은 날 모두와 날짜마다 좋은 이유",
-              "날마다 좋은 시간대",
+              "가장 좋은 날 세 개와 한눈에 고르기 (가장 빠른 날·주말·평일)",
+              "날짜마다 좋은 이유를 쉬운 말로",
+              `좋은 시간${found.kind === "wedding" ? "과 예식 시간" : found.kind === "move" ? "과 손 방향, 그해 피할 방향" : "과 계약 시간"}`,
+              "기간 전체 택일 달력과 써도 좋은 날 모두",
               "책력에는 좋다는데 사주와 부딪혀 빼 둔 날",
+              "정 훈도의 택일 소견서 (왜 이 날인지, 그날 할 일)",
             ]}
-            heading="기간 전체 택일 달력"
-            sub="세 날이 사정에 안 맞을 때, 기간 안의 다른 좋은 날을 모두 이유와 함께 보여 드려요"
+            heading="택일 보고서"
+            sub="날짜만이 아니라, 왜 그 날이고 그날 무엇을 할지까지 풀어 드려요"
           />
         )}
         <Link href="/reports/taekil" className="mt-6 block border border-seal/40 py-3 text-center text-sm font-bold text-seal">
