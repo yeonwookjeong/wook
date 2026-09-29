@@ -142,6 +142,34 @@ const WATCH: Record<string, [avoid: string, prep: string]> = {
   편인: ["혼자 끙끙 끌어안기", "주변에 먼저 도움 청하기"],
 };
 
+// When the sharpest cause is a clash (충·형), every pillar sharing that branch would get the same line; what to
+// do instead then follows the month's ten god, so the advice fits the pillar and not only the branch.
+const PREP: Record<TenGod, string> = {
+  비견: "혼자 떠안지 말고 동료와 일을 나누기",
+  겁재: "지출 한도를 미리 정해 두기",
+  식신: "벌인 일을 줄이고 하던 것 하나에 집중하기",
+  상관: "하고 싶은 말은 글로 한 번 정리하기",
+  편재: "새 투자·거래는 한 박자 늦추기",
+  정재: "계약서와 금액은 두 번 확인하기",
+  편관: "맡은 일을 줄이고, 일정에 빈칸을 남겨 두기",
+  정관: "규칙과 마감부터 챙기기",
+  편인: "혼자 끙끙대지 말고 먼저 도움 청하기",
+  정인: "조언은 듣되 결정은 천천히 하기",
+};
+// What still goes well in a hard month or day, from the same ten god (words that sit with the advice above).
+export const BRIGHT: Record<TenGod, string> = {
+  비견: "함께하는 동료가 힘이 돼요",
+  겁재: "경쟁하는 자리에서는 실력을 보여 줄 수 있어요",
+  식신: "취미나 창작으로 숨을 돌리기 좋아요",
+  상관: "아이디어는 반짝여요",
+  편재: "눈여겨볼 기회는 들어와요",
+  정재: "들어온 돈을 차곡차곡 챙기기 좋아요",
+  편관: "버텨 낸 만큼 실력이 늘어요",
+  정관: "성실함은 눈에 띄어요",
+  편인: "혼자 공부하고 파고들기엔 좋아요",
+  정인: "도와주는 사람이 곁에 있어요",
+};
+
 export function meet(stem: number, branch: number, ms: number, mb: number) {
   const p = { dayStem: stem, dayBranch: branch, yearBranch: branch } as Pillars;
   const god = tenGod(stem, ms);
@@ -204,8 +232,9 @@ export function meet(stem: number, branch: number, ms: number, mb: number) {
   const line = (tail ? `${GOD_SHORT[god]}, ${tail}.` : `${GOD_LINE[god]}.`) + extra;
   const short = key ? `${GOD_KEY[god]}, ${key}` : GOD_ALONE[god];
   const cause = ["충", "천간충", "형"].find((t) => tags.includes(t)) ?? (WATCH[god] ? god : WATCH[branchGod] ? branchGod : null);
-  const [avoid, prep] = cause ? WATCH[cause] : ["무리한 욕심", "평소 페이스를 지키기"];
-  return { score: Math.round(score * 10) / 10, line, short, tips: [GOD_DO[god], ...tips].slice(0, 3), avoid, prep, bright: GOD_DO[god], tags };
+  const [avoid, byCause] = cause ? WATCH[cause] : ["무리한 욕심", "평소 페이스를 지키기"];
+  const prep = cause && ["충", "천간충", "형"].includes(cause) ? PREP[god] : byCause;
+  return { score: Math.round(score * 10) / 10, line, short, tips: [GOD_DO[god], ...tips].slice(0, 3), avoid, prep, bright: BRIGHT[god], tags };
 }
 
 // This calendar month in Korea, for the monthly ranking.
