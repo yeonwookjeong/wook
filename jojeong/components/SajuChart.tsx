@@ -66,7 +66,8 @@ export default function SajuChart({
             {s.branch !== null && (
               <span className="flex flex-col text-[10px] leading-tight text-ink-soft">
                 <span className="font-bold text-seal">{tenGod(day, HIDDEN[s.branch].at(-1)![0])}</span>
-                <span className="font-myeongjo">{HIDDEN[s.branch].map(([h]) => STEMS[h]).join("")}</span>
+                {/* Too small for the brush hand: the plain face keeps these readable. */}
+                <span>{HIDDEN[s.branch].map(([h]) => STEMS[h]).join("")}</span>
                 <span>{stageOf(day, s.branch)}</span>
               </span>
             )}
