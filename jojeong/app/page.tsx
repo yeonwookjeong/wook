@@ -204,10 +204,18 @@ export default async function Home() {
             const wide = i === TOPICS.length - 1 && TOPICS.length % 2 === 1;
             return (
               <li key={t.id} className={wide ? "col-span-2" : undefined}>
-                <Link href={href} className="doc-paper flex h-full flex-col px-4 pt-4 pb-3.5">
-                  <span className="font-myeongjo text-xl leading-tight font-extrabold">{t.name}</span>
-                  <span className="mt-1.5 flex-1 text-[12.5px] leading-snug text-ink-soft">{t.ask}</span>
-                  <span className="mt-2.5 border-t border-seal/15 pt-2 text-right text-[12px] font-bold text-seal">{mine ? "결제함 · 바로 보기 →" : "보기 →"}</span>
+                {/* The reports on sale carry the most weight on the page: 쪽빛 boxes with a gold rim, their seal in gold. */}
+                <Link
+                  href={href}
+                  className="flex h-full flex-col rounded-2xl bg-[linear-gradient(160deg,#2c3848,var(--color-jjok)_55%,#1a232f)] px-4 pt-4 pb-3.5 text-hanji shadow-[0_4px_0_#131a23,inset_0_0_0_1px_rgb(212_175_95/0.4),inset_0_0_0_5px_var(--color-jjok),inset_0_0_0_6px_rgb(212_175_95/0.2)]"
+                >
+                  <span className="font-myeongjo text-2xl text-gold">{productById(t.id)!.hanja}</span>
+                  <span className="mt-2 font-myeongjo text-xl leading-tight font-extrabold">{t.name}</span>
+                  <span className="mt-1.5 flex-1 text-[12.5px] leading-snug text-hanji/75">{t.ask}</span>
+                  <span className="mt-2.5 flex items-center justify-between border-t border-gold/30 pt-2 text-[12px] font-bold">
+                    <span className="text-hanji/60">{mine ? "결제함" : `${priceNow().toLocaleString("ko-KR")}원`}</span>
+                    <span className="text-gold">{mine ? "바로 보기 →" : "보기 →"}</span>
+                  </span>
                 </Link>
               </li>
             );
