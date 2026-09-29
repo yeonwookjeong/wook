@@ -265,7 +265,9 @@ export function todayFor(me: Person | null, now = new Date()): Today {
     const bgod = tenGod(p.dayStem, HIDDEN[branch].at(-1)![0]);
     const cause =
       ["충", "천간충", "형"].find((t) => mm.tags.includes(t)) ?? (DAY_WATCH[god] ? god : DAY_WATCH[bgod] ? bgod : bad !== undefined ? "기신" : null);
-    const [avoid, prep] = cause ? DAY_WATCH[cause] : ["무리한 욕심", "평소 페이스를 지키기"];
+    const [avoid, byCause] = cause ? DAY_WATCH[cause] : ["무리한 욕심", "평소 페이스를 지키기"];
+    // A clash says what to avoid; what to do instead follows the day's ten god (the month's rule, lib/iljuRank.ts).
+    const prep = cause && ["충", "천간충", "형"].includes(cause) ? mm.prep : byCause;
     // The next ◎ day within ten days.
     let next: string | null = null;
     for (let i = 1; i <= 10 && !next; i++) {
