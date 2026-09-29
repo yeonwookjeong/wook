@@ -73,6 +73,15 @@ function Brand({ dark = false }: { dark?: boolean }) {
   );
 }
 
+// The sixty-pillar characters in a brush hand (Google Fonts, OFL, cut down to the 22 stems and branches in
+// public/fonts). ?hf= picks one while we choose: syuku (default), boku, mai.
+const BRUSHES = ["syuku", "boku", "mai"] as const;
+function BrushFont({ hf }: { hf: string }) {
+  const pick = BRUSHES.includes(hf as (typeof BRUSHES)[number]) ? hf : "syuku";
+  return <style>{`@font-face{font-family:"GanzhiBrush";src:url(/fonts/ganzhi-${pick}.woff2) format("woff2");font-display:block}`}</style>;
+}
+const brush = '"GanzhiBrush", var(--font-heading)';
+
 // The feed thumbnail's two-line title over the bottom of the cover, on a gradient so it reads over anything.
 function ThumbTitle({ top, main }: { top: string; main: string }) {
   return (
@@ -252,6 +261,7 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
     const when = nextDayOf(st, b);
     return (
       <Frame dark>
+        <BrushFont hf={String(q.hf ?? "")} />
         <CornerBrand />
         <p style={{ position: "absolute", top: 72, right: 70, fontSize: 30, fontWeight: 800, color: GOLD }}>{no} / 60</p>
         <div
@@ -261,7 +271,7 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
           <p style={{ display: "inline-block", padding: "10px 26px", background: INK, color: HANJI, fontSize: 34, fontWeight: 800 }}>60일주 도감</p>
           <p style={{ marginTop: 26, fontSize: 28, color: SOFT, fontFamily: sans }}>- - - - - - - - - - - - - - - - - - - -</p>
           <p style={{ marginTop: 22, fontSize: 30, color: SOFT }}>{no === 1 ? "육십갑자의 맨 첫 자리" : `육십갑자의 ${no}번째 자리`}</p>
-          <p style={{ marginTop: 6, fontSize: 190, fontWeight: 800, lineHeight: 1.05, color: SEAL, letterSpacing: "0.04em" }}>{f.hanja}</p>
+          <p style={{ marginTop: 10, fontSize: 200, fontWeight: 400, lineHeight: 1.05, color: SEAL, letterSpacing: "0.02em", fontFamily: brush }}>{f.hanja}</p>
           <p style={{ marginTop: 6, fontSize: 64, fontWeight: 800 }}>{f.name}</p>
           <p style={{ marginTop: 14, fontSize: 34, color: SOFT }}>{f.image}</p>
         </div>
