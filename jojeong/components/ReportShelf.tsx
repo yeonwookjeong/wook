@@ -21,19 +21,23 @@ export default function ReportShelf({
       <ul className="mt-3 flex flex-col gap-2">
         {ids.map((id) => {
           const p = productById(id)!;
+          // Paid in 쪽빛, free on paper, as everywhere on the site.
+          const free = isOpen(p);
           return (
             <li key={id}>
-              <Link href={`/reports/${id}?${query}`} className="doc-paper flex items-center gap-3 px-4 py-4">
-                <span className={`flex h-11 min-w-11 shrink-0 items-center justify-center border-2 border-seal/60 px-1 font-myeongjo font-extrabold text-seal ${p.hanja.length > 2 ? "text-xs" : "text-sm"}`}>
+              <Link href={`/reports/${id}?${query}`} className={`${free ? "doc-paper" : "jjok-box"} flex items-center gap-3 px-4 py-4`}>
+                <span
+                  className={`flex h-11 min-w-11 shrink-0 items-center justify-center border-2 px-1 font-myeongjo font-extrabold ${free ? "border-seal/60 text-seal" : "border-gold/60 text-gold"} ${p.hanja.length > 2 ? "text-xs" : "text-sm"}`}
+                >
                   {p.hanja}
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block font-myeongjo font-extrabold">{p.title}</span>
-                  <span className="block text-xs leading-snug text-ink-soft">
-                    {highlights[id] ? <b className="text-seal">{highlights[id]}</b> : <Keep clauses>{p.tagline}</Keep>}
+                  <span className={`block text-xs leading-snug ${free ? "text-ink-soft" : "text-hanji/75"}`}>
+                    {highlights[id] ? <b className={free ? "text-seal" : "text-gold"}>{highlights[id]}</b> : <Keep clauses>{p.tagline}</Keep>}
                   </span>
                 </span>
-                <span className="shrink-0 text-sm font-bold text-seal">{isOpen(p) ? "무료 →" : `${priceNow().toLocaleString("ko-KR")}원 →`}</span>
+                <span className={`shrink-0 text-sm font-bold ${free ? "text-seal" : "text-gold"}`}>{free ? "무료 →" : `${priceNow().toLocaleString("ko-KR")}원 →`}</span>
               </Link>
             </li>
           );

@@ -14,29 +14,31 @@ const WHERE: Record<Product["for"], string | null> = { king: "왕이 보는 보�
 
 function Row({ p, price, mine }: { p: Product; price: number; mine?: string }) {
   const where = p.modern ? null : WHERE[p.for];
+  // Paid in 쪽빛, free on paper, as everywhere on the site.
+  const free = Boolean(p.free);
   return (
     <li>
-      <Link href={mine ?? `/reports/${p.id}`} className="doc-paper flex items-center gap-4 px-5 py-5">
+      <Link href={mine ?? `/reports/${p.id}`} className={`${free ? "doc-paper" : "jjok-box"} flex items-center gap-4 px-5 py-5`}>
         <span
-          className={`flex h-14 min-w-14 shrink-0 items-center justify-center border-2 border-seal/60 px-1 font-myeongjo font-extrabold text-seal ${p.hanja.length > 2 ? "text-sm" : "text-lg"}`}
+          className={`flex h-14 min-w-14 shrink-0 items-center justify-center border-2 px-1 font-myeongjo font-extrabold ${free ? "border-seal/60 text-seal" : "border-gold/60 text-gold"} ${p.hanja.length > 2 ? "text-sm" : "text-lg"}`}
         >
           {p.hanja}
         </span>
         <span className="min-w-0 flex-1">
           <span className="block font-myeongjo text-lg leading-snug font-extrabold">{p.title}</span>
-          <span className="mt-0.5 block text-[13px] leading-snug text-ink-soft">
+          <span className={`mt-0.5 block text-[13px] leading-snug ${free ? "text-ink-soft" : "text-hanji/75"}`}>
             <Keep clauses>{p.tagline}</Keep>
           </span>
           {where && <span className="mt-1 inline-block border border-gold/60 px-1.5 text-[10px] font-bold text-gold">{where}</span>}
         </span>
-        <span className="shrink-0 text-right font-myeongjo font-extrabold text-seal">
+        <span className={`shrink-0 text-right font-myeongjo font-extrabold ${free ? "text-seal" : "text-gold"}`}>
           {mine ? (
             <span className="text-sm">결제함</span>
           ) : p.free ? (
             "무료"
           ) : price < PRICE ? (
             <>
-              <s className="block text-xs font-normal text-ink-soft">{PRICE.toLocaleString("ko-KR")}원</s>
+              <s className="block text-xs font-normal text-hanji/50">{PRICE.toLocaleString("ko-KR")}원</s>
               {price.toLocaleString("ko-KR")}원
             </>
           ) : (
@@ -60,18 +62,18 @@ function SetCard({ id, ny }: { id: SetId; ny: number | null }) {
   const href = id === "ny" && ny ? `/reports/yeonun?y=${ny}` : `/reports/${first}`;
   return (
     <li>
-      <Link href={href} className="block rounded-2xl border-2 border-gold/50 bg-gold/8 px-4 py-3.5">
+      <Link href={href} className="jjok-box block px-5 py-4">
         <b className="block font-myeongjo text-[17px]">{set.title}</b>
         <span className="mt-2 flex flex-wrap gap-1.5">
           {set.products.map((p) => (
-            <span key={p} className="rounded-md border border-seal/20 bg-white/70 px-2 py-0.5 text-[12px] font-bold">
+            <span key={p} className="rounded-md border border-gold/40 bg-white/5 px-2 py-0.5 text-[12px] font-bold text-hanji/90">
               {p === "yeonun" && ny ? `${ny} 신년운세` : (SHORT[p] ?? productById(p)!.title)}
             </span>
           ))}
         </span>
         <span className="mt-2.5 flex items-baseline justify-end gap-2">
-          <s className="text-[12px] text-ink-soft">{sum.toLocaleString("ko-KR")}원</s>
-          <b className="font-myeongjo text-xl text-seal">{set.price.toLocaleString("ko-KR")}원</b>
+          <s className="text-[12px] text-hanji/50">{sum.toLocaleString("ko-KR")}원</s>
+          <b className="font-myeongjo text-xl text-gold">{set.price.toLocaleString("ko-KR")}원</b>
         </span>
       </Link>
     </li>

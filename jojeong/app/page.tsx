@@ -207,7 +207,7 @@ export default async function Home() {
                 {/* The reports on sale carry the most weight on the page: 쪽빛 boxes with a gold rim, their seal in gold. */}
                 <Link
                   href={href}
-                  className="flex h-full flex-col rounded-2xl bg-[linear-gradient(160deg,#2c3848,var(--color-jjok)_55%,#1a232f)] px-4 pt-4 pb-3.5 text-hanji shadow-[0_4px_0_#131a23,inset_0_0_0_1px_rgb(212_175_95/0.4),inset_0_0_0_5px_var(--color-jjok),inset_0_0_0_6px_rgb(212_175_95/0.2)]"
+                  className="jjok-box flex h-full flex-col px-4 pt-4 pb-3.5"
                 >
                   <span className="font-myeongjo text-2xl text-gold">{productById(t.id)!.hanja}</span>
                   <span className="mt-2 font-myeongjo text-xl leading-tight font-extrabold">{t.name}</span>
