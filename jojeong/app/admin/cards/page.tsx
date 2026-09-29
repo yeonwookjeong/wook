@@ -83,6 +83,37 @@ function BrushFont({ hf }: { hf: string }) {
 }
 const brush = '"GanzhiBrush", var(--font-heading)';
 
+// 1·2·3위: a round medal in gold, silver and bronze, rimmed like the site's seals.
+const MEDAL = [
+  { face: "radial-gradient(circle at 35% 30%, #fff3c4, #e2bd62 45%, #a87a22)", rim: "#8a6214" },
+  { face: "radial-gradient(circle at 35% 30%, #ffffff, #c9ced6 45%, #8e959f)", rim: "#6f7580" },
+  { face: "radial-gradient(circle at 35% 30%, #ffdcbf, #c98b55 45%, #8e5429)", rim: "#6e3f1c" },
+];
+function Medal({ n, size }: { n: number; size: number }) {
+  const md = MEDAL[n - 1];
+  return (
+    <span
+      style={{
+        width: size,
+        height: size,
+        borderRadius: "50%",
+        background: md.face,
+        border: `${Math.round(size / 18)}px solid ${md.rim}`,
+        boxShadow: `inset 0 0 0 ${Math.round(size / 14)}px rgba(255,255,255,.35), 0 4px 10px rgba(0,0,0,.25)`,
+        display: "grid",
+        placeItems: "center",
+        color: md.rim,
+        fontSize: Math.round(size * 0.46),
+        fontWeight: 800,
+        fontFamily: serif,
+        flexShrink: 0,
+      }}
+    >
+      {n}
+    </span>
+  );
+}
+
 // The feed thumbnail's two-line title over the bottom of the cover, on a gradient so it reads over anything.
 function ThumbTitle({ top, main }: { top: string; main: React.ReactNode }) {
   return (
@@ -253,28 +284,16 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
   }
 
   // ② 60일주 도감
-  // 60일주 월간 랭킹 (posted on the 1st): the 절기 month that begins in the calendar month.
+  // 60일주 월간 랭킹, posted on the day the 절기 month begins (?y=&m= the calendar month it begins in).
   if (c.startsWith("rank-")) {
     const y = Number(q.y ?? 2026);
     const m = Number(q.m ?? 10);
     const mp = monthPillarOf(y, m);
     if (!mp) return null;
     const rows = rankMonth(mp.stem, mp.branch);
-    const span = `${mp.term} ${mp.from} ~ ${mp.to}`;
+    const head = `60일주 운세 랭킹 · ${mp.label} (${mp.term}~${mp.nextTerm})`;
     const stars = (r: IljuMonth) => "★★★★★".slice(0, 5 - Math.floor((r.rank - 1) / 12)) + "☆☆☆☆☆".slice(0, Math.floor((r.rank - 1) / 12));
     const hf = <BrushFont hf={String(q.hf ?? "")} />;
-    const Row = ({ r, big = false }: { r: IljuMonth; big?: boolean }) => (
-      <div style={{ display: "flex", alignItems: "center", gap: 22, padding: big ? "16px 0" : "5px 0", borderTop: "1.5px solid rgba(179,38,30,.15)" }}>
-        <span style={{ width: 70, fontSize: big ? 44 : 30, fontWeight: 800, color: r.rank <= 3 ? SEAL : INK, textAlign: "right" }}>{r.rank}</span>
-        <span style={{ width: big ? 116 : 84, fontSize: big ? 56 : 38, color: SEAL, fontFamily: brush, lineHeight: 1 }}>{r.hanja}</span>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ fontSize: big ? 34 : 29, fontWeight: 800 }}>
-            {r.name} <span style={{ marginLeft: 8, fontSize: big ? 24 : 21, color: GOLD, letterSpacing: "0.05em" }}>{stars(r)}</span>
-          </p>
-          {big && <p style={{ marginTop: 4, fontSize: 24, lineHeight: 1.45, color: SOFT, fontFamily: sans }}>{r.line}</p>}
-        </div>
-      </div>
-    );
 
     if (c === "rank-cover") {
       const top = rows[0];
@@ -285,8 +304,11 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
           <p style={{ position: "absolute", top: 72, right: 70, fontSize: 30, fontWeight: 800, color: GOLD }}>{mp.label}</p>
           <div className="doc-paper" style={{ position: "absolute", top: 160, left: 150, right: 150, height: 700, textAlign: "center", color: INK, paddingTop: 50 }}>
             <p style={{ display: "inline-block", padding: "10px 26px", background: INK, color: HANJI, fontSize: 34, fontWeight: 800 }}>
-              {m}월 일주 랭킹 <span style={{ color: "#f1cf7a" }}>1위</span>
+              {mp.label} 일주 랭킹 <span style={{ color: "#f1cf7a" }}>1위</span>
             </p>
+            <div style={{ position: "absolute", top: 34, right: 34 }}>
+              <Medal n={1} size={96} />
+            </div>
             <p style={{ marginTop: 26, fontSize: 28, color: SOFT, fontFamily: sans }}>- - - - - - - - - - - - - - - - - - - -</p>
             <p style={{ marginTop: 22, fontSize: 30, color: SOFT }}>{top.image}</p>
             <p style={{ marginTop: 10, fontSize: 200, lineHeight: 1.05, color: SEAL, fontFamily: brush }}>{top.hanja}</p>
@@ -302,22 +324,34 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
               {q.say ? String(q.say) : "이달의 1위!"}
             </div>
           </div>
-          <ThumbTitle top={`60일주 운세 랭킹 · ${span}`} main={`${m}월 1위 · ${top.name}`} />
+          <ThumbTitle top={`60일주 운세 랭킹 · ${mp.term} ${mp.from} ~ ${mp.to}`} main={`${mp.label} 1위 · ${top.name}`} />
         </Frame>
       );
     }
-    if (c === "rank-top")
+    if (c === "rank-top3")
       return (
         <Frame>
           {hf}
           <div style={{ position: "absolute", top: 110, left: 90, right: 90 }}>
-            <Label>
-              {m}월 60일주 운세 랭킹 · {mp.label}
-            </Label>
-            <p style={{ marginTop: 12, fontSize: 62, fontWeight: 800 }}>TOP 10</p>
-            <div style={{ marginTop: 18 }}>
-              {rows.slice(0, 10).map((r) => (
-                <Row key={r.no} r={r} big={r.rank <= 3} />
+            <Label>{head}</Label>
+            <p style={{ marginTop: 10, fontSize: 60, fontWeight: 800 }}>이달의 TOP 3</p>
+            <div style={{ marginTop: 22, display: "flex", flexDirection: "column", gap: 20 }}>
+              {rows.slice(0, 3).map((r) => (
+                <div key={r.no} className="doc-paper" style={{ display: "flex", gap: 26, padding: "24px 28px" }}>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, width: 150 }}>
+                    <Medal n={r.rank} size={78} />
+                    <span style={{ fontSize: 58, color: SEAL, fontFamily: brush, lineHeight: 1 }}>{r.hanja}</span>
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: 38, fontWeight: 800 }}>{r.name}</p>
+                    <p style={{ marginTop: 4, fontSize: 25, lineHeight: 1.45, color: INK, fontFamily: sans }}>{r.line}</p>
+                    {r.tips.slice(0, 2).map((t) => (
+                      <p key={t} style={{ marginTop: 6, fontSize: 23, lineHeight: 1.4, color: SOFT, fontFamily: sans }}>
+                        <b style={{ color: SEAL }}>✓</b> {t}
+                      </p>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           </div>
@@ -328,15 +362,29 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
       return (
         <Frame>
           {hf}
-          <div style={{ position: "absolute", top: 120, left: 90, right: 90 }}>
-            <Label>
-              {m}월 60일주 운세 랭킹 · {mp.label}
-            </Label>
-            <p style={{ marginTop: 12, fontSize: 60, fontWeight: 800, lineHeight: 1.25 }}>이번 달, 쉬어 가면 좋은 일주</p>
-            <p style={{ marginTop: 10, fontSize: 28, color: SOFT, fontFamily: sans }}>나쁜 달이 아니라, 속도를 늦추면 되는 달이에요</p>
-            <div style={{ marginTop: 26 }}>
+          <div style={{ position: "absolute", top: 110, left: 90, right: 90 }}>
+            <Label>{head}</Label>
+            <p style={{ marginTop: 10, fontSize: 56, fontWeight: 800, lineHeight: 1.25 }}>미리 대비하면 되는 일주</p>
+            <p style={{ marginTop: 8, fontSize: 26, color: SOFT, fontFamily: sans }}>나쁜 달이 아니라, 알고 준비하면 되는 달이에요</p>
+            <div style={{ marginTop: 18 }}>
               {rows.slice(-5).map((r) => (
-                <Row key={r.no} r={r} big />
+                <div key={r.no} style={{ display: "flex", gap: 22, padding: "14px 0", borderTop: "1.5px solid rgba(179,38,30,.15)" }}>
+                  <span style={{ width: 96, fontSize: 48, color: SEAL, fontFamily: brush, lineHeight: 1.1 }}>{r.hanja}</span>
+                  <div style={{ flex: 1, minWidth: 0, fontFamily: sans }}>
+                    <p style={{ fontSize: 30, fontWeight: 800, fontFamily: serif }}>
+                      {r.name} <span style={{ marginLeft: 6, fontSize: 22, color: SOFT, fontWeight: 400 }}>{r.rank}위 · {r.short}</span>
+                    </p>
+                    <p style={{ marginTop: 4, fontSize: 22, lineHeight: 1.4 }}>
+                      <b style={{ color: SEAL }}>피할 것</b> {r.avoid}
+                    </p>
+                    <p style={{ marginTop: 2, fontSize: 22, lineHeight: 1.4 }}>
+                      <b style={{ color: "#3d6656" }}>이렇게</b> {r.prep}
+                    </p>
+                    <p style={{ marginTop: 2, fontSize: 22, lineHeight: 1.4, color: SOFT }}>
+                      <b style={{ color: GOLD }}>좋은 점</b> {r.bright}
+                    </p>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
@@ -344,22 +392,35 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
         </Frame>
       );
     if (c === "rank-rest") {
-      const page = Math.min(3, Math.max(1, Number(q.p ?? 1)));
-      const list = rows.slice(10 + (page - 1) * 15, 10 + page * 15);
+      // 4위~55위 in two pages of two columns, every pillar with its line.
+      const page = Math.min(2, Math.max(1, Number(q.p ?? 1)));
+      const list = rows.slice(3 + (page - 1) * 26, 3 + page * 26);
+      const cols = [list.slice(0, 13), list.slice(13)];
       return (
         <Frame>
           {hf}
-          <div style={{ position: "absolute", top: 110, left: 90, right: 90 }}>
-            <Label>
-              {m}월 60일주 운세 랭킹 · {mp.label}
-            </Label>
-            <p style={{ marginTop: 8, fontSize: 50, fontWeight: 800 }}>
+          <div style={{ position: "absolute", top: 96, left: 80, right: 80 }}>
+            <Label>{head}</Label>
+            <p style={{ marginTop: 4, fontSize: 46, fontWeight: 800 }}>
               {list[0].rank}위 ~ {list.at(-1)!.rank}위
             </p>
-            <p style={{ marginTop: 6, fontSize: 22, color: SOFT, fontFamily: sans }}>일주(태어난 날의 두 글자)로 본 간이 운세예요 · 내 일주는 프로필 링크에서</p>
-            <div style={{ marginTop: 10 }}>
-              {list.map((r) => (
-                <Row key={r.no} r={r} />
+            <p style={{ marginTop: 6, fontSize: 21, color: SOFT, fontFamily: sans }}>일주(태어난 날의 두 글자)로 본 간이 운세예요 · 내 일주는 프로필 링크에서</p>
+            <div style={{ marginTop: 10, display: "flex", gap: 30 }}>
+              {cols.map((col, i) => (
+                <div key={i} style={{ flex: 1, minWidth: 0 }}>
+                  {col.map((r) => (
+                    <div key={r.no} style={{ display: "flex", alignItems: "center", gap: 12, padding: "3px 0", borderTop: "1.5px solid rgba(179,38,30,.15)" }}>
+                      <span style={{ width: 40, fontSize: 25, fontWeight: 800, textAlign: "right" }}>{r.rank}</span>
+                      <span style={{ width: 62, fontSize: 30, color: SEAL, fontFamily: brush, lineHeight: 1 }}>{r.hanja}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: 23, fontWeight: 800 }}>
+                          {r.name} <span style={{ fontSize: 15, color: GOLD }}>{stars(r)}</span>
+                        </p>
+                        <p style={{ fontSize: 17, color: SOFT, fontFamily: sans, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.short}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               ))}
             </div>
           </div>
@@ -972,7 +1033,7 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
       </div>
       <Hundo src="/hundo-bow.png" size={230} bottom={385} />
       <div style={{ position: "absolute", left: 150, right: 150, bottom: 200, paddingTop: 26, borderTop: "1.5px solid rgba(212,175,95,.45)", textAlign: "center" }}>
-        <p style={{ fontSize: 31, lineHeight: 1.55, color: GOLD, fontWeight: 800 }}>역사 속 인물의 사주를 꾸준히 올리옵니다</p>
+        <p style={{ fontSize: 31, lineHeight: 1.55, color: GOLD, fontWeight: 800 }}>매일 60일주 도감, 월요일엔 이번 주 운세</p>
         <p style={{ marginTop: 4, fontSize: 29, color: "rgba(244,236,219,.85)" }}>저장해 두고 팔로우하시옵소서</p>
       </div>
       <Brand dark />
