@@ -10,7 +10,7 @@ import { STEMS } from "@/lib/saju";
 
 export const metadata: Metadata = { title: "카드", robots: { index: false } };
 
-// Social cards, 1080×1350 (Instagram 4:5), drawn in the site's own look. Owner only. Each slide is one URL
+// Social cards, 1080×1440 (Instagram 3:4, the profile grid's own shape, so nothing is cropped there), drawn in the site's own look. Owner only. Each slide is one URL
 // (?c=…), so a screenshot of the page is the image.
 const HANJI = "#f4ecdb";
 const INK = "#211b17";
@@ -28,7 +28,7 @@ function Frame({ children, dark = false }: { children: React.ReactNode; dark?: b
         position: "fixed",
         inset: 0,
         width: 1080,
-        height: 1350,
+        height: 1440,
         zIndex: 50,
         background: dark ? "linear-gradient(180deg,#0f2236,#17304a 55%,#1f3d5c)" : HANJI,
         backgroundImage: dark
@@ -332,21 +332,21 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
       return (
         <Frame>
           {hf}
-          <div style={{ position: "absolute", top: 110, left: 90, right: 90 }}>
+          <div style={{ position: "absolute", top: 120, left: 90, right: 90 }}>
             <Label>{head}</Label>
-            <p style={{ marginTop: 10, fontSize: 60, fontWeight: 800 }}>이달의 TOP 3</p>
-            <div style={{ marginTop: 22, display: "flex", flexDirection: "column", gap: 20 }}>
+            <p style={{ marginTop: 10, fontSize: 66, fontWeight: 800 }}>이달의 TOP 3</p>
+            <div style={{ marginTop: 30, display: "flex", flexDirection: "column", gap: 28 }}>
               {rows.slice(0, 3).map((r) => (
-                <div key={r.no} className="doc-paper" style={{ display: "flex", gap: 26, padding: "24px 28px" }}>
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, width: 150 }}>
-                    <Medal n={r.rank} size={78} />
-                    <span style={{ fontSize: 58, color: SEAL, fontFamily: brush, lineHeight: 1 }}>{r.hanja}</span>
+                <div key={r.no} className="doc-paper" style={{ display: "flex", gap: 26, padding: "36px 32px" }}>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, width: 160 }}>
+                    <Medal n={r.rank} size={86} />
+                    <span style={{ fontSize: 66, color: SEAL, fontFamily: brush, lineHeight: 1 }}>{r.hanja}</span>
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: 38, fontWeight: 800 }}>{r.name}</p>
-                    <p style={{ marginTop: 4, fontSize: 25, lineHeight: 1.45, color: INK, fontFamily: sans }}>{r.line}</p>
+                    <p style={{ fontSize: 42, fontWeight: 800 }}>{r.name}</p>
+                    <p style={{ marginTop: 6, fontSize: 28, lineHeight: 1.45, color: INK, fontFamily: sans }}>{r.line}</p>
                     {r.tips.slice(0, 2).map((t) => (
-                      <p key={t} style={{ marginTop: 6, fontSize: 23, lineHeight: 1.4, color: SOFT, fontFamily: sans }}>
+                      <p key={t} style={{ marginTop: 8, fontSize: 25, lineHeight: 1.4, color: SOFT, fontFamily: sans }}>
                         <b style={{ color: SEAL }}>✓</b> {t}
                       </p>
                     ))}
@@ -368,19 +368,19 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
             <p style={{ marginTop: 8, fontSize: 26, color: SOFT, fontFamily: sans }}>나쁜 달이 아니라, 알고 준비하면 되는 달이에요</p>
             <div style={{ marginTop: 18 }}>
               {rows.slice(-5).map((r) => (
-                <div key={r.no} style={{ display: "flex", gap: 22, padding: "14px 0", borderTop: "1.5px solid rgba(179,38,30,.15)" }}>
-                  <span style={{ width: 96, fontSize: 48, color: SEAL, fontFamily: brush, lineHeight: 1.1 }}>{r.hanja}</span>
+                <div key={r.no} style={{ display: "flex", gap: 22, padding: "17px 0", borderTop: "1.5px solid rgba(179,38,30,.15)" }}>
+                  <span style={{ width: 110, fontSize: 50, color: SEAL, fontFamily: brush, lineHeight: 1.1 }}>{r.hanja}</span>
                   <div style={{ flex: 1, minWidth: 0, fontFamily: sans }}>
-                    <p style={{ fontSize: 30, fontWeight: 800, fontFamily: serif }}>
+                    <p style={{ fontSize: 33, fontWeight: 800, fontFamily: serif }}>
                       {r.name} <span style={{ marginLeft: 6, fontSize: 22, color: SOFT, fontWeight: 400 }}>{r.rank}위 · {r.short}</span>
                     </p>
-                    <p style={{ marginTop: 4, fontSize: 22, lineHeight: 1.4 }}>
+                    <p style={{ marginTop: 4, fontSize: 24, lineHeight: 1.4 }}>
                       <b style={{ color: SEAL }}>피할 것</b> {r.avoid}
                     </p>
-                    <p style={{ marginTop: 2, fontSize: 22, lineHeight: 1.4 }}>
+                    <p style={{ marginTop: 2, fontSize: 24, lineHeight: 1.4 }}>
                       <b style={{ color: "#3d6656" }}>이렇게</b> {r.prep}
                     </p>
-                    <p style={{ marginTop: 2, fontSize: 22, lineHeight: 1.4, color: SOFT }}>
+                    <p style={{ marginTop: 2, fontSize: 24, lineHeight: 1.4, color: SOFT }}>
                       <b style={{ color: GOLD }}>좋은 점</b> {r.bright}
                     </p>
                   </div>
@@ -409,14 +409,14 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
               {cols.map((col, i) => (
                 <div key={i} style={{ flex: 1, minWidth: 0 }}>
                   {col.map((r) => (
-                    <div key={r.no} style={{ display: "flex", alignItems: "center", gap: 12, padding: "3px 0", borderTop: "1.5px solid rgba(179,38,30,.15)" }}>
+                    <div key={r.no} style={{ display: "flex", alignItems: "center", gap: 12, padding: "5px 0", borderTop: "1.5px solid rgba(179,38,30,.15)" }}>
                       <span style={{ width: 40, fontSize: 25, fontWeight: 800, textAlign: "right" }}>{r.rank}</span>
                       <span style={{ width: 62, fontSize: 30, color: SEAL, fontFamily: brush, lineHeight: 1 }}>{r.hanja}</span>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ fontSize: 23, fontWeight: 800 }}>
                           {r.name} <span style={{ fontSize: 15, color: GOLD }}>{stars(r)}</span>
                         </p>
-                        <p style={{ fontSize: 17, color: SOFT, fontFamily: sans, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.short}</p>
+                        <p style={{ fontSize: 19, color: SOFT, fontFamily: sans, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.short}</p>
                       </div>
                     </div>
                   ))}
@@ -761,14 +761,14 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
       const r = ch.reading;
       return (
         <Frame>
-          <div style={{ position: "absolute", top: 120, left: 100, right: 100 }}>
+          <div style={{ position: "absolute", top: 150, left: 100, right: 100 }}>
             <Label>오늘 태어난 인물의 사주 · {fig.name}</Label>
             <p style={{ marginTop: 22, fontSize: 72, fontWeight: 800 }}>{ch.hour ? "여덟 글자" : "여섯 글자"}로 본 사주</p>
-            <div style={{ marginTop: 40, display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, textAlign: "center" }}>
+            <div style={{ marginTop: 56, display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, textAlign: "center" }}>
               {cols.map((x) => (
                 <div
                   key={x.pos}
-                  style={{ padding: "22px 0", borderRadius: 20, border: "me" in x && x.me ? `3px solid ${SEAL}` : "3px solid rgba(33,27,23,.12)", background: "me" in x && x.me ? "rgba(179,38,30,.08)" : "transparent" }}
+                  style={{ padding: "30px 0", borderRadius: 20, border: "me" in x && x.me ? `3px solid ${SEAL}` : "3px solid rgba(33,27,23,.12)", background: "me" in x && x.me ? "rgba(179,38,30,.08)" : "transparent" }}
                 >
                   <p style={{ fontSize: 22, color: SOFT, fontFamily: sans }}>{x.pos}</p>
                   <p style={{ marginTop: 8, fontSize: 64, fontWeight: 800, color: "me" in x && x.me ? SEAL : INK, lineHeight: 1.1 }}>
@@ -782,7 +782,7 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
                 </div>
               ))}
             </div>
-            <div style={{ marginTop: 40, display: "grid", gridTemplateColumns: "200px 1fr", rowGap: 20, fontSize: 38, lineHeight: 1.45 }}>
+            <div style={{ marginTop: 56, display: "grid", gridTemplateColumns: "200px 1fr", rowGap: 30, fontSize: 40, lineHeight: 1.45 }}>
               <b style={{ color: SEAL }}>일간</b>
               <span style={{ fontFamily: sans }}>{stemName(STEMS.indexOf(ch.day.hanja[0] as (typeof STEMS)[number]))} · {stemThing(STEMS.indexOf(ch.day.hanja[0] as (typeof STEMS)[number]))}</span>
               <b style={{ color: SEAL }}>일주</b>
@@ -801,12 +801,12 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
     if (c === "fig-pairs")
       return (
         <Frame>
-          <div style={{ position: "absolute", top: 120, left: 100, right: 100 }}>
+          <div style={{ position: "absolute", top: 150, left: 100, right: 100 }}>
             <Label>오늘 태어난 인물의 사주 · {fig.name}</Label>
             <p style={{ marginTop: 22, fontSize: 72, fontWeight: 800, lineHeight: 1.25 }}>사주가 닮은 인생</p>
-            <div style={{ marginTop: 44, display: "flex", flexDirection: "column", gap: 26 }}>
+            <div style={{ marginTop: 44, display: "flex", flexDirection: "column", gap: 34 }}>
               {fig.pairs.map((x) => (
-                <div key={x.sign} style={{ padding: "26px 30px", borderRadius: 24, background: "rgba(33,27,23,.05)" }}>
+                <div key={x.sign} style={{ padding: "32px 34px", borderRadius: 24, background: "rgba(33,27,23,.05)" }}>
                   <p style={{ fontSize: 30, color: SEAL, fontWeight: 800 }}>사주 · {x.sign}</p>
                   <p style={{ marginTop: 12, fontSize: 40, fontWeight: 800, lineHeight: 1.4 }}>→ {x.life}</p>
                 </div>
@@ -820,7 +820,7 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
     if (c === "fig-daeun")
       return (
         <Frame>
-          <div style={{ position: "absolute", top: 120, left: 100, right: 100 }}>
+          <div style={{ position: "absolute", top: 130, left: 100, right: 100 }}>
             <Label>오늘 태어난 인물의 사주 · {fig.name}</Label>
             <p style={{ marginTop: 22, fontSize: 72, fontWeight: 800, lineHeight: 1.25 }}>대운과 인생의 순간</p>
             <div style={{ marginTop: 40, display: "flex", flexDirection: "column", gap: 14 }}>
@@ -828,7 +828,7 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
                 <div
                   key={x.gz}
                   style={{
-                    padding: "18px 26px",
+                    padding: "20px 26px",
                     borderRadius: 20,
                     background: x.mark === "◎" ? "rgba(179,38,30,.1)" : "rgba(33,27,23,.05)",
                     border: x.mark === "◎" ? `3px solid ${SEAL}` : "3px solid transparent",
@@ -861,7 +861,7 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
     return (
       <Frame dark>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/cards/gwansanggam.webp" alt="" style={{ position: "absolute", left: 0, top: -90, width: 1080, height: 1440, objectFit: "cover" }} />
+        <img src="/cards/gwansanggam.webp" alt="" style={{ position: "absolute", left: 0, top: 0, width: 1080, height: 1440, objectFit: "cover", objectPosition: "50% 100%" }} />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(10,22,40,.55), transparent 38%, transparent 72%, rgba(10,22,40,.85))" }} />
         <div style={{ position: "absolute", inset: 36, border: "3px solid rgba(212,175,95,.55)" }} />
         <div style={{ position: "absolute", top: 104, left: 0, right: 0, textAlign: "center", textShadow: "0 2px 14px rgba(0,0,0,.6)" }}>
@@ -895,17 +895,17 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
     ];
     return (
       <Frame>
-        <div style={{ position: "absolute", top: 140, left: 100, right: 100 }}>
+        <div style={{ position: "absolute", top: 180, left: 100, right: 100 }}>
           <div style={{ textAlign: "center" }}>
             <Label>觀象監</Label>
             <p style={{ marginTop: 14, fontSize: 66, fontWeight: 800 }}>관상감은 어떤 곳이옵니까</p>
             <p style={{ marginTop: 12, fontSize: 36, color: SOFT }}>조선의 하늘을 맡던 관청이옵니다</p>
           </div>
-          <div style={{ marginTop: 54, display: "flex", flexDirection: "column", gap: 22 }}>
+          <div style={{ marginTop: 64, display: "flex", flexDirection: "column", gap: 30 }}>
             {schools.map((x, i) => {
               const ours = i === schools.length - 1;
               return (
-                <div key={x.t} className="doc-paper" style={{ display: "flex", alignItems: "center", gap: 30, padding: "26px 34px" }}>
+                <div key={x.t} className="doc-paper" style={{ display: "flex", alignItems: "center", gap: 30, padding: "32px 34px" }}>
                   <span
                     style={{
                       flexShrink: 0,
@@ -951,9 +951,9 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
         <img
           src="/cards/hundo-scroll.webp"
           alt=""
-          style={{ position: "absolute", left: -150, bottom: 170, height: 900, filter: "drop-shadow(0 14px 24px rgba(0,0,0,.45))" }}
+          style={{ position: "absolute", left: -150, bottom: 170, height: 960, filter: "drop-shadow(0 14px 24px rgba(0,0,0,.45))" }}
         />
-        <div style={{ position: "absolute", top: 250, left: 470, right: 90 }}>
+        <div style={{ position: "absolute", top: 290, left: 470, right: 90 }}>
           <p style={{ fontSize: 30, letterSpacing: "0.2em", color: GOLD, fontWeight: 800 }}>鄭 訓導</p>
           <p style={{ marginTop: 10, fontSize: 88, fontWeight: 800, lineHeight: 1.1 }}>정 훈도</p>
           <p style={{ marginTop: 18, fontSize: 32, fontWeight: 800 }}>관상감 명과학 훈도 · 정9품</p>
@@ -992,14 +992,14 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
     ];
     return (
       <Frame>
-        <div style={{ position: "absolute", top: 150, left: 96, right: 96 }}>
+        <div style={{ position: "absolute", top: 185, left: 96, right: 96 }}>
           <div style={{ textAlign: "center" }}>
             <Label>훈도사주에서 볼 수 있는 것</Label>
             <p style={{ marginTop: 14, fontSize: 64, fontWeight: 800 }}>무엇이 궁금하시옵니까</p>
           </div>
-          <div style={{ marginTop: 38, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+          <div style={{ marginTop: 38, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 22 }}>
             {topics.map((x, i) => (
-              <div key={x.t} className="doc-paper" style={{ gridColumn: i === topics.length - 1 ? "span 2" : undefined, padding: "26px 30px 24px" }}>
+              <div key={x.t} className="doc-paper" style={{ gridColumn: i === topics.length - 1 ? "span 2" : undefined, padding: "32px 30px 30px" }}>
                 <p style={{ fontSize: 42, fontWeight: 800, lineHeight: 1.1 }}>{x.t}</p>
                 <p style={{ marginTop: 10, fontSize: 25, lineHeight: 1.4, color: SOFT, fontFamily: sans }}>{x.d}</p>
               </div>
@@ -1015,7 +1015,7 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
   // The last slide of every carousel: the site for the reader's own chart, then a reason to follow.
   return (
     <Frame dark>
-      <div style={{ position: "absolute", top: 130, left: 0, right: 0, textAlign: "center" }}>
+      <div style={{ position: "absolute", top: 165, left: 0, right: 0, textAlign: "center" }}>
         <p style={{ fontSize: 34, letterSpacing: "0.3em", color: GOLD, fontWeight: 800 }}>明 課 學 訓 導</p>
         <p style={{ marginTop: 40, fontSize: 76, fontWeight: 800, lineHeight: 1.3 }}>
           {q.who === "saju" ? "그대의 여덟 글자가" : "내 일간이"}
@@ -1031,7 +1031,7 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
           프로필 링크에서 보기
         </p>
       </div>
-      <Hundo src="/hundo-bow.png" size={230} bottom={385} />
+      <Hundo src="/hundo-bow.png" size={230} bottom={400} />
       <div style={{ position: "absolute", left: 150, right: 150, bottom: 200, paddingTop: 26, borderTop: "1.5px solid rgba(212,175,95,.45)", textAlign: "center" }}>
         <p style={{ fontSize: 31, lineHeight: 1.55, color: GOLD, fontWeight: 800 }}>여덟 글자 속 이야기를 날마다 올리옵니다</p>
         <p style={{ marginTop: 4, fontSize: 29, color: "rgba(244,236,219,.85)" }}>저장해 두고 팔로우하시옵소서</p>
