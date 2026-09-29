@@ -30,6 +30,7 @@ const TOPICS: { id: ProductId; name: string; ask: string }[] = [
 
 // Free, computed, no payment: short rows under the choices.
 const FREE: { href: string; name: string; line: string }[] = [
+  { href: "/ranking", name: "이달의 일주 랭킹", line: "60일주 중 이번 달 운이 좋은 일주는?" },
   { href: "/reports/gukjeong", name: "2026 운세", line: "남은 올해, 언제 움직이고 언제 쉴까" },
   { href: "/samjae", name: "2026 삼재 띠", line: "토끼·양·돼지띠 눌삼재" },
   { href: "/king", name: "왕이 될 사주", line: "친구와 함께 하는 조선 사주 놀이" },
