@@ -1,3 +1,4 @@
+import { Solar } from "lunar-javascript";
 import { isBaekho, isGoegang, stageOf } from "./deep";
 import { BRANCH_EL, ELEMENT_HANJA, ELEMENT_KO, stemEl } from "./myeongri";
 import { BRANCHES, BRANCHES_KO, STEMS, STEMS_KO, type Pillars } from "./saju";
@@ -103,3 +104,18 @@ export const ILJU_TAG_TEXT: Record<string, string> = {
   간여지동: "간여지동: 천간과 지지가 같은 기운. 속과 겉이 같아 주관이 뚜렷해요",
   양인: "양인 일주: 칼을 쥔 듯한 결단력. 욱하는 순간만 다스리면 큰 무기예요",
 };
+
+// A day pillar's place in the sixty (1 = 갑자 … 60 = 계해), and the next day it comes round (Korean calendar),
+// so the 60일주 도감 can post each pillar on its own day.
+export const jiaziNo = (stem: number, branch: number) => Array.from({ length: 60 }, (_, i) => i).findIndex((i) => i % 10 === stem && i % 12 === branch) + 1;
+export function nextDayOf(stem: number, branch: number, from = Date.now()) {
+  const hanja = `${STEMS[stem]}${BRANCHES[branch]}`;
+  for (let i = 0; i < 60; i++) {
+    const d = new Date(from + 9 * 3600000 + i * 86400000);
+    const solar = Solar.fromYmd(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+    const l = solar.getLunar();
+    if (l.getDayGan() + l.getDayZhi() === hanja)
+      return { m: d.getUTCMonth() + 1, d: d.getUTCDate(), weekday: "일월화수목금토"[d.getUTCDay()] };
+  }
+  return null;
+}

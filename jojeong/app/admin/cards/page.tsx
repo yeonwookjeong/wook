@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { isAdmin } from "@/lib/admin";
-import { ILGAN, ILJU_TAG_TEXT, iljuFacts, stemCure, stemMatches, stemName, stemThing } from "@/lib/cards";
+import { ILGAN, ILJU_TAG_TEXT, iljuFacts, jiaziNo, nextDayOf, stemCure, stemMatches, stemName, stemThing } from "@/lib/cards";
 import { josa } from "@/lib/josa";
 import { pickDays } from "@/lib/taekil";
 import { figureById, figureChart } from "@/lib/figures";
@@ -69,6 +69,54 @@ function Brand({ dark = false }: { dark?: boolean }) {
         <span style={{ fontSize: 38, fontWeight: 800 }}>훈도사주</span>
       </div>
       <p style={{ marginTop: 8, fontSize: 30, letterSpacing: "0.04em", color: dark ? "rgba(244,236,219,.85)" : SOFT }}>hundosaju.com</p>
+    </div>
+  );
+}
+
+// The feed thumbnail's two-line title over the bottom of the cover, on a gradient so it reads over anything.
+function ThumbTitle({ top, main }: { top: string; main: string }) {
+  return (
+    <>
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: 560,
+          background: "linear-gradient(180deg, rgba(10,20,34,0) 0%, rgba(10,20,34,.78) 42%, rgba(10,20,34,.96) 100%)",
+        }}
+      />
+      <div style={{ position: "absolute", left: 70, right: 70, bottom: 92 }}>
+        <p style={{ fontSize: 50, fontWeight: 800, color: "#f4ecdb", letterSpacing: "0.01em" }}>{top}</p>
+        <p style={{ marginTop: 6, fontSize: 92, fontWeight: 800, lineHeight: 1.12, color: "#f1cf7a" }}>{main}</p>
+      </div>
+    </>
+  );
+}
+
+// The brand in the top corner, for covers whose bottom carries the thumbnail title.
+function CornerBrand() {
+  return (
+    <div style={{ position: "absolute", top: 64, left: 70, display: "flex", alignItems: "center", gap: 12 }}>
+      <span
+        style={{
+          width: 50,
+          height: 50,
+          border: `4px solid ${SEAL}`,
+          color: SEAL,
+          background: HANJI,
+          display: "grid",
+          placeItems: "center",
+          fontSize: 19,
+          fontWeight: 800,
+          lineHeight: 1,
+          transform: "rotate(-4deg)",
+        }}
+      >
+        訓<br />導
+      </span>
+      <span style={{ fontSize: 32, fontWeight: 800, color: HANJI }}>훈도사주</span>
     </div>
   );
 }
@@ -195,6 +243,67 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
   }
 
   // ② 60일주 도감
+  // 60일주 도감: the feed cover. Each pillar is posted on its own day of the sixty-day round.
+  if (c === "ilju-cover") {
+    const b = Math.min(11, Math.max(0, Number(q.b ?? 0) || 0));
+    const st = b % 2 === s % 2 ? s : (s + 1) % 10; // a stem and branch of the same yin-yang only
+    const f = iljuFacts(st, b);
+    const no = jiaziNo(st, b);
+    const when = nextDayOf(st, b);
+    return (
+      <Frame dark>
+        <CornerBrand />
+        <p style={{ position: "absolute", top: 72, right: 70, fontSize: 30, fontWeight: 800, color: GOLD }}>{no} / 60</p>
+        <div
+          className="doc-paper"
+          style={{ position: "absolute", top: 160, left: 150, right: 150, height: 700, textAlign: "center", color: INK, paddingTop: 50 }}
+        >
+          <p style={{ display: "inline-block", padding: "10px 26px", background: INK, color: HANJI, fontSize: 34, fontWeight: 800 }}>60일주 도감</p>
+          <p style={{ marginTop: 26, fontSize: 28, color: SOFT, fontFamily: sans }}>- - - - - - - - - - - - - - - - - - - -</p>
+          <p style={{ marginTop: 22, fontSize: 30, color: SOFT }}>{no === 1 ? "육십갑자의 맨 첫 자리" : `육십갑자의 ${no}번째 자리`}</p>
+          <p style={{ marginTop: 6, fontSize: 190, fontWeight: 800, lineHeight: 1.05, color: SEAL, letterSpacing: "0.04em" }}>{f.hanja}</p>
+          <p style={{ marginTop: 6, fontSize: 64, fontWeight: 800 }}>{f.name}</p>
+          <p style={{ marginTop: 14, fontSize: 34, color: SOFT }}>{f.image}</p>
+        </div>
+        {/* 정 훈도, calling it from the side of the page */}
+        <div style={{ position: "absolute", top: 745, left: 64 }}>
+          <div
+            style={{
+              width: 170,
+              height: 170,
+              borderRadius: "50%",
+              overflow: "hidden",
+              border: `6px solid ${GOLD}`,
+              background: HANJI,
+              boxShadow: "0 10px 24px rgba(0,0,0,.4)",
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/hundo-face.png" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          </div>
+          <div
+            style={{
+              position: "absolute",
+              left: -12,
+              top: -84,
+              padding: "12px 22px",
+              background: "#fff",
+              color: INK,
+              borderRadius: 22,
+              fontSize: 32,
+              fontWeight: 800,
+              whiteSpace: "nowrap",
+              boxShadow: "0 8px 20px rgba(0,0,0,.3)",
+            }}
+          >
+            {q.say ? String(q.say) : "오늘 태어난 일주!"}
+          </div>
+        </div>
+        <ThumbTitle top={when ? `${when.m}월 ${when.d}일 ${when.weekday}요일 · ${f.name.replace("일주", "")}일` : f.name} main={`60일주 도감 · ${f.name}`} />
+      </Frame>
+    );
+  }
+
   if (c === "ilju") {
     const b = Math.min(11, Math.max(0, Number(q.b ?? 6) || 0));
     const f = iljuFacts(s, b);
