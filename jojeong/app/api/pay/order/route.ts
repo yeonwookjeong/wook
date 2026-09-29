@@ -4,6 +4,8 @@ import { FIXED_RELATION, isOpen, isPair, priceNow, productById, SETS, setOf } fr
 import { jobFor, type JobRequest } from "@/lib/reportWriter";
 import { KINDS, parseSearch, searchDay } from "@/lib/taekil";
 import { newYearOf } from "@/lib/yeonun";
+import { saleKey } from "@/lib/sales";
+import { track } from "@/lib/stats";
 
 // POST { product, p } or, for a two-person report, { product, a, b, rel } → a new order for that exact report, priced here.
 export async function POST(request: Request) {
@@ -23,6 +25,7 @@ export async function POST(request: Request) {
     const job = await jobFor(req);
     if ("error" in job) return Response.json({ error: job.error }, { status: job.status });
     const order = await createOrder(lead, req, `${decodePerson(req.p)?.name}님`, SETS[set].price, { set, bundle: [lead, ...rest] });
+    await track(`co:${saleKey(lead, set, undefined)}`);
     return Response.json({ orderId: order.id, amount: order.amount, orderName: ny ? `${SETS[set].title} (${ny} 신년운세 포함)` : SETS[set].title, clientKey: payClientKey(), mock: payMock() });
   }
 
@@ -38,6 +41,7 @@ export async function POST(request: Request) {
     // The search date is set here, not by the browser: the days (and the written note) stay as they were bought.
     const req: JobRequest = { product: product.id, kind: search.kind, from: body.from, n: String(search.n), a: body.a, ...(b && { b: body.b }), d: searchDay(undefined) };
     const order = await createOrder(product.id, req, `${b ? `${a.name}님과 ${b.name}님` : `${a.name}님`} · ${KINDS[search.kind].title}`, priceNow());
+    await track(`co:${saleKey(product.id, undefined, undefined)}`);
     return Response.json({ orderId: order.id, amount: order.amount, orderName: KINDS[search.kind].title, clientKey: payClientKey(), mock: payMock() });
   }
 
@@ -51,6 +55,7 @@ export async function POST(request: Request) {
   const who =
     isPair(product) ? `${decodePerson(req.a)?.name}님과 ${decodePerson(req.b)?.name}님` : `${decodePerson(req.p)?.name}님`;
   const order = await createOrder(product.id, req, product.id === "yeonun" ? `${who} · ${req.y}년 운세` : who, priceNow());
+  await track(`co:${saleKey(product.id, undefined, req.y)}`);
   const orderName = product.id === "yeonun" ? `${req.y}년 운세 (연운)` : product.title;
   return Response.json({ orderId: order.id, amount: order.amount, orderName, clientKey: payClientKey(), mock: payMock() });
 }
