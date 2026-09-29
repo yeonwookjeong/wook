@@ -68,11 +68,16 @@ export type IljuMonth = {
   image: string;
   score: number;
   rank: number;
-  line: string; // the month in one line
+  line: string; // the month in a sentence
+  short: string; // the month in a few words, for the full list
+  tips: string[]; // what to make of a good month
+  avoid: string; // for a hard month: what to steer clear of,
+  prep: string; // what to do instead,
+  bright: string; // and what still goes well
   tags: string[];
 };
 
-export type MonthPillar = { stem: number; branch: number; from: string; to: string; label: string; term: string };
+export type MonthPillar = { stem: number; branch: number; from: string; to: string; label: string; term: string; nextTerm: string };
 
 // The 절기 that opens each month branch (子 대설 … 亥 입동).
 const TERM = ["대설", "소한", "입춘", "경칩", "청명", "입하", "망종", "소서", "입추", "백로", "한로", "입동"];
@@ -102,11 +107,42 @@ export function monthPillarOf(y: number, m: number): MonthPillar | null {
   const nextStart = startDay(Number(next.from.split("/")[0]) < m ? y + 1 : y, next.from, next.stem, next.branch);
   const end = new Date(nextStart.getTime() - 86400000);
   const md = (d: Date) => `${d.getUTCMonth() + 1}/${d.getUTCDate()}`;
-  return { stem: cur.stem, branch: cur.branch, from: md(start), to: md(end), label: `${STEMS_KO[cur.stem]}${BRANCHES_KO[cur.branch]}월`, term: TERM[cur.branch] };
+  return { stem: cur.stem, branch: cur.branch, from: md(start), to: md(end), label: `${STEMS_KO[cur.stem]}${BRANCHES_KO[cur.branch]}월`, term: TERM[cur.branch], nextTerm: TERM[(cur.branch + 1) % 12] };
 }
 
 // How a month (or any pillar) meets one day pillar.
-export function meet(stem: number, branch: number, ms: number, mb: number): { score: number; line: string; tags: string[] } {
+const GOD_KEY: Record<TenGod, string> = {
+  정재: "돈이 모이고", 편재: "기회가 들고", 식신: "재주가 빛나고", 상관: "말이 앞서고", 정관: "인정받고",
+  편관: "부담이 크고", 정인: "도움이 따르고", 편인: "공부가 잘 되고", 비견: "동료와 함께하고", 겁재: "지출이 늘고",
+};
+const GOD_ALONE: Record<TenGod, string> = {
+  정재: "돈이 모이는 달", 편재: "기회가 드는 달", 식신: "재주가 빛나는 달", 상관: "말을 아낄 달", 정관: "인정받는 달",
+  편관: "무리하지 말 달", 정인: "도움받는 달", 편인: "공부가 잘 되는 달", 비견: "동료와 함께할 달", 겁재: "지출을 조심할 달",
+};
+const GOD_DO: Record<TenGod, string> = {
+  정재: "저축과 계약에 좋아요",
+  편재: "새 거래나 부업 기회를 살펴보세요",
+  식신: "미뤄 둔 취미나 창작을 시작해 보세요",
+  상관: "아이디어를 글이나 작품으로 풀어 보세요",
+  정관: "면접·승진처럼 공식적인 자리에 나서 보세요",
+  편관: "맡은 책임을 차근차근 해내면 인정받아요",
+  정인: "공부·자격증, 선배의 조언을 구해 보세요",
+  편인: "기획이나 공부를 혼자 깊게 파 보세요",
+  비견: "동료와 함께하는 일을 벌여 보세요",
+  겁재: "경쟁하는 자리라면 실력을 보여 줄 기회예요",
+};
+// For a hard month: the one thing to steer clear of and what to do instead, from its sharpest cause.
+const WATCH: Record<string, [avoid: string, prep: string]> = {
+  충: ["이사·퇴사 같은 큰 결정을 서두르기", "일정은 여유 있게, 중요한 일은 두 번 확인하기"],
+  천간충: ["고집으로 밀어붙이기", "한발 물러서서 상대 말을 먼저 듣기"],
+  형: ["감정 섞인 말과 서류 실수", "계약서와 약속은 꼼꼼히 확인하기"],
+  편관: ["무리한 야근과 과로", "몸을 먼저 챙기고 일을 나누기"],
+  겁재: ["돈 빌려주기와 충동구매", "이달 지출 한도를 미리 정해 두기"],
+  상관: ["윗사람과의 말다툼", "하고 싶은 말은 글로 한 번 정리하기"],
+  편인: ["혼자 끙끙 끌어안기", "주변에 먼저 도움 청하기"],
+};
+
+export function meet(stem: number, branch: number, ms: number, mb: number) {
   const p = { dayStem: stem, dayBranch: branch, yearBranch: branch } as Pillars;
   const god = tenGod(stem, ms);
   const branchGod = tenGod(stem, HIDDEN[mb].at(-1)![0]);
@@ -114,22 +150,28 @@ export function meet(stem: number, branch: number, ms: number, mb: number): { sc
   const tags: string[] = [];
   // The meeting that most shapes the month becomes the second half of the line.
   let tail: string | null = null;
+  let key: string | null = null;
+  const tips: string[] = [];
   const m = meetings(branch, mb);
   const sals = salsAt(p, mb);
   if (m.includes("충")) {
     score -= 2.5;
     tags.push("충");
     tail = "흔들림이 있는 달이에요. 큰 결정은 한 박자 쉬고 하세요";
+    key = "흔들림에 대비할 달";
   }
   if (m.includes("육합") || m.includes("삼합")) {
     score += m.includes("육합") ? 2 : 1.5;
     tags.push("합");
     tail ??= "사람과 손발이 맞는 달이에요";
+    key ??= "손발이 맞는 달";
+    tips.push("협업·모임·소개 자리에 나가 보세요");
   } else if (m.includes("방합")) score += 0.5;
   if (m.includes("형")) {
     score -= 1;
     tags.push("형");
     tail ??= "사소한 마찰을 조심할 달이에요";
+    key ??= "마찰을 조심할 달";
   }
   if (m.includes("원진")) score -= 0.7;
   if (m.includes("해") || m.includes("파")) score -= 0.5;
@@ -137,6 +179,8 @@ export function meet(stem: number, branch: number, ms: number, mb: number): { sc
     score += 1.5;
     tags.push("천간합");
     tail ??= "반가운 제안과 인연이 닿는 달이에요";
+    key ??= "반가운 제안이 오는 달";
+    tips.push("들어온 제안은 한번 받아 보세요");
   }
   if (stemClash(stem, ms)) {
     score -= 1.5;
@@ -145,7 +189,11 @@ export function meet(stem: number, branch: number, ms: number, mb: number): { sc
   if (sals.includes("천을귀인")) {
     score += 1.5;
     tags.push("귀인");
-    if (!m.includes("충")) tail = "귀인이 돕는 달이에요";
+    if (!m.includes("충")) {
+      tail = "귀인이 돕는 달이에요";
+      key = "귀인이 돕는 달";
+    }
+    tips.push("막힌 일은 도움을 청하면 풀려요");
   }
   if (sals.includes("문창귀인")) score += 0.5;
   const stage = stageOf(stem, mb);
@@ -153,8 +201,11 @@ export function meet(stem: number, branch: number, ms: number, mb: number): { sc
   else if (stage === "장생" || stage === "관대") score += 0.5;
   else if (stage === "사" || stage === "묘" || stage === "절") score -= 0.5;
   const extra = sals.includes("도화") ? " 인연운도 들어와요." : sals.includes("역마") ? " 이동과 출장이 잦아요." : "";
-  const line = tail ? `${GOD_SHORT[god]}, ${tail}.` : `${GOD_LINE[god]}.`;
-  return { score: Math.round(score * 10) / 10, line: line + extra, tags };
+  const line = (tail ? `${GOD_SHORT[god]}, ${tail}.` : `${GOD_LINE[god]}.`) + extra;
+  const short = key ? `${GOD_KEY[god]}, ${key}` : GOD_ALONE[god];
+  const cause = ["충", "천간충", "형"].find((t) => tags.includes(t)) ?? (WATCH[god] ? god : WATCH[branchGod] ? branchGod : null);
+  const [avoid, prep] = cause ? WATCH[cause] : ["무리한 욕심", "평소 페이스를 지키기"];
+  return { score: Math.round(score * 10) / 10, line, short, tips: [GOD_DO[god], ...tips].slice(0, 3), avoid, prep, bright: GOD_DO[god], tags };
 }
 
 // This calendar month in Korea, for the monthly ranking.
@@ -163,12 +214,22 @@ export function kstMonthNow(t = Date.now()) {
   return { y: d.getUTCFullYear(), m: d.getUTCMonth() + 1 };
 }
 
+// The 절기 month in effect on a day: this calendar month's once its 절기 has come, last month's before.
+export function monthPillarNow(t = Date.now()): MonthPillar & { y: number } {
+  const { y, m } = kstMonthNow(t);
+  const d = new Date(t + 9 * 3600000).getUTCDate();
+  const cur = monthPillarOf(y, m)!;
+  if (d >= Number(cur.from.split("/")[1])) return { ...cur, y };
+  const py = m === 1 ? y - 1 : y;
+  return { ...monthPillarOf(py, m === 1 ? 12 : m - 1)!, y: py };
+}
+
 // All sixty for one month pillar, best first.
 export function rankMonth(ms: number, mb: number): IljuMonth[] {
   const rows = SIXTY.map(({ no, stem, branch }) => {
     const hanja = `${STEMS[stem]}${BRANCHES[branch]}`;
     const m = meet(stem, branch, ms, mb);
-    return { no, stem, branch, hanja, name: `${STEMS_KO[stem]}${BRANCHES_KO[branch]}일주`, image: ILJU_IMAGE[hanja], score: m.score, rank: 0, line: m.line, tags: m.tags };
+    return { no, stem, branch, hanja, name: `${STEMS_KO[stem]}${BRANCHES_KO[branch]}일주`, image: ILJU_IMAGE[hanja], rank: 0, ...m };
   });
   rows.sort((a, b) => b.score - a.score || a.no - b.no);
   rows.forEach((r, i) => (r.rank = i + 1));
