@@ -50,8 +50,8 @@ function Row({ p, price, mine }: { p: Product; price: number; mine?: string }) {
 // A set's reports as short chips (the full titles run long side by side).
 const SHORT: Partial<Record<ProductId, string>> = { pyeongsaeng: "평생 사주", yeonae: "연애·결혼", jaemul: "재물운", jikup: "직업·적성", yeonun: "연운" };
 
-// Sets: a card each, unlike the report rows above: the reports as chips, and the price against the sum of the
-// singles, so the saving reads at a glance. The 새해 set shows only in its season (September to February).
+// Sets: a card each, unlike the report rows above: the reports as chips, and the price beside the sum of the
+// singles struck through. The 새해 set shows only in its season (September to February).
 function SetCard({ id, ny }: { id: SetId; ny: number | null }) {
   const set = SETS[id];
   const sum = set.products.length * PRICE;
@@ -60,10 +60,7 @@ function SetCard({ id, ny }: { id: SetId; ny: number | null }) {
   return (
     <li>
       <Link href={href} className="block rounded-2xl border-2 border-gold/50 bg-gold/8 px-4 py-3.5">
-        <span className="flex items-center justify-between gap-2">
-          <b className="font-myeongjo text-[17px]">{set.title}</b>
-          <span className="shrink-0 rounded-full bg-seal px-2 py-0.5 text-[11px] font-extrabold text-hanji">{(sum - set.price).toLocaleString("ko-KR")}원 아껴요</span>
-        </span>
+        <b className="block font-myeongjo text-[17px]">{set.title}</b>
         <span className="mt-2 flex flex-wrap gap-1.5">
           {set.products.map((p) => (
             <span key={p} className="rounded-md border border-seal/20 bg-white/70 px-2 py-0.5 text-[12px] font-bold">
