@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { forgetMeAction } from "@/app/actions";
+import FreeTiles, { type FreeTile } from "@/components/FreeTiles";
 import Keep from "@/components/Keep";
 import RoyalDoc from "@/components/RoyalDoc";
 import StoreHero from "@/components/StoreHero";
@@ -30,12 +31,12 @@ const TOPICS: { id: ProductId; name: string; ask: string }[] = [
   { id: "taekil", name: "택일", ask: "결혼·이사·계약·면접, 언제 할까?" },
 ];
 
-// Free, computed, no payment: short rows under the choices.
-const FREE: { href: string; name: string; line: string }[] = [
-  { href: "/reports/gukjeong", name: "2026 운세", line: "남은 올해, 언제 움직이고 언제 쉴까" },
-  { href: "/samjae", name: "2026 삼재 띠", line: "토끼·양·돼지띠 눌삼재" },
-  { href: "/king", name: "왕이 될 사주", line: "친구와 함께 하는 조선 사주 놀이" },
-  { href: "/reports/sinbun", name: "조선 신분 감정", line: "조선에 태어났다면 어떤 신분이었을까" },
+// Free, computed, no payment: night-blue tiles under the choices (components/FreeTiles.tsx).
+const FREE: FreeTile[] = [
+  { href: "/reports/gukjeong", hanja: "國運", title: "2026 운세", line: "남은 올해, 언제 움직이고 언제 쉴까", tag: "내 사주" },
+  { href: "/samjae", hanja: "三災", title: "2026 삼재 띠", line: "토끼·양·돼지띠 눌삼재", tag: "띠별" },
+  { href: "/king", hanja: "王", title: "왕이 될 사주", line: "친구를 불러 내 조정을 꾸리는 놀이", tag: "친구와" },
+  { href: "/reports/sinbun", hanja: "身分", title: "조선 신분 감정", line: "조선에 태어났다면 어떤 신분이었을까", tag: "혼자" },
 ];
 
 // The one price, and the regular one struck through beside it on a sale day.
@@ -216,19 +217,7 @@ export default async function Home() {
 
       <section className="mt-8">
         <h2 className="text-center font-myeongjo text-lg font-extrabold">무료로 보기</h2>
-        <ul className="doc-paper mt-3 flex flex-col divide-y divide-seal/10 px-5 py-1">
-          {FREE.map((f) => (
-            <li key={f.href}>
-              <Link href={f.href} className="flex items-center gap-3 py-3">
-                <span className="min-w-0 flex-1">
-                  <b className="block font-myeongjo">{f.name}</b>
-                  <span className="block text-[12px] text-ink-soft">{f.line}</span>
-                </span>
-                <span className="shrink-0 text-xs font-bold text-seal">무료 →</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <FreeTiles tiles={FREE} className="mt-3" />
       </section>
     </>
   );
