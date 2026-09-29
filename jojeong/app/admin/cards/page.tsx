@@ -1033,7 +1033,7 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
       </div>
       <Hundo src="/hundo-bow.png" size={230} bottom={385} />
       <div style={{ position: "absolute", left: 150, right: 150, bottom: 200, paddingTop: 26, borderTop: "1.5px solid rgba(212,175,95,.45)", textAlign: "center" }}>
-        <p style={{ fontSize: 31, lineHeight: 1.55, color: GOLD, fontWeight: 800 }}>매일, 여덟 글자로 그대의 날을 읽사옵니다</p>
+        <p style={{ fontSize: 31, lineHeight: 1.55, color: GOLD, fontWeight: 800 }}>여덟 글자 속 이야기를 날마다 올리옵니다</p>
         <p style={{ marginTop: 4, fontSize: 29, color: "rgba(244,236,219,.85)" }}>저장해 두고 팔로우하시옵소서</p>
       </div>
       <Brand dark />
