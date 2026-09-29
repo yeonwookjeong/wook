@@ -104,7 +104,11 @@ export default async function Home() {
             1위 {ranks[0].name} <span className="text-seal">{ranks[0].hanja}</span>
           </b>
           <span className="block text-[12px] text-ink-soft">
-            {myRank ? (
+            {myRank && myRank.rank > 50 ? (
+              <>
+                {me!.person.name}님 {myRank.name}는 이달 <b className="text-ink">미리 대비하면 되는 일주</b> · 대비법 보기
+              </>
+            ) : myRank ? (
               <>
                 {me!.person.name}님 {myRank.name}는 <b className="text-seal">{myRank.rank}위</b> · 60일주 전체 순위 보기
               </>

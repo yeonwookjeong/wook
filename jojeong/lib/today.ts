@@ -74,12 +74,15 @@ export type Today = {
   personal: string | null;
   rating: 0 | 1 | 2 | null;
   score: number | null; // 0–100
-  rank: number | null; // the reader's day pillar among the sixty today
+  rank: number | null; // the reader's day pillar among the sixty today (the card shows it in the top 20 only)
+  best: { label: string; stars: number } | null; // the day's strongest area: something good on every day
   ilju: string | null; // 갑자일주
   areas: Area[] | null;
   hour: { label: string; why: string } | null;
   lucky: { color: string; direction: string } | null;
   week: { day: string; date: number; mark: "◎" | "○" | "△"; today: boolean }[] | null;
+  // A hard day (△): what to avoid, what to do instead, what still goes well, and the next good day.
+  watch: { avoid: string; prep: string; bright: string; next: string | null } | null;
   hundo: string | null;
 };
 
@@ -97,11 +100,30 @@ function dayPillar(y: number, m: number, d: number) {
 
 // The day for this chart, 0–100: how the day pillar meets the reader's day pillar (the ranking's score), and
 // whether the day brings the element the chart needs (용신) or the one it can't take (기신).
+// The marks (◎○△, 좋음·무난·대비) come from this raw score; what the reader sees is `shown`.
 function dayScore(p: Pillars, r: Reading, stem: number, branch: number) {
   const base = meet(p.dayStem, p.dayBranch, stem, branch).score;
   const el = elScore(r, stemEl(stem)) + elScore(r, BRANCH_EL[branch]);
   return clamp(Math.round(55 + (base + el * 0.8) * 4.5), 12, 98);
 }
+// Shown on screen: the order is kept, the lower half pressed together, so the hardest day reads about 35, not
+// 12 (a number in the teens reads as a ruined chart, not a day to be careful).
+const shown = (raw: number) => (raw >= 55 ? raw : Math.round(55 - (55 - raw) * 0.5));
+const markOf = (raw: number) => (raw >= 70 ? "◎" : raw >= 50 ? "○" : "△") as "◎" | "○" | "△";
+
+// For a hard day: the one thing to steer clear of and what to do instead, from its sharpest cause (the same
+// causes as the monthly ranking, worded for a day).
+const DAY_WATCH: Record<string, [avoid: string, prep: string]> = {
+  충: ["이사·퇴사 같은 큰 결정을 서두르기", "일정은 여유 있게, 중요한 일은 두 번 확인하기"],
+  천간충: ["고집으로 밀어붙이기", "한발 물러서서 상대 말을 먼저 듣기"],
+  형: ["감정 섞인 말과 서류 실수", "계약서와 약속은 꼼꼼히 확인하기"],
+  편관: ["무리한 야근과 과로", "몸을 먼저 챙기고 일을 나누기"],
+  겁재: ["돈 빌려주기와 충동구매", "오늘 쓸 돈의 한도를 미리 정해 두기"],
+  상관: ["윗사람과의 말다툼", "하고 싶은 말은 글로 한 번 정리하기"],
+  편인: ["혼자 끙끙 끌어안기", "주변에 먼저 도움 청하기"],
+  기신: ["큰 결정과 큰 지출", "하던 일을 마무리하는 데 하루를 쓰기"],
+};
+const HUNDO_HARD: [string, string] = ["피할 것만 피하시면 무탈한 날이옵니다.", "오늘은 한 걸음 쉬어 가시옵소서. 좋은 날은 곧 오옵니다."];
 
 // Four areas in one to five stars, from the ten gods the day brings and how its branch meets the chart.
 function areasOf(me: Person, r: Reading, stem: number, branch: number): Area[] {
@@ -190,11 +212,13 @@ export function todayFor(me: Person | null, now = new Date()): Today {
     rating: null,
     score: null,
     rank: null,
+    best: null,
     ilju: null,
     areas: null,
     hour: null,
     lucky: null,
     week: null,
+    watch: null,
     hundo: null,
   };
   const r = me ? readChart(me.pillars) : null;
@@ -202,6 +226,7 @@ export function todayFor(me: Person | null, now = new Date()): Today {
 
   const p = me.pillars;
   const score = dayScore(p, r, stem, branch);
+  const hard = score < 50;
   const hit = [s, b].find((e) => e === r.yong);
   const bad = [s, b].find((e) => e === r.gi);
   let personal =
@@ -211,8 +236,8 @@ export function todayFor(me: Person | null, now = new Date()): Today {
         ? `버거운 ${EL(bad)} 기운의 날이에요. 큰 결정은 하루 미루세요.`
         : score >= 70
           ? "오늘의 일진이 내 일주와 잘 맞물리는 날이에요."
-          : score < 50
-            ? "오늘의 일진이 내 일주와 삐걱대는 날이에요. 서두르지 말고 하던 대로 가세요."
+          : hard
+            ? "오늘의 일진이 내 일주와 삐걱대는 날이에요. 아래 한 가지만 피하면 돼요."
             : "기운이 어느 한쪽으로 크게 치우치지 않는 날이에요.";
   const mt = meetings(branch, p.dayBranch);
   if (mt.includes("충")) personal += " 가까운 사람과 부딪히기 쉬우니 말은 한 번 더 고르세요.";
@@ -221,29 +246,48 @@ export function todayFor(me: Person | null, now = new Date()): Today {
   const hour = bestHour(p, r, stem);
   // This week, Monday to Sunday.
   const dow = (kst.getUTCDay() + 6) % 7;
-  const week = Array.from({ length: 7 }, (_, i) => {
-    const t = new Date(Date.UTC(y, m - 1, d - dow + i));
+  const at = (i: number) => {
+    const t = new Date(Date.UTC(y, m - 1, d + i));
     const dp = dayPillar(t.getUTCFullYear(), t.getUTCMonth() + 1, t.getUTCDate());
-    const v = dayScore(p, r, dp.stem, dp.branch);
-    return {
-      day: "월화수목금토일"[i],
-      date: t.getUTCDate(),
-      mark: (v >= 70 ? "◎" : v >= 50 ? "○" : "△") as "◎" | "○" | "△",
-      today: i === dow,
-    };
+    return { t, mark: markOf(dayScore(p, r, dp.stem, dp.branch)) };
+  };
+  const week = Array.from({ length: 7 }, (_, i) => {
+    const { t, mark } = at(i - dow);
+    return { day: "월화수목금토일"[i], date: t.getUTCDate(), mark, today: i === dow };
   });
+
+  const areas = areasOf(me, r, stem, branch);
+  const best = areas.reduce((a, x) => (x.stars > a.stars ? x : a));
+  let watch: Today["watch"] = null;
+  if (hard) {
+    const mm = meet(p.dayStem, p.dayBranch, stem, branch);
+    const god = tenGod(p.dayStem, stem);
+    const bgod = tenGod(p.dayStem, HIDDEN[branch].at(-1)![0]);
+    const cause =
+      ["충", "천간충", "형"].find((t) => mm.tags.includes(t)) ?? (DAY_WATCH[god] ? god : DAY_WATCH[bgod] ? bgod : bad !== undefined ? "기신" : null);
+    const [avoid, prep] = cause ? DAY_WATCH[cause] : ["무리한 욕심", "평소 페이스를 지키기"];
+    // The next ◎ day within ten days.
+    let next: string | null = null;
+    for (let i = 1; i <= 10 && !next; i++) {
+      const { t, mark } = at(i);
+      if (mark === "◎") next = `${i === 1 ? "내일" : `${"일월화수목금토"[t.getUTCDay()]}요일`}(${t.getUTCMonth() + 1}/${t.getUTCDate()})`;
+    }
+    watch = { avoid, prep, bright: mm.bright, next };
+  }
 
   return {
     ...out,
     personal,
     rating: score >= 70 ? 2 : score >= 50 ? 1 : 0,
-    score,
+    score: shown(score),
     rank: ranks.find((x) => x.stem === p.dayStem && x.branch === p.dayBranch)!.rank,
     ilju: `${STEMS_KO[p.dayStem]}${BRANCHES_KO[p.dayBranch]}일주`,
-    areas: areasOf(me, r, stem, branch),
+    best: best.stars >= 3 ? { label: best.label, stars: best.stars } : null,
+    areas,
     hour: { label: hour.label, why: hour.why },
     lucky: { color: EL_COLOR[hour.el], direction: EL_DIRECTION[r.yong] },
     week,
-    hundo: HUNDO[tenGod(p.dayStem, stem)][d % 2],
+    watch,
+    hundo: hard ? HUNDO_HARD[d % 2] : HUNDO[tenGod(p.dayStem, stem)][d % 2],
   };
 }

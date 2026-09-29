@@ -7,7 +7,7 @@ import MeForm from "./MeForm";
 import type { Today } from "@/lib/today";
 
 const RATING = [
-  { label: "조심", className: "bg-ink/10 text-ink" },
+  { label: "대비", className: "bg-ink/10 text-ink" },
   { label: "무난", className: "bg-gold/20 text-gold" },
   { label: "좋음", className: "bg-seal text-hanji" },
 ] as const;
@@ -119,7 +119,7 @@ export default function TodayCard({ today, name }: { today: Today; name: string 
         <div className="animate-rise">
           <div className="mt-3 flex items-center gap-4">
             <p className="flex shrink-0 flex-col items-center">
-              <span className="font-myeongjo text-5xl leading-none font-extrabold text-seal">{today.score}</span>
+              <span className={`font-myeongjo text-5xl leading-none font-extrabold ${today.rating === 0 ? "text-ink" : "text-seal"}`}>{today.score}</span>
               <span className="mt-1 text-[11px] text-ink-soft">/ 100점</span>
             </p>
             <div className="min-w-0 flex-1">
@@ -127,9 +127,18 @@ export default function TodayCard({ today, name }: { today: Today; name: string 
                 {rating && <span className={`shrink-0 rounded-md px-2 py-0.5 text-xs font-extrabold ${rating.className}`}>{rating.label}</span>}
                 <span className="font-myeongjo leading-snug font-extrabold">{today.image}</span>
               </p>
-              <p className="mt-1 text-[12px] leading-snug text-ink-soft">
-                {today.ilju}, 60일주 중 오늘 <b className="text-seal">{today.rank}위</b>
-              </p>
+              {/* The rank is something to show off, so only a high one is shown; otherwise the day's best area. */}
+              {today.rank !== null && today.rank <= 20 ? (
+                <p className="mt-1 text-[12px] leading-snug text-ink-soft">
+                  {today.ilju}, 60일주 중 오늘 <b className="text-seal">{today.rank}위!</b>
+                </p>
+              ) : (
+                today.best && (
+                  <p className="mt-1 text-[12px] leading-snug text-ink-soft">
+                    오늘의 무기 <b className="text-ink">{today.best.label}</b> <Stars n={today.best.stars} />
+                  </p>
+                )
+              )}
             </div>
           </div>
 
@@ -138,9 +147,26 @@ export default function TodayCard({ today, name }: { today: Today; name: string 
               <b className="text-seal">{name}님에게는</b> {today.personal}
             </p>
           )}
-          <p className="mt-2 text-[13px] leading-relaxed text-ink-soft">
-            <b>하루 전체로는</b> {today.advice}
-          </p>
+          {today.watch && (
+            <ul className="mt-2 flex flex-col gap-1 rounded-xl border border-seal/15 bg-white/50 px-3 py-2.5 text-[13px] leading-snug">
+              <li>
+                <b className="text-seal">피할 것</b> {today.watch.avoid}
+              </li>
+              <li>
+                <b className="text-jade">이렇게</b> {today.watch.prep}
+              </li>
+              <li className="text-ink-soft">
+                <b className="text-gold">좋은 점</b> {today.watch.bright}
+              </li>
+              {today.watch.next && <li className="mt-1 border-t border-seal/10 pt-1.5 font-bold">큰 일은 {today.watch.next}로 미뤄 보세요 ◎</li>}
+            </ul>
+          )}
+          {/* On a hard day the general line (read for everyone) would pull against the advice above. */}
+          {!today.watch && (
+            <p className="mt-2 text-[13px] leading-relaxed text-ink-soft">
+              <b>하루 전체로는</b> {today.advice}
+            </p>
+          )}
 
           {today.areas && (
             <ul className="mt-4 flex flex-col divide-y divide-seal/10 border-y border-seal/15">
@@ -192,7 +218,7 @@ export default function TodayCard({ today, name }: { today: Today; name: string 
                   </li>
                 ))}
               </ol>
-              <p className="mt-1 text-right text-[10px] text-ink-soft">◎ 좋음 · ○ 무난 · △ 조심</p>
+              <p className="mt-1 text-right text-[10px] text-ink-soft">◎ 좋음 · ○ 무난 · △ 대비</p>
             </div>
           )}
 
