@@ -83,7 +83,7 @@ function BrushFont({ hf }: { hf: string }) {
 const brush = '"GanzhiBrush", var(--font-heading)';
 
 // The feed thumbnail's two-line title over the bottom of the cover, on a gradient so it reads over anything.
-function ThumbTitle({ top, main }: { top: string; main: string }) {
+function ThumbTitle({ top, main }: { top: string; main: React.ReactNode }) {
   return (
     <>
       <div
@@ -259,16 +259,19 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
     const f = iljuFacts(st, b);
     const no = jiaziNo(st, b);
     const when = nextDayOf(st, b);
+    const nn = String(no).padStart(2, "0");
     return (
       <Frame dark>
         <BrushFont hf={String(q.hf ?? "")} />
         <CornerBrand />
-        <p style={{ position: "absolute", top: 72, right: 70, fontSize: 30, fontWeight: 800, color: GOLD }}>{no} / 60</p>
+        <p style={{ position: "absolute", top: 72, right: 70, fontSize: 30, fontWeight: 800, color: GOLD }}>{nn} / 60</p>
         <div
           className="doc-paper"
           style={{ position: "absolute", top: 160, left: 150, right: 150, height: 700, textAlign: "center", color: INK, paddingTop: 50 }}
         >
-          <p style={{ display: "inline-block", padding: "10px 26px", background: INK, color: HANJI, fontSize: 34, fontWeight: 800 }}>60일주 도감</p>
+          <p style={{ display: "inline-block", padding: "10px 26px", background: INK, color: HANJI, fontSize: 34, fontWeight: 800 }}>
+            60일주 도감 <span style={{ color: "#f1cf7a" }}>No.{nn}</span>
+          </p>
           <p style={{ marginTop: 26, fontSize: 28, color: SOFT, fontFamily: sans }}>- - - - - - - - - - - - - - - - - - - -</p>
           <p style={{ marginTop: 22, fontSize: 30, color: SOFT }}>{no === 1 ? "육십갑자의 맨 첫 자리" : `육십갑자의 ${no}번째 자리`}</p>
           <p style={{ marginTop: 10, fontSize: 200, fontWeight: 400, lineHeight: 1.05, color: SEAL, letterSpacing: "0.02em", fontFamily: brush }}>{f.hanja}</p>
@@ -309,7 +312,15 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
             {q.say ? String(q.say) : "오늘 태어난 일주!"}
           </div>
         </div>
-        <ThumbTitle top={when ? `${when.m}월 ${when.d}일 ${when.weekday}요일 · ${f.name.replace("일주", "")}일` : f.name} main={`60일주 도감 · ${f.name}`} />
+        <ThumbTitle
+          top={`60일주 도감${when ? ` · ${when.m}월 ${when.d}일 ${when.weekday}요일` : ""}`}
+          main={
+            <>
+              <span style={{ fontSize: 70, color: HANJI, marginRight: 22 }}>No.{nn}</span>
+              {f.name}
+            </>
+          }
+        />
       </Frame>
     );
   }
