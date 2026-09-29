@@ -362,27 +362,30 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
       return (
         <Frame>
           {hf}
-          <div style={{ position: "absolute", top: 110, left: 90, right: 90 }}>
+          <div style={{ position: "absolute", top: 100, left: 90, right: 90 }}>
             <Label>{head}</Label>
             <p style={{ marginTop: 10, fontSize: 56, fontWeight: 800, lineHeight: 1.25 }}>미리 대비하면 되는 일주</p>
             <p style={{ marginTop: 8, fontSize: 26, color: SOFT, fontFamily: sans }}>나쁜 달이 아니라, 알고 준비하면 되는 달이에요</p>
             <div style={{ marginTop: 18 }}>
               {rows.slice(-5).map((r) => (
-                <div key={r.no} style={{ display: "flex", gap: 22, padding: "17px 0", borderTop: "1.5px solid rgba(179,38,30,.15)" }}>
+                <div key={r.no} style={{ display: "flex", gap: 22, padding: "11px 0", borderTop: "1.5px solid rgba(179,38,30,.15)" }}>
                   <span style={{ width: 110, fontSize: 50, color: SEAL, fontFamily: brush, lineHeight: 1.1 }}>{r.hanja}</span>
                   <div style={{ flex: 1, minWidth: 0, fontFamily: sans }}>
                     <p style={{ fontSize: 33, fontWeight: 800, fontFamily: serif }}>
                       {r.name} <span style={{ marginLeft: 6, fontSize: 22, color: SOFT, fontWeight: 400 }}>{r.rank}위 · {r.short}</span>
                     </p>
-                    <p style={{ marginTop: 4, fontSize: 24, lineHeight: 1.4 }}>
-                      <b style={{ color: SEAL }}>피할 것</b> {r.avoid}
-                    </p>
-                    <p style={{ marginTop: 2, fontSize: 24, lineHeight: 1.4 }}>
-                      <b style={{ color: "#3d6656" }}>이렇게</b> {r.prep}
-                    </p>
-                    <p style={{ marginTop: 2, fontSize: 24, lineHeight: 1.4, color: SOFT }}>
-                      <b style={{ color: GOLD }}>좋은 점</b> {r.bright}
-                    </p>
+                    {(
+                      [
+                        ["피할 것", r.avoid, SEAL, "rgba(179,38,30,.1)"],
+                        ["이렇게", r.prep, "#3d6656", "rgba(61,102,86,.12)"],
+                        ["좋은 점", r.bright, "#a87a22", "rgba(168,122,34,.14)"],
+                      ] as const
+                    ).map(([tag, text, fg, bg]) => (
+                      <p key={tag} style={{ marginTop: 5, display: "flex", alignItems: "flex-start", gap: 12, fontSize: 24, lineHeight: 1.4 }}>
+                        <span style={{ flexShrink: 0, width: 92, marginTop: 1, padding: "1px 0", borderRadius: 8, background: bg, color: fg, fontSize: 19, fontWeight: 800, textAlign: "center" }}>{tag}</span>
+                        <span style={{ flex: 1, minWidth: 0 }}>{text}</span>
+                      </p>
+                    ))}
                   </div>
                 </div>
               ))}

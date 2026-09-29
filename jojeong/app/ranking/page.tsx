@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import AdSlot from "@/components/AdSlot";
+import WatchList from "@/components/WatchList";
 import { monthPillarNow, rankMonth, type IljuMonth } from "@/lib/iljuRank";
 import { readMe } from "@/lib/me";
 
@@ -63,17 +64,11 @@ export default async function RankingPage() {
             이번 달 <span className="text-seal">{mine.rank}위</span> <Stars r={mine} />
           </p>
           <p className="mt-2 text-[15px] leading-relaxed">{mine.line}</p>
-          <p className="mt-2 text-[13px] leading-relaxed text-ink-soft">
-            {mine.rank > 50 ? (
-              <>
-                피할 것 · {mine.avoid}
-                <br />
-                이렇게 · {mine.prep}
-              </>
-            ) : (
-              mine.tips[0]
-            )}
-          </p>
+          {mine.rank > 50 ? (
+            <WatchList watch={{ avoid: mine.avoid, prep: mine.prep }} className="mx-auto mt-3 w-fit text-left text-[13px] leading-snug" />
+          ) : (
+            <p className="mt-2 text-[13px] leading-relaxed text-ink-soft">{mine.tips[0]}</p>
+          )}
           <p className="mt-3 text-[12px] leading-relaxed text-ink-soft">
             일주는 여덟 글자 중 두 글자예요. 내 사주 전체로 본 이달의 흐름은
             <br />
@@ -144,15 +139,7 @@ export default async function RankingPage() {
               <span className="w-12 shrink-0 text-center font-myeongjo text-2xl leading-8 text-seal">{r.hanja}</span>
               <span className="min-w-0 flex-1 text-[13px] leading-snug">
                 <b className="font-myeongjo text-base">{r.name}</b> <span className="text-[11px] text-ink-soft">{r.rank}위 · {r.short}</span>
-                <span className="mt-1.5 block">
-                  <b className="text-seal">피할 것</b> {r.avoid}
-                </span>
-                <span className="mt-0.5 block">
-                  <b className="text-jade">이렇게</b> {r.prep}
-                </span>
-                <span className="mt-0.5 block text-ink-soft">
-                  <b className="text-gold">좋은 점</b> {r.bright}
-                </span>
+                <WatchList watch={r} className="mt-2 w-full" />
               </span>
             </li>
           ))}

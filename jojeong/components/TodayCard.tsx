@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
 import Hundo from "./Hundo";
 import MeForm from "./MeForm";
+import WatchList from "./WatchList";
 import type { Today } from "@/lib/today";
 
 const RATING = [
@@ -148,18 +149,10 @@ export default function TodayCard({ today, name }: { today: Today; name: string 
             </p>
           )}
           {today.watch && (
-            <ul className="mt-2 flex flex-col gap-1 rounded-xl border border-seal/15 bg-white/50 px-3 py-2.5 text-[13px] leading-snug">
-              <li>
-                <b className="text-seal">피할 것</b> {today.watch.avoid}
-              </li>
-              <li>
-                <b className="text-jade">이렇게</b> {today.watch.prep}
-              </li>
-              <li className="text-ink-soft">
-                <b className="text-gold">좋은 점</b> {today.watch.bright}
-              </li>
-              {today.watch.next && <li className="mt-1 border-t border-seal/10 pt-1.5 font-bold">큰 일은 {today.watch.next}로 미뤄 보세요 ◎</li>}
-            </ul>
+            <div className="mt-2 rounded-xl border border-seal/15 bg-white/50 px-3 py-2.5 text-[13px] leading-snug">
+              <WatchList watch={today.watch} />
+              {today.watch.next && <p className="mt-2 border-t border-seal/10 pt-1.5 font-bold">큰 일은 {today.watch.next}로 미뤄 보세요 ◎</p>}
+            </div>
           )}
           {/* On a hard day the general line (read for everyone) would pull against the advice above. */}
           {!today.watch && (
