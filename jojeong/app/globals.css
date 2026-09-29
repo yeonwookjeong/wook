@@ -86,3 +86,15 @@ p, li, dd, blockquote {
     inset 0 0 0 8px rgb(179 38 30 / 0.35),
     0 6px 16px rgb(33 27 23 / 0.12);
 }
+
+/* A report on sale: a 쪽빛 box with a thin gold rim, heavier than the paper of what is free. */
+.jjok-box {
+  border-radius: 1rem;
+  background: linear-gradient(160deg, #2c3848, var(--color-jjok) 55%, #1a232f);
+  color: var(--color-hanji);
+  box-shadow:
+    0 4px 0 #131a23,
+    inset 0 0 0 1px rgb(212 175 95 / 0.4),
+    inset 0 0 0 5px var(--color-jjok),
+    inset 0 0 0 6px rgb(212 175 95 / 0.2);
+}
