@@ -157,6 +157,12 @@ export function meet(stem: number, branch: number, ms: number, mb: number): { sc
   return { score: Math.round(score * 10) / 10, line: line + extra, tags };
 }
 
+// This calendar month in Korea, for the monthly ranking.
+export function kstMonthNow(t = Date.now()) {
+  const d = new Date(t + 9 * 3600000);
+  return { y: d.getUTCFullYear(), m: d.getUTCMonth() + 1 };
+}
+
 // All sixty for one month pillar, best first.
 export function rankMonth(ms: number, mb: number): IljuMonth[] {
   const rows = SIXTY.map(({ no, stem, branch }) => {
