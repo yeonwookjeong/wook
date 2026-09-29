@@ -637,12 +637,6 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
     );
   }
   if (c === "intro-hundo") {
-    const rows = [
-      { k: "하는 일", v: "여덟 글자를 읽고,\n좋은 날을 고르옵니다" },
-      { k: "성격", v: "다정하지만,\n셈은 누구보다 꼼꼼하옵니다" },
-      { k: "버릇", v: "틈만 나면 책을 펴옵니다" },
-      { k: "좌우명", v: "사주는 참고로, 결정은 그대가" },
-    ];
     return (
       <Frame dark>
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -651,20 +645,27 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
           alt=""
           style={{ position: "absolute", left: -150, bottom: 170, height: 900, filter: "drop-shadow(0 14px 24px rgba(0,0,0,.45))" }}
         />
-        <div style={{ position: "absolute", top: 150, left: 470, right: 90 }}>
+        <div style={{ position: "absolute", top: 250, left: 470, right: 90 }}>
           <p style={{ fontSize: 30, letterSpacing: "0.2em", color: GOLD, fontWeight: 800 }}>鄭 訓導</p>
           <p style={{ marginTop: 10, fontSize: 88, fontWeight: 800, lineHeight: 1.1 }}>정 훈도</p>
           <p style={{ marginTop: 18, fontSize: 32, fontWeight: 800 }}>관상감 명과학 훈도 · 정9품</p>
-          <p style={{ marginTop: 8, fontSize: 26, lineHeight: 1.5, color: "rgba(244,236,219,.75)", fontFamily: sans }}>『경국대전』에 단 두 자리뿐인 명과학 선생</p>
-          <div style={{ marginTop: 40, display: "flex", flexDirection: "column", gap: 26 }}>
-            {rows.map((x) => (
-              <div key={x.k} style={{ borderTop: "1.5px solid rgba(212,175,95,.4)", paddingTop: 16 }}>
-                <p style={{ fontSize: 24, color: GOLD, fontWeight: 800, fontFamily: sans }}>{x.k}</p>
-                <p style={{ marginTop: 6, fontSize: 32, lineHeight: 1.4, fontWeight: 800, wordBreak: "keep-all", whiteSpace: "pre-line" }}>{x.v}</p>
-              </div>
-            ))}
+          <div style={{ marginTop: 44, borderTop: "1.5px solid rgba(212,175,95,.4)", paddingTop: 20 }}>
+            <p style={{ fontSize: 24, color: GOLD, fontWeight: 800, fontFamily: sans }}>하는 일</p>
+            <p style={{ marginTop: 8, fontSize: 36, lineHeight: 1.45, fontWeight: 800 }}>
+              여덟 글자를 읽고,
+              <br />
+              좋은 날을 고르옵니다
+            </p>
           </div>
-          <p style={{ marginTop: 40, fontSize: 22, color: "rgba(244,236,219,.6)", fontFamily: sans }}>※ 정 훈도는 실제 관직을 빌린 가상의 인물이옵니다</p>
+          <div style={{ marginTop: 44, borderTop: "1.5px solid rgba(212,175,95,.4)", paddingTop: 28 }}>
+            <p style={{ fontSize: 44, fontWeight: 800, color: GOLD, lineHeight: 1.3 }}>배움에는 끝이 없사옵니다</p>
+            <p style={{ marginTop: 18, fontSize: 32, lineHeight: 1.65, color: "rgba(244,236,219,.92)" }}>
+              오늘도 명리서를 펴고 풀이를 다듬어,
+              <br />
+              더 정확하게 읽어 드리겠사옵니다
+            </p>
+          </div>
+          <p style={{ marginTop: 56, fontSize: 22, color: "rgba(244,236,219,.55)", fontFamily: sans }}>※ 정 훈도는 실제 관직을 빌린 가상의 인물이옵니다</p>
         </div>
         <Brand dark />
       </Frame>
