@@ -3,6 +3,7 @@ import { isBaekho, isGoegang, stageOf } from "./deep";
 import { BRANCH_EL, ELEMENT_HANJA, ELEMENT_KO, stemEl } from "./myeongri";
 import { BRANCHES, BRANCHES_KO, STEMS, STEMS_KO, type Pillars } from "./saju";
 import { DAY_IMAGE, STAGE_TEXT } from "./yearText";
+import { ILJU_IMAGE } from "./iljuRank";
 
 // Social cards (/admin/cards): the facts each series shows, computed from the same tables the site reads with,
 // so a card never says what a reading would not.
@@ -78,7 +79,6 @@ export function stemMatches(s: number) {
 }
 
 // ② 60일주 도감: what the day pillar is, from the tables.
-const ZODIAC = ["쥐", "소", "호랑이", "토끼", "용", "뱀", "말", "양", "원숭이", "닭", "개", "돼지"];
 export function iljuFacts(stem: number, branch: number) {
   const day = { dayStem: stem, dayBranch: branch } as Pillars;
   const stage = stageOf(stem, branch);
@@ -92,7 +92,7 @@ export function iljuFacts(stem: number, branch: number) {
   return {
     name: `${STEMS_KO[stem]}${BRANCHES_KO[branch]}일주`,
     hanja: `${STEMS[stem]}${BRANCHES[branch]}`,
-    image: `${DAY_IMAGE[stem].thing} 위의 ${ZODIAC[branch]}`,
+    image: ILJU_IMAGE[`${STEMS[stem]}${BRANCHES[branch]}`],
     stage,
     stageText: STAGE_TEXT[stage],
     tags,

@@ -5,6 +5,7 @@ import { ILGAN, ILJU_TAG_TEXT, iljuFacts, jiaziNo, nextDayOf, stemCure, stemMatc
 import { josa } from "@/lib/josa";
 import { pickDays } from "@/lib/taekil";
 import { figureById, figureChart } from "@/lib/figures";
+import { monthPillarOf, rankMonth, type IljuMonth } from "@/lib/iljuRank";
 import { STEMS } from "@/lib/saju";
 
 export const metadata: Metadata = { title: "카드", robots: { index: false } };
@@ -252,6 +253,122 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
   }
 
   // ② 60일주 도감
+  // 60일주 월간 랭킹 (posted on the 1st): the 절기 month that begins in the calendar month.
+  if (c.startsWith("rank-")) {
+    const y = Number(q.y ?? 2026);
+    const m = Number(q.m ?? 10);
+    const mp = monthPillarOf(y, m);
+    if (!mp) return null;
+    const rows = rankMonth(mp.stem, mp.branch);
+    const span = `${mp.term} ${mp.from} ~ ${mp.to}`;
+    const stars = (r: IljuMonth) => "★★★★★".slice(0, 5 - Math.floor((r.rank - 1) / 12)) + "☆☆☆☆☆".slice(0, Math.floor((r.rank - 1) / 12));
+    const hf = <BrushFont hf={String(q.hf ?? "")} />;
+    const Row = ({ r, big = false }: { r: IljuMonth; big?: boolean }) => (
+      <div style={{ display: "flex", alignItems: "center", gap: 22, padding: big ? "16px 0" : "5px 0", borderTop: "1.5px solid rgba(179,38,30,.15)" }}>
+        <span style={{ width: 70, fontSize: big ? 44 : 30, fontWeight: 800, color: r.rank <= 3 ? SEAL : INK, textAlign: "right" }}>{r.rank}</span>
+        <span style={{ width: big ? 116 : 84, fontSize: big ? 56 : 38, color: SEAL, fontFamily: brush, lineHeight: 1 }}>{r.hanja}</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontSize: big ? 34 : 29, fontWeight: 800 }}>
+            {r.name} <span style={{ marginLeft: 8, fontSize: big ? 24 : 21, color: GOLD, letterSpacing: "0.05em" }}>{stars(r)}</span>
+          </p>
+          {big && <p style={{ marginTop: 4, fontSize: 24, lineHeight: 1.45, color: SOFT, fontFamily: sans }}>{r.line}</p>}
+        </div>
+      </div>
+    );
+
+    if (c === "rank-cover") {
+      const top = rows[0];
+      return (
+        <Frame dark>
+          {hf}
+          <CornerBrand />
+          <p style={{ position: "absolute", top: 72, right: 70, fontSize: 30, fontWeight: 800, color: GOLD }}>{mp.label}</p>
+          <div className="doc-paper" style={{ position: "absolute", top: 160, left: 150, right: 150, height: 700, textAlign: "center", color: INK, paddingTop: 50 }}>
+            <p style={{ display: "inline-block", padding: "10px 26px", background: INK, color: HANJI, fontSize: 34, fontWeight: 800 }}>
+              {m}월 일주 랭킹 <span style={{ color: "#f1cf7a" }}>1위</span>
+            </p>
+            <p style={{ marginTop: 26, fontSize: 28, color: SOFT, fontFamily: sans }}>- - - - - - - - - - - - - - - - - - - -</p>
+            <p style={{ marginTop: 22, fontSize: 30, color: SOFT }}>{top.image}</p>
+            <p style={{ marginTop: 10, fontSize: 200, lineHeight: 1.05, color: SEAL, fontFamily: brush }}>{top.hanja}</p>
+            <p style={{ marginTop: 6, fontSize: 64, fontWeight: 800 }}>{top.name}</p>
+            <p style={{ marginTop: 14, padding: "0 50px", fontSize: 30, lineHeight: 1.45, color: SOFT, fontFamily: sans }}>{top.line}</p>
+          </div>
+          <div style={{ position: "absolute", top: 745, left: 64 }}>
+            <div style={{ width: 170, height: 170, borderRadius: "50%", overflow: "hidden", border: `6px solid ${GOLD}`, background: HANJI, boxShadow: "0 10px 24px rgba(0,0,0,.4)" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/hundo-face.png" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            </div>
+            <div style={{ position: "absolute", left: -12, top: -84, padding: "12px 22px", background: "#fff", color: INK, borderRadius: 22, fontSize: 32, fontWeight: 800, whiteSpace: "nowrap", boxShadow: "0 8px 20px rgba(0,0,0,.3)" }}>
+              {q.say ? String(q.say) : "이달의 1위!"}
+            </div>
+          </div>
+          <ThumbTitle top={`60일주 운세 랭킹 · ${span}`} main={`${m}월 1위 · ${top.name}`} />
+        </Frame>
+      );
+    }
+    if (c === "rank-top")
+      return (
+        <Frame>
+          {hf}
+          <div style={{ position: "absolute", top: 110, left: 90, right: 90 }}>
+            <Label>
+              {m}월 60일주 운세 랭킹 · {mp.label}
+            </Label>
+            <p style={{ marginTop: 12, fontSize: 62, fontWeight: 800 }}>TOP 10</p>
+            <div style={{ marginTop: 18 }}>
+              {rows.slice(0, 10).map((r) => (
+                <Row key={r.no} r={r} big={r.rank <= 3} />
+              ))}
+            </div>
+          </div>
+          <Brand />
+        </Frame>
+      );
+    if (c === "rank-care")
+      return (
+        <Frame>
+          {hf}
+          <div style={{ position: "absolute", top: 120, left: 90, right: 90 }}>
+            <Label>
+              {m}월 60일주 운세 랭킹 · {mp.label}
+            </Label>
+            <p style={{ marginTop: 12, fontSize: 60, fontWeight: 800, lineHeight: 1.25 }}>이번 달, 쉬어 가면 좋은 일주</p>
+            <p style={{ marginTop: 10, fontSize: 28, color: SOFT, fontFamily: sans }}>나쁜 달이 아니라, 속도를 늦추면 되는 달이에요</p>
+            <div style={{ marginTop: 26 }}>
+              {rows.slice(-5).map((r) => (
+                <Row key={r.no} r={r} big />
+              ))}
+            </div>
+          </div>
+          <Brand />
+        </Frame>
+      );
+    if (c === "rank-rest") {
+      const page = Math.min(3, Math.max(1, Number(q.p ?? 1)));
+      const list = rows.slice(10 + (page - 1) * 15, 10 + page * 15);
+      return (
+        <Frame>
+          {hf}
+          <div style={{ position: "absolute", top: 110, left: 90, right: 90 }}>
+            <Label>
+              {m}월 60일주 운세 랭킹 · {mp.label}
+            </Label>
+            <p style={{ marginTop: 8, fontSize: 50, fontWeight: 800 }}>
+              {list[0].rank}위 ~ {list.at(-1)!.rank}위
+            </p>
+            <p style={{ marginTop: 6, fontSize: 22, color: SOFT, fontFamily: sans }}>일주(태어난 날의 두 글자)로 본 간이 운세예요 · 내 일주는 프로필 링크에서</p>
+            <div style={{ marginTop: 10 }}>
+              {list.map((r) => (
+                <Row key={r.no} r={r} />
+              ))}
+            </div>
+          </div>
+          <Brand />
+        </Frame>
+      );
+    }
+  }
+
   // 60일주 도감: the feed cover. Each pillar is posted on its own day of the sixty-day round.
   if (c === "ilju-cover") {
     const b = Math.min(11, Math.max(0, Number(q.b ?? 0) || 0));
