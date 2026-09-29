@@ -4,6 +4,16 @@
   color-scheme: light;
 }
 
+/* Hanja in a brush hand (Yuji Syuku, Google Fonts, OFL), cut down to the characters the site uses. Heading text
+   (font-myeongjo) falls back to it for hanja only, since its Korean face has none; body text keeps the system
+   font, where small hanja stay readable. */
+@font-face {
+  font-family: "HanjaBrush";
+  src: url("/fonts/hanja-brush.woff2") format("woff2");
+  unicode-range: U+3400-4DBF, U+4E00-9FFF, U+F900-FAFF;
+  font-display: swap;
+}
+
 @theme inline {
   --color-hanji: #f4ecdb;
   --color-hanji-deep: #e9dcc0;
@@ -12,7 +22,7 @@
   --color-seal: #b3261e;
   --color-gold: #a87a22;
   --color-jade: #3d6656;
-  --font-myeongjo: var(--font-heading);
+  --font-myeongjo: var(--font-heading), "HanjaBrush", serif;
   --font-sans: "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
 }
 
