@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { adminConfigured, isAdmin } from "@/lib/admin";
-import { getOrder, type Order } from "@/lib/pay";
+import { paidOrders, type Order } from "@/lib/pay";
+import { SALE_KEYS, saleKey, saleLabel } from "@/lib/sales";
 import { productById, SETS } from "@/lib/products";
-import { listInquiries, paidOrderIds, readingCount } from "@/lib/store";
+import { listInquiries, readingCount } from "@/lib/store";
 import { adminSignOut, inquiryDeleteAction, inquiryDoneAction } from "./actions";
 import SignInForm from "./SignInForm";
 import { isPreview, newYearOf } from "@/lib/yeonun";
@@ -17,7 +18,7 @@ const todayKst = () => day(Date.now());
 
 // The owner's page: sign in once per browser (ADMIN_PASSWORD), then every report opens here without payment,
 // and the paid orders and revenue are listed.
-export default async function AdminPage() {
+export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   if (!adminConfigured())
     return (
       <p className="doc-paper mt-6 px-5 py-6 text-sm leading-relaxed">
@@ -32,9 +33,11 @@ export default async function AdminPage() {
       </section>
     );
 
-  const ids = (await paidOrderIds().catch(() => [])).slice(-200).reverse();
-  const orders = (await Promise.all(ids.map((id) => getOrder(id)))).filter((o): o is Order => o !== null);
+  // Every paid order (refunds keep their record with status "canceled"), newest first.
+  const orders = (await paidOrders()).reverse();
   const paid = orders.filter((o) => o.status === "paid");
+  const sp = String((await searchParams).sp ?? "all");
+  const period: Period = PERIODS.some((p) => p.key === sp) ? (sp as Period) : "all";
   const today = todayKst();
   const sum = (list: Order[]) => list.reduce((a, o) => a + o.amount, 0);
   const todays = paid.filter((o) => day(o.paidAt ?? o.createdAt) === today);
@@ -43,8 +46,11 @@ export default async function AdminPage() {
   const inquiries = await listInquiries().catch(() => []);
   const open = inquiries.filter((q) => !q.done);
   const when = (t: number) => new Date(t + 9 * 3600000).toISOString().slice(5, 16).replace("T", " ");
-  const stats = await readStats(["uv", "pv", "reading", "king", "join", "appoint", "share_court", "share_result", "save_image", "own_court", "to_saju"]);
-  // Paid orders per period, from the same recent orders as above.
+  const stats = await readStats([
+    ...["uv", "pv", "reading", "king", "join", "appoint", "share_court", "share_result", "save_image", "own_court", "to_saju"],
+    ...SALE_KEYS.flatMap((k) => [`view:${k}`, `co:${k}`]),
+  ]);
+  // Paid orders per period.
   const paidBy = Object.fromEntries(PERIODS.map(({ key }) => [key, { n: 0, won: 0 }])) as Record<Period, { n: number; won: number }>;
   for (const o of paid)
     for (const p of inPeriods(o.paidAt ?? o.createdAt)) {
@@ -73,7 +79,7 @@ export default async function AdminPage() {
         ))}
       </section>
       <p className="mt-2 text-center text-[11px] text-ink-soft">
-        최근 200건 기준 · 테스트 결제도 포함돼요 · 정확한 정산은 토스 상점관리자에서 확인하세요
+        테스트 결제도 포함돼요 · 정확한 정산은 토스 상점관리자에서 확인하세요
       </p>
       <p className="mt-3 text-center text-[13px]">
         지금까지 풀어 드린 사주 <b className="font-myeongjo text-seal">{(await readingCount()).toLocaleString("ko-KR")}</b>건
@@ -81,6 +87,12 @@ export default async function AdminPage() {
       </p>
 
       <StatsTable stats={stats} paidBy={paidBy} />
+      <SalesTable
+        period={period}
+        stats={stats}
+        paid={paid.filter((o) => inPeriods(o.paidAt ?? o.createdAt).includes(period))}
+        refunds={orders.filter((o) => o.status === "canceled" && inPeriods(o.paidAt ?? o.createdAt).includes(period)).length}
+      />
 
       <section className="doc-paper mt-4 px-4 py-4">
         <h2 className="flex items-baseline justify-between font-myeongjo font-extrabold">
@@ -158,7 +170,7 @@ export default async function AdminPage() {
           <p className="mt-2 text-sm text-ink-soft">아직 결제가 없어요.</p>
         ) : (
           <ul className="mt-2 flex flex-col divide-y divide-seal/10 text-[13px]">
-            {orders.map((o) => (
+            {orders.slice(0, 100).map((o) => (
               <li key={o.id} className="flex items-center gap-2 py-2">
                 <span className="w-20 shrink-0 text-[11px] text-ink-soft">{day(o.paidAt ?? o.createdAt).slice(5)}</span>
                 <span className="min-w-0 flex-1">
@@ -265,6 +277,113 @@ function StatsTable({ stats, paidBy }: { stats: Record<string, Record<Period, nu
       <p className="mt-2 px-1 text-[10.5px] leading-relaxed text-ink-soft">
         방문자는 기기(브라우저) 기준이고, 관리자로 로그인한 브라우저는 세지 않아요. 전체는 이 표를 만든 날부터 세요. 유입 경로(인스타·카톡 등)는
         Vercel 대시보드 Analytics에서 볼 수 있어요.
+      </p>
+    </section>
+  );
+}
+
+// Sales per product for one period: shoppers who saw the page, opened the payment window, paid, and the money.
+// Payments come from the orders themselves (so they go back to the first sale); views and payment windows are
+// counted from when this table was added.
+function SalesTable({ period, stats, paid, refunds }: { period: Period; stats: Record<string, Record<Period, number>>; paid: Order[]; refunds: number }) {
+  const n = (v: number) => v.toLocaleString("ko-KR");
+  const rows = SALE_KEYS.map((key) => {
+    const mine = paid.filter((o) => saleKey(o.product, o.set, o.req.y, o.paidAt ?? o.createdAt) === key);
+    return {
+      key,
+      label: saleLabel(key) ?? key,
+      view: stats[`view:${key}`]?.[period] ?? 0,
+      co: stats[`co:${key}`]?.[period] ?? 0,
+      n: mine.length,
+      won: mine.reduce((a, o) => a + o.amount, 0),
+    };
+  })
+    .filter((r) => r.view || r.co || r.n)
+    .sort((a, b) => b.won - a.won || b.n - a.n || b.view - a.view);
+  const total = rows.reduce((a, r) => ({ view: a.view + r.view, co: a.co + r.co, n: a.n + r.n, won: a.won + r.won }), { view: 0, co: 0, n: 0, won: 0 });
+  const methods = Object.entries(
+    paid.reduce<Record<string, number>>((a, o) => ((a[o.method || "기타"] = (a[o.method || "기타"] ?? 0) + 1), a), {}),
+  ).sort((a, b) => b[1] - a[1]);
+  const sets = paid.filter((o) => o.set).length;
+  const pct = (a: number, b: number) => (b ? `${Math.round((a / b) * 100)}%` : "–");
+  return (
+    <section className="doc-paper mt-4 px-3 py-4">
+      <h2 className="flex items-baseline justify-between px-1 font-myeongjo font-extrabold">
+        상품별 매출
+        <a href="/admin/orders.csv" className="text-xs font-bold text-seal underline">
+          CSV 받기
+        </a>
+      </h2>
+      <nav className="mt-2 flex flex-wrap gap-1.5 px-1">
+        {PERIODS.map((p) => (
+          <Link
+            key={p.key}
+            href={`/admin?sp=${p.key}`}
+            scroll={false}
+            className={`rounded-full border px-3 py-1 text-xs font-bold ${p.key === period ? "border-ink bg-ink text-hanji" : "border-ink/20 text-ink-soft"}`}
+          >
+            {p.label}
+          </Link>
+        ))}
+      </nav>
+      {rows.length === 0 ? (
+        <p className="mt-3 px-1 text-sm text-ink-soft">이 기간에는 아직 기록이 없어요.</p>
+      ) : (
+        <div className="mt-3 overflow-x-auto">
+          <table className="w-full text-right text-[12px] tabular-nums">
+            <thead>
+              <tr className="text-ink-soft">
+                <th className="py-1 text-left font-normal">상품</th>
+                <th className="px-1 font-normal">조회</th>
+                <th className="px-1 font-normal">결제창</th>
+                <th className="px-1 font-normal">결제</th>
+                <th className="px-1 font-normal">전환</th>
+                <th className="pl-1 font-normal">매출</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.key} className="border-t border-seal/10">
+                  <td className="py-1.5 text-left leading-tight">{r.label}</td>
+                  <td className="px-1">{n(r.view)}</td>
+                  <td className="px-1">{n(r.co)}</td>
+                  <td className="px-1 font-bold">{n(r.n)}</td>
+                  <td className="px-1 text-ink-soft">{pct(r.n, r.view)}</td>
+                  <td className="pl-1 font-bold">{n(r.won)}</td>
+                </tr>
+              ))}
+              <tr className="border-t-2 border-seal/30 font-bold">
+                <td className="py-1.5 text-left">합계</td>
+                <td className="px-1">{n(total.view)}</td>
+                <td className="px-1">{n(total.co)}</td>
+                <td className="px-1">{n(total.n)}</td>
+                <td className="px-1 text-ink-soft">{pct(total.n, total.view)}</td>
+                <td className="pl-1">{n(total.won)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      )}
+      <ul className="mt-3 grid grid-cols-3 gap-1.5 text-center">
+        {[
+          ["객단가", total.n ? `${n(Math.round(total.won / total.n))}원` : "–"],
+          ["세트 비중", pct(sets, total.n)],
+          ["환불", `${refunds}건`],
+        ].map(([k, v]) => (
+          <li key={k} className="rounded-lg bg-white/60 px-1 py-2">
+            <p className="text-[10px] text-ink-soft">{k}</p>
+            <p className="font-myeongjo font-extrabold">{v}</p>
+          </li>
+        ))}
+      </ul>
+      {methods.length > 0 && (
+        <p className="mt-2 px-1 text-[11.5px] text-ink-soft">
+          결제 수단 · {methods.map(([m, c]) => `${m} ${c}건`).join(" · ")}
+        </p>
+      )}
+      <p className="mt-2 px-1 text-[10.5px] leading-relaxed text-ink-soft">
+        조회는 결제 전 보고서 화면을 본 수, 결제창은 결제 버튼을 누른 수예요(오늘부터 집계). 결제와 매출은 첫 결제부터 모두 반영돼요. 전환 = 결제 ÷ 조회. 연운은
+        지난해·올해·내년으로 나눴고, 내년 연운이 신년운세예요. CSV에는 이름 없이 날짜·상품·금액·결제 수단만 담겨요.
       </p>
     </section>
   );

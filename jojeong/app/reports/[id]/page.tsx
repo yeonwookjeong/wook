@@ -40,6 +40,8 @@ import { courtOfReader, subjectFor } from "@/lib/subject";
 import { getProfile } from "@/lib/store";
 import { covers, getOrder, ownedOrderFor, ownedOrders, type Order } from "@/lib/pay";
 import { isAdmin } from "@/lib/admin";
+import TrackView from "@/components/TrackView";
+import { saleKey } from "@/lib/sales";
 import { KINDS, parseSearch, pickDays, searchDay, startMonths } from "@/lib/taekil";
 import { yearReading } from "@/lib/yearly";
 
@@ -595,9 +597,13 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
   const orderId = typeof search.order === "string" ? search.order : undefined;
   const order = orderId ? await getOrder(orderId) : null;
   const paid = order && covers(order, product.id) ? order : undefined;
+  const y = typeof search.y === "string" ? search.y : undefined;
+  // A shopper on a paid report's page (연운 counts once a year is chosen), for the owner's sales table.
+  const shopping = product.modern && !isOpen(product) && !paid && (product.id !== "yeonun" || y);
   if (isOpen(product) || product.modern || paid)
     return (
       <>
+        {shopping && <TrackView sale={saleKey(product.id, undefined, y)} />}
         <nav className="pt-4 text-sm">
           <Link href="/reports" className="font-bold text-ink-soft">
             ← 전체 보고서

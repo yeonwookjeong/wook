@@ -219,6 +219,10 @@ export async function notePaidOrder(orderId: string) {
     .push("orders:paid", orderId)
     .catch(() => {});
 }
+// Many orders in one round trip (the owner's sales table).
+export async function getOrdersRaw(ids: string[]): Promise<(string | null)[]> {
+  return ids.length ? backend().mget(ids.map((id) => `order:${id}`)) : [];
+}
 export async function paidOrderIds(): Promise<string[]> {
   return backend().list("orders:paid");
 }

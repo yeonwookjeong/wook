@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { ORDERS_COOKIE } from "./cookies";
 import type { ProductId, SetId } from "./products";
 import type { JobRequest } from "./reportWriter";
-import { getOrderRaw, notePaidOrder, setOrderRaw } from "./store";
+import { getOrderRaw, getOrdersRaw, notePaidOrder, paidOrderIds, setOrderRaw } from "./store";
 
 // Paying for a report with 토스페이먼츠 (결제창, API 개별 연동 키).
 //   1. /api/pay/order makes an order: the report request, whose chart, and the amount fixed on our side.
@@ -50,6 +50,13 @@ export async function getOrder(orderId: string | undefined | null): Promise<Orde
   if (!orderId) return null;
   const raw = await getOrderRaw(orderId).catch(() => null);
   return raw ? (JSON.parse(raw) as Order) : null;
+}
+
+// Every order that was ever paid (refunded ones too, with their status), oldest first, for the owner.
+export async function paidOrders(limit = 5000): Promise<Order[]> {
+  const ids = [...new Set((await paidOrderIds().catch(() => [])).slice(-limit))];
+  const raws = await getOrdersRaw(ids).catch(() => []);
+  return raws.flatMap((raw) => (raw ? [JSON.parse(raw) as Order] : []));
 }
 
 export async function createOrder(product: ProductId, req: JobRequest, who: string, amount: number, set?: { set: SetId; bundle: ProductId[] }): Promise<Order> {

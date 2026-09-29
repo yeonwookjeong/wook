@@ -22,7 +22,9 @@ export const kstMonth = (t = Date.now()) => kstDay(t).slice(0, 7);
 const dayKey = (e: string, day: string) => `st:${e}:d:${day}`;
 const allKey = (e: string) => `st:${e}:all`;
 
-export async function track(event: StatEvent) {
+// Also `view:<sale>` (a paid report's page seen by a shopper) and `co:<sale>` (its payment window opened), per
+// line of the sales table (lib/sales.ts).
+export async function track(event: StatEvent | `view:${string}` | `co:${string}`) {
   await bumpCounters([dayKey(event, kstDay()), allKey(event)]);
 }
 
@@ -61,7 +63,7 @@ function periodDays(now = Date.now()) {
 }
 
 // Each event's count for each period, read in one round trip.
-export async function readStats(events: (StatEvent | "uv")[]): Promise<Record<string, Record<Period, number>>> {
+export async function readStats(events: string[]): Promise<Record<string, Record<Period, number>>> {
   const spans = periodDays();
   const keys: string[] = [];
   const at: Record<string, Partial<Record<Period, number[]>>> = {};
