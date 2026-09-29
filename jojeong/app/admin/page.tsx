@@ -7,6 +7,7 @@ import { listInquiries, paidOrderIds, readingCount } from "@/lib/store";
 import { adminSignOut, inquiryDeleteAction, inquiryDoneAction } from "./actions";
 import SignInForm from "./SignInForm";
 import { isPreview, newYearOf } from "@/lib/yeonun";
+import { inPeriods, PERIODS, readStats, type Period } from "@/lib/stats";
 
 export const metadata: Metadata = { title: "관리자", robots: { index: false } };
 
@@ -42,6 +43,14 @@ export default async function AdminPage() {
   const inquiries = await listInquiries().catch(() => []);
   const open = inquiries.filter((q) => !q.done);
   const when = (t: number) => new Date(t + 9 * 3600000).toISOString().slice(5, 16).replace("T", " ");
+  const stats = await readStats(["uv", "pv", "reading", "king", "join", "appoint", "share_court", "share_result", "save_image", "own_court", "to_saju"]);
+  // Paid orders per period, from the same recent orders as above.
+  const paidBy = Object.fromEntries(PERIODS.map(({ key }) => [key, { n: 0, won: 0 }])) as Record<Period, { n: number; won: number }>;
+  for (const o of paid)
+    for (const p of inPeriods(o.paidAt ?? o.createdAt)) {
+      paidBy[p].n += 1;
+      paidBy[p].won += o.amount;
+    }
 
   return (
     <>
@@ -70,6 +79,8 @@ export default async function AdminPage() {
         지금까지 풀어 드린 사주 <b className="font-myeongjo text-seal">{(await readingCount()).toLocaleString("ko-KR")}</b>건
         <span className="block text-[11px] text-ink-soft">무료 분석 + 즉위 · 100건부터 홈에 표시돼요</span>
       </p>
+
+      <StatsTable stats={stats} paidBy={paidBy} />
 
       <section className="doc-paper mt-4 px-4 py-4">
         <h2 className="flex items-baseline justify-between font-myeongjo font-extrabold">
@@ -168,5 +179,93 @@ export default async function AdminPage() {
         <button className="text-xs text-ink-soft underline">관리자 로그아웃</button>
       </form>
     </>
+  );
+}
+
+// Visits and the 왕이 될 사주 → 훈도사주 funnel, per period (lib/stats.ts). Counting started with this table,
+// so "전체" means since then.
+const ROWS: { key: string; label: string; group?: string }[] = [
+  { key: "uv", label: "방문자", group: "방문" },
+  { key: "pv", label: "페이지뷰" },
+  { key: "king", label: "즉위", group: "왕이 될 사주" },
+  { key: "share_court", label: "신하 부르기 공유" },
+  { key: "join", label: "입궐 (친구)" },
+  { key: "appoint", label: "직접 등용" },
+  { key: "share_result", label: "결과 공유" },
+  { key: "save_image", label: "이미지 저장" },
+  { key: "own_court", label: "나도 조정 만들기" },
+  { key: "to_saju", label: "게임 → 사주 이동", group: "훈도사주" },
+  { key: "reading", label: "무료 사주 분석" },
+];
+
+function StatsTable({ stats, paidBy }: { stats: Record<string, Record<Period, number>>; paidBy: Record<Period, { n: number; won: number }> }) {
+  const n = (v: number) => v.toLocaleString("ko-KR");
+  const pct = (a: number, b: number) => (b ? `${Math.round((a / b) * 100)}%` : "–");
+  const m = (k: string) => stats[k]?.month ?? 0;
+  return (
+    <section className="doc-paper mt-4 px-3 py-4">
+      <h2 className="px-1 font-myeongjo font-extrabold">방문과 전환</h2>
+      <div className="mt-2 overflow-x-auto">
+        <table className="w-full text-right text-[12px] tabular-nums">
+          <thead>
+            <tr className="text-ink-soft">
+              <th className="py-1 text-left font-normal"></th>
+              {PERIODS.map((p) => (
+                <th key={p.key} className="px-1 py-1 font-normal">
+                  {p.label}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {ROWS.map((r) => (
+              <tr key={r.key} className={r.group ? "border-t border-seal/20" : ""}>
+                <td className="py-1 text-left">
+                  {r.group && <span className="block pt-1 text-[10px] font-extrabold text-seal">{r.group}</span>}
+                  {r.label}
+                </td>
+                {PERIODS.map((p) => (
+                  <td key={p.key} className="px-1 py-1">
+                    {n(stats[r.key]?.[p.key] ?? 0)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+            <tr className="border-t border-seal/20 font-bold">
+              <td className="py-1 text-left">결제</td>
+              {PERIODS.map((p) => (
+                <td key={p.key} className="px-1 py-1">
+                  {n(paidBy[p.key].n)}
+                </td>
+              ))}
+            </tr>
+            <tr className="font-bold">
+              <td className="py-1 text-left">매출</td>
+              {PERIODS.map((p) => (
+                <td key={p.key} className="px-1 py-1 text-[11px]">
+                  {n(paidBy[p.key].won)}
+                </td>
+              ))}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ul className="mt-3 grid grid-cols-3 gap-1.5 text-center">
+        {[
+          ["왕 1명당 입궐", m("king") ? (m("join") / m("king")).toFixed(1) + "명" : "–"],
+          ["친구 → 새 왕", pct(m("own_court"), m("join"))],
+          ["방문 → 결제", pct(paidBy.month.n, m("uv"))],
+        ].map(([k, v]) => (
+          <li key={k} className="rounded-lg bg-white/60 px-1 py-2">
+            <p className="text-[10px] text-ink-soft">{k} (이번 달)</p>
+            <p className="font-myeongjo font-extrabold">{v}</p>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-2 px-1 text-[10.5px] leading-relaxed text-ink-soft">
+        방문자는 기기(브라우저) 기준이고, 관리자로 로그인한 브라우저는 세지 않아요. 전체는 이 표를 만든 날부터 세요. 유입 경로(인스타·카톡 등)는
+        Vercel 대시보드 Analytics에서 볼 수 있어요.
+      </p>
+    </section>
   );
 }

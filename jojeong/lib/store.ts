@@ -26,6 +26,7 @@ type Backend = {
   list(key: string): Promise<string[]>;
   remove(key: string, value: string): Promise<void>;
   incr(key: string): Promise<number>;
+  mget(keys: string[]): Promise<(string | null)[]>;
 };
 
 function redisBackend(url: string, token: string): Backend {
@@ -48,13 +49,16 @@ function redisBackend(url: string, token: string): Backend {
     list: (key) => call<string[]>(["LRANGE", key, 0, -1]),
     remove: async (key, value) => void (await call(["LREM", key, 1, value])),
     incr: (key) => call<number>(["INCR", key]),
+    mget: (keys) => (keys.length ? call<(string | null)[]>(["MGET", ...keys]) : Promise.resolve([])),
   };
 }
 
 function fileBackend(): Backend {
   const file = join(process.cwd(), ".data", "db.json");
   type Db = { kv: Record<string, string>; lists: Record<string, string[]> };
-  let queue: Promise<unknown> = Promise.resolve();
+  // One queue per process (not per module copy): route handlers and server actions are bundled separately in
+  // dev, and two copies writing the same file at once would drop each other's changes.
+  const g = globalThis as { __dbQueue?: Promise<unknown> };
 
   async function load(): Promise<Db> {
     try {
@@ -64,14 +68,14 @@ function fileBackend(): Backend {
     }
   }
   function mutate<T>(fn: (db: Db) => T): Promise<T> {
-    const next = queue.then(async () => {
+    const next = (g.__dbQueue ?? Promise.resolve()).then(async () => {
       const db = await load();
       const result = fn(db);
       await mkdir(join(process.cwd(), ".data"), { recursive: true });
       await writeFile(file, JSON.stringify(db));
       return result;
     });
-    queue = next.catch(() => {});
+    g.__dbQueue = next.catch(() => {});
     return next;
   }
   return {
@@ -91,6 +95,10 @@ function fileBackend(): Backend {
         db.kv[key] = String(next);
         return next;
       }),
+    mget: async (keys) => {
+      const db = await load();
+      return keys.map((k) => db.kv[k] ?? null);
+    },
   };
 }
 
@@ -158,9 +166,13 @@ export async function setProfile(courtId: string, who: string, profile: Profile)
 // Real count of free readings (a chart entered for the first time in a browser, or changed), kept from launch
 // so the number exists by the time it is worth showing. Nothing about the person is stored.
 export async function noteReading(): Promise<void> {
-  await backend()
-    .incr("stats:readings")
-    .catch(() => {});
+  const { track } = await import("./stats");
+  await Promise.all([
+    backend()
+      .incr("stats:readings")
+      .catch(() => {}),
+    track("reading"),
+  ]);
 }
 
 // Every chart read so far: free readings and enthronements (/king). Counts readings, not distinct people.
@@ -250,4 +262,17 @@ export async function setInquiryDone(id: string, done: boolean) {
 export async function deleteInquiry(id: string) {
   await backend().set(`inquiry:${id}`, "");
   await backend().remove("inquiries", id);
+}
+
+// Plain counters for the owner's dashboard (lib/stats.ts): bumped in parallel, read many at once.
+export async function bumpCounters(keys: string[]) {
+  const b = backend();
+  await Promise.all(keys.map((k) => b.incr(k))).catch(() => {});
+}
+export async function readCounters(keys: string[]): Promise<number[]> {
+  try {
+    return (await backend().mget(keys)).map((v) => Number(v ?? 0));
+  } catch {
+    return keys.map(() => 0);
+  }
 }

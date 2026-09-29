@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { computeProfile, type Gender } from "@/lib/profile";
 import { cityById, parseClock } from "@/lib/birthtime";
 import { BirthInputError, computePillars, LATE_ZI, resolveBirthTime, resolveLateZi, type BirthInput, type Pillars } from "@/lib/saju";
+import { track } from "@/lib/stats";
 import { addMinister, createCourt, CourtFullError, getCourt, getProfile, listMinisters, MAX_MINISTERS, noteReading, removeMinister, setProfile } from "@/lib/store";
 import { OWNER_COOKIE, MINISTER_COOKIE } from "@/lib/cookies";
 import { encodePerson, relationOf, type Person } from "@/lib/pairToken";
@@ -88,6 +89,7 @@ export async function enthroneAction(_prev: FormState, formData: FormData): Prom
     await saveProfile(court.id, "king", parsed);
     (await cookies()).set(OWNER_COOKIE(court.id), court.ownerToken, COOKIE_OPTS);
     courtId = court.id;
+    await track("king");
   } catch (e) {
     if (e instanceof BirthInputError) return { error: e.message };
     console.error(e);
@@ -107,6 +109,7 @@ export async function joinCourtAction(_prev: FormState, formData: FormData): Pro
     await saveProfile(court.id, minister.id, parsed);
     (await cookies()).set(MINISTER_COOKIE(court.id), minister.id, COOKIE_OPTS);
     ministerId = minister.id;
+    await track("join");
   } catch (e) {
     if (e instanceof BirthInputError) return { error: e.message };
     if (e instanceof CourtFullError) return { error: `조정이 가득 찼사옵니다. (최대 ${MAX_MINISTERS}명)` };
@@ -138,6 +141,7 @@ export async function appointMinisterAction(_prev: FormState, formData: FormData
     const parsed = parseForm(formData);
     ministerId = (await addMinister(court.id, parsed.name, parsed.pillars, "appointed")).id;
     await saveProfile(court.id, ministerId, parsed);
+    await track("appoint");
   } catch (e) {
     if (e instanceof BirthInputError) return { error: e.message };
     if (e instanceof CourtFullError) return { error: `조정이 가득 찼사옵니다. (최대 ${MAX_MINISTERS}명)` };

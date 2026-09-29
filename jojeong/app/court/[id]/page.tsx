@@ -6,6 +6,8 @@ import Hundo from "@/components/Hundo";
 import ReportShelf from "@/components/ReportShelf";
 import RoyalDoc from "@/components/RoyalDoc";
 import KingCard from "@/components/KingCard";
+import CourtBoard from "@/components/CourtBoard";
+import TrackLink from "@/components/TrackLink";
 import Sillok from "@/components/Sillok";
 import PairHighlights from "@/components/PairHighlights";
 import SeatRow from "@/components/SeatRow";
@@ -16,7 +18,7 @@ import { reignTier, TIERS } from "@/lib/reign";
 import { castOf } from "@/lib/sillok";
 import { sinbunOf } from "@/lib/sinbun";
 import { yearPreview } from "@/lib/yearly";
-import { EMPTY_SEATS, ROLES } from "@/lib/roles";
+
 
 export async function generateMetadata({ params }: PageProps<"/court/[id]">): Promise<Metadata> {
   const { id } = await params;
@@ -34,7 +36,6 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
 
   const gansinCount = seats.filter((s) => s.role === "gansin").length;
   const filled = new Set(seats.map((s) => s.role));
-  const emptySeats = EMPTY_SEATS.filter((k) => !filled.has(k));
   const kingType = KING_TYPES[court.king.dayStem];
   const tier = TIERS[reignTier(court.king).tier];
   const cast = castOf(seats);
@@ -68,8 +69,16 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
         <>
           {isOwner && seats.length === 0 ? (
             <>
+              {/* First thing after the accession: the empty court and the way to fill it (the game's loop). */}
+              <CourtBoard kingName={court.kingName} seats={[]} />
+              <div className="mt-3">
+                <ShareLinkButton path={`/court/${court.id}`} text={inviteText} label="친구 불러 자리 채우기" />
+              </div>
+              <p className="mt-2 text-center text-[12px] leading-relaxed text-ink-soft">
+                단톡방에 올리면 여럿이 한 번에 들어오옵니다. 들어오는 친구마다 사주로 관직이 정해지옵니다.
+              </p>
               <section className="mt-6">
-                <Hundo mood="bow">전하, 즉위를 경하드리옵니다. 소신이 전하의 사주로 실록과 즉위 교서를 지어 올리옵니다.</Hundo>
+                <Hundo mood="bow">전하, 즉위를 경하드리옵니다. 벗들을 기다리시는 동안 전하의 실록부터 올리옵니다.</Hundo>
               </section>
               <Sillok kingName={court.kingName} pillars={court.king} cast={cast} />
               {/* Folded like the chronicle's body, so inviting friends and the reports are a short scroll away. */}
@@ -83,12 +92,6 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
                 </div>
               </details>
               <YearCallout href={`/reports/gukjeong?court=${court.id}`} verdict={yearPreview(court.king).verdict} />
-              <section className="mt-6">
-                <Hundo mood="face">
-                  이제 조정을 채우실 차례이옵니다. 벗들을 부르시면 소신이 그들의 사주를 살펴, 누가 영의정감이고 누가 간신인지
-                  가려 천거하겠사옵니다. 그들의 이름은 실록에도 오르옵니다.
-                </Hundo>
-              </section>
             </>
           ) : (
             <section className="mt-6">
@@ -109,6 +112,7 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
             </section>
           )}
 
+          {seats.length > 0 && <CourtBoard kingName={court.kingName} seats={seats.map((x) => ({ role: x.role, name: x.minister.name }))} />}
           {seats.length > 0 && (
             <p className="mt-6 text-right text-[11px] text-ink-soft">오른쪽 숫자는 전하와의 궁합 점수 · 평균 68점</p>
           )}
@@ -136,22 +140,6 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
                 <BirthForm mode="appoint" courtId={court.id} />
               </div>
             </details>
-          )}
-
-          {emptySeats.length > 0 && (
-            <section className="mt-6">
-              <p className="mb-2 text-center text-xs font-bold text-ink-soft">아직 비어 있는 자리</p>
-              <ul className="flex flex-wrap justify-center gap-2">
-                {emptySeats.map((k) => (
-                  <li
-                    key={k}
-                    className="rounded-full border border-dashed border-ink/25 px-3 py-1.5 font-myeongjo text-sm text-ink-soft"
-                  >
-                    {ROLES[k].title}
-                  </li>
-                ))}
-              </ul>
-            </section>
           )}
 
           <PairHighlights ministers={seats.map((s) => s.minister)} />
@@ -203,7 +191,7 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
 
           {isOwner && (
             <div className="sticky bottom-4 z-10 mt-6">
-              <ShareLinkButton path={`/court/${court.id}`} text={inviteText} label={seats.length > 0 ? "신하 더 부르기" : "신하 부르기"} />
+              <ShareLinkButton path={`/court/${court.id}`} text={inviteText} label={seats.length > 0 ? "친구 더 부르기" : "친구 불러 자리 채우기"} />
             </div>
           )}
 
@@ -218,12 +206,13 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
               >
                 내 관직 다시 보기
               </Link>
-              <Link
+              <TrackLink
+                event="own_court"
                 href="/king"
                 className="w-full rounded-2xl bg-seal py-4 text-center font-myeongjo text-lg font-extrabold text-hanji shadow-[0_6px_0_#7d1a14]"
               >
-                나는 어떤 왕일까? 즉위하기
-              </Link>
+                나도 내 조정 만들기
+              </TrackLink>
             </section>
           )}
         </>
@@ -281,7 +270,7 @@ function Invitation({
 // Right after the accession: the free 2026 reading, the strongest pull from the Joseon fantasy to the present.
 function YearCallout({ href, verdict }: { href: string; verdict: string }) {
   return (
-    <Link href={href} className="doc-paper mt-6 flex items-center gap-4 px-5 py-5">
+    <TrackLink event="to_saju" href={href} className="doc-paper mt-6 flex items-center gap-4 px-5 py-5">
       <span className="flex size-14 shrink-0 -rotate-3 items-center justify-center border-[3px] border-seal font-myeongjo text-xl font-extrabold text-seal">
         {verdict}
       </span>
@@ -291,6 +280,6 @@ function YearCallout({ href, verdict }: { href: string; verdict: string }) {
         <span className="mt-0.5 block text-xs leading-snug text-ink-soft">열두 달 흐름, 돈·일·연애·건강, 10년 대운까지</span>
       </span>
       <span className="shrink-0 font-myeongjo text-sm font-extrabold text-seal">보기 →</span>
-    </Link>
+    </TrackLink>
   );
 }

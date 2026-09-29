@@ -7,7 +7,7 @@ import { keepValues } from "@/lib/keepForm";
 
 const MODES = {
   king: { action: enthroneAction, nameLabel: "전하의 존함", submit: "즉위하기", unknownHour: "모르겠노라" },
-  minister: { action: joinCourtAction, nameLabel: "그대의 이름", submit: "입궐하기", unknownHour: "모르겠사옵니다" },
+  minister: { action: joinCourtAction, nameLabel: "그대의 이름", submit: "내 관직 받기", unknownHour: "모르겠사옵니다" },
   appoint: { action: appointMinisterAction, nameLabel: "등용할 신하의 이름", submit: "등용하기", unknownHour: "모르겠노라" },
 };
 
@@ -19,7 +19,7 @@ export default function BirthForm({ mode, courtId }: { mode: keyof typeof MODES;
     <form onSubmit={keepValues(formAction)} className="flex flex-col gap-4">
       {courtId && <input type="hidden" name="courtId" value={courtId} />}
 
-      <PersonFields nameLabel={nameLabel} unknownHour={unknownHour} />
+      <PersonFields nameLabel={nameLabel} unknownHour={unknownHour} foldExtras={mode !== "appoint"} />
 
       {state.error && (
         <p role="alert" className="rounded-xl bg-seal/10 px-4 py-3 text-sm text-seal">
