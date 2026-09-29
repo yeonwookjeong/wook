@@ -8,13 +8,15 @@ import { readMe } from "@/lib/me";
 import { ownedByProduct, ownedOrders } from "@/lib/pay";
 import { PRICE, priceNow, productById, SETS, type ProductId } from "@/lib/products";
 import { readingCount } from "@/lib/store";
+import { monthPillarNow, rankMonth } from "@/lib/iljuRank";
 import { todayFor } from "@/lib/today";
 import { profileOf } from "@/lib/pairToken";
 import { isPreview, newYearOf, newYearProduct, thisYear, yearDetail, yearName, yearNickname } from "@/lib/yeonun";
 
-// The main page, one path: the free reading first; in season, next year's 신년운세 as the flagship; then what
-// the visitor wants to know, as plain choices; then the free extras, folded into short rows. A buyer finds
-// what they bought at the top.
+// The main page, one path: the free reading first; then what changes every day and every month (오늘의 운세,
+// the month's 일주 랭킹), so a return visit always has something new; in season, next year's 신년운세 as the
+// flagship; then what the visitor wants to know, as plain choices; then the free extras, folded into short
+// rows. A buyer finds what they bought near the top.
 // The Joseon game (왕이 될 사주, /king) is one row among the free extras.
 
 // What each report answers, in the visitor's words: the report and the question.
@@ -30,7 +32,6 @@ const TOPICS: { id: ProductId; name: string; ask: string }[] = [
 
 // Free, computed, no payment: short rows under the choices.
 const FREE: { href: string; name: string; line: string }[] = [
-  { href: "/ranking", name: "이달의 일주 랭킹", line: "60일주 중 이번 달 운이 좋은 일주는?" },
   { href: "/reports/gukjeong", name: "2026 운세", line: "남은 올해, 언제 움직이고 언제 쉴까" },
   { href: "/samjae", name: "2026 삼재 띠", line: "토끼·양·돼지띠 눌삼재" },
   { href: "/king", name: "왕이 될 사주", line: "친구와 함께 하는 조선 사주 놀이" },
@@ -68,6 +69,10 @@ export default async function Home() {
   const nyProduct = ny ? newYearProduct(productById("yeonun")!, ny) : null;
   const nyTheme = ny && me ? yearDetail(me.person.pillars, profileOf(me.person), ny, thisYear())?.theme : null;
   const nyOwned = ny && me ? orders.find((o) => (o.bundle ?? [o.product]).includes("yeonun") && o.req.y === String(ny) && o.req.p === me.token) : undefined;
+  // This 절기 month's ranking: its winner, and where the reader's day pillar stands.
+  const mp = monthPillarNow();
+  const ranks = rankMonth(mp.stem, mp.branch);
+  const myRank = me ? ranks.find((r) => r.stem === me.person.pillars.dayStem && r.branch === me.person.pillars.dayBranch) : undefined;
 
   return (
     <>
@@ -81,6 +86,35 @@ export default async function Home() {
             : { href: "/reports/gukjeong", label: "내 사주 무료로 보기", sub: "생년월일만 넣으면 2026년 운세와 사주 분석을 바로 보여 드려요" }
         }
       />
+
+      <TodayCard today={todayFor(me?.person ?? null)} name={me?.person.name ?? null} />
+
+      <Link href="/ranking" className="doc-paper mt-3 flex items-center gap-3 px-5 py-4">
+        <span className="flex size-12 shrink-0 items-center justify-center rounded-full border-[3px] border-[#8a6214] bg-[radial-gradient(circle_at_35%_30%,#fff3c4,#e2bd62_45%,#a87a22)] font-myeongjo text-lg font-extrabold text-[#8a6214]">
+          1
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="flex items-center gap-1.5 text-xs">
+            <b className="text-seal">이달의 일주 랭킹</b>
+            <span className="text-ink-soft">
+              {mp.label} · {mp.term} {mp.from}~
+            </span>
+          </span>
+          <b className="mt-0.5 block font-myeongjo text-[17px] leading-snug">
+            1위 {ranks[0].name} <span className="text-seal">{ranks[0].hanja}</span>
+          </b>
+          <span className="block text-[12px] text-ink-soft">
+            {myRank ? (
+              <>
+                {me!.person.name}님 {myRank.name}는 <b className="text-seal">{myRank.rank}위</b> · 60일주 전체 순위 보기
+              </>
+            ) : (
+              "60일주 중 내 일주는 몇 위? 전체 순위 보기"
+            )}
+          </span>
+        </span>
+        <span className="shrink-0 text-xs font-bold text-seal">무료 →</span>
+      </Link>
 
       {ny && nyProduct && (
         <RoyalDoc className="mt-5" paperClassName="px-5">
@@ -178,8 +212,7 @@ export default async function Home() {
 
       <section className="mt-8">
         <h2 className="text-center font-myeongjo text-lg font-extrabold">무료로 보기</h2>
-        <TodayCard today={todayFor(me?.person ?? null)} name={me?.person.name ?? null} />
-        <ul className="doc-paper mt-2 flex flex-col divide-y divide-seal/10 px-5 py-1">
+        <ul className="doc-paper mt-3 flex flex-col divide-y divide-seal/10 px-5 py-1">
           {FREE.map((f) => (
             <li key={f.href}>
               <Link href={f.href} className="flex items-center gap-3 py-3">
