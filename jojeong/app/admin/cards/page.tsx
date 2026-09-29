@@ -516,7 +516,7 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
             <Label>오늘 태어난 인물의 사주 · {fig.name}</Label>
             <p style={{ marginTop: 22, fontSize: 72, fontWeight: 800, lineHeight: 1.25 }}>대운과 인생의 순간</p>
             <div style={{ marginTop: 40, display: "flex", flexDirection: "column", gap: 14 }}>
-              {ch.decades.filter((x) => !fig.died || x.from <= fig.died).slice(0, 6).map((x) => (
+              {ch.decades.filter((x) => !fig.died || x.from <= fig.died).slice(-6).map((x) => (
                 <div
                   key={x.gz}
                   style={{

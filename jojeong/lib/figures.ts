@@ -45,6 +45,28 @@ export const FIGURES: Figure[] = [
     ],
     source: "NobelPrize.org · Britannica",
   },
+  {
+    id: "hong",
+    name: "홍범도",
+    born: { y: 1868, m: 10, d: 12 }, // 음력 8월 27일
+    male: true,
+    died: 1943,
+    line: "1868 · 의병장 · 대한독립군 사령관",
+    hook: "날카롭게 다듬어진 쇠, 봉오동에서 이기다",
+    photo: "/figures/hong.jpg",
+    pairs: [
+      { sign: "일간 신금(辛金), 날카롭게 다듬어진 쇠", life: "백발백중 포수, 총 한 자루로 일어선 의병장" },
+      { sign: "극신강, 쇠 기운이 넘치는 사주", life: "나라를 잃어도 끝까지 무기를 놓지 않은 기개" },
+      { sign: "태어난 해(辰)와 달(戌)이 부딪치는 충", life: "함경도·간도·연해주·중앙아시아, 평생 떠돈 삶" },
+      { sign: "좋은 대운(◎) 1907~1926", life: "의병 봉기부터 봉오동·청산리 대승까지" },
+    ],
+    events: [
+      { year: 1907, text: "산포대 조직, 의병 봉기" },
+      { year: 1920, text: "봉오동 전투 · 청산리 대첩" },
+      { year: 1937, text: "카자흐스탄으로 강제이주" },
+    ],
+    source: "한국민족문화대백과사전",
+  },
 ];
 
 export const figureById = (id: unknown) => FIGURES.find((f) => f.id === id) ?? null;
