@@ -6,6 +6,8 @@ declare module "lunar-javascript" {
     getMonthZhi(): string;
     getDayGan(): string;
     getDayZhi(): string;
+    getTimeGan(): string;
+    getTimeZhi(): string;
     getYun(gender: 0 | 1): Yun;
   }
   interface Yun {
@@ -15,6 +17,8 @@ declare module "lunar-javascript" {
     getGanZhi(): string;
     getStartYear(): number;
     getEndYear(): number;
+    getStartAge(): number;
+    getEndAge(): number;
   }
   interface LunarTime {
     getZhi(): string;

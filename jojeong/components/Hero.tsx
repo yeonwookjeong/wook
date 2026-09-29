@@ -6,9 +6,9 @@ import { CHARACTER, CHARACTER_NAME, SERVICE_NAME } from "@/lib/brand";
 export default function Hero() {
   return (
     <header className="animate-rise relative mt-4 overflow-hidden rounded-3xl shadow-[0_10px_30px_rgb(33_27_23/0.25)]">
-      <div className="relative h-[420px]">
+      <div className="relative h-[360px]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/irworobongdo.svg" alt="" width={390} height={420} className="absolute inset-0 size-full object-cover object-bottom" />
+        <img src="/irworobongdo.svg" alt="" width={390} height={360} className="absolute inset-0 size-full object-cover object-bottom" />
         <div className="absolute inset-x-0 top-0 flex flex-col items-center pt-6 text-center">
           <p className="text-[11px] font-bold tracking-[0.25em] text-[#f3ead0]/85">조선 왕실도 사주를 봤다</p>
           {/* 현판: black lacquer board, gold rim and gilded letters */}
@@ -28,7 +28,7 @@ export default function Hero() {
           href="#enthrone"
           className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full border-2 border-[#e2bc68] bg-seal px-5 py-2.5 font-myeongjo text-base font-extrabold whitespace-nowrap text-hanji shadow-[0_4px_0_#7d1a14]"
         >
-          사주로 즉위하기 ↓
+          내 조정 만들기 ↓
         </a>
 
         {/* 정 훈도: 구석에서 허리 숙인 신하 */}

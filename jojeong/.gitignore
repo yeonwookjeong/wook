@@ -42,3 +42,6 @@ next-env.d.ts
 
 # local court data (dev only)
 /.data
+
+# card photos: rendered locally, rights checked per post
+/public/figures

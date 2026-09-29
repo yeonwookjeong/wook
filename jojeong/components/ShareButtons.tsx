@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { trackEvent } from "./VisitBeacon";
 
 function useToast() {
   const [msg, setMsg] = useState<string | null>(null);
@@ -21,15 +22,19 @@ export function ShareLinkButton({
   text,
   label,
   primary = true,
+  event = "share_court",
 }: {
   path: string;
   text: string;
   label: string;
   primary?: boolean;
+  // Which funnel step a tap counts as (lib/stats.ts).
+  event?: "share_court" | "share_result";
 }) {
   const { show, toast } = useToast();
 
   async function onClick() {
+    trackEvent(event);
     const url = new URL(path, window.location.origin).toString();
     if (navigator.share) {
       try {
@@ -80,6 +85,7 @@ export function SaveImageButton({
   const [busy, setBusy] = useState(false);
 
   async function onClick() {
+    trackEvent("save_image");
     setBusy(true);
     try {
       const res = await fetch(src);

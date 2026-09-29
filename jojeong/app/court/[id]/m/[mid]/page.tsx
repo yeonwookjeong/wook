@@ -6,6 +6,7 @@ import AdSlot from "@/components/AdSlot";
 import ReportShelf from "@/components/ReportShelf";
 import RoyalDoc from "@/components/RoyalDoc";
 import { SaveImageButton, ShareLinkButton } from "@/components/ShareButtons";
+import TrackLink from "@/components/TrackLink";
 import { bragLine, decreeLine, summonLine } from "@/lib/decree";
 import { loadCourt, viewerOf } from "@/lib/load";
 import { moodFor, ROLES } from "@/lib/roles";
@@ -75,6 +76,44 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
           <br />寶
         </span>
       </RoyalDoc>
+
+      {/* The two moves that keep the game going, right under the announcement: show it off, or start one's own. */}
+      {isSelf && (
+        <section className="mt-4 flex flex-col gap-2">
+          <ShareLinkButton
+            path={`/court/${court.id}/m/${seat.minister.id}`}
+            text={bragLine(court.kingName, seat.role)}
+            label="내 관직 자랑하기"
+            event="share_result"
+          />
+          <TrackLink
+            event="own_court"
+            href="/king"
+            className="w-full rounded-2xl border-2 border-ink py-3.5 text-center font-myeongjo font-extrabold"
+          >
+            나도 내 조정 만들기 · 친구들 관직 주기
+          </TrackLink>
+        </section>
+      )}
+      {!isSelf && !isOwner && (
+        <section className="mt-4 flex flex-col gap-2">
+          {!myMinisterId && seat.minister.source !== "appointed" && (
+            <Link
+              href={`/court/${court.id}`}
+              className="w-full rounded-2xl border-2 border-ink py-3.5 text-center font-myeongjo font-extrabold"
+            >
+              나도 {court.kingName} 전하께 관직 받기
+            </Link>
+          )}
+          <TrackLink
+            event="own_court"
+            href="/king"
+            className="w-full rounded-2xl bg-seal py-4 text-center font-myeongjo text-lg font-extrabold text-hanji shadow-[0_6px_0_#7d1a14]"
+          >
+            나도 내 조정 만들기
+          </TrackLink>
+        </section>
+      )}
 
       <section className="mt-6">
         <Hundo mood={moodFor(seat.role)}>{role.report}</Hundo>
@@ -152,8 +191,9 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
             <ShareLinkButton
               path={`/court/${court.id}/m/${seat.minister.id}`}
               text={bragLine(court.kingName, seat.role)}
-              label="결과 자랑하기"
+              label="내 관직 자랑하기"
               primary={false}
+              event="share_result"
             />
           </>
         )}
@@ -174,24 +214,6 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
               className="w-full rounded-2xl border-2 border-ink/30 py-3.5 text-center font-myeongjo font-extrabold text-ink-soft"
             >
               조정으로 돌아가기
-            </Link>
-          </>
-        )}
-        {!isSelf && !isOwner && (
-          <>
-            {!myMinisterId && seat.minister.source !== "appointed" && (
-              <Link
-                href={`/court/${court.id}`}
-                className="w-full rounded-2xl border-2 border-ink py-3.5 text-center font-myeongjo font-extrabold"
-              >
-                나도 {court.kingName} 전하의 조정에 입궐하기
-              </Link>
-            )}
-            <Link
-              href="/king"
-              className="w-full rounded-2xl bg-seal py-4 text-center font-myeongjo text-lg font-extrabold text-hanji shadow-[0_6px_0_#7d1a14]"
-            >
-              나는 어떤 왕일까? 즉위하기
             </Link>
           </>
         )}
@@ -232,12 +254,13 @@ function MyChartTeaser({ pillars, name }: { pillars: Pillars; name: string }) {
           성군이었을까, 폭군이었을까?
         </p>
         <p className="mt-1.5 text-sm text-ink-soft">즉위하면 그대의 등급과 가상 실록 일곱 장이 열리옵니다</p>
-        <Link
+        <TrackLink
+          event="own_court"
           href="/king#enthrone"
           className="mt-4 block w-full rounded-2xl bg-seal py-3.5 font-myeongjo text-lg font-extrabold text-hanji shadow-[0_5px_0_#7d1a14]"
         >
           내 실록 열기 · 즉위하기
-        </Link>
+        </TrackLink>
       </div>
     </section>
   );

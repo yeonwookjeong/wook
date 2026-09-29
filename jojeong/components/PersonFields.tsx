@@ -23,14 +23,34 @@ export default function PersonFields({
   genderLabel = "성별 (선택 · 10년 대운 풀이에 쓰이옵니다)",
   modern = false,
   defaultName,
+  foldExtras = false,
 }: {
   prefix?: string;
   modern?: boolean;
+  // The game (/king) asks only name and birthday up front; time, place and gender fold away as optional.
+  foldExtras?: boolean;
   defaultName?: string;
   nameLabel: string;
   unknownHour: string;
   genderLabel?: string;
 }) {
+  const extras = (
+    <>
+      <BirthTimeFields unknownLabel={unknownHour} prefix={prefix} modern={modern} />
+
+      <fieldset className="flex flex-col gap-1.5">
+        <legend className="mb-1.5 text-sm font-semibold text-ink-soft">{genderLabel}</legend>
+        <div className="grid grid-cols-3 gap-2">
+          {GENDERS.map((g) => (
+            <label key={g.value} className="cursor-pointer">
+              <input type="radio" name={`${prefix}gender`} value={g.value} defaultChecked={g.value === ""} className="peer sr-only" />
+              <span className={choice}>{g.label}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+    </>
+  );
   return (
     <>
       <label className="flex flex-col gap-1.5">
@@ -69,19 +89,17 @@ export default function PersonFields({
         ))}
       </fieldset>
 
-      <BirthTimeFields unknownLabel={unknownHour} prefix={prefix} modern={modern} />
-
-      <fieldset className="flex flex-col gap-1.5">
-        <legend className="mb-1.5 text-sm font-semibold text-ink-soft">{genderLabel}</legend>
-        <div className="grid grid-cols-3 gap-2">
-          {GENDERS.map((g) => (
-            <label key={g.value} className="cursor-pointer">
-              <input type="radio" name={`${prefix}gender`} value={g.value} defaultChecked={g.value === ""} className="peer sr-only" />
-              <span className={choice}>{g.label}</span>
-            </label>
-          ))}
-        </div>
-      </fieldset>
+      {foldExtras ? (
+        <details className="group rounded-xl border border-ink/15 bg-white/40">
+          <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-ink-soft [&::-webkit-details-marker]:hidden">
+            태어난 시각 · 성별 (선택, 더 정확하게)
+            <span className="ml-1 inline-block transition group-open:rotate-180">▾</span>
+          </summary>
+          <div className="flex flex-col gap-4 border-t border-ink/10 px-4 pt-4 pb-4">{extras}</div>
+        </details>
+      ) : (
+        extras
+      )}
     </>
   );
 }

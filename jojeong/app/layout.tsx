@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { adsAccount } from "@/lib/ads";
 import { SITE_NAME, SITE_TAGLINE, siteUrl } from "@/lib/brand";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
+import VisitBeacon from "@/components/VisitBeacon";
 import "./globals.css";
 
 // Headings: Hahmlet, a modern Korean serif (variable weight), for 정 훈도's Joseon-meets-now voice.
@@ -48,6 +49,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </main>
         {/* Page views and visitors, cookieless (Vercel Web Analytics; enable it in the Vercel project). */}
         <Analytics />
+        {/* The same, counted for the owner's dashboard (/admin). */}
+        <VisitBeacon />
       </body>
     </html>
   );
