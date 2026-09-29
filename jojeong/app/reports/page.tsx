@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
+import FreeTiles from "@/components/FreeTiles";
 import Keep from "@/components/Keep";
 import { ownedByProduct, ownedOrders } from "@/lib/pay";
 import { PRICE, priceNow, productById, SHELF, saleLabel, saleNow, SETS, type Product, type ProductId, type SetId } from "@/lib/products";
@@ -128,26 +129,13 @@ export default async function ReportsPage() {
       <section className="mt-9">
         <h2 className="font-myeongjo text-lg font-extrabold">재미로 보는 조선 사주</h2>
         <p className="mt-1 text-xs leading-relaxed text-ink-soft">조선 시대로 가 보는 무료 놀이예요. 혼자도, 친구와도</p>
-        {/* Free play, so not the paper rows of the reports on sale: two night-blue tiles, the 신분 감정 and the
-            court game side by side. */}
-        <ul className="mt-3 grid grid-cols-2 gap-2.5">
-          {[
-            ...joseon.map((p) => ({ href: `/reports/${p.id}`, hanja: p.hanja, title: p.title, line: "조선에 태어났다면 어떤 신분이었을까", who: "혼자" })),
-            { href: "/king", hanja: "王", title: "왕이 될 사주", line: "친구를 불러 내 조정을 꾸리는 놀이", who: "친구와" },
-          ].map((t) => (
-            <li key={t.href}>
-              <Link href={t.href} className="flex h-full flex-col rounded-2xl bg-[#17304a] px-4 pt-4 pb-3.5 text-hanji shadow-[0_4px_0_#0f2236]">
-                <span className="flex items-center justify-between">
-                  <span className="font-myeongjo text-2xl text-gold">{t.hanja}</span>
-                  <span className="rounded-full border border-gold/50 px-2 py-0.5 text-[10px] font-bold text-gold">{t.who} · 무료</span>
-                </span>
-                <b className="mt-2 font-myeongjo text-[17px] leading-tight">{t.title}</b>
-                <span className="mt-1 flex-1 text-[12px] leading-snug text-hanji/75">{t.line}</span>
-                <span className="mt-2 text-right text-[12px] font-bold text-gold">해 보기 →</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <FreeTiles
+          className="mt-3"
+          tiles={[
+            ...joseon.map((p) => ({ href: `/reports/${p.id}`, hanja: p.hanja, title: p.title, line: "조선에 태어났다면 어떤 신분이었을까", tag: "혼자" })),
+            { href: "/king", hanja: "王", title: "왕이 될 사주", line: "친구를 불러 내 조정을 꾸리는 놀이", tag: "친구와" },
+          ]}
+        />
       </section>
     </>
   );
