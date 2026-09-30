@@ -197,14 +197,12 @@ export default async function Home() {
         <h2 className="text-center font-myeongjo text-xl font-extrabold">무엇이 궁금하세요?</h2>
         <p className="mt-1 text-center text-xs text-ink-soft">사주 분석은 무료로 먼저 보고, 풀이 보고서는 한 편에 <Price /></p>
         <ul className="mt-4 grid grid-cols-2 gap-2">
-          {TOPICS.map((t, i) => {
+          {TOPICS.map((t) => {
             const mine = owned[t.id];
             // 연운 is bought a year at a time, so its tile opens the list of years (bought ones are marked there).
             const href = t.id === "yeonun" ? "/reports/yeonun" : (mine?.href ?? `/reports/${t.id}`);
-            // An odd tile out closes the grid across both columns.
-            const wide = i === TOPICS.length - 1 && TOPICS.length % 2 === 1;
             return (
-              <li key={t.id} className={wide ? "col-span-2" : undefined}>
+              <li key={t.id}>
                 {/* The reports on sale carry the most weight on the page: 쪽빛 boxes with a gold rim, their seal in gold. */}
                 <Link
                   href={href}
@@ -222,6 +220,21 @@ export default async function Home() {
               </li>
             );
           })}
+          {/* An odd tile out is paired with what 정 훈도 is studying next: not for sale, so dashed and faint, and it
+              asks which reading people want most (the answers choose the next report). */}
+          {TOPICS.length % 2 === 1 && (
+            <li>
+              <Link
+                href={`/contact?topic=${encodeURIComponent("보고 싶은 풀이")}`}
+                className="flex h-full flex-col rounded-2xl border-2 border-dashed border-jjok/30 bg-jjok/5 px-4 pt-4 pb-3.5"
+              >
+                <span className="font-myeongjo text-2xl text-jjok/45">硏究</span>
+                <span className="mt-2 font-myeongjo text-xl leading-tight font-extrabold text-jjok/80">공부 중</span>
+                <span className="mt-1.5 flex-1 text-[12.5px] leading-snug text-ink-soft">정 훈도가 새 보고서를 준비하고 있어요</span>
+                <span className="mt-2.5 border-t border-jjok/15 pt-2 text-right text-[12px] font-bold text-jjok/80">보고 싶은 풀이 알려 주기 →</span>
+              </Link>
+            </li>
+          )}
         </ul>
       </section>
 

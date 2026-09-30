@@ -14,7 +14,9 @@ const mailto = (topic: (typeof INQUIRY_TOPICS)[number]) =>
     [...topic.body, "화면 캡처가 있으면 첨부해 주세요."].join("\n") + "\n",
   )}`;
 
-export default function ContactPage() {
+// ?topic= opens the form on that topic (the home page's "공부 중" tile asks for 보고 싶은 풀이).
+export default async function ContactPage({ searchParams }: PageProps<"/contact">) {
+  const { topic } = await searchParams;
   return (
     <RoyalDoc paperClassName="px-5">
       <p className="text-center font-myeongjo text-sm font-extrabold tracking-[0.4em] text-seal">上 疏</p>
@@ -26,7 +28,7 @@ export default function ContactPage() {
       </p>
 
       <div className="mt-5">
-        <ContactForm />
+        <ContactForm initial={typeof topic === "string" ? topic : undefined} />
       </div>
 
       <details className="group mt-6 border-t border-seal/20 pt-4">
