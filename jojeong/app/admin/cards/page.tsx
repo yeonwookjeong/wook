@@ -940,17 +940,18 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
               </div>
             ))}
           </div>
-          <Body style={{ marginTop: 48, fontSize: 35, color: INK }}>
+          <Body style={{ marginTop: 56, fontSize: 37, color: INK }}>
             사주 여덟 글자 가운데 <b>나 자신</b>을 뜻하는 자리예요. 성격과 인연을 볼 때 가장 먼저 봐요.
           </Body>
-          <div style={{ marginTop: 40, padding: "32px 34px", borderRadius: 22, background: "rgba(33,27,23,.05)", fontFamily: sans }}>
-            <p style={{ fontSize: 31, lineHeight: 1.6 }}>
-              <b style={{ color: SEAL }}>하늘 글자 10개</b> <span style={{ fontFamily: brush, color: SOFT }}>{STEMS.join("")}</span>
+          <div style={{ marginTop: 50, padding: "38px 36px", borderRadius: 22, background: "rgba(33,27,23,.05)", fontFamily: sans }}>
+            <p style={{ fontSize: 33, lineHeight: 1.6 }}>
+              사주는 <b>해·달·날·시</b> 네 기둥이에요. 기둥마다 위에 <b style={{ color: SEAL }}>하늘 글자</b>, 아래에 <b style={{ color: SEAL }}>땅 글자</b>가 하나씩, 모두 여덟 글자.
             </p>
-            <p style={{ marginTop: 8, fontSize: 31, lineHeight: 1.6 }}>
-              <b style={{ color: SEAL }}>땅 글자 12개</b> <span style={{ fontFamily: brush, color: SOFT }}>{BRANCHES.join("")}</span>
+            <p style={{ marginTop: 18, fontSize: 34, lineHeight: 1.7 }}>
+              <b style={{ color: SEAL }}>하늘 10</b> <span style={{ fontFamily: brush, color: SOFT }}>{STEMS.join("")}</span>
+              <br />
+              <b style={{ color: SEAL }}>땅 12</b> <span style={{ fontFamily: brush, color: SOFT }}>{BRANCHES.join("")}</span>
             </p>
-            <p style={{ marginTop: 18, fontSize: 32, fontWeight: 800, lineHeight: 1.45 }}>둘이 차례로 짝을 지어 60가지, 60일마다 한 바퀴 돌아요</p>
           </div>
         </div>
         <Brand />
@@ -981,29 +982,85 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
         <Brand />
       </Frame>
     );
-  if (c === "gz-find") {
-    const steps = [
-      { t: "생년월일만 있으면 돼요", d: "양력이든 음력이든 괜찮아요. 태어난 시간은 몰라도 일주는 나와요" },
-      { t: "hundosaju.com에서 '내 사주 무료로 보기'", d: "프로필 링크로 들어가 생년월일을 넣어요" },
-      { t: "'태어난 날' 칸의 두 글자가 내 일주", d: "예) 甲子가 나오면 갑자일주예요" },
-    ];
+  if (c === "gz-how") {
+    // The first twelve days: stems and branches step together, and the stems come round first.
+    const first = Array.from({ length: 12 }, (_, i) => gz(i));
     return (
       <Frame>
-        <div style={{ position: "absolute", top: 160, left: 100, right: 100 }}>
-          <Label>내 일주 찾는 법</Label>
-          <p style={{ marginTop: 18, fontSize: 70, fontWeight: 800, lineHeight: 1.2 }}>1분이면 충분해요</p>
-          <div style={{ marginTop: 50, display: "flex", flexDirection: "column", gap: 30 }}>
-            {steps.map((x, i) => (
-              <div key={x.t} className="doc-paper" style={{ display: "flex", alignItems: "center", gap: 28, padding: "38px 34px" }}>
-                <span style={{ flexShrink: 0, width: 76, height: 76, display: "grid", placeItems: "center", borderRadius: "50%", background: SEAL, color: HANJI, fontSize: 40, fontWeight: 800 }}>{i + 1}</span>
-                <div>
-                  <p style={{ fontSize: 40, fontWeight: 800, lineHeight: 1.3 }}>{x.t}</p>
-                  <p style={{ marginTop: 10, fontSize: 29, lineHeight: 1.45, color: SOFT, fontFamily: sans }}>{x.d}</p>
-                </div>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 140, left: 80, right: 80 }}>
+          <Label>60갑자의 원리 ①</Label>
+          <p style={{ marginTop: 16, fontSize: 70, fontWeight: 800, lineHeight: 1.2 }}>하루에 한 칸씩, 나란히</p>
+          <Body style={{ marginTop: 18, fontSize: 34, color: INK }}>하늘 글자와 땅 글자가 날마다 한 칸씩 함께 나아가요</Body>
+          <div style={{ marginTop: 56, display: "grid", gridTemplateColumns: "96px repeat(12, 1fr)", rowGap: 16, alignItems: "center", textAlign: "center" }}>
+            <span style={{ fontSize: 22, color: SOFT, fontFamily: sans, textAlign: "left" }}>하늘</span>
+            {first.map((g, i) => (
+              <span key={`s${i}`} style={{ fontSize: 52, fontFamily: brush, color: i >= 10 ? SEAL : INK }}>
+                {g.hanja[0]}
+              </span>
+            ))}
+            <span style={{ fontSize: 22, color: SOFT, fontFamily: sans, textAlign: "left" }}>땅</span>
+            {first.map((g, i) => (
+              <span key={`b${i}`} style={{ fontSize: 52, fontFamily: brush, color: i >= 10 ? SEAL : INK }}>
+                {g.hanja[1]}
+              </span>
+            ))}
+            <span style={{ fontSize: 22, color: SOFT, fontFamily: sans, textAlign: "left" }}>날</span>
+            {first.map((g, i) => (
+              <span key={`n${i}`} style={{ fontSize: 24, fontWeight: 800, color: i >= 10 ? SEAL : SOFT, fontFamily: sans }}>
+                {i + 1}
+              </span>
+            ))}
+          </div>
+          <div style={{ marginTop: 56, padding: "34px 36px", borderRadius: 22, background: "rgba(179,38,30,.07)", fontFamily: sans }}>
+            <p style={{ fontSize: 33, lineHeight: 1.6 }}>
+              하늘 글자는 10개라 먼저 한 바퀴를 돌아, 11번째 날 다시 <b style={{ color: SEAL }}>甲</b>.
+            </p>
+            <p style={{ marginTop: 10, fontSize: 33, lineHeight: 1.6 }}>
+              땅 글자는 12개라 아직 <b style={{ color: SEAL }}>戌</b>. 그래서 11번째는 <b style={{ color: SEAL }}>甲戌</b>이에요.
+            </p>
+          </div>
+          <Body style={{ marginTop: 40, fontSize: 33, color: INK }}>이렇게 조금씩 어긋나며 돌다가, 60번째를 지나면 처음으로</Body>
+          <p style={{ marginTop: 26, display: "flex", alignItems: "center", justifyContent: "center", gap: 18, fontFamily: brush, fontSize: 60, color: SEAL }}>
+            甲子 <span style={{ fontSize: 34, color: SOFT, fontFamily: sans }}>→ … →</span> 癸亥 <span style={{ fontSize: 34, color: SOFT, fontFamily: sans }}>→</span> 甲子
+          </p>
+        </div>
+        <Brand />
+      </Frame>
+    );
+  }
+  if (c === "gz-why") {
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 130, left: 90, right: 90 }}>
+          <Label>60갑자의 원리 ②</Label>
+          <p style={{ marginTop: 16, fontSize: 64, fontWeight: 800, lineHeight: 1.2 }}>10 × 12는 120인데, 왜 60일까?</p>
+          <div style={{ marginTop: 44, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, textAlign: "center" }}>
+            {[
+              { h: "甲子", t: "양 + 양", ok: true },
+              { h: "甲丑", t: "양 + 음", ok: false },
+            ].map((x) => (
+              <div key={x.h} style={{ padding: "30px 0", borderRadius: 22, border: `3px solid ${x.ok ? "#3d6656" : "rgba(33,27,23,.15)"}`, background: x.ok ? "rgba(61,102,86,.08)" : "rgba(33,27,23,.04)" }}>
+                <p style={{ fontSize: 100, lineHeight: 1.05, fontFamily: brush, color: x.ok ? SEAL : "rgba(33,27,23,.3)", textDecoration: x.ok ? "none" : "line-through" }}>{x.h}</p>
+                <p style={{ marginTop: 8, fontSize: 28, fontWeight: 800, color: x.ok ? "#3d6656" : SOFT }}>
+                  {x.t} {x.ok ? "✓ 있어요" : "✗ 없어요"}
+                </p>
               </div>
             ))}
           </div>
-          <Body style={{ marginTop: 44, fontSize: 27 }}>밤 11시 이후에 태어났다면 학파에 따라 다음 날의 일주로 보기도 해요</Body>
+          <Body style={{ marginTop: 32, fontSize: 34, color: INK }}>
+            글자마다 양과 음이 있어서, <b>양은 양끼리, 음은 음끼리</b>만 짝을 지어요. 그래서 120가지의 절반, 60가지예요.
+          </Body>
+          <div style={{ marginTop: 44, borderTop: "2px solid rgba(179,38,30,.2)", paddingTop: 40 }}>
+            <p style={{ fontSize: 46, fontWeight: 800 }}>60년이면 한 바퀴, 환갑</p>
+            <Body style={{ marginTop: 16, fontSize: 33, color: INK }}>
+              60갑자는 날에만 도는 게 아니라 해에도 돌아요. 2026년은 <b style={{ color: SEAL }}>丙午</b>년, 60년 전 1966년도 丙午년이었어요.
+            </Body>
+            <Body style={{ marginTop: 14, fontSize: 33, color: INK }}>
+              태어난 해의 간지가 다시 돌아오는 만 60세 생일을 <b>환갑(還甲)</b>, &lsquo;갑이 돌아온다&rsquo;고 불러요.
+            </Body>
+          </div>
         </div>
         <Brand />
       </Frame>
