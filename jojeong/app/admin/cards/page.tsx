@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Fragment } from "react";
 import { redirect } from "next/navigation";
 import { isAdmin } from "@/lib/admin";
 import { ILGAN, ILJU_TAG_TEXT, iljuFacts, jiaziNo, nextDayOf, stemCure, stemMatches, stemName, stemThing } from "@/lib/cards";
@@ -1032,44 +1033,64 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
     );
   }
   if (c === "gz-why") {
+    // 10 × 12 = 120 cells, and the days fill only the checkerboard half: stems and branches start together at
+    // number 1 and step together, so odd meets odd and even meets even (both 10 and 12 are even, so a lap never
+    // changes that). 甲丑 is the cell that never comes.
+    const JIA_CHOU = "0-1";
     return (
       <Frame>
         <BrushFont hf={String(q.hf ?? "")} />
-        <div style={{ position: "absolute", top: 130, left: 90, right: 90 }}>
+        <div style={{ position: "absolute", top: 110, left: 70, right: 70 }}>
           <Label>60갑자의 원리 ②</Label>
-          <p style={{ marginTop: 14, fontSize: 60, fontWeight: 800, lineHeight: 1.2 }}>10 × 12는 120인데, 왜 60일까?</p>
-          <Body style={{ marginTop: 22, fontSize: 34, color: INK }}>
-            <b>甲</b> 하나만 따라가 보면 보여요. 甲이 나오는 날, 땅 글자는 어디에 있을까요?
+          <p style={{ marginTop: 12, fontSize: 58, fontWeight: 800, lineHeight: 1.2 }}>120칸인데 왜 60칸만 찰까?</p>
+          <Body style={{ marginTop: 14, fontSize: 30, color: INK, lineHeight: 1.55 }}>
+            하늘과 땅은 <b>1번끼리</b> 출발해 매일 한 칸씩 같이 가요. 그래서 <b style={{ color: SEAL }}>홀수는 홀수끼리</b>, <b style={{ color: "#2c3848" }}>짝수는 짝수끼리</b>만 만나요.
           </Body>
-          <div style={{ marginTop: 26, display: "grid", gridTemplateColumns: "150px repeat(6, 1fr)", rowGap: 10, alignItems: "center", textAlign: "center", padding: "26px 20px", borderRadius: 22, background: "rgba(61,102,86,.08)", border: "3px solid #3d6656" }}>
-            <span style={{ fontSize: 24, color: SOFT, fontFamily: sans, textAlign: "left" }}>甲이 나오는 날</span>
-            {[1, 11, 21, 31, 41, 51].map((d) => (
-              <span key={d} style={{ fontSize: 28, fontWeight: 800, fontFamily: sans, color: SOFT }}>
-                {d}일
+          <div style={{ marginTop: 26, display: "grid", gridTemplateColumns: "62px repeat(12, 1fr)", gap: 5 }}>
+            <span />
+            {BRANCHES.map((b, bi) => (
+              <span key={b} style={{ textAlign: "center", lineHeight: 1.1 }}>
+                <span style={{ display: "block", fontSize: 30, fontFamily: brush, color: bi % 2 ? "#2c3848" : SEAL }}>{b}</span>
+                <span style={{ display: "block", fontSize: 15, fontWeight: 800, fontFamily: sans, color: bi % 2 ? "#2c3848" : SEAL }}>{bi + 1}</span>
               </span>
             ))}
-            <span style={{ fontSize: 24, color: SOFT, fontFamily: sans, textAlign: "left" }}>만나는 땅 글자</span>
-            {[0, 10, 20, 30, 40, 50].map((d) => (
-              <span key={d} style={{ fontSize: 64, lineHeight: 1.1, fontFamily: brush, color: SEAL }}>
-                {BRANCHES[d % 12]}
-              </span>
+            {STEMS.map((st, si) => (
+              <Fragment key={st}>
+                <span style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: sans }}>
+                  <span style={{ fontSize: 30, fontFamily: brush, color: si % 2 ? "#2c3848" : SEAL }}>{st}</span>
+                  <span style={{ fontSize: 15, fontWeight: 800, color: si % 2 ? "#2c3848" : SEAL }}>{si + 1}</span>
+                </span>
+                {BRANCHES.map((b, bi) => {
+                  const on = si % 2 === bi % 2;
+                  const never = `${si}-${bi}` === JIA_CHOU;
+                  return (
+                    <span
+                      key={b}
+                      style={{
+                        height: 60,
+                        display: "grid",
+                        placeItems: "center",
+                        borderRadius: 8,
+                        fontFamily: brush,
+                        fontSize: 23,
+                        background: on ? (si % 2 ? "rgba(44,56,72,.12)" : "rgba(179,38,30,.12)") : "transparent",
+                        color: on ? INK : "rgba(33,27,23,.18)",
+                        border: never ? `3px dashed ${SEAL}` : on ? "none" : "1.5px solid rgba(33,27,23,.08)",
+                      }}
+                    >
+                      {on ? `${st}${b}` : never ? <span style={{ color: SEAL, fontSize: 26, fontFamily: sans, fontWeight: 800 }}>✕</span> : ""}
+                    </span>
+                  );
+                })}
+              </Fragment>
             ))}
           </div>
-          <Body style={{ marginTop: 22, fontSize: 32, color: INK }}>
-            甲은 땅 글자 <b>6개만</b> 만나요. <span style={{ fontFamily: brush }}>丑卯巳未酉亥</span>와는 한 번도 못 만나서 <s style={{ color: SOFT }}>甲丑</s> 같은 건 없어요.
+          <Body style={{ marginTop: 22, fontSize: 30, color: INK, lineHeight: 1.55 }}>
+            1번 <b>甲</b>은 2번 <b>丑</b>을 끝내 못 만나요. 그래서 <b style={{ color: SEAL }}>甲丑일은 없어요.</b>
           </Body>
-          <p style={{ marginTop: 18, fontSize: 40, fontWeight: 800, textAlign: "center" }}>
-            하늘 글자 10개 × 6개씩 = <span style={{ color: SEAL }}>60</span>
+          <p style={{ marginTop: 18, padding: "18px 0", borderRadius: 18, background: "rgba(33,27,23,.05)", textAlign: "center", fontSize: 32, fontWeight: 800 }}>
+            <span style={{ color: SEAL }}>홀수 5 × 6</span> + <span style={{ color: "#2c3848" }}>짝수 5 × 6</span> = <span style={{ color: SEAL, fontSize: 40 }}>60</span>
           </p>
-          <div style={{ marginTop: 30, borderTop: "2px solid rgba(179,38,30,.2)", paddingTop: 26 }}>
-            <p style={{ fontSize: 40, fontWeight: 800 }}>60년이면 한 바퀴, 환갑</p>
-            <Body style={{ marginTop: 10, fontSize: 30, color: INK }}>
-              60갑자는 날에만 도는 게 아니라 해에도 돌아요. 2026년은 <b style={{ color: SEAL }}>丙午</b>년, 60년 전 1966년도 丙午년이었어요.
-            </Body>
-            <Body style={{ marginTop: 8, fontSize: 30, color: INK }}>
-              태어난 해의 간지가 다시 돌아오는 만 60세 생일을 <b>환갑(還甲)</b>, &lsquo;갑이 돌아온다&rsquo;고 불러요.
-            </Body>
-          </div>
         </div>
         <Brand />
       </Frame>
