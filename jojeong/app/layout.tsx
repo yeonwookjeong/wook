@@ -22,7 +22,8 @@ export const metadata: Metadata = {
   // Search Console and 네이버 서치어드바이저 ownership, from the codes each gives (only the content value).
   verification: {
     ...(process.env.GOOGLE_SITE_VERIFICATION && { google: process.env.GOOGLE_SITE_VERIFICATION }),
-    ...(process.env.NAVER_SITE_VERIFICATION && { other: { "naver-site-verification": process.env.NAVER_SITE_VERIFICATION } }),
+    // 네이버 서치어드바이저 (www.hundosaju.com); the HTML file in public/ proves the same, this tag is the backup.
+    other: { "naver-site-verification": process.env.NAVER_SITE_VERIFICATION || "977644dafbe46fe9d6c66f78b9b00d54601b6abb" },
   },
 };
 
