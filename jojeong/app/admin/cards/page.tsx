@@ -1020,9 +1020,11 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
               땅 글자는 12개라 아직 <b style={{ color: SEAL }}>戌</b>. 그래서 11번째는 <b style={{ color: SEAL }}>甲戌</b>이에요.
             </p>
           </div>
-          <Body style={{ marginTop: 40, fontSize: 33, color: INK }}>이렇게 조금씩 어긋나며 돌다가, 60번째를 지나면 처음으로</Body>
-          <p style={{ marginTop: 26, display: "flex", alignItems: "center", justifyContent: "center", gap: 18, fontFamily: brush, fontSize: 60, color: SEAL }}>
-            甲子 <span style={{ fontSize: 34, color: SOFT, fontFamily: sans }}>→ … →</span> 癸亥 <span style={{ fontSize: 34, color: SOFT, fontFamily: sans }}>→</span> 甲子
+          <Body style={{ marginTop: 36, fontSize: 33, color: INK }}>
+            하늘은 10일마다, 땅은 12일마다 처음으로 돌아가요. 둘이 <b>동시에</b> 처음으로 돌아오는 날은 10으로도 12로도 나누어떨어지는 <b style={{ color: SEAL }}>60일째</b>예요.
+          </Body>
+          <p style={{ marginTop: 22, display: "flex", alignItems: "center", justifyContent: "center", gap: 18, fontFamily: brush, fontSize: 56, color: SEAL }}>
+            甲子 <span style={{ fontSize: 30, color: SOFT, fontFamily: sans }}>→ 60일 →</span> 甲子
           </p>
         </div>
         <Brand />
@@ -1035,29 +1037,36 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
         <BrushFont hf={String(q.hf ?? "")} />
         <div style={{ position: "absolute", top: 130, left: 90, right: 90 }}>
           <Label>60갑자의 원리 ②</Label>
-          <p style={{ marginTop: 16, fontSize: 64, fontWeight: 800, lineHeight: 1.2 }}>10 × 12는 120인데, 왜 60일까?</p>
-          <div style={{ marginTop: 44, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, textAlign: "center" }}>
-            {[
-              { h: "甲子", t: "양 + 양", ok: true },
-              { h: "甲丑", t: "양 + 음", ok: false },
-            ].map((x) => (
-              <div key={x.h} style={{ padding: "30px 0", borderRadius: 22, border: `3px solid ${x.ok ? "#3d6656" : "rgba(33,27,23,.15)"}`, background: x.ok ? "rgba(61,102,86,.08)" : "rgba(33,27,23,.04)" }}>
-                <p style={{ fontSize: 100, lineHeight: 1.05, fontFamily: brush, color: x.ok ? SEAL : "rgba(33,27,23,.3)", textDecoration: x.ok ? "none" : "line-through" }}>{x.h}</p>
-                <p style={{ marginTop: 8, fontSize: 28, fontWeight: 800, color: x.ok ? "#3d6656" : SOFT }}>
-                  {x.t} {x.ok ? "✓ 있어요" : "✗ 없어요"}
-                </p>
-              </div>
+          <p style={{ marginTop: 14, fontSize: 60, fontWeight: 800, lineHeight: 1.2 }}>10 × 12는 120인데, 왜 60일까?</p>
+          <Body style={{ marginTop: 22, fontSize: 34, color: INK }}>
+            <b>甲</b> 하나만 따라가 보면 보여요. 甲이 나오는 날, 땅 글자는 어디에 있을까요?
+          </Body>
+          <div style={{ marginTop: 26, display: "grid", gridTemplateColumns: "150px repeat(6, 1fr)", rowGap: 10, alignItems: "center", textAlign: "center", padding: "26px 20px", borderRadius: 22, background: "rgba(61,102,86,.08)", border: "3px solid #3d6656" }}>
+            <span style={{ fontSize: 24, color: SOFT, fontFamily: sans, textAlign: "left" }}>甲이 나오는 날</span>
+            {[1, 11, 21, 31, 41, 51].map((d) => (
+              <span key={d} style={{ fontSize: 28, fontWeight: 800, fontFamily: sans, color: SOFT }}>
+                {d}일
+              </span>
+            ))}
+            <span style={{ fontSize: 24, color: SOFT, fontFamily: sans, textAlign: "left" }}>만나는 땅 글자</span>
+            {[0, 10, 20, 30, 40, 50].map((d) => (
+              <span key={d} style={{ fontSize: 64, lineHeight: 1.1, fontFamily: brush, color: SEAL }}>
+                {BRANCHES[d % 12]}
+              </span>
             ))}
           </div>
-          <Body style={{ marginTop: 32, fontSize: 34, color: INK }}>
-            글자마다 양과 음이 있어서, <b>양은 양끼리, 음은 음끼리</b>만 짝을 지어요. 그래서 120가지의 절반, 60가지예요.
+          <Body style={{ marginTop: 22, fontSize: 32, color: INK }}>
+            甲은 땅 글자 <b>6개만</b> 만나요. <span style={{ fontFamily: brush }}>丑卯巳未酉亥</span>와는 한 번도 못 만나서 <s style={{ color: SOFT }}>甲丑</s> 같은 건 없어요.
           </Body>
-          <div style={{ marginTop: 44, borderTop: "2px solid rgba(179,38,30,.2)", paddingTop: 40 }}>
-            <p style={{ fontSize: 46, fontWeight: 800 }}>60년이면 한 바퀴, 환갑</p>
-            <Body style={{ marginTop: 16, fontSize: 33, color: INK }}>
+          <p style={{ marginTop: 18, fontSize: 40, fontWeight: 800, textAlign: "center" }}>
+            하늘 글자 10개 × 6개씩 = <span style={{ color: SEAL }}>60</span>
+          </p>
+          <div style={{ marginTop: 30, borderTop: "2px solid rgba(179,38,30,.2)", paddingTop: 26 }}>
+            <p style={{ fontSize: 40, fontWeight: 800 }}>60년이면 한 바퀴, 환갑</p>
+            <Body style={{ marginTop: 10, fontSize: 30, color: INK }}>
               60갑자는 날에만 도는 게 아니라 해에도 돌아요. 2026년은 <b style={{ color: SEAL }}>丙午</b>년, 60년 전 1966년도 丙午년이었어요.
             </Body>
-            <Body style={{ marginTop: 14, fontSize: 33, color: INK }}>
+            <Body style={{ marginTop: 8, fontSize: 30, color: INK }}>
               태어난 해의 간지가 다시 돌아오는 만 60세 생일을 <b>환갑(還甲)</b>, &lsquo;갑이 돌아온다&rsquo;고 불러요.
             </Body>
           </div>
