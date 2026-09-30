@@ -200,6 +200,14 @@ export async function getReportText(key: string): Promise<string | null> {
 export async function setReportText(key: string, text: string) {
   await backend().set(`report:${key}`, text);
 }
+// A report being written: when its writing began, so a second visit (a refresh, the tab reopened) waits for that
+// one instead of paying for another. "0" once the writing failed, so the next visit starts over.
+export async function getReportWriting(key: string): Promise<number> {
+  return Number((await backend().get(`writing:${key}`)) ?? 0);
+}
+export async function setReportWriting(key: string, at: number) {
+  await backend().set(`writing:${key}`, String(at));
+}
 // A per-day counter of freshly written reports (a spending guard).
 export async function countReportToday(): Promise<number> {
   return backend().incr(`stats:reports:${new Date().toISOString().slice(0, 10)}`);

@@ -16,7 +16,8 @@ const WORDS = {
     stoppedMidway: "작성이 중간에 멈췄어요. 새로고침하시면 다시 써 드려요.",
     reading: "정 훈도가 사주를 읽고 있어요…",
     writing: "정 훈도가 보고서를 쓰고 있어요…",
-    wait: "처음 한 번만 1~2분 걸리고, 다음부터는 바로 열려요.",
+    wait: "처음 한 번만 1~2분 걸려요. 창을 닫아도 끝까지 써 두니, 다음부터는 바로 열려요.",
+    chapterDone: "완료",
     sign: "— 정 훈도 드림",
     tap: "제목을 누르면 풀이가 펼쳐져요",
   },
@@ -27,7 +28,8 @@ const WORDS = {
     stoppedMidway: "붓이 중간에 멈췄사옵니다. 새로고침하시면 다시 적어 올리옵니다.",
     reading: "정 훈도가 사주를 펼쳐 보는 중이옵니다…",
     writing: "붓을 들어 적는 중이옵니다…",
-    wait: "처음 한 번만 1~2분 걸리고, 다음부터는 바로 열리옵니다.",
+    wait: "처음 한 번만 1~2분 걸리옵니다. 창을 닫으셔도 끝까지 적어 두니, 다음부터는 바로 열리옵니다.",
+    chapterDone: "적음",
     sign: "— 관상감 명과학 훈도 정가, 삼가 적음",
     tap: "제목을 누르시면 풀이가 펼쳐지옵니다",
   },
@@ -54,7 +56,8 @@ function parse(text: string): { sections: Section[]; failed: boolean } {
   return { sections, failed };
 }
 
-// A report written by 정 훈도 (lib/reportWriter.ts): fetched once, rendered chapter by chapter as it arrives.
+// A report written by 정 훈도 (lib/reportWriter.ts): while it is written, a waiting card that stamps each chapter
+// as it is finished; then the whole report at once.
 export default function AiReport({
   request,
   chapters,
@@ -68,7 +71,8 @@ export default function AiReport({
 }) {
   const w = WORDS[modern ? "modern" : "joseon"];
   const [text, setText] = useState("");
-  const [state, setState] = useState<"loading" | "writing" | "done" | "error">("loading");
+  // "waiting": written for an earlier visit (or this one lost its connection), so the page asks again until saved.
+  const [state, setState] = useState<"loading" | "writing" | "waiting" | "done" | "error">("loading");
   const [error, setError] = useState<string | null>(null);
   const started = useRef(false);
   const body = JSON.stringify(request);
@@ -76,9 +80,22 @@ export default function AiReport({
   useEffect(() => {
     if (started.current) return;
     started.current = true;
-    (async () => {
+    const since = Date.now();
+    const again = () => {
+      // The writing takes a minute or two; past six, it is not coming.
+      if (Date.now() - since > 6 * 60 * 1000) {
+        setError(w.stopped);
+        setState("error");
+      } else setTimeout(load, 4000);
+    };
+    async function load() {
+      let all = "";
       try {
         const res = await fetch("/api/report", { method: "POST", headers: { "content-type": "application/json" }, body });
+        if (res.status === 202) {
+          setState("waiting");
+          return again();
+        }
         if (!res.ok || !res.body) {
           const data = (await res.json().catch(() => ({}))) as { error?: string };
           setError(data.error ?? w.failed);
@@ -88,7 +105,6 @@ export default function AiReport({
         setState(res.headers.get("x-report") === "cached" ? "done" : "writing");
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
-        let all = "";
         for (;;) {
           const { done, value } = await reader.read();
           if (done) break;
@@ -97,10 +113,17 @@ export default function AiReport({
         }
         setState(all.includes(MARK_ERROR) ? "error" : "done");
       } catch {
+        // The connection dropped while it was being written: the server writes on, so wait for the saved report.
+        if (all && !all.includes(MARK_ERROR)) {
+          setText("");
+          setState("waiting");
+          return again();
+        }
         setError(w.cut);
         setState("error");
       }
-    })();
+    }
+    load();
     // w only changes with `modern`, which never changes for one report.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [body]);
@@ -114,6 +137,38 @@ export default function AiReport({
         {fallback}
       </div>
     );
+
+  // While it is being written nothing of it is shown: the report appears whole, as a finished document.
+  if (state !== "done" && state !== "error") {
+    const written = state === "writing" ? Math.max(0, sections.length - 1) : 0;
+    return (
+      <div className="doc-paper mt-4 px-5 py-6">
+        <div className="flex flex-col items-center gap-2 text-center">
+          <span className="size-6 animate-spin rounded-full border-2 border-seal/30 border-t-seal" aria-hidden="true" />
+          <p className="font-myeongjo text-sm font-extrabold text-seal">{state === "loading" ? w.reading : w.writing}</p>
+          <p className="text-xs text-ink-soft">{w.wait}</p>
+        </div>
+        {chapters.length > 0 && (
+          <ol className="mt-5 flex flex-col gap-1.5 border-t border-seal/15 pt-4">
+            {chapters.map((c, i) => {
+              const done = i < written;
+              return (
+                <li key={i} className={`flex items-center gap-2.5 text-[13px] ${done ? "text-ink" : "text-ink-soft/70"}`}>
+                  <span
+                    className={`flex size-6 shrink-0 items-center justify-center border font-myeongjo text-[11px] font-extrabold ${done ? "border-seal bg-seal text-hanji" : "border-ink/20"}`}
+                  >
+                    {hanjaNum(i + 1)}
+                  </span>
+                  <span className={done ? "font-bold" : ""}>{c}</span>
+                  {done && <span className="ml-auto text-[11px] font-bold text-seal">{w.chapterDone}</span>}
+                </li>
+              );
+            })}
+          </ol>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="mt-4 flex flex-col gap-2">
@@ -146,15 +201,6 @@ export default function AiReport({
         </details>
       ))}
 
-      {state !== "done" && state !== "error" && (
-        <div className="doc-paper flex flex-col items-center gap-2 px-5 py-6 text-center">
-          <span className="size-6 animate-spin rounded-full border-2 border-seal/30 border-t-seal" aria-hidden="true" />
-          <p className="font-myeongjo text-sm font-extrabold text-seal">
-            {state === "loading" ? w.reading : `${w.writing} (${Math.min(sections.length, chapters.length)}/${chapters.length}장)`}
-          </p>
-          <p className="text-xs text-ink-soft">{w.wait}</p>
-        </div>
-      )}
       {(failed || state === "error") && sections.length > 0 && (
         <p className="rounded-xl bg-seal/10 px-4 py-3 text-center text-sm text-seal">{w.stoppedMidway}</p>
       )}

@@ -154,7 +154,7 @@ export async function writeReport(job: ReportJob, onText: (t: string) => void): 
     const { MOCK_REPORT } = await import("./reportMock");
     for (const piece of MOCK_REPORT.match(/[\s\S]{1,40}/g) ?? []) {
       onText(piece);
-      await new Promise((r) => setTimeout(r, 15));
+      await new Promise((r) => setTimeout(r, Number(process.env.REPORT_MOCK_MS ?? 15)));
     }
     return MOCK_REPORT;
   }
