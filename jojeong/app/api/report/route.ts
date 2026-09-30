@@ -12,6 +12,8 @@ const DAILY_LIMIT = Number(process.env.REPORT_DAILY_LIMIT ?? 1000);
 const MARK_ERROR = "\n\n[[error]]";
 // A writing begun this long ago and still unsaved has died with its function (maxDuration is 5 minutes).
 const WRITING_FOR = 5 * 60 * 1000;
+// When the v6 prompt went live (lib/reportPrompts.ts). Orders paid before it keep their v5 reports.
+const V6_SINCE = Date.parse("2026-09-30T15:05:00Z");
 
 // POST { product, court?, m?, t?, p?, a?, b?, rel?, order? } → the report as plain text, streamed while it is being written (or all at
 // once when it was written before). A failure midway ends the stream with MARK_ERROR.
@@ -22,8 +24,9 @@ export async function POST(request: Request) {
   const product = productById(body.product);
   if (!product) return Response.json({ error: "없는 보고서예요." }, { status: 404 });
   let req: JobRequest = body;
+  let order: Awaited<ReturnType<typeof getOrder>> = null;
   if (!(body.order === undefined && (await isAdmin()))) {
-    const order = await getOrder(body.order);
+    order = await getOrder(body.order);
     if (!order || !covers(order, product.id))
       return Response.json({ error: product.modern ? "결제한 뒤에 열 수 있어요." : "복채를 주신 뒤에 열리옵니다." }, { status: 402 });
     req = { ...order.req, product: product.id };
@@ -31,7 +34,10 @@ export async function POST(request: Request) {
   const job = await jobFor(req);
   if ("error" in job) return Response.json({ error: job.error }, { status: job.status });
 
-  const cached = await getReportText(job.key);
+  // A report bought before the v6 prompt opens exactly as it was first written (its v5 text), never rewritten.
+  const boughtBefore = order && (order.paidAt ?? order.createdAt) < V6_SINCE;
+  const legacy = boughtBefore ? await jobFor(req, "v5") : null;
+  const cached = (legacy && !("error" in legacy) ? await getReportText(legacy.key) : null) ?? (await getReportText(job.key));
   if (cached) return new Response(cached, { headers: { "content-type": "text/plain; charset=utf-8", "x-report": "cached" } });
 
   if (!aiEnabled())
