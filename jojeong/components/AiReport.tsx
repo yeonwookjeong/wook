@@ -4,9 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 type Section = { label: string; headline: string; paras: string[] };
 
-const DIGITS = "一二三四五六七八九";
-// 1 → 一, 10 → 十, 13 → 十三
-const hanjaNum = (n: number) => (n < 10 ? DIGITS[n - 1] : `十${n > 10 ? DIGITS[n - 11] : ""}`);
+import { hanjaNum } from "@/lib/hanjaNum";
 const MARK_ERROR = "[[error]]";
 
 // Present-day reports speak plain 해요체; the Joseon ones keep 정 훈도's court speech.
@@ -124,7 +122,10 @@ export default function AiReport({
         // Closed by default: the headlines read as a table of contents, and each opens on a tap.
         <details key={i} className="group doc-paper px-5 py-4">
           <summary className="flex cursor-pointer list-none items-start gap-3 [&::-webkit-details-marker]:hidden">
-            <span className="flex size-9 shrink-0 items-center justify-center border-2 border-seal/60 font-myeongjo font-extrabold text-seal">
+            {/* Two characters (十一…) go on one line at a smaller size, so they stay inside the seal. */}
+            <span
+              className={`flex size-9 shrink-0 items-center justify-center border-2 border-seal/60 font-myeongjo font-extrabold whitespace-nowrap text-seal ${hanjaNum(i + 1).length > 1 ? "text-[15px] leading-none tracking-[-0.06em]" : ""}`}
+            >
               {hanjaNum(i + 1)}
             </span>
             <span className="min-w-0 flex-1">
