@@ -6,8 +6,10 @@ import { useState } from "react";
 export default function OrderLink({
   id,
   others = [],
+  gift = false,
 }: {
   id: string;
+  gift?: boolean;
   others?: { href: string; title: string }[];
 }) {
   const [copied, setCopied] = useState(false);
@@ -24,9 +26,15 @@ export default function OrderLink({
     <div className="mt-4 rounded-2xl border border-gold/40 bg-gold/10 px-4 py-3 text-[13px]">
       <div className="flex items-center gap-3">
         <p className="min-w-0 flex-1 leading-snug">
-          <b className="block text-gold">결제한 보고서예요</b>
+          <b className="block text-gold">{gift ? "선물 받은 보고서예요" : "결제한 보고서예요"}</b>
           <span className="text-ink-soft">
-            나중에는 맨 위 <b className="text-ink">내 보고서</b>에서 바로 열 수 있어요. 다른 기기에서는 이 링크로 열어요
+            {gift ? (
+              <>이 링크로 언제든 다시 열 수 있어요. 링크를 복사해 두세요</>
+            ) : (
+              <>
+                나중에는 맨 위 <b className="text-ink">내 보고서</b>에서 바로 열 수 있어요. 다른 기기에서는 이 링크로 열어요
+              </>
+            )}
           </span>
         </p>
         <button
