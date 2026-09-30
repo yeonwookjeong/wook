@@ -866,7 +866,7 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
     return (
       <Frame dark>
         <BrushFont hf={String(q.hf ?? "")} />
-        {/* all sixty, faint, behind the title */}
+        {/* all sixty, faint, behind the one day that never comes */}
         <div
           style={{
             position: "absolute",
@@ -880,7 +880,7 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
             fontFamily: brush,
             fontSize: 56,
             lineHeight: 1.25,
-            color: "rgba(212,175,95,.13)",
+            color: "rgba(212,175,95,.12)",
           }}
         >
           {SIXTY.map((x) => (
@@ -888,10 +888,23 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
           ))}
         </div>
         <CornerBrand />
-        <div style={{ position: "absolute", top: 250, left: 0, right: 0, textAlign: "center" }}>
+        <div style={{ position: "absolute", top: 230, left: 0, right: 0, textAlign: "center" }}>
           <p style={{ fontSize: 34, letterSpacing: "0.3em", color: GOLD, fontWeight: 800 }}>六十甲子</p>
-          <p style={{ marginTop: 18, fontSize: 210, lineHeight: 1, color: "#f1cf7a", fontFamily: brush, textShadow: "0 6px 24px rgba(0,0,0,.5)" }}>甲子</p>
-          <p style={{ marginTop: 20, fontSize: 40, color: "rgba(244,236,219,.9)" }}>갑자에서 계해까지, 예순 가지 일주</p>
+          <div style={{ position: "relative", display: "inline-block", marginTop: 18 }}>
+            <p style={{ fontSize: 230, lineHeight: 1, color: "rgba(244,236,219,.9)", fontFamily: brush, padding: "0 30px" }}>甲丑</p>
+            {/* a red seal struck across it */}
+            <span
+              style={{
+                position: "absolute",
+                inset: "-10px -6px",
+                border: "10px solid #e2553f",
+                borderRadius: "50%",
+                transform: "rotate(-8deg)",
+                opacity: 0.9,
+              }}
+            />
+            <span style={{ position: "absolute", left: "-4%", right: "-4%", top: "48%", height: 12, background: "#e2553f", transform: "rotate(-22deg)", opacity: 0.9 }} />
+          </div>
         </div>
         <div style={{ position: "absolute", top: 790, left: 64 }}>
           <div style={{ width: 170, height: 170, borderRadius: "50%", overflow: "hidden", border: `6px solid ${GOLD}`, background: HANJI, boxShadow: "0 10px 24px rgba(0,0,0,.4)" }}>
@@ -899,26 +912,27 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
             <img src="/hundo-face.png" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           </div>
           <div style={{ position: "absolute", left: -12, top: -84, padding: "12px 22px", background: "#fff", color: INK, borderRadius: 22, fontSize: 32, fontWeight: 800, whiteSpace: "nowrap", boxShadow: "0 8px 20px rgba(0,0,0,.3)" }}>
-            {q.say ? String(q.say) : "저장해 두시옵소서!"}
+            {q.say ? String(q.say) : "어찌 된 일이겠사옵니까?"}
           </div>
         </div>
-        <ThumbTitle top="태어난 날의 두 글자, 60갑자 한눈에" main="나는 무슨 일주?" />
+        <ThumbTitle top="달력에 甲丑일이 없는 이유" main="절대 오지 않는 날" />
       </Frame>
     );
   if (c === "gz-what") {
-    // A real day: 2026-10-17 (丙午년 戊戌월 甲子일).
+    // Today, the day this post goes up: 2026-09-30 is 丙午년 丁酉월 丁未일.
     const cols = [
-      { pos: "태어난 시", h: "？", ko: "" },
-      { pos: "태어난 날", h: "甲子", ko: "갑자", me: true },
-      { pos: "태어난 달", h: "戊戌", ko: "무술" },
-      { pos: "태어난 해", h: "丙午", ko: "병오" },
+      { pos: "시각", h: "？", ko: "" },
+      { pos: "오늘", h: "丁未", ko: "정미", me: true },
+      { pos: "이번 달", h: "丁酉", ko: "정유" },
+      { pos: "올해", h: "丙午", ko: "병오" },
     ];
     return (
       <Frame>
         <BrushFont hf={String(q.hf ?? "")} />
         <div style={{ position: "absolute", top: 140, left: 100, right: 100 }}>
-          <Label>일주가 뭐예요?</Label>
-          <p style={{ marginTop: 18, fontSize: 70, fontWeight: 800, lineHeight: 1.2 }}>태어난 날의 두 글자</p>
+          <Label>먼저, 날에도 이름이 있어요</Label>
+          <p style={{ marginTop: 18, fontSize: 64, fontWeight: 800, lineHeight: 1.2 }}>오늘 9월 30일은 丁未일</p>
+          <Body style={{ marginTop: 14, fontSize: 32, color: INK }}>올해가 丙午년이듯, 달에도 날에도 두 글자 이름이 있어요</Body>
           <div style={{ marginTop: 44, display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, textAlign: "center" }}>
             {cols.map((x) => (
               <div
@@ -935,14 +949,14 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
                 </p>
                 {x.me && (
                   <span style={{ position: "absolute", top: -26, left: "50%", transform: "translateX(-50%)", padding: "4px 14px", borderRadius: 999, background: SEAL, color: HANJI, fontSize: 22, fontWeight: 800, whiteSpace: "nowrap" }}>
-                    이게 일주!
+                    여기가 일주
                   </span>
                 )}
               </div>
             ))}
           </div>
-          <Body style={{ marginTop: 56, fontSize: 37, color: INK }}>
-            사주 여덟 글자 가운데 <b>나 자신</b>을 뜻하는 자리예요. 성격과 인연을 볼 때 가장 먼저 봐요.
+          <Body style={{ marginTop: 50, fontSize: 36, color: INK }}>
+            내가 <b>태어난 날의 이름</b>이 바로 <b style={{ color: SEAL }}>일주</b>예요. 사주 여덟 글자 가운데 <b>나 자신</b>을 뜻해서 가장 먼저 봐요.
           </Body>
           <div style={{ marginTop: 50, padding: "38px 36px", borderRadius: 22, background: "rgba(33,27,23,.05)", fontFamily: sans }}>
             <p style={{ fontSize: 33, lineHeight: 1.6 }}>
