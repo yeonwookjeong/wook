@@ -30,7 +30,7 @@ export default function Paywall({
   const sets = request.p ? setsWith(product.id).filter((s) => s !== "ny" || (ny !== null && (request.y === undefined || request.y === String(ny)))) : [];
   const titleIn = (id: ProductId) => (id === "yeonun" && ny !== null ? `${ny} 신년운세` : productById(id)!.title);
   return (
-    <section className="doc-paper mt-6 px-5 pt-6 pb-6">
+    <section id="report-start" className="doc-paper mt-6 scroll-mt-4 px-5 pt-6 pb-6">
       <h2 className="text-center font-myeongjo text-lg font-extrabold">{heading}</h2>
       <p className="mt-1 text-center text-xs text-ink-soft">{sub}</p>
       <ol className="mt-4 flex flex-col divide-y divide-seal/15 border-y-[3px] border-double border-seal/40 px-1">

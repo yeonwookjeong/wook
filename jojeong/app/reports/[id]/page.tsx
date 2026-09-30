@@ -375,7 +375,7 @@ async function OpenReport({
   const fullIntro = intro && (
     <>
       {intro}
-      {free && <FreeReading name={name} r={free} query={query} addGender={`${next}?new=1`} />}
+      {free && <FreeReading name={name} r={free} query={query} addGender={`${next}?new=1`} onLifeReport={product.id === "pyeongsaeng"} />}
     </>
   );
   // Without gender or the hour, the remembered chart is simply entered again with them.
@@ -570,7 +570,9 @@ async function OpenReport({
         </>
       ) : (
         <>
-          <AiReport request={request} chapters={chaptersOf(product.id)} modern />
+          <div id="report-start" className="scroll-mt-4">
+            <AiReport request={request} chapters={chaptersOf(product.id)} modern />
+          </div>
           {meDeepen}
         </>
       )}

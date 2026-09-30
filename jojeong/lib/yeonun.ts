@@ -127,7 +127,9 @@ export function monthsOf(y: number): { stem: number; branch: number; from: strin
   let prev = "";
   for (let t = Date.UTC(y, 1, 1); t <= Date.UTC(y + 1, 0, 10); t += 86400000) {
     const d = new Date(t);
-    const ec = Solar.fromYmdHms(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(), 12, 0, 0).getLunar().getEightChar();
+    // Sampled at the end of the day, so a month is dated from the day its 절기 falls, even when the 절기 comes
+    // late in that day (at noon it would show the next day: 소서 on 7/7 afternoon read as 7/8).
+    const ec = Solar.fromYmdHms(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(), 23, 59, 0).getLunar().getEightChar();
     const gz = ec.getMonthGan() + ec.getMonthZhi();
     if (gz !== prev) {
       prev = gz;

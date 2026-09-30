@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
+import { Fragment } from "react";
 import { redirect } from "next/navigation";
 import { isAdmin } from "@/lib/admin";
 import { ILGAN, ILJU_TAG_TEXT, iljuFacts, jiaziNo, nextDayOf, stemCure, stemMatches, stemName, stemThing } from "@/lib/cards";
 import { josa } from "@/lib/josa";
 import { pickDays } from "@/lib/taekil";
 import { figureById, figureChart } from "@/lib/figures";
-import { monthPillarOf, rankMonth, type IljuMonth } from "@/lib/iljuRank";
-import { STEMS } from "@/lib/saju";
+import { monthPillarOf, rankMonth, SIXTY, type IljuMonth } from "@/lib/iljuRank";
+import { ANIMALS, BRANCHES, BRANCHES_KO, STEMS, STEMS_KO } from "@/lib/saju";
 
 export const metadata: Metadata = { title: "카드", robots: { index: false } };
 
@@ -858,6 +859,418 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
         </Frame>
       );
   }
+
+  // ── 60갑자 한눈에 보기: what a day pillar is, all sixty in their order, and how to find one's own.
+  const gz = (i: number) => ({ no: i + 1, hanja: `${STEMS[i % 10]}${BRANCHES[i % 12]}`, ko: `${STEMS_KO[i % 10]}${BRANCHES_KO[i % 12]}` });
+  if (c === "gz-cover")
+    return (
+      <Frame dark>
+        <BrushFont hf={String(q.hf ?? "")} />
+        {/* all sixty, faint, behind the title */}
+        <div
+          style={{
+            position: "absolute",
+            top: 130,
+            left: 70,
+            right: 70,
+            display: "grid",
+            gridTemplateColumns: "repeat(6, 1fr)",
+            rowGap: 6,
+            textAlign: "center",
+            fontFamily: brush,
+            fontSize: 56,
+            lineHeight: 1.25,
+            color: "rgba(212,175,95,.13)",
+          }}
+        >
+          {SIXTY.map((x) => (
+            <span key={x.no}>{gz(x.no - 1).hanja}</span>
+          ))}
+        </div>
+        <CornerBrand />
+        <div style={{ position: "absolute", top: 250, left: 0, right: 0, textAlign: "center" }}>
+          <p style={{ fontSize: 34, letterSpacing: "0.3em", color: GOLD, fontWeight: 800 }}>六十甲子</p>
+          <p style={{ marginTop: 18, fontSize: 210, lineHeight: 1, color: "#f1cf7a", fontFamily: brush, textShadow: "0 6px 24px rgba(0,0,0,.5)" }}>甲子</p>
+          <p style={{ marginTop: 20, fontSize: 40, color: "rgba(244,236,219,.9)" }}>갑자에서 계해까지, 예순 가지 일주</p>
+        </div>
+        <div style={{ position: "absolute", top: 790, left: 64 }}>
+          <div style={{ width: 170, height: 170, borderRadius: "50%", overflow: "hidden", border: `6px solid ${GOLD}`, background: HANJI, boxShadow: "0 10px 24px rgba(0,0,0,.4)" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/hundo-face.png" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          </div>
+          <div style={{ position: "absolute", left: -12, top: -84, padding: "12px 22px", background: "#fff", color: INK, borderRadius: 22, fontSize: 32, fontWeight: 800, whiteSpace: "nowrap", boxShadow: "0 8px 20px rgba(0,0,0,.3)" }}>
+            {q.say ? String(q.say) : "저장해 두시옵소서!"}
+          </div>
+        </div>
+        <ThumbTitle top="태어난 날의 두 글자, 60갑자 한눈에" main="나는 무슨 일주?" />
+      </Frame>
+    );
+  if (c === "gz-what") {
+    // Today, the day this post goes up: 2026-09-30 is 丙午년 丁酉월 丁未일.
+    const cols = [
+      { pos: "시각", h: "？", ko: "" },
+      { pos: "오늘", h: "丁未", ko: "정미", me: true },
+      { pos: "이번 달", h: "丁酉", ko: "정유" },
+      { pos: "올해", h: "丙午", ko: "병오" },
+    ];
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 140, left: 100, right: 100 }}>
+          <Label>① 일주가 뭐예요?</Label>
+          <p style={{ marginTop: 18, fontSize: 64, fontWeight: 800, lineHeight: 1.2 }}>오늘 9월 30일은 丁未일</p>
+          <Body style={{ marginTop: 14, fontSize: 32, color: INK }}>올해가 丙午년이듯, 달에도 날에도 두 글자 이름이 있어요</Body>
+          <div style={{ marginTop: 44, display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, textAlign: "center" }}>
+            {cols.map((x) => (
+              <div
+                key={x.pos}
+                style={{ position: "relative", padding: "24px 0", borderRadius: 20, border: x.me ? `3px solid ${SEAL}` : "3px solid rgba(33,27,23,.12)", background: x.me ? "rgba(179,38,30,.08)" : "transparent" }}
+              >
+                <p style={{ fontSize: 22, color: SOFT, fontFamily: sans }}>{x.pos}</p>
+                <p style={{ marginTop: 8, fontSize: 66, lineHeight: 1.1, color: x.me ? SEAL : INK, fontFamily: brush }}>
+                  {x.h.split("").map((chr, i) => (
+                    <span key={i} style={{ display: "block" }}>
+                      {chr}
+                    </span>
+                  ))}
+                </p>
+                {x.me && (
+                  <span style={{ position: "absolute", top: -26, left: "50%", transform: "translateX(-50%)", padding: "4px 14px", borderRadius: 999, background: SEAL, color: HANJI, fontSize: 22, fontWeight: 800, whiteSpace: "nowrap" }}>
+                    여기가 일주
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+          <Body style={{ marginTop: 50, fontSize: 36, color: INK }}>
+            내가 <b>태어난 날의 이름</b>이 바로 <b style={{ color: SEAL }}>일주</b>예요. 사주 여덟 글자 가운데 <b>나 자신</b>을 뜻해서 가장 먼저 봐요.
+          </Body>
+          <div style={{ marginTop: 50, padding: "38px 36px", borderRadius: 22, background: "rgba(33,27,23,.05)", fontFamily: sans }}>
+            <p style={{ fontSize: 33, lineHeight: 1.6 }}>
+              사주는 <b>해·달·날·시</b> 네 기둥이에요. 기둥마다 위에 <b style={{ color: SEAL }}>하늘 글자</b>, 아래에 <b style={{ color: SEAL }}>땅 글자</b>가 하나씩, 모두 여덟 글자.
+            </p>
+            <p style={{ marginTop: 14, fontSize: 33, lineHeight: 1.6 }}>
+              그중 <b style={{ color: SEAL }}>날 기둥 두 글자</b>가 일주예요. 같은 일주는 60일마다 다시 돌아와요.
+            </p>
+          </div>
+        </div>
+        <Brand />
+      </Frame>
+    );
+  }
+  if (c === "gz-read") {
+    const SKY = ["큰 나무", "꽃·덩굴", "태양", "촛불", "큰 산", "논밭", "무쇠", "보석", "큰 강", "단비"];
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 130, left: 80, right: 80 }}>
+          <Label>④ 두 글자는 이렇게 읽어요</Label>
+          <p style={{ marginTop: 12, fontSize: 58, fontWeight: 800, lineHeight: 1.2 }}>앞은 나의 모습, 뒤는 나의 동물</p>
+          <div style={{ marginTop: 40, display: "flex", alignItems: "center", justifyContent: "center", gap: 26 }}>
+            {[
+              { h: "丁", t: "촛불", d: "하늘 글자 · 나의 모습" },
+              { h: "未", t: "양", d: "땅 글자 · 나의 동물" },
+            ].map((x, i) => (
+              <Fragment key={x.h}>
+                {i === 1 && <span style={{ fontSize: 56, color: SOFT, fontWeight: 800 }}>+</span>}
+                <div style={{ width: 340, padding: "28px 0 24px", borderRadius: 24, textAlign: "center", background: "rgba(179,38,30,.08)", border: `3px solid ${SEAL}` }}>
+                  <p style={{ fontSize: 124, lineHeight: 1, fontFamily: brush, color: SEAL }}>{x.h}</p>
+                  <p style={{ marginTop: 8, fontSize: 38, fontWeight: 800 }}>{x.t}</p>
+                  <p style={{ marginTop: 4, fontSize: 23, color: SOFT, fontFamily: sans }}>{x.d}</p>
+                </div>
+              </Fragment>
+            ))}
+          </div>
+          <p style={{ marginTop: 30, textAlign: "center", fontSize: 38, fontWeight: 800 }}>
+            오늘 丁未일은 <span style={{ color: SEAL }}>&lsquo;여름밤 들판의 모닥불&rsquo;</span>
+          </p>
+          <div style={{ marginTop: 40, padding: "30px 30px", borderRadius: 22, background: "rgba(33,27,23,.05)" }}>
+            <p style={{ fontSize: 26, fontWeight: 800, color: SOFT }}>하늘 글자 10 · 나의 모습</p>
+            <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "repeat(5, 1fr)", rowGap: 14 }}>
+              {STEMS.map((st, i) => (
+                <span key={st} style={{ fontSize: 27, fontFamily: sans }}>
+                  <b style={{ fontFamily: brush, fontSize: 38, color: SEAL, marginRight: 6 }}>{st}</b>
+                  {SKY[i]}
+                </span>
+              ))}
+            </div>
+            <p style={{ marginTop: 26, fontSize: 26, fontWeight: 800, color: SOFT }}>땅 글자 12 · 나의 동물</p>
+            <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "repeat(6, 1fr)", rowGap: 14 }}>
+              {BRANCHES.map((b, i) => (
+                <span key={b} style={{ fontSize: 27, fontFamily: sans }}>
+                  <b style={{ fontFamily: brush, fontSize: 38, color: SEAL, marginRight: 6 }}>{b}</b>
+                  {ANIMALS[i]}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+        <Brand />
+      </Frame>
+    );
+  }
+  if (c === "gz-table")
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 100, left: 70, right: 70 }}>
+          <Label>④ 이제 내 일주를 찾아보시옵소서</Label>
+          <p style={{ marginTop: 6, fontSize: 56, fontWeight: 800 }}>60갑자 한눈에 보기</p>
+          {/* six columns of ten, as the sixty are laid out in the almanacs (갑자순·갑술순…) */}
+          <div style={{ marginTop: 20, display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gridAutoFlow: "column", gridTemplateRows: "repeat(10, auto)", gap: "5px 8px" }}>
+            {SIXTY.map((x) => {
+              const g = gz(x.no - 1);
+              return (
+                <div key={x.no} style={{ position: "relative", padding: "8px 0 6px", borderRadius: 12, textAlign: "center", background: x.no % 2 ? "rgba(33,27,23,.045)" : "transparent" }}>
+                  <span style={{ position: "absolute", top: 6, left: 8, fontSize: 15, color: SOFT, fontFamily: sans }}>{x.no}</span>
+                  <p style={{ fontSize: 44, lineHeight: 1.05, color: SEAL, fontFamily: brush, whiteSpace: "nowrap" }}>{g.hanja}</p>
+                  <p style={{ marginTop: 2, fontSize: 20, fontWeight: 800 }}>{g.ko}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        <Brand />
+      </Frame>
+    );
+  if (c === "gz-how") {
+    // The first twelve days: stems and branches step together, and the stems come round first.
+    const first = Array.from({ length: 12 }, (_, i) => gz(i));
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 140, left: 80, right: 80 }}>
+          <Label>② 날의 이름은 이렇게 붙어요</Label>
+          <p style={{ marginTop: 16, fontSize: 70, fontWeight: 800, lineHeight: 1.2 }}>하루에 한 칸씩, 나란히</p>
+          <Body style={{ marginTop: 18, fontSize: 34, color: INK }}>하늘 글자와 땅 글자가 날마다 한 칸씩 함께 나아가요</Body>
+          <div style={{ marginTop: 56, display: "grid", gridTemplateColumns: "96px repeat(12, 1fr)", rowGap: 16, alignItems: "center", textAlign: "center" }}>
+            <span style={{ fontSize: 22, color: SOFT, fontFamily: sans, textAlign: "left" }}>하늘</span>
+            {first.map((g, i) => (
+              <span key={`s${i}`} style={{ fontSize: 52, fontFamily: brush, color: i >= 10 ? SEAL : INK }}>
+                {g.hanja[0]}
+              </span>
+            ))}
+            <span style={{ fontSize: 22, color: SOFT, fontFamily: sans, textAlign: "left" }}>땅</span>
+            {first.map((g, i) => (
+              <span key={`b${i}`} style={{ fontSize: 52, fontFamily: brush, color: i >= 10 ? SEAL : INK }}>
+                {g.hanja[1]}
+              </span>
+            ))}
+            <span style={{ fontSize: 22, color: SOFT, fontFamily: sans, textAlign: "left" }}>날</span>
+            {first.map((g, i) => (
+              <span key={`n${i}`} style={{ fontSize: 24, fontWeight: 800, color: i >= 10 ? SEAL : SOFT, fontFamily: sans }}>
+                {i + 1}
+              </span>
+            ))}
+          </div>
+          <div style={{ marginTop: 56, padding: "34px 36px", borderRadius: 22, background: "rgba(179,38,30,.07)", fontFamily: sans }}>
+            <p style={{ fontSize: 33, lineHeight: 1.6 }}>
+              하늘 글자는 10개라 먼저 한 바퀴를 돌아, 11번째 날 다시 <b style={{ color: SEAL }}>甲</b>.
+            </p>
+            <p style={{ marginTop: 10, fontSize: 33, lineHeight: 1.6 }}>
+              땅 글자는 12개라 아직 <b style={{ color: SEAL }}>戌</b>. 그래서 11번째는 <b style={{ color: SEAL }}>甲戌</b>이에요.
+            </p>
+          </div>
+          <Body style={{ marginTop: 36, fontSize: 33, color: INK }}>
+            하늘은 10일마다, 땅은 12일마다 처음으로 돌아가요. 둘이 <b>동시에</b> 처음으로 돌아오는 날은 10으로도 12로도 나누어떨어지는 <b style={{ color: SEAL }}>60일째</b>예요.
+          </Body>
+          <p style={{ marginTop: 22, display: "flex", alignItems: "center", justifyContent: "center", gap: 18, fontFamily: brush, fontSize: 56, color: SEAL }}>
+            甲子 <span style={{ fontSize: 30, color: SOFT, fontFamily: sans }}>→ 60일 →</span> 甲子
+          </p>
+        </div>
+        <Brand />
+      </Frame>
+    );
+  }
+  if (c === "gz-why") {
+    // 10 × 12 = 120 cells, and the days fill only the checkerboard half: stems and branches start together at
+    // number 1 and step together, so odd meets odd and even meets even (both 10 and 12 are even, so a lap never
+    // changes that). 甲丑 is the cell that never comes.
+    const JIA_CHOU = "0-1";
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 110, left: 70, right: 70 }}>
+          <Label>③ 그래서 딱 60가지</Label>
+          <p style={{ marginTop: 12, fontSize: 58, fontWeight: 800, lineHeight: 1.2 }}>120칸인데 왜 60칸만 찰까?</p>
+          <Body style={{ marginTop: 14, fontSize: 30, color: INK, lineHeight: 1.55 }}>
+            하늘과 땅은 <b>1번끼리</b> 출발해 매일 한 칸씩 같이 가요. 그래서 <b style={{ color: SEAL }}>홀수는 홀수끼리</b>, <b style={{ color: "#2c3848" }}>짝수는 짝수끼리</b>만 만나요.
+          </Body>
+          <div style={{ marginTop: 26, display: "grid", gridTemplateColumns: "62px repeat(12, 1fr)", gap: 5 }}>
+            <span />
+            {BRANCHES.map((b, bi) => (
+              <span key={b} style={{ textAlign: "center", lineHeight: 1.1 }}>
+                <span style={{ display: "block", fontSize: 30, fontFamily: brush, color: bi % 2 ? "#2c3848" : SEAL }}>{b}</span>
+                <span style={{ display: "block", fontSize: 15, fontWeight: 800, fontFamily: sans, color: bi % 2 ? "#2c3848" : SEAL }}>{bi + 1}</span>
+              </span>
+            ))}
+            {STEMS.map((st, si) => (
+              <Fragment key={st}>
+                <span style={{ display: "flex", alignItems: "center", gap: 4, fontFamily: sans }}>
+                  <span style={{ fontSize: 30, fontFamily: brush, color: si % 2 ? "#2c3848" : SEAL }}>{st}</span>
+                  <span style={{ fontSize: 15, fontWeight: 800, color: si % 2 ? "#2c3848" : SEAL }}>{si + 1}</span>
+                </span>
+                {BRANCHES.map((b, bi) => {
+                  const on = si % 2 === bi % 2;
+                  const never = `${si}-${bi}` === JIA_CHOU;
+                  return (
+                    <span
+                      key={b}
+                      style={{
+                        height: 60,
+                        display: "grid",
+                        placeItems: "center",
+                        borderRadius: 8,
+                        fontFamily: brush,
+                        fontSize: 23,
+                        background: on ? (si % 2 ? "rgba(44,56,72,.12)" : "rgba(179,38,30,.12)") : "transparent",
+                        color: on ? INK : "rgba(33,27,23,.18)",
+                        border: never ? `3px dashed ${SEAL}` : on ? "none" : "1.5px solid rgba(33,27,23,.08)",
+                      }}
+                    >
+                      {on ? `${st}${b}` : never ? <span style={{ color: SEAL, fontSize: 26, fontFamily: sans, fontWeight: 800 }}>✕</span> : ""}
+                    </span>
+                  );
+                })}
+              </Fragment>
+            ))}
+          </div>
+          <Body style={{ marginTop: 22, fontSize: 30, color: INK, lineHeight: 1.55 }}>
+            1번 <b>甲</b>은 2번 <b>丑</b>을 끝내 못 만나요. 그래서 <b style={{ color: SEAL }}>甲丑일은 없어요.</b>
+          </Body>
+          <p style={{ marginTop: 18, padding: "18px 0", borderRadius: 18, background: "rgba(33,27,23,.05)", textAlign: "center", fontSize: 32, fontWeight: 800 }}>
+            <span style={{ color: SEAL }}>홀수 5 × 6</span> + <span style={{ color: "#2c3848" }}>짝수 5 × 6</span> = <span style={{ color: SEAL, fontSize: 40 }}>60</span>
+          </p>
+        </div>
+        <Brand />
+      </Frame>
+    );
+  }
+
+  // ── 2027년은 왜 붉은 양일까: where a year's color and animal come from, and what 丁未 looks like.
+  const YEAR_COLORS = [
+    { stems: "甲乙", el: "나무", color: "푸른", swatch: "#3f7a5a", ex: "2024 갑진년 · 푸른 용" },
+    { stems: "丙丁", el: "불", color: "붉은", swatch: "#b3261e", ex: "2026 병오년 · 붉은 말" },
+    { stems: "戊己", el: "흙", color: "누런(황금)", swatch: "#c9a13b", ex: "2019 기해년 · 황금돼지" },
+    { stems: "庚辛", el: "쇠", color: "하얀", swatch: "#e9e4d8", ex: "2020 경자년 · 흰 쥐" },
+    { stems: "壬癸", el: "물", color: "검은", swatch: "#1d1d22", ex: "2012 임진년 · 흑룡" },
+  ];
+  if (c === "ny-cover")
+    return (
+      <Frame dark>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <CornerBrand />
+        <p style={{ position: "absolute", top: 72, right: 70, fontSize: 30, fontWeight: 800, color: GOLD }}>2027</p>
+        <div style={{ position: "absolute", top: 200, left: 0, right: 0, textAlign: "center" }}>
+          <p style={{ fontSize: 34, letterSpacing: "0.3em", color: GOLD, fontWeight: 800 }}>丁未年</p>
+          <p style={{ marginTop: 10, fontSize: 250, lineHeight: 1, fontFamily: brush, color: "#e2553f", textShadow: "0 6px 30px rgba(226,85,63,.35)" }}>丁未</p>
+          <p style={{ marginTop: 26, display: "flex", justifyContent: "center", gap: 14 }}>
+            {["황금돼지", "흑룡", "붉은 말", "붉은 양?"].map((t, i) => (
+              <span key={t} style={{ padding: "8px 20px", borderRadius: 999, border: `2px solid ${i === 3 ? GOLD : "rgba(212,175,95,.4)"}`, color: i === 3 ? "#f1cf7a" : "rgba(244,236,219,.75)", fontSize: 30, fontWeight: 800 }}>
+                {t}
+              </span>
+            ))}
+          </p>
+        </div>
+        <div style={{ position: "absolute", top: 790, left: 64 }}>
+          <div style={{ width: 170, height: 170, borderRadius: "50%", overflow: "hidden", border: `6px solid ${GOLD}`, background: HANJI, boxShadow: "0 10px 24px rgba(0,0,0,.4)" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/hundo-face.png" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          </div>
+          <div style={{ position: "absolute", left: -12, top: -84, padding: "12px 22px", background: "#fff", color: INK, borderRadius: 22, fontSize: 32, fontWeight: 800, whiteSpace: "nowrap", boxShadow: "0 8px 20px rgba(0,0,0,.3)" }}>
+            {q.say ? String(q.say) : "색에도 까닭이 있사옵니다"}
+          </div>
+        </div>
+        <ThumbTitle top="2027 정미년 · 해마다 붙는 색의 비밀" main="왜 붉은 양일까?" />
+      </Frame>
+    );
+  if (c === "ny-color")
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 120, left: 90, right: 90 }}>
+          <Label>색은 해 이름의 앞 글자에서</Label>
+          <p style={{ marginTop: 14, fontSize: 60, fontWeight: 800, lineHeight: 1.2 }}>앞 글자가 색을 정해요</p>
+          <Body style={{ marginTop: 14, fontSize: 31, color: INK }}>하늘 글자 열 개는 둘씩 다섯 기운이고, 기운마다 제 색이 있어요</Body>
+          <div style={{ marginTop: 34, display: "flex", flexDirection: "column", gap: 14 }}>
+            {YEAR_COLORS.map((x) => (
+              <div key={x.stems} style={{ display: "flex", alignItems: "center", gap: 24, padding: "18px 26px", borderRadius: 20, background: x.stems === "丙丁" ? "rgba(179,38,30,.09)" : "rgba(33,27,23,.045)", border: x.stems === "丙丁" ? `3px solid ${SEAL}` : "3px solid transparent" }}>
+                <span style={{ flexShrink: 0, width: 58, height: 58, borderRadius: "50%", background: x.swatch, boxShadow: "inset 0 0 0 2px rgba(0,0,0,.15)" }} />
+                <span style={{ flexShrink: 0, width: 120, fontSize: 52, lineHeight: 1, fontFamily: brush, color: INK }}>{x.stems}</span>
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <b style={{ display: "block", fontSize: 36 }}>
+                    {x.el} → {x.color}
+                  </b>
+                  <span style={{ display: "block", marginTop: 2, fontSize: 25, color: SOFT, fontFamily: sans }}>{x.ex}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+          <Body style={{ marginTop: 26, fontSize: 30, color: INK }}>
+            2027년의 앞 글자는 <b style={{ color: SEAL }}>丁</b>. 불의 글자라 <b style={{ color: SEAL }}>붉은</b> 해예요.
+          </Body>
+        </div>
+        <Brand />
+      </Frame>
+    );
+  if (c === "ny-animal")
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 130, left: 90, right: 90 }}>
+          <Label>동물은 해 이름의 뒤 글자에서</Label>
+          <p style={{ marginTop: 14, fontSize: 60, fontWeight: 800, lineHeight: 1.2 }}>뒤 글자가 띠를 정해요</p>
+          <Body style={{ marginTop: 14, fontSize: 31, color: INK }}>땅 글자 열두 개가 곧 열두 띠예요</Body>
+          <div style={{ marginTop: 34, display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+            {BRANCHES.map((b, i) => (
+              <div key={b} style={{ padding: "18px 0 14px", borderRadius: 18, textAlign: "center", background: i === 7 ? "rgba(179,38,30,.09)" : "rgba(33,27,23,.045)", border: i === 7 ? `3px solid ${SEAL}` : "3px solid transparent" }}>
+                <p style={{ fontSize: 62, lineHeight: 1, fontFamily: brush, color: i === 7 ? SEAL : INK }}>{b}</p>
+                <p style={{ marginTop: 8, fontSize: 28, fontWeight: 800, color: i === 7 ? SEAL : SOFT }}>{ANIMALS[i]}</p>
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop: 40, textAlign: "center" }}>
+            <p style={{ fontSize: 40, fontWeight: 800 }}>
+              <span style={{ fontFamily: brush, color: SEAL, fontSize: 60 }}>丁</span> 붉은 + <span style={{ fontFamily: brush, color: SEAL, fontSize: 60 }}>未</span> 양
+            </p>
+            <p style={{ marginTop: 10, fontSize: 48, fontWeight: 800, color: SEAL }}>= 붉은 양의 해</p>
+          </div>
+        </div>
+        <Brand />
+      </Frame>
+    );
+  if (c === "ny-what")
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 140, left: 90, right: 90 }}>
+          <Label>그럼 정미년은 어떤 해일까?</Label>
+          <p style={{ marginTop: 14, fontSize: 60, fontWeight: 800, lineHeight: 1.2 }}>해가 지고, 모닥불이 남는 해</p>
+          <div style={{ marginTop: 44, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+            {[
+              { y: "2026", h: "丙午", img: "한여름 한낮의 태양", d: "크게 타오르고 멀리까지 비추는 해" },
+              { y: "2027", h: "丁未", img: "여름밤 들판의 모닥불", d: "가까운 곳을 오래 밝히는 해" },
+            ].map((x, i) => (
+              <div key={x.y} style={{ padding: "32px 24px", borderRadius: 22, textAlign: "center", background: i ? "rgba(179,38,30,.08)" : "rgba(33,27,23,.045)", border: i ? `3px solid ${SEAL}` : "3px solid transparent" }}>
+                <p style={{ fontSize: 26, color: SOFT, fontWeight: 800 }}>{x.y}</p>
+                <p style={{ marginTop: 4, fontSize: 96, lineHeight: 1.1, fontFamily: brush, color: i ? SEAL : INK }}>{x.h}</p>
+                <p style={{ marginTop: 12, fontSize: 32, fontWeight: 800 }}>{x.img}</p>
+                <p style={{ marginTop: 8, fontSize: 26, color: SOFT, fontFamily: sans, lineHeight: 1.4 }}>{x.d}</p>
+              </div>
+            ))}
+          </div>
+          <Body style={{ marginTop: 36, fontSize: 33, color: INK }}>
+            丁은 태양이 아닌 <b>촛불·등불</b> 같은 불, 未는 여름 끝의 <b>따뜻한 흙</b>이에요. 크게 벌이기보다 곁을 밝히고, 벌여 둔 일을 다지기 좋은 기운이에요.
+          </Body>
+          <Body style={{ marginTop: 14, fontSize: 28 }}>같은 해라도 사주에 따라 누구에겐 기회, 누구에겐 숨 고르기예요</Body>
+          <div style={{ marginTop: 34, padding: "28px 32px", borderRadius: 20, background: "rgba(212,175,95,.14)" }}>
+            <p style={{ fontSize: 34, fontWeight: 800 }}>1967년생이시라면</p>
+            <p style={{ marginTop: 8, fontSize: 30, lineHeight: 1.5, fontFamily: sans }}>태어난 해도 丁未년. 2027년은 태어난 해가 돌아오는 환갑이에요</p>
+          </div>
+        </div>
+        <Brand />
+      </Frame>
+    );
 
   // ── The introduction post.
   if (c === "intro-1")
