@@ -6,7 +6,7 @@ import { josa } from "@/lib/josa";
 import { pickDays } from "@/lib/taekil";
 import { figureById, figureChart } from "@/lib/figures";
 import { monthPillarOf, rankMonth, SIXTY, type IljuMonth } from "@/lib/iljuRank";
-import { BRANCHES, BRANCHES_KO, STEMS, STEMS_KO } from "@/lib/saju";
+import { ANIMALS, BRANCHES, BRANCHES_KO, STEMS, STEMS_KO } from "@/lib/saju";
 
 export const metadata: Metadata = { title: "카드", robots: { index: false } };
 
@@ -1075,6 +1075,131 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
       </Frame>
     );
   }
+
+  // ── 2027년은 왜 붉은 양일까: where a year's color and animal come from, and what 丁未 looks like.
+  const YEAR_COLORS = [
+    { stems: "甲乙", el: "나무", color: "푸른", swatch: "#3f7a5a", ex: "2024 갑진년 · 푸른 용" },
+    { stems: "丙丁", el: "불", color: "붉은", swatch: "#b3261e", ex: "2026 병오년 · 붉은 말" },
+    { stems: "戊己", el: "흙", color: "누런(황금)", swatch: "#c9a13b", ex: "2019 기해년 · 황금돼지" },
+    { stems: "庚辛", el: "쇠", color: "하얀", swatch: "#e9e4d8", ex: "2020 경자년 · 흰 쥐" },
+    { stems: "壬癸", el: "물", color: "검은", swatch: "#1d1d22", ex: "2012 임진년 · 흑룡" },
+  ];
+  if (c === "ny-cover")
+    return (
+      <Frame dark>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <CornerBrand />
+        <p style={{ position: "absolute", top: 72, right: 70, fontSize: 30, fontWeight: 800, color: GOLD }}>2027</p>
+        <div style={{ position: "absolute", top: 200, left: 0, right: 0, textAlign: "center" }}>
+          <p style={{ fontSize: 34, letterSpacing: "0.3em", color: GOLD, fontWeight: 800 }}>丁未年</p>
+          <p style={{ marginTop: 10, fontSize: 250, lineHeight: 1, fontFamily: brush, color: "#e2553f", textShadow: "0 6px 30px rgba(226,85,63,.35)" }}>丁未</p>
+          <p style={{ marginTop: 26, display: "flex", justifyContent: "center", gap: 14 }}>
+            {["황금돼지", "흑룡", "붉은 말", "붉은 양?"].map((t, i) => (
+              <span key={t} style={{ padding: "8px 20px", borderRadius: 999, border: `2px solid ${i === 3 ? GOLD : "rgba(212,175,95,.4)"}`, color: i === 3 ? "#f1cf7a" : "rgba(244,236,219,.75)", fontSize: 30, fontWeight: 800 }}>
+                {t}
+              </span>
+            ))}
+          </p>
+        </div>
+        <div style={{ position: "absolute", top: 790, left: 64 }}>
+          <div style={{ width: 170, height: 170, borderRadius: "50%", overflow: "hidden", border: `6px solid ${GOLD}`, background: HANJI, boxShadow: "0 10px 24px rgba(0,0,0,.4)" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/hundo-face.png" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          </div>
+          <div style={{ position: "absolute", left: -12, top: -84, padding: "12px 22px", background: "#fff", color: INK, borderRadius: 22, fontSize: 32, fontWeight: 800, whiteSpace: "nowrap", boxShadow: "0 8px 20px rgba(0,0,0,.3)" }}>
+            {q.say ? String(q.say) : "색에도 까닭이 있사옵니다"}
+          </div>
+        </div>
+        <ThumbTitle top="2027 정미년 · 해마다 붙는 색의 비밀" main="왜 붉은 양일까?" />
+      </Frame>
+    );
+  if (c === "ny-color")
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 120, left: 90, right: 90 }}>
+          <Label>색은 해 이름의 앞 글자에서</Label>
+          <p style={{ marginTop: 14, fontSize: 60, fontWeight: 800, lineHeight: 1.2 }}>앞 글자가 색을 정해요</p>
+          <Body style={{ marginTop: 14, fontSize: 31, color: INK }}>하늘 글자 열 개는 둘씩 다섯 기운이고, 기운마다 제 색이 있어요</Body>
+          <div style={{ marginTop: 34, display: "flex", flexDirection: "column", gap: 14 }}>
+            {YEAR_COLORS.map((x) => (
+              <div key={x.stems} style={{ display: "flex", alignItems: "center", gap: 24, padding: "18px 26px", borderRadius: 20, background: x.stems === "丙丁" ? "rgba(179,38,30,.09)" : "rgba(33,27,23,.045)", border: x.stems === "丙丁" ? `3px solid ${SEAL}` : "3px solid transparent" }}>
+                <span style={{ flexShrink: 0, width: 58, height: 58, borderRadius: "50%", background: x.swatch, boxShadow: "inset 0 0 0 2px rgba(0,0,0,.15)" }} />
+                <span style={{ flexShrink: 0, width: 120, fontSize: 52, lineHeight: 1, fontFamily: brush, color: INK }}>{x.stems}</span>
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <b style={{ display: "block", fontSize: 36 }}>
+                    {x.el} → {x.color}
+                  </b>
+                  <span style={{ display: "block", marginTop: 2, fontSize: 25, color: SOFT, fontFamily: sans }}>{x.ex}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+          <Body style={{ marginTop: 26, fontSize: 30, color: INK }}>
+            2027년의 앞 글자는 <b style={{ color: SEAL }}>丁</b>. 불의 글자라 <b style={{ color: SEAL }}>붉은</b> 해예요.
+          </Body>
+        </div>
+        <Brand />
+      </Frame>
+    );
+  if (c === "ny-animal")
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 130, left: 90, right: 90 }}>
+          <Label>동물은 해 이름의 뒤 글자에서</Label>
+          <p style={{ marginTop: 14, fontSize: 60, fontWeight: 800, lineHeight: 1.2 }}>뒤 글자가 띠를 정해요</p>
+          <Body style={{ marginTop: 14, fontSize: 31, color: INK }}>땅 글자 열두 개가 곧 열두 띠예요</Body>
+          <div style={{ marginTop: 34, display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+            {BRANCHES.map((b, i) => (
+              <div key={b} style={{ padding: "18px 0 14px", borderRadius: 18, textAlign: "center", background: i === 7 ? "rgba(179,38,30,.09)" : "rgba(33,27,23,.045)", border: i === 7 ? `3px solid ${SEAL}` : "3px solid transparent" }}>
+                <p style={{ fontSize: 62, lineHeight: 1, fontFamily: brush, color: i === 7 ? SEAL : INK }}>{b}</p>
+                <p style={{ marginTop: 8, fontSize: 28, fontWeight: 800, color: i === 7 ? SEAL : SOFT }}>{ANIMALS[i]}</p>
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop: 40, textAlign: "center" }}>
+            <p style={{ fontSize: 40, fontWeight: 800 }}>
+              <span style={{ fontFamily: brush, color: SEAL, fontSize: 60 }}>丁</span> 붉은 + <span style={{ fontFamily: brush, color: SEAL, fontSize: 60 }}>未</span> 양
+            </p>
+            <p style={{ marginTop: 10, fontSize: 48, fontWeight: 800, color: SEAL }}>= 붉은 양의 해</p>
+          </div>
+        </div>
+        <Brand />
+      </Frame>
+    );
+  if (c === "ny-what")
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 140, left: 90, right: 90 }}>
+          <Label>그럼 정미년은 어떤 해일까?</Label>
+          <p style={{ marginTop: 14, fontSize: 60, fontWeight: 800, lineHeight: 1.2 }}>해가 지고, 모닥불이 남는 해</p>
+          <div style={{ marginTop: 44, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+            {[
+              { y: "2026", h: "丙午", img: "한여름 한낮의 태양", d: "크게 타오르고 멀리까지 비추는 해" },
+              { y: "2027", h: "丁未", img: "여름밤 들판의 모닥불", d: "가까운 곳을 오래 밝히는 해" },
+            ].map((x, i) => (
+              <div key={x.y} style={{ padding: "32px 24px", borderRadius: 22, textAlign: "center", background: i ? "rgba(179,38,30,.08)" : "rgba(33,27,23,.045)", border: i ? `3px solid ${SEAL}` : "3px solid transparent" }}>
+                <p style={{ fontSize: 26, color: SOFT, fontWeight: 800 }}>{x.y}</p>
+                <p style={{ marginTop: 4, fontSize: 96, lineHeight: 1.1, fontFamily: brush, color: i ? SEAL : INK }}>{x.h}</p>
+                <p style={{ marginTop: 12, fontSize: 32, fontWeight: 800 }}>{x.img}</p>
+                <p style={{ marginTop: 8, fontSize: 26, color: SOFT, fontFamily: sans, lineHeight: 1.4 }}>{x.d}</p>
+              </div>
+            ))}
+          </div>
+          <Body style={{ marginTop: 36, fontSize: 33, color: INK }}>
+            丁은 태양이 아닌 <b>촛불·등불</b> 같은 불, 未는 여름 끝의 <b>따뜻한 흙</b>이에요. 크게 벌이기보다 곁을 밝히고, 벌여 둔 일을 다지기 좋은 기운이에요.
+          </Body>
+          <Body style={{ marginTop: 14, fontSize: 28 }}>같은 해라도 사주에 따라 누구에겐 기회, 누구에겐 숨 고르기예요</Body>
+          <div style={{ marginTop: 34, padding: "28px 32px", borderRadius: 20, background: "rgba(212,175,95,.14)" }}>
+            <p style={{ fontSize: 34, fontWeight: 800 }}>1967년생이시라면</p>
+            <p style={{ marginTop: 8, fontSize: 30, lineHeight: 1.5, fontFamily: sans }}>태어난 해도 丁未년. 2027년은 태어난 해가 돌아오는 환갑이에요</p>
+          </div>
+        </div>
+        <Brand />
+      </Frame>
+    );
 
   // ── The introduction post.
   if (c === "intro-1")
