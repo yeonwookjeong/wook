@@ -94,6 +94,15 @@ export async function dismissMinisterAction(formData: FormData) {
   refresh();
 }
 
+// A court taken off this browser's list (/king): only the owner cookie goes, so the court and its ministers stay
+// for everyone holding the link, but this browser no longer opens it as the king.
+export async function forgetCourtAction(formData: FormData) {
+  const courtId = String(formData.get("courtId") ?? "");
+  if (!/^[\w-]{1,64}$/.test(courtId)) return;
+  (await cookies()).set(OWNER_COOKIE(courtId), "", { ...COOKIE_OPTS, maxAge: 0 });
+  refresh();
+}
+
 export async function appointMinisterAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const courtId = String(formData.get("courtId") ?? "");
   let ministerId: string;

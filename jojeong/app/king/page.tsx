@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import ForgetCourtButton from "@/components/ForgetCourtButton";
 import { SERVICE_NAME, TAGLINE } from "@/lib/brand";
 import AdSlot from "@/components/AdSlot";
 import BirthForm from "@/components/BirthForm";
@@ -79,11 +80,12 @@ export default async function KingHome() {
           <p className="text-[11px] font-bold text-ink-soft">이 기기에서 즉위하신 조정</p>
           <ul className="mt-1 flex flex-col divide-y divide-ink/10">
             {courts.map((court) => (
-              <li key={court.id}>
-                <Link href={`/court/${court.id}`} className="flex items-center justify-between py-2 text-[15px] font-bold">
-                  <span>{court.kingName} 전하의 조정</span>
-                  <span className="text-sm text-gold">입궐 →</span>
+              <li key={court.id} className="flex items-center gap-3">
+                <Link href={`/court/${court.id}`} className="flex min-w-0 flex-1 items-center justify-between py-2 text-[15px] font-bold">
+                  <span className="truncate">{court.kingName} 전하의 조정</span>
+                  <span className="shrink-0 text-sm text-gold">입궐 →</span>
                 </Link>
+                <ForgetCourtButton courtId={court.id} kingName={court.kingName} />
               </li>
             ))}
           </ul>
