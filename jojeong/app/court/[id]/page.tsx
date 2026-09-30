@@ -7,12 +7,15 @@ import ReportShelf from "@/components/ReportShelf";
 import RoyalDoc from "@/components/RoyalDoc";
 import KingCard from "@/components/KingCard";
 import CourtBoard from "@/components/CourtBoard";
+import GameBridge from "@/components/GameBridge";
 import TrackLink from "@/components/TrackLink";
 import Sillok from "@/components/Sillok";
 import PairHighlights from "@/components/PairHighlights";
 import SeatRow from "@/components/SeatRow";
 import { SaveImageButton, ShareLinkButton } from "@/components/ShareButtons";
+import { bridgeQuery, chartBridge, yearBridge } from "@/lib/gameBridge";
 import { loadCourt, viewerOf } from "@/lib/load";
+import { getProfile } from "@/lib/store";
 import { KING_TYPES } from "@/lib/kingTypes";
 import { reignTier, TIERS } from "@/lib/reign";
 import { castOf } from "@/lib/sillok";
@@ -39,6 +42,10 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
   const kingType = KING_TYPES[court.king.dayStem];
   const tier = TIERS[reignTier(court.king).tier];
   const cast = castOf(seats);
+  // The game's two ways into 훈도사주: the coming year and the whole chart, both free, read for this king.
+  const bq = isOwner ? await bridgeQuery(court.king) : "";
+  const year = yearBridge(court.king, isOwner ? await getProfile(court.id, "king") : null, bq, "전하");
+  const chart = chartBridge(court.king, bq, `${kingType.title}의 진짜 사주`, "왕의 옷을 벗으면, 전하는 어떤 사람일까");
   const inviteText = `${kingType.title} ${court.kingName} 전하께서 그대를 조정에 부르셨사옵니다. 입궐하시겠사옵니까?`;
 
   return (
@@ -91,7 +98,8 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
                   <KingCard kingName={court.kingName} pillars={court.king} />
                 </div>
               </details>
-              <YearCallout href={`/reports/gukjeong?court=${court.id}`} verdict={yearPreview(court.king).verdict} />
+              <GameBridge {...year} />
+              <GameBridge {...chart} />
             </>
           ) : (
             <section className="mt-6">
@@ -157,6 +165,12 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
                     <KingCard kingName={court.kingName} pillars={court.king} />
                   </div>
                 </details>
+              )}
+              {isOwner && (
+                <>
+                  <GameBridge {...year} />
+                  <GameBridge {...chart} />
+                </>
               )}
             </>
           )}
@@ -264,22 +278,5 @@ function Invitation({
         <BirthForm mode="minister" courtId={courtId} />
       </section>
     </>
-  );
-}
-
-// Right after the accession: the free 2026 reading, the strongest pull from the Joseon fantasy to the present.
-function YearCallout({ href, verdict }: { href: string; verdict: string }) {
-  return (
-    <TrackLink event="to_saju" href={href} className="doc-paper mt-6 flex items-center gap-4 px-5 py-5">
-      <span className="flex size-14 shrink-0 -rotate-3 items-center justify-center border-[3px] border-seal font-myeongjo text-xl font-extrabold text-seal">
-        {verdict}
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block text-[11px] font-extrabold text-seal">國運 · 무료로 전부 공개</span>
-        <span className="block font-myeongjo text-lg leading-snug font-extrabold">전하의 2026 병오년 운세</span>
-        <span className="mt-0.5 block text-xs leading-snug text-ink-soft">열두 달 흐름, 돈·일·연애·건강, 10년 대운까지</span>
-      </span>
-      <span className="shrink-0 font-myeongjo text-sm font-extrabold text-seal">보기 →</span>
-    </TrackLink>
   );
 }
