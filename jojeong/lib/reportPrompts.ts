@@ -92,12 +92,49 @@ const FOCUS: Partial<Record<ProductId, string>> = {
 - 친구(왕)가 서운해하는 포인트와 기분 푸는 법은 왕의 사주로, 실제로 써먹을 수 있는 말과 행동으로.`,
 };
 
+const FOCUS_V6: Partial<Record<ProductId, string>> = {
+  ...FOCUS,
+  pyeongsaeng: `평생 사주(기본 사주). 사주를 처음 보는 사람이 "내 인생 전체가 어떤지" 한 번에 알고 싶어 사는 대표 보고서다. 가장 길고 깊게, 한 권의 책처럼. 열세 장이 서로 같은 이야기를 반복하지 않고, 앞 장을 이어받으며 한 권으로 흘러야 한다.
+- 첫 두 장에서 성격을 "소름 돋게 맞다" 싶게 그린다: '★ 이 사람만의 특징' 상위 2~3개가 출발점이다. 겉(천간)과 속(지지·지장간·일지 12운성)의 차이, 사람들이 오해하는 점도 이 사람의 글자로만 말한다. 일간·일주의 일반적인 성격론으로 채우지 않는다. 겉과 속이 다르다고 말할 때는 그 차이를 만드는 글자 두 개를 함께 짚는다.
+- 무기와 약점: 가장 강한 기운과 모자란 기운(없는 오행), 신강약이 만드는 삶의 패턴. 1·2장에서 한 성격 이야기를 다시 풀지 말고, 그 성격이 왜 생기는지의 '원리'와 처방에 집중한다.
+- 돈·일·연애와 결혼·가족·사람 복·건강: 각 영역을 평생의 관점에서 큰 틀로. 돈·일·연애는 연도별 세부나 전략까지 파고들지 않는다(재물·직업·연애 보고서의 몫). 가족은 연주(부모·집안)·월주·시주(자녀)와 인성·비겁·식상/관성을 근거로 하되, 부모의 성격이나 갈등을 추정하지 않고 "이런 기대와 이런 속도가 어긋났다면"처럼 읽는 사람이 판단하게 쓴다.
+- 평생 챙겨야 할 몸: 이 사람 원국에서만 나오는 몸의 버릇(가장 많은 기운, 없는 기운, 같은 글자의 반복, 지장간에 숨은 기운)과 '조심할 때'(모자란 기운이 한꺼번에 들어오거나 넘치는 해·대운), 그리고 이 사람만을 위한 생활 처방. 누구에게나 맞는 건강 상식(물 마시기, 운동하기)만으로 채우지 않는다. 쓰더라도 이 사람의 글자에서 나온 이유를 붙인다.
+- 인생의 사계절: 대운 흐름을 초년·청년·중년·말년으로 나눠 언제 오르막이고 언제 쉬어 가는지 큰 그림으로. 올해 한 해의 세부는 다음 장에 맡긴다.
+- 지금 어디쯤인가: 현재 대운과 2026년, 나이에 맞춰 지금 겪고 있을 고민과 올해 안의 때(달)를 짚는다. 앞 장의 큰 그림을 되풀이하지 않는다.
+- 앞으로 10년: 다음 대운까지 포함해, 이 10년에 실제로 할 일. 앞 장에서 말한 처방(예: 돈을 묶기)은 "이 10년에 실행할 때"로 이어받는다.
+- 마지막 장은 앞 장 요약이 아니다: 정 훈도가 이 사주를 보며 가장 오래 들여다본 조합 하나(이 사주에만 있는 것)로 여는 짧은 편지로 쓰고, 앞 장들을 그 조합 하나로 엮은 뒤, 이 사람의 실제 연도로 된 연표(3~5개 해, 해마다 할 일 한 줄)와 기억할 한 문장으로 끝낸다.`,
+};
+
+export type PromptVersion = "v5" | "v6";
+export const PROMPT_NOW: PromptVersion = "v6";
+
+const specsOf = (focus: Partial<Record<ProductId, string>>): Partial<Record<ProductId, ReportSpec>> =>
+  Object.fromEntries(
+    Object.entries(focus)
+      .filter(([id]) => !PRODUCTS.find((p) => p.id === id)!.free)
+      .map(([id, f]) => [id, { chapters: PRODUCTS.find((p) => p.id === id)!.toc, focus: f }]),
+  );
+export const SPECS: Record<PromptVersion, Partial<Record<ProductId, ReportSpec>>> = { v5: specsOf(FOCUS), v6: specsOf(FOCUS_V6) };
+
 export const REPORT_SPECS: Partial<Record<ProductId, ReportSpec>> = Object.fromEntries(
   // Only what is sold is written: a free report stays computed, with no writer and no cost.
   Object.entries(FOCUS)
     .filter(([id]) => !PRODUCTS.find((p) => p.id === id)!.free)
     .map(([id, focus]) => [id, { chapters: PRODUCTS.find((p) => p.id === id)!.toc, focus }]),
 );
+
+const PAST_V5 = `- 과거를 짚는다: '★ 과거 확인용 연도'에서 이 보고서 주제에 맞는 해를 2~3개 골라 "○○년 무렵 △△ 같은 일이 있었을 가능성이 크다"는 뜻으로 짚는다(말투는 아래 말투 규칙을 따른다). 단정하지 말고, 나이에 맞는 현실적인 장면으로(스무 살 무렵이면 진학·첫 연애, 서른 무렵이면 이직·결혼 고민). 과거 연도가 없으면 억지로 만들지 않는다.`;
+const PAST_V6 = `- 과거는 읽는 사람이 스스로 확인하게 짚는다: '★ 과거 확인용 연도' 가운데 그 장 주제에 가장 맞는 해 하나만 골라 "○○년 무렵 △△ 같은 일이 있었다면, 그건 ~ 때문이에요"처럼 쓴다. 한 장에 한 해, 보고서 전체에 서너 해까지. 여러 해를 연달아 던지거나 "~을 겪으셨을 것입니다"로 단정하지 않는다(브리프의 '2~3개' 안내보다 이 규칙이 우선). 나이에 맞는 현실적인 장면으로 쓰고, 과거 연도가 없으면 억지로 만들지 않는다.`;
+const EXTRA_V6 = `
+
+[길게, 그러나 같은 말은 한 번만: 읽는 재미를 지키는 방향]
+- 분량은 줄이지 않는다. 대신 문단마다 앞에서 하지 않은 새 이야기(새 근거, 새 장면, 새 시기, 새 행동)를 준다. 이것은 금지 목록이 아니라 방향이다. 지금의 따뜻한 말투, 장면, 구체적인 처방은 그대로 살린다.
+- 한 특징(예: 생각이 많아 첫발이 늦음, 정이 많아 못 끊음, 돈을 문서로 묶기, 행동파를 곁에 두기)은 가장 잘 맞는 한 장에서만 자세히 푼다. 다른 장에서 다시 필요하면 "○장에서 말씀드린 ~가 여기서는 이렇게 나타나요"처럼 한두 문장으로 이어받고, 그 장만의 새 각도를 더한다.
+- 근거 하나로 긴 이야기를 만들지 않는다. 특히 가족과 몸은 근거가 두 개 이상 겹칠 때만 구체적으로 쓰고, 근거가 하나면 "그랬다면"처럼 읽는 사람이 판단하게 둔다. 부모 가운데 누구인지, 부모가 어떤 사람이었는지는 추정하지 않는다.
+- 몸은 병명으로 이어 가지 않는다(예: 불이 없다 → 심장 → 혈압 → 두통처럼 잇지 않는다). 이 사람 원국에서 나온 몸의 버릇, 조심할 때(대운·해), 생활 처방으로 쓴다.
+- 결과를 약속하지 않는다: "생애 최고의 황금기", "완벽하게", "반드시 ~하게 됩니다", "평생 ~을 완성", "천직" 같은 말 대신 "가장 힘이 붙는 구간", "~쪽으로 기울기 쉬워요"처럼 흐름으로 쓴다.
+- 누구에게나 맞는 응원 문단("기회는 문을 여는 사람에게…")은 쓰지 않는다. 응원도 이 사람의 글자와 연도로 한다.
+- 이 사주에만 있는 조합을 찾아 쓴다: 같은 글자가 여러 번 있는 것, 원국 안의 합과 충, 지장간 속에 숨은 기운(예: 겉으로는 없는 불이 지장간에 들어 있음), 대운·올해가 원국과 만나 새로 묶이는 해. 브리프에 있는 글자와 판정만 근거로 쓴다.`;
 
 // What makes a report this person's and no one else's. Shared by both voices.
 const DISTINCT_RULES = `[이 사람만의 사주로 쓴다: 가장 중요한 규칙]
@@ -107,6 +144,10 @@ const DISTINCT_RULES = `[이 사람만의 사주로 쓴다: 가장 중요한 규
 - 첫 장 도입에서 한 번, "같은 ○○일주라도 다 같지 않다"는 점을 '★ 같은 일주 안에서'와 '★ 극단값'의 숫자로 보여 준다(예: 같은 일주 가운데 약 6%만 이 구조). 숫자는 브리프에 있는 것만 쓴다.
 - 과거를 짚는다: '★ 과거 확인용 연도'에서 이 보고서 주제에 맞는 해를 2~3개 골라 "○○년 무렵 △△ 같은 일이 있었을 가능성이 크다"는 뜻으로 짚는다(말투는 아래 말투 규칙을 따른다). 단정하지 말고, 나이에 맞는 현실적인 장면으로(스무 살 무렵이면 진학·첫 연애, 서른 무렵이면 이직·결혼 고민). 과거 연도가 없으면 억지로 만들지 않는다.
 - 문단마다 "이건 누구에게나 맞는 말인가?"를 스스로 묻고, 그렇다면 이 사람의 근거로 바꿔 쓴다.`;
+
+// v6 (from 2026-10): the same rules with the past read as a question to the reader, plus the direction that keeps
+// a long report fresh. Derived from the v5 text so a v5 prompt (and the reports cached under it) never changes.
+const DISTINCT_RULES_V6 = DISTINCT_RULES.replace(PAST_V5, PAST_V6) + EXTRA_V6;
 
 // Chapters that all open the same way ("~하시죠?") read like a template. Shared by both voices.
 const RHYTHM_RULES = `[문장 리듬: 첫 문장이 비슷하면 틀에 찍은 글로 보인다]
@@ -190,7 +231,11 @@ ${RHYTHM_RULES}
 ## [장 질문 그대로] 헤드라인
 - 그 아래 본문 3~5문단, 문단 사이는 빈 줄. 한 문단은 2~4문장. 마크다운 목록·표·굵은 글씨·이모지는 쓰지 않는다. 장 밖의 머리말·맺음말은 쓰지 않는다.`;
 
-export const systemPromptFor = (product: Product) => (product.modern ? MODERN_PROMPT : JOSEON_PROMPT);
+const MODERN_PROMPT_V6 = MODERN_PROMPT.replace(DISTINCT_RULES, DISTINCT_RULES_V6);
+const JOSEON_PROMPT_V6 = JOSEON_PROMPT.replace(DISTINCT_RULES, DISTINCT_RULES_V6);
+
+export const systemPromptFor = (product: Product, v: PromptVersion = PROMPT_NOW) =>
+  v === "v5" ? (product.modern ? MODERN_PROMPT : JOSEON_PROMPT) : product.modern ? MODERN_PROMPT_V6 : JOSEON_PROMPT_V6;
 
 export function userPrompt(spec: ReportSpec, subjectLine: string, briefs: string): string {
   return `${subjectLine}

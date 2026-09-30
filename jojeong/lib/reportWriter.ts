@@ -11,7 +11,7 @@ import { reunionBrief } from "./reunion";
 import { freeBrief } from "./freeReading";
 import { decadeBrief, decadeOf, domainBrief, isDomain } from "./domains";
 import { thisYear, yearOf, yearName, yeonunBrief } from "./yeonun";
-import { REPORT_SPECS, systemPromptFor, userPrompt } from "./reportPrompts";
+import { PROMPT_NOW, SPECS, systemPromptFor, userPrompt, type PromptVersion } from "./reportPrompts";
 import { dayStart, KINDS, parseSearch, pickDays, searchDay, taekilBrief } from "./taekil";
 import type { Gender } from "./profile";
 import type { Pillars } from "./saju";
@@ -26,16 +26,16 @@ import { courtOfReader, subjectFor } from "./subject";
 export const REPORT_MODEL =
   process.env.REPORT_MODEL ?? (process.env.ANTHROPIC_API_KEY || !process.env.GEMINI_API_KEY ? "claude-opus-5" : "gemini-3.8-flash");
 const isGemini = REPORT_MODEL.startsWith("gemini");
-const PROMPT_VERSION = "v5";
 export const aiEnabled = () =>
   Boolean(isGemini ? process.env.GEMINI_API_KEY : process.env.ANTHROPIC_API_KEY) || process.env.REPORT_MOCK === "1";
 
 export type ReportJob = { key: string; system: string; prompt: string; title: string; modern: boolean };
 export type JobRequest = { product: string; court?: string; m?: string; t?: string; a?: string; b?: string; rel?: string; p?: string; kind?: string; from?: string; n?: string; d?: string; y?: string };
 
-export async function jobFor(req: JobRequest): Promise<ReportJob | { error: string; status: number }> {
+// `v`: which prompt writes it. v5 is kept only to find the reports bought before v6, so they open as they were read.
+export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW): Promise<ReportJob | { error: string; status: number }> {
   const product = productById(req.product);
-  const spec = product && REPORT_SPECS[product.id as ProductId];
+  const spec = product && SPECS[v][product.id as ProductId];
   // A free report is never written (no spec either): free means no AI cost.
   if (!product || product.free || !spec) return { error: "없는 보고서예요.", status: 404 };
 
@@ -127,11 +127,11 @@ export async function jobFor(req: JobRequest): Promise<ReportJob | { error: stri
     briefs = [chartBrief(subject.name, subject.pillars, profile), freeBrief(subject.pillars, profile), ...deep(product.id, subject.pillars, profile?.gender ?? null)].join("\n\n");
   }
 
-  const system = systemPromptFor(product);
+  const system = systemPromptFor(product, v);
   // 연운 for a year already gone asks its twelve questions in the past tense.
   const past = product.id === "yeonun" && req.y !== undefined && Number(req.y) < thisYear();
   const prompt = userPrompt(past ? { ...spec, chapters: YEONUN_PAST_TOC } : spec, subjectLine, briefs);
-  const key = createHash("sha256").update([PROMPT_VERSION, REPORT_MODEL, product.id, system, prompt].join("\n")).digest("base64url");
+  const key = createHash("sha256").update([v, REPORT_MODEL, product.id, system, prompt].join("\n")).digest("base64url");
   return { key, system, prompt, title: product.title, modern: Boolean(product.modern) };
 }
 
