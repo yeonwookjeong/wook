@@ -1148,6 +1148,173 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
   }
 
   // ── 2027년은 왜 붉은 양일까: where a year's color and animal come from, and what 丁未 looks like.
+  // ── 10/2 그대는 나무? 촛불?: the first letter of the day pillar, the ten ways a person can be.
+  const GAN = [
+    { h: "甲", ko: "갑", el: "나무", sw: "#3f7a5a", img: "큰 나무", line: "곧게 위로 자라는 모습 · 한번 정하면 밀고 나가는 편" },
+    { h: "乙", ko: "을", el: "나무", sw: "#3f7a5a", img: "꽃·덩굴", line: "어디서든 뿌리내리는 모습 · 부드럽게 길을 찾는 편" },
+    { h: "丙", ko: "병", el: "불", sw: "#b3261e", img: "태양", line: "모두를 비추는 모습 · 숨김없이 밝은 편" },
+    { h: "丁", ko: "정", el: "불", sw: "#b3261e", img: "촛불·등불", line: "가까운 곳을 밝히는 모습 · 곁을 섬세하게 챙기는 편" },
+    { h: "戊", ko: "무", el: "흙", sw: "#c9a13b", img: "큰 산", line: "묵묵히 버티는 모습 · 믿음직하고 듬직한 편" },
+    { h: "己", ko: "기", el: "흙", sw: "#c9a13b", img: "논밭", line: "길러 내는 모습 · 사람을 챙기고 키우는 편" },
+    { h: "庚", ko: "경", el: "쇠", sw: "#bdb6a6", img: "바위·원석", line: "단단하게 부딪히는 모습 · 결단이 빠른 편" },
+    { h: "辛", ko: "신", el: "쇠", sw: "#bdb6a6", img: "보석", line: "다듬어져 빛나는 모습 · 기준이 섬세한 편" },
+    { h: "壬", ko: "임", el: "물", sw: "#1d1d22", img: "큰 강·바다", line: "넓게 흘러가는 모습 · 품이 넓은 편" },
+    { h: "癸", ko: "계", el: "물", sw: "#1d1d22", img: "비·이슬", line: "조용히 스며드는 모습 · 눈치와 감이 좋은 편" },
+  ];
+  const ganRows = (from: number, to: number) => (
+    <div style={{ marginTop: 34, display: "flex", flexDirection: "column", gap: 14 }}>
+      {GAN.slice(from, to).map((x) => (
+        <div key={x.h} style={{ display: "flex", alignItems: "center", gap: 26, padding: "20px 28px", borderRadius: 22, background: "rgba(33,27,23,.045)" }}>
+          <span style={{ flexShrink: 0, width: 96, textAlign: "center" }}>
+            <span style={{ display: "block", fontSize: 76, lineHeight: 1, fontFamily: brush, color: INK }}>{x.h}</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 6, fontSize: 22, color: SOFT, fontFamily: sans }}>
+              <span style={{ width: 14, height: 14, borderRadius: "50%", background: x.sw }} />
+              {x.el}
+            </span>
+          </span>
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <b style={{ display: "block", fontSize: 44, lineHeight: 1.2, color: SEAL }}>{x.img}</b>
+            <span style={{ display: "block", marginTop: 6, fontSize: 28, lineHeight: 1.45, color: INK, fontFamily: sans }}>{x.line}</span>
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+  if (c === "gan-cover")
+    return (
+      <Frame dark>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 120, left: 70, right: 70, display: "grid", gridTemplateColumns: "repeat(5, 1fr)", rowGap: 10, textAlign: "center", fontFamily: brush, fontSize: 120, lineHeight: 1.25, color: "rgba(212,175,95,.12)" }}>
+          {GAN.map((x) => (
+            <span key={x.h}>{x.h}</span>
+          ))}
+        </div>
+        <CornerBrand />
+        <div style={{ position: "absolute", top: 250, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 90, textAlign: "center" }}>
+          {[
+            { h: "甲", t: "큰 나무" },
+            { h: "丁", t: "촛불" },
+          ].map((x) => (
+            <div key={x.h}>
+              <p style={{ fontSize: 230, lineHeight: 1, color: "#f1cf7a", fontFamily: brush, textShadow: "0 6px 24px rgba(0,0,0,.5)" }}>{x.h}</p>
+              <p style={{ marginTop: 18, fontSize: 44, fontWeight: 800, color: "rgba(244,236,219,.92)" }}>{x.t}</p>
+            </div>
+          ))}
+        </div>
+        <div style={{ position: "absolute", top: 790, left: 64 }}>
+          <div style={{ width: 170, height: 170, borderRadius: "50%", overflow: "hidden", border: `6px solid ${GOLD}`, background: HANJI, boxShadow: "0 10px 24px rgba(0,0,0,.4)" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/hundo-face.png" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          </div>
+          <div style={{ position: "absolute", left: -12, top: -84, padding: "12px 22px", background: "#fff", color: INK, borderRadius: 22, fontSize: 32, fontWeight: 800, whiteSpace: "nowrap", boxShadow: "0 8px 20px rgba(0,0,0,.3)" }}>
+            {q.say ? String(q.say) : "그대의 앞 글자는?"}
+          </div>
+        </div>
+        <ThumbTitle top="일주 앞 글자로 보는 나의 모습" main="그대는 나무? 촛불?" />
+      </Frame>
+    );
+  if (c === "gan-where")
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 140, left: 100, right: 100 }}>
+          <Label>① 앞 글자가 ‘나’예요</Label>
+          <p style={{ marginTop: 18, fontSize: 60, fontWeight: 800, lineHeight: 1.25 }}>일주 두 글자 가운데 위 글자</p>
+          <div style={{ marginTop: 56, display: "flex", justifyContent: "center", gap: 60, alignItems: "center" }}>
+            <div style={{ padding: "26px 40px", borderRadius: 26, border: `3px solid rgba(33,27,23,.12)`, textAlign: "center" }}>
+              <p style={{ fontSize: 24, color: SOFT, fontFamily: sans }}>예: 丁未일주</p>
+              <p style={{ marginTop: 10, fontSize: 130, lineHeight: 1.05, fontFamily: brush, color: SEAL }}>丁</p>
+              <p style={{ fontSize: 130, lineHeight: 1.05, fontFamily: brush, color: "rgba(33,27,23,.28)" }}>未</p>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 120, fontFamily: sans }}>
+              <p style={{ fontSize: 36, lineHeight: 1.4 }}>
+                <b style={{ color: SEAL }}>← 위 글자 = 나의 모습</b>
+                <br />
+                <span style={{ fontSize: 28, color: SOFT }}>하늘 글자 · 열 가지</span>
+              </p>
+              <p style={{ fontSize: 36, lineHeight: 1.4, color: SOFT }}>
+                ← 아래 글자 = 내가 선 자리
+                <br />
+                <span style={{ fontSize: 28 }}>땅 글자 · 열두 가지</span>
+              </p>
+            </div>
+          </div>
+          <Body style={{ marginTop: 60, fontSize: 36, color: INK }}>
+            태어난 날의 두 글자 가운데 <b style={{ color: SEAL }}>위 글자</b>가 사주에서 <b>나 자신</b>이에요. 丁未일에 태어났다면 나는 <b style={{ color: SEAL }}>丁, 촛불</b>이에요.
+          </Body>
+          <div style={{ marginTop: 40, padding: "32px 34px", borderRadius: 22, background: "rgba(33,27,23,.05)", fontFamily: sans }}>
+            <p style={{ fontSize: 31, lineHeight: 1.6 }}>
+              띠는 <b>태어난 해</b>에서, 나의 모습은 <b>태어난 날</b>에서 나와요. 그래서 같은 띠 친구끼리도 앞 글자는 다를 수 있어요.
+            </p>
+          </div>
+        </div>
+        <Brand />
+      </Frame>
+    );
+  if (c === "gan-list1")
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 110, left: 90, right: 90 }}>
+          <Label>② 나무 · 불 · 흙</Label>
+          <p style={{ marginTop: 12, fontSize: 56, fontWeight: 800, lineHeight: 1.2 }}>열 가지 모습, 먼저 여섯</p>
+          {ganRows(0, 6)}
+        </div>
+        <Brand />
+      </Frame>
+    );
+  if (c === "gan-list2")
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 110, left: 90, right: 90 }}>
+          <Label>③ 쇠 · 물</Label>
+          <p style={{ marginTop: 12, fontSize: 56, fontWeight: 800, lineHeight: 1.2 }}>나머지 넷</p>
+          {ganRows(6, 10)}
+          <div style={{ marginTop: 36, padding: "30px 34px", borderRadius: 22, background: "rgba(33,27,23,.05)", fontFamily: sans }}>
+            <p style={{ fontSize: 31, lineHeight: 1.6 }}>
+              둘씩 짝이 같은 기운이에요. 甲은 <b>큰 나무</b>, 乙은 <b>꽃</b>처럼 한쪽은 크고 곧게, 한쪽은 작고 부드럽게 같은 기운을 나눠 가져요.
+            </p>
+          </div>
+        </div>
+        <Brand />
+      </Frame>
+    );
+  if (c === "gan-same") {
+    const pair = [
+      { h: "甲子", t: "한겨울 깊은 물가에 선 큰 나무" },
+      { h: "甲午", t: "한여름 햇살 아래 무성한 큰 나무" },
+    ];
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 140, left: 100, right: 100 }}>
+          <Label>④ 같은 나무라도 다 같지 않아요</Label>
+          <p style={{ marginTop: 18, fontSize: 58, fontWeight: 800, lineHeight: 1.25 }}>뒤 글자가 계절과 자리를 정해요</p>
+          <div style={{ marginTop: 50, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 22 }}>
+            {pair.map((x, i) => (
+              <div key={x.h} style={{ padding: "34px 24px", borderRadius: 24, textAlign: "center", background: i === 0 ? "rgba(29,29,34,.07)" : "rgba(179,38,30,.07)" }}>
+                <p style={{ fontSize: 110, lineHeight: 1.05, fontFamily: brush }}>
+                  <span style={{ color: INK }}>{x.h[0]}</span>
+                  <span style={{ color: i === 0 ? "#1d1d22" : SEAL }}>{x.h[1]}</span>
+                </p>
+                <p style={{ marginTop: 20, fontSize: 32, lineHeight: 1.45, fontWeight: 800 }}>{x.t}</p>
+              </div>
+            ))}
+          </div>
+          <Body style={{ marginTop: 50, fontSize: 35, color: INK }}>
+            둘 다 <b>큰 나무</b>지만, 한겨울 물가의 나무는 <b>뿌리부터 단단히</b>, 한여름의 나무는 <b>잎부터 무성하게</b> 자라요. 같은 앞 글자도 뒤 글자에 따라 다른 사람이 돼요.
+          </Body>
+          <div style={{ marginTop: 40, padding: "30px 34px", borderRadius: 22, background: "rgba(33,27,23,.05)", fontFamily: sans }}>
+            <p style={{ fontSize: 31, lineHeight: 1.6 }}>
+              내 일주가 궁금하면 <b>60갑자 표</b>에서 태어난 날을 찾거나, 훈도사주 <b>무료 사주 분석</b>에서 바로 볼 수 있어요.
+            </p>
+          </div>
+        </div>
+        <Brand />
+      </Frame>
+    );
+  }
   const YEAR_COLORS = [
     { stems: "甲乙", el: "나무", color: "푸른", swatch: "#3f7a5a", ex: "2024 갑진년 · 푸른 용" },
     { stems: "丙丁", el: "불", color: "붉은", swatch: "#b3261e", ex: "2026 병오년 · 붉은 말" },
