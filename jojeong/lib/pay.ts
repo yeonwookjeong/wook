@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { ORDERS_COOKIE } from "./cookies";
 import type { ProductId, SetId } from "./products";
 import type { JobRequest } from "./reportWriter";
-import { getOrderRaw, getOrdersRaw, notePaidOrder, paidOrderIds, setOrderRaw } from "./store";
+import { getOrderRaw, getOrdersRaw, giftOrderIds, noteGiftOrder, notePaidOrder, paidOrderIds, setOrderRaw } from "./store";
 
 // Paying for a report with 토스페이먼츠 (결제창, API 개별 연동 키).
 //   1. /api/pay/order makes an order: the report request, whose chart, and the amount fixed on our side.
@@ -26,6 +26,8 @@ export type Order = {
   amount: number;
   // "canceled": refunded in the Toss admin (learned through the webhook); the report closes again.
   status: "ready" | "paid" | "canceled";
+  // Given away from /admin: paid at 0 won with no payment behind it, and never among the paid orders.
+  gift?: boolean;
   createdAt: number;
   paidAt?: number;
   paymentKey?: string;
@@ -64,6 +66,32 @@ export async function createOrder(product: ProductId, req: JobRequest, who: stri
   const order: Order = { id: `hd${randomBytes(15).toString("base64url")}`, product, req, who, amount, ...set, status: "ready", createdAt: Date.now() };
   await setOrderRaw(order.id, JSON.stringify(order));
   return order;
+}
+
+// A report the owner gives to someone (a friend, a tester): an order that is already paid, at 0 won, that opens
+// at /r/… like a bought one. It is kept out of the paid-order list (orders:paid), so it never enters the sales
+// table, the revenue or the CSV; its own list (orders:gift) is the owner's record, and it can be closed again.
+export async function createGiftOrder(product: ProductId, req: JobRequest, who: string): Promise<Order> {
+  const now = Date.now();
+  const order: Order = { id: `hd${randomBytes(15).toString("base64url")}`, product, req, who, amount: 0, status: "paid", gift: true, createdAt: now, paidAt: now, method: "관리자 발급" };
+  await setOrderRaw(order.id, JSON.stringify(order));
+  await noteGiftOrder(order.id);
+  return order;
+}
+
+// The gifts given so far, newest first.
+export async function giftOrders(limit = 100): Promise<Order[]> {
+  const ids = [...new Set((await giftOrderIds().catch(() => [])).slice(-limit))].reverse();
+  const raws = await getOrdersRaw(ids).catch(() => []);
+  return raws.flatMap((raw) => (raw ? [JSON.parse(raw) as Order] : []));
+}
+
+// Closes a gift again (its link then leads to the shopper's own list). Only gifts, never a bought order.
+export async function revokeGiftOrder(orderId: string): Promise<boolean> {
+  const order = await getOrder(orderId);
+  if (!order?.gift) return false;
+  await setOrderRaw(order.id, JSON.stringify({ ...order, status: "canceled" } satisfies Order));
+  return true;
 }
 
 // Confirms the payment with Toss (결제 승인). The amount must be the one fixed in the order.

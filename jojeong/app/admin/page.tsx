@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { adminConfigured, isAdmin } from "@/lib/admin";
-import { paidOrders, type Order } from "@/lib/pay";
+import { giftOrders, paidOrders, type Order } from "@/lib/pay";
+import CopyButton from "@/components/CopyButton";
+import { GIFTABLE, originNow } from "@/lib/gift";
 import { SALE_KEYS, saleKey, saleLabel } from "@/lib/sales";
 import { productById, SETS } from "@/lib/products";
 import { listInquiries, readingCount } from "@/lib/store";
-import { adminSignOut, inquiryDeleteAction, inquiryDoneAction } from "./actions";
+import { adminSignOut, giftRevokeAction, inquiryDeleteAction, inquiryDoneAction } from "./actions";
+import GiftForm from "./GiftForm";
 import SignInForm from "./SignInForm";
-import { isPreview, newYearOf } from "@/lib/yeonun";
+import { isPreview, newYearOf, thisYear } from "@/lib/yeonun";
 import { inPeriods, PERIODS, readStats, type Period } from "@/lib/stats";
 
 export const metadata: Metadata = { title: "관리자", robots: { index: false } };
@@ -35,6 +38,9 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
 
   // Every paid order (refunds keep their record with status "canceled"), newest first.
   const orders = (await paidOrders()).reverse();
+  // Reports given away: their own list, never among the paid orders above.
+  const gifts = await giftOrders(50);
+  const origin = await originNow();
   const paid = orders.filter((o) => o.status === "paid");
   const sp = String((await searchParams).sp ?? "all");
   const period: Period = PERIODS.some((p) => p.key === sp) ? (sp as Period) : "all";
@@ -162,6 +168,49 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="doc-paper mt-4 px-4 py-4">
+        <h2 className="font-myeongjo font-extrabold">보고서 선물 링크</h2>
+        <p className="mt-1 text-[11px] leading-relaxed text-ink-soft">
+          친구의 생년월일과 열어 줄 보고서를 고르면 링크가 나와요. 받은 사람은 어느 기기에서든 결제 없이 열어요. <b>0원이라 매출에는 잡히지 않아요.</b> 유료
+          보고서는 실제 AI가 써서 한 편에 수십~수백 원이 들어요. 생년월일은 저장하지 않고, 이름과 사주 글자만 링크에 담겨요. 친구에게 미리 알려 주세요.
+        </p>
+        <GiftForm
+          products={GIFTABLE.map((id) => ({ id, title: productById(id)?.title ?? id }))}
+          years={Array.from({ length: 6 }, (_, i) => thisYear() - 2 + i)}
+          defaultYear={ny ?? thisYear()}
+        />
+        {gifts.length > 0 && (
+          <>
+            <h3 className="mt-5 text-sm font-bold">발급한 링크 ({gifts.length})</h3>
+            <ul className="mt-2 flex flex-col divide-y divide-seal/10 text-[13px]">
+              {gifts.map((o) => (
+                <li key={o.id} className="flex items-center gap-2 py-2">
+                  <span className="w-12 shrink-0 text-[11px] text-ink-soft">{day(o.createdAt).slice(5)}</span>
+                  <span className="min-w-0 flex-1">
+                    <b className="block truncate">{productById(o.product)?.title}</b>
+                    <span className="block truncate text-[11px] text-ink-soft">
+                      {o.who}
+                      {o.status !== "paid" && " · 회수됨"}
+                    </span>
+                  </span>
+                  {o.status === "paid" ? (
+                    <>
+                      <CopyButton text={`${origin}/r/${o.id}`} label="복사" />
+                      <form action={giftRevokeAction}>
+                        <input type="hidden" name="id" value={o.id} />
+                        <button className="shrink-0 rounded-lg border border-ink/15 px-2 py-1.5 text-[12px] text-ink-soft">회수</button>
+                      </form>
+                    </>
+                  ) : (
+                    <span className="shrink-0 text-[11px] text-ink-soft line-through">닫힘</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </section>
 
       <section className="doc-paper mt-4 px-4 py-4">
