@@ -1014,7 +1014,7 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
       <Frame>
         <BrushFont hf={String(q.hf ?? "")} />
         <div style={{ position: "absolute", top: 100, left: 70, right: 70 }}>
-          <Label>⑤ 이제 내 일주를 찾아보시옵소서</Label>
+          <Label>④ 이제 내 일주를 찾아보시옵소서</Label>
           <p style={{ marginTop: 6, fontSize: 56, fontWeight: 800 }}>60갑자 한눈에 보기</p>
           {/* six columns of ten, as the sixty are laid out in the almanacs (갑자순·갑술순…) */}
           <div style={{ marginTop: 20, display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gridAutoFlow: "column", gridTemplateRows: "repeat(10, auto)", gap: "5px 8px" }}>
