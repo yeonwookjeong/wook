@@ -917,7 +917,7 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
       <Frame>
         <BrushFont hf={String(q.hf ?? "")} />
         <div style={{ position: "absolute", top: 140, left: 100, right: 100 }}>
-          <Label>먼저, 날에도 이름이 있어요</Label>
+          <Label>① 일주가 뭐예요?</Label>
           <p style={{ marginTop: 18, fontSize: 64, fontWeight: 800, lineHeight: 1.2 }}>오늘 9월 30일은 丁未일</p>
           <Body style={{ marginTop: 14, fontSize: 32, color: INK }}>올해가 丙午년이듯, 달에도 날에도 두 글자 이름이 있어요</Body>
           <div style={{ marginTop: 44, display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, textAlign: "center" }}>
@@ -949,11 +949,60 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
             <p style={{ fontSize: 33, lineHeight: 1.6 }}>
               사주는 <b>해·달·날·시</b> 네 기둥이에요. 기둥마다 위에 <b style={{ color: SEAL }}>하늘 글자</b>, 아래에 <b style={{ color: SEAL }}>땅 글자</b>가 하나씩, 모두 여덟 글자.
             </p>
-            <p style={{ marginTop: 18, fontSize: 34, lineHeight: 1.7 }}>
-              <b style={{ color: SEAL }}>하늘 10</b> <span style={{ fontFamily: brush, color: SOFT }}>{STEMS.join("")}</span>
-              <br />
-              <b style={{ color: SEAL }}>땅 12</b> <span style={{ fontFamily: brush, color: SOFT }}>{BRANCHES.join("")}</span>
+            <p style={{ marginTop: 14, fontSize: 33, lineHeight: 1.6 }}>
+              그중 <b style={{ color: SEAL }}>날 기둥 두 글자</b>가 일주예요. 같은 일주는 60일마다 다시 돌아와요.
             </p>
+          </div>
+        </div>
+        <Brand />
+      </Frame>
+    );
+  }
+  if (c === "gz-read") {
+    const SKY = ["큰 나무", "꽃·덩굴", "태양", "촛불", "큰 산", "논밭", "무쇠", "보석", "큰 강", "단비"];
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 130, left: 80, right: 80 }}>
+          <Label>④ 두 글자는 이렇게 읽어요</Label>
+          <p style={{ marginTop: 12, fontSize: 58, fontWeight: 800, lineHeight: 1.2 }}>앞은 나의 모습, 뒤는 나의 동물</p>
+          <div style={{ marginTop: 40, display: "flex", alignItems: "center", justifyContent: "center", gap: 26 }}>
+            {[
+              { h: "丁", t: "촛불", d: "하늘 글자 · 나의 모습" },
+              { h: "未", t: "양", d: "땅 글자 · 나의 동물" },
+            ].map((x, i) => (
+              <Fragment key={x.h}>
+                {i === 1 && <span style={{ fontSize: 56, color: SOFT, fontWeight: 800 }}>+</span>}
+                <div style={{ width: 340, padding: "28px 0 24px", borderRadius: 24, textAlign: "center", background: "rgba(179,38,30,.08)", border: `3px solid ${SEAL}` }}>
+                  <p style={{ fontSize: 124, lineHeight: 1, fontFamily: brush, color: SEAL }}>{x.h}</p>
+                  <p style={{ marginTop: 8, fontSize: 38, fontWeight: 800 }}>{x.t}</p>
+                  <p style={{ marginTop: 4, fontSize: 23, color: SOFT, fontFamily: sans }}>{x.d}</p>
+                </div>
+              </Fragment>
+            ))}
+          </div>
+          <p style={{ marginTop: 30, textAlign: "center", fontSize: 38, fontWeight: 800 }}>
+            오늘 丁未일은 <span style={{ color: SEAL }}>&lsquo;여름밤 들판의 모닥불&rsquo;</span>
+          </p>
+          <div style={{ marginTop: 40, padding: "30px 30px", borderRadius: 22, background: "rgba(33,27,23,.05)" }}>
+            <p style={{ fontSize: 26, fontWeight: 800, color: SOFT }}>하늘 글자 10 · 나의 모습</p>
+            <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "repeat(5, 1fr)", rowGap: 14 }}>
+              {STEMS.map((st, i) => (
+                <span key={st} style={{ fontSize: 27, fontFamily: sans }}>
+                  <b style={{ fontFamily: brush, fontSize: 38, color: SEAL, marginRight: 6 }}>{st}</b>
+                  {SKY[i]}
+                </span>
+              ))}
+            </div>
+            <p style={{ marginTop: 26, fontSize: 26, fontWeight: 800, color: SOFT }}>땅 글자 12 · 나의 동물</p>
+            <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "repeat(6, 1fr)", rowGap: 14 }}>
+              {BRANCHES.map((b, i) => (
+                <span key={b} style={{ fontSize: 27, fontFamily: sans }}>
+                  <b style={{ fontFamily: brush, fontSize: 38, color: SEAL, marginRight: 6 }}>{b}</b>
+                  {ANIMALS[i]}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
         <Brand />
@@ -965,7 +1014,7 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
       <Frame>
         <BrushFont hf={String(q.hf ?? "")} />
         <div style={{ position: "absolute", top: 100, left: 70, right: 70 }}>
-          <Label>저장해 두고 꺼내 보시옵소서</Label>
+          <Label>⑤ 이제 내 일주를 찾아보시옵소서</Label>
           <p style={{ marginTop: 6, fontSize: 56, fontWeight: 800 }}>60갑자 한눈에 보기</p>
           {/* six columns of ten, as the sixty are laid out in the almanacs (갑자순·갑술순…) */}
           <div style={{ marginTop: 20, display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gridAutoFlow: "column", gridTemplateRows: "repeat(10, auto)", gap: "5px 8px" }}>
@@ -991,7 +1040,7 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
       <Frame>
         <BrushFont hf={String(q.hf ?? "")} />
         <div style={{ position: "absolute", top: 140, left: 80, right: 80 }}>
-          <Label>60갑자의 원리 ①</Label>
+          <Label>② 날의 이름은 이렇게 붙어요</Label>
           <p style={{ marginTop: 16, fontSize: 70, fontWeight: 800, lineHeight: 1.2 }}>하루에 한 칸씩, 나란히</p>
           <Body style={{ marginTop: 18, fontSize: 34, color: INK }}>하늘 글자와 땅 글자가 날마다 한 칸씩 함께 나아가요</Body>
           <div style={{ marginTop: 56, display: "grid", gridTemplateColumns: "96px repeat(12, 1fr)", rowGap: 16, alignItems: "center", textAlign: "center" }}>
@@ -1042,7 +1091,7 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
       <Frame>
         <BrushFont hf={String(q.hf ?? "")} />
         <div style={{ position: "absolute", top: 110, left: 70, right: 70 }}>
-          <Label>60갑자의 원리 ②</Label>
+          <Label>③ 그래서 딱 60가지</Label>
           <p style={{ marginTop: 12, fontSize: 58, fontWeight: 800, lineHeight: 1.2 }}>120칸인데 왜 60칸만 찰까?</p>
           <Body style={{ marginTop: 14, fontSize: 30, color: INK, lineHeight: 1.55 }}>
             하늘과 땅은 <b>1번끼리</b> 출발해 매일 한 칸씩 같이 가요. 그래서 <b style={{ color: SEAL }}>홀수는 홀수끼리</b>, <b style={{ color: "#2c3848" }}>짝수는 짝수끼리</b>만 만나요.
