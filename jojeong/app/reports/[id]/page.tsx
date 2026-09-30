@@ -429,7 +429,8 @@ async function OpenReport({
     const now = thisYear();
     const y = yearOf(paid ? paid.req.y : search.y, profile, now);
     const token = me?.token;
-    const link = (year?: number) => `${base}?${new URLSearchParams({ ...(courtId && { court: courtId }), ...(year && { y: String(year) }) })}`;
+    const link = (year?: number) =>
+      `${base}?${new URLSearchParams({ ...(courtId && { court: courtId }), ...(ministerId && { m: ministerId }), ...(year && { y: String(year) }) })}`;
     if (y === null) {
       const { from, to } = yearRange(profile, now);
       const rows = yearRows(pillars, profile, from, to, now);

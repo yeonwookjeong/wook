@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import GameBridge from "@/components/GameBridge";
 import Hundo from "@/components/Hundo";
 import AdSlot from "@/components/AdSlot";
 import ReportShelf from "@/components/ReportShelf";
@@ -8,7 +9,9 @@ import RoyalDoc from "@/components/RoyalDoc";
 import { SaveImageButton, ShareLinkButton } from "@/components/ShareButtons";
 import TrackLink from "@/components/TrackLink";
 import { bragLine, decreeLine, summonLine } from "@/lib/decree";
+import { bridgeQuery, chartBridge, yearBridge } from "@/lib/gameBridge";
 import { loadCourt, viewerOf } from "@/lib/load";
+import { getProfile } from "@/lib/store";
 import { moodFor, ROLES } from "@/lib/roles";
 import { factLines, GANSIN_SIGNS, relationSentence, roleReasons, type Pillars } from "@/lib/saju";
 import { chartOf, GYEOK_NAME, readChart } from "@/lib/myeongri";
@@ -37,6 +40,7 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
   const { isOwner, myMinisterId } = await viewerOf(court.id, court.ownerToken);
   const isSelf = myMinisterId === seat.minister.id;
   const role = ROLES[seat.role];
+  const bq = isSelf ? await bridgeQuery(seat.minister.pillars) : "";
   const danger = role.tone === "red" || role.tone === "gray";
   const reasons = roleReasons(court.king, seat.minister.pillars, seat.match, seat.role, seat.minister.name);
   // The 기신 line is already part of the reasons for 간신 and 유배.
@@ -167,6 +171,21 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
       </section>
 
       {isSelf && <MyChartTeaser pillars={seat.minister.pillars} name={seat.minister.name} />}
+      {isSelf && (
+        <>
+          <GameBridge
+            {...yearBridge(seat.minister.pillars, await getProfile(court.id, seat.minister.id), bq, seat.minister.name)}
+          />
+          <GameBridge
+            {...chartBridge(
+              seat.minister.pillars,
+              bq,
+              `${role.title} 말고, 진짜 ${seat.minister.name}`,
+              "관직을 벗으면 나는 어떤 사람일까",
+            )}
+          />
+        </>
+      )}
       {isSelf && (
         <ReportShelf
           ids={["sinbun", "pyeongsaeng", "gunghap", "gukjeong"]}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { isOpen, priceNow, productById, type ProductId } from "@/lib/products";
 import Keep from "./Keep";
+import TrackLink from "./TrackLink";
 
 // A short shelf of reports under a free result. `query` carries whose chart the report page should read;
 // `highlights` swaps a report's tagline for a line read from that chart.
@@ -20,11 +21,13 @@ export default function ReportShelf({ ids, query, highlights = {} }: { ids: Prod
             <ul key={g} className={`${g === 0 ? "mt-3" : "mt-4"} flex flex-col gap-2`}>
               {group.map((id) => {
                 const p = productById(id)!;
+                // The modern reports read the chart remembered in this browser (saved when the game was played),
+                // never a court's, so their links carry no court.
                 // Paid in 쪽빛, free on paper, as everywhere on the site.
                 const free = isOpen(p);
                 return (
                   <li key={id}>
-                    <Link href={`/reports/${id}?${query}`} className={`${free ? "doc-paper" : "jjok-box"} flex items-center gap-3 px-4 py-4`}>
+                    <TrackLink event="to_saju" href={p.modern ? `/reports/${id}` : `/reports/${id}?${query}`} className={`${free ? "doc-paper" : "jjok-box"} flex items-center gap-3 px-4 py-4`}>
                       <span
                         className={`flex h-11 min-w-11 shrink-0 items-center justify-center border-2 px-1 font-myeongjo font-extrabold ${free ? "border-seal/60 text-seal" : "border-gold/60 text-gold"} ${p.hanja.length > 2 ? "text-xs" : "text-sm"}`}
                       >
@@ -39,7 +42,7 @@ export default function ReportShelf({ ids, query, highlights = {} }: { ids: Prod
                       <span className={`shrink-0 text-sm font-bold ${free ? "text-seal" : "text-gold"}`}>
                         {free ? "무료 →" : `${priceNow().toLocaleString("ko-KR")}원 →`}
                       </span>
-                    </Link>
+                    </TrackLink>
                   </li>
                 );
               })}

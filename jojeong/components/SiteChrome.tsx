@@ -1,4 +1,5 @@
 import Link from "next/link";
+import SnsLinks from "./SnsLinks";
 import FooterAd from "./FooterAd";
 import { BUSINESS, ftcLookupUrl, hasBusinessInfo } from "@/lib/business";
 import { ownedOrderIds } from "@/lib/pay";
@@ -73,6 +74,7 @@ export function SiteFooter() {
         </Link>
         {/* The site is 훈도사주; 정 훈도 is the reader who writes the readings. Said once, so the two never blur. */}
         <p className="mt-1.5 text-center text-[11px] text-ink-soft">풀이는 조선 관상감의 명과학 훈도, 정 훈도가 맡아요</p>
+        <SnsLinks />
         <Link href="/" className="mt-4 rounded-full bg-seal px-5 py-2.5 font-myeongjo text-sm font-extrabold text-hanji">
           훈도사주 처음으로
         </Link>
