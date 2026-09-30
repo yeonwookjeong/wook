@@ -496,62 +496,56 @@ async function OpenReport({
       <SajuChart {...reading.chart} kingdom={false} />
     </details>
   );
-  // A bought report opens on what was bought: the link, the (full) calendar and the written report first; the
-  // free analysis seen before paying folds away at the bottom.
+  // The free analysis, as it is shown before paying: the whole chart for the life report, the topic's verdict and
+  // calendar (with the whole-chart analysis folded) for the topic reports.
+  const analysis = (unlocked: boolean) =>
+    domain && card ? (
+      <>
+        <DomainCard name={name} domain={domain} card={card} />
+        <DecadeTable name={name} domain={domain} years={decadeOf(domain, pillars, gender)} locked={!unlocked && locked} />
+        {intro && (
+          <details className="group mt-4">
+            <summary className="doc-paper flex cursor-pointer list-none items-center justify-between px-5 py-4 [&::-webkit-details-marker]:hidden">
+              <span>
+                <b className="block font-myeongjo">내 사주 전체 분석 보기</b>
+                <span className="text-[12px] text-ink-soft">여덟 글자의 무게, 드문 특징 · 평생 사주와 같은 무료 분석</span>
+              </span>
+              <span className="text-ink-soft transition group-open:rotate-180" aria-hidden="true">
+                ▾
+              </span>
+            </summary>
+            {intro}
+          </details>
+        )}
+      </>
+    ) : (
+      fullIntro
+    );
+  // A bought (or gifted) report reads like the page before paying, with the written report where the payment was:
+  // the free analysis on top, then the report. One who was given it never saw that analysis, so it is not folded.
   if (unlock)
     return (
       <>
         <Header product={product} subjectName={`${name}님`} />
         <OrderLink
           id={unlock.id}
+          gift={!!unlock.gift}
           others={(unlock.bundle ?? [])
             .filter((id) => id !== product.id)
             .map((id) => ({ href: `/reports/${id}?order=${unlock.id}`, title: productById(id)!.title }))}
         />
-        {domain && card && <DecadeTable name={name} domain={domain} years={decadeOf(domain, pillars, gender)} locked={false} />}
-        <AiReport request={{ product: product.id, order: unlock.id }} chapters={chaptersOf(product.id)} modern />
-        <details className="group mt-6">
-          <summary className="doc-paper flex cursor-pointer list-none items-center justify-between px-5 py-4 [&::-webkit-details-marker]:hidden">
-            <span>
-              <b className="block font-myeongjo">결제 전에 본 무료 분석 다시 보기</b>
-              <span className="text-[12px] text-ink-soft">여덟 글자의 무게, 드문 특징{domain ? ", 주제 판정" : ""}</span>
-            </span>
-            <span className="text-ink-soft transition group-open:rotate-180" aria-hidden="true">
-              ▾
-            </span>
-          </summary>
-          {domain && card && <DomainCard name={name} domain={domain} card={card} />}
-          {intro}
-          {chartFold}
-        </details>
+        {analysis(true)}
+        {chartFold}
+        <div id="report-start" className="scroll-mt-4">
+          <AiReport request={{ product: product.id, order: unlock.id }} chapters={chaptersOf(product.id)} modern />
+        </div>
       </>
     );
   return (
     <>
       <Header product={product} subjectName={`${name}님`} />
       {other}
-      {domain && card ? (
-        <>
-          <DomainCard name={name} domain={domain} card={card} />
-          <DecadeTable name={name} domain={domain} years={decadeOf(domain, pillars, gender)} locked={locked} />
-          {intro && (
-            <details className="group mt-4">
-              <summary className="doc-paper flex cursor-pointer list-none items-center justify-between px-5 py-4 [&::-webkit-details-marker]:hidden">
-                <span>
-                  <b className="block font-myeongjo">내 사주 전체 분석 보기</b>
-                  <span className="text-[12px] text-ink-soft">여덟 글자의 무게, 드문 특징 · 평생 사주와 같은 무료 분석</span>
-                </span>
-                <span className="text-ink-soft transition group-open:rotate-180" aria-hidden="true">
-                  ▾
-                </span>
-              </summary>
-              {intro}
-            </details>
-          )}
-        </>
-      ) : (
-        fullIntro
-      )}
+      {analysis(false)}
       {chartFold}
       {locked ? (
         // A bought report is written for exactly this chart, so the missing details come before the payment.
