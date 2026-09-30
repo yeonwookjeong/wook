@@ -115,7 +115,7 @@ export default function FreeReading({
             {r.weak.line}
           </p>
         </div>
-        <p className="mt-2 text-[11px] text-ink-soft">상위·하위 표시는 사주 25만여 개 가운데 이 비율이 어디쯤인지예요.</p>
+        <p className="mt-2 text-[11px] text-ink-soft">상위·하위는 1950~2008년에 태어날 수 있는 모든 날·시의 사주와 비교했어요.</p>
       </Card>
 
       <Card hanja="神 殺" title={`${name}님 사주 속 별`}>

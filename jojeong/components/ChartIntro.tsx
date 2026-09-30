@@ -114,7 +114,7 @@ export default function ChartIntro({ name, d, slots }: { name: string; d: Distin
             </div>
           )}
           <p className="mt-3 text-[11px] leading-relaxed text-ink-soft">
-            숫자는 1950~2008년의 모든 날, 모든 시간으로 세운 사주 25만여 개와 비교한 값이에요. 아래 보고서는 이 특징들을 바탕으로 썼어요.
+            숫자는 1950~2008년에 태어날 수 있는 모든 날·시의 사주와 비교한 값이에요. 아래 보고서는 이 특징들을 바탕으로 썼어요.
           </p>
         </>
       )}
