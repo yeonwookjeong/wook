@@ -1,5 +1,6 @@
 import Link from "next/link";
 import PayButton from "./PayButton";
+import { hanjaNum } from "@/lib/hanjaNum";
 import { josa } from "@/lib/josa";
 import { payEnabled } from "@/lib/pay";
 import { PRICE, productById, saleLabel, saleNow, SETS, setsWith, type Product, type ProductId } from "@/lib/products";
@@ -36,7 +37,7 @@ export default function Paywall({
       <ol className="mt-4 flex flex-col divide-y divide-seal/15 border-y-[3px] border-double border-seal/40 px-1">
         {chapters.map((item, i) => (
           <li key={item} className="flex items-center gap-2 py-2 text-left text-[15px]">
-            <span className="font-myeongjo font-extrabold text-seal">{i < 9 ? "一二三四五六七八九"[i] : i + 1}</span>
+            <span className="w-9 shrink-0 font-myeongjo font-extrabold whitespace-nowrap text-seal">{hanjaNum(i + 1)}</span>
             <span className="flex-1">{item}</span>
             <span className="text-xs text-ink-soft" aria-label="잠김">
               🔒
@@ -78,9 +79,8 @@ export default function Paywall({
         <p className="mt-2 text-[11px] text-ink-soft">결제하면 바로 열려요 · 링크로 언제든 다시 볼 수 있어요</p>
       </div>
       <p className="mt-4 text-left text-[11px] leading-relaxed text-ink-soft">
-        보고서는 결제 즉시 열리는 디지털 콘텐츠라, 열람을 시작한 뒤에는 전자상거래법에 따라 청약철회가 제한돼요. 결제 전에 위의
-        목차와 풀이로 내용을 확인해 주세요. 보고서가 안내한 내용과 다르게 제공된 경우에는 받은 날부터 3개월 이내에 환불을 요청할
-        수 있어요. 자세한 내용은{" "}
+        보고서는 결제 즉시 열리는 디지털 콘텐츠라, 열람을 시작한 뒤에는 전자상거래법에 따라 청약철회가 제한돼요. 결제 전에 위의 목차와 풀이로 내용을 확인해
+        주세요. 보고서가 안내한 내용과 다르게 제공된 경우에는 받은 날부터 3개월 이내에 환불을 요청할 수 있어요. 자세한 내용은{" "}
         <Link href="/refund" className="whitespace-nowrap underline">
           환불 규정
         </Link>
