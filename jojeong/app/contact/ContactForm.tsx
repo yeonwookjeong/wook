@@ -8,10 +8,11 @@ const field = "w-full rounded-xl border border-ink/15 bg-white/70 px-4 py-3 text
 
 // Write and send right here: no mail app needed (many open the site inside Instagram, where mailto does
 // nothing). Choosing a topic fills in the lines that help the answer.
-export default function ContactForm() {
+export default function ContactForm({ initial }: { initial?: string }) {
+  const first = INQUIRY_TOPICS.find((t) => t.key === initial) ?? INQUIRY_TOPICS[0];
   const [state, action, pending] = useActionState<InquiryState, FormData>(sendInquiryAction, { status: "idle", message: null });
-  const [topic, setTopic] = useState<string>(INQUIRY_TOPICS[0].key);
-  const [body, setBody] = useState<string>(INQUIRY_TOPICS[0].body.join("\n") + "\n");
+  const [topic, setTopic] = useState<string>(first.key);
+  const [body, setBody] = useState<string>(first.body.join("\n") + "\n");
 
   if (state.status === "sent")
     return (
