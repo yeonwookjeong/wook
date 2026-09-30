@@ -213,8 +213,9 @@ export default async function Home() {
                   <span className="font-myeongjo text-2xl text-gold">{productById(t.id)!.hanja}</span>
                   <span className="mt-2 font-myeongjo text-xl leading-tight font-extrabold">{t.name}</span>
                   <span className="mt-1.5 flex-1 text-[12.5px] leading-snug text-hanji/75">{t.ask}</span>
+                  {/* The price is said once above the grid, not on every card. */}
                   <span className="mt-2.5 flex items-center justify-between border-t border-gold/30 pt-2 text-[12px] font-bold">
-                    <span className="text-hanji/60">{mine ? "결제함" : `${priceNow().toLocaleString("ko-KR")}원`}</span>
+                    <span className="text-hanji/60">{mine ? "결제함" : ""}</span>
                     <span className="text-gold">{mine ? "바로 보기 →" : "보기 →"}</span>
                   </span>
                 </Link>

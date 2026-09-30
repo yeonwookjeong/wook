@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { isOpen, priceNow, productById, type ProductId } from "@/lib/products";
+import { isOpen, productById, type ProductId } from "@/lib/products";
 import Keep from "./Keep";
 import TrackLink from "./TrackLink";
 
@@ -40,7 +40,7 @@ export default function ReportShelf({ ids, query, highlights = {} }: { ids: Prod
                         </span>
                       </span>
                       <span className={`shrink-0 text-sm font-bold ${free ? "text-seal" : "text-gold"}`}>
-                        {free ? "무료 →" : `${priceNow().toLocaleString("ko-KR")}원 →`}
+                        {free ? "무료 →" : "보기 →"}
                       </span>
                     </TrackLink>
                   </li>
