@@ -374,7 +374,7 @@ async function OpenReport({
   const intro = distinct && <ChartIntro name={name} d={distinct} slots={reading.chart.slots} />;
   const fullIntro = intro && (
     <>
-      {intro}
+      <ChartIntro name={name} d={distinct} slots={reading.chart.slots} chips={!free} />
       {free && <FreeReading name={name} r={free} query={query} addGender={`${next}?new=1`} onLifeReport={product.id === "pyeongsaeng"} />}
     </>
   );
@@ -535,7 +535,7 @@ async function OpenReport({
             .map((id) => ({ href: `/reports/${id}?order=${unlock.id}`, title: productById(id)!.title }))}
         />
         {analysis(true)}
-        {chartFold}
+        {!intro && chartFold}
         <div id="report-start" className="scroll-mt-4">
           <AiReport request={{ product: product.id, order: unlock.id }} chapters={chaptersOf(product.id)} modern />
         </div>
@@ -546,7 +546,8 @@ async function OpenReport({
       <Header product={product} subjectName={`${name}님`} />
       {other}
       {analysis(false)}
-      {chartFold}
+      {/* The chart is already on the page in the analysis; the bare table only when that could not be read. */}
+      {!intro && chartFold}
       {locked ? (
         // A bought report is written for exactly this chart, so the missing details come before the payment.
         <>
