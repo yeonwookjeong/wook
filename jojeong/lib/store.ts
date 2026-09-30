@@ -219,6 +219,13 @@ export async function notePaidOrder(orderId: string) {
     .push("orders:paid", orderId)
     .catch(() => {});
 }
+// Reports the owner gave away from /admin: their own list, apart from the paid ones, so they never count as sales.
+export async function noteGiftOrder(orderId: string) {
+  await backend().push("orders:gift", orderId);
+}
+export async function giftOrderIds(): Promise<string[]> {
+  return backend().list("orders:gift");
+}
 // Many orders in one round trip (the owner's sales table).
 export async function getOrdersRaw(ids: string[]): Promise<(string | null)[]> {
   return ids.length ? backend().mget(ids.map((id) => `order:${id}`)) : [];
