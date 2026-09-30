@@ -83,11 +83,15 @@ export function freeReadingOf(p: Pillars, profile: Profile | null, now = 2026): 
   if (!r || !isFull(p)) return null;
   const gender = profile?.gender ?? null;
   const sum = GROUPS.reduce((a, g) => a + r.godWeights[g], 0) || 1;
-  const powers = GROUPS.map((g) => {
-    const share = r.godWeights[g] / sum;
-    const t = godRank(g, share);
+  // Whole percents that add up to exactly 100 (largest remainder), since the map draws them as one circle.
+  const raw = GROUPS.map((g) => (100 * r.godWeights[g]) / sum);
+  const pcts = raw.map(Math.floor);
+  const order = raw.map((v, i) => i).sort((a, b) => raw[b] - Math.floor(raw[b]) - (raw[a] - Math.floor(raw[a])));
+  for (let k = 0; k < 100 - pcts.reduce((a, b) => a + b, 0); k++) pcts[order[k]]++;
+  const powers = GROUPS.map((g, i) => {
+    const t = godRank(g, r.godWeights[g] / sum);
     const pct = Math.max(1, Math.round(t.rate * 100));
-    return { group: g, name: POWER[g].name, pct: Math.round(share * 100), rank: t.rate <= 0.25 ? `${t.side === "high" ? "상위" : "하위"} ${pct}%` : null };
+    return { group: g, name: POWER[g].name, pct: pcts[i], rank: t.rate <= 0.25 ? `${t.side === "high" ? "상위" : "하위"} ${pct}%` : null };
   });
   const sorted = [...powers].sort((a, b) => b.pct - a.pct);
   const strong = { name: sorted[0].name, line: POWER[sorted[0].group].high };
