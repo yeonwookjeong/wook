@@ -5,8 +5,8 @@ import { ILGAN, ILJU_TAG_TEXT, iljuFacts, jiaziNo, nextDayOf, stemCure, stemMatc
 import { josa } from "@/lib/josa";
 import { pickDays } from "@/lib/taekil";
 import { figureById, figureChart } from "@/lib/figures";
-import { monthPillarOf, rankMonth, type IljuMonth } from "@/lib/iljuRank";
-import { STEMS } from "@/lib/saju";
+import { monthPillarOf, rankMonth, SIXTY, type IljuMonth } from "@/lib/iljuRank";
+import { BRANCHES, BRANCHES_KO, STEMS, STEMS_KO } from "@/lib/saju";
 
 export const metadata: Metadata = { title: "카드", robots: { index: false } };
 
@@ -857,6 +857,157 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
           <Brand />
         </Frame>
       );
+  }
+
+  // ── 60갑자 한눈에 보기: what a day pillar is, all sixty in their order, and how to find one's own.
+  const gz = (i: number) => ({ no: i + 1, hanja: `${STEMS[i % 10]}${BRANCHES[i % 12]}`, ko: `${STEMS_KO[i % 10]}${BRANCHES_KO[i % 12]}` });
+  if (c === "gz-cover")
+    return (
+      <Frame dark>
+        <BrushFont hf={String(q.hf ?? "")} />
+        {/* all sixty, faint, behind the title */}
+        <div
+          style={{
+            position: "absolute",
+            top: 130,
+            left: 70,
+            right: 70,
+            display: "grid",
+            gridTemplateColumns: "repeat(6, 1fr)",
+            rowGap: 6,
+            textAlign: "center",
+            fontFamily: brush,
+            fontSize: 56,
+            lineHeight: 1.25,
+            color: "rgba(212,175,95,.13)",
+          }}
+        >
+          {SIXTY.map((x) => (
+            <span key={x.no}>{gz(x.no - 1).hanja}</span>
+          ))}
+        </div>
+        <CornerBrand />
+        <div style={{ position: "absolute", top: 250, left: 0, right: 0, textAlign: "center" }}>
+          <p style={{ fontSize: 34, letterSpacing: "0.3em", color: GOLD, fontWeight: 800 }}>六十甲子</p>
+          <p style={{ marginTop: 18, fontSize: 210, lineHeight: 1, color: "#f1cf7a", fontFamily: brush, textShadow: "0 6px 24px rgba(0,0,0,.5)" }}>甲子</p>
+          <p style={{ marginTop: 20, fontSize: 40, color: "rgba(244,236,219,.9)" }}>갑자에서 계해까지, 예순 가지 일주</p>
+        </div>
+        <div style={{ position: "absolute", top: 790, left: 64 }}>
+          <div style={{ width: 170, height: 170, borderRadius: "50%", overflow: "hidden", border: `6px solid ${GOLD}`, background: HANJI, boxShadow: "0 10px 24px rgba(0,0,0,.4)" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/hundo-face.png" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          </div>
+          <div style={{ position: "absolute", left: -12, top: -84, padding: "12px 22px", background: "#fff", color: INK, borderRadius: 22, fontSize: 32, fontWeight: 800, whiteSpace: "nowrap", boxShadow: "0 8px 20px rgba(0,0,0,.3)" }}>
+            {q.say ? String(q.say) : "저장해 두시옵소서!"}
+          </div>
+        </div>
+        <ThumbTitle top="태어난 날의 두 글자, 60갑자 한눈에" main="나는 무슨 일주?" />
+      </Frame>
+    );
+  if (c === "gz-what") {
+    // A real day: 2026-10-17 (丙午년 戊戌월 甲子일).
+    const cols = [
+      { pos: "태어난 시", h: "？", ko: "" },
+      { pos: "태어난 날", h: "甲子", ko: "갑자", me: true },
+      { pos: "태어난 달", h: "戊戌", ko: "무술" },
+      { pos: "태어난 해", h: "丙午", ko: "병오" },
+    ];
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 140, left: 100, right: 100 }}>
+          <Label>일주가 뭐예요?</Label>
+          <p style={{ marginTop: 18, fontSize: 70, fontWeight: 800, lineHeight: 1.2 }}>태어난 날의 두 글자</p>
+          <div style={{ marginTop: 44, display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, textAlign: "center" }}>
+            {cols.map((x) => (
+              <div
+                key={x.pos}
+                style={{ position: "relative", padding: "24px 0", borderRadius: 20, border: x.me ? `3px solid ${SEAL}` : "3px solid rgba(33,27,23,.12)", background: x.me ? "rgba(179,38,30,.08)" : "transparent" }}
+              >
+                <p style={{ fontSize: 22, color: SOFT, fontFamily: sans }}>{x.pos}</p>
+                <p style={{ marginTop: 8, fontSize: 66, lineHeight: 1.1, color: x.me ? SEAL : INK, fontFamily: brush }}>
+                  {x.h.split("").map((chr, i) => (
+                    <span key={i} style={{ display: "block" }}>
+                      {chr}
+                    </span>
+                  ))}
+                </p>
+                {x.me && (
+                  <span style={{ position: "absolute", top: -26, left: "50%", transform: "translateX(-50%)", padding: "4px 14px", borderRadius: 999, background: SEAL, color: HANJI, fontSize: 22, fontWeight: 800, whiteSpace: "nowrap" }}>
+                    이게 일주!
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+          <Body style={{ marginTop: 48, fontSize: 35, color: INK }}>
+            사주 여덟 글자 가운데 <b>나 자신</b>을 뜻하는 자리예요. 성격과 인연을 볼 때 가장 먼저 봐요.
+          </Body>
+          <div style={{ marginTop: 40, padding: "32px 34px", borderRadius: 22, background: "rgba(33,27,23,.05)", fontFamily: sans }}>
+            <p style={{ fontSize: 31, lineHeight: 1.6 }}>
+              <b style={{ color: SEAL }}>하늘 글자 10개</b> <span style={{ fontFamily: brush, color: SOFT }}>{STEMS.join("")}</span>
+            </p>
+            <p style={{ marginTop: 8, fontSize: 31, lineHeight: 1.6 }}>
+              <b style={{ color: SEAL }}>땅 글자 12개</b> <span style={{ fontFamily: brush, color: SOFT }}>{BRANCHES.join("")}</span>
+            </p>
+            <p style={{ marginTop: 18, fontSize: 32, fontWeight: 800, lineHeight: 1.45 }}>둘이 차례로 짝을 지어 60가지, 60일마다 한 바퀴 돌아요</p>
+          </div>
+        </div>
+        <Brand />
+      </Frame>
+    );
+  }
+  if (c === "gz-table")
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 100, left: 70, right: 70 }}>
+          <Label>저장해 두고 꺼내 보시옵소서</Label>
+          <p style={{ marginTop: 6, fontSize: 56, fontWeight: 800 }}>60갑자 한눈에 보기</p>
+          {/* six columns of ten, as the sixty are laid out in the almanacs (갑자순·갑술순…) */}
+          <div style={{ marginTop: 20, display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gridAutoFlow: "column", gridTemplateRows: "repeat(10, auto)", gap: "5px 8px" }}>
+            {SIXTY.map((x) => {
+              const g = gz(x.no - 1);
+              return (
+                <div key={x.no} style={{ position: "relative", padding: "8px 0 6px", borderRadius: 12, textAlign: "center", background: x.no % 2 ? "rgba(33,27,23,.045)" : "transparent" }}>
+                  <span style={{ position: "absolute", top: 6, left: 8, fontSize: 15, color: SOFT, fontFamily: sans }}>{x.no}</span>
+                  <p style={{ fontSize: 44, lineHeight: 1.05, color: SEAL, fontFamily: brush, whiteSpace: "nowrap" }}>{g.hanja}</p>
+                  <p style={{ marginTop: 2, fontSize: 20, fontWeight: 800 }}>{g.ko}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        <Brand />
+      </Frame>
+    );
+  if (c === "gz-find") {
+    const steps = [
+      { t: "생년월일만 있으면 돼요", d: "양력이든 음력이든 괜찮아요. 태어난 시간은 몰라도 일주는 나와요" },
+      { t: "hundosaju.com에서 '내 사주 무료로 보기'", d: "프로필 링크로 들어가 생년월일을 넣어요" },
+      { t: "'태어난 날' 칸의 두 글자가 내 일주", d: "예) 甲子가 나오면 갑자일주예요" },
+    ];
+    return (
+      <Frame>
+        <div style={{ position: "absolute", top: 160, left: 100, right: 100 }}>
+          <Label>내 일주 찾는 법</Label>
+          <p style={{ marginTop: 18, fontSize: 70, fontWeight: 800, lineHeight: 1.2 }}>1분이면 충분해요</p>
+          <div style={{ marginTop: 50, display: "flex", flexDirection: "column", gap: 30 }}>
+            {steps.map((x, i) => (
+              <div key={x.t} className="doc-paper" style={{ display: "flex", alignItems: "center", gap: 28, padding: "38px 34px" }}>
+                <span style={{ flexShrink: 0, width: 76, height: 76, display: "grid", placeItems: "center", borderRadius: "50%", background: SEAL, color: HANJI, fontSize: 40, fontWeight: 800 }}>{i + 1}</span>
+                <div>
+                  <p style={{ fontSize: 40, fontWeight: 800, lineHeight: 1.3 }}>{x.t}</p>
+                  <p style={{ marginTop: 10, fontSize: 29, lineHeight: 1.45, color: SOFT, fontFamily: sans }}>{x.d}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <Body style={{ marginTop: 44, fontSize: 27 }}>밤 11시 이후에 태어났다면 학파에 따라 다음 날의 일주로 보기도 해요</Body>
+        </div>
+        <Brand />
+      </Frame>
+    );
   }
 
   // ── The introduction post.
