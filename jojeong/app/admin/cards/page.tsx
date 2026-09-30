@@ -1148,6 +1148,158 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
   }
 
   // ── 2027년은 왜 붉은 양일까: where a year's color and animal come from, and what 丁未 looks like.
+  // ── 10/3 손 없는 날: what the '손' is, why 9 and 0, and how it differs from a day chosen by the chart.
+  const SON_DAYS = [9, 10, 19, 20, 29, 30];
+  const monthGrid = (size: number) => (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(10, 1fr)", gap: size / 8 }}>
+      {Array.from({ length: 30 }, (_, i) => i + 1).map((d) => {
+        const on = SON_DAYS.includes(d);
+        return (
+          <span
+            key={d}
+            style={{ height: size, borderRadius: size / 5, display: "grid", placeItems: "center", fontFamily: sans, fontSize: size * 0.42, fontWeight: on ? 800 : 500, background: on ? SEAL : "rgba(33,27,23,.05)", color: on ? HANJI : SOFT }}
+          >
+            {d}
+          </span>
+        );
+      })}
+    </div>
+  );
+  if (c === "son-cover")
+    return (
+      <Frame dark>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <CornerBrand />
+        <div style={{ position: "absolute", top: 190, left: 110, right: 110, padding: 34, borderRadius: 30, background: "rgba(244,236,219,.96)", boxShadow: "0 16px 40px rgba(0,0,0,.35)" }}>
+          <p style={{ textAlign: "center", fontSize: 30, fontWeight: 800, color: SEAL, marginBottom: 20 }}>음력 한 달</p>
+          {monthGrid(64)}
+        </div>
+        <div style={{ position: "absolute", top: 790, left: 64 }}>
+          <div style={{ width: 170, height: 170, borderRadius: "50%", overflow: "hidden", border: `6px solid ${GOLD}`, background: HANJI, boxShadow: "0 10px 24px rgba(0,0,0,.4)" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/hundo-face.png" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          </div>
+          <div style={{ position: "absolute", left: -12, top: -84, padding: "12px 22px", background: "#fff", color: INK, borderRadius: 22, fontSize: 32, fontWeight: 800, whiteSpace: "nowrap", boxShadow: "0 8px 20px rgba(0,0,0,.3)" }}>
+            {q.say ? String(q.say) : "빨간 날만 이사하시옵니까?"}
+          </div>
+        </div>
+        <ThumbTitle top="이사할 때 꼭 보는 손 없는 날" main="그 ‘손’이 뭐길래?" />
+      </Frame>
+    );
+  if (c === "son-who") {
+    const cell = (dir: string, days: string, on = false) => (
+      <div style={{ padding: "26px 0", borderRadius: 24, textAlign: "center", background: on ? SEAL : "rgba(33,27,23,.05)", color: on ? HANJI : INK }}>
+        <p style={{ fontSize: 44, fontWeight: 800 }}>{dir}</p>
+        <p style={{ marginTop: 6, fontSize: 28, fontFamily: sans, color: on ? "rgba(244,236,219,.9)" : SOFT }}>{days}</p>
+      </div>
+    );
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 140, left: 100, right: 100 }}>
+          <Label>① ‘손’은 날마다 자리를 옮겨요</Label>
+          <p style={{ marginTop: 18, fontSize: 58, fontWeight: 800, lineHeight: 1.25 }}>일을 방해한다는 떠돌이 귀신</p>
+          <Body style={{ marginTop: 16, fontSize: 33, color: INK }}>
+            옛사람들은 ‘손’이 날짜에 따라 동서남북을 돌며, 그쪽에서 벌이는 일을 방해한다고 믿었어요. 그래서 손이 있는 방향으로는 이사를 피했어요.
+          </Body>
+          <div style={{ marginTop: 44, display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+            <span />
+            {cell("북", "7·8일")}
+            <span />
+            {cell("서", "5·6일")}
+            {cell("하늘", "9·10일", true)}
+            {cell("동", "1·2일")}
+            <span />
+            {cell("남", "3·4일")}
+            <span />
+          </div>
+          <p style={{ marginTop: 22, textAlign: "center", fontSize: 26, color: SOFT, fontFamily: sans }}>음력 날짜 끝자리 기준 · 11일부터 다시 동쪽으로</p>
+        </div>
+        <Brand />
+      </Frame>
+    );
+  }
+  if (c === "son-nine")
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 140, left: 100, right: 100 }}>
+          <Label>② 9와 0으로 끝나는 날엔 하늘로</Label>
+          <p style={{ marginTop: 18, fontSize: 58, fontWeight: 800, lineHeight: 1.25 }}>그래서 ‘손 없는 날’</p>
+          <Body style={{ marginTop: 16, fontSize: 33, color: INK }}>
+            음력으로 끝자리가 <b style={{ color: SEAL }}>9와 0</b>인 날에는 손이 하늘로 올라가 어느 방향에도 없다고 여겼어요. 어느 쪽으로 옮겨도 괜찮은 날이에요.
+          </Body>
+          <div style={{ marginTop: 44 }}>{monthGrid(72)}</div>
+          <div style={{ marginTop: 44, padding: "32px 36px", borderRadius: 22, background: "rgba(33,27,23,.05)", fontFamily: sans }}>
+            <p style={{ fontSize: 32, lineHeight: 1.6 }}>
+              한 달에 <b style={{ color: SEAL }}>딱 여섯 날</b>. 모두가 이 날에 이사하려고 해서 이삿짐 예약이 몰리고, 값도 오르기 쉬워요.
+            </p>
+          </div>
+        </div>
+        <Brand />
+      </Frame>
+    );
+  if (c === "son-diff")
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 140, left: 100, right: 100 }}>
+          <Label>③ 사실, 사주와는 다른 이야기예요</Label>
+          <p style={{ marginTop: 18, fontSize: 58, fontWeight: 800, lineHeight: 1.25 }}>손 없는 날은 누구에게나 같은 날</p>
+          <div style={{ marginTop: 44, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+            {[
+              { t: "손 없는 날", rows: ["음력 날짜 끝자리만 봐요", "모든 사람에게 같은 날", "한 달에 여섯 날"], on: false },
+              { t: "사주로 고른 날", rows: ["그날의 두 글자(일진)와\n내 사주를 함께 봐요", "사람마다 다른 날", "나에게 맞는 날만"], on: true },
+            ].map((x) => (
+              <div key={x.t} style={{ padding: "30px 24px", borderRadius: 24, border: x.on ? `3px solid ${SEAL}` : "3px solid rgba(33,27,23,.12)", background: x.on ? "rgba(179,38,30,.06)" : "transparent" }}>
+                <p style={{ textAlign: "center", fontSize: 42, fontWeight: 800, color: x.on ? SEAL : INK }}>{x.t}</p>
+                {x.rows.map((r) => (
+                  <p key={r} style={{ marginTop: 18, paddingTop: 16, borderTop: "1.5px solid rgba(33,27,23,.1)", textAlign: "center", fontSize: 29, lineHeight: 1.45, fontFamily: sans, whiteSpace: "pre-line" }}>
+                    {r}
+                  </p>
+                ))}
+              </div>
+            ))}
+          </div>
+          <Body style={{ marginTop: 44, fontSize: 33, color: INK }}>
+            손 없는 날은 음양오행과 방위를 따지던 <b>민간 풍속</b>에서 나왔어요. 태어난 날의 글자로 사람마다 따로 보는 <b>사주</b>와는 뿌리가 달라요.
+          </Body>
+        </div>
+        <Brand />
+      </Frame>
+    );
+  if (c === "son-me")
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 140, left: 100, right: 100 }}>
+          <Label>④ 그대에게 좋은 날은 따로 있어요</Label>
+          <p style={{ marginTop: 18, fontSize: 56, fontWeight: 800, lineHeight: 1.25 }}>같은 손 없는 날이라도</p>
+          <div style={{ marginTop: 40, padding: "30px 32px", borderRadius: 24, background: "rgba(33,27,23,.05)" }}>
+            <p style={{ fontSize: 30, color: SOFT, fontFamily: sans }}>예: 손 없는 날이 마침 <b style={{ color: INK }}>子(쥐)의 날</b>이라면</p>
+            <div style={{ marginTop: 20, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, textAlign: "center" }}>
+              <div style={{ padding: "24px 10px", borderRadius: 20, background: "#fff" }}>
+                <p style={{ fontSize: 30, fontFamily: sans, color: SOFT }}>丑(소)의 날에 태어난 사람</p>
+                <p style={{ marginTop: 8, fontSize: 40, fontWeight: 800, color: SEAL }}>손잡는 날 ◎</p>
+              </div>
+              <div style={{ padding: "24px 10px", borderRadius: 20, background: "#fff" }}>
+                <p style={{ fontSize: 30, fontFamily: sans, color: SOFT }}>午(말)의 날에 태어난 사람</p>
+                <p style={{ marginTop: 8, fontSize: 40, fontWeight: 800, color: INK }}>부딪히는 날 △</p>
+              </div>
+            </div>
+          </div>
+          <Body style={{ marginTop: 40, fontSize: 33, color: INK }}>
+            사주에서 子와 丑은 서로 손을 잡고, 子와 午는 정면으로 부딪히는 사이예요. 그래서 모두에게 좋다는 날도 <b style={{ color: SEAL }}>누군가에게는 부딪히는 날</b>일 수 있어요.
+          </Body>
+          <div style={{ marginTop: 36, padding: "30px 34px", borderRadius: 22, background: "rgba(33,27,23,.05)", fontFamily: sans }}>
+            <p style={{ fontSize: 30, lineHeight: 1.6 }}>
+              조선에서는 나라의 큰 날을 <b>관상감 명과학</b>이 골랐어요. 정 훈도가 바로 그 명과학의 훈도예요. 붐비는 날 대신 <b>나에게 맞는 날</b>은 훈도사주 <b>택일</b>에서 받아 보세요.
+            </p>
+          </div>
+        </div>
+        <Brand />
+      </Frame>
+    );
   // ── 10/3 결혼 날짜는 왜 '받는다'고 할까: 택일, 정 훈도의 본업.
   if (c === "tk-cover")
     return (
