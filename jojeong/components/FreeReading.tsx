@@ -22,7 +22,9 @@ function Card({ hanja, title, children }: { hanja: string; title: string; childr
 
 // The free reading's four computed blocks (lib/freeReading.ts): the five powers, the 신살, one line each on
 // money, love and work, and the ten-year flow of life. Each ends where a paid report goes further.
-export default function FreeReading({ name, r, query, addGender }: { name: string; r: Reading; query: string; addGender: string }) {
+// `onLifeReport`: this card sits on the 평생 사주 page itself, so the link to that report goes down to its payment
+// (a link to the page one is on goes nowhere); it is the Paywall when locked, the written report once bought.
+export default function FreeReading({ name, r, query, addGender, onLifeReport = false }: { name: string; r: Reading; query: string; addGender: string; onLifeReport?: boolean }) {
   const q = query ? `?${query}` : "";
   return (
     <>
@@ -121,9 +123,15 @@ export default function FreeReading({ name, r, query, addGender }: { name: strin
               ))}
             </dl>
             <p className="mt-2 text-[11px] leading-relaxed text-ink-soft">대운은 1월 1일이 아니라 태어난 날 무렵에 넘어가요. 바뀌는 해 앞뒤 1년쯤은 두 흐름이 섞여 느껴져요.</p>
-            <Link href={`/reports/pyeongsaeng${q}`} className="mt-3 block text-right text-[12px] font-bold text-seal">
-              시기마다 무슨 일이 생기는지 · 평생 사주 →
-            </Link>
+            {onLifeReport ? (
+              <a href="#report-start" className="mt-3 block text-right text-[12px] font-bold text-seal">
+                시기마다 무슨 일이 생기는지 · 아래에서 이어 보기 ↓
+              </a>
+            ) : (
+              <Link href={`/reports/pyeongsaeng${q}`} className="mt-3 block text-right text-[12px] font-bold text-seal">
+                시기마다 무슨 일이 생기는지 · 평생 사주 →
+              </Link>
+            )}
           </>
         ) : (
           <p className="mt-3 text-center text-[14px] leading-relaxed">
