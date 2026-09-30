@@ -21,13 +21,18 @@ export async function viewerOf(courtId: string, ownerToken: string) {
   };
 }
 
-// Courts this browser enthroned (owner cookies), newest cookies first as the browser returns them.
+// Courts this browser enthroned (owner cookies), the newest first.
 export async function ownedCourts(limit = 3): Promise<Court[]> {
   const jar = await cookies();
+  // Every court this browser enthroned is checked (up to 30), and the newest shown first: taking the first few
+  // cookies before checking them hid a new court behind older or deleted ones once a browser had made several.
   const owned = jar
     .getAll()
     .filter((c) => c.name.startsWith(OWNER_PREFIX))
-    .slice(0, limit);
+    .slice(0, 30);
   const courts = await Promise.all(owned.map((c) => getCourt(c.name.slice(OWNER_PREFIX.length))));
-  return courts.filter((court, i): court is Court => !!court && court.ownerToken === owned[i].value);
+  return courts
+    .filter((court, i): court is Court => !!court && court.ownerToken === owned[i].value)
+    .sort((a, b) => b.createdAt - a.createdAt)
+    .slice(0, limit);
 }
