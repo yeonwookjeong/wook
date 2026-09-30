@@ -866,7 +866,7 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
     return (
       <Frame dark>
         <BrushFont hf={String(q.hf ?? "")} />
-        {/* all sixty, faint, behind the one day that never comes */}
+        {/* all sixty, faint, behind the title */}
         <div
           style={{
             position: "absolute",
@@ -880,7 +880,7 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
             fontFamily: brush,
             fontSize: 56,
             lineHeight: 1.25,
-            color: "rgba(212,175,95,.12)",
+            color: "rgba(212,175,95,.13)",
           }}
         >
           {SIXTY.map((x) => (
@@ -888,23 +888,10 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
           ))}
         </div>
         <CornerBrand />
-        <div style={{ position: "absolute", top: 230, left: 0, right: 0, textAlign: "center" }}>
+        <div style={{ position: "absolute", top: 250, left: 0, right: 0, textAlign: "center" }}>
           <p style={{ fontSize: 34, letterSpacing: "0.3em", color: GOLD, fontWeight: 800 }}>六十甲子</p>
-          <div style={{ position: "relative", display: "inline-block", marginTop: 18 }}>
-            <p style={{ fontSize: 230, lineHeight: 1, color: "rgba(244,236,219,.9)", fontFamily: brush, padding: "0 30px" }}>甲丑</p>
-            {/* a red seal struck across it */}
-            <span
-              style={{
-                position: "absolute",
-                inset: "-10px -6px",
-                border: "10px solid #e2553f",
-                borderRadius: "50%",
-                transform: "rotate(-8deg)",
-                opacity: 0.9,
-              }}
-            />
-            <span style={{ position: "absolute", left: "-4%", right: "-4%", top: "48%", height: 12, background: "#e2553f", transform: "rotate(-22deg)", opacity: 0.9 }} />
-          </div>
+          <p style={{ marginTop: 18, fontSize: 210, lineHeight: 1, color: "#f1cf7a", fontFamily: brush, textShadow: "0 6px 24px rgba(0,0,0,.5)" }}>甲子</p>
+          <p style={{ marginTop: 20, fontSize: 40, color: "rgba(244,236,219,.9)" }}>갑자에서 계해까지, 예순 가지 일주</p>
         </div>
         <div style={{ position: "absolute", top: 790, left: 64 }}>
           <div style={{ width: 170, height: 170, borderRadius: "50%", overflow: "hidden", border: `6px solid ${GOLD}`, background: HANJI, boxShadow: "0 10px 24px rgba(0,0,0,.4)" }}>
@@ -912,10 +899,10 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
             <img src="/hundo-face.png" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           </div>
           <div style={{ position: "absolute", left: -12, top: -84, padding: "12px 22px", background: "#fff", color: INK, borderRadius: 22, fontSize: 32, fontWeight: 800, whiteSpace: "nowrap", boxShadow: "0 8px 20px rgba(0,0,0,.3)" }}>
-            {q.say ? String(q.say) : "어찌 된 일이겠사옵니까?"}
+            {q.say ? String(q.say) : "저장해 두시옵소서!"}
           </div>
         </div>
-        <ThumbTitle top="달력에 甲丑일이 없는 이유" main="절대 오지 않는 날" />
+        <ThumbTitle top="태어난 날의 두 글자, 60갑자 한눈에" main="나는 무슨 일주?" />
       </Frame>
     );
   if (c === "gz-what") {
