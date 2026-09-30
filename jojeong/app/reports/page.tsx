@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "전체 보고서" };
 // Every report on one shelf: the present-day readings first, then the Joseon play that opens from the court.
 const WHERE: Record<Product["for"], string | null> = { king: "왕이 보는 보고서", minister: "신하가 보는 보고서", anyone: null };
 
-function Row({ p, price, mine }: { p: Product; price: number; mine?: string }) {
+function Row({ p, mine }: { p: Product; mine?: string }) {
   const where = p.modern ? null : WHERE[p.for];
   // Paid in 쪽빛, free on paper, as everywhere on the site.
   const free = Boolean(p.free);
@@ -36,13 +36,9 @@ function Row({ p, price, mine }: { p: Product; price: number; mine?: string }) {
             <span className="text-sm">결제함</span>
           ) : p.free ? (
             "무료"
-          ) : price < PRICE ? (
-            <>
-              <s className="block text-xs font-normal text-hanji/50">{PRICE.toLocaleString("ko-KR")}원</s>
-              {price.toLocaleString("ko-KR")}원
-            </>
           ) : (
-            `${price.toLocaleString("ko-KR")}원`
+            // The price is said once at the top of the page, not on every report.
+            <span className="text-sm">보기 →</span>
           )}
         </span>
       </Link>
@@ -111,7 +107,7 @@ export default async function ReportsPage() {
         <h2 className="font-myeongjo text-lg font-extrabold">내 사주 보고서</h2>
         <ul className="mt-3 flex flex-col gap-3">
           {modern.map((p) => (
-            <Row key={p.id} p={p} price={price} mine={owned[p.id]?.href} />
+            <Row key={p.id} p={p} mine={owned[p.id]?.href} />
           ))}
         </ul>
       </section>
