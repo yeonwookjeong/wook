@@ -1148,6 +1148,144 @@ export default async function Cards({ searchParams }: PageProps<"/admin/cards">)
   }
 
   // ── 2027년은 왜 붉은 양일까: where a year's color and animal come from, and what 丁未 looks like.
+  // ── 10/3 결혼 날짜는 왜 '받는다'고 할까: 택일, 정 훈도의 본업.
+  if (c === "tk-cover")
+    return (
+      <Frame dark>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <CornerBrand />
+        <div style={{ position: "absolute", top: 230, left: 0, right: 0, textAlign: "center" }}>
+          <p style={{ fontSize: 34, letterSpacing: "0.3em", color: GOLD, fontWeight: 800 }}>擇 日</p>
+          <p style={{ marginTop: 20, fontSize: 230, lineHeight: 1, color: "#f1cf7a", fontFamily: brush, textShadow: "0 6px 24px rgba(0,0,0,.5)" }}>吉日</p>
+          <p style={{ marginTop: 26, fontSize: 40, color: "rgba(244,236,219,.9)" }}>“날 받았어?” 의 그 날</p>
+        </div>
+        <div style={{ position: "absolute", top: 790, left: 64 }}>
+          <div style={{ width: 170, height: 170, borderRadius: "50%", overflow: "hidden", border: `6px solid ${GOLD}`, background: HANJI, boxShadow: "0 10px 24px rgba(0,0,0,.4)" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/hundo-face.png" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          </div>
+          <div style={{ position: "absolute", left: -12, top: -84, padding: "12px 22px", background: "#fff", color: INK, borderRadius: 22, fontSize: 32, fontWeight: 800, whiteSpace: "nowrap", boxShadow: "0 8px 20px rgba(0,0,0,.3)" }}>
+            {q.say ? String(q.say) : "소신의 본업이옵니다"}
+          </div>
+        </div>
+        <ThumbTitle top="결혼 날짜는 왜 ‘잡는다’가 아니라" main="‘받는다’고 할까?" />
+      </Frame>
+    );
+  if (c === "tk-receive")
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 140, left: 100, right: 100 }}>
+          <Label>① 날은 ‘받아 오는’ 것이었어요</Label>
+          <p style={{ marginTop: 18, fontSize: 62, fontWeight: 800, lineHeight: 1.25 }}>“날 받았어?”</p>
+          <Body style={{ marginTop: 20, fontSize: 36, color: INK }}>
+            결혼, 이사, 개업처럼 큰일을 앞두면 옛사람들은 날짜를 <b>스스로 고르지 않았어요.</b> 날을 볼 줄 아는 사람에게 가서 좋은 날을 <b style={{ color: SEAL }}>받아 왔어요.</b>
+          </Body>
+          <div style={{ marginTop: 56, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, textAlign: "center" }}>
+            {[
+              { k: "날을 잡다", v: "내 사정에 맞춰\n내가 정하는 날", on: false },
+              { k: "날을 받다", v: "하늘과 내 사주에 맞춰\n골라 받은 날", on: true },
+            ].map((x) => (
+              <div key={x.k} style={{ padding: "34px 20px", borderRadius: 24, border: x.on ? `3px solid ${SEAL}` : "3px solid rgba(33,27,23,.12)", background: x.on ? "rgba(179,38,30,.07)" : "transparent" }}>
+                <p style={{ fontSize: 46, fontWeight: 800, color: x.on ? SEAL : INK }}>{x.k}</p>
+                <p style={{ marginTop: 14, fontSize: 30, lineHeight: 1.5, color: SOFT, fontFamily: sans, whiteSpace: "pre-line" }}>{x.v}</p>
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop: 56, padding: "34px 36px", borderRadius: 22, background: "rgba(33,27,23,.05)", fontFamily: sans }}>
+            <p style={{ fontSize: 32, lineHeight: 1.6 }}>
+              그래서 좋은 날을 고르는 일을 <b style={{ color: SEAL }}>택일(擇日)</b>, 날을 받아 오는 일을 <b>날받이</b>라고 불렀어요.
+            </p>
+          </div>
+        </div>
+        <Brand />
+      </Frame>
+    );
+  if (c === "tk-gwan")
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 140, left: 100, right: 100 }}>
+          <Label>② 나라의 날은 관상감이 골랐어요</Label>
+          <p style={{ marginTop: 18, fontSize: 58, fontWeight: 800, lineHeight: 1.25 }}>조선의 날씨청이자 달력청</p>
+          <div style={{ marginTop: 44, display: "flex", flexDirection: "column", gap: 16 }}>
+            {[
+              { h: "天文", t: "천문학", v: "하늘을 보고 해·달·별과 날씨를 기록", on: false },
+              { h: "地理", t: "지리학", v: "땅을 보고 집터와 묏자리를 고름", on: false },
+              { h: "命課", t: "명과학", v: "사람의 명을 보고 좋은 날을 고름", on: true },
+            ].map((x) => (
+              <div key={x.h} style={{ display: "flex", alignItems: "center", gap: 26, padding: "24px 30px", borderRadius: 22, border: x.on ? `3px solid ${SEAL}` : "3px solid transparent", background: x.on ? "rgba(179,38,30,.07)" : "rgba(33,27,23,.045)" }}>
+                <span style={{ flexShrink: 0, width: 130, fontSize: 60, lineHeight: 1, fontFamily: brush, color: x.on ? SEAL : INK }}>{x.h}</span>
+                <span>
+                  <b style={{ display: "block", fontSize: 40, color: x.on ? SEAL : INK }}>{x.t}</b>
+                  <span style={{ display: "block", marginTop: 4, fontSize: 29, color: SOFT, fontFamily: sans }}>{x.v}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+          <Body style={{ marginTop: 44, fontSize: 34, color: INK }}>
+            왕실의 혼례, 즉위, 장례처럼 나라의 큰일은 <b>관상감 명과학</b> 관원들이 날을 골라 올렸어요. 정 훈도는 바로 그 <b style={{ color: SEAL }}>명과학의 훈도</b>, 날 고르는 법을 가르치던 관원이에요.
+          </Body>
+        </div>
+        <Brand />
+      </Frame>
+    );
+  if (c === "tk-how")
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 140, left: 100, right: 100 }}>
+          <Label>③ 좋은 날은 두 번 거른 날</Label>
+          <p style={{ marginTop: 18, fontSize: 58, fontWeight: 800, lineHeight: 1.25 }}>달력이 좋고, 내 사주에도 좋고</p>
+          <div style={{ marginTop: 44, display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
+            {[
+              { n: "一", t: "달력(책력)이 권하는 날", v: "누구에게나 좋다는 날, 피하라는 날을 먼저 거르고", w: 880 },
+              { n: "二", t: "내 사주와 부딪히지 않는 날", v: "그 가운데 내 글자와 부딪히지 않고, 필요한 기운이 드는 날", w: 720 },
+              { n: "三", t: "나에게 좋은 날", v: "두 번 걸러 남은 날이 받는 날", w: 560 },
+            ].map((x, i) => (
+              <div key={x.n} style={{ width: x.w, padding: "22px 28px", borderRadius: 22, textAlign: "center", background: i === 2 ? SEAL : "rgba(33,27,23,.05)", color: i === 2 ? HANJI : INK }}>
+                <b style={{ fontSize: 36 }}>
+                  {x.n} · {x.t}
+                </b>
+                <p style={{ marginTop: 6, fontSize: 27, lineHeight: 1.45, color: i === 2 ? "rgba(244,236,219,.85)" : SOFT, fontFamily: sans }}>{x.v}</p>
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop: 44, padding: "32px 36px", borderRadius: 22, background: "rgba(33,27,23,.05)", fontFamily: sans }}>
+            <p style={{ fontSize: 31, lineHeight: 1.6 }}>
+              이사 때 많이 보는 <b>손 없는 날</b>은 첫 번째 거름망이에요. 누구에게나 같은 날이라, 그 날이 <b style={{ color: SEAL }}>나에게도</b> 좋은지는 두 번째 거름망에서 갈려요.
+            </p>
+          </div>
+        </div>
+        <Brand />
+      </Frame>
+    );
+  if (c === "tk-now")
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 140, left: 100, right: 100 }}>
+          <Label>④ 지금도 날을 받을 수 있어요</Label>
+          <p style={{ marginTop: 18, fontSize: 58, fontWeight: 800, lineHeight: 1.25 }}>큰일 앞두고 계신가요?</p>
+          <div style={{ marginTop: 44, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, textAlign: "center" }}>
+            {["결혼", "상견례", "이사", "개업", "계약", "면접"].map((x) => (
+              <div key={x} style={{ padding: "26px 0", borderRadius: 20, background: "rgba(33,27,23,.045)", fontSize: 40, fontWeight: 800 }}>
+                {x}
+              </div>
+            ))}
+          </div>
+          <Body style={{ marginTop: 44, fontSize: 34, color: INK }}>
+            책력이 권하는 날 가운데 <b>내 사주와 부딪히지 않는 날</b>을 골라, 날마다 <b style={{ color: SEAL }}>왜 그 날인지</b>와 좋은 시간까지 적어 드려요. 결혼처럼 두 사람의 일은 두 사람 사주를 함께 봐요.
+          </Body>
+          <div style={{ marginTop: 40, padding: "30px 34px", borderRadius: 22, background: "rgba(33,27,23,.05)", fontFamily: sans }}>
+            <p style={{ fontSize: 31, lineHeight: 1.6 }}>
+              훈도사주 <b>택일 · 좋은 날 받기</b>에서 조건에 맞는 좋은 날이 <b>몇 날인지</b>는 먼저 무료로 볼 수 있어요.
+            </p>
+          </div>
+        </div>
+        <Brand />
+      </Frame>
+    );
   // ── 10/2 그대는 나무? 촛불?: the first letter of the day pillar, the ten ways a person can be.
   const GAN = [
     { h: "甲", ko: "갑", el: "나무", sw: "#3f7a5a", img: "큰 나무", line: "곧게 위로 자라는 모습 · 한번 정하면 밀고 나가는 편" },

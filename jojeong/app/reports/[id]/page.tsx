@@ -118,7 +118,7 @@ async function OpenReport({
 }) {
   const query = new URLSearchParams({ ...(courtId && { court: courtId }), ...(ministerId && { m: ministerId }) }).toString();
 
-  // 택일: the search and chart(s) in the link (or the order), the three best days free, the rest when bought.
+  // 택일: the search and chart(s) in the link (or the order); how many good days there are is free, the days themselves when bought.
   if (product.id === "taekil") {
     const src = paid ? paid.req : { ...search, a: pair.a, b: pair.b };
     const found = parseSearch(src.kind, src.from, src.n, !paid);
