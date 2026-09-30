@@ -29,12 +29,27 @@ async function saveProfile(courtId: string, who: string, { input, gender }: Pars
   }
 }
 
+// The player's own chart, from the game, also becomes the site's "내 사주" (lib/me.ts), so 오늘의 운세, the
+// ranking and the reports open on it without asking again. Only when none is saved yet: a chart already kept in
+// this browser is never replaced by a game entry. Only the player's own (enthroning, or joining from a link),
+// never a friend appointed by the king. A failure here never blocks the game.
+async function rememberIfNone(parsed: Parsed) {
+  try {
+    if (await readMe()) return;
+    const profile = computeProfile(parsed.input, parsed.gender);
+    await rememberMe({ name: parsed.name, pillars: parsed.pillars, gender: parsed.gender, birthYear: profile.birthYear ?? null, daeun: profile.daeun ?? [] });
+  } catch (e) {
+    console.error(e);
+  }
+}
+
 export async function enthroneAction(_prev: FormState, formData: FormData): Promise<FormState> {
   let courtId: string;
   try {
     const parsed = parseForm(formData);
     const court = await createCourt(parsed.name, parsed.pillars);
     await saveProfile(court.id, "king", parsed);
+    await rememberIfNone(parsed);
     (await cookies()).set(OWNER_COOKIE(court.id), court.ownerToken, COOKIE_OPTS);
     courtId = court.id;
     await track("king");
@@ -55,6 +70,7 @@ export async function joinCourtAction(_prev: FormState, formData: FormData): Pro
     const parsed = parseForm(formData);
     const minister = await addMinister(court.id, parsed.name, parsed.pillars, "joined");
     await saveProfile(court.id, minister.id, parsed);
+    await rememberIfNone(parsed);
     (await cookies()).set(MINISTER_COOKIE(court.id), minister.id, COOKIE_OPTS);
     ministerId = minister.id;
     await track("join");
