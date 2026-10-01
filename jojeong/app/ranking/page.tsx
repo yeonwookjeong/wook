@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import AdSlot from "@/components/AdSlot";
+import NextStep from "@/components/NextStep";
 import WatchList from "@/components/WatchList";
+import { STEPS } from "@/lib/nextStep";
+import { thisYear } from "@/lib/yeonun";
 import { monthPillarNow, rankMonth, type IljuMonth } from "@/lib/iljuRank";
 import { readMe } from "@/lib/me";
 
@@ -69,24 +71,10 @@ export default async function RankingPage() {
           ) : (
             <p className="mt-2 text-[13px] leading-relaxed text-ink-soft">{mine.tips[0]}</p>
           )}
-          <p className="mt-3 text-[12px] leading-relaxed text-ink-soft">
-            일주는 여덟 글자 중 두 글자예요. 내 사주 전체로 본 이달의 흐름은
-            <br />
-            <Link href="/reports/yeonun" className="font-bold text-seal underline">
-              연운 · 그해 운세
-            </Link>
-            에서 볼 수 있어요.
-          </p>
         </section>
-      ) : (
-        <Link href="/" className="doc-paper mt-5 flex items-center gap-3 px-5 py-4">
-          <span className="min-w-0 flex-1">
-            <b className="block font-myeongjo">내 일주를 모르겠다면</b>
-            <span className="block text-[12.5px] text-ink-soft">생년월일만 넣으면 무료 사주 분석에서 바로 알려 드려요</span>
-          </span>
-          <span className="shrink-0 text-xs font-bold text-seal">무료 →</span>
-        </Link>
-      )}
+      ) : null}
+      {/* Right under the reader's own place (or where it would be): the question it leaves, answered. */}
+      <NextStep from="ranking" steps={STEPS.ranking(thisYear(), !!mine)} />
 
       <section className="mt-6">
         <h2 className="text-center font-myeongjo text-lg font-extrabold">이달의 TOP 3</h2>

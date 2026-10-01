@@ -27,7 +27,7 @@ export default function ReportShelf({ ids, query, highlights = {} }: { ids: Prod
                 const free = isOpen(p);
                 return (
                   <li key={id}>
-                    <TrackLink event="to_saju" href={p.modern ? `/reports/${id}` : `/reports/${id}?${query}`} className={`${free ? "doc-paper" : "jjok-box"} flex items-center gap-3 px-4 py-4`}>
+                    <TrackLink event="to_saju" from="minister" href={p.modern ? `/reports/${id}` : `/reports/${id}?${query}`} className={`${free ? "doc-paper" : "jjok-box"} flex items-center gap-3 px-4 py-4`}>
                       <span
                         className={`flex h-11 min-w-11 shrink-0 items-center justify-center border-2 px-1 font-myeongjo font-extrabold ${free ? "border-seal/60 text-seal" : "border-gold/60 text-gold"} ${p.hanja.length > 2 ? "text-xs" : "text-sm"}`}
                       >

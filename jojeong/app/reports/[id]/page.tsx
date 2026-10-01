@@ -16,6 +16,9 @@ import OrderLink from "@/components/OrderLink";
 import DecadeTable from "@/components/DecadeTable";
 import DomainCard from "@/components/DomainCard";
 import FreeReading from "@/components/FreeReading";
+import NextStep from "@/components/NextStep";
+import TrackLink from "@/components/TrackLink";
+import { STEPS } from "@/lib/nextStep";
 import { freeReadingOf } from "@/lib/freeReading";
 import DeepenForm from "@/components/DeepenForm";
 import Keep from "@/components/Keep";
@@ -345,6 +348,7 @@ async function OpenReport({
           heading={subject?.king ? `${name} 전하가 왕이 아니었다면` : `${josa(name, "이/가")} 조선에 태어났다면`}
           query={query}
         />
+        {self && <NextStep from="sinbun" steps={STEPS.sinbun(query)} />}
         {other}
         <AdSlot />
       </>
@@ -554,7 +558,7 @@ async function OpenReport({
           {meDeepen}
           <Paywall product={product} request={request} chapters={product.toc} />
           {/* Not ready to pay: the free year reading is one tap away, not a dead end. */}
-          <Link href={`/reports/gukjeong${query ? `?${query}` : ""}`} className="doc-paper mt-4 flex items-center gap-3 px-5 py-4">
+          <TrackLink event="to_saju" from="reading" href={`/reports/gukjeong${query ? `?${query}` : ""}`} className="doc-paper mt-4 flex items-center gap-3 px-5 py-4">
             <span className="min-w-0 flex-1">
               <b className="block font-myeongjo">결제 전에, 무료 2026년 운세부터</b>
               <span className="block text-[12px] text-ink-soft">
@@ -562,7 +566,7 @@ async function OpenReport({
               </span>
             </span>
             <span className="shrink-0 text-sm font-bold text-seal">무료 →</span>
-          </Link>
+          </TrackLink>
         </>
       ) : (
         <>

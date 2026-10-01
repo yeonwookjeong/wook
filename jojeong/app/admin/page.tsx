@@ -12,6 +12,7 @@ import GiftForm from "./GiftForm";
 import SignInForm from "./SignInForm";
 import { isPreview, newYearOf, thisYear } from "@/lib/yeonun";
 import { inPeriods, PERIODS, readStats, type Period } from "@/lib/stats";
+import { STEP_FROM, STEP_LABEL } from "@/lib/nextStep";
 
 export const metadata: Metadata = { title: "관리자", robots: { index: false } };
 
@@ -54,6 +55,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   const when = (t: number) => new Date(t + 9 * 3600000).toISOString().slice(5, 16).replace("T", " ");
   const stats = await readStats([
     ...["uv", "pv", "reading", "king", "join", "appoint", "share_court", "share_result", "save_image", "own_court", "to_saju"],
+    ...STEP_FROM.map((f) => `to:${f}`),
     ...SALE_KEYS.flatMap((k) => [`view:${k}`, `co:${k}`]),
   ]);
   // Paid orders per period.
@@ -258,7 +260,8 @@ const ROWS: { key: string; label: string; group?: string }[] = [
   { key: "share_result", label: "결과 공유" },
   { key: "save_image", label: "이미지 저장" },
   { key: "own_court", label: "나도 조정 만들기" },
-  { key: "to_saju", label: "게임 → 사주 이동", group: "훈도사주" },
+  { key: "to_saju", label: "무료 → 다음 걸음 (전체)", group: "훈도사주" },
+  ...STEP_FROM.map((f) => ({ key: `to:${f}`, label: `　└ ${STEP_LABEL[f]}` })),
   { key: "reading", label: "무료 사주 분석" },
 ];
 
