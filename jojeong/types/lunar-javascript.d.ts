@@ -8,6 +8,7 @@ declare module "lunar-javascript" {
     getDayZhi(): string;
     getTimeGan(): string;
     getTimeZhi(): string;
+    getMonth(): string; // the month pillar, e.g. "戊戌"
     getYun(gender: 0 | 1): Yun;
   }
   interface Yun {
@@ -45,6 +46,10 @@ declare module "lunar-javascript" {
     getTimes(): LunarTime[];
     getYearZhiByLiChun(): string;
     getYearGanByLiChun(): string;
+    // Solar terms, used by lib/snsNight.ts: the term that falls on this day ("" if none), and the 節 (the
+    // twelve that turn the saju month) if this day is one.
+    getJieQi(): string;
+    getCurrentJie(): { getName(): string } | null;
   }
   interface SolarDate {
     getLunar(): LunarDate;

@@ -5,6 +5,7 @@ import { isAdmin } from "@/lib/admin";
 import CopyButton from "@/components/CopyButton";
 import { SNS } from "@/lib/snsCalendar";
 import { morningPost } from "@/lib/snsMorning";
+import { nightPost } from "@/lib/snsNight";
 import { Card } from "../cards/Card";
 import CardSaver from "./CardSaver";
 
@@ -49,6 +50,8 @@ export default async function SnsPage({ searchParams }: PageProps<"/admin/sns">)
   const date = /^\d{4}-\d{2}-\d{2}$/.test(q) && !Number.isNaN(Date.parse(q)) ? q : today;
   const day = SNS[date];
   const morning = morningPost(date);
+  // Written for the day in the calendar if there is one, otherwise the fact the calendar gives for tonight.
+  const night = day?.night ?? nightPost(date).text;
   const tabs = [0, 1, 2].map((n) => ({ date: shift(today, n), name: ["오늘", "내일", "모레"][n] }));
   const month = date.slice(0, 7);
   const monthDays = Object.entries(SNS).filter(([d]) => d.startsWith(month));
@@ -138,8 +141,8 @@ export default async function SnsPage({ searchParams }: PageProps<"/admin/sns">)
         )}
       </Block>
 
-      <Block title="⑤ 밤 질문 글" time="21:30~23:00" text={day?.night}>
-        {!day?.night && <p className="mt-2 text-[13px] text-ink-soft">아직 없어요.</p>}
+      <Block title="⑤ 밤 글" time="스레드 · 21:30~23:00" text={night}>
+        {!day?.night && <p className="mt-2 text-[11px] text-ink-soft">날짜에서 자동으로 골라요: 절기 · 손 없는 날 · 보름 · 초하루 · 그날의 동물 · 자시.</p>}
       </Block>
 
       <section className="doc-paper mt-4 px-4 py-4">

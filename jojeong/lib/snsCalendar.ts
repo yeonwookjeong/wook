@@ -1,7 +1,7 @@
 // What goes up on Instagram and Threads each day, for the admin SNS page (/admin/sns). The plan itself and
 // its rules live in docs/content-calendar.md; this is the ready-to-post part. Each day: the card set (one
 // /admin/cards query per slide, in order), the Instagram caption, the noon Threads chain (one string per
-// post, no numbers) and the night question. The morning 일진 post is written per day by lib/snsMorning.ts.
+// post, no numbers) and, only when a day needs its own, the night post. The morning and night posts are otherwise written per day by lib/snsMorning.ts and lib/snsNight.ts.
 export type SnsDay = {
   title: string;
   cards?: string[];
@@ -50,8 +50,6 @@ export const SNS: Record<string, SnsDay> = {
       `그대는 열 가지 가운데 무엇이옵니까?
 앞 글자를 남겨 주시면 한 줄 붙여 드리겠사옵니다.`,
     ],
-    night: `띠는 바로 말하는데 일주는 모르는 분,
-손 한번 들어 보시옵소서 🙋`,
   },
   "2026-10-02": {
     title: "손 없는 날, 그 ‘손’이 뭐길래?",
@@ -90,8 +88,6 @@ export const SNS: Record<string, SnsDay> = {
 손 없는 날이 子의 날이면, 午의 날에 태어난 이에게는 부딪히는 날이지요.
 그대에게 좋은 날은 따로 있사옵니다.`,
     ],
-    night: `이사할 때 손 없는 날, 챙기시는 편이옵니까?
-아니면 그냥 비는 날로 잡으시옵니까?`,
   },
   "2026-10-03": {
     title: "그대의 일주에도 동물이 숨어 있사옵니다 (뒤 글자 12동물)",
@@ -130,8 +126,6 @@ export const SNS: Record<string, SnsDay> = {
       `그대의 날의 동물은 무엇이옵니까?
 띠와 같은 분도 계시옵니까?`,
     ],
-    night: `띠 동물과 날의 동물이 다른 분,
-둘 중 어느 쪽이 더 닮으셨사옵니까?`,
   },
   "2026-10-04": { title: "같은 날 태어난 쌍둥이, 사주도 같을까요? (12시진)" },
   "2026-10-05": { title: "이번 주 가장 운 좋은 일주는? · 주간 운세 #1", note: "월요일 정례" },
