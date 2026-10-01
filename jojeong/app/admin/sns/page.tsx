@@ -25,6 +25,26 @@ const label = (date: string) => {
 const SCALE = 0.3;
 const CIRCLED = ["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩"];
 
+// A day's slides at a fraction of their size, drawn by the same Card as /admin/cards, ready to save as PNGs.
+function Slides({ date, list, kind }: { date: string; list: string[]; kind: "card" | "reel" }) {
+  const h = kind === "reel" ? 1920 : 1440;
+  const scale = kind === "reel" ? 0.26 : SCALE;
+  return (
+    <div className="mt-3">
+      <CardSaver date={date} count={list.length} kind={kind}>
+        {list.map((qs, i) => (
+          <div key={i} className="relative shrink-0 snap-start overflow-hidden rounded-md border border-seal/20" style={{ width: 1080 * scale, height: h * scale }}>
+            <div style={{ width: 1080, height: h, transform: `scale(${scale})`, transformOrigin: "0 0", position: "relative" }}>
+              <Card q={Object.fromEntries(new URLSearchParams(qs))} />
+            </div>
+            <span className="absolute left-1.5 top-1.5 rounded bg-black/50 px-1.5 text-[11px] font-bold text-white">{i + 1}</span>
+          </div>
+        ))}
+      </CardSaver>
+    </div>
+  );
+}
+
 function Block({ title, time, text, children }: { title: string; time?: string; text?: string; children?: React.ReactNode }) {
   return (
     <section className="doc-paper mt-4 px-4 py-4">
@@ -101,23 +121,17 @@ export default async function SnsPage({ searchParams }: PageProps<"/admin/sns">)
       </Block>
 
       <Block title="② 카드" time="인스타 · 점심 무렵">
-        {day?.cards ? (
-          <div className="mt-3">
-            <CardSaver date={date} count={day.cards.length}>
-              {day.cards.map((qs, i) => (
-                <div key={i} className="relative shrink-0 snap-start overflow-hidden rounded-md border border-seal/20" style={{ width: 1080 * SCALE, height: 1440 * SCALE }}>
-                  <div style={{ width: 1080, height: 1440, transform: `scale(${SCALE})`, transformOrigin: "0 0", position: "relative" }}>
-                    <Card q={Object.fromEntries(new URLSearchParams(qs))} />
-                  </div>
-                  <span className="absolute left-1.5 top-1.5 rounded bg-black/50 px-1.5 text-[11px] font-bold text-white">{i + 1}</span>
-                </div>
-              ))}
-            </CardSaver>
-          </div>
-        ) : (
-          <p className="mt-2 text-[13px] text-ink-soft">아직 카드가 없어요.</p>
-        )}
+        {day?.cards ? <Slides date={date} list={day.cards} kind="card" /> : <p className="mt-2 text-[13px] text-ink-soft">아직 카드가 없어요.</p>}
       </Block>
+
+      {day?.reels && (
+        <Block title="② 릴스 이미지" time="인스타 릴스 · 9:16">
+          <Slides date={date} list={day.reels} kind="reel" />
+          <p className="mt-2 text-[11px] leading-relaxed text-ink-soft">
+            인스타 + → 릴스 → 이 이미지 1장 → 길이 6~8초 → 음악(가사 없는 인기곡) → 스티커 하나 → 피드에도 공유 켜기
+          </p>
+        </Block>
+      )}
 
       <Block title="③ 인스타 캡션" text={day?.caption}>
         {!day?.caption && <p className="mt-2 text-[13px] text-ink-soft">아직 캡션이 없어요.</p>}

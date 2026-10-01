@@ -43,6 +43,29 @@ function Frame({ children, dark = false }: { children: React.ReactNode; dark?: b
   );
 }
 
+// Reels and stories, 1080×1920 (9:16): one dense picture people stop to read. Instagram lays its own buttons over
+// the bottom fifth and the right edge, so the content keeps to the top four fifths.
+function ReelFrame({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      data-card
+      style={{
+        position: "fixed",
+        inset: 0,
+        width: 1080,
+        height: 1920,
+        zIndex: 50,
+        background: "linear-gradient(180deg,#0f2236,#17304a 55%,#1f3d5c)",
+        color: HANJI,
+        fontFamily: serif,
+        overflow: "hidden",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 function Brand({ dark = false }: { dark?: boolean }) {
   return (
     <div style={{ position: "absolute", left: 0, right: 0, bottom: 64, textAlign: "center" }}>
@@ -293,6 +316,56 @@ export async function Card({ q }: { q: CardQuery }) {
     const stars = (r: IljuMonth) => "★★★★★".slice(0, 5 - Math.floor((r.rank - 1) / 12)) + "☆☆☆☆☆".slice(0, Math.floor((r.rank - 1) / 12));
     const hf = <BrushFont hf={String(q.hf ?? "")} />;
 
+    if (c === "rank-reel") {
+      const cols = [rows.slice(0, 20), rows.slice(20, 40), rows.slice(40, 60)];
+      return (
+        <ReelFrame>
+          {hf}
+          <CornerBrand />
+          <div style={{ position: "absolute", top: 170, left: 60, right: 60, textAlign: "center" }}>
+            <p style={{ fontSize: 34, fontWeight: 800, letterSpacing: "0.08em", color: GOLD }}>60일주 운세 랭킹 · {mp.label}</p>
+            <p style={{ marginTop: 14, fontSize: 92, fontWeight: 800, lineHeight: 1.1 }}>
+              {m}월, 내 일주는 <span style={{ color: "#f1cf7a" }}>몇 위?</span>
+            </p>
+            <p style={{ marginTop: 16, fontSize: 30, color: "rgba(244,236,219,.85)", fontFamily: sans }}>
+              {mp.term} {mp.from} ~ {mp.to} · 태어난 날의 두 글자로 본 간이 운세
+            </p>
+          </div>
+          <div className="doc-paper" style={{ position: "absolute", top: 440, left: 44, right: 44, padding: "26px 22px 22px", color: INK, display: "flex", gap: 14 }}>
+            {cols.map((col, ci) => (
+              <div key={ci} style={{ flex: 1, minWidth: 0 }}>
+                {col.map((r) => {
+                  const top = r.rank <= 3;
+                  return (
+                    <div
+                      key={r.no}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        height: 54,
+                        padding: "0 8px",
+                        borderTop: r.rank % 20 === 1 ? "none" : "1.5px solid rgba(179,38,30,.13)",
+                        background: top ? "rgba(212,175,95,.22)" : r.rank > 55 ? "rgba(33,27,23,.05)" : "transparent",
+                      }}
+                    >
+                      <span style={{ width: 40, flexShrink: 0, textAlign: "right", fontSize: 26, fontWeight: 800, color: top ? SEAL : INK }}>{r.rank}</span>
+                      <span style={{ width: 88, flexShrink: 0, whiteSpace: "nowrap", fontSize: 38, lineHeight: 1, color: SEAL, fontFamily: brush }}>{r.hanja}</span>
+                      <span style={{ flex: 1, minWidth: 0, whiteSpace: "nowrap", fontSize: 26, fontWeight: 800 }}>{r.name.replace("일주", "")}</span>
+                      <span style={{ flexShrink: 0, fontSize: 15, letterSpacing: "-0.04em", color: "#a87a22" }}>{stars(r).replace(/☆/g, "")}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+          <div style={{ position: "absolute", top: 1585, left: 60, right: 60, textAlign: "center" }}>
+            <p style={{ fontSize: 30, fontWeight: 800, color: "#f1cf7a" }}>내 일주를 모르면? 프로필 링크에서 생년월일만 넣으면 바로</p>
+            <p style={{ marginTop: 10, fontSize: 26, color: "rgba(244,236,219,.75)", fontFamily: sans }}>저장해 두고 이번 달 내내 꺼내 보시옵소서</p>
+          </div>
+        </ReelFrame>
+      );
+    }
     if (c === "rank-cover") {
       const top = rows[0];
       return (
