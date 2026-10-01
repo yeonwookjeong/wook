@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import GameBridge from "@/components/GameBridge";
+import NextStep from "@/components/NextStep";
 import Hundo from "@/components/Hundo";
 import AdSlot from "@/components/AdSlot";
 import ReportShelf from "@/components/ReportShelf";
@@ -41,6 +41,12 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
   const isSelf = myMinisterId === seat.minister.id;
   const role = ROLES[seat.role];
   const bq = isSelf ? await bridgeQuery(seat.minister.pillars) : "";
+  // The result's one step out: the real chart (free), and the year beside it. Only for the minister themself.
+  const ministerYear = isSelf ? yearBridge(seat.minister.pillars, await getProfile(court.id, seat.minister.id), bq, seat.minister.name) : null;
+  const ministerStep = {
+    main: { ...chartBridge(seat.minister.pillars, bq, `${role.title} 말고, 진짜 ${seat.minister.name}`, "관직을 벗으면 나는 어떤 사람일까"), free: true },
+    more: ministerYear ? [{ href: ministerYear.href, title: ministerYear.title }] : [],
+  };
   const danger = role.tone === "red" || role.tone === "gray";
   const reasons = roleReasons(court.king, seat.minister.pillars, seat.match, seat.role, seat.minister.name);
   // The 기신 line is already part of the reasons for 간신 and 유배.
@@ -171,21 +177,7 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
       </section>
 
       {isSelf && <MyChartTeaser pillars={seat.minister.pillars} name={seat.minister.name} />}
-      {isSelf && (
-        <>
-          <GameBridge
-            {...yearBridge(seat.minister.pillars, await getProfile(court.id, seat.minister.id), bq, seat.minister.name)}
-          />
-          <GameBridge
-            {...chartBridge(
-              seat.minister.pillars,
-              bq,
-              `${role.title} 말고, 진짜 ${seat.minister.name}`,
-              "관직을 벗으면 나는 어떤 사람일까",
-            )}
-          />
-        </>
-      )}
+      {isSelf && <NextStep from="minister" steps={ministerStep} />}
       {isSelf && (
         <ReportShelf
           ids={["sinbun", "pyeongsaeng", "gunghap", "gukjeong"]}

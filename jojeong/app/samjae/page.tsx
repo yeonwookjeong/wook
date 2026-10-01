@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import NextStep from "@/components/NextStep";
+import { STEPS } from "@/lib/nextStep";
 import AdSlot from "@/components/AdSlot";
 import { readMe } from "@/lib/me";
 import { samjaeOf, TTI } from "@/lib/samjae";
@@ -80,10 +81,8 @@ export default async function SamjaePage() {
           다만 삼재는 태어난 해의 띠 한 글자만 보는 풀이예요. 실제 사주는 여덟 글자로 보기 때문에, 같은 삼재라도 사람마다 그해가 전혀 다르게
           흘러가요. 삼재인데 오히려 좋은 해인 사람도 많아요.
         </p>
-        <Link href="/reports/gukjeong" className="mt-4 block rounded-2xl bg-seal py-3.5 text-center font-myeongjo font-extrabold text-hanji">
-          여덟 글자로 보는 내 {YEAR}년 운세 (무료) →
-        </Link>
       </section>
+      <NextStep from="samjae" steps={STEPS.samjae(YEAR)} />
       <AdSlot />
     </>
   );

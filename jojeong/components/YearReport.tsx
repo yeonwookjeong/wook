@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { priceNow, productById, type ProductId } from "@/lib/products";
 import { ELEMENT_HANJA, ELEMENT_KO } from "@/lib/myeongri";
 import type { YearReading } from "@/lib/yearly";
@@ -7,6 +6,7 @@ import DeepenForm from "./DeepenForm";
 import Keep from "./Keep";
 import RoyalDoc from "./RoyalDoc";
 import SajuChart from "./SajuChart";
+import TrackLink from "./TrackLink";
 
 const RATING = [
   { mark: "✕", label: "고비", cls: "bg-ink text-hanji" },
@@ -252,7 +252,9 @@ export default function YearReport({
         <ul className="mt-4 flex flex-col gap-2">
           {NEXT.map(({ id, ask }, i) => (
             <li key={id}>
-              <Link
+              <TrackLink
+                event="to_saju"
+                from="gukjeong"
                 href={`/reports/${id}${query ? `?${query}` : ""}`}
                 className={`flex items-center gap-3 rounded-2xl px-4 py-3 ${i === 0 ? "bg-seal text-hanji" : "border border-seal/25 bg-white/50"}`}
               >
@@ -261,7 +263,7 @@ export default function YearReport({
                   <span className={`block text-[12px] ${i === 0 ? "text-hanji/80" : "text-ink-soft"}`}>{ask}</span>
                 </span>
                 <span className="shrink-0 text-sm font-bold">→</span>
-              </Link>
+              </TrackLink>
             </li>
           ))}
         </ul>

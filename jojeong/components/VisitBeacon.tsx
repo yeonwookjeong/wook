@@ -23,8 +23,9 @@ export function send(body: object) {
   }
 }
 
-// For buttons: which step of the funnel was taken (lib/stats.ts CLIENT_EVENTS).
-export const trackEvent = (e: string) => send({ e });
+// For buttons: which step of the funnel was taken (lib/stats.ts CLIENT_EVENTS), and for a step out of a free
+// page, which page it was (lib/nextStep.ts).
+export const trackEvent = (e: string, from?: string) => send(from ? { e, from } : { e });
 
 export default function VisitBeacon() {
   const path = usePathname();

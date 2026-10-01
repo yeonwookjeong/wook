@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import ForgetCourtButton from "@/components/ForgetCourtButton";
-import TrackLink from "@/components/TrackLink";
+import NextStep from "@/components/NextStep";
+import { STEPS } from "@/lib/nextStep";
 import { SERVICE_NAME, TAGLINE } from "@/lib/brand";
 import AdSlot from "@/components/AdSlot";
 import BirthForm from "@/components/BirthForm";
@@ -21,14 +22,6 @@ const EXAMPLE: BoardSeat[] = [
   { role: "gansin", name: "철수" },
 ];
 
-
-// From the game to the readings, each tied to what 명과학 did for the court.
-const BRIDGE = [
-  { id: "sinbun", title: "조선 신분 감정", line: "조선에 태어났다면 나는 양반? 상민? 그 한평생", free: true },
-  { id: "pyeongsaeng", title: "평생 사주", line: "명과학 시험 과목, 자평명리로 보는 내 사주", free: false },
-  { id: "gunghap", title: "궁합", line: "왕자·공주 궁합을 심사하던 그 방식으로", free: false },
-  { id: "taekil", title: "택일", line: "왕실의 길일을 고르던 본업, 내 큰일의 날", free: false },
-];
 
 export const metadata: Metadata = {
   title: { absolute: `${SERVICE_NAME} · ${TAGLINE}` },
@@ -118,22 +111,8 @@ export default async function KingHome() {
         </p>
       </section>
 
-      {/* The same three things the fact above names, as 정 훈도 does them today: the way across to the readings. */}
-      <section className="mt-4">
-        <p className="text-center text-[12px] font-bold text-ink-soft">명과학 훈도가 지금도 봐 드리는 것</p>
-        <div className="mt-2 grid grid-cols-2 gap-2">
-          {BRIDGE.map((b) => (
-            <TrackLink key={b.id} event="to_saju" href={`/reports/${b.id}`} className="doc-paper flex flex-col px-3 py-3">
-              <span className="flex items-baseline justify-between gap-1">
-                <b className="font-myeongjo text-[15px]">{b.title}</b>
-                {b.free && <span className="shrink-0 text-[10px] font-bold text-seal">무료</span>}
-              </span>
-              <span className="mt-1 flex-1 text-[12px] leading-snug text-ink-soft">{b.line}</span>
-              <span className="mt-2 text-[12px] font-bold text-seal">보기 →</span>
-            </TrackLink>
-          ))}
-        </div>
-      </section>
+      {/* The same things the fact above names, as 정 훈도 does them today: the way across to the readings. */}
+      <NextStep from="king" steps={STEPS.king()} />
 
       <section className="mt-5">
         <Hundo>

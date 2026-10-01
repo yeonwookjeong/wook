@@ -7,7 +7,7 @@ import ReportShelf from "@/components/ReportShelf";
 import RoyalDoc from "@/components/RoyalDoc";
 import KingCard from "@/components/KingCard";
 import CourtBoard from "@/components/CourtBoard";
-import GameBridge from "@/components/GameBridge";
+import NextStep from "@/components/NextStep";
 import TrackLink from "@/components/TrackLink";
 import Sillok from "@/components/Sillok";
 import PairHighlights from "@/components/PairHighlights";
@@ -46,6 +46,19 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
   const bq = isOwner ? await bridgeQuery(court.king) : "";
   const year = yearBridge(court.king, isOwner ? await getProfile(court.id, "king") : null, bq, "전하");
   const chart = chartBridge(court.king, bq, `${kingType.title}의 진짜 사주`, "왕의 옷을 벗으면, 전하는 어떤 사람일까");
+  // The game's one step out: the real chart (free), with the year and the Joseon life beside it.
+  const step = (
+    <NextStep
+      from="court"
+      steps={{
+        main: { ...chart, free: true },
+        more: [
+          { href: year.href, title: year.title },
+          { href: `/reports/sinbun?court=${court.id}`, title: "왕이 아니었다면, 조선 신분 감정" },
+        ],
+      }}
+    />
+  );
   const inviteText = `${kingType.title} ${court.kingName} 전하께서 그대를 조정에 부르셨사옵니다. 입궐하시겠사옵니까?`;
 
   return (
@@ -98,8 +111,7 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
                   <KingCard kingName={court.kingName} pillars={court.king} />
                 </div>
               </details>
-              <GameBridge {...year} />
-              <GameBridge {...chart} />
+              {step}
             </>
           ) : (
             <section className="mt-6">
@@ -166,12 +178,7 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
                   </div>
                 </details>
               )}
-              {isOwner && (
-                <>
-                  <GameBridge {...year} />
-                  <GameBridge {...chart} />
-                </>
-              )}
+              {isOwner && step}
             </>
           )}
 
