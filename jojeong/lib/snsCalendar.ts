@@ -56,6 +56,7 @@ export const SNS: Record<string, SnsDay> = {
   "2026-10-02": {
     title: "손 없는 날, 그 ‘손’이 뭐길래?",
     cards: ["c=son-cover", "c=son-who", "c=son-nine", "c=son-diff", "c=son-me", CLOSING],
+    reels: ["c=son-reel&y=2026&m=10"],
     caption: `이사 날짜 고르실 때, 달력에 빨간 동그라미부터 치시옵니까?
 손 없는 날 말이옵니다.
 
