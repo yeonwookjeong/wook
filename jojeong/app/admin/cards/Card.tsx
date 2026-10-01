@@ -1602,6 +1602,207 @@ export async function Card({ q }: { q: CardQuery }) {
       </Frame>
     );
   }
+  // ── 10/3 그대의 일주에도 동물이 숨어 있사옵니다: the second letter of the day pillar, the twelve animals.
+  const JI = [
+    { h: "子", ani: "쥐", el: "물", sw: "#1d1d22", season: "한겨울", line: "조용히 모으고 깊이 생각하는 편" },
+    { h: "丑", ani: "소", el: "흙", sw: "#c9a13b", season: "늦겨울", line: "묵묵히 버티며 쌓아 가는 편" },
+    { h: "寅", ani: "호랑이", el: "나무", sw: "#3f7a5a", season: "이른 봄", line: "먼저 일어나 앞서 나가는 편" },
+    { h: "卯", ani: "토끼", el: "나무", sw: "#3f7a5a", season: "한봄", line: "부드럽게 어울리며 자라는 편" },
+    { h: "辰", ani: "용", el: "흙", sw: "#c9a13b", season: "늦봄", line: "여러 기운을 품고 바뀌어 가는 편" },
+    { h: "巳", ani: "뱀", el: "불", sw: "#b3261e", season: "초여름", line: "조용하다가 한번에 타오르는 편" },
+    { h: "午", ani: "말", el: "불", sw: "#b3261e", season: "한여름", line: "밝고 빠르게 내달리는 편" },
+    { h: "未", ani: "양", el: "흙", sw: "#c9a13b", season: "늦여름", line: "따뜻하게 품고 기다리는 편" },
+    { h: "申", ani: "원숭이", el: "쇠", sw: "#bdb6a6", season: "초가을", line: "재빠르게 움직이고 손이 빠른 편" },
+    { h: "酉", ani: "닭", el: "쇠", sw: "#bdb6a6", season: "한가을", line: "정확하게 다듬고 가려내는 편" },
+    { h: "戌", ani: "개", el: "흙", sw: "#c9a13b", season: "늦가을", line: "제 것을 지키고 믿음을 주는 편" },
+    { h: "亥", ani: "돼지", el: "물", sw: "#1d1d22", season: "초겨울", line: "넉넉하게 품고 흘려보내는 편" },
+  ];
+  const jiRows = (from: number, to: number) => (
+    <div style={{ marginTop: 30, display: "flex", flexDirection: "column", gap: 12 }}>
+      {JI.slice(from, to).map((x) => (
+        <div key={x.h} style={{ display: "flex", alignItems: "center", gap: 26, padding: "17px 28px", borderRadius: 22, background: "rgba(33,27,23,.045)" }}>
+          <span style={{ flexShrink: 0, width: 96, textAlign: "center" }}>
+            <span style={{ display: "block", fontSize: 74, lineHeight: 1, fontFamily: brush, color: INK }}>{x.h}</span>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 6, fontSize: 22, color: SOFT, fontFamily: sans }}>
+              <span style={{ width: 14, height: 14, borderRadius: "50%", background: x.sw }} />
+              {x.el}
+            </span>
+          </span>
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span style={{ display: "flex", alignItems: "baseline", gap: 14 }}>
+              <b style={{ fontSize: 44, lineHeight: 1.2, color: SEAL }}>{x.ani}</b>
+              <span style={{ fontSize: 27, color: SOFT, fontFamily: sans }}>{x.season}</span>
+            </span>
+            <span style={{ display: "block", marginTop: 4, fontSize: 28, lineHeight: 1.45, color: INK, fontFamily: sans }}>{x.line}</span>
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+  if (c === "ji-cover")
+    return (
+      <Frame dark>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 120, left: 70, right: 70, display: "grid", gridTemplateColumns: "repeat(6, 1fr)", rowGap: 10, textAlign: "center", fontFamily: brush, fontSize: 112, lineHeight: 1.3, color: "rgba(212,175,95,.12)" }}>
+          {JI.map((x) => (
+            <span key={x.h}>{x.h}</span>
+          ))}
+        </div>
+        <CornerBrand />
+        <div style={{ position: "absolute", top: 250, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 90, textAlign: "center" }}>
+          {[
+            { h: "戌", t: "띠는 개", dim: true },
+            { h: "未", t: "날은 양", dim: false },
+          ].map((x) => (
+            <div key={x.h}>
+              <p style={{ fontSize: 230, lineHeight: 1, color: x.dim ? "rgba(241,207,122,.45)" : "#f1cf7a", fontFamily: brush, textShadow: "0 6px 24px rgba(0,0,0,.5)" }}>{x.h}</p>
+              <p style={{ marginTop: 18, fontSize: 44, fontWeight: 800, color: x.dim ? "rgba(244,236,219,.6)" : "rgba(244,236,219,.95)" }}>{x.t}</p>
+            </div>
+          ))}
+        </div>
+        <div style={{ position: "absolute", top: 790, left: 64 }}>
+          <div style={{ width: 170, height: 170, borderRadius: "50%", overflow: "hidden", border: `6px solid ${GOLD}`, background: HANJI, boxShadow: "0 10px 24px rgba(0,0,0,.4)" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/hundo-face.png" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          </div>
+          <div style={{ position: "absolute", left: -12, top: -84, padding: "12px 22px", background: "#fff", color: INK, borderRadius: 22, fontSize: 32, fontWeight: 800, whiteSpace: "nowrap", boxShadow: "0 8px 20px rgba(0,0,0,.3)" }}>
+            {q.say ? String(q.say) : "그대의 날은 무슨 동물?"}
+          </div>
+        </div>
+        <ThumbTitle top="일주 뒤 글자에 숨은 동물" main="띠 말고, 나의 동물은?" />
+      </Frame>
+    );
+  if (c === "ji-where") {
+    // A real chart: 1994-05-21 14:00 → 甲戌년 己巳월 丁未일 丁未시. 개띠, and the day's animal is 양.
+    const cols = [
+      { k: "시", s: "丁", b: "未", ani: "양" },
+      { k: "날", s: "丁", b: "未", ani: "양", day: true },
+      { k: "달", s: "己", b: "巳", ani: "뱀" },
+      { k: "해", s: "甲", b: "戌", ani: "개", year: true },
+    ];
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 140, left: 100, right: 100 }}>
+          <Label>① 뒤 글자가 ‘나의 동물’이에요</Label>
+          <p style={{ marginTop: 18, fontSize: 60, fontWeight: 800, lineHeight: 1.25 }}>사주에는 동물이 넷</p>
+          <div style={{ marginTop: 46, display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, textAlign: "center" }}>
+            {cols.map((x) => (
+              <div
+                key={x.k}
+                style={{
+                  padding: "18px 0 22px",
+                  borderRadius: 24,
+                  background: x.day ? "rgba(179,38,30,.08)" : "rgba(33,27,23,.04)",
+                  border: x.day ? `3px solid ${SEAL}` : "3px solid transparent",
+                }}
+              >
+                <p style={{ fontSize: 26, color: SOFT, fontFamily: sans }}>태어난 {x.k}</p>
+                <p style={{ marginTop: 8, fontSize: 92, lineHeight: 1.08, fontFamily: brush, color: "rgba(33,27,23,.25)" }}>{x.s}</p>
+                <p style={{ fontSize: 92, lineHeight: 1.08, fontFamily: brush, color: x.day ? SEAL : INK }}>{x.b}</p>
+                <p style={{ marginTop: 8, fontSize: 34, fontWeight: 800, color: x.day ? SEAL : INK }}>{x.ani}</p>
+                <p style={{ marginTop: 4, fontSize: 24, fontFamily: sans, color: x.day ? SEAL : SOFT, fontWeight: x.day || x.year ? 700 : 400 }}>
+                  {x.day ? "나의 동물" : x.year ? "띠" : " "}
+                </p>
+              </div>
+            ))}
+          </div>
+          <p style={{ marginTop: 14, textAlign: "center", fontSize: 24, color: SOFT, fontFamily: sans }}>예: 1994년 5월 21일 오후 2시에 태어난 사람</p>
+          <Body style={{ marginTop: 40, fontSize: 35, color: INK }}>
+            여덟 글자의 <b>아래 줄 넷</b>이 모두 동물이에요. 띠는 그중 <b>태어난 해</b>의 동물이고, 사주에서 나를 뜻하는 <b style={{ color: SEAL }}>태어난 날</b>의 아래 글자가 나의 동물이에요.
+          </Body>
+          <div style={{ marginTop: 34, padding: "28px 34px", borderRadius: 22, background: "rgba(33,27,23,.05)", fontFamily: sans }}>
+            <p style={{ fontSize: 31, lineHeight: 1.6 }}>
+              이 사람은 <b>개띠</b>지만, 날의 동물은 <b style={{ color: SEAL }}>양</b>이에요.
+            </p>
+          </div>
+        </div>
+        <Brand />
+      </Frame>
+    );
+  }
+  if (c === "ji-list1")
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 110, left: 90, right: 90 }}>
+          <Label>② 한겨울부터 초여름까지</Label>
+          <p style={{ marginTop: 12, fontSize: 56, fontWeight: 800, lineHeight: 1.2 }}>열두 동물, 먼저 여섯</p>
+          {jiRows(0, 6)}
+        </div>
+        <Brand />
+      </Frame>
+    );
+  if (c === "ji-list2")
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 110, left: 90, right: 90 }}>
+          <Label>③ 한여름부터 초겨울까지</Label>
+          <p style={{ marginTop: 12, fontSize: 56, fontWeight: 800, lineHeight: 1.2 }}>나머지 여섯</p>
+          {jiRows(6, 12)}
+        </div>
+        <Brand />
+      </Frame>
+    );
+  if (c === "ji-diff") {
+    const rows = [
+      ["어디서", "태어난 해", "태어난 날"],
+      ["바뀌는 때", "12년마다", "12일마다"],
+      ["같은 동물", "그해 태어난 모두", "띠가 같아도 제각각"],
+    ];
+    const friends = [
+      { h: "子", ani: "쥐" },
+      { h: "午", ani: "말" },
+      { h: "酉", ani: "닭" },
+    ];
+    return (
+      <Frame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: 140, left: 100, right: 100 }}>
+          <Label>④ 띠와 날의 동물</Label>
+          <p style={{ marginTop: 18, fontSize: 58, fontWeight: 800, lineHeight: 1.25 }}>무엇이 다를까요?</p>
+          <div style={{ marginTop: 40, display: "grid", gridTemplateColumns: "190px 1fr 1fr", rowGap: 4, fontSize: 32, lineHeight: 1.4, fontFamily: sans }}>
+            <span />
+            <b style={{ padding: "14px 18px", fontFamily: serif, fontSize: 36 }}>띠</b>
+            <b style={{ padding: "14px 18px", fontFamily: serif, fontSize: 36, color: SEAL, background: "rgba(179,38,30,.07)", borderRadius: "18px 18px 0 0" }}>날의 동물</b>
+            {rows.map(([k, a, b], i) => (
+              <Fragment key={k}>
+                <span style={{ padding: "14px 0", color: SOFT, borderTop: "1.5px solid rgba(33,27,23,.1)" }}>{k}</span>
+                <span style={{ padding: "14px 18px", borderTop: "1.5px solid rgba(33,27,23,.1)" }}>{a}</span>
+                <b
+                  style={{
+                    padding: "14px 18px",
+                    borderTop: "1.5px solid rgba(179,38,30,.15)",
+                    background: "rgba(179,38,30,.07)",
+                    borderRadius: i === rows.length - 1 ? "0 0 18px 18px" : 0,
+                  }}
+                >
+                  {b}
+                </b>
+              </Fragment>
+            ))}
+          </div>
+          <p style={{ marginTop: 50, fontSize: 36, fontWeight: 800 }}>같은 개띠 친구 셋이라도</p>
+          <div style={{ marginTop: 20, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 18, textAlign: "center" }}>
+            {friends.map((x) => (
+              <div key={x.h} style={{ padding: "22px 0", borderRadius: 22, background: "rgba(33,27,23,.045)" }}>
+                <p style={{ fontSize: 26, color: SOFT, fontFamily: sans }}>개띠</p>
+                <p style={{ marginTop: 4, fontSize: 84, lineHeight: 1.05, fontFamily: brush, color: SEAL }}>{x.h}</p>
+                <p style={{ marginTop: 4, fontSize: 32, fontWeight: 800 }}>날은 {x.ani}</p>
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop: 40, padding: "28px 34px", borderRadius: 22, background: "rgba(33,27,23,.05)", fontFamily: sans }}>
+            <p style={{ fontSize: 31, lineHeight: 1.6 }}>
+              내 날의 동물이 궁금하면 <b>60갑자 표</b>에서 태어난 날을 찾거나, 훈도사주 <b>무료 사주 분석</b>에서 바로 볼 수 있어요.
+            </p>
+          </div>
+        </div>
+        <Brand />
+      </Frame>
+    );
+  }
   const YEAR_COLORS = [
     { stems: "甲乙", el: "나무", color: "푸른", swatch: "#3f7a5a", ex: "2024 갑진년 · 푸른 용" },
     { stems: "丙丁", el: "불", color: "붉은", swatch: "#b3261e", ex: "2026 병오년 · 붉은 말" },
