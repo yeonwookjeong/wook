@@ -1,4 +1,5 @@
 import { Fragment } from "react";
+import { Solar } from "lunar-javascript";
 import { ILGAN, ILJU_TAG_TEXT, iljuFacts, jiaziNo, nextDayOf, stemCure, stemMatches, stemName, stemThing } from "@/lib/cards";
 import { josa } from "@/lib/josa";
 import { pickDays } from "@/lib/taekil";
@@ -306,6 +307,87 @@ export async function Card({ q }: { q: CardQuery }) {
 
   // ② 60일주 도감
   // 60일주 월간 랭킹, posted on the day the 절기 month begins (?y=&m= the calendar month it begins in).
+  // A month's 손 없는 날 (lunar days ending in 9 and 0) on one calendar, for a reel people save before moving.
+  if (c === "son-reel") {
+    const y = Number(q.y ?? 2026);
+    const m = Number(q.m ?? 10);
+    const last = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    const first = new Date(Date.UTC(y, m - 1, 1)).getUTCDay();
+    const HOLI: Record<string, string> = { "1-1": "신정", "3-1": "삼일절", "5-5": "어린이날", "6-6": "현충일", "8-15": "광복절", "10-3": "개천절", "10-9": "한글날", "12-25": "성탄절" };
+    const days = Array.from({ length: last }, (_, i) => {
+      const d = i + 1;
+      const l = Solar.fromYmd(y, m, d).getLunar();
+      const ld = l.getDay();
+      const wd = (first + i) % 7;
+      return { d, wd, lunar: `${Math.abs(l.getMonth())}.${ld}`, son: ld % 10 === 9 || ld % 10 === 0, holi: HOLI[`${m}-${d}`] };
+    });
+    const sons = days.filter((x) => x.son);
+    const cells = [...Array(first).fill(null), ...days];
+    const W = "일월화수목금토";
+    return (
+      <ReelFrame>
+        <CornerBrand />
+        <div style={{ position: "absolute", top: 170, left: 60, right: 60, textAlign: "center" }}>
+          <p style={{ fontSize: 34, fontWeight: 800, letterSpacing: "0.08em", color: GOLD }}>이사 · 개업 날짜 잡기 전에</p>
+          <p style={{ marginTop: 14, fontSize: 88, fontWeight: 800, lineHeight: 1.1 }}>
+            {m}월 손 없는 날, <span style={{ color: "#f1cf7a" }}>딱 {sons.length}일</span>
+          </p>
+          <p style={{ marginTop: 16, fontSize: 30, color: "rgba(244,236,219,.85)", fontFamily: sans }}>음력 날짜 끝자리가 9와 0인 날 · 작은 글씨는 음력</p>
+        </div>
+        <div className="doc-paper" style={{ position: "absolute", top: 420, left: 44, right: 110, padding: "22px 18px", color: INK }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6, textAlign: "center" }}>
+            {W.split("").map((w, i) => (
+              <p key={w} style={{ fontSize: 26, fontWeight: 800, color: i === 0 ? SEAL : i === 6 ? "#1f4e8c" : SOFT, paddingBottom: 6 }}>
+                {w}
+              </p>
+            ))}
+            {cells.map((x, i) =>
+              x ? (
+                <div
+                  key={i}
+                  style={{
+                    height: 132,
+                    borderRadius: 14,
+                    paddingTop: 10,
+                    background: x.son ? SEAL : "rgba(33,27,23,.04)",
+                    color: x.son ? HANJI : x.wd === 0 || x.holi ? SEAL : x.wd === 6 ? "#1f4e8c" : INK,
+                  }}
+                >
+                  <p style={{ fontSize: 40, fontWeight: 800, lineHeight: 1.05 }}>{x.d}</p>
+                  <p style={{ marginTop: 4, fontSize: 19, fontFamily: sans, opacity: x.son ? 0.9 : 0.6 }}>{x.lunar}</p>
+                  {x.son ? (
+                    <p style={{ marginTop: 6, fontSize: 21, fontWeight: 800 }}>손 없음</p>
+                  ) : x.holi ? (
+                    <p style={{ marginTop: 6, fontSize: 19, fontWeight: 800 }}>{x.holi}</p>
+                  ) : null}
+                </div>
+              ) : (
+                <div key={i} />
+              ),
+            )}
+          </div>
+        </div>
+        <div style={{ position: "absolute", top: 1236, left: 60, right: 110 }}>
+          {sons.map((x) => (
+            <p key={x.d} style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.55 }}>
+              <span style={{ color: "#f1cf7a" }}>
+                {m}/{x.d} ({W[x.wd]})
+              </span>
+              <span style={{ marginLeft: 14, fontSize: 26, fontWeight: 400, color: "rgba(244,236,219,.8)", fontFamily: sans }}>
+                음력 {x.lunar}
+                {x.holi ? ` · ${x.holi}` : ""}
+                {x.wd === 0 || x.wd === 6 ? " · 주말" : ""}
+              </span>
+            </p>
+          ))}
+          <p style={{ marginTop: 18, fontSize: 28, lineHeight: 1.5, color: "rgba(244,236,219,.85)", fontFamily: sans }}>
+            손 없는 날은 누구에게나 같은 날이에요. 내 사주에 맞는 날은 따로 있어요.
+          </p>
+        </div>
+      </ReelFrame>
+    );
+  }
+
   if (c.startsWith("rank-")) {
     const y = Number(q.y ?? 2026);
     const m = Number(q.m ?? 10);
