@@ -90,7 +90,7 @@ const EL = (e: number) => `${ELEMENT_KO[e]}(${ELEMENT_HANJA[e]})`;
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 
 // The day pillar of a Korean calendar day.
-function dayPillar(y: number, m: number, d: number) {
+export function dayPillar(y: number, m: number, d: number) {
   const ec = Solar.fromYmdHms(y, m, d, 12, 0, 0).getLunar().getEightChar();
   return {
     stem: STEMS.indexOf(ec.getDayGan() as (typeof STEMS)[number]),
