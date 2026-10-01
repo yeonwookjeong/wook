@@ -2,6 +2,7 @@ import "server-only";
 import { randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { ORDERS_COOKIE } from "./cookies";
+import { isSource, SRC_COOKIE, type Source } from "./source";
 import type { ProductId, SetId } from "./products";
 import type { JobRequest } from "./reportWriter";
 import { getOrderRaw, getOrdersRaw, giftOrderIds, noteGiftOrder, notePaidOrder, paidOrderIds, setOrderRaw } from "./store";
@@ -32,6 +33,8 @@ export type Order = {
   paidAt?: number;
   paymentKey?: string;
   method?: string;
+  // The road the buyer first came by (lib/source.ts); orders made before it was kept have none.
+  src?: Source;
 };
 
 const clientKey = () => process.env.TOSS_CLIENT_KEY?.trim() ?? "";
@@ -63,7 +66,18 @@ export async function paidOrders(limit = 5000): Promise<Order[]> {
 
 export async function createOrder(product: ProductId, req: JobRequest, who: string, amount: number, set?: { set: SetId; bundle: ProductId[] }): Promise<Order> {
   // Toss wants 6–64 characters of [A-Za-z0-9_-=]; unguessable, since the id is also the link to the report.
-  const order: Order = { id: `hd${randomBytes(15).toString("base64url")}`, product, req, who, amount, ...set, status: "ready", createdAt: Date.now() };
+  const src = (await cookies()).get(SRC_COOKIE)?.value;
+  const order: Order = {
+    id: `hd${randomBytes(15).toString("base64url")}`,
+    product,
+    req,
+    who,
+    amount,
+    ...set,
+    status: "ready",
+    createdAt: Date.now(),
+    ...(isSource(src) && { src }),
+  };
   await setOrderRaw(order.id, JSON.stringify(order));
   return order;
 }

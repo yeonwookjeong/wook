@@ -24,7 +24,7 @@ const allKey = (e: string) => `st:${e}:all`;
 
 // Also `view:<sale>` (a paid report's page seen by a shopper) and `co:<sale>` (its payment window opened), per
 // line of the sales table (lib/sales.ts).
-export async function track(event: StatEvent | `view:${string}` | `co:${string}` | `to:${string}`) {
+export async function track(event: StatEvent | `view:${string}` | `co:${string}` | `to:${string}` | `src:${string}`) {
   await bumpCounters([dayKey(event, kstDay()), allKey(event)]);
 }
 
@@ -101,4 +101,18 @@ export function inPeriods(t: number): Period[] {
   if (d >= s.week[0]) out.push("week");
   if (d >= s.month[0]) out.push("month");
   return out;
+}
+
+// The Korean days from one to another (both included), at most a year.
+export function daysBetween(from: string, to: string): string[] {
+  const out: string[] = [];
+  for (let t = Date.parse(from); t <= Date.parse(to) && out.length < 366; t += 86400000) out.push(new Date(t).toISOString().slice(0, 10));
+  return out;
+}
+
+// Each event's count on each of the given days, in one round trip. Visitors here are per day (a browser that
+// came on two days counts twice), unlike the week and month columns above.
+export async function readDays(events: string[], days: string[]): Promise<Record<string, number[]>> {
+  const values = await readCounters(events.flatMap((e) => days.map((d) => dayKey(e, d))));
+  return Object.fromEntries(events.map((e, i) => [e, values.slice(i * days.length, (i + 1) * days.length)]));
 }

@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
+import { classify, SRC_COOKIE } from "@/lib/source";
 
 // Reports each page view to /api/stat, and whether this browser is new today, this week, this month or at all.
 // The browser remembers only the dates it was last counted; nothing identifies it.
@@ -43,7 +44,14 @@ export default function VisitBeacon() {
       }
     } catch {}
     const cur = { d: day(now), w: week(now), m: day(now).slice(0, 7) };
-    send({ v: { day: seen.d !== cur.d, week: seen.w !== cur.w, month: seen.m !== cur.m, ever } });
+    // The road this browser first came by (lib/source.ts), kept a year; a browser counted before this existed
+    // gets one on its next visit, but only a first visit is counted by road.
+    let src: string | undefined;
+    if (!document.cookie.split("; ").some((c) => c.startsWith(`${SRC_COOKIE}=`))) {
+      src = classify({ path, referrer: document.referrer, ua: navigator.userAgent, query: location.search });
+      document.cookie = `${SRC_COOKIE}=${src}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
+    }
+    send({ v: { day: seen.d !== cur.d, week: seen.w !== cur.w, month: seen.m !== cur.m, ever }, ...(ever && src && { src }) });
     try {
       localStorage.setItem("hv", JSON.stringify(cur));
     } catch {}

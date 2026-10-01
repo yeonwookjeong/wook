@@ -13,6 +13,8 @@ import SignInForm from "./SignInForm";
 import { isPreview, newYearOf, thisYear } from "@/lib/yeonun";
 import { inPeriods, PERIODS, readStats, type Period } from "@/lib/stats";
 import { STEP_FROM, STEP_LABEL } from "@/lib/nextStep";
+import { SOURCES } from "@/lib/source";
+import { DailyTable, SourceTable } from "./Insights";
 
 export const metadata: Metadata = { title: "관리자", robots: { index: false } };
 
@@ -43,7 +45,12 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   const gifts = await giftOrders(50);
   const origin = await originNow();
   const paid = orders.filter((o) => o.status === "paid");
-  const sp = String((await searchParams).sp ?? "all");
+  const q = await searchParams;
+  const sp = String(q.sp ?? "all");
+  // The day-by-day span (?df=&dt=), the last seven days unless chosen.
+  const isDay = (v: unknown): v is string => typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v));
+  const dt = isDay(q.dt) ? q.dt : todayKst();
+  const df = isDay(q.df) && q.df <= dt ? q.df : day(Date.parse(`${dt}T12:00:00+09:00`) - 6 * 86400000);
   const period: Period = PERIODS.some((p) => p.key === sp) ? (sp as Period) : "all";
   const today = todayKst();
   const sum = (list: Order[]) => list.reduce((a, o) => a + o.amount, 0);
@@ -56,6 +63,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   const stats = await readStats([
     ...["uv", "pv", "reading", "king", "join", "appoint", "share_court", "share_result", "save_image", "own_court", "to_saju"],
     ...STEP_FROM.map((f) => `to:${f}`),
+    ...SOURCES.map((s) => `src:${s}`),
     ...SALE_KEYS.flatMap((k) => [`view:${k}`, `co:${k}`]),
   ]);
   // Paid orders per period.
@@ -98,6 +106,8 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
       </p>
 
       <StatsTable stats={stats} paidBy={paidBy} />
+      <SourceTable stats={stats} paid={paid} />
+      <DailyTable from={df} to={dt} paid={paid} />
       <SalesTable
         period={period}
         stats={stats}
