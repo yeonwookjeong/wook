@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Hahmlet } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { adsAccount } from "@/lib/ads";
-import { SITE_NAME, SITE_TAGLINE, siteUrl } from "@/lib/brand";
+import { SITE_NAME, SITE_SUMMARY, SITE_TAGLINE, SNS_URLS, siteUrl } from "@/lib/brand";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import VisitBeacon from "@/components/VisitBeacon";
 import "./globals.css";
@@ -27,6 +27,29 @@ export const metadata: Metadata = {
   },
 };
 
+// Who the site is, for search engines (schema.org): the name to show, what it does, and its own accounts.
+const JSON_LD = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      name: SITE_NAME,
+      alternateName: ["훈도 사주", "Hundo Saju", "hundosaju"],
+      url: `${siteUrl()}/`,
+      description: SITE_SUMMARY,
+      inLanguage: "ko-KR",
+    },
+    {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: `${siteUrl()}/`,
+      logo: `${siteUrl()}/icon.svg`,
+      description: SITE_SUMMARY,
+      sameAs: SNS_URLS,
+    },
+  ],
+};
+
 export const viewport: Viewport = {
   themeColor: "#f4ecdb",
 };
@@ -41,6 +64,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           crossOrigin="anonymous"
           href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
         />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD).replace(/</g, "\\u003c") }} />
       </head>
       <body className="min-h-full">
         <main className="mx-auto flex min-h-dvh w-full max-w-[440px] flex-col px-4 pb-8">
