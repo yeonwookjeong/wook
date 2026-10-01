@@ -92,7 +92,7 @@ async function fontCss(nodes: HTMLElement[]) {
 
 type State = { kind: "idle" } | { kind: "making"; done: number } | { kind: "ready"; files: File[]; urls: string[] } | { kind: "error"; message: string };
 
-export default function CardSaver({ date, count, children }: { date: string; count: number; children: React.ReactNode }) {
+export default function CardSaver({ date, count, kind = "card", children }: { date: string; count: number; kind?: "card" | "reel"; children: React.ReactNode }) {
   const box = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<State>({ kind: "idle" });
 
@@ -104,19 +104,19 @@ export default function CardSaver({ date, count, children }: { date: string; cou
       await document.fonts.ready;
       const fontEmbedCSS = await fontCss(nodes);
       const opts = {
-        width: 1080,
-        height: 1440,
         pixelRatio: 1,
         fontEmbedCSS,
         style: { position: "relative", inset: "auto", left: "0", top: "0", zIndex: "auto" },
       };
       // Safari draws the first pass before the inlined images and fonts decode; a throwaway pass first.
-      await toBlob(nodes[0], opts).catch(() => null);
+      // Each at its own size: 1080×1440 for a card, 1080×1920 for a reel.
+      const sized = (n: HTMLElement) => ({ ...opts, width: n.offsetWidth, height: n.offsetHeight });
+      await toBlob(nodes[0], sized(nodes[0])).catch(() => null);
       const files: File[] = [];
       for (const [i, n] of nodes.entries()) {
-        const blob = await toBlob(n, opts);
+        const blob = await toBlob(n, sized(n));
         if (!blob) throw new Error("이미지를 만들지 못했어요");
-        files.push(new File([blob], `hundosaju-${date}-${i + 1}.png`, { type: "image/png" }));
+        files.push(new File([blob], `hundosaju-${date}${kind === "reel" ? "-reel" : ""}-${i + 1}.png`, { type: "image/png" }));
         setState({ kind: "making", done: i + 1 });
       }
       setState({ kind: "ready", files, urls: files.map((f) => URL.createObjectURL(f)) });
@@ -170,7 +170,7 @@ export default function CardSaver({ date, count, children }: { date: string; cou
             disabled={state.kind === "making"}
             className="w-full rounded-xl border border-seal bg-white/70 py-3 text-sm font-bold text-seal disabled:opacity-60"
           >
-            {state.kind === "making" ? `이미지 만드는 중… ${state.done}/${count}` : `카드 이미지 ${count}장 만들기`}
+            {state.kind === "making" ? `이미지 만드는 중… ${state.done}/${count}` : `${kind === "reel" ? "릴스" : "카드"} 이미지 ${count}장 만들기`}
           </button>
         )}
         {state.kind === "error" && <p className="mt-2 text-center text-xs text-seal">만들지 못했어요: {state.message}</p>}

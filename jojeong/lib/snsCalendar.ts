@@ -5,6 +5,8 @@
 export type SnsDay = {
   title: string;
   cards?: string[];
+  // Reels: one dense 1080×1920 picture each (lib/../app/admin/cards ReelFrame), music and a sticker added in Instagram.
+  reels?: string[];
   caption?: string;
   threads?: string[];
   night?: string;
@@ -131,7 +133,7 @@ export const SNS: Record<string, SnsDay> = {
   "2026-10-05": { title: "이번 주 가장 운 좋은 일주는? · 주간 운세 #1", note: "월요일 정례" },
   "2026-10-06": { title: "1월에 태어나셨다면, 띠가 다를 수 있사옵니다 (사주의 새해는 입춘)" },
   "2026-10-07": { title: "절기 24개는 어떻게 정해질까? 한로·상강은 무슨 뜻? (내일부터 무술월)" },
-  "2026-10-08": { title: "이번 달 1위 일주는? 무술월 60일주 랭킹", note: "한로 · 정례" },
+  "2026-10-08": { title: "이번 달 1위 일주는? 무술월 60일주 랭킹", note: "한로 · 정례", reels: ["c=rank-reel&y=2026&m=10"] },
   "2026-10-09": { title: "삼재가 들었다는 말, 들어 보셨사옵니까? (2026·2027 삼재 띠)", note: "한글날" },
   "2026-10-10": { title: "도화살이 있다는 말, 칭찬이옵니까 욕이옵니까? (도화·역마)" },
   "2026-10-11": { title: "태어난 시간 몰라도 사주 볼 수 있나요? (시간 모름·음력 양력·밤 11시 출생)" },
