@@ -283,6 +283,14 @@ export async function deleteInquiry(id: string) {
   await backend().remove("inquiries", id);
 }
 
+// One line per model call that wrote a report (lib/aiUsage.ts), oldest first.
+export async function logAiUsage(line: string) {
+  await backend().push("ai:usage", line);
+}
+export async function aiUsageLog(): Promise<string[]> {
+  return backend().list("ai:usage");
+}
+
 // Plain counters for the owner's dashboard (lib/stats.ts): bumped in parallel, read many at once.
 export async function bumpCounters(keys: string[]) {
   const b = backend();

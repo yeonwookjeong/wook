@@ -12,6 +12,7 @@ import GiftForm from "./GiftForm";
 import SignInForm from "./SignInForm";
 import { isPreview, newYearOf, thisYear } from "@/lib/yeonun";
 import { inPeriods, PERIODS, readStats, type Period } from "@/lib/stats";
+import { aiUsageSummary, KRW_PER_USD, type AiUsage, type ModelSummary } from "@/lib/aiUsage";
 
 export const metadata: Metadata = { title: "관리자", robots: { index: false } };
 
@@ -99,6 +100,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
         paid={paid.filter((o) => inPeriods(o.paidAt ?? o.createdAt).includes(period))}
         refunds={orders.filter((o) => o.status === "canceled" && inPeriods(o.paidAt ?? o.createdAt).includes(period)).length}
       />
+      <AiCostTable period={period} revenue={paidBy[period].won} {...await aiUsageSummary()} />
 
       <section className="doc-paper mt-4 px-4 py-4">
         <h2 className="flex items-baseline justify-between font-myeongjo font-extrabold">
@@ -433,6 +435,81 @@ function SalesTable({ period, stats, paid, refunds }: { period: Period; stats: R
       <p className="mt-2 px-1 text-[10.5px] leading-relaxed text-ink-soft">
         조회는 결제 전 보고서 화면을 본 수, 결제창은 결제 버튼을 누른 수예요(오늘부터 집계). 결제와 매출은 첫 결제부터 모두 반영돼요. 전환 = 결제 ÷ 조회. 연운은
         지난해·올해·내년으로 나눴고, 내년 연운이 신년운세예요. CSV에는 이름 없이 날짜·상품·금액·결제 수단만 담겨요.
+      </p>
+    </section>
+  );
+}
+
+// What the model calls behind the reports cost, for the period picked in the sales table: which model really
+// answered, tokens per report, and the cost in won (at an assumed exchange rate).
+function AiCostTable({ period, revenue, by, recent }: { period: Period; revenue: number; by: Record<Period, ModelSummary[]>; recent: AiUsage[] }) {
+  const n = (v: number) => Math.round(v).toLocaleString("ko-KR");
+  const won = (usd: number | null) => (usd === null ? "단가 없음" : `${n(usd * KRW_PER_USD)}원`);
+  const rows = by[period];
+  const known = rows.every((r) => r.usd !== null);
+  const totalUsd = rows.reduce((a, r) => a + (r.usd ?? 0), 0);
+  const when = (t: number) => new Date(t + 9 * 3600000).toISOString().slice(5, 16).replace("T", " ");
+  return (
+    <section className="doc-paper mt-4 px-3 py-4">
+      <h2 className="px-1 font-myeongjo font-extrabold">AI 원가</h2>
+      {rows.length === 0 ? (
+        <p className="mt-2 px-1 text-sm text-ink-soft">이 기간에 새로 쓴 보고서가 없어요. 기록은 이 표를 만든 날부터 쌓여요.</p>
+      ) : (
+        <div className="mt-2 overflow-x-auto">
+          <table className="w-full text-right text-[12px] tabular-nums">
+            <thead>
+              <tr className="text-ink-soft">
+                <th className="py-1 text-left font-normal">모델</th>
+                <th className="px-1 font-normal">편수</th>
+                <th className="px-1 font-normal">편당 입력</th>
+                <th className="px-1 font-normal">편당 출력</th>
+                <th className="px-1 font-normal">편당 원가</th>
+                <th className="pl-1 font-normal">합계</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.model} className="border-t border-seal/10">
+                  <td className="py-1.5 text-left leading-tight">
+                    {r.model}
+                    {r.failed > 0 && <span className="block text-[10px] text-seal">중단 {r.failed}편 포함</span>}
+                  </td>
+                  <td className="px-1 font-bold">{n(r.n)}</td>
+                  <td className="px-1">{n(r.input / r.n)}</td>
+                  <td className="px-1">
+                    {n((r.output + r.thinking) / r.n)}
+                    {r.thinking > 0 && <span className="block text-[10px] text-ink-soft">생각 {n(r.thinking / r.n)}</span>}
+                  </td>
+                  <td className="px-1 font-bold">{r.usd === null ? "–" : won(r.usd / r.n)}</td>
+                  <td className="pl-1 font-bold">{won(r.usd)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {rows.length > 0 && known && revenue > 0 && (
+        <p className="mt-2 px-1 text-[12px]">
+          같은 기간 매출 대비 AI 원가 <b className="font-myeongjo text-seal">{((totalUsd * KRW_PER_USD * 100) / revenue).toFixed(1)}%</b>
+        </p>
+      )}
+      {recent.length > 0 && (
+        <details className="mt-2 px-1 text-[11.5px]">
+          <summary className="cursor-pointer text-ink-soft">최근 10편</summary>
+          <ul className="mt-1 flex flex-col gap-0.5 tabular-nums">
+            {recent.map((u) => (
+              <li key={u.at + u.product} className={u.ok ? "" : "text-seal"}>
+                {when(u.at)} · {productById(u.product)?.title ?? u.product} · 입력 {n(u.input)} · 출력 {n(u.output + u.thinking)}
+                {u.ok ? "" : " · 중단"}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+      <p className="mt-2 px-1 text-[10.5px] leading-relaxed text-ink-soft">
+        새로 쓴 보고서마다 모델이 알려 준 토큰 수를 그대로 모았어요(이미 써 둔 보고서를 다시 열면 0원). 모델 이름은 실제로 답한 모델이에요.
+        원가는 공시 단가로 계산했고 환율은 1달러 {n(KRW_PER_USD)}원으로 잡았어요. 중단된 보고서도 요금은 나가요. 정확한 청구액은 Google AI
+        Studio·Anthropic 콘솔에서 확인하세요.
       </p>
     </section>
   );
