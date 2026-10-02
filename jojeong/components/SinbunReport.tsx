@@ -25,7 +25,8 @@ function Stat({ label, children }: { label: string; children: React.ReactNode })
 
 // The free 조선 신분 감정 report: a whole Joseon life in seven chapters, laid out like the 가상 실록.
 // Ends with a bridge to the paid present-day 직업·적성 report.
-export default function SinbunReport({ pillars, heading, query }: { pillars: Pillars; heading: string; query: string }) {
+// `share`: the reader's card with its save and send buttons, right under the verdict where it is wanted.
+export default function SinbunReport({ pillars, heading, query, share }: { pillars: Pillars; heading: string; query: string; share?: (s: ReturnType<typeof sinbunStory>) => React.ReactNode }) {
   const s = sinbunStory(pillars);
   return (
     <RoyalDoc className="mt-3" paperClassName="px-5">
@@ -50,6 +51,8 @@ export default function SinbunReport({ pillars, heading, query }: { pillars: Pil
           {ELEMENT_KO[s.yong]}({ELEMENT_HANJA[s.yong]})
         </Stat>
       </div>
+
+      {share && <div className="mt-5">{share(s)}</div>}
 
       {s.basis.length > 0 && (
         <div className="mt-3 bg-ink/5 px-3 py-2 text-[11px] leading-relaxed text-ink-soft">
