@@ -33,7 +33,8 @@ export type ReportJob = { key: string; system: string; prompt: string; title: st
 export type JobRequest = { product: string; court?: string; m?: string; t?: string; a?: string; b?: string; rel?: string; p?: string; kind?: string; from?: string; n?: string; d?: string; y?: string };
 
 // `v`: which prompt writes it. v5 is kept only to find the reports bought before v6, so they open as they were read.
-export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW): Promise<ReportJob | { error: string; status: number }> {
+// `oldBrief`: the three-grade life flow the writer was told before the five grades (see app/api/report/route.ts).
+export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, oldBrief = false): Promise<ReportJob | { error: string; status: number }> {
   const product = productById(req.product);
   const spec = product && SPECS[v][product.id as ProductId];
   // A free report is never written (no spec either): free means no AI cost.
@@ -112,7 +113,7 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW): Pr
     if (y !== null) subjectLine += ` / 연운: ${y}년(${yearName(y).ko})`;
     briefs = [
       chartBrief(me.name, me.pillars, profileOf(me)),
-      freeBrief(me.pillars, profileOf(me)),
+      freeBrief(me.pillars, profileOf(me), 2026, oldBrief),
       ...deep(product.id, me.pillars, me.gender),
       ...(y !== null ? [yeonunBrief(me.pillars, profileOf(me), y, thisYear())] : []),
     ].join("\n\n");
@@ -124,7 +125,7 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW): Pr
     subjectLine = product.modern
       ? `[대상] ${subject.name} ('${subject.name}님'이라 부를 것)`
       : `[대상] ${subject.name}${subject.king ? " (조정의 왕이므로 '전하'라 부를 것)" : " ('그대'라 부를 것)"}`;
-    briefs = [chartBrief(subject.name, subject.pillars, profile), freeBrief(subject.pillars, profile), ...deep(product.id, subject.pillars, profile?.gender ?? null)].join("\n\n");
+    briefs = [chartBrief(subject.name, subject.pillars, profile), freeBrief(subject.pillars, profile, 2026, oldBrief), ...deep(product.id, subject.pillars, profile?.gender ?? null)].join("\n\n");
   }
 
   const system = systemPromptFor(product, v);

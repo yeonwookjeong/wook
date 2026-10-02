@@ -1,3 +1,4 @@
+import type { Mood } from "@/lib/freeReading";
 import Link from "next/link";
 import type { YearDetail, YearRow, Verdict } from "@/lib/yeonun";
 
@@ -48,27 +49,28 @@ function Row({ r, href, owned }: { r: YearRow; href: string; owned: boolean }) {
   );
 }
 
-type Decade = { from: number; to: number; age: string; mood: "기회" | "무난" | "다지기"; theme: string; now: boolean };
-const MOOD_MARK = { 기회: "◎", 무난: "○", 다지기: "△" } as const;
+type Decade = { from: number; to: number; age: string; mood: Mood; theme: string; line: string; young: boolean; now: boolean };
+const MOOD_MARK = { 활짝: "◎◎", 기회: "◎", 무난: "○", 다지기: "△", 버티기: "▽" } as const;
+const isGood = (m: Mood) => m === "활짝" || m === "기회";
 
 // A decade header: the ground the years below stand on, as the free life flow grades it.
 function DecadeHead({ d }: { d: Decade }) {
   return (
     <li className="mt-3 mb-1 flex items-baseline gap-2 rounded-lg bg-ink/5 px-2 py-1.5 text-[12px]">
-      <b className={d.mood === "기회" ? "text-seal" : "text-ink"}>
-        {MOOD_MARK[d.mood]} {d.from}~{d.to}{d.age ? ` (${d.age})` : ""}
+      <b className={isGood(d.mood) ? "text-seal" : "text-ink"}>
+        {d.young ? "" : `${MOOD_MARK[d.mood]} `}{d.from}~{d.to}{d.age ? ` (${d.age})` : ""}
       </b>
-      <span className="text-ink-soft">{d.theme}</span>
+      <span className="text-ink-soft">{d.line}</span>
     </li>
   );
 }
 
-const MOOD_WORD = { 기회: "좋은 10년", 무난: "무난한 10년", 다지기: "다지는 10년" } as const;
+const MOOD_WORD = { 활짝: "크게 좋은 10년", 기회: "좋은 10년", 무난: "무난한 10년", 다지기: "다지는 10년", 버티기: "버티는 10년" } as const;
 
 // "When is my 대운?": every ten-year stretch of the life at a glance, with the good ones named in one sentence.
 // In everyday speech 대운 means the big lucky stretch, so the ◎ decades are called that plainly.
 function DecadeStrip({ name, decades }: { name: string; decades: Decade[] }) {
-  const good = decades.filter((d) => d.mood === "기회");
+  const good = decades.filter((d) => isGood(d.mood) && !d.young);
   const now = decades.find((d) => d.now);
   const nextGood = good.find((d) => now && d.from > now.to);
   return (
@@ -87,7 +89,7 @@ function DecadeStrip({ name, decades }: { name: string; decades: Decade[] }) {
               </span>
             ))}
             이에요.{" "}
-            {now?.mood === "기회"
+            {now && isGood(now.mood)
               ? "지금이 바로 그 10년 안이에요."
               : nextGood
                 ? `다음 좋은 10년은 ${nextGood.from}년 무렵부터 열려요.`
@@ -101,15 +103,15 @@ function DecadeStrip({ name, decades }: { name: string; decades: Decade[] }) {
         {decades.map((d) => (
           <li
             key={d.from}
-            className={`flex items-baseline gap-2 rounded-lg px-2 py-1 text-[13px] ${d.now ? "bg-gold/15 font-bold" : ""} ${d.mood === "기회" ? "text-seal" : ""}`}
+            className={`flex items-baseline gap-2 rounded-lg px-2 py-1 text-[13px] ${d.now ? "bg-gold/15 font-bold" : ""} ${isGood(d.mood) ? "text-seal" : ""}`}
           >
-            <span className="w-4 shrink-0">{MOOD_MARK[d.mood]}</span>
+            <span className="w-6 shrink-0">{d.young ? "" : MOOD_MARK[d.mood]}</span>
             <span className="w-[5.5rem] shrink-0 tabular-nums">
               {d.from}~{d.to}
             </span>
             <span className="w-14 shrink-0 text-ink-soft">{d.age}</span>
             <span className="min-w-0 flex-1">
-              {MOOD_WORD[d.mood]}
+              {d.young ? "자라는 시기" : MOOD_WORD[d.mood]}
               {d.now ? " · 지금" : ""}
             </span>
           </li>

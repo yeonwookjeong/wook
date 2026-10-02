@@ -5,6 +5,7 @@ import type { Profile } from "./profile";
 import { godRank, salRate } from "./rarity";
 import { isFull, type Pillars } from "./saju";
 import { luckFit } from "./yearly";
+import { decadeLine, type Level } from "./decadeLine";
 
 // The free reading's extra blocks, computed only (no writer, no cost): what the chart is, in numbers and one-line
 // verdicts. The paid reports tell how it plays out and when; these say what it is.
@@ -62,12 +63,17 @@ const DECADE_OF: Record<GodGroup, Record<Stage, string>> = {
   관성: { young: "규칙과 기대 속에서 자란 시기", adult: "자리와 책임이 커지는 10년", late: "이름과 자리를 지키는 10년" },
   인성: { young: "공부와 보살핌 속에 자란 시기", adult: "배우고 자격을 쌓는 10년", late: "마음이 편안해지는 10년" },
 };
+// Five grades from luckFit (about −9…9, in 3000 random charts 15 · 18 · 31 · 20 · 15 %), named so none of them reads as a verdict of doom.
 export const MOODS = {
-  기회: "사주에 필요한 기운이 들어와 힘이 붙는 10년",
+  활짝: "필요한 기운이 크게 들어와 힘이 확 붙는 10년",
+  기회: "필요한 기운이 들어와 힘이 붙는 10년",
   무난: "좋고 나쁨이 섞여 흐름이 고른 10년",
   다지기: "버거운 기운이 겹쳐, 크게 벌이기보다 기반을 다질 10년",
+  버티기: "부딪힘이 커서 흔들리기 쉬워요. 무리하지 않고 정리하며 버티는 10년",
 } as const;
 export type Mood = keyof typeof MOODS;
+export const moodOf = (fit: number): { mood: Mood; level: Level } =>
+  fit >= 4 ? { mood: "활짝", level: 5 } : fit >= 2 ? { mood: "기회", level: 4 } : fit >= -1 ? { mood: "무난", level: 3 } : fit >= -3 ? { mood: "다지기", level: 2 } : { mood: "버티기", level: 1 };
 
 export type FreeReading = {
   powers: { group: GodGroup; name: string; pct: number; rank: string | null }[];
@@ -75,7 +81,9 @@ export type FreeReading = {
   weak: { name: string; line: string };
   sals: { name: string; plain: string; line: string; rate: number | null }[];
   domains: { domain: Domain; card: DomainCard }[];
-  flow: { from: number; to: number; age: string; mood: Mood; theme: string; now: boolean; past: boolean }[] | null;
+  // `fit` is the raw grade (the paid report is still told the old three-step reading of it for orders written before
+  // the five grades); `line` and `why` are this decade's own sentence (lib/decadeLine.ts); `young` is a childhood decade.
+  flow: { from: number; to: number; age: string; mood: Mood; level: Level; fit: number; theme: string; line: string; why: string; young: boolean; now: boolean; past: boolean }[] | null;
 };
 
 export function freeReadingOf(p: Pillars, profile: Profile | null, now = 2026): FreeReading | null {
@@ -117,12 +125,20 @@ export function freeReadingOf(p: Pillars, profile: Profile | null, now = 2026): 
         const g = GROUP_OF[tenGod(p.dayStem, HIDDEN[d.branch].at(-1)![0])];
         const age = by ? d.from - by : 30;
         const stage: Stage = age < 18 ? "young" : age < 60 ? "adult" : "late";
+        const { mood, level } = moodOf(fit);
+        const young = Boolean(by) && age < 12;
+        const text = decadeLine(p, r, d, level, young);
         return {
           from: d.from,
           to: d.to,
           age: by ? `${d.from - by}~${d.to - by}세` : "",
-          mood: fit >= 3 ? ("기회" as const) : fit <= -3 ? ("다지기" as const) : ("무난" as const),
+          mood,
+          level,
+          fit,
           theme: DECADE_OF[g][stage],
+          line: text.line,
+          why: text.why,
+          young,
           now: d.from <= now && now <= d.to,
           past: d.to < now,
         };
@@ -133,7 +149,8 @@ export function freeReadingOf(p: Pillars, profile: Profile | null, now = 2026): 
 
 // The same verdicts for the writer: a paid report must never say otherwise than the free screen the reader has
 // already seen (the decade marks above all).
-export function freeBrief(p: Pillars, profile: Profile | null, now = 2026): string {
+const MARK: Record<Mood, string> = { 활짝: "◎◎", 기회: "◎", 무난: "○", 다지기: "△", 버티기: "▽" };
+export function freeBrief(p: Pillars, profile: Profile | null, now = 2026, legacy = false): string {
   const r = freeReadingOf(p, profile, now);
   if (!r) return "";
   const cur = r.flow?.find((f) => f.now);
@@ -143,10 +160,16 @@ export function freeBrief(p: Pillars, profile: Profile | null, now = 2026): stri
     `- 사주 속 별: ${r.sals.length ? r.sals.map((x) => `${x.name}(${x.plain})`).join(", ") : "두드러진 신살 없음"}`,
     `- 돈·사랑·일 판정: ${r.domains.map((d) => `${d.domain === "jaemul" ? "돈" : d.domain === "yeonae" ? "사랑" : "일"} '${d.card.type}'`).join(", ")}`,
     ...(r.flow
-      ? [
-          `- 인생 흐름(10년 대운, ◎기회 ○무난 △다지기): ${r.flow.map((f) => `${f.from}~${f.to}${f.age ? `(${f.age})` : ""} ${f.mood === "기회" ? "◎" : f.mood === "무난" ? "○" : "△"} ${f.theme}${f.now ? "←지금" : ""}`).join(" / ")}`,
-          ...(cur ? [`- 지금의 10년은 ${cur.from}~${cur.to}년 '${cur.mood}'. 대운은 해가 바뀌는 첫머리가 아니라 태어난 날 무렵에 넘어가므로, 바뀌는 해를 말할 때는 "${cur.from}년 무렵부터"처럼 쓴다.`] : []),
-        ]
+      ? legacy
+        ? [
+            // Reports written before the five grades were told these three, and open as they were written.
+            `- 인생 흐름(10년 대운, ◎기회 ○무난 △다지기): ${r.flow.map((f) => `${f.from}~${f.to}${f.age ? `(${f.age})` : ""} ${f.fit >= 3 ? "◎" : f.fit <= -3 ? "△" : "○"} ${f.theme}${f.now ? "←지금" : ""}`).join(" / ")}`,
+            ...(cur ? [`- 지금의 10년은 ${cur.from}~${cur.to}년 '${cur.fit >= 3 ? "기회" : cur.fit <= -3 ? "다지기" : "무난"}'. 대운은 해가 바뀌는 첫머리가 아니라 태어난 날 무렵에 넘어가므로, 바뀌는 해를 말할 때는 "${cur.from}년 무렵부터"처럼 쓴다.`] : []),
+          ]
+        : [
+            `- 인생 흐름(10년 대운, 다섯 단계 ◎◎활짝 ◎기회 ○무난 △다지기 ▽버티기. 어린 시기는 단계 없이 성장기): ${r.flow.map((f) => `${f.from}~${f.to}${f.age ? `(${f.age})` : ""} ${f.young ? "성장기" : `${MARK[f.mood]}${f.mood}`} ${f.line}${f.now ? "←지금" : ""}`).join(" / ")}`,
+            ...(cur ? [`- 지금의 10년은 ${cur.from}~${cur.to}년 '${cur.mood}'(${cur.line}). 대운은 해가 바뀌는 첫머리가 아니라 태어난 날 무렵에 넘어가므로, 바뀌는 해를 말할 때는 "${cur.from}년 무렵부터"처럼 쓴다.`] : []),
+          ]
       : ["- 인생 흐름: 성별을 몰라 대운을 계산하지 않음(대운 이야기는 하지 않는다)"]),
   ].join("\n");
 }

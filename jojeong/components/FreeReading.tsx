@@ -4,10 +4,13 @@ import { MOODS, type FreeReading as Reading } from "@/lib/freeReading";
 import { perHundred } from "@/lib/rarity";
 
 const TOPIC: Record<Domain, string> = { jaemul: "돈", yeonae: "사랑", jikup: "일" };
+// The five grades of a decade, with the colour its bar is drawn in (lib/freeReading.ts moodOf).
 const MOOD = {
-  기회: { mark: "◎ 기회", cls: "bg-seal text-hanji" },
-  무난: { mark: "○ 무난", cls: "bg-gold/20 text-ink" },
-  다지기: { mark: "△ 다지기", cls: "bg-ink/10 text-ink" },
+  활짝: { mark: "◎◎ 활짝", cls: "bg-seal text-hanji", bar: "#b3261e", w: 100 },
+  기회: { mark: "◎ 기회", cls: "bg-seal/80 text-hanji", bar: "#c9645a", w: 80 },
+  무난: { mark: "○ 무난", cls: "bg-gold/25 text-ink", bar: "#c9a13b", w: 60 },
+  다지기: { mark: "△ 다지기", cls: "bg-ink/10 text-ink", bar: "#8b95a1", w: 40 },
+  버티기: { mark: "▽ 버티기", cls: "bg-ink/20 text-ink", bar: "#4d5966", w: 20 },
 } as const;
 
 // One colour per power, the same for everyone, so two people's maps can be set side by side.
@@ -163,22 +166,38 @@ export default function FreeReading({
       <Card hanja="運 路" title={`${name}님의 인생 흐름`}>
         {r.flow ? (
           <>
-            <p className="mt-1 text-center text-[12px] text-ink-soft">10년마다 바뀌는 큰 흐름(대운)이에요. 지나온 시기가 맞는지 먼저 확인해 보세요</p>
+            <p className="mt-1 text-center text-[12px] text-ink-soft">10년마다 바뀌는 큰 흐름(대운)이에요. 막대가 길수록 힘이 붙는 시기, 누르면 이유가 펼쳐져요</p>
             <ol className="mt-4 flex flex-col gap-1.5">
               {r.flow.map((f) => (
-                <li
-                  key={f.from}
-                  className={`flex items-center gap-3 rounded-xl px-3 py-2 ${f.now ? "border-2 border-seal bg-seal/5" : f.past ? "opacity-70" : ""}`}
-                >
-                  <span className="w-20 shrink-0 text-[12px] leading-tight">
-                    <b className="block">{f.age || `${f.from}년~`}</b>
-                    <span className="text-[10px] text-ink-soft">
-                      {f.from}~{f.to}
-                    </span>
-                  </span>
-                  <span className={`w-16 shrink-0 rounded-md py-0.5 text-center text-[11px] font-bold ${MOOD[f.mood].cls}`}>{MOOD[f.mood].mark}</span>
-                  <span className="min-w-0 flex-1 text-[13px]">{f.theme}</span>
-                  {f.now && <span className="shrink-0 text-[11px] font-extrabold text-seal">지금</span>}
+                <li key={f.from} className={`rounded-xl ${f.now ? "border-2 border-seal bg-seal/5" : "border border-transparent"} ${f.past ? "opacity-75" : ""}`}>
+                  <details className="group">
+                    <summary className="flex cursor-pointer list-none items-start gap-3 px-3 py-2 [&::-webkit-details-marker]:hidden">
+                      <span className="w-[4.6rem] shrink-0 text-[12px] leading-tight">
+                        <b className="block">{f.age || `${f.from}년~`}</b>
+                        <span className="text-[10px] text-ink-soft">
+                          {f.from}~{f.to}
+                        </span>
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-center gap-2">
+                          {f.young ? (
+                            <span className="w-[4.5rem] shrink-0 rounded-md bg-ink/5 py-0.5 text-center text-[11px] font-bold text-ink-soft">성장기</span>
+                          ) : (
+                            <span className={`w-[4.5rem] shrink-0 rounded-md py-0.5 text-center text-[11px] font-bold ${MOOD[f.mood].cls}`}>{MOOD[f.mood].mark}</span>
+                          )}
+                          <span className="h-2 flex-1 overflow-hidden rounded-full bg-ink/5" aria-hidden="true">
+                            <span className="block h-full rounded-full" style={{ width: f.young ? "0%" : `${MOOD[f.mood].w}%`, background: MOOD[f.mood].bar }} />
+                          </span>
+                          {f.now && <span className="shrink-0 text-[11px] font-extrabold text-seal">지금</span>}
+                        </span>
+                        <span className="mt-1 block text-[13px] leading-snug">{f.line}</span>
+                      </span>
+                      <span className="mt-0.5 shrink-0 text-[11px] text-ink-soft transition group-open:rotate-180" aria-hidden="true">
+                        ▾
+                      </span>
+                    </summary>
+                    <p className="px-3 pt-0 pb-3 pl-[5.9rem] text-[12px] leading-relaxed text-ink-soft">{f.why}</p>
+                  </details>
                 </li>
               ))}
             </ol>
