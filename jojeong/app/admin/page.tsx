@@ -12,7 +12,7 @@ import GiftForm from "./GiftForm";
 import SignInForm from "./SignInForm";
 import { isPreview, newYearOf, thisYear } from "@/lib/yeonun";
 import { inPeriods, PERIODS, readStats, type Period } from "@/lib/stats";
-import { STEP_FROM, STEP_LABEL } from "@/lib/nextStep";
+import { SHARE_FROM, STEP_FROM, STEP_LABEL } from "@/lib/nextStep";
 import { SOURCES } from "@/lib/source";
 import { DailyTable, SourceTable } from "./Insights";
 
@@ -63,6 +63,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   const stats = await readStats([
     ...["uv", "pv", "reading", "king", "join", "appoint", "share_court", "share_result", "save_image", "own_court", "to_saju"],
     ...STEP_FROM.map((f) => `to:${f}`),
+    ...SHARE_FROM.flatMap((f) => [`sh:${f}`, `sv:${f}`]),
     ...SOURCES.map((s) => `src:${s}`),
     ...SALE_KEYS.flatMap((k) => [`view:${k}`, `co:${k}`]),
   ]);
@@ -272,6 +273,11 @@ const ROWS: { key: string; label: string; group?: string }[] = [
   { key: "own_court", label: "나도 조정 만들기" },
   { key: "to_saju", label: "무료 → 다음 걸음 (전체)", group: "훈도사주" },
   ...STEP_FROM.map((f) => ({ key: `to:${f}`, label: `　└ ${STEP_LABEL[f]}` })),
+  // The pages that carry a card to send or save.
+  ...SHARE_FROM.flatMap((f) => [
+    { key: `sh:${f}`, label: `${STEP_LABEL[f]}: 친구에게 보내기`, ...(f === SHARE_FROM[0] && { group: "공유" }) },
+    { key: `sv:${f}`, label: `${STEP_LABEL[f]}: 카드 저장` },
+  ]),
   { key: "reading", label: "무료 사주 분석" },
 ];
 

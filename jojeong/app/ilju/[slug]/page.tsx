@@ -56,7 +56,12 @@ export default async function IljuPage({ params }: PageProps<"/ilju/[slug]">) {
 
       <section className="mt-5">
         {mine && <p className="mb-2 text-center text-sm font-extrabold text-seal">{me!.person.name}님의 일주예요</p>}
-        <SaveCard file={`hundosaju-${e.slug}`}>
+        <SaveCard
+          file={`hundosaju-${e.slug}`}
+          from="ilju"
+          path={`/ilju/${e.slug}`}
+          text={`나 ${f.name}래 ㅋㅋ ${f.image}라는데 맞는 것 같기도… 너는 무슨 일주야?`}
+        >
           {/* The card: the same face as the Instagram 60일주 도감 cover. */}
           <div className="relative aspect-[4/5] w-full overflow-hidden rounded-2xl bg-[linear-gradient(180deg,#0f2236,#17304a_55%,#1f3d5c)] p-4">
             <div className="flex items-center justify-between px-1 text-[11px] font-extrabold">

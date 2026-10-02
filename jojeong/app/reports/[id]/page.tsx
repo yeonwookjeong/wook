@@ -16,6 +16,9 @@ import OrderLink from "@/components/OrderLink";
 import DecadeTable from "@/components/DecadeTable";
 import DomainCard from "@/components/DomainCard";
 import FreeReading from "@/components/FreeReading";
+import SaveCard from "@/components/SaveCard";
+import { ReadingCard, SinbunCard } from "@/components/ResultCards";
+import { iljuFacts } from "@/lib/cards";
 import NextStep from "@/components/NextStep";
 import TrackLink from "@/components/TrackLink";
 import { STEPS } from "@/lib/nextStep";
@@ -347,6 +350,20 @@ async function OpenReport({
           pillars={pillars}
           heading={subject?.king ? `${name} 전하가 왕이 아니었다면` : `${josa(name, "이/가")} 조선에 태어났다면`}
           query={query}
+          share={
+            self
+              ? (st) => (
+                  <SaveCard
+                    file="hundosaju-sinbun"
+                    from="sinbun"
+                    path="/reports/sinbun"
+                    text={`${josa(name, "은/는")} 조선에 태어났다면 ${st.rank} ${st.job}래 ㅋㅋ 너는 조선에서 뭐였을까?`}
+                  >
+                    <SinbunCard who={`${josa(name, "이/가")} 조선에 태어났다면`} rank={st.rank} job={st.job} line={st.line} rise={st.rise} yong={st.yong} />
+                  </SaveCard>
+                )
+              : undefined
+          }
         />
         {self && <NextStep from="sinbun" steps={STEPS.sinbun(query)} />}
         {other}
@@ -376,8 +393,32 @@ async function OpenReport({
   // The free reading: the chart analysis, then the four computed blocks (powers, 신살, money·love·work, the
   // flow of life). Shown on the free year reading and on the life report before purchase.
   const intro = distinct && <ChartIntro name={name} d={distinct} slots={reading.chart.slots} />;
+  // The card of this reading to save or send: the day pillar, the five powers, money·love·work, and how rare the
+  // build is (no birth date, no eight characters).
+  const ilju = free ? iljuFacts(pillars.dayStem, pillars.dayBranch) : null;
+  const shareCard = free && (
+    <div className="mt-4">
+      <style>{`@font-face{font-family:"GanzhiBrush";src:url(/fonts/ganzhi-syuku.woff2) format("woff2");font-display:block}`}</style>
+      <SaveCard
+        file="hundosaju-saju"
+        from="reading"
+        path="/reports/gukjeong"
+        text={`${name} 사주 봤는데 ${ilju!.name}래. 가장 큰 힘은 ${free.powers.slice().sort((a, b) => b.pct - a.pct)[0].name}이라는데, 너는 어때?`}
+      >
+        <ReadingCard
+          who={`${name}님의 사주`}
+          ilju={{ hanja: ilju!.hanja, name: ilju!.name.replace("일주", "") }}
+          image={ilju!.image ?? null}
+          powers={free.powers}
+          kinds={free.domains.map((d) => ({ label: d.domain === "jaemul" ? "돈" : d.domain === "yeonae" ? "사랑" : "일", type: d.card.type }))}
+          same={distinct?.ilju ? `같은 ${distinct.ilju.name}일주 중 약 ${Math.max(1, Math.round(distinct.ilju.rate * 100))}%만 이 구조` : null}
+        />
+      </SaveCard>
+    </div>
+  );
   const fullIntro = intro && (
     <>
+      {shareCard}
       <ChartIntro name={name} d={distinct} slots={reading.chart.slots} chips={!free} />
       {free && <FreeReading name={name} r={free} query={query} addGender={`${next}?new=1`} onLifeReport={product.id === "pyeongsaeng"} />}
     </>

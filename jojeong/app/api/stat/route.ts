@@ -19,6 +19,9 @@ export async function POST(request: Request) {
     await track(body.e as ClientEvent);
     // A step out of a free page also counts for that page.
     if (body.e === "to_saju" && isStepFrom(body.from)) await track(`to:${body.from}`);
+    // A share or a saved card also counts for the page it was made on.
+    if (body.e === "share_result" && isStepFrom(body.from)) await track(`sh:${body.from}`);
+    if (body.e === "save_image" && isStepFrom(body.from)) await track(`sv:${body.from}`);
   } else if (typeof body.e === "string" && body.e.startsWith("view:") && saleLabel(body.e.slice(5))) {
     await track(body.e as `view:${string}`);
   }

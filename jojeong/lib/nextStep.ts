@@ -4,6 +4,8 @@
 // owner's dashboard (which page actually sends people on).
 export const STEP_FROM = ["king", "court", "minister", "sinbun", "reading", "gukjeong", "ranking", "samjae", "today", "ilju"] as const;
 export type StepFrom = (typeof STEP_FROM)[number];
+// The free pages that carry a result card to save or send (components/SaveCard.tsx), counted per page.
+export const SHARE_FROM: StepFrom[] = ["sinbun", "reading", "ilju"];
 export const isStepFrom = (v: unknown): v is StepFrom => STEP_FROM.includes(v as StepFrom);
 
 export const STEP_LABEL: Record<StepFrom, string> = {
