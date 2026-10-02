@@ -3,10 +3,11 @@ import type { DecadeYear, Domain } from "@/lib/domains";
 const TITLE: Record<Domain, string> = { jaemul: "재물", yeonae: "연애·결혼", jikup: "직업" };
 const MARK = ["✕", "△", "○", "◎"];
 const STYLE = ["bg-ink/10 text-ink", "bg-ink/5 text-ink-soft", "bg-gold/25 text-ink", "bg-seal text-hanji"];
-const FREE_YEARS = 2;
+// The calendar starts at this year, so the free taste is the year the reader is in; next year is already the hook.
+const FREE_YEARS = 1;
 
 // The ten-year calendar of a deep report, computed year by year (lib/domains.ts). Before purchase only the
-// first years show; the rest are placeholders, so nothing paid is in the page source.
+// first year shows; the rest are placeholders, so nothing paid is in the page source.
 export default function DecadeTable({ name, domain, years, locked }: { name: string; domain: Domain; years: DecadeYear[]; locked: boolean }) {
   if (!years.length) return null;
   const shown = locked ? years.slice(0, FREE_YEARS) : years;
