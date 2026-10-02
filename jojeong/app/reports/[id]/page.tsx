@@ -364,8 +364,8 @@ async function OpenReport({
               full: `/s/sinbun/${sealPerson("sinbun", me.person)}`,
             }}
             texts={{
-              summary: `나 조선에 태어났으면 ${josa(`${sinbun.rank} ${sinbun.job}`, "이래/래")}. 너는 뭐였을지 해봐`,
-              full: `내 조선 신분 감정 결과야. 나는 ${josa(`${sinbun.rank} ${sinbun.job}`, "이래/래")}. 너도 해봐`,
+              summary: "훈도사주 · 조선에 태어났다면 나는 무엇이었을까",
+              full: "훈도사주 · 조선에 태어났다면 나는 무엇이었을까",
             }}
             card={<SinbunCard who={`${josa(name, "이/가")} 조선에 태어났다면`} rank={sinbun.rank} job={sinbun.job} line={sinbun.line} rise={sinbun.rise} yong={sinbun.yong} />}
           />
@@ -417,8 +417,8 @@ async function OpenReport({
             full: `/s/reading/${sealPerson("reading", me.person)}`,
           }}
           texts={{
-            summary: `내 사주 봤는데 ${josa(ilju.name, "이래/래")}. 너도 생년월일만 넣으면 바로 나와`,
-            full: `내 사주 풀이야. 너도 생년월일만 넣으면 바로 나와`,
+            summary: "훈도사주 · 조선 관상감 훈도가 풀어 주는 무료 사주",
+            full: "훈도사주 · 조선 관상감 훈도가 풀어 주는 무료 사주",
           }}
           card={
             <ReadingCard
