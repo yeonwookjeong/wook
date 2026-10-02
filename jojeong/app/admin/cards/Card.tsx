@@ -46,6 +46,11 @@ function Frame({ children, dark = false }: { children: React.ReactNode; dark?: b
 
 // Reels and stories, 1080×1920 (9:16): one dense picture people stop to read. Instagram lays its own buttons over
 // the bottom fifth and the right edge, so the content keeps to the top four fifths.
+// Where a reel's content survives Instagram's player, checked on a tall phone (the picture fills the screen and is
+// cropped about 100px at each side): below the status bar and the 릴스·친구 tabs (top), above the account and caption
+// (bottom), and clear of the like/comment column that runs down the right edge from about y 1040 (x past 880).
+const REEL = { top: 250, side: 100, bottom: 1480 };
+
 function ReelFrame({ children }: { children: React.ReactNode }) {
   return (
     <div
@@ -158,9 +163,9 @@ function ThumbTitle({ top, main }: { top: string; main: React.ReactNode }) {
 }
 
 // The brand in the top corner, for covers whose bottom carries the thumbnail title.
-function CornerBrand() {
+function CornerBrand({ top = 64, left = 70 }: { top?: number; left?: number } = {}) {
   return (
-    <div style={{ position: "absolute", top: 64, left: 70, display: "flex", alignItems: "center", gap: 12 }}>
+    <div style={{ position: "absolute", top, left, display: "flex", alignItems: "center", gap: 12 }}>
       <span
         style={{
           width: 50,
@@ -324,20 +329,25 @@ export async function Card({ q }: { q: CardQuery }) {
     const sons = days.filter((x) => x.son);
     const cells = [...Array(first).fill(null), ...days];
     const W = "일월화수목금토";
+    // The calendar ends above the like column (y 1040) in a five-week month; a six-week month gets shorter cells.
+    const weeks = Math.ceil(cells.length / 7);
+    const tall = weeks <= 5;
+    const ch = tall ? 92 : 80;
+    const calTop = 470;
+    const calH = 36 + 38 + weeks * (ch + 6);
     return (
       <ReelFrame>
-        <CornerBrand />
-        <div style={{ position: "absolute", top: 170, left: 60, right: 60, textAlign: "center" }}>
+        <div style={{ position: "absolute", top: REEL.top, left: REEL.side, right: REEL.side, textAlign: "center" }}>
           <p style={{ fontSize: 34, fontWeight: 800, letterSpacing: "0.08em", color: GOLD }}>이사 · 개업 날짜 잡기 전에</p>
-          <p style={{ marginTop: 14, fontSize: 88, fontWeight: 800, lineHeight: 1.1 }}>
+          <p style={{ marginTop: 14, fontSize: 80, fontWeight: 800, lineHeight: 1.1, whiteSpace: "nowrap" }}>
             {m}월 손 없는 날, <span style={{ color: "#f1cf7a" }}>딱 {sons.length}일</span>
           </p>
-          <p style={{ marginTop: 16, fontSize: 30, color: "rgba(244,236,219,.85)", fontFamily: sans }}>음력 날짜 끝자리가 9와 0인 날 · 작은 글씨는 음력</p>
+          <p style={{ marginTop: 16, fontSize: 30, lineHeight: 1.3, color: "rgba(244,236,219,.85)", fontFamily: sans }}>음력 날짜 끝자리가 9와 0인 날 · 작은 글씨는 음력</p>
         </div>
-        <div className="doc-paper" style={{ position: "absolute", top: 420, left: 44, right: 44, padding: "22px 18px", color: INK }}>
+        <div className="doc-paper" style={{ position: "absolute", top: calTop, left: REEL.side, right: REEL.side, padding: "18px 16px", color: INK }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6, textAlign: "center" }}>
             {W.split("").map((w, i) => (
-              <p key={w} style={{ fontSize: 26, fontWeight: 800, color: i === 0 ? SEAL : i === 6 ? "#1f4e8c" : SOFT, paddingBottom: 6 }}>
+              <p key={w} style={{ fontSize: 26, fontWeight: 800, lineHeight: 1.2, color: i === 0 ? SEAL : i === 6 ? "#1f4e8c" : SOFT, paddingBottom: 6 }}>
                 {w}
               </p>
             ))}
@@ -346,19 +356,19 @@ export async function Card({ q }: { q: CardQuery }) {
                 <div
                   key={i}
                   style={{
-                    height: 132,
+                    height: ch,
                     borderRadius: 14,
-                    paddingTop: 10,
+                    paddingTop: 5,
                     background: x.son ? SEAL : "rgba(33,27,23,.04)",
                     color: x.son ? HANJI : x.wd === 0 || x.holi ? SEAL : x.wd === 6 ? "#1f4e8c" : INK,
                   }}
                 >
-                  <p style={{ fontSize: 40, fontWeight: 800, lineHeight: 1.05 }}>{x.d}</p>
-                  <p style={{ marginTop: 4, fontSize: 19, fontFamily: sans, opacity: x.son ? 0.9 : 0.6 }}>{x.lunar}</p>
-                  {x.son ? (
-                    <p style={{ marginTop: 6, fontSize: 21, fontWeight: 800 }}>손 없음</p>
-                  ) : x.holi ? (
-                    <p style={{ marginTop: 6, fontSize: 19, fontWeight: 800 }}>{x.holi}</p>
+                  <p style={{ fontSize: tall ? 34 : 30, fontWeight: 800, lineHeight: 1.05 }}>{x.d}</p>
+                  <p style={{ marginTop: 2, fontSize: 16, lineHeight: 1.15, fontFamily: sans, opacity: x.son ? 0.9 : 0.6 }}>{x.lunar}</p>
+                  {tall && x.son ? (
+                    <p style={{ marginTop: 3, fontSize: 18, lineHeight: 1.15, fontWeight: 800 }}>손 없음</p>
+                  ) : tall && x.holi ? (
+                    <p style={{ marginTop: 3, fontSize: 16, lineHeight: 1.15, fontWeight: 800 }}>{x.holi}</p>
                   ) : null}
                 </div>
               ) : (
@@ -367,19 +377,20 @@ export async function Card({ q }: { q: CardQuery }) {
             )}
           </div>
         </div>
-        <div style={{ position: "absolute", top: 1236, left: 60, right: 60 }}>
-          {sons.map((x) => (
-            <p key={x.d} style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.55 }}>
-              <span style={{ color: "#f1cf7a" }}>
-                {m}/{x.d} ({W[x.wd]})
-              </span>
-              <span style={{ marginLeft: 14, fontSize: 26, fontWeight: 400, color: "rgba(244,236,219,.8)", fontFamily: sans }}>
-                음력 {x.lunar}
-                {x.holi ? ` · ${x.holi}` : ""}
-                {x.wd === 0 || x.wd === 6 ? " · 주말" : ""}
-              </span>
-            </p>
-          ))}
+        <div style={{ position: "absolute", top: calTop + calH + 34, left: REEL.side, width: 780 }}>
+          {/* Two columns, so even a month with seven of them leaves room for the closing line above the caption. */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
+            {sons.map((x) => (
+              <p key={x.d} style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.5, whiteSpace: "nowrap" }}>
+                <span style={{ color: "#f1cf7a" }}>
+                  {m}/{x.d} ({W[x.wd]})
+                </span>
+                <span style={{ marginLeft: 12, fontSize: 24, fontWeight: 400, color: "rgba(244,236,219,.8)", fontFamily: sans }}>
+                  {[x.holi, x.wd === 0 || x.wd === 6 ? "주말" : ""].filter(Boolean).join(" · ")}
+                </span>
+              </p>
+            ))}
+          </div>
           <p style={{ marginTop: 18, fontSize: 28, lineHeight: 1.5, color: "rgba(244,236,219,.85)", fontFamily: sans }}>
             손 없는 날은 누구에게나 같은 날이에요. 내 사주에 맞는 날은 따로 있어요.
           </p>
@@ -403,17 +414,16 @@ export async function Card({ q }: { q: CardQuery }) {
       return (
         <ReelFrame>
           {hf}
-          <CornerBrand />
-          <div style={{ position: "absolute", top: 170, left: 60, right: 60, textAlign: "center" }}>
+          <div style={{ position: "absolute", top: REEL.top, left: REEL.side, right: REEL.side, textAlign: "center" }}>
             <p style={{ fontSize: 34, fontWeight: 800, letterSpacing: "0.08em", color: GOLD }}>60일주 운세 랭킹 · {mp.label}</p>
-            <p style={{ marginTop: 14, fontSize: 92, fontWeight: 800, lineHeight: 1.1 }}>
+            <p style={{ marginTop: 14, fontSize: 80, fontWeight: 800, lineHeight: 1.1, whiteSpace: "nowrap" }}>
               {m}월, 내 일주는 <span style={{ color: "#f1cf7a" }}>몇 위?</span>
             </p>
-            <p style={{ marginTop: 16, fontSize: 30, color: "rgba(244,236,219,.85)", fontFamily: sans }}>
+            <p style={{ marginTop: 16, fontSize: 30, lineHeight: 1.3, color: "rgba(244,236,219,.85)", fontFamily: sans }}>
               {mp.term} {mp.from} ~ {mp.to}
             </p>
           </div>
-          <div className="doc-paper" style={{ position: "absolute", top: 440, left: 44, right: 44, padding: "26px 22px 22px", color: INK, display: "flex", gap: 14 }}>
+          <div className="doc-paper" style={{ position: "absolute", top: 480, left: REEL.side, right: REEL.side, padding: "18px 14px", color: INK, display: "flex", gap: 12 }}>
             {cols.map((col, ci) => (
               <div key={ci} style={{ flex: 1, minWidth: 0 }}>
                 {col.map((r) => {
@@ -425,25 +435,24 @@ export async function Card({ q }: { q: CardQuery }) {
                         display: "flex",
                         alignItems: "center",
                         gap: 8,
-                        height: 54,
+                        height: 42,
                         padding: "0 8px",
                         borderTop: r.rank % 20 === 1 ? "none" : "1.5px solid rgba(179,38,30,.13)",
                         background: top ? "rgba(212,175,95,.22)" : r.rank > 55 ? "rgba(33,27,23,.05)" : "transparent",
                       }}
                     >
-                      <span style={{ width: 40, flexShrink: 0, textAlign: "right", fontSize: 26, fontWeight: 800, color: top ? SEAL : INK }}>{r.rank}</span>
-                      <span style={{ width: 88, flexShrink: 0, whiteSpace: "nowrap", fontSize: 38, lineHeight: 1, color: SEAL, fontFamily: brush }}>{r.hanja}</span>
-                      <span style={{ flex: 1, minWidth: 0, whiteSpace: "nowrap", fontSize: 26, fontWeight: 800 }}>{r.name.replace("일주", "")}</span>
-                      <span style={{ flexShrink: 0, fontSize: 15, letterSpacing: "-0.04em", color: "#a87a22" }}>{stars(r).replace(/☆/g, "")}</span>
+                      <span style={{ width: 36, flexShrink: 0, textAlign: "right", fontSize: 24, fontWeight: 800, color: top ? SEAL : INK }}>{r.rank}</span>
+                      <span style={{ width: 76, flexShrink: 0, whiteSpace: "nowrap", fontSize: 34, lineHeight: 1, color: SEAL, fontFamily: brush }}>{r.hanja}</span>
+                      <span style={{ flex: 1, minWidth: 0, whiteSpace: "nowrap", fontSize: 23, fontWeight: 800 }}>{r.name.replace("일주", "")}</span>
                     </div>
                   );
                 })}
               </div>
             ))}
           </div>
-          <div style={{ position: "absolute", top: 1585, left: 60, right: 60, textAlign: "center" }}>
-            <p style={{ fontSize: 30, fontWeight: 800, color: "#f1cf7a" }}>내 일주를 모르면? 프로필 링크에서 생년월일만 넣으면 바로</p>
-            <p style={{ marginTop: 10, fontSize: 26, color: "rgba(244,236,219,.75)", fontFamily: sans }}>저장해 두고 이번 달 내내 꺼내 보시옵소서</p>
+          <div style={{ position: "absolute", top: 1384, left: REEL.side, width: 780, textAlign: "center" }}>
+            <p style={{ fontSize: 30, lineHeight: 1.4, fontWeight: 800, color: "#f1cf7a" }}>내 일주를 모르면? 프로필 링크에서 생년월일만 넣으면 바로</p>
+            <p style={{ marginTop: 10, fontSize: 26, lineHeight: 1.4, color: "rgba(244,236,219,.75)", fontFamily: sans }}>저장해 두고 이번 달 내내 꺼내 보시옵소서</p>
           </div>
         </ReelFrame>
       );
