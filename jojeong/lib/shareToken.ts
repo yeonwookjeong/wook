@@ -1,41 +1,28 @@
 import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
-import type { Rank } from "./sinbun";
+import { decodePerson, encodePerson, type Person } from "./pairToken";
 
-// What a friend's link carries: the sender's RESULT (a name, a day pillar, the five powers, a verdict), never a
-// birth date or the eight characters. It rides in the address, signed, so the page can show the sender's card
-// without storing anything, and nobody can make a card say something we did not compute.
-//   /s/reading/<token>   the free 사주 분석 card
-//   /s/sinbun/<token>    the 조선 신분 감정 card
-export type ReadingShare = {
-  n: string; // the name as typed
-  s: number; // day stem
-  b: number; // day branch
-  p: [group: string, name: string, pct: number][]; // the five powers
-  k: [label: string, type: string][]; // 돈 · 사랑 · 일
-  r: string; // "같은 신묘일주 중 약 3%만 이 구조", or ""
-};
-export type SinbunShare = { n: string; r: Rank; j: string; l: string; w: number; y: number };
+// "친구에게 보내기": the whole free result goes in the address, so the friend opens it as the sender saw it. What it
+// carries is what a 궁합 link already carries (lib/pairToken.ts): a name, the eight characters, gender, birth
+// year and the ten-year cycles, never the birth date. It is signed, so nobody can make a page say something we
+// did not compute from a chart.
+//   /s/reading/<token>   the free 사주 분석 (the year reading with the whole chart analysis)
+//   /s/sinbun/<token>    the 조선 신분 감정
 export type ShareKind = "reading" | "sinbun";
-export type ShareOf<K extends ShareKind> = K extends "reading" ? ReadingShare : SinbunShare;
 export const isShareKind = (v: unknown): v is ShareKind => v === "reading" || v === "sinbun";
 
 const secret = () => `hundosaju-share:${process.env.ADMIN_PASSWORD?.trim() || "dev"}`;
 const sign = (kind: string, body: string) => createHmac("sha256", secret()).update(`${kind}.${body}`).digest("base64url").slice(0, 16);
 
-export function sealShare<K extends ShareKind>(kind: K, data: ShareOf<K>): string {
-  const body = Buffer.from(JSON.stringify(data)).toString("base64url");
+export function sealPerson(kind: ShareKind, person: Person): string {
+  const body = encodePerson(person);
   return `${body}.${sign(kind, body)}`;
 }
 
-export function openShare<K extends ShareKind>(kind: K, token: string): ShareOf<K> | null {
+export function openPerson(kind: ShareKind, token: string): Person | null {
   const [body, sig, ...rest] = token.split(".");
-  if (!body || !sig || rest.length || body.length > 2000) return null;
+  if (!body || !sig || rest.length) return null;
   const want = sign(kind, body);
   if (sig.length !== want.length || !timingSafeEqual(Buffer.from(sig), Buffer.from(want))) return null;
-  try {
-    return JSON.parse(Buffer.from(body, "base64url").toString()) as ShareOf<K>;
-  } catch {
-    return null;
-  }
+  return decodePerson(body);
 }

@@ -1,28 +1,33 @@
-import { shareImage } from "@/lib/og";
 import { iljuFacts } from "@/lib/cards";
+import { freeReadingOf } from "@/lib/freeReading";
 import { josa } from "@/lib/josa";
-import { isShareKind, openShare, type ReadingShare, type SinbunShare } from "@/lib/shareToken";
+import { shareImage } from "@/lib/og";
+import { profileOf } from "@/lib/pairToken";
+import { distinctOf } from "@/lib/rarity";
+import { isShareKind, openPerson } from "@/lib/shareToken";
+import { sinbunStory } from "@/lib/sinbun";
 
 export const alt = "친구가 보내온 훈도사주 결과";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-// The link's preview (KakaoTalk, messages): the sender's result in a line or two, from the signed address.
+// The link's preview (KakaoTalk, messages): the sender's result in a line or two, computed from the signed address.
 export default async function Image({ params }: { params: Promise<{ kind: string; token: string }> }) {
   const { kind, token } = await params;
-  const data = isShareKind(kind) ? openShare(kind, token) : null;
-  if (!data || !isShareKind(kind)) return shareImage({ top: "훈도사주", big: "나한테만 맞는 말", small: "생년월일만 넣으면 무료로 바로" });
+  const person = isShareKind(kind) ? openPerson(kind, token) : null;
+  if (!person) return shareImage({ top: "훈도사주", big: "나한테만 맞는 말", small: "생년월일만 넣으면 무료로 바로" });
   if (kind === "sinbun") {
-    const d = data as SinbunShare;
-    return shareImage({ top: `${josa(d.n, "이/가")} 조선에 태어났다면`, badge: d.r, big: d.j, small: d.l });
+    const s = sinbunStory(person.pillars);
+    return shareImage({ top: `${josa(person.name, "이/가")} 조선에 태어났다면`, badge: s.rank, big: s.job, small: s.line });
   }
-  const d = data as ReadingShare;
-  const f = iljuFacts(d.s, d.b);
-  const top = [...d.p].sort((a, b) => b[2] - a[2])[0];
+  const f = iljuFacts(person.pillars.dayStem, person.pillars.dayBranch);
+  const free = freeReadingOf(person.pillars, profileOf(person));
+  const top = free ? [...free.powers].sort((a, b) => b.pct - a.pct)[0] : null;
+  const same = distinctOf(person.pillars, person.gender)?.ilju;
   return shareImage({
-    top: `${d.n}님의 사주 한 장`,
+    top: `${person.name}님의 사주 풀이`,
     badge: f.hanja,
-    big: `${f.name} · ${f.image ?? ""}`.replace(/ · $/, ""),
-    small: `가장 큰 힘 ${top[1]} ${top[2]}%${d.r ? ` · ${d.r}` : ""}`,
+    big: `${f.name}${f.image ? ` · ${f.image}` : ""}`,
+    small: [top && `가장 큰 힘 ${top.name} ${top.pct}%`, same && `같은 ${same.name}일주 중 약 ${Math.max(1, Math.round(same.rate * 100))}%만 이 구조`].filter(Boolean).join(" · "),
   });
 }
