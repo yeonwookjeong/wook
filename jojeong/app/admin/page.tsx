@@ -64,6 +64,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
     ...["uv", "pv", "reading", "king", "join", "appoint", "share_court", "share_result", "save_image", "own_court", "to_saju"],
     ...STEP_FROM.map((f) => `to:${f}`),
     ...SHARE_FROM.flatMap((f) => [`sh:${f}`, `sv:${f}`]),
+    ...["reading", "sinbun"].map((k) => `sl:${k}`),
     ...SOURCES.map((s) => `src:${s}`),
     ...SALE_KEYS.flatMap((k) => [`view:${k}`, `co:${k}`]),
   ]);
@@ -278,6 +279,8 @@ const ROWS: { key: string; label: string; group?: string }[] = [
     { key: `sh:${f}`, label: `${STEP_LABEL[f]}: 친구에게 보내기`, ...(f === SHARE_FROM[0] && { group: "공유" }) },
     { key: `sv:${f}`, label: `${STEP_LABEL[f]}: 카드 저장` },
   ]),
+  { key: "sl:reading", label: "친구가 보낸 링크로 도착: 무료 사주 분석" },
+  { key: "sl:sinbun", label: "친구가 보낸 링크로 도착: 조선 신분 감정" },
   { key: "reading", label: "무료 사주 분석" },
 ];
 
