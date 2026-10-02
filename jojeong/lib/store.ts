@@ -1,5 +1,5 @@
 import "server-only";
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { Profile } from "./profile";
@@ -21,7 +21,8 @@ export class CourtFullError extends Error {}
 
 type Backend = {
   get(key: string): Promise<string | null>;
-  set(key: string, value: string): Promise<void>;
+  // `ttl`: seconds after which the key goes away (the file backend, for local work, keeps it).
+  set(key: string, value: string, ttl?: number): Promise<void>;
   push(key: string, value: string): Promise<number>;
   list(key: string): Promise<string[]>;
   remove(key: string, value: string): Promise<void>;
@@ -44,7 +45,7 @@ function redisBackend(url: string, token: string): Backend {
   }
   return {
     get: (key) => call<string | null>(["GET", key]),
-    set: async (key, value) => void (await call(["SET", key, value])),
+    set: async (key, value, ttl) => void (await call(ttl ? ["SET", key, value, "EX", ttl] : ["SET", key, value])),
     push: (key, value) => call<number>(["RPUSH", key, value]),
     list: (key) => call<string[]>(["LRANGE", key, 0, -1]),
     remove: async (key, value) => void (await call(["LREM", key, 1, value])),
@@ -111,6 +112,20 @@ function backend(): Backend {
 }
 
 const id = (bytes: number) => randomBytes(bytes).toString("base64url");
+
+// Short links for "친구에게 보내기": the long signed address (lib/shareToken.ts) kept under an eight-character id, made
+// when the reader taps send, for a little over a year. The id comes from the address itself, so sending the same
+// result again gives the same link and stores nothing new.
+const SHARE_DAYS = 400;
+export async function putShare(path: string): Promise<string> {
+  const code = createHash("sha256").update(path).digest("base64url").slice(0, 8);
+  await backend().set(`share:${code}`, path, SHARE_DAYS * 86400);
+  return code;
+}
+export async function getShare(code: string): Promise<string | null> {
+  if (!/^[\w-]{8}$/.test(code)) return null;
+  return backend().get(`share:${code}`);
+}
 
 export async function createCourt(kingName: string, king: Pillars): Promise<Court> {
   const court: Court = { id: id(6), kingName, king, ownerToken: id(18), createdAt: Date.now() };

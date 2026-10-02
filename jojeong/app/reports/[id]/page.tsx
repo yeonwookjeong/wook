@@ -363,7 +363,10 @@ async function OpenReport({
               summary: `/s/sinbun/${sealCard("sinbun", { n: name.slice(0, 12), r: sinbun.rank, j: sinbun.job, l: sinbun.line, w: sinbun.rise, y: sinbun.yong })}`,
               full: `/s/sinbun/${sealPerson("sinbun", me.person)}`,
             }}
-            text={`${josa(name, "은/는")} 조선에 태어났다면 ${sinbun.rank} ${sinbun.job}래 ㅋㅋ 너는 조선에서 뭐였을까?`}
+            texts={{
+              summary: `나 조선에 태어났으면 ${sinbun.rank} ${sinbun.job}래 ㅋㅋㅋ 너는 조선에서 뭐였을까? 👇`,
+              full: `내 조선 신분 감정 통째로 보냄 ㅋㅋ 나는 ${sinbun.rank} ${sinbun.job}래. 너도 해봐 👇`,
+            }}
             card={<SinbunCard who={`${josa(name, "이/가")} 조선에 태어났다면`} rank={sinbun.rank} job={sinbun.job} line={sinbun.line} rise={sinbun.rise} yong={sinbun.yong} />}
           />
         )}
@@ -413,7 +416,10 @@ async function OpenReport({
             summary: `/s/reading/${sealCard("reading", { n: name.slice(0, 12), s: pillars.dayStem, b: pillars.dayBranch, p: free.powers.map((x) => [x.group, x.name, x.pct]), k: kindsOf, r: sameLine })}`,
             full: `/s/reading/${sealPerson("reading", me.person)}`,
           }}
-          text={`${name} 사주 봤는데 ${ilju.name}래. 가장 큰 힘은 ${free.powers.slice().sort((a, b) => b.pct - a.pct)[0].name}이라는데, 너도 해봐!`}
+          texts={{
+            summary: `내 사주 봤더니 ${ilju.name}래 ㅋㅋ ${distinct?.ilju ? `같은 일주 중 약 ${Math.max(1, Math.round(distinct.ilju.rate * 100))}%만 이런 구조라는데, ` : ""}너는 뭐야? 👇`,
+            full: `내 사주 풀이 전부 보냄 👀 생각보다 신기해. 너도 생년월일만 넣으면 바로 나와 👇`,
+          }}
           card={
             <ReadingCard
               who={`${name}님의 사주`}

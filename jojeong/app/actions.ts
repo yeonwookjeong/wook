@@ -6,7 +6,8 @@ import { redirect } from "next/navigation";
 import { computeProfile } from "@/lib/profile";
 import { BirthInputError, type Pillars } from "@/lib/saju";
 import { track } from "@/lib/stats";
-import { addMinister, createCourt, CourtFullError, getCourt, getProfile, listMinisters, MAX_MINISTERS, noteReading, removeMinister, setProfile } from "@/lib/store";
+import { addMinister, createCourt, CourtFullError, getCourt, getProfile, listMinisters, MAX_MINISTERS, noteReading, putShare, removeMinister, setProfile } from "@/lib/store";
+import { openCard, openPerson } from "@/lib/shareToken";
 import { OWNER_COOKIE, MINISTER_COOKIE } from "@/lib/cookies";
 import { encodePerson, relationOf, type Person } from "@/lib/pairToken";
 import { forgetMe, readMe, rememberMe } from "@/lib/me";
@@ -213,6 +214,20 @@ export async function saveMeAction(_prev: FormState, formData: FormData): Promis
     return { error: "사주를 준비하다 문제가 생겼어요. 잠시 후 다시 시도해 주세요." };
   }
   redirect(/^\/reports\/[a-z]+(\?y=\d{4})?$/.test(next) ? next : next === "/#today" ? "/#today" : "/");
+}
+
+// "친구에게 보내기": the long signed address turned into a short one. Only an address this site signed is kept.
+export async function shortShareAction(path: string): Promise<string | null> {
+  const m = /^\/s\/(reading|sinbun)\/([\w.-]{20,2400})$/.exec(path);
+  if (!m) return null;
+  const kind = m[1] as "reading" | "sinbun";
+  if (!openPerson(kind, m[2]) && !openCard(kind, m[2])) return null;
+  try {
+    return `/l/${await putShare(path)}`;
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
 }
 
 export async function forgetMeAction(formData: FormData) {
