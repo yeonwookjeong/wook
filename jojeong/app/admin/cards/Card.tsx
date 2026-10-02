@@ -410,7 +410,7 @@ export async function Card({ q }: { q: CardQuery }) {
               {m}월, 내 일주는 <span style={{ color: "#f1cf7a" }}>몇 위?</span>
             </p>
             <p style={{ marginTop: 16, fontSize: 30, color: "rgba(244,236,219,.85)", fontFamily: sans }}>
-              {mp.term} {mp.from} ~ {mp.to} · 태어난 날의 두 글자로 본 간이 운세
+              {mp.term} {mp.from} ~ {mp.to}
             </p>
           </div>
           <div className="doc-paper" style={{ position: "absolute", top: 440, left: 44, right: 44, padding: "26px 22px 22px", color: INK, display: "flex", gap: 14 }}>
@@ -560,7 +560,7 @@ export async function Card({ q }: { q: CardQuery }) {
             <p style={{ marginTop: 4, fontSize: 46, fontWeight: 800 }}>
               {list[0].rank}위 ~ {list.at(-1)!.rank}위
             </p>
-            <p style={{ marginTop: 6, fontSize: 21, color: SOFT, fontFamily: sans }}>일주(태어난 날의 두 글자)로 본 간이 운세예요 · 내 일주는 프로필 링크에서</p>
+            <p style={{ marginTop: 6, fontSize: 21, color: SOFT, fontFamily: sans }}>내 일주는 프로필 링크에서</p>
             <div style={{ marginTop: 10, display: "flex", gap: 30 }}>
               {cols.map((col, i) => (
                 <div key={i} style={{ flex: 1, minWidth: 0 }}>
