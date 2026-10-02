@@ -364,8 +364,8 @@ async function OpenReport({
               full: `/s/sinbun/${sealPerson("sinbun", me.person)}`,
             }}
             texts={{
-              summary: `나 조선에 태어났으면 ${sinbun.rank} ${sinbun.job}래 ㅋㅋㅋ 너는 조선에서 뭐였을까? 👇`,
-              full: `내 조선 신분 감정 통째로 보냄 ㅋㅋ 나는 ${sinbun.rank} ${sinbun.job}래. 너도 해봐 👇`,
+              summary: `나 조선에 태어났으면 ${josa(`${sinbun.rank} ${sinbun.job}`, "이래/래")}. 너는 뭐였을지 해봐`,
+              full: `내 조선 신분 감정 결과야. 나는 ${josa(`${sinbun.rank} ${sinbun.job}`, "이래/래")}. 너도 해봐`,
             }}
             card={<SinbunCard who={`${josa(name, "이/가")} 조선에 태어났다면`} rank={sinbun.rank} job={sinbun.job} line={sinbun.line} rise={sinbun.rise} yong={sinbun.yong} />}
           />
@@ -417,8 +417,8 @@ async function OpenReport({
             full: `/s/reading/${sealPerson("reading", me.person)}`,
           }}
           texts={{
-            summary: `내 사주 봤더니 ${ilju.name}래 ㅋㅋ ${distinct?.ilju ? `같은 일주 중 약 ${Math.max(1, Math.round(distinct.ilju.rate * 100))}%만 이런 구조라는데, ` : ""}너는 뭐야? 👇`,
-            full: `내 사주 풀이 전부 보냄 👀 생각보다 신기해. 너도 생년월일만 넣으면 바로 나와 👇`,
+            summary: `내 사주 봤는데 ${josa(ilju.name, "이래/래")}. 너도 생년월일만 넣으면 바로 나와`,
+            full: `내 사주 풀이야. 너도 생년월일만 넣으면 바로 나와`,
           }}
           card={
             <ReadingCard
