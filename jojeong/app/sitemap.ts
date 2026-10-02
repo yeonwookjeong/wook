@@ -1,10 +1,6 @@
 import type { MetadataRoute } from "next";
 import { siteUrl } from "@/lib/brand";
-import { kstYm, parseYm, shiftYm, ymOf } from "@/lib/chaek";
 import { SHELF } from "@/lib/products";
-
-// Rebuilt daily, so the almanac's months roll forward.
-export const revalidate = 86400;
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = siteUrl();
@@ -16,11 +12,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     page("/king", 0.7),
     page("/samjae", 0.6),
     page("/ranking", 0.7),
-    page("/chaek", 0.7),
-    // The almanac: this month and the next eleven.
-    ...Array.from({ length: 12 }, (_, i) => ymOf(...shiftYm(...kstYm(), i)))
-      .filter((ym) => parseYm(ym) !== null)
-      .map((ym) => page(`/chaek/${ym}`, 0.6)),
     page("/about", 0.5),
     page("/terms", 0.2),
     page("/refund", 0.2),
