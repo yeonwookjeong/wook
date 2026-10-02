@@ -51,8 +51,6 @@ export default async function RankingPage() {
         </p>
         <p className="mt-1 text-xs leading-relaxed text-ink-soft">
           사주의 한 달은 1일이 아니라 절기로 바뀌어요 · 무료
-          <br />
-          태어난 날의 두 글자(일주)로 본 간이 운세예요
         </p>
       </section>
 
@@ -132,14 +130,6 @@ export default async function RankingPage() {
             </li>
           ))}
         </ol>
-      </section>
-
-      <section className="mt-6 border-l-[3px] border-seal/60 py-1 pl-4 text-[13px] leading-relaxed text-ink-soft">
-        <p className="text-xs font-extrabold text-seal">순위는 이렇게 매겨요</p>
-        <p className="mt-1">
-          이달의 월주({mp.label})가 각 일주와 만나는 방식을 봐요. 월간이 일간에게 어떤 십신인지, 월지와 일지가 합하는지 부딪치는지,
-          귀인이 드는지를 점수로 합쳤어요. 절기가 바뀌는 날 새 달의 순위로 바뀌어요.
-        </p>
       </section>
 
       <AdSlot />
