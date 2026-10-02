@@ -24,7 +24,7 @@ const allKey = (e: string) => `st:${e}:all`;
 
 // Also `view:<sale>` (a paid report's page seen by a shopper) and `co:<sale>` (its payment window opened), per
 // line of the sales table (lib/sales.ts).
-export async function track(event: StatEvent | `view:${string}` | `co:${string}` | `to:${string}` | `src:${string}` | `sh:${string}` | `sv:${string}`) {
+export async function track(event: StatEvent | `view:${string}` | `co:${string}` | `to:${string}` | `src:${string}` | `sh:${string}` | `sv:${string}` | `sl:${string}`) {
   await bumpCounters([dayKey(event, kstDay()), allKey(event)]);
 }
 

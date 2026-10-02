@@ -157,6 +157,26 @@ function InnerRule({ width, accent }: { width: number; accent: string }) {
   );
 }
 
+// The preview of a friend's shared result (app/s/[kind]/[token]): who, a badge (the rank or the day pillar), the
+// verdict large, and one line under it.
+export function shareImage({ top, badge, big, small }: { top: string; badge?: string; big: string; small: string }) {
+  return render(
+    <div style={{ ...frame(1200, 630), justifyContent: "center", paddingBottom: 130 }}>
+      <InnerRule width={1200} accent={C.seal} />
+      <div style={{ fontSize: 34, color: C.soft, fontWeight: 800 }}>{top}</div>
+      {badge && <div style={{ marginTop: 16, display: "flex", fontSize: 50, color: C.seal, fontWeight: 800, border: `5px solid ${C.seal}`, padding: "0 26px" }}>{badge}</div>}
+      <div style={{ marginTop: 18, fontSize: big.length > 16 ? 60 : big.length > 10 ? 78 : 92, fontWeight: 800, textAlign: "center" }}>{big}</div>
+      <div style={{ marginTop: 18, fontSize: 28, color: C.soft, textAlign: "center", maxWidth: 900 }}>{small}</div>
+      <div style={{ position: "absolute", left: 80, bottom: 56, display: "flex" }}>
+        <Portrait mood="face" size={130} />
+      </div>
+      <div style={{ position: "absolute", right: 90, bottom: 66, display: "flex", fontSize: 30, color: C.gold, fontWeight: 800 }}>{SITE_NAME}</div>
+    </div>,
+    1200,
+    630,
+  );
+}
+
 export function inviteImage(kingName: string, king: Pillars, ministerCount: number) {
   return render(
     <div style={{ ...frame(1200, 630), justifyContent: "center" }}>
