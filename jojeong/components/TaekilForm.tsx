@@ -11,9 +11,10 @@ const choice =
 const select = "w-full rounded-xl border border-ink/15 bg-white/70 px-4 py-3 text-base outline-none focus:border-seal";
 
 // What for, from which month, for how long, and whose chart; a wedding or a betrothal also asks for the partner.
-export default function TaekilForm({ savedName, months }: { savedName: string | null; months: { value: string; label: string }[] }) {
+// `initial` picks the purpose for a link that names one (/reports/taekil?kind=move, from the almanac).
+export default function TaekilForm({ savedName, months, initial = "wedding" }: { savedName: string | null; months: { value: string; label: string }[]; initial?: Kind }) {
   const [state, formAction, pending] = useActionState<FormState, FormData>(taekilAction, { error: null });
-  const [kind, setKind] = useState<Kind>("wedding");
+  const [kind, setKind] = useState<Kind>(initial);
   const [useSaved, setUseSaved] = useState(savedName !== null);
 
   return (
