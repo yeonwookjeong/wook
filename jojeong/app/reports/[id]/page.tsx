@@ -16,10 +16,11 @@ import OrderLink from "@/components/OrderLink";
 import DecadeTable from "@/components/DecadeTable";
 import DomainCard from "@/components/DomainCard";
 import FreeReading from "@/components/FreeReading";
-import SaveCard from "@/components/SaveCard";
+import ShareResult from "@/components/ShareResult";
 import { ReadingCard, SinbunCard } from "@/components/ResultCards";
 import { iljuFacts } from "@/lib/cards";
-import { sealShare } from "@/lib/shareToken";
+import { sinbunStory } from "@/lib/sinbun";
+import { sealPerson } from "@/lib/shareToken";
 import NextStep from "@/components/NextStep";
 import TrackLink from "@/components/TrackLink";
 import { STEPS } from "@/lib/nextStep";
@@ -344,33 +345,31 @@ async function OpenReport({
     </p>
   );
 
-  if (product.id === "sinbun")
+  if (product.id === "sinbun") {
+    const sinbun = sinbunStory(pillars);
     return (
       <>
         <SinbunReport
           pillars={pillars}
           heading={subject?.king ? `${name} 전하가 왕이 아니었다면` : `${josa(name, "이/가")} 조선에 태어났다면`}
           query={query}
-          share={
-            self
-              ? (st) => (
-                  <SaveCard
-                    file="hundosaju-sinbun"
-                    from="sinbun"
-                    path={`/s/sinbun/${sealShare("sinbun", { n: name.slice(0, 12), r: st.rank, j: st.job, l: st.line, w: st.rise, y: st.yong })}`}
-                    text={`${josa(name, "은/는")} 조선에 태어났다면 ${st.rank} ${st.job}래 ㅋㅋ 너는 조선에서 뭐였을까?`}
-                  >
-                    <SinbunCard who={`${josa(name, "이/가")} 조선에 태어났다면`} rank={st.rank} job={st.job} line={st.line} rise={st.rise} yong={st.yong} />
-                  </SaveCard>
-                )
-              : undefined
-          }
         />
+        {self && me && (
+          <ShareResult
+            name={name}
+            file="hundosaju-sinbun"
+            from="sinbun"
+            path={`/s/sinbun/${sealPerson("sinbun", me.person)}`}
+            text={`${josa(name, "은/는")} 조선에 태어났다면 ${sinbun.rank} ${sinbun.job}래 ㅋㅋ 너는 조선에서 뭐였을까?`}
+            card={<SinbunCard who={`${josa(name, "이/가")} 조선에 태어났다면`} rank={sinbun.rank} job={sinbun.job} line={sinbun.line} rise={sinbun.rise} yong={sinbun.yong} />}
+          />
+        )}
         {self && <NextStep from="sinbun" steps={STEPS.sinbun(query)} />}
         {other}
         <AdSlot />
       </>
     );
+  }
 
   const profile = me ? profileOf(me.person) : subject!.self ? await getProfile(subject!.courtId, subject!.who) : null;
   const reading = yearReading(pillars, profile);
@@ -394,34 +393,36 @@ async function OpenReport({
   // The free reading: the chart analysis, then the four computed blocks (powers, 신살, money·love·work, the
   // flow of life). Shown on the free year reading and on the life report before purchase.
   const intro = distinct && <ChartIntro name={name} d={distinct} slots={reading.chart.slots} />;
-  // The card of this reading to save or send: the day pillar, the five powers, money·love·work, and how rare the
-  // build is (no birth date, no eight characters).
+  // The card of this reading, for a story (the day pillar, the five powers, money·love·work, how rare the build is).
   const ilju = free ? iljuFacts(pillars.dayStem, pillars.dayBranch) : null;
   const sameLine = distinct?.ilju ? `같은 ${distinct.ilju.name}일주 중 약 ${Math.max(1, Math.round(distinct.ilju.rate * 100))}%만 이 구조` : "";
   const kindsOf = free ? free.domains.map((d) => [d.domain === "jaemul" ? "돈" : d.domain === "yeonae" ? "사랑" : "일", d.card.type] as [string, string]) : [];
-  const shareCard = free && (
-    <div className="mt-4">
-      <style>{`@font-face{font-family:"GanzhiBrush";src:url(/fonts/ganzhi-syuku.woff2) format("woff2");font-display:block}`}</style>
-      <SaveCard
-        file="hundosaju-saju"
-        from="reading"
-        path={`/s/reading/${sealShare("reading", { n: name.slice(0, 12), s: pillars.dayStem, b: pillars.dayBranch, p: free.powers.map((x) => [x.group, x.name, x.pct]), k: kindsOf, r: sameLine })}`}
-        text={`${name} 사주 봤는데 ${ilju!.name}래. 가장 큰 힘은 ${free.powers.slice().sort((a, b) => b.pct - a.pct)[0].name}이라는데, 너는 어때?`}
-      >
-        <ReadingCard
-          who={`${name}님의 사주`}
-          ilju={{ hanja: ilju!.hanja, name: ilju!.name.replace("일주", "") }}
-          image={ilju!.image ?? null}
-          powers={free.powers}
-          kinds={kindsOf.map(([label, type]) => ({ label, type }))}
-          same={sameLine || null}
+  // At the very end, once the reader has been through all of it: send it to a friend, or keep the card.
+  const shareEnd =
+    free && ilju && me ? (
+      <>
+        <style>{`@font-face{font-family:"GanzhiBrush";src:url(/fonts/ganzhi-syuku.woff2) format("woff2");font-display:block}`}</style>
+        <ShareResult
+          name={name}
+          file="hundosaju-saju"
+          from="reading"
+          path={`/s/reading/${sealPerson("reading", me.person)}`}
+          text={`${name} 사주 봤는데 ${ilju.name}래. 가장 큰 힘은 ${free.powers.slice().sort((a, b) => b.pct - a.pct)[0].name}이라는데, 너도 해봐!`}
+          card={
+            <ReadingCard
+              who={`${name}님의 사주`}
+              ilju={{ hanja: ilju.hanja, name: ilju.name.replace("일주", "") }}
+              image={ilju.image ?? null}
+              powers={free.powers}
+              kinds={kindsOf.map(([label, type]) => ({ label, type }))}
+              same={sameLine || null}
+            />
+          }
         />
-      </SaveCard>
-    </div>
-  );
+      </>
+    ) : null;
   const fullIntro = intro && (
     <>
-      {shareCard}
       <ChartIntro name={name} d={distinct} slots={reading.chart.slots} chips={!free} />
       {free && <FreeReading name={name} r={free} query={query} addGender={`${next}?new=1`} onLifeReport={product.id === "pyeongsaeng"} />}
     </>
@@ -463,6 +464,7 @@ async function OpenReport({
           query={query}
           intro={self ? fullIntro : undefined}
         />
+        {shareEnd}
         {meDeepen}
         {other}
         <AdSlot />
