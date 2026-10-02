@@ -334,7 +334,7 @@ export async function Card({ q }: { q: CardQuery }) {
           </p>
           <p style={{ marginTop: 16, fontSize: 30, color: "rgba(244,236,219,.85)", fontFamily: sans }}>음력 날짜 끝자리가 9와 0인 날 · 작은 글씨는 음력</p>
         </div>
-        <div className="doc-paper" style={{ position: "absolute", top: 420, left: 44, right: 110, padding: "22px 18px", color: INK }}>
+        <div className="doc-paper" style={{ position: "absolute", top: 420, left: 44, right: 44, padding: "22px 18px", color: INK }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6, textAlign: "center" }}>
             {W.split("").map((w, i) => (
               <p key={w} style={{ fontSize: 26, fontWeight: 800, color: i === 0 ? SEAL : i === 6 ? "#1f4e8c" : SOFT, paddingBottom: 6 }}>
@@ -367,7 +367,7 @@ export async function Card({ q }: { q: CardQuery }) {
             )}
           </div>
         </div>
-        <div style={{ position: "absolute", top: 1236, left: 60, right: 110 }}>
+        <div style={{ position: "absolute", top: 1236, left: 60, right: 60 }}>
           {sons.map((x) => (
             <p key={x.d} style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.55 }}>
               <span style={{ color: "#f1cf7a" }}>
