@@ -1,5 +1,5 @@
 import { COMBINE_INTO, meetings, stemClash, stemCombine, type Meeting } from "./deep";
-import { BRANCH_EL, chartOf, ELEMENT_KO, stemEl, type Reading } from "./myeongri";
+import { BRANCH_EL, chartOf, stemEl, type Reading } from "./myeongri";
 import { BRANCHES, STEMS, type FullPillars } from "./saju";
 import { josa } from "./josa";
 
