@@ -1,5 +1,5 @@
 import { Fragment } from "react";
-import { Solar } from "lunar-javascript";
+import { monthOf } from "@/lib/chaek";
 import { ILGAN, ILJU_TAG_TEXT, iljuFacts, jiaziNo, nextDayOf, stemCure, stemMatches, stemName, stemThing } from "@/lib/cards";
 import { josa } from "@/lib/josa";
 import { pickDays } from "@/lib/taekil";
@@ -316,16 +316,9 @@ export async function Card({ q }: { q: CardQuery }) {
   if (c === "son-reel") {
     const y = Number(q.y ?? 2026);
     const m = Number(q.m ?? 10);
-    const last = new Date(Date.UTC(y, m, 0)).getUTCDate();
-    const first = new Date(Date.UTC(y, m - 1, 1)).getUTCDay();
-    const HOLI: Record<string, string> = { "1-1": "신정", "3-1": "삼일절", "5-5": "어린이날", "6-6": "현충일", "8-15": "광복절", "10-3": "개천절", "10-9": "한글날", "12-25": "성탄절" };
-    const days = Array.from({ length: last }, (_, i) => {
-      const d = i + 1;
-      const l = Solar.fromYmd(y, m, d).getLunar();
-      const ld = l.getDay();
-      const wd = (first + i) % 7;
-      return { d, wd, lunar: `${Math.abs(l.getMonth())}.${ld}`, son: ld % 10 === 9 || ld % 10 === 0, holi: HOLI[`${m}-${d}`] };
-    });
+    // The same almanac as /chaek: lunar dates, 손 없는 날 and public holidays (substitute days included).
+    const days = monthOf(y, m);
+    const first = days[0].wd;
     const sons = days.filter((x) => x.son);
     const cells = [...Array(first).fill(null), ...days];
     const W = "일월화수목금토";

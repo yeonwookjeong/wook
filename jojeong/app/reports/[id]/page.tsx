@@ -45,7 +45,7 @@ import { covers, getOrder, ownedOrderFor, ownedOrders, type Order } from "@/lib/
 import { isAdmin } from "@/lib/admin";
 import TrackView from "@/components/TrackView";
 import { saleKey } from "@/lib/sales";
-import { KINDS, parseSearch, pickDays, searchDay, startMonths } from "@/lib/taekil";
+import { KINDS, OFFERED, parseSearch, pickDays, searchDay, startMonths } from "@/lib/taekil";
 import { yearReading } from "@/lib/yearly";
 
 export async function generateMetadata({ params }: PageProps<"/reports/[id]">): Promise<Metadata> {
@@ -135,7 +135,7 @@ async function OpenReport({
           <section className="doc-paper mt-4 px-5 pt-6 pb-6">
             <p className="text-center text-sm leading-relaxed text-ink-soft">{product.teaser}</p>
             {locked ? <p className="mt-2 mb-4 text-center text-[13px] font-bold text-seal">조건에 맞는 길일이 몇 날인지는 무료로 먼저 보여 드려요</p> : <div className="mb-4" />}
-            <TaekilForm savedName={saved} months={startMonths()} />
+            <TaekilForm savedName={saved} months={startMonths()} initial={OFFERED.find((k) => k === search.kind)} />
           </section>
         </>
       );
