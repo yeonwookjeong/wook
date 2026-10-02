@@ -12,7 +12,6 @@ const FREE = [
   { href: "/reports/pyeongsaeng", title: "무료 사주 분석", line: "여덟 글자의 무게, 다섯 가지 힘, 10년 흐름" },
   { href: "/reports/gukjeong", title: "2026 신년 운세", line: "한 해의 흐름과 달마다 좋은 때" },
   { href: "/ranking", title: "이달의 일주 랭킹", line: "60일주 가운데 내 일주는 이번 달 몇 위" },
-  { href: "/chaek", title: "정 훈도의 책력", line: "달마다 손 없는 날, 음력 날짜와 절기" },
   { href: "/samjae", title: "삼재 띠 확인", line: "올해와 내년 삼재 띠" },
   { href: "/king", title: "왕이 될 사주", line: "친구들과 하는 조선 조정 놀이" },
 ];

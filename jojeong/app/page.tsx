@@ -12,7 +12,6 @@ import { ownedByProduct, ownedOrders } from "@/lib/pay";
 import { PRICE, priceNow, productById, SETS, type ProductId } from "@/lib/products";
 import { readingCount } from "@/lib/store";
 import { monthPillarNow, rankMonth } from "@/lib/iljuRank";
-import { kstYm, monthOf, WEEK, ymOf } from "@/lib/chaek";
 import { todayFor } from "@/lib/today";
 import { profileOf } from "@/lib/pairToken";
 import { isPreview, newYearOf, newYearProduct, thisYear, yearDetail, yearName, yearNickname } from "@/lib/yeonun";
@@ -77,9 +76,6 @@ export default async function Home() {
   const mp = monthPillarNow();
   const ranks = rankMonth(mp.stem, mp.branch);
   const myRank = me ? ranks.find((r) => r.stem === me.person.pillars.dayStem && r.branch === me.person.pillars.dayBranch) : undefined;
-  // This month's 손 없는 날, from the almanac.
-  const ym = kstYm();
-  const sons = monthOf(...ym).filter((d) => d.son);
 
   return (
     <>
@@ -126,16 +122,6 @@ export default async function Home() {
         </span>
         <span className="shrink-0 text-xs font-bold text-seal">무료 →</span>
       </TrackLink>
-
-      {/* The almanac's month: the 손 없는 날 people look up before a move, one tap away. */}
-      <Link href={`/chaek/${ymOf(...ym)}`} className="doc-paper mt-2 flex items-center gap-3 px-5 py-3">
-        <span className="flex size-12 shrink-0 -rotate-3 items-center justify-center border-[3px] border-seal font-myeongjo text-sm font-extrabold text-seal">冊曆</span>
-        <span className="min-w-0 flex-1">
-          <b className="block text-xs text-seal">{ym[1]}월 손 없는 날 · 책력</b>
-          <span className="block font-myeongjo text-[15px] leading-snug font-extrabold">{sons.map((d) => `${d.d}일(${WEEK[d.wd]})`).join(" · ")}</span>
-        </span>
-        <span className="shrink-0 text-xs font-bold text-seal">무료 →</span>
-      </Link>
 
       {ny && nyProduct && (
         <RoyalDoc className="mt-5" paperClassName="px-5">

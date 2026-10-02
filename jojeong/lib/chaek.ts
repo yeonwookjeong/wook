@@ -1,8 +1,8 @@
 import { Solar } from "lunar-javascript";
 import { BRANCHES, STEMS } from "./saju";
 
-// 정 훈도의 책력: a calendar month as the almanac gives it (lunar dates, 손 없는 날, the 24 절기 and when the saju
-// month turns, Korean public holidays). Computed, nothing stored; used by /chaek and the 손 없는 날 reel.
+// A calendar month as the almanac gives it (lunar dates, 손 없는 날, the 24 절기 and when the saju month turns,
+// Korean public holidays). Computed, nothing stored; used by the 손 없는 날 reel and the night post.
 
 // The 24 절기 as lunar-javascript names them (both scripts), with their Korean name, hanja and meaning.
 export const TERMS: Record<string, [ko: string, hanja: string, meaning: string]> = {
@@ -37,9 +37,6 @@ export const TERMS: Record<string, [ko: string, hanja: string, meaning: string]>
   小寒: ["소한", "小寒", "작은 추위가 온다는 때"],
   大寒: ["대한", "大寒", "큰 추위가 온다는 때"],
 };
-
-// Where 손 is on a lunar day (by its last digit); on days ending in 9 and 0 it has gone up to the sky.
-export const SON_DIR = [null, "동쪽", "동쪽", "남쪽", "남쪽", "서쪽", "서쪽", "북쪽", "북쪽", null] as const;
 
 export const WEEK = "일월화수목금토";
 
@@ -156,25 +153,4 @@ export function monthOf(y: number, m: number): ChaekDay[] {
       branch: BRANCHES.indexOf(l.getDayZhi() as (typeof BRANCHES)[number]),
     };
   });
-}
-
-// "2026-10" → [2026, 10], within the years the almanac pages cover.
-export const FIRST_YEAR = 2025;
-export const LAST_YEAR = 2030;
-export function parseYm(s: string): [number, number] | null {
-  const m = /^(\d{4})-(\d{2})$/.exec(s);
-  if (!m) return null;
-  const y = Number(m[1]);
-  const mo = Number(m[2]);
-  return y >= FIRST_YEAR && y <= LAST_YEAR && mo >= 1 && mo <= 12 ? [y, mo] : null;
-}
-export const ymOf = (y: number, m: number) => `${y}-${String(m).padStart(2, "0")}`;
-export const shiftYm = (y: number, m: number, n: number): [number, number] => {
-  const k = y * 12 + (m - 1) + n;
-  return [Math.floor(k / 12), (k % 12) + 1];
-};
-// This month in Korea.
-export function kstYm(t = Date.now()): [number, number] {
-  const x = new Date(t + 9 * 3600000);
-  return [x.getUTCFullYear(), x.getUTCMonth() + 1];
 }

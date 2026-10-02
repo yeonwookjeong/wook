@@ -316,7 +316,7 @@ export async function Card({ q }: { q: CardQuery }) {
   if (c === "son-reel") {
     const y = Number(q.y ?? 2026);
     const m = Number(q.m ?? 10);
-    // The same almanac as /chaek: lunar dates, 손 없는 날 and public holidays (substitute days included).
+    // The almanac (lib/chaek.ts): lunar dates, 손 없는 날 and public holidays (substitute days included).
     const days = monthOf(y, m);
     const first = days[0].wd;
     const sons = days.filter((x) => x.son);
