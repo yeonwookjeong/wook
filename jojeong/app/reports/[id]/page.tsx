@@ -20,7 +20,7 @@ import ShareResult from "@/components/ShareResult";
 import { ReadingCard, SinbunCard } from "@/components/ResultCards";
 import { iljuFacts } from "@/lib/cards";
 import { sinbunStory } from "@/lib/sinbun";
-import { sealPerson } from "@/lib/shareToken";
+import { sealCard, sealPerson } from "@/lib/shareToken";
 import NextStep from "@/components/NextStep";
 import TrackLink from "@/components/TrackLink";
 import { STEPS } from "@/lib/nextStep";
@@ -359,7 +359,10 @@ async function OpenReport({
             name={name}
             file="hundosaju-sinbun"
             from="sinbun"
-            path={`/s/sinbun/${sealPerson("sinbun", me.person)}`}
+            paths={{
+              summary: `/s/sinbun/${sealCard("sinbun", { n: name.slice(0, 12), r: sinbun.rank, j: sinbun.job, l: sinbun.line, w: sinbun.rise, y: sinbun.yong })}`,
+              full: `/s/sinbun/${sealPerson("sinbun", me.person)}`,
+            }}
             text={`${josa(name, "은/는")} 조선에 태어났다면 ${sinbun.rank} ${sinbun.job}래 ㅋㅋ 너는 조선에서 뭐였을까?`}
             card={<SinbunCard who={`${josa(name, "이/가")} 조선에 태어났다면`} rank={sinbun.rank} job={sinbun.job} line={sinbun.line} rise={sinbun.rise} yong={sinbun.yong} />}
           />
@@ -406,7 +409,10 @@ async function OpenReport({
           name={name}
           file="hundosaju-saju"
           from="reading"
-          path={`/s/reading/${sealPerson("reading", me.person)}`}
+          paths={{
+            summary: `/s/reading/${sealCard("reading", { n: name.slice(0, 12), s: pillars.dayStem, b: pillars.dayBranch, p: free.powers.map((x) => [x.group, x.name, x.pct]), k: kindsOf, r: sameLine })}`,
+            full: `/s/reading/${sealPerson("reading", me.person)}`,
+          }}
           text={`${name} 사주 봤는데 ${ilju.name}래. 가장 큰 힘은 ${free.powers.slice().sort((a, b) => b.pct - a.pct)[0].name}이라는데, 너도 해봐!`}
           card={
             <ReadingCard

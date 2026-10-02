@@ -13,27 +13,33 @@ import { josa } from "@/lib/josa";
 import { readMe } from "@/lib/me";
 import { profileOf } from "@/lib/pairToken";
 import { distinctOf } from "@/lib/rarity";
-import { isShareKind, openPerson } from "@/lib/shareToken";
+import { iljuFacts } from "@/lib/cards";
+import { ReadingCard, SinbunCard } from "@/components/ResultCards";
+import { isShareKind, openCard, openPerson, type ReadingSummary, type SinbunSummary } from "@/lib/shareToken";
 import { track } from "@/lib/stats";
 import { yearReading } from "@/lib/yearly";
 
-// What a friend opens from "친구에게 보내기": the sender's whole free result, as the sender saw it, and the form for
-// their own at the top and the foot, which leads to the same free page. Nothing is stored; the signed address holds
-// the chart (lib/shareToken.ts).
+// What a friend opens from "친구에게 보내기". Two kinds of link, both signed (lib/shareToken.ts), nothing stored:
+//   the whole free result as the sender saw it, with the form for their own at the top and the foot; or
+//   the sender's summary card only (no chart), with the form below it.
+// Either leads to the same free page.
 const NEXT = { reading: "/reports/gukjeong", sinbun: "/reports/sinbun" } as const;
 
 async function load(params: PageProps<"/s/[kind]/[token]">["params"]) {
   const { kind, token } = await params;
   if (!isShareKind(kind)) return null;
   const person = openPerson(kind, token);
-  return person ? { kind, person } : null;
+  if (person) return { kind, person, card: null };
+  const card = openCard(kind, token);
+  return card ? { kind, person: null, card } : null;
 }
 
 export async function generateMetadata({ params }: PageProps<"/s/[kind]/[token]">): Promise<Metadata> {
   const got = await load(params);
   if (!got) return {};
-  const { kind, person } = got;
-  const title = kind === "reading" ? `${person.name}님의 사주 풀이` : `${josa(person.name, "이/가")} 조선에 태어났다면`;
+  const { kind } = got;
+  const who = got.person ? got.person.name : got.card!.n;
+  const title = kind === "reading" ? `${who}님의 사주 풀이` : `${josa(who, "이/가")} 조선에 태어났다면`;
   const description = kind === "reading" ? "그대의 사주는 어떠하옵니까? 생년월일만 넣으면 무료로 바로 보여 드려요." : "그대는 조선에서 무엇이었을까요? 생년월일만 넣으면 무료로 바로 감정해 드려요.";
   return { title, description, robots: { index: false }, openGraph: { title, description } };
 }
@@ -41,16 +47,17 @@ export async function generateMetadata({ params }: PageProps<"/s/[kind]/[token]"
 export default async function SharedPage({ params }: PageProps<"/s/[kind]/[token]">) {
   const got = await load(params);
   if (!got) notFound();
-  const { kind, person } = got;
+  const { kind, person, card } = got;
   const me = await readMe();
   // A friend's link opened: how many arrive this way (the owner's table).
   await track(`sl:${kind}`).catch(() => {});
 
-  const profile = profileOf(person);
-  const { pillars, name } = person;
-  const reading = kind === "reading" ? yearReading(pillars, profile) : null;
-  const distinct = reading ? distinctOf(pillars, person.gender) : null;
-  const free = reading ? freeReadingOf(pillars, profile) : null;
+  const name = person ? person.name : (card as { n: string }).n;
+  const profile = person ? profileOf(person) : null;
+  const pillars = person?.pillars;
+  const reading = person && pillars && kind === "reading" ? yearReading(pillars, profile) : null;
+  const distinct = reading && pillars ? distinctOf(pillars, person!.gender) : null;
+  const free = reading && pillars ? freeReadingOf(pillars, profile) : null;
 
   // The friend's own: the form, or (a chart already kept on this device) straight to their result.
   const mine = (
@@ -87,7 +94,34 @@ export default async function SharedPage({ params }: PageProps<"/s/[kind]/[token
         </a>
       </section>
 
-      {kind === "sinbun" ? (
+      {card && (
+        <section className="mt-5">
+          <style>{`@font-face{font-family:"GanzhiBrush";src:url(/fonts/ganzhi-syuku.woff2) format("woff2");font-display:block}`}</style>
+          {kind === "sinbun" ? (
+            (() => {
+              const d = card as SinbunSummary;
+              return <SinbunCard who={`${josa(d.n, "이/가")} 조선에 태어났다면`} rank={d.r} job={d.j} line={d.l} rise={d.w} yong={d.y} />;
+            })()
+          ) : (
+            (() => {
+              const d = card as ReadingSummary;
+              const f = iljuFacts(d.s, d.b);
+              return (
+                <ReadingCard
+                  who={`${d.n}님의 사주`}
+                  ilju={{ hanja: f.hanja, name: f.name.replace("일주", "") }}
+                  image={f.image ?? null}
+                  powers={d.p.map(([group, n, pct]) => ({ group: group as never, name: n, pct, rank: null }))}
+                  kinds={d.k.map(([label, type]) => ({ label, type }))}
+                  same={d.r || null}
+                />
+              );
+            })()
+          )}
+        </section>
+      )}
+
+      {person && kind === "sinbun" && pillars ? (
         <SinbunReport pillars={pillars} heading={`${josa(name, "이/가")} 조선에 태어났다면`} query="" />
       ) : reading ? (
         <YearReport

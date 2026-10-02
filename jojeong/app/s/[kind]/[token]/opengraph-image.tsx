@@ -4,7 +4,7 @@ import { josa } from "@/lib/josa";
 import { shareImage } from "@/lib/og";
 import { profileOf } from "@/lib/pairToken";
 import { distinctOf } from "@/lib/rarity";
-import { isShareKind, openPerson } from "@/lib/shareToken";
+import { isShareKind, openCard, openPerson, type ReadingSummary, type SinbunSummary } from "@/lib/shareToken";
 import { sinbunStory } from "@/lib/sinbun";
 
 export const alt = "친구가 보내온 훈도사주 결과";
@@ -15,6 +15,18 @@ export const contentType = "image/png";
 export default async function Image({ params }: { params: Promise<{ kind: string; token: string }> }) {
   const { kind, token } = await params;
   const person = isShareKind(kind) ? openPerson(kind, token) : null;
+  const card = isShareKind(kind) && !person ? openCard(kind, token) : null;
+  // A summary link: the result as it was sent.
+  if (card && kind === "sinbun") {
+    const d = card as SinbunSummary;
+    return shareImage({ top: `${josa(d.n, "이/가")} 조선에 태어났다면`, badge: d.r, big: d.j, small: d.l });
+  }
+  if (card) {
+    const d = card as ReadingSummary;
+    const f = iljuFacts(d.s, d.b);
+    const top = [...d.p].sort((a, b) => b[2] - a[2])[0];
+    return shareImage({ top: `${d.n}님의 사주 한 장`, badge: f.hanja, big: `${f.name}${f.image ? ` · ${f.image}` : ""}`, small: [`가장 큰 힘 ${top[1]} ${top[2]}%`, d.r].filter(Boolean).join(" · ") });
+  }
   if (!person) return shareImage({ top: "훈도사주", big: "나한테만 맞는 말", small: "생년월일만 넣으면 무료로 바로" });
   if (kind === "sinbun") {
     const s = sinbunStory(person.pillars);
