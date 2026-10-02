@@ -5,7 +5,7 @@ import type { Profile } from "./profile";
 import { godRank, salRate } from "./rarity";
 import { isFull, type Pillars } from "./saju";
 import { luckFit } from "./yearly";
-import { decadeLine, type Level } from "./decadeLine";
+import { decadeLine, decadeSeen, type Level } from "./decadeLine";
 
 // The free reading's extra blocks, computed only (no writer, no cost): what the chart is, in numbers and one-line
 // verdicts. The paid reports tell how it plays out and when; these say what it is.
@@ -82,8 +82,10 @@ export type FreeReading = {
   sals: { name: string; plain: string; line: string; rate: number | null }[];
   domains: { domain: Domain; card: DomainCard }[];
   // `fit` is the raw grade (the paid report is still told the old three-step reading of it for orders written before
-  // the five grades); `line` and `why` are this decade's own sentence (lib/decadeLine.ts); `young` is a childhood decade.
-  flow: { from: number; to: number; age: string; mood: Mood; level: Level; fit: number; theme: string; line: string; why: string; young: boolean; now: boolean; past: boolean }[] | null;
+  // the five grades); `line` is this decade in plain words, `why` its reason with the hanja (lib/decadeLine.ts), and
+  // `tech` the reason in one line, which is what the paid report is told (so reports already written keep their key);
+  // `young` is a childhood decade.
+  flow: { from: number; to: number; age: string; mood: Mood; level: Level; fit: number; theme: string; line: string; why: string; tech: string; young: boolean; now: boolean; past: boolean }[] | null;
 };
 
 export function freeReadingOf(p: Pillars, profile: Profile | null, now = 2026): FreeReading | null {
@@ -119,6 +121,8 @@ export function freeReadingOf(p: Pillars, profile: Profile | null, now = 2026): 
   });
 
   const by = profile?.birthYear;
+  // Shared across the decades, so no two read the same (lib/decadeLine.ts).
+  const seen = decadeSeen();
   const flow = profile?.daeun?.length
     ? profile.daeun.map((d) => {
         const fit = luckFit(r, p.dayStem, d.stem, d.branch);
@@ -127,7 +131,7 @@ export function freeReadingOf(p: Pillars, profile: Profile | null, now = 2026): 
         const stage: Stage = age < 18 ? "young" : age < 60 ? "adult" : "late";
         const { mood, level } = moodOf(fit);
         const young = Boolean(by) && age < 12;
-        const text = decadeLine(p, r, d, level, young);
+        const text = decadeLine(p, r, d, level, young, { past: d.to < now, seen });
         return {
           from: d.from,
           to: d.to,
@@ -138,6 +142,7 @@ export function freeReadingOf(p: Pillars, profile: Profile | null, now = 2026): 
           theme: DECADE_OF[g][stage],
           line: text.line,
           why: text.why,
+          tech: text.tech,
           young,
           now: d.from <= now && now <= d.to,
           past: d.to < now,
@@ -167,8 +172,8 @@ export function freeBrief(p: Pillars, profile: Profile | null, now = 2026, legac
             ...(cur ? [`- 지금의 10년은 ${cur.from}~${cur.to}년 '${cur.fit >= 3 ? "기회" : cur.fit <= -3 ? "다지기" : "무난"}'. 대운은 해가 바뀌는 첫머리가 아니라 태어난 날 무렵에 넘어가므로, 바뀌는 해를 말할 때는 "${cur.from}년 무렵부터"처럼 쓴다.`] : []),
           ]
         : [
-            `- 인생 흐름(10년 대운, 다섯 단계 ◎◎활짝 ◎기회 ○무난 △다지기 ▽버티기. 어린 시기는 단계 없이 성장기): ${r.flow.map((f) => `${f.from}~${f.to}${f.age ? `(${f.age})` : ""} ${f.young ? "성장기" : `${MARK[f.mood]}${f.mood}`} ${f.line}${f.now ? "←지금" : ""}`).join(" / ")}`,
-            ...(cur ? [`- 지금의 10년은 ${cur.from}~${cur.to}년 '${cur.mood}'(${cur.line}). 대운은 해가 바뀌는 첫머리가 아니라 태어난 날 무렵에 넘어가므로, 바뀌는 해를 말할 때는 "${cur.from}년 무렵부터"처럼 쓴다.`] : []),
+            `- 인생 흐름(10년 대운, 다섯 단계 ◎◎활짝 ◎기회 ○무난 △다지기 ▽버티기. 어린 시기는 단계 없이 성장기): ${r.flow.map((f) => `${f.from}~${f.to}${f.age ? `(${f.age})` : ""} ${f.young ? "성장기" : `${MARK[f.mood]}${f.mood}`} ${f.tech}${f.now ? "←지금" : ""}`).join(" / ")}`,
+            ...(cur ? [`- 지금의 10년은 ${cur.from}~${cur.to}년 '${cur.mood}'(${cur.tech}). 대운은 해가 바뀌는 첫머리가 아니라 태어난 날 무렵에 넘어가므로, 바뀌는 해를 말할 때는 "${cur.from}년 무렵부터"처럼 쓴다.`] : []),
           ]
       : ["- 인생 흐름: 성별을 몰라 대운을 계산하지 않음(대운 이야기는 하지 않는다)"]),
   ].join("\n");
