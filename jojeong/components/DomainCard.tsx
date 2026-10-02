@@ -26,7 +26,6 @@ export default function DomainCard({ name, domain, card }: { name: string; domai
           </li>
         ))}
       </ul>
-      <p className="mt-3 text-[11px] leading-relaxed text-ink-soft">평생 사주에는 없는, 이 주제만 따로 계산한 결과예요. 아래 10년 달력과 보고서가 이걸 바탕으로 이어져요.</p>
     </section>
   );
 }
