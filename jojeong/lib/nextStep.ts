@@ -2,7 +2,7 @@
 // page first where there is one, the paid report after (무료 → 무료 → 유료). The pages and their steps live here,
 // so a new free page is one more line. Each click is counted as `to:<from>` as well as `to_saju`, for the
 // owner's dashboard (which page actually sends people on).
-export const STEP_FROM = ["king", "court", "minister", "sinbun", "reading", "gukjeong", "ranking", "samjae", "today"] as const;
+export const STEP_FROM = ["king", "court", "minister", "sinbun", "reading", "gukjeong", "ranking", "samjae", "today", "ilju"] as const;
 export type StepFrom = (typeof STEP_FROM)[number];
 export const isStepFrom = (v: unknown): v is StepFrom => STEP_FROM.includes(v as StepFrom);
 
@@ -16,6 +16,7 @@ export const STEP_LABEL: Record<StepFrom, string> = {
   ranking: "이달의 일주 랭킹",
   samjae: "삼재",
   today: "오늘의 운세",
+  ilju: "60일주 사전",
 };
 
 export type Step = { href: string; title: string; line?: string; seal?: string; kicker?: string; free?: boolean };
@@ -58,4 +59,10 @@ export const STEPS = {
           ask: "내 일주를 모르겠다면",
           main: { href: "/reports/pyeongsaeng", seal: "日柱", kicker: "무료", title: "생년월일만 넣으면 바로 알려 드려요", line: "내 일주와 이번 달 순위, 사주 분석까지", free: true },
         },
+  // A day pillar is two of the eight characters: the step is the other six.
+  ilju: (name: string): Steps => ({
+    ask: `같은 ${name}라도 여덟 글자가 다르면 다른 사람이에요`,
+    main: { href: "/reports/pyeongsaeng", seal: "八字", kicker: "무료", title: "나머지 여섯 글자까지, 내 사주 전체 보기", line: "성향 지도, 돈·사랑·일 판정, 10년 흐름까지", free: true },
+    more: [{ href: "/reports/gunghap", title: "궁합" }, { href: "/ranking", title: "이달의 일주 랭킹" }],
+  }),
 };
