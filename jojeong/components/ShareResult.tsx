@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { toBlob } from "html-to-image";
+import { shortShareAction } from "@/app/actions";
 import { fontCss } from "@/lib/cardExport";
 import { trackEvent } from "./VisitBeacon";
 
@@ -13,7 +14,7 @@ export default function ShareResult({
   file,
   from,
   paths,
-  text,
+  texts,
   card,
 }: {
   name: string;
@@ -21,7 +22,8 @@ export default function ShareResult({
   from: string;
   // The two things a friend can be sent: the result alone, or the whole of it (lib/shareToken.ts).
   paths: { summary: string; full: string };
-  text: string;
+  // The line that goes with each, in the sender's own voice.
+  texts: { summary: string; full: string };
   // The card of the result, drawn only once it is asked for.
   card: React.ReactNode;
 }) {
@@ -30,20 +32,27 @@ export default function ShareResult({
   const [showCard, setShowCard] = useState(false);
   const [state, setState] = useState<"idle" | "making" | "error" | "copied">("idle");
 
-  async function send(path: string) {
+  async function send(which: "summary" | "full") {
     trackEvent("share_result", from);
     setChoosing(false);
+    // A short address if it can be made (the long one is a few hundred characters), else the long one.
+    let path = paths[which];
+    try {
+      path = (await shortShareAction(path)) ?? path;
+    } catch {}
     const url = new URL(path, window.location.origin).toString();
+    // One message, the line and the link together: sent apart, a chat app shows two bubbles and no preview.
+    const message = `${texts[which]}\n${url}`;
     if (navigator.share) {
       try {
-        await navigator.share({ text, url });
+        await navigator.share({ text: message });
         return;
       } catch (e) {
         if ((e as Error).name === "AbortError") return;
       }
     }
     try {
-      await navigator.clipboard.writeText(`${text}\n${url}`);
+      await navigator.clipboard.writeText(message);
       setState("copied");
       setTimeout(() => setState("idle"), 2500);
     } catch {
@@ -103,17 +112,17 @@ export default function ShareResult({
       {choosing && (
         <div className="mt-3 rounded-2xl border border-seal/30 bg-white/70 p-3 text-left">
           <p className="px-1 text-[12px] font-bold text-ink-soft">무엇을 보낼까요?</p>
-          <button type="button" onClick={() => send(paths.summary)} className="mt-2 w-full rounded-xl border-2 border-seal bg-hanji px-4 py-3 text-left">
+          <button type="button" onClick={() => send("summary")} className="mt-2 w-full rounded-xl border-2 border-seal bg-hanji px-4 py-3 text-left">
             <b className="block font-myeongjo text-[15px]">
               요약 한 장만 <span className="ml-1 rounded bg-seal px-1.5 py-0.5 text-[10px] text-hanji">추천</span>
             </b>
             <span className="mt-0.5 block text-[12px] leading-snug text-ink-soft">일주, 가장 큰 힘, 돈·사랑·일 한 줄만 보여요. 사주 글자는 담기지 않아요.</span>
           </button>
-          <button type="button" onClick={() => send(paths.full)} className="mt-2 w-full rounded-xl border border-ink/20 bg-white px-4 py-3 text-left">
+          <button type="button" onClick={() => send("full")} className="mt-2 w-full rounded-xl border border-ink/20 bg-white px-4 py-3 text-left">
             <b className="block font-myeongjo text-[15px]">전체 결과</b>
             <span className="mt-0.5 block text-[12px] leading-snug text-ink-soft">풀이, 성향 지도, 10년 흐름까지 모두 보여요. 사주 글자와 출생연도가 담기고, 받은 분이 다시 전달할 수 있어요.</span>
           </button>
-          <p className="mt-2 px-1 text-[11px] text-ink-soft/80">한번 보낸 링크는 되돌릴 수 없어요. 생년월일은 어느 쪽에도 담기지 않아요.</p>
+          <p className="mt-2 px-1 text-[11px] text-ink-soft/80">생년월일은 어느 쪽에도 담기지 않아요. 보낸 링크는 1년간 열려요. 지우고 싶으면 문의하기로 알려 주세요.</p>
         </div>
       )}
       <button
