@@ -117,7 +117,7 @@ export default async function SnsPage({ searchParams }: PageProps<"/admin/sns">)
       </section>
 
       <Block title="① 아침 일진 글" time="스레드 · 7:30~8:30" text={morning.text}>
-        <p className="mt-2 text-[11px] text-ink-soft">날마다 자동으로 바뀌어요. 날을 좋다·나쁘다로 매기지 않아요.</p>
+        <p className="mt-2 text-[11px] text-ink-soft">요일·연휴에 맞춰 날마다 바뀌어요. 날이 모두에게 어떻다고 말하지 않고, 일진에서 핑계 하나를 빌려 드려요.</p>
       </Block>
 
       <Block title="② 카드" time="인스타 · 점심 무렵">
