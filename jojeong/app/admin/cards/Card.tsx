@@ -313,6 +313,59 @@ export async function Card({ q }: { q: CardQuery }) {
   // ② 60일주 도감
   // 60일주 월간 랭킹, posted on the day the 절기 month begins (?y=&m= the calendar month it begins in).
   // A month's 손 없는 날 (lunar days ending in 9 and 0) on one calendar, for a reel people save before moving.
+  // 띠 궁합 at a glance, for a reel people tag each other on: each animal's 육합 (찰떡) and 충 (부딪힘), both
+  // fixed by the branches, so nothing in it is a guess.
+  if (c === "tti-reel") {
+    const HAP = [1, 0, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2];
+    const GREEN = "#3d6656";
+    const rowH = 58;
+    const tableTop = 548;
+    const pair = (b: number, color: string) => (
+      <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <span style={{ fontSize: 34, lineHeight: 1, color, fontFamily: brush }}>{BRANCHES[b]}</span>
+        <b style={{ fontSize: 30, color }}>{ANIMALS[b]}</b>
+      </span>
+    );
+    return (
+      <ReelFrame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: REEL.top, left: REEL.side, right: REEL.side, textAlign: "center" }}>
+          <p style={{ fontSize: 34, fontWeight: 800, letterSpacing: "0.08em", color: GOLD }}>열두 띠 궁합 한눈에</p>
+          <p style={{ marginTop: 14, fontSize: 80, fontWeight: 800, lineHeight: 1.15 }}>
+            우리 띠, <span style={{ color: "#f1cf7a" }}>찰떡</span>일까
+            <br />
+            <span style={{ color: "#f08a80" }}>상극</span>일까
+          </p>
+        </div>
+        {/* Centred on the picture: the words stay left of x 820, clear of the like column; only the paper's edge runs under it. */}
+        <div className="doc-paper" style={{ position: "absolute", top: tableTop, left: 150, width: 780, padding: "16px 22px 16px 40px", color: INK }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1.15fr 1fr 1fr", alignItems: "center", height: 46, fontSize: 24, fontWeight: 800, fontFamily: sans }}>
+            <span style={{ color: SOFT }}>내 띠</span>
+            <span style={{ color: GREEN }}>찰떡 짝</span>
+            <span style={{ color: SEAL }}>부딪히는 짝</span>
+          </div>
+          {ANIMALS.map((_, b) => (
+            <div
+              key={b}
+              style={{ display: "grid", gridTemplateColumns: "1.15fr 1fr 1fr", alignItems: "center", height: rowH, borderTop: "1.5px solid rgba(179,38,30,.15)" }}
+            >
+              <span style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <span style={{ fontSize: 40, lineHeight: 1, color: INK, fontFamily: brush }}>{BRANCHES[b]}</span>
+                <b style={{ fontSize: 34 }}>{ANIMALS[b]}띠</b>
+              </span>
+              {pair(HAP[b], GREEN)}
+              {pair((b + 6) % 12, SEAL)}
+            </div>
+          ))}
+        </div>
+        <div style={{ position: "absolute", top: tableTop + 32 + 46 + 12 * rowH + 30, left: 150, width: 780, textAlign: "center" }}>
+          <p style={{ fontSize: 30, lineHeight: 1.45, fontWeight: 800, color: "#f1cf7a" }}>띠는 여덟 글자 중 한 글자일 뿐이옵니다</p>
+          <p style={{ marginTop: 8, fontSize: 26, lineHeight: 1.45, color: "rgba(244,236,219,.8)", fontFamily: sans }}>찰떡은 육합, 부딪힘은 충 · 진짜 궁합은 두 사람의 여덟 글자로</p>
+        </div>
+      </ReelFrame>
+    );
+  }
+
   if (c === "son-reel") {
     const y = Number(q.y ?? 2026);
     const m = Number(q.m ?? 10);
