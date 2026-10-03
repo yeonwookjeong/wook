@@ -49,7 +49,9 @@ function Frame({ children, dark = false }: { children: React.ReactNode; dark?: b
 // Where a reel's content survives Instagram's player, checked on a tall phone (the picture fills the screen and is
 // cropped about 100px at each side): below the status bar and the 릴스·친구 tabs (top), above the account and caption
 // (bottom), and clear of the like/comment column that runs down the right edge from about y 1040 (x past 880).
-const REEL = { top: 250, side: 100, bottom: 1480 };
+// Measured again on the posted 띠 궁합 reel (10/3): the picture is cropped about 50px a side, the account row
+// starts near y 1700 and the like column's heart near y 1150 (x past 900), so content may run down to about 1640.
+const REEL = { top: 250, side: 100, bottom: 1640 };
 
 function ReelFrame({ children }: { children: React.ReactNode }) {
   return (
@@ -318,12 +320,13 @@ export async function Card({ q }: { q: CardQuery }) {
   if (c === "tti-reel") {
     const HAP = [1, 0, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2];
     const GREEN = "#3d6656";
-    const rowH = 58;
-    const tableTop = 548;
+    // Rows tall enough to fill the picture down to the closing lines, which end above the account row (y ~1650).
+    const rowH = 70;
+    const tableTop = 556;
     const pair = (b: number, color: string) => (
       <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <span style={{ fontSize: 34, lineHeight: 1, color, fontFamily: brush }}>{BRANCHES[b]}</span>
-        <b style={{ fontSize: 30, color }}>{ANIMALS[b]}</b>
+        <span style={{ fontSize: 40, lineHeight: 1, color, fontFamily: brush }}>{BRANCHES[b]}</span>
+        <b style={{ fontSize: 35, color }}>{ANIMALS[b]}</b>
       </span>
     );
     return (
@@ -339,7 +342,7 @@ export async function Card({ q }: { q: CardQuery }) {
         </div>
         {/* Centred on the picture: the words stay left of x 820, clear of the like column; only the paper's edge runs under it. */}
         <div className="doc-paper" style={{ position: "absolute", top: tableTop, left: 150, width: 780, padding: "16px 22px 16px 40px", color: INK }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1.15fr 1fr 1fr", alignItems: "center", height: 46, fontSize: 24, fontWeight: 800, fontFamily: sans }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1.15fr 1fr 1fr", alignItems: "center", height: 50, fontSize: 27, fontWeight: 800, fontFamily: sans }}>
             <span style={{ color: SOFT }}>내 띠</span>
             <span style={{ color: GREEN }}>찰떡 짝</span>
             <span style={{ color: SEAL }}>부딪히는 짝</span>
@@ -350,17 +353,17 @@ export async function Card({ q }: { q: CardQuery }) {
               style={{ display: "grid", gridTemplateColumns: "1.15fr 1fr 1fr", alignItems: "center", height: rowH, borderTop: "1.5px solid rgba(179,38,30,.15)" }}
             >
               <span style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <span style={{ fontSize: 40, lineHeight: 1, color: INK, fontFamily: brush }}>{BRANCHES[b]}</span>
-                <b style={{ fontSize: 34 }}>{ANIMALS[b]}띠</b>
+                <span style={{ fontSize: 46, lineHeight: 1, color: INK, fontFamily: brush }}>{BRANCHES[b]}</span>
+                <b style={{ fontSize: 39 }}>{ANIMALS[b]}띠</b>
               </span>
               {pair(HAP[b], GREEN)}
               {pair((b + 6) % 12, SEAL)}
             </div>
           ))}
         </div>
-        <div style={{ position: "absolute", top: tableTop + 32 + 46 + 12 * rowH + 30, left: 150, width: 780, textAlign: "center" }}>
-          <p style={{ fontSize: 30, lineHeight: 1.45, fontWeight: 800, color: "#f1cf7a" }}>띠는 여덟 글자 중 한 글자일 뿐이옵니다</p>
-          <p style={{ marginTop: 8, fontSize: 26, lineHeight: 1.45, color: "rgba(244,236,219,.8)", fontFamily: sans }}>찰떡은 육합, 부딪힘은 충 · 진짜 궁합은 두 사람의 여덟 글자로</p>
+        <div style={{ position: "absolute", top: tableTop + 32 + 50 + 12 * rowH + 34, left: 150, width: 780, textAlign: "center" }}>
+          <p style={{ fontSize: 34, lineHeight: 1.45, fontWeight: 800, color: "#f1cf7a" }}>띠는 여덟 글자 중 한 글자일 뿐이옵니다</p>
+          <p style={{ marginTop: 8, fontSize: 28, lineHeight: 1.45, color: "rgba(244,236,219,.8)", fontFamily: sans }}>찰떡은 육합, 부딪힘은 충 · 진짜 궁합은 두 사람의 여덟 글자로</p>
         </div>
       </ReelFrame>
     );
