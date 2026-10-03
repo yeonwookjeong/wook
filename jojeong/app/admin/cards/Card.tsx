@@ -321,7 +321,7 @@ export async function Card({ q }: { q: CardQuery }) {
     const yearsOf = (b: number) => Array.from({ length: 51 }, (_, i) => 1960 + i).filter((y) => (y - 4 + 1200) % 12 === b);
     const BOXES = [
       {
-        head: "유난히 사람이 붙은 년생",
+        head: "올해 사람이 붙은 년생",
         sub: "올해 도와주는 사람이 자꾸 나타났다면",
         color: "#3d6656",
         rows: [
@@ -331,7 +331,7 @@ export async function Card({ q }: { q: CardQuery }) {
         ],
       },
       {
-        head: "유난히 판이 흔들린 년생",
+        head: "올해 판이 흔들린 년생",
         sub: "올해 이사·이직·이별이 몰렸다면",
         color: SEAL,
         rows: [
@@ -342,12 +342,14 @@ export async function Card({ q }: { q: CardQuery }) {
       },
     ];
     const boxTop = [548, 1006];
+    // Each 띠 with its animal, so the row is found at a glance.
+    const FACE = ["🐭", "🐮", "🐯", "🐰", "🐲", "🐍", "🐴", "🐑", "🐵", "🐔", "🐶", "🐷"];
     return (
       <ReelFrame>
         <div style={{ position: "absolute", top: REEL.top, left: REEL.side, right: REEL.side, textAlign: "center" }}>
           <p style={{ fontSize: 34, fontWeight: 800, letterSpacing: "0.06em", color: GOLD }}>2026년 붉은 말의 해, 석 달 남았습니다</p>
           <p style={{ marginTop: 12, fontSize: 74, fontWeight: 800, lineHeight: 1.18 }}>
-            <span style={{ color: "#9fd3b4" }}>사람이 붙은</span> 년생
+            올해 <span style={{ color: "#9fd3b4" }}>사람이 붙은</span> 년생
             <br />
             vs <span style={{ color: "#f08a80" }}>판이 흔들린</span> 년생
           </p>
@@ -363,17 +365,20 @@ export async function Card({ q }: { q: CardQuery }) {
             {box.rows.map((r) => (
               <div key={r.b} style={{ marginTop: 10, paddingTop: 10, borderTop: "1.5px solid rgba(179,38,30,.15)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                  <span style={{ width: 168, flexShrink: 0 }}>
-                    <b style={{ display: "block", fontSize: 34, lineHeight: 1.15 }}>{ANIMALS[r.b]}띠</b>
-                    <span style={{ display: "block", fontSize: 19, fontWeight: 800, color: box.color, fontFamily: sans }}>{r.why}</span>
+                  <span style={{ width: 228, flexShrink: 0, display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontSize: 54, lineHeight: 1 }}>{FACE[r.b]}</span>
+                    <span>
+                      <b style={{ display: "block", fontSize: 32, lineHeight: 1.15, whiteSpace: "nowrap" }}>{ANIMALS[r.b]}띠</b>
+                      <span style={{ display: "block", fontSize: 18, fontWeight: 800, whiteSpace: "nowrap", color: box.color, fontFamily: sans }}>{r.why}</span>
+                    </span>
                   </span>
-                  <b style={{ fontSize: 42, whiteSpace: "nowrap", color: box.color }}>
+                  <b style={{ fontSize: 40, whiteSpace: "nowrap", color: box.color }}>
                     {yearsOf(r.b)
                       .map((y) => String(y).slice(2))
                       .join(" · ")}
                   </b>
                 </div>
-                {r.note && <p style={{ marginTop: 2, marginLeft: 182, fontSize: 21, fontWeight: 800, color: box.color, fontFamily: sans }}>{r.note}</p>}
+                {r.note && <p style={{ marginTop: 2, marginLeft: 242, fontSize: 21, fontWeight: 800, color: box.color, fontFamily: sans }}>{r.note}</p>}
               </div>
             ))}
           </div>
