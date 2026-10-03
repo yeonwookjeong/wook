@@ -27,3 +27,10 @@ export const INQUIRY_TOPICS = [
     body: ["문의 내용:"],
   },
 ] as const;
+
+// Everything but a wish for a new reading needs an answer, so a way to reach the writer is required.
+export const needsReply = (topic: string) => topic !== "보고 싶은 풀이";
+
+// A reply address: an email, or a Korean mobile number (010-1234-5678, 01012345678).
+export const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+export const isPhone = (v: string) => /^01[016789]-?\d{3,4}-?\d{4}$/.test(v);

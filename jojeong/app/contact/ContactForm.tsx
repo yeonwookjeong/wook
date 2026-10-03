@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { sendInquiryAction, type InquiryState } from "./actions";
-import { INQUIRY_TOPICS } from "./topics";
+import { INQUIRY_TOPICS, needsReply } from "./topics";
 
 const field = "w-full rounded-xl border border-ink/15 bg-white/70 px-4 py-3 text-base outline-none focus:border-seal";
 
@@ -18,7 +18,7 @@ export default function ContactForm({ initial }: { initial?: string }) {
     return (
       <div className="rounded-2xl bg-gold/10 px-4 py-5 text-center">
         <p className="font-myeongjo text-lg font-extrabold">문의를 받았어요</p>
-        <p className="mt-1 text-sm leading-relaxed text-ink-soft">영업일 1~2일 안에 확인할게요. 이메일을 남기셨다면 그 주소로 답장을 드려요.</p>
+        <p className="mt-1 text-sm leading-relaxed text-ink-soft">영업일 1~2일 안에 확인하고, 남겨 주신 연락처로 답장을 드려요.</p>
       </div>
     );
 
@@ -51,8 +51,16 @@ export default function ContactForm({ initial }: { initial?: string }) {
         <textarea name="body" value={body} onChange={(e) => setBody(e.target.value)} rows={7} maxLength={2000} required className={field} />
       </label>
       <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-semibold text-ink-soft">답장받을 이메일 (선택)</span>
-        <input name="email" type="email" inputMode="email" autoComplete="email" maxLength={100} placeholder="답장이 필요하면 적어 주세요" className={field} />
+        <span className="text-sm font-semibold text-ink-soft">답장받을 연락처{needsReply(topic) ? "" : " (선택)"}</span>
+        <input
+          name="email"
+          type="text"
+          autoComplete="email"
+          maxLength={100}
+          required={needsReply(topic)}
+          placeholder="이메일 또는 휴대폰 번호"
+          className={field}
+        />
       </label>
       {/* Bots fill every field; people never see this one. */}
       <input name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />
@@ -65,7 +73,7 @@ export default function ContactForm({ initial }: { initial?: string }) {
         {pending ? "보내는 중…" : "문의 보내기"}
       </button>
       <p className="text-[11px] leading-relaxed text-ink-soft">
-        적어 주신 내용과 이메일은 답변에만 쓰고, 지워 달라고 하시면 바로 지워요. 생년월일 같은 개인정보는 적지 않아도 돼요.
+        적어 주신 내용과 연락처는 답변에만 쓰고, 지워 달라고 하시면 바로 지워요. 생년월일 같은 개인정보는 적지 않아도 돼요.
       </p>
     </form>
   );
