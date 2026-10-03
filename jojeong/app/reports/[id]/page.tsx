@@ -34,6 +34,7 @@ import YearReport from "@/components/YearReport";
 import { YearList, YearTop } from "@/components/Yeonun";
 import { newYearOf, newYearProduct, thisYear, yearDetail, yearOf, yearRange, yearRows } from "@/lib/yeonun";
 import { josa } from "@/lib/josa";
+import { hanjaKo } from "@/lib/saju";
 import { ownedCourts } from "@/lib/load";
 import { ADULT_ONLY, FIXED_RELATION, isAdult, isOpen, isPair, PRICE, productById, saleLabel, saleNow, YEONUN_PAST_TOC, type Product, type ProductId } from "@/lib/products";
 import { REPORT_SPECS } from "@/lib/reportPrompts";
@@ -401,7 +402,7 @@ async function OpenReport({
   const intro = distinct && <ChartIntro name={name} d={distinct} slots={reading.chart.slots} />;
   // The card of this reading, for a story (the day pillar, the five powers, money·love·work, how rare the build is).
   const ilju = free ? iljuFacts(pillars.dayStem, pillars.dayBranch) : null;
-  const sameLine = distinct?.ilju ? `같은 ${distinct.ilju.name}일주 중 약 ${Math.max(1, Math.round(distinct.ilju.rate * 100))}%만 이 구조` : "";
+  const sameLine = distinct?.ilju ? `같은 ${hanjaKo(distinct.ilju.name)}일주 중 약 ${Math.max(1, Math.round(distinct.ilju.rate * 100))}%만 이 구조` : "";
   const kindsOf = free ? free.domains.map((d) => [d.domain === "jaemul" ? "돈" : d.domain === "yeonae" ? "사랑" : "일", d.card.type] as [string, string]) : [];
   // At the very end, once the reader has been through all of it: send it to a friend, or keep the card.
   const shareEnd =
