@@ -96,6 +96,7 @@ export const SNS: Record<string, SnsDay> = {
     title: "그대의 일주에도 동물이 숨어 있사옵니다 (뒤 글자 12동물)",
     note: "개천절",
     cards: ["c=ji-cover", "c=ji-where", "c=ji-list1", "c=ji-list2", "c=ji-diff", CLOSING],
+    reels: ["c=tti-reel"],
     caption: `"무슨 띠이옵니까?" 하면 다들 바로 답하시지요.
 그런데 그대에게는 동물이 하나 더 있사옵니다.
 
