@@ -6,7 +6,7 @@ import CopyButton from "@/components/CopyButton";
 import { GIFTABLE, originNow } from "@/lib/gift";
 import { SALE_KEYS, saleKey, saleLabel } from "@/lib/sales";
 import { productById, SETS } from "@/lib/products";
-import { listInquiries, readingCount } from "@/lib/store";
+import { lastReportError, listInquiries, readingCount } from "@/lib/store";
 import { adminSignOut, giftRevokeAction, inquiryDeleteAction, inquiryDoneAction } from "./actions";
 import GiftForm from "./GiftForm";
 import SignInForm from "./SignInForm";
@@ -58,6 +58,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   const won = (n: number) => `${n.toLocaleString("ko-KR")}원`;
   const ny = newYearOf();
   const inquiries = await listInquiries().catch(() => []);
+  const writeError = await lastReportError();
   const open = inquiries.filter((q) => !q.done);
   const when = (t: number) => new Date(t + 9 * 3600000).toISOString().slice(5, 16).replace("T", " ");
   const stats = await readStats([
@@ -87,6 +88,14 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
           오늘 SNS 올릴 것 보기 →
         </Link>
       </section>
+
+      {writeError && (
+        <section className="mt-4 rounded-xl border-2 border-seal bg-seal/10 px-4 py-3">
+          <p className="text-sm font-extrabold text-seal">보고서 쓰기 실패 · {when(writeError.at)}</p>
+          <p className="mt-1 text-[12px] leading-relaxed break-all">{writeError.message}</p>
+          <p className="mt-1 text-[11px] text-ink-soft">최근 이틀 안의 마지막 실패만 보여요. 고친 뒤 보고서를 다시 열면 새로 써요.</p>
+        </section>
+      )}
 
       <section className="mt-5 grid grid-cols-2 gap-2 text-center">
         {[
