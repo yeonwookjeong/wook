@@ -3,7 +3,7 @@ import { covers, getOrder } from "@/lib/pay";
 import { productById } from "@/lib/products";
 import { aiEnabled, jobFor, writeReport, type JobRequest } from "@/lib/reportWriter";
 import { after } from "next/server";
-import { countReportToday, getReportText, getReportWriting, setReportText, setReportWriting } from "@/lib/store";
+import { countReportToday, getReportText, getReportWriting, noteReportError, setReportText, setReportWriting } from "@/lib/store";
 
 // Writing a long report takes a minute or two.
 export const maxDuration = 300;
@@ -89,9 +89,10 @@ export async function POST(request: Request) {
       if (text) {
         await setReportText(job.key, text);
         ok = true;
-      }
+      } else await noteReportError(`${job.title}: 끝까지 쓰지 못함 (stop_reason)`).catch(() => {});
     } catch (e) {
       console.error(e);
+      await noteReportError(`${job.title}: ${e instanceof Error ? e.message : String(e)}`).catch(() => {});
     }
     if (!ok) {
       await setReportWriting(job.key, 0).catch(() => {});

@@ -223,6 +223,16 @@ export async function getReportWriting(key: string): Promise<number> {
 export async function setReportWriting(key: string, at: number) {
   await backend().set(`writing:${key}`, String(at));
 }
+// The last time a report could not be written, and why (the model's own error), for the owner's page.
+export async function noteReportError(message: string) {
+  await backend().set("report:lastError", JSON.stringify({ at: Date.now(), message: message.slice(0, 500) }));
+}
+// Only one from the last two days.
+export async function lastReportError(): Promise<{ at: number; message: string } | null> {
+  const raw = await backend().get("report:lastError").catch(() => null);
+  const e = raw ? (JSON.parse(raw) as { at: number; message: string }) : null;
+  return e && Date.now() - e.at < 2 * 86400000 ? e : null;
+}
 // A per-day counter of freshly written reports (a spending guard).
 export async function countReportToday(): Promise<number> {
   return backend().incr(`stats:reports:${new Date().toISOString().slice(0, 10)}`);
