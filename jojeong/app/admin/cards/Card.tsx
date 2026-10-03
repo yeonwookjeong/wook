@@ -164,62 +164,69 @@ function ThumbTitle({ top, main }: { top: string; main: React.ReactNode }) {
   );
 }
 
-// The profile's pinned row: one 3240×1440 night over the 관상감, cut into three 3:4 posts (pin-1 … pin-3) that
-// sit side by side in the grid. Each third is drawn by sliding the same picture, so the seams meet exactly;
-// faces and words keep 60px from every seam (the grid's white gaps). Each third is also the cover of its own
-// carousel, so it has to read on its own in a follower's feed: the name, the person, what he reads for you.
+// The profile's pinned row: one 3240×1440 picture (pin-wide) of a night over the 관상감 courtyard, the hall on
+// the left, its mirror on the right, 정 훈도 standing between, that is cut into three 3:4 posts (pin-1 … pin-3)
+// sitting side by side in the grid. Each third is the same picture slid along, so the seams meet exactly;
+// faces and words keep 60px from every seam (the grid's white gaps).
 function starField(): { x: number; y: number; r: number; o: number }[] {
   let seed = 7;
   const rnd = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
-  return Array.from({ length: 170 }, () => ({ x: 1040 + rnd() * 2200, y: rnd() * 860, r: 1.5 + rnd() * 3, o: 0.35 + rnd() * 0.65 }));
+  return Array.from({ length: 190 }, () => ({ x: rnd() * 3240, y: rnd() * 760, r: 1.5 + rnd() * 3, o: 0.35 + rnd() * 0.65 }));
 }
 
-function PinBanner({ k }: { k: 0 | 1 | 2 }) {
+function PinBanner({ k }: { k: 0 | 1 | 2 | null }) {
   const stars = starField();
-  const READS = [
-    { seal: "命", t: "무료 사주 분석", d: "여덟 글자로 보는 나" },
-    { seal: "身", t: "조선 신분 감정", d: "조선에 태어났다면 나는" },
-    { seal: "日", t: "이달의 일주 랭킹", d: "60일주 중 내 순위" },
-    { seal: "緣", t: "궁합 · 연애 보고서", d: "두 사람의 여덟 글자로" },
-  ];
+  const fade = (dir: "90deg" | "270deg") => `linear-gradient(${dir}, #000 72%, transparent 100%)`;
   return (
-    <div data-card style={{ position: "fixed", inset: 0, width: 1080, height: 1440, zIndex: 50, overflow: "hidden", fontFamily: serif, color: HANJI }}>
+    <div
+      data-card
+      style={{ position: "fixed", inset: 0, width: k === null ? 3240 : 1080, height: 1440, zIndex: 50, overflow: "hidden", fontFamily: serif, color: HANJI }}
+    >
       <div
         style={{
           position: "absolute",
           top: 0,
-          left: -k * 1080,
+          left: -(k ?? 0) * 1080,
           width: 3240,
           height: 1440,
-          background:
-            "radial-gradient(ellipse 900px 260px at 1620px 1420px, rgba(240,170,90,.35), transparent 70%), radial-gradient(ellipse 900px 260px at 2700px 1420px, rgba(240,170,90,.28), transparent 70%), linear-gradient(180deg, #0e2041 0%, #15294b 45%, #1b2e4f 62%, #262c40 80%, #3b302f 93%, #33292a 100%)",
+          background: "linear-gradient(180deg, #0e2041 0%, #142a4c 40%, #1a2d4e 58%, #2a2c3c 76%, #4a3b35 90%, #3a2e2b 100%)",
         }}
       >
         {stars.map((st, i) => (
           <span key={i} style={{ position: "absolute", left: st.x, top: st.y, width: st.r, height: st.r, borderRadius: "50%", background: "#fff6dc", opacity: st.o }} />
         ))}
-        {/* The milky way, a faint band across the whole row. */}
-        <div style={{ position: "absolute", left: 900, top: 60, width: 2500, height: 260, transform: "rotate(-7deg)", background: "radial-gradient(ellipse at center, rgba(190,205,255,.14), transparent 70%)" }} />
+        {/* One milky way across the whole row. */}
+        <div style={{ position: "absolute", left: -200, top: 120, width: 3640, height: 300, transform: "rotate(-4deg)", background: "radial-gradient(ellipse at center, rgba(190,205,255,.16), transparent 70%)" }} />
 
-        {/* ① 관상감 and the name. */}
+        {/* The hall on the left and its mirror on the right, fading into one courtyard. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/cards/gwansanggam.webp"
+          alt=""
+          style={{ position: "absolute", left: 0, top: 0, width: 1152, height: 1440, objectFit: "cover", maskImage: fade("90deg"), WebkitMaskImage: fade("90deg") }}
+        />
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/cards/gwansanggam.webp"
           alt=""
           style={{
             position: "absolute",
-            left: 0,
+            left: 3240 - 1152,
             top: 0,
-            width: 1080,
+            width: 1152,
             height: 1440,
             objectFit: "cover",
-            objectPosition: "35% 100%",
-            maskImage: "linear-gradient(90deg, #000 80%, transparent 100%)",
-            WebkitMaskImage: "linear-gradient(90deg, #000 80%, transparent 100%)",
+            transform: "scaleX(-1)",
+            maskImage: fade("90deg"),
+            WebkitMaskImage: fade("90deg"),
           }}
         />
-        <div style={{ position: "absolute", left: 0, top: 0, width: 1080, height: 640, background: "linear-gradient(180deg, rgba(10,22,40,.55), transparent)" }} />
-        <div style={{ position: "absolute", left: 80, top: 150, width: 920, textAlign: "center", textShadow: "0 3px 18px rgba(0,0,0,.65)" }}>
+        {/* The courtyard's warm ground and lantern glow, continuous under all three. */}
+        <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 260, background: "radial-gradient(ellipse 1300px 240px at 1620px 260px, rgba(240,170,90,.38), transparent 75%)" }} />
+        <div style={{ position: "absolute", left: 0, right: 0, top: 0, height: 700, background: "linear-gradient(180deg, rgba(10,22,40,.6), transparent)" }} />
+
+        {/* ① the name */}
+        <div style={{ position: "absolute", left: 80, top: 140, width: 920, textAlign: "center", textShadow: "0 3px 18px rgba(0,0,0,.65)" }}>
           <p style={{ fontSize: 36, letterSpacing: "0.5em", color: GOLD, fontWeight: 800 }}>朝鮮 觀象監</p>
           <p style={{ marginTop: 18, fontSize: 168, fontWeight: 800, lineHeight: 1.05 }}>훈도사주</p>
           <p style={{ marginTop: 26, fontSize: 40, lineHeight: 1.5, color: "rgba(244,236,219,.95)" }}>
@@ -229,12 +236,12 @@ function PinBanner({ k }: { k: 0 | 1 | 2 }) {
           </p>
         </div>
 
-        {/* ② 정 훈도. */}
+        {/* ② 정 훈도, standing in the courtyard */}
         <div style={{ position: "absolute", left: 1080 + 80, top: 130, width: 920, textAlign: "center", textShadow: "0 3px 18px rgba(0,0,0,.6)" }}>
           <p style={{ fontSize: 34, letterSpacing: "0.4em", color: GOLD, fontWeight: 800 }}>鄭 訓導</p>
           <p style={{ marginTop: 10, fontSize: 58, fontWeight: 800 }}>명과학 훈도 정가</p>
         </div>
-        <div style={{ position: "absolute", left: 1620 - 330, top: 520, width: 660, height: 660, borderRadius: "50%", background: "radial-gradient(circle, rgba(241,207,122,.22), transparent 68%)" }} />
+        <div style={{ position: "absolute", left: 1620 - 340, top: 520, width: 680, height: 680, borderRadius: "50%", background: "radial-gradient(circle, rgba(241,207,122,.2), transparent 68%)" }} />
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="/cards/hundo-scroll.webp"
@@ -242,44 +249,16 @@ function PinBanner({ k }: { k: 0 | 1 | 2 }) {
           style={{ position: "absolute", left: 1620 - 440, bottom: 34, width: 880, height: 1100, objectFit: "contain", filter: "drop-shadow(0 18px 26px rgba(0,0,0,.55))" }}
         />
 
-        {/* ③ What he reads for you. */}
-        <div style={{ position: "absolute", left: 2160 + 90, top: 150, width: 900 }}>
-          <p style={{ fontSize: 34, letterSpacing: "0.3em", color: GOLD, fontWeight: 800 }}>命課學</p>
-          <p style={{ marginTop: 14, fontSize: 70, fontWeight: 800, lineHeight: 1.25 }}>
+        {/* ③ what he reads, and where */}
+        <div style={{ position: "absolute", left: 2160 + 80, top: 140, width: 920, textAlign: "center", textShadow: "0 3px 18px rgba(0,0,0,.65)" }}>
+          <p style={{ fontSize: 36, letterSpacing: "0.4em", color: GOLD, fontWeight: 800 }}>命課學</p>
+          <p style={{ marginTop: 18, fontSize: 76, fontWeight: 800, lineHeight: 1.22 }}>
             그대의 여덟 글자를
             <br />
             읽어 드리옵니다
           </p>
-          <div style={{ marginTop: 64, display: "flex", flexDirection: "column", gap: 38 }}>
-            {READS.map((x) => (
-              <div key={x.t} style={{ display: "flex", alignItems: "center", gap: 26 }}>
-                <span
-                  style={{
-                    flexShrink: 0,
-                    width: 108,
-                    height: 108,
-                    display: "grid",
-                    placeItems: "center",
-                    fontSize: 62,
-                    fontWeight: 800,
-                    color: HANJI,
-                    border: `4px solid ${GOLD}`,
-                    transform: "rotate(-3deg)",
-                  }}
-                >
-                  {x.seal}
-                </span>
-                <span>
-                  <b style={{ display: "block", fontSize: 50 }}>{x.t}</b>
-                  <span style={{ display: "block", marginTop: 4, fontSize: 31, color: "rgba(244,236,219,.8)", fontFamily: sans }}>{x.d}</span>
-                </span>
-              </div>
-            ))}
-          </div>
-          <div style={{ marginTop: 90, paddingTop: 40, borderTop: "2px solid rgba(212,175,95,.45)" }}>
-            <p style={{ fontSize: 66, fontWeight: 800, color: "#f1cf7a" }}>hundosaju.com</p>
-            <p style={{ marginTop: 10, fontSize: 34, color: "rgba(244,236,219,.85)", fontFamily: sans }}>프로필 링크에서 무료로 시작</p>
-          </div>
+          <p style={{ marginTop: 30, fontSize: 64, fontWeight: 800, color: "#f1cf7a" }}>hundosaju.com</p>
+          <p style={{ marginTop: 8, fontSize: 34, color: "rgba(244,236,219,.9)", fontFamily: sans }}>프로필 링크에서 무료로</p>
         </div>
       </div>
     </div>
@@ -2419,6 +2398,7 @@ export async function Card({ q }: { q: CardQuery }) {
     );
 
   // ── The pinned row (see PinBanner).
+  if (c === "pin-wide") return <PinBanner k={null} />;
   if (c === "pin-1" || c === "pin-2" || c === "pin-3") return <PinBanner k={(Number(c.slice(4)) - 1) as 0 | 1 | 2} />;
 
   // ── The introduction post.
