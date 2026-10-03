@@ -137,7 +137,7 @@ export default async function SnsPage({ searchParams }: PageProps<"/admin/sns">)
         {!day?.caption && <p className="mt-2 text-[13px] text-ink-soft">아직 캡션이 없어요.</p>}
       </Block>
 
-      <Block title="④ 스레드 연결 글" time="점심 12:00~13:00">
+      <Block title="④ 스레드 연결 글" time="점심 12:00~13:00 · 첫 글 올리고 바로 답글로 이어서">
         {day?.threads ? (
           <ol className="mt-3 space-y-2">
             {day.threads.map((t, i) => (
@@ -155,9 +155,25 @@ export default async function SnsPage({ searchParams }: PageProps<"/admin/sns">)
         )}
       </Block>
 
-      <Block title="⑤ 밤 글" time="스레드 · 21:30~23:00" text={night}>
-        {!day?.night && <p className="mt-2 text-[11px] text-ink-soft">날짜에서 자동으로 골라요: 절기 · 손 없는 날 · 보름 · 초하루 · 그날의 동물 · 자시.</p>}
-      </Block>
+      {day?.nightThreads ? (
+        <Block title="⑤ 밤 스레드" time="21:30~23:00 · 첫 글 올리고 바로 답글로 이어서">
+          <ol className="mt-3 space-y-2">
+            {day.nightThreads.map((t, i) => (
+              <li key={i} className="rounded-lg bg-white/60 px-3 py-3">
+                <div className="flex items-start justify-between gap-2">
+                  <span className="font-myeongjo font-extrabold text-seal">{CIRCLED[i]}</span>
+                  <CopyButton text={t} />
+                </div>
+                <p className="mt-1 whitespace-pre-wrap text-[13px] leading-relaxed">{t}</p>
+              </li>
+            ))}
+          </ol>
+        </Block>
+      ) : (
+        <Block title="⑤ 밤 글" time="스레드 · 21:30~23:00" text={night}>
+          {!day?.night && <p className="mt-2 text-[11px] text-ink-soft">날짜에서 자동으로 골라요: 절기 · 손 없는 날 · 보름 · 초하루 · 그날의 동물 · 자시.</p>}
+        </Block>
+      )}
 
       <section className="doc-paper mt-4 px-4 py-4">
         <h2 className="font-myeongjo font-extrabold">{Number(month.slice(5))}월 달력</h2>

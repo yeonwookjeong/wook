@@ -164,6 +164,107 @@ function ThumbTitle({ top, main }: { top: string; main: React.ReactNode }) {
   );
 }
 
+// The profile's pinned row: one 3240×1440 picture (pin-wide) of a night over the 관상감 courtyard, the hall on
+// the left, its mirror on the right, 정 훈도 standing between, that is cut into three 3:4 posts (pin-1 … pin-3)
+// sitting side by side in the grid. Each third is the same picture slid along, so the seams meet exactly;
+// faces and words keep 60px from every seam (the grid's white gaps).
+function starField(): { x: number; y: number; r: number; o: number }[] {
+  let seed = 7;
+  const rnd = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
+  return Array.from({ length: 190 }, () => ({ x: rnd() * 3240, y: rnd() * 760, r: 1.5 + rnd() * 3, o: 0.35 + rnd() * 0.65 }));
+}
+
+function PinBanner({ k }: { k: 0 | 1 | 2 | null }) {
+  const stars = starField();
+  const fade = (dir: "90deg" | "270deg") => `linear-gradient(${dir}, #000 72%, transparent 100%)`;
+  return (
+    <div
+      data-card
+      style={{ position: "fixed", inset: 0, width: k === null ? 3240 : 1080, height: 1440, zIndex: 50, overflow: "hidden", fontFamily: serif, color: HANJI }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: -(k ?? 0) * 1080,
+          width: 3240,
+          height: 1440,
+          background: "linear-gradient(180deg, #0e2041 0%, #142a4c 40%, #1a2d4e 58%, #2a2c3c 76%, #4a3b35 90%, #3a2e2b 100%)",
+        }}
+      >
+        {stars.map((st, i) => (
+          <span key={i} style={{ position: "absolute", left: st.x, top: st.y, width: st.r, height: st.r, borderRadius: "50%", background: "#fff6dc", opacity: st.o }} />
+        ))}
+        {/* One milky way across the whole row. */}
+        <div style={{ position: "absolute", left: -200, top: 120, width: 3640, height: 300, transform: "rotate(-4deg)", background: "radial-gradient(ellipse at center, rgba(190,205,255,.16), transparent 70%)" }} />
+
+        {/* The hall on the left and its mirror on the right, fading into one courtyard. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/cards/gwansanggam.webp"
+          alt=""
+          style={{ position: "absolute", left: 0, top: 0, width: 1152, height: 1440, objectFit: "cover", maskImage: fade("90deg"), WebkitMaskImage: fade("90deg") }}
+        />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/cards/gwansanggam.webp"
+          alt=""
+          style={{
+            position: "absolute",
+            left: 3240 - 1152,
+            top: 0,
+            width: 1152,
+            height: 1440,
+            objectFit: "cover",
+            transform: "scaleX(-1)",
+            maskImage: fade("90deg"),
+            WebkitMaskImage: fade("90deg"),
+          }}
+        />
+        {/* The courtyard's warm ground and lantern glow, continuous under all three. */}
+        <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 260, background: "radial-gradient(ellipse 1300px 240px at 1620px 260px, rgba(240,170,90,.38), transparent 75%)" }} />
+        <div style={{ position: "absolute", left: 0, right: 0, top: 0, height: 700, background: "linear-gradient(180deg, rgba(10,22,40,.6), transparent)" }} />
+
+        {/* ① the name */}
+        <div style={{ position: "absolute", left: 80, top: 140, width: 920, textAlign: "center", textShadow: "0 3px 18px rgba(0,0,0,.65)" }}>
+          <p style={{ fontSize: 36, letterSpacing: "0.5em", color: GOLD, fontWeight: 800 }}>朝鮮 觀象監</p>
+          <p style={{ marginTop: 18, fontSize: 168, fontWeight: 800, lineHeight: 1.05 }}>훈도사주</p>
+          <p style={{ marginTop: 26, fontSize: 40, lineHeight: 1.5, color: "rgba(244,236,219,.95)" }}>
+            조선 관상감 훈도가
+            <br />
+            풀어 주는 사주
+          </p>
+        </div>
+
+        {/* ② 정 훈도, standing in the courtyard */}
+        <div style={{ position: "absolute", left: 1080 + 80, top: 130, width: 920, textAlign: "center", textShadow: "0 3px 18px rgba(0,0,0,.6)" }}>
+          <p style={{ fontSize: 34, letterSpacing: "0.4em", color: GOLD, fontWeight: 800 }}>鄭 訓導</p>
+          <p style={{ marginTop: 10, fontSize: 58, fontWeight: 800 }}>명과학 훈도 정가</p>
+        </div>
+        <div style={{ position: "absolute", left: 1620 - 340, top: 520, width: 680, height: 680, borderRadius: "50%", background: "radial-gradient(circle, rgba(241,207,122,.2), transparent 68%)" }} />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/cards/hundo-scroll.webp"
+          alt=""
+          style={{ position: "absolute", left: 1620 - 440, bottom: 34, width: 880, height: 1100, objectFit: "contain", filter: "drop-shadow(0 18px 26px rgba(0,0,0,.55))" }}
+        />
+
+        {/* ③ what he reads, and where */}
+        <div style={{ position: "absolute", left: 2160 + 80, top: 140, width: 920, textAlign: "center", textShadow: "0 3px 18px rgba(0,0,0,.65)" }}>
+          <p style={{ fontSize: 36, letterSpacing: "0.4em", color: GOLD, fontWeight: 800 }}>命課學</p>
+          <p style={{ marginTop: 18, fontSize: 76, fontWeight: 800, lineHeight: 1.22 }}>
+            그대의 여덟 글자를
+            <br />
+            읽어 드리옵니다
+          </p>
+          <p style={{ marginTop: 30, fontSize: 64, fontWeight: 800, color: "#f1cf7a" }}>hundosaju.com</p>
+          <p style={{ marginTop: 8, fontSize: 34, color: "rgba(244,236,219,.9)", fontFamily: sans }}>프로필 링크에서 무료로</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // The brand in the top corner, for covers whose bottom carries the thumbnail title.
 function CornerBrand({ top = 64, left = 70 }: { top?: number; left?: number } = {}) {
   return (
@@ -315,6 +416,86 @@ export async function Card({ q }: { q: CardQuery }) {
   // ② 60일주 도감
   // 60일주 월간 랭킹, posted on the day the 절기 month begins (?y=&m= the calendar month it begins in).
   // A month's 손 없는 날 (lunar days ending in 9 and 0) on one calendar, for a reel people save before moving.
+  // 2026년(丙午)을 돌아보며: the 띠 the year's 午 joined (寅·戌 삼합, 未 육합) and the ones it shook (子 충, 午 its
+  // own year, 丑 원진), with every year of birth 1960–2010 computed from the branch, never typed in.
+  if (c === "y2026-reel") {
+    const yearsOf = (b: number) => Array.from({ length: 51 }, (_, i) => 1960 + i).filter((y) => (y - 4 + 1200) % 12 === b);
+    const BOXES = [
+      {
+        head: "올해 사람이 붙은 년생",
+        sub: "올해 도와주는 사람이 자꾸 나타났다면",
+        color: "#3d6656",
+        rows: [
+          { b: 2, why: "寅午 삼합" },
+          { b: 10, why: "午戌 삼합" },
+          { b: 7, why: "午未 육합", note: "삼재 한가운데였지만 손잡아 준 해" },
+        ],
+      },
+      {
+        head: "올해 판이 흔들린 년생",
+        sub: "올해 이사·이직·이별이 몰렸다면",
+        color: SEAL,
+        rows: [
+          { b: 0, why: "子午 충" },
+          { b: 6, why: "내 띠의 해" },
+          { b: 1, why: "丑午 원진" },
+        ],
+      },
+    ];
+    const boxTop = [548, 1006];
+    // Each 띠 with its animal, so the row is found at a glance.
+    const FACE = ["🐭", "🐮", "🐯", "🐰", "🐲", "🐍", "🐴", "🐑", "🐵", "🐔", "🐶", "🐷"];
+    return (
+      <ReelFrame>
+        <div style={{ position: "absolute", top: REEL.top, left: REEL.side, right: REEL.side, textAlign: "center" }}>
+          <p style={{ fontSize: 34, fontWeight: 800, letterSpacing: "0.06em", color: GOLD }}>2026년 붉은 말의 해, 석 달 남았습니다</p>
+          <p style={{ marginTop: 12, fontSize: 74, fontWeight: 800, lineHeight: 1.18 }}>
+            올해 <span style={{ color: "#9fd3b4" }}>사람이 붙은</span> 년생
+            <br />
+            vs <span style={{ color: "#f08a80" }}>판이 흔들린</span> 년생
+          </p>
+        </div>
+        {BOXES.map((box, bi) => (
+          <div
+            key={box.head}
+            className="doc-paper"
+            style={{ position: "absolute", top: boxTop[bi], left: 150, width: 780, padding: "20px 64px 18px 30px", color: INK }}
+          >
+            <b style={{ display: "block", fontSize: 40, color: box.color }}>{box.head}</b>
+            <span style={{ display: "block", marginTop: 2, fontSize: 25, fontWeight: 800, color: SOFT, fontFamily: sans }}>{box.sub}</span>
+            {box.rows.map((r) => (
+              <div key={r.b} style={{ marginTop: 10, paddingTop: 10, borderTop: "1.5px solid rgba(179,38,30,.15)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                  <span style={{ width: 228, flexShrink: 0, display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontSize: 54, lineHeight: 1 }}>{FACE[r.b]}</span>
+                    <span>
+                      <b style={{ display: "block", fontSize: 32, lineHeight: 1.15, whiteSpace: "nowrap" }}>{ANIMALS[r.b]}띠</b>
+                      <span style={{ display: "block", fontSize: 18, fontWeight: 800, whiteSpace: "nowrap", color: box.color, fontFamily: sans }}>{r.why}</span>
+                    </span>
+                  </span>
+                  <b style={{ fontSize: 40, whiteSpace: "nowrap", color: box.color }}>
+                    {yearsOf(r.b)
+                      .map((y) => String(y).slice(2))
+                      .join(" · ")}
+                  </b>
+                </div>
+                {r.note && <p style={{ marginTop: 2, marginLeft: 242, fontSize: 21, fontWeight: 800, color: box.color, fontFamily: sans }}>{r.note}</p>}
+              </div>
+            ))}
+          </div>
+        ))}
+        <div style={{ position: "absolute", top: 1440, left: 150, width: 780, textAlign: "center" }}>
+          <p style={{ fontSize: 31, lineHeight: 1.4, fontWeight: 800, color: "#f1cf7a" }}>흔들린 만큼 판이 바뀐 해 · 남은 석 달은 정리하는 때</p>
+          <p style={{ marginTop: 8, fontSize: 24, lineHeight: 1.45, color: "rgba(244,236,219,.8)", fontFamily: sans }}>
+            띠는 여덟 글자 중 한 글자 · 내 2026년 전체는 프로필 링크에서
+            <br />
+            1월~2월 초(입춘 전)에 태어났다면 앞 해의 띠예요
+          </p>
+        </div>
+      </ReelFrame>
+    );
+  }
+
   // 내 사주에 없는 오행, 몇 %: every chart a person born 1960–2010 can have (each day × the twelve hours,
   // 223,536 charts), counted with the site's own reading (lib/myeongri.ts readChart().missing, the eight
   // characters as written). Computed once offline; the numbers are fixed facts of the calendar.
@@ -2215,6 +2396,10 @@ export async function Card({ q }: { q: CardQuery }) {
         <Brand />
       </Frame>
     );
+
+  // ── The pinned row (see PinBanner).
+  if (c === "pin-wide") return <PinBanner k={null} />;
+  if (c === "pin-1" || c === "pin-2" || c === "pin-3") return <PinBanner k={(Number(c.slice(4)) - 1) as 0 | 1 | 2} />;
 
   // ── The introduction post.
   if (c === "intro-1")
