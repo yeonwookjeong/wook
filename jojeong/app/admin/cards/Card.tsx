@@ -315,6 +315,82 @@ export async function Card({ q }: { q: CardQuery }) {
   // ② 60일주 도감
   // 60일주 월간 랭킹, posted on the day the 절기 month begins (?y=&m= the calendar month it begins in).
   // A month's 손 없는 날 (lunar days ending in 9 and 0) on one calendar, for a reel people save before moving.
+  // 내 사주에 없는 오행, 몇 %: every chart a person born 1960–2010 can have (each day × the twelve hours,
+  // 223,536 charts), counted with the site's own reading (lib/myeongri.ts readChart().missing, the eight
+  // characters as written). Computed once offline; the numbers are fixed facts of the calendar.
+  if (c === "ohaeng-reel") {
+    const MISSING = [
+      { el: 2, hanja: "土", word: "흙", pct: 7.6, note: "가장 희귀" },
+      { el: 1, hanja: "火", word: "불", pct: 19.5 },
+      { el: 4, hanja: "水", word: "물", pct: 19.8 },
+      { el: 3, hanja: "金", word: "쇠", pct: 20.2 },
+      { el: 0, hanja: "木", word: "나무", pct: 20.5 },
+    ];
+    const COUNT = [
+      { n: "다섯 다 있음", pct: 30.4 },
+      { n: "하나 없음", pct: 52.5, note: "제일 흔함" },
+      { n: "둘 없음", pct: 16.3 },
+      { n: "셋 없음", pct: 0.8, note: "초희귀" },
+    ];
+    const EL = ["#3d6656", "#b3261e", "#a87a22", "#7d8590", "#1f3d5c"];
+    // The right padding keeps the numbers clear of the like column (x past 900, from y ~1150).
+    const panel = { left: 150, width: 780, padding: "22px 64px 24px 30px", color: INK } as const;
+    const bar = (pct: number, max: number, color: string) => (
+      <div style={{ flex: 1, height: 26, borderRadius: 13, background: "rgba(33,27,23,.07)", overflow: "hidden" }}>
+        <div style={{ width: `${Math.max(2, (pct / max) * 100)}%`, height: "100%", borderRadius: 13, background: color }} />
+      </div>
+    );
+    return (
+      <ReelFrame>
+        <div style={{ position: "absolute", top: REEL.top, left: REEL.side, right: REEL.side, textAlign: "center" }}>
+          <p style={{ fontSize: 32, fontWeight: 800, letterSpacing: "0.04em", color: GOLD }}>1960~2010년생 사주 22만 개를 전부 세어 봤어요</p>
+          <p style={{ marginTop: 14, fontSize: 80, fontWeight: 800, lineHeight: 1.15 }}>
+            내 사주에 <span style={{ color: "#f1cf7a" }}>없는 오행</span>
+            <br />몇 %일까?
+          </p>
+        </div>
+        <div className="doc-paper" style={{ position: "absolute", top: 530, ...panel }}>
+          <p style={{ fontSize: 30, fontWeight: 800, fontFamily: sans }}>이 오행이 없는 사주</p>
+          {MISSING.map((m, i) => (
+            <div key={m.el} style={{ display: "flex", alignItems: "center", gap: 18, height: 86, borderTop: i ? "1.5px solid rgba(179,38,30,.13)" : "none" }}>
+              <span style={{ width: 150, flexShrink: 0, display: "flex", alignItems: "baseline", gap: 10 }}>
+                <span style={{ fontSize: 46, lineHeight: 1, color: EL[m.el] }}>{m.hanja}</span>
+                <b style={{ fontSize: 32 }}>{m.word}</b>
+              </span>
+              {bar(m.pct, 21, EL[m.el])}
+              <span style={{ width: 190, flexShrink: 0, textAlign: "right" }}>
+                <b style={{ fontSize: 40, color: i === 0 ? SEAL : INK }}>{m.pct}%</b>
+                {m.note && <span style={{ display: "block", fontSize: 21, fontWeight: 800, color: SEAL, fontFamily: sans }}>{m.note}</span>}
+              </span>
+            </div>
+          ))}
+          <p style={{ marginTop: 6, fontSize: 22, lineHeight: 1.45, color: SOFT, fontFamily: sans }}>
+            흙이 귀한 이유: 땅의 글자 열둘 중 넷(辰·戌·丑·未)이 흙이라 어딘가에 하나쯤 들어 있어요
+          </p>
+        </div>
+        <div className="doc-paper" style={{ position: "absolute", top: 1128, ...panel }}>
+          <p style={{ fontSize: 30, fontWeight: 800, fontFamily: sans }}>비어 있는 오행 개수</p>
+          {COUNT.map((m, i) => (
+            <div key={m.n} style={{ display: "flex", alignItems: "center", gap: 18, height: 74, borderTop: i ? "1.5px solid rgba(179,38,30,.13)" : "none" }}>
+              <b style={{ width: 190, flexShrink: 0, fontSize: 31 }}>{m.n}</b>
+              {bar(m.pct, 55, i === 1 ? SEAL : "#8a6214")}
+              <span style={{ width: 190, flexShrink: 0, textAlign: "right" }}>
+                <b style={{ fontSize: 38, color: i === 1 ? SEAL : INK }}>{m.pct}%</b>
+                {m.note && <span style={{ display: "block", fontSize: 21, fontWeight: 800, color: SEAL, fontFamily: sans }}>{m.note}</span>}
+              </span>
+            </div>
+          ))}
+        </div>
+        <div style={{ position: "absolute", top: 1548, left: 150, width: 780, textAlign: "center" }}>
+          <p style={{ fontSize: 30, lineHeight: 1.4, fontWeight: 800, color: "#f1cf7a" }}>10명 중 7명은 하나쯤 비어 있어요. 내 건 뭘까?</p>
+          <p style={{ marginTop: 6, fontSize: 24, lineHeight: 1.4, color: "rgba(244,236,219,.8)", fontFamily: sans }}>
+            프로필 링크에서 생일만 넣으면 바로 · 태어난 시간까지 넣은 여덟 글자 기준
+          </p>
+        </div>
+      </ReelFrame>
+    );
+  }
+
   // 띠 궁합 at a glance, for a reel people tag each other on: each animal's 육합 (찰떡) and 충 (부딪힘), both
   // fixed by the branches, so nothing in it is a guess.
   if (c === "tti-reel") {
