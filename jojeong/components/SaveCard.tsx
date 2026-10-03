@@ -1,8 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { toBlob } from "html-to-image";
-import { fontCss } from "@/lib/cardExport";
+import { keepPng, makePng } from "@/lib/cardExport";
 import { trackEvent } from "./VisitBeacon";
 
 // The reader's own result as a card to look at, and the two ways to pass it on: "카드 저장" (a 1080px-wide PNG
@@ -32,26 +31,9 @@ export default function SaveCard({
     trackEvent("save_image", from);
     setState("making");
     try {
-      await document.fonts.ready;
-      const opts = { pixelRatio: 1080 / node.offsetWidth, fontEmbedCSS: await fontCss([node]) };
-      // Safari draws the first pass before the inlined fonts decode; a throwaway pass first.
-      await toBlob(node, opts).catch(() => null);
-      const blob = await toBlob(node, opts);
-      if (!blob) throw new Error("no image");
-      const png = new File([blob], `${file}.png`, { type: "image/png" });
+      const png = await makePng(node, file);
       setState("idle");
-      if (navigator.canShare?.({ files: [png] })) {
-        try {
-          await navigator.share({ files: [png] });
-          return;
-        } catch (e) {
-          if (e instanceof DOMException && e.name === "AbortError") return;
-        }
-      }
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(png);
-      a.download = png.name;
-      a.click();
+      await keepPng(png);
     } catch {
       setState("error");
     }

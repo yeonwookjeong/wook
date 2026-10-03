@@ -86,15 +86,15 @@ export function ReadingCard({
       <p className="mt-1.5 text-[13px] text-ink-soft">{who}</p>
       {ilju && (
         <>
-          <p className="mt-1.5 text-[50px] leading-none text-seal" style={{ fontFamily: '"GanzhiBrush", var(--font-heading)' }}>
+          <p className="mt-1 text-[44px] leading-none text-seal" style={{ fontFamily: '"GanzhiBrush", var(--font-heading)' }}>
             {ilju.hanja}
           </p>
-          <p className="mt-1 font-myeongjo text-xl font-extrabold">{ilju.name}일주</p>
+          <p className="mt-0.5 font-myeongjo text-lg font-extrabold">{ilju.name}일주</p>
           {image && <p className="text-[12px] text-ink-soft">{image}</p>}
         </>
       )}
-      <div className="mt-3 w-full">
-        <div className="flex h-3 overflow-hidden rounded-full">
+      <div className="mt-2 w-full">
+        <div className="flex h-2.5 overflow-hidden rounded-full">
           {shown.map((x) => (
             <span key={x.group} style={{ width: `${x.pct}%`, background: POWER_COLOR[x.group] }} />
           ))}
@@ -103,7 +103,7 @@ export function ReadingCard({
           가장 큰 힘 <b style={{ color: POWER_COLOR[top.group] }}>{top.name} {top.pct}%</b>
         </p>
       </div>
-      <ul className="mt-3 flex w-full flex-col gap-1 text-[12px]">
+      <ul className="mt-2 flex w-full flex-col gap-0.5 text-[12px]">
         {kinds.map((k) => (
           <li key={k.label} className="flex justify-between border-b border-seal/15 pb-1 last:border-b-0">
             <span className="text-ink-soft">{k.label}</span>

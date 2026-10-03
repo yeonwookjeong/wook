@@ -85,3 +85,39 @@ export async function fontCss(nodes: HTMLElement[]) {
   return css.join("\n");
 }
 
+
+// A card node drawn into a PNG file, 1080px wide whatever its size on screen.
+export async function makePng(node: HTMLElement, name: string): Promise<File> {
+  const { toBlob } = await import("html-to-image");
+  await document.fonts.ready;
+  const opts = { pixelRatio: 1080 / node.offsetWidth, fontEmbedCSS: await fontCss([node]) };
+  // Safari draws the first pass before the inlined fonts decode; a throwaway pass first.
+  await toBlob(node, opts).catch(() => null);
+  const blob = await toBlob(node, opts);
+  if (!blob || !blob.size) throw new Error("no image");
+  return new File([blob], `${name}.png`, { type: "image/png" });
+}
+
+// iPhones and iPads (an iPad asks for the desktop site and calls itself a Mac).
+const isApple = () => /iPad|iPhone|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+
+// Keeping the image: on an iPhone the share sheet (its "이미지 저장" puts it in Photos); elsewhere a plain download.
+// Android's share sheet is not used: a chat app picked there (KakaoTalk) can refuse a file a web page hands it
+// ("지원하지 않는 파일 형식입니다"), while a download always lands in the gallery's downloads.
+export async function keepPng(png: File): Promise<"shared" | "downloaded" | "aborted"> {
+  if (isApple() && navigator.canShare?.({ files: [png] })) {
+    try {
+      await navigator.share({ files: [png] });
+      return "shared";
+    } catch (e) {
+      if (e instanceof DOMException && e.name === "AbortError") return "aborted";
+    }
+  }
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(png);
+  a.download = png.name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  return "downloaded";
+}
