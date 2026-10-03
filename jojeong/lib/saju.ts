@@ -7,6 +7,16 @@ export const STEMS = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "�
 export const STEMS_KO = ["갑", "을", "병", "정", "무", "기", "경", "신", "임", "계"] as const;
 export const BRANCHES = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"] as const;
 export const BRANCHES_KO = ["자", "축", "인", "묘", "진", "사", "오", "미", "신", "유", "술", "해"] as const;
+// Stems and branches read aloud: "庚申" → "경신". Anything else passes through.
+export const hanjaKo = (text: string) =>
+  [...text]
+    .map((c) => {
+      const s = STEMS.indexOf(c as (typeof STEMS)[number]);
+      if (s >= 0) return STEMS_KO[s];
+      const b = BRANCHES.indexOf(c as (typeof BRANCHES)[number]);
+      return b >= 0 ? BRANCHES_KO[b] : c;
+    })
+    .join("");
 export const ANIMALS = ["쥐", "소", "호랑이", "토끼", "용", "뱀", "말", "양", "원숭이", "닭", "개", "돼지"] as const;
 export const ELEMENTS = ["木", "火", "土", "金", "水"] as const;
 export const ELEMENTS_KO = ["목", "화", "토", "금", "수"] as const;

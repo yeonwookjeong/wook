@@ -1,6 +1,6 @@
 import { stageOf } from "@/lib/deep";
 import { ELEMENT_HANJA, ELEMENT_KO, BRANCH_EL, HIDDEN, stemEl, tenGod, type Slot } from "@/lib/myeongri";
-import { BRANCHES, STEMS } from "@/lib/saju";
+import { BRANCHES, STEMS, hanjaKo } from "@/lib/saju";
 
 // Element colours follow the traditional 오방색 loosely: 木 green, 火 red, 土 ochre, 金 grey-white, 水 black-blue.
 export const EL_STYLE = [
@@ -28,7 +28,10 @@ export function Cell({ value, el }: { value: string | null; el: number | null })
   return (
     <div className={`flex aspect-square flex-col items-center justify-center rounded-lg ${EL_STYLE[el]}`}>
       <span className="font-myeongjo text-xl leading-none font-extrabold">{value}</span>
-      <span className="mt-0.5 text-[10px] leading-none opacity-80">{ELEMENT_KO[el]}</span>
+      {/* How it is read, then its element: 경 · 금. */}
+      <span className="mt-0.5 text-[10px] leading-none opacity-80">
+        {hanjaKo(value)} · {ELEMENT_KO[el]}
+      </span>
     </div>
   );
 }

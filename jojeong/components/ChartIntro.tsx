@@ -1,6 +1,6 @@
 import { BRANCH_EL, stemEl, type Slot } from "@/lib/myeongri";
 import { perHundred, type Distinct } from "@/lib/rarity";
-import { BRANCHES, STEMS } from "@/lib/saju";
+import { BRANCHES, hanjaKo, STEMS } from "@/lib/saju";
 import { Cell } from "./SajuChart";
 
 const POS_ROLE = { 시: "자녀·말년", 일: "나·배우자", 월: "부모·일터", 연: "뿌리·어린 시절" } as const;
@@ -36,10 +36,14 @@ export default function ChartIntro({ name, d, slots, chips = true }: { name: str
 
       {d.ilju && (
         <>
-          <h3 className="mt-5 text-sm font-extrabold">같은 {d.ilju.name}일주라도 다 같지 않아요</h3>
+          <h3 className="mt-5 text-sm font-extrabold">
+            같은 {hanjaKo(d.ilju.name)}({d.ilju.name})일주라도 다 같지 않아요
+          </h3>
           <p className="mt-1.5 text-[14px] leading-relaxed">
-            {d.ilju.name}일주는 60가지 일주 가운데 하나예요. 하지만 태어난 계절, 태어난 달이 정하는 사주의 틀(격국), 가장 무거운 기운이 다르면 전혀 다른
-            사람이 돼요. {name}님은 <b>{d.ilju.build} {d.ilju.name}일주</b>로, 같은 일주 가운데 <b>약 {Math.max(1, Math.round(d.ilju.rate * 100))}%</b>만 이
+            {hanjaKo(d.ilju.name)}일주는 60가지 일주 가운데 하나예요. 하지만 태어난 계절, 태어난 달이 정하는 사주의 틀(격국), 가장 무거운 기운이 다르면 전혀 다른
+            사람이 돼요. {name}님은 <b>
+              {d.ilju.build} {hanjaKo(d.ilju.name)}일주
+            </b>로, 같은 일주 가운데 <b>약 {Math.max(1, Math.round(d.ilju.rate * 100))}%</b>만 이
             구조예요.
           </p>
         </>
