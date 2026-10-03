@@ -1,9 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { toBlob } from "html-to-image";
 import { shortShareAction } from "@/app/actions";
-import { fontCss } from "@/lib/cardExport";
+import { keepPng, makePng } from "@/lib/cardExport";
 import { trackEvent } from "./VisitBeacon";
 
 // The foot of a free result, once it has been read: send the whole result to a friend (a link that opens it as the
@@ -31,6 +30,8 @@ export default function ShareResult({
   const box = useRef<HTMLDivElement>(null);
   const [showCard, setShowCard] = useState(false);
   const [state, setState] = useState<"idle" | "making" | "error" | "copied">("idle");
+  // The image once made, shown so it can also be kept by a long press.
+  const [made, setMade] = useState<string | null>(null);
 
   async function send(which: "summary" | "full") {
     trackEvent("share_result", from);
@@ -69,26 +70,10 @@ export default function ShareResult({
       await new Promise((r) => setTimeout(r, 120));
       const node = box.current?.firstElementChild as HTMLElement | null;
       if (!node) throw new Error("no card");
-      await document.fonts.ready;
-      const opts = { pixelRatio: 1080 / node.offsetWidth, fontEmbedCSS: await fontCss([node]) };
-      // Safari draws the first pass before the inlined fonts decode; a throwaway pass first.
-      await toBlob(node, opts).catch(() => null);
-      const blob = await toBlob(node, opts);
-      if (!blob) throw new Error("no image");
-      const png = new File([blob], `${file}.png`, { type: "image/png" });
+      const png = await makePng(node, file);
+      setMade(URL.createObjectURL(png));
       setState("idle");
-      if (navigator.canShare?.({ files: [png] })) {
-        try {
-          await navigator.share({ files: [png] });
-          return;
-        } catch (e) {
-          if (e instanceof DOMException && e.name === "AbortError") return;
-        }
-      }
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(png);
-      a.download = png.name;
-      a.click();
+      await keepPng(png);
     } catch {
       setState("error");
     }
@@ -134,10 +119,18 @@ export default function ShareResult({
         {state === "making" ? "카드를 만드는 중…" : "카드 이미지로 저장 · 스토리"}
       </button>
       {state === "error" && <p className="mt-2 text-xs text-seal">카드를 만들지 못했어요. 화면을 캡처해 주세요.</p>}
-      {showCard && (
-        <div ref={box} className="mt-4 text-left">
-          {card}
+      {made ? (
+        <div className="mt-4">
+          <p className="text-[12px] leading-relaxed text-ink-soft">사진첩(다운로드)에 저장했어요. 저장이 안 됐다면 아래 이미지를 길게 눌러 저장해 주세요.</p>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={made} alt="내 사주 카드" className="-mx-3 mt-2 w-[calc(100%+1.5rem)] max-w-none rounded-2xl" />
         </div>
+      ) : (
+        showCard && (
+          <div ref={box} className="-mx-3 mt-4 text-left">
+            {card}
+          </div>
+        )
       )}
     </section>
   );
