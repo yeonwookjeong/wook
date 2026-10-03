@@ -146,13 +146,17 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
                 <div className="mt-2 flex flex-wrap items-center gap-2 text-[12px]">
                   {q.email ? (
                     <a
-                      href={`mailto:${q.email}?subject=${encodeURIComponent(`[훈도사주] ${q.topic} 문의 답변`)}`}
+                      href={
+                        q.email.includes("@")
+                          ? `mailto:${q.email}?subject=${encodeURIComponent(`[훈도사주] ${q.topic} 문의 답변`)}`
+                          : `sms:${q.email.replace(/-/g, "")}`
+                      }
                       className="rounded-full bg-seal px-3 py-1 font-bold text-hanji"
                     >
-                      답장하기 · {q.email}
+                      {q.email.includes("@") ? "답장하기" : "문자 보내기"} · {q.email}
                     </a>
                   ) : (
-                    <span className="text-ink-soft">이메일 없음</span>
+                    <span className="text-ink-soft">연락처 없음</span>
                   )}
                   <form action={inquiryDoneAction} className="ml-auto">
                     <input type="hidden" name="id" value={q.id} />
