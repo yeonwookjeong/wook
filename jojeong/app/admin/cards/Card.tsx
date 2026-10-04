@@ -196,7 +196,39 @@ function PinBanner({ k }: { k: 0 | 1 | 2 | null }) {
           <span key={i} style={{ position: "absolute", left: st.x, top: st.y, width: st.r, height: st.r, borderRadius: "50%", background: "#fff6dc", opacity: st.o }} />
         ))}
         {/* One milky way across the whole row. */}
-        <div style={{ position: "absolute", left: -200, top: 120, width: 3640, height: 300, transform: "rotate(-4deg)", background: "radial-gradient(ellipse at center, rgba(190,205,255,.16), transparent 70%)" }} />
+        <div style={{ position: "absolute", left: -300, top: 40, width: 3840, height: 420, transform: "rotate(-6deg)", background: "radial-gradient(ellipse at center, rgba(200,212,255,.22), rgba(200,212,255,.08) 45%, transparent 72%)" }} />
+
+        {/* Far mountains behind the whole row, and the main hall of the 관상감 behind 정 훈도, so the middle third
+            is a courtyard too, not an empty sky. */}
+        <svg style={{ position: "absolute", left: 0, top: 0 }} width={3240} height={1440}>
+          <defs>
+            <linearGradient id="pinMt" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#2c4a78" />
+              <stop offset="1" stopColor="#182a48" />
+            </linearGradient>
+            <linearGradient id="pinRoof" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#3b3433" />
+              <stop offset="1" stopColor="#141010" />
+            </linearGradient>
+            <radialGradient id="pinWin" cx="0.5" cy="0.5" r="0.5">
+              <stop offset="0" stopColor="#ffe4a8" />
+              <stop offset="1" stopColor="#e79a45" />
+            </radialGradient>
+          </defs>
+          <path
+            d="M0 930 L180 860 L360 900 L560 800 L760 880 L980 790 L1220 860 L1420 770 L1620 840 L1840 760 L2060 850 L2280 790 L2500 880 L2720 800 L2940 870 L3240 820 L3240 1100 L0 1100 Z"
+            fill="url(#pinMt)"
+            opacity={0.95}
+          />
+          <path
+            d="M0 990 L240 940 L470 980 L700 920 L930 975 L1160 930 L1400 985 L1620 940 L1850 985 L2080 935 L2320 980 L2550 925 L2780 975 L3010 935 L3240 970 L3240 1120 L0 1120 Z"
+            fill="#15233d"
+            opacity={0.95}
+          />
+          {/* A waning moon: the morning moon of these days. */}
+          <circle cx={1300} cy={430} r={58} fill="#fff4d6" opacity={0.95} />
+          <circle cx={1326} cy={414} r={56} fill="#132a4c" />
+        </svg>
 
         {/* The hall on the left and its mirror on the right, fading into one courtyard. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -221,18 +253,109 @@ function PinBanner({ k }: { k: 0 | 1 | 2 | null }) {
             WebkitMaskImage: fade("90deg"),
           }}
         />
-        {/* The courtyard's warm ground and lantern glow, continuous under all three. */}
-        <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 260, background: "radial-gradient(ellipse 1300px 240px at 1620px 260px, rgba(240,170,90,.38), transparent 75%)" }} />
+        {/* One stone courtyard under all three: the same floor, the same joints, lanterns standing across the seams. */}
+        <div
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: 330,
+            background:
+              "linear-gradient(180deg, rgba(60,46,42,0) 0%, rgba(70,54,48,.85) 26%, #4a3a33 60%, #3a2d29 100%)",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: 230,
+            opacity: 0.35,
+            background:
+              "repeating-linear-gradient(180deg, transparent 0 44px, rgba(20,14,12,.7) 44px 46px), repeating-linear-gradient(90deg, transparent 0 178px, rgba(20,14,12,.55) 178px 180px)",
+          }}
+        />
+        <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 360, background: "radial-gradient(ellipse 1500px 300px at 1620px 360px, rgba(240,170,90,.42), transparent 75%)" }} />
+        {[1080, 2160].map((x) => (
+          <div key={x} style={{ position: "absolute", left: x - 44, bottom: 120, width: 88 }}>
+            <div style={{ width: 88, height: 18, background: "#2a211e", borderRadius: 4 }} />
+            <div
+              style={{
+                margin: "0 auto",
+                width: 62,
+                height: 82,
+                background: "radial-gradient(circle at 50% 45%, #ffe2a3, #f0a94c 55%, #b5651d)",
+                border: "6px solid #2a211e",
+                boxShadow: "0 0 70px 26px rgba(255,190,110,.45)",
+              }}
+            />
+            <div style={{ margin: "0 auto", width: 26, height: 70, background: "#2a211e" }} />
+            <div style={{ width: 88, height: 16, background: "#2a211e", borderRadius: 4 }} />
+          </div>
+        ))}
+        {/* 북두칠성 drawn across the middle and right thirds: the 관상감 watched these stars. */}
+        <svg style={{ position: "absolute", left: 0, top: 0 }} width={3240} height={700}>
+          {(() => {
+            const pts: [number, number][] = [
+              [1830, 520],
+              [2050, 470],
+              [2260, 430],
+              [2470, 400],
+              [2560, 250],
+              [2860, 230],
+              [2900, 420],
+            ];
+            const line = pts.map(([x, y]) => `${x},${y}`).join(" ");
+            return (
+              <>
+                <polyline points={line} fill="none" stroke="rgba(241,207,122,.45)" strokeWidth={3} strokeDasharray="10 10" />
+                <line x1={2470} y1={400} x2={2900} y2={420} stroke="rgba(241,207,122,.45)" strokeWidth={3} strokeDasharray="10 10" />
+                {pts.map(([x, y], i) => (
+                  <g key={i}>
+                    <circle cx={x} cy={y} r={22} fill="rgba(255,240,200,.18)" />
+                    <circle cx={x} cy={y} r={9} fill="#fff4d6" />
+                  </g>
+                ))}
+              </>
+            );
+          })()}
+        </svg>
         <div style={{ position: "absolute", left: 0, right: 0, top: 0, height: 700, background: "linear-gradient(180deg, rgba(10,22,40,.6), transparent)" }} />
 
-        {/* ① the name */}
-        <div style={{ position: "absolute", left: 80, top: 140, width: 920, textAlign: "center", textShadow: "0 3px 18px rgba(0,0,0,.65)" }}>
-          <p style={{ fontSize: 36, letterSpacing: "0.5em", color: GOLD, fontWeight: 800 }}>朝鮮 觀象監</p>
-          <p style={{ marginTop: 18, fontSize: 168, fontWeight: 800, lineHeight: 1.05 }}>훈도사주</p>
-          <p style={{ marginTop: 26, fontSize: 40, lineHeight: 1.5, color: "rgba(244,236,219,.95)" }}>
-            조선 관상감 훈도가
+        {/* ① the name and the hook, on a sheet of 한지 that reads first in the grid */}
+        <div
+          className="doc-paper"
+          style={{ position: "absolute", left: 90, top: 200, width: 900, padding: "60px 60px 56px", color: INK, boxShadow: "0 18px 40px rgba(0,0,0,.45)" }}
+        >
+          <p style={{ display: "inline-block", padding: "8px 22px", border: `3px solid ${SEAL}`, color: SEAL, fontSize: 30, fontWeight: 800, letterSpacing: "0.12em" }}>
+            觀象監 · 훈도사주
+          </p>
+          <p style={{ marginTop: 40, fontSize: 104, fontWeight: 800, lineHeight: 1.18, letterSpacing: "-0.02em" }}>
+            조선 관상감이
             <br />
-            풀어 주는 사주
+            읽어 주는
+            <br />
+            <span style={{ color: SEAL }}>내 사주</span>
+          </p>
+          <p style={{ marginTop: 34, fontSize: 32, fontWeight: 800, color: SOFT, fontFamily: sans, letterSpacing: "0.02em" }}>
+            사주 · 연애 · 궁합 · 신년 운세 · 택일
+          </p>
+          <p
+            style={{
+              display: "inline-block",
+              marginTop: 44,
+              padding: "20px 44px",
+              borderRadius: 999,
+              background: SEAL,
+              color: HANJI,
+              fontSize: 36,
+              fontWeight: 800,
+              fontFamily: sans,
+            }}
+          >
+            내 사주 보러 가기 →
           </p>
         </div>
 
@@ -240,6 +363,35 @@ function PinBanner({ k }: { k: 0 | 1 | 2 | null }) {
         <div style={{ position: "absolute", left: 1080 + 80, top: 130, width: 920, textAlign: "center", textShadow: "0 3px 18px rgba(0,0,0,.6)" }}>
           <p style={{ fontSize: 34, letterSpacing: "0.4em", color: GOLD, fontWeight: 800 }}>鄭 訓導</p>
           <p style={{ marginTop: 10, fontSize: 58, fontWeight: 800 }}>명과학 훈도 정가</p>
+        </div>
+        {/* The 관상감 main hall, far behind 정 훈도: the same painting, smaller and dimmer, so it reads as distance. */}
+        <div
+          style={{
+            position: "absolute",
+            left: 1620 - 470,
+            top: 820,
+            width: 940,
+            height: 360,
+            overflow: "hidden",
+            maskImage: "linear-gradient(90deg, transparent, #000 16%, #000 84%, transparent)",
+            WebkitMaskImage: "linear-gradient(90deg, transparent, #000 16%, #000 84%, transparent)",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              maskImage: "linear-gradient(180deg, transparent 0%, #000 38%, #000 82%, transparent 100%)",
+              WebkitMaskImage: "linear-gradient(180deg, transparent 0%, #000 38%, #000 82%, transparent 100%)",
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/cards/gwansanggam.webp"
+              alt=""
+              style={{ position: "absolute", left: -20, top: -745, width: 1346, height: 1682, maxWidth: "none", filter: "brightness(.72) saturate(.9) blur(1px)" }}
+            />
+          </div>
         </div>
         <div style={{ position: "absolute", left: 1620 - 340, top: 520, width: 680, height: 680, borderRadius: "50%", background: "radial-gradient(circle, rgba(241,207,122,.2), transparent 68%)" }} />
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -249,17 +401,10 @@ function PinBanner({ k }: { k: 0 | 1 | 2 | null }) {
           style={{ position: "absolute", left: 1620 - 440, bottom: 34, width: 880, height: 1100, objectFit: "contain", filter: "drop-shadow(0 18px 26px rgba(0,0,0,.55))" }}
         />
 
-        {/* ③ what he reads, and where */}
-        <div style={{ position: "absolute", left: 2160 + 80, top: 140, width: 920, textAlign: "center", textShadow: "0 3px 18px rgba(0,0,0,.65)" }}>
-          <p style={{ fontSize: 36, letterSpacing: "0.4em", color: GOLD, fontWeight: 800 }}>命課學</p>
-          <p style={{ marginTop: 18, fontSize: 76, fontWeight: 800, lineHeight: 1.22 }}>
-            그대의 여덟 글자를
-            <br />
-            읽어 드리옵니다
-          </p>
-          <p style={{ marginTop: 30, fontSize: 64, fontWeight: 800, color: "#f1cf7a" }}>hundosaju.com</p>
-          <p style={{ marginTop: 8, fontSize: 34, color: "rgba(244,236,219,.9)", fontFamily: sans }}>프로필 링크에서 무료로</p>
-        </div>
+        {/* ③ the hall, and where to find it */}
+        <p style={{ position: "absolute", left: 2160, width: 1080, bottom: 70, textAlign: "center", fontSize: 44, fontWeight: 800, color: "#f1cf7a", textShadow: "0 3px 18px rgba(0,0,0,.7)" }}>
+          hundosaju.com
+        </p>
       </div>
     </div>
   );
@@ -416,6 +561,46 @@ export async function Card({ q }: { q: CardQuery }) {
   // ② 60일주 도감
   // 60일주 월간 랭킹, posted on the day the 절기 month begins (?y=&m= the calendar month it begins in).
   // A month's 손 없는 날 (lunar days ending in 9 and 0) on one calendar, for a reel people save before moving.
+  // 얼굴 많이 보는 남자 일주: the four day pillars whose day branch is a 도화 (子午卯酉) holding the man's 재성, the
+  // only four of the sixty (checked against every pillar); 戊子 and 壬午 also join in secret (戊癸, 丁壬 암합).
+  if (c === "face-reel") {
+    const ROWS = [
+      { hanja: "戊子", name: "무자일주", line: "첫눈에 반하면 그날로 직진" },
+      { hanja: "壬午", name: "임오일주", line: "사진 한 장 보고 이미 마음 정함" },
+      { hanja: "辛卯", name: "신묘일주", line: "얼굴 보고, 옷 센스 보고, 손끝까지 봄" },
+      { hanja: "丁酉", name: "정유일주", line: "예쁜 걸 보면 \"예쁘다\"가 바로 나옴" },
+    ];
+    return (
+      <ReelFrame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: REEL.top, left: REEL.side, right: REEL.side, textAlign: "center" }}>
+          <p style={{ fontSize: 34, fontWeight: 800, letterSpacing: "0.06em", color: GOLD }}>60일주 가운데 딱 넷</p>
+          <p style={{ marginTop: 14, fontSize: 86, fontWeight: 800, lineHeight: 1.15 }}>
+            <span style={{ color: "#f1cf7a" }}>얼굴</span> 많이 보는
+            <br />
+            남자 일주
+          </p>
+        </div>
+        <div style={{ position: "absolute", top: 570, left: 150, width: 780, display: "flex", flexDirection: "column", gap: 26 }}>
+          {ROWS.map((r) => (
+            <div key={r.hanja} className="doc-paper" style={{ display: "flex", alignItems: "center", gap: 22, padding: "34px 56px 34px 24px", color: INK }}>
+              <span style={{ width: 190, flexShrink: 0, textAlign: "center", whiteSpace: "nowrap", fontSize: 78, lineHeight: 1, color: SEAL, fontFamily: brush }}>{r.hanja}</span>
+              <span style={{ minWidth: 0 }}>
+                <b style={{ display: "block", fontSize: 44 }}>{r.name}</b>
+                <span style={{ display: "block", marginTop: 6, fontSize: 30, lineHeight: 1.35, color: SOFT, fontFamily: sans, fontWeight: 700 }}>{r.line}</span>
+              </span>
+            </div>
+          ))}
+        </div>
+        <div style={{ position: "absolute", top: 1470, left: 150, width: 780, textAlign: "center" }}>
+          <p style={{ fontSize: 30, lineHeight: 1.45, color: "rgba(244,236,219,.88)", fontFamily: sans }}>배우자 자리에 끌림의 별을 품고 태어난 일주</p>
+          <p style={{ marginTop: 14, fontSize: 36, lineHeight: 1.4, fontWeight: 800, color: "#f1cf7a" }}>여기 그대 일주가 없사옵니까?</p>
+          <p style={{ marginTop: 6, fontSize: 28, color: "rgba(244,236,219,.8)", fontFamily: sans }}>프로필 링크에서 내 일주 확인</p>
+        </div>
+      </ReelFrame>
+    );
+  }
+
   // 2026년(丙午)을 돌아보며: the 띠 the year's 午 joined (寅·戌 삼합, 未 육합) and the ones it shook (子 충, 午 its
   // own year, 丑 원진), with every year of birth 1960–2010 computed from the branch, never typed in.
   if (c === "y2026-reel") {
