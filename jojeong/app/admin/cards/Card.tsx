@@ -241,7 +241,7 @@ function PinBanner({ k }: { k: 0 | 1 | 2 | null }) {
             <span style={{ color: SEAL }}>내 사주</span>
           </p>
           <p style={{ marginTop: 34, fontSize: 32, fontWeight: 800, color: SOFT, fontFamily: sans, letterSpacing: "0.02em" }}>
-            사주 · 연애 · 궁합 · 신년 운세 · 조선 신분
+            사주 · 연애 · 궁합 · 신년 운세 · 택일
           </p>
           <p
             style={{
