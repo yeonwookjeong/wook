@@ -828,10 +828,13 @@ export async function Card({ q }: { q: CardQuery }) {
     } as const;
     const rel = (a: number, b: number): keyof typeof KIND | null =>
       a === b ? null : (a + b) % 12 === 1 ? "hap" : (a - b + 12) % 4 === 0 ? "samhap" : (a - b + 12) % 12 === 6 ? "chung" : WONJIN[a] === b ? "wonjin" : null;
-    // The table keeps inside x 100–900, left of the like column that starts near y 1150.
-    const head = 96;
-    const cell = 54;
-    const top = 540;
+    // Big and centred on the picture: the table is what people stop for. Its right edge runs under the like
+    // column (x past 900, from y ~1150), like the MBTI tables it answers; the cells there stay readable around it.
+    const width = 940;
+    const left = (1080 - width) / 2;
+    const head = 110;
+    const cell = 64;
+    const top = 430;
     const grid = `${head}px repeat(12, ${cell}px)`;
     return (
       <ReelFrame>
@@ -840,22 +843,21 @@ export async function Card({ q }: { q: CardQuery }) {
           <p style={{ marginTop: 14, fontSize: 84, fontWeight: 800, lineHeight: 1.12 }}>
             12띠 <span style={{ color: "#f1cf7a" }}>찐궁합표</span>
           </p>
-          <p style={{ marginTop: 14, fontSize: 30, color: "rgba(244,236,219,.85)", fontFamily: sans }}>내 띠 줄에서 그 사람 띠 칸을 찾으시옵소서</p>
         </div>
-        <div className="doc-paper" style={{ position: "absolute", top, left: REEL.side, width: 800, padding: "14px 12px", color: INK }}>
+        <div className="doc-paper" style={{ position: "absolute", top, left, width, padding: "14px", color: INK }}>
           <div style={{ display: "grid", gridTemplateColumns: grid, gap: 2 }}>
             <span />
             {FACE.map((f, b) => (
-              <span key={b} style={{ height: 70, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
-                <span style={{ fontSize: 32 }}>{f}</span>
-                <b style={{ marginTop: 4, fontSize: 15, fontFamily: sans, color: SOFT }}>{ANIMALS[b]}</b>
+              <span key={b} style={{ height: 80, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
+                <span style={{ fontSize: 38 }}>{f}</span>
+                <b style={{ marginTop: 5, fontSize: 17, fontFamily: sans, color: SOFT, whiteSpace: "nowrap" }}>{ANIMALS[b]}</b>
               </span>
             ))}
             {FACE.map((f, a) => (
               <Fragment key={a}>
-                <span style={{ height: cell, display: "flex", alignItems: "center", gap: 4, paddingLeft: 2 }}>
-                  <span style={{ fontSize: 30, lineHeight: 1 }}>{f}</span>
-                  <b style={{ fontSize: 17, fontFamily: sans, whiteSpace: "nowrap" }}>{ANIMALS[a]}</b>
+                <span style={{ height: cell, display: "flex", alignItems: "center", gap: 5, paddingLeft: 2 }}>
+                  <span style={{ fontSize: 36, lineHeight: 1 }}>{f}</span>
+                  <b style={{ fontSize: 19, fontFamily: sans, whiteSpace: "nowrap" }}>{ANIMALS[a]}</b>
                 </span>
                 {FACE.map((_, b) => {
                   const k = rel(a, b);
@@ -865,10 +867,10 @@ export async function Card({ q }: { q: CardQuery }) {
                       key={b}
                       style={{
                         height: cell,
-                        borderRadius: 8,
+                        borderRadius: 10,
                         display: "grid",
                         placeItems: "center",
-                        fontSize: 30,
+                        fontSize: 36,
                         fontWeight: 800,
                         fontFamily: sans,
                         background: st ? st.bg : a === b ? "rgba(33,27,23,.12)" : "rgba(33,27,23,.04)",
@@ -883,8 +885,8 @@ export async function Card({ q }: { q: CardQuery }) {
             ))}
           </div>
         </div>
-        <div style={{ position: "absolute", top: top + 28 + 70 + 12 * (cell + 2) + 30, left: REEL.side, width: 800 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px 20px", fontFamily: sans, fontSize: 28 }}>
+        <div style={{ position: "absolute", top: top + 28 + 80 + 12 * (cell + 2) + 28, left, width }}>
+          <div style={{ display: "grid", gridTemplateColumns: "auto auto", justifyContent: "center", gap: "12px 80px", fontFamily: sans, fontSize: 28 }}>
             {Object.values(KIND).map((k) => (
               <span key={k.name} style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <span
