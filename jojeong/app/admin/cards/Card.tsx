@@ -561,6 +561,46 @@ export async function Card({ q }: { q: CardQuery }) {
   // ② 60일주 도감
   // 60일주 월간 랭킹, posted on the day the 절기 month begins (?y=&m= the calendar month it begins in).
   // A month's 손 없는 날 (lunar days ending in 9 and 0) on one calendar, for a reel people save before moving.
+  // 얼굴 많이 보는 남자 일주: the four day pillars whose day branch is a 도화 (子午卯酉) holding the man's 재성, the
+  // only four of the sixty (checked against every pillar); 戊子 and 壬午 also join in secret (戊癸, 丁壬 암합).
+  if (c === "face-reel") {
+    const ROWS = [
+      { hanja: "戊子", name: "무자일주", line: "첫눈에 반하면 그날로 직진" },
+      { hanja: "壬午", name: "임오일주", line: "사진 한 장 보고 이미 마음 정함" },
+      { hanja: "辛卯", name: "신묘일주", line: "얼굴 보고, 옷 센스 보고, 손끝까지 봄" },
+      { hanja: "丁酉", name: "정유일주", line: "예쁜 걸 보면 \"예쁘다\"가 바로 나옴" },
+    ];
+    return (
+      <ReelFrame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: REEL.top, left: REEL.side, right: REEL.side, textAlign: "center" }}>
+          <p style={{ fontSize: 34, fontWeight: 800, letterSpacing: "0.06em", color: GOLD }}>60일주 가운데 딱 넷</p>
+          <p style={{ marginTop: 14, fontSize: 86, fontWeight: 800, lineHeight: 1.15 }}>
+            <span style={{ color: "#f1cf7a" }}>얼굴</span> 많이 보는
+            <br />
+            남자 일주
+          </p>
+        </div>
+        <div style={{ position: "absolute", top: 570, left: 150, width: 780, display: "flex", flexDirection: "column", gap: 26 }}>
+          {ROWS.map((r) => (
+            <div key={r.hanja} className="doc-paper" style={{ display: "flex", alignItems: "center", gap: 22, padding: "34px 56px 34px 24px", color: INK }}>
+              <span style={{ width: 190, flexShrink: 0, textAlign: "center", whiteSpace: "nowrap", fontSize: 78, lineHeight: 1, color: SEAL, fontFamily: brush }}>{r.hanja}</span>
+              <span style={{ minWidth: 0 }}>
+                <b style={{ display: "block", fontSize: 44 }}>{r.name}</b>
+                <span style={{ display: "block", marginTop: 6, fontSize: 30, lineHeight: 1.35, color: SOFT, fontFamily: sans, fontWeight: 700 }}>{r.line}</span>
+              </span>
+            </div>
+          ))}
+        </div>
+        <div style={{ position: "absolute", top: 1470, left: 150, width: 780, textAlign: "center" }}>
+          <p style={{ fontSize: 30, lineHeight: 1.45, color: "rgba(244,236,219,.88)", fontFamily: sans }}>배우자 자리에 끌림의 별을 품고 태어난 일주</p>
+          <p style={{ marginTop: 14, fontSize: 36, lineHeight: 1.4, fontWeight: 800, color: "#f1cf7a" }}>여기 그대 일주가 없사옵니까?</p>
+          <p style={{ marginTop: 6, fontSize: 28, color: "rgba(244,236,219,.8)", fontFamily: sans }}>프로필 링크에서 내 일주 확인</p>
+        </div>
+      </ReelFrame>
+    );
+  }
+
   // 2026년(丙午)을 돌아보며: the 띠 the year's 午 joined (寅·戌 삼합, 未 육합) and the ones it shook (子 충, 午 its
   // own year, 丑 원진), with every year of birth 1960–2010 computed from the branch, never typed in.
   if (c === "y2026-reel") {
