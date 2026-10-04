@@ -225,14 +225,38 @@ function PinBanner({ k }: { k: 0 | 1 | 2 | null }) {
         <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 260, background: "radial-gradient(ellipse 1300px 240px at 1620px 260px, rgba(240,170,90,.38), transparent 75%)" }} />
         <div style={{ position: "absolute", left: 0, right: 0, top: 0, height: 700, background: "linear-gradient(180deg, rgba(10,22,40,.6), transparent)" }} />
 
-        {/* ① the name */}
-        <div style={{ position: "absolute", left: 80, top: 140, width: 920, textAlign: "center", textShadow: "0 3px 18px rgba(0,0,0,.65)" }}>
-          <p style={{ fontSize: 36, letterSpacing: "0.5em", color: GOLD, fontWeight: 800 }}>朝鮮 觀象監</p>
-          <p style={{ marginTop: 18, fontSize: 168, fontWeight: 800, lineHeight: 1.05 }}>훈도사주</p>
-          <p style={{ marginTop: 26, fontSize: 40, lineHeight: 1.5, color: "rgba(244,236,219,.95)" }}>
-            조선 관상감 훈도가
+        {/* ① the name and the hook, on a sheet of 한지 that reads first in the grid */}
+        <div
+          className="doc-paper"
+          style={{ position: "absolute", left: 90, top: 200, width: 900, padding: "60px 60px 56px", color: INK, boxShadow: "0 18px 40px rgba(0,0,0,.45)" }}
+        >
+          <p style={{ display: "inline-block", padding: "8px 22px", border: `3px solid ${SEAL}`, color: SEAL, fontSize: 30, fontWeight: 800, letterSpacing: "0.12em" }}>
+            觀象監 · 훈도사주
+          </p>
+          <p style={{ marginTop: 40, fontSize: 104, fontWeight: 800, lineHeight: 1.18, letterSpacing: "-0.02em" }}>
+            조선 관상감이
             <br />
-            풀어 주는 사주
+            읽어 주는
+            <br />
+            <span style={{ color: SEAL }}>내 사주</span>
+          </p>
+          <p style={{ marginTop: 34, fontSize: 32, fontWeight: 800, color: SOFT, fontFamily: sans, letterSpacing: "0.02em" }}>
+            사주 · 연애 · 궁합 · 신년 운세 · 조선 신분
+          </p>
+          <p
+            style={{
+              display: "inline-block",
+              marginTop: 44,
+              padding: "20px 44px",
+              borderRadius: 999,
+              background: SEAL,
+              color: HANJI,
+              fontSize: 36,
+              fontWeight: 800,
+              fontFamily: sans,
+            }}
+          >
+            내 사주 보러 가기 →
           </p>
         </div>
 
@@ -249,17 +273,10 @@ function PinBanner({ k }: { k: 0 | 1 | 2 | null }) {
           style={{ position: "absolute", left: 1620 - 440, bottom: 34, width: 880, height: 1100, objectFit: "contain", filter: "drop-shadow(0 18px 26px rgba(0,0,0,.55))" }}
         />
 
-        {/* ③ what he reads, and where */}
-        <div style={{ position: "absolute", left: 2160 + 80, top: 140, width: 920, textAlign: "center", textShadow: "0 3px 18px rgba(0,0,0,.65)" }}>
-          <p style={{ fontSize: 36, letterSpacing: "0.4em", color: GOLD, fontWeight: 800 }}>命課學</p>
-          <p style={{ marginTop: 18, fontSize: 76, fontWeight: 800, lineHeight: 1.22 }}>
-            그대의 여덟 글자를
-            <br />
-            읽어 드리옵니다
-          </p>
-          <p style={{ marginTop: 30, fontSize: 64, fontWeight: 800, color: "#f1cf7a" }}>hundosaju.com</p>
-          <p style={{ marginTop: 8, fontSize: 34, color: "rgba(244,236,219,.9)", fontFamily: sans }}>프로필 링크에서 무료로</p>
-        </div>
+        {/* ③ the hall, and where to find it */}
+        <p style={{ position: "absolute", left: 2160, width: 1080, bottom: 70, textAlign: "center", fontSize: 44, fontWeight: 800, color: "#f1cf7a", textShadow: "0 3px 18px rgba(0,0,0,.7)" }}>
+          hundosaju.com
+        </p>
       </div>
     </div>
   );
