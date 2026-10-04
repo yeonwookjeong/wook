@@ -331,12 +331,17 @@ function PinBanner({ k }: { k: 0 | 1 | 2 | null }) {
           <p style={{ display: "inline-block", padding: "8px 22px", border: `3px solid ${SEAL}`, color: SEAL, fontSize: 30, fontWeight: 800, letterSpacing: "0.12em" }}>
             觀象監 · 훈도사주
           </p>
-          <p style={{ marginTop: 40, fontSize: 104, fontWeight: 800, lineHeight: 1.18, letterSpacing: "-0.02em" }}>
-            조선 관상감이
+          {/* The site's promise, the same words as its first screen and the profile: what is said fits one person. */}
+          <p style={{ marginTop: 40, fontSize: 96, fontWeight: 800, lineHeight: 1.18, letterSpacing: "-0.02em" }}>
+            누구에게나
             <br />
-            읽어 주는
+            맞는 말 말고
             <br />
-            <span style={{ color: SEAL }}>내 사주</span>
+            <span style={{ color: SEAL }}>
+              나한테만
+              <br />
+              맞는 사주
+            </span>
           </p>
           <p style={{ marginTop: 34, fontSize: 32, fontWeight: 800, color: SOFT, fontFamily: sans, letterSpacing: "0.02em" }}>
             사주 · 연애 · 궁합 · 신년 운세 · 택일
