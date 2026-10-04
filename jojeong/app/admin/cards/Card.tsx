@@ -815,6 +815,96 @@ export async function Card({ q }: { q: CardQuery }) {
     );
   }
 
+  if (c === "tti-grid") {
+    // Every pair of 띠 in one table, like the MBTI 궁합표 people save: no made-up percentages, only the four
+    // relations between year branches (육합 · 삼합 · 충 · 원진), each a fixed rule anyone can check.
+    const FACE = ["🐭", "🐮", "🐯", "🐰", "🐲", "🐍", "🐴", "🐑", "🐵", "🐔", "🐶", "🐷"];
+    const WONJIN = [7, 6, 9, 8, 11, 10, 1, 0, 3, 2, 5, 4];
+    const KIND = {
+      hap: { mark: "♥", bg: SEAL, fg: HANJI, name: "육합", say: "찰떡" },
+      samhap: { mark: "◎", bg: "#a87a22", fg: HANJI, name: "삼합", say: "한편" },
+      chung: { mark: "✕", bg: "#1f3448", fg: HANJI, name: "충", say: "부딪힘" },
+      wonjin: { mark: "△", bg: "#d4cbbd", fg: INK, name: "원진", say: "묘하게 서운" },
+    } as const;
+    const rel = (a: number, b: number): keyof typeof KIND | null =>
+      a === b ? null : (a + b) % 12 === 1 ? "hap" : (a - b + 12) % 4 === 0 ? "samhap" : (a - b + 12) % 12 === 6 ? "chung" : WONJIN[a] === b ? "wonjin" : null;
+    // The table keeps inside x 100–900, left of the like column that starts near y 1150.
+    const head = 96;
+    const cell = 54;
+    const top = 540;
+    const grid = `${head}px repeat(12, ${cell}px)`;
+    return (
+      <ReelFrame>
+        <div style={{ position: "absolute", top: REEL.top, left: REEL.side, right: REEL.side, textAlign: "center" }}>
+          <p style={{ fontSize: 34, fontWeight: 800, letterSpacing: "0.06em", color: GOLD }}>명리의 합 · 충으로 그린</p>
+          <p style={{ marginTop: 14, fontSize: 84, fontWeight: 800, lineHeight: 1.12 }}>
+            12띠 <span style={{ color: "#f1cf7a" }}>찐궁합표</span>
+          </p>
+          <p style={{ marginTop: 14, fontSize: 30, color: "rgba(244,236,219,.85)", fontFamily: sans }}>내 띠 줄에서 그 사람 띠 칸을 찾으시옵소서</p>
+        </div>
+        <div className="doc-paper" style={{ position: "absolute", top, left: REEL.side, width: 800, padding: "14px 12px", color: INK }}>
+          <div style={{ display: "grid", gridTemplateColumns: grid, gap: 2 }}>
+            <span />
+            {FACE.map((f, b) => (
+              <span key={b} style={{ height: 70, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
+                <span style={{ fontSize: 32 }}>{f}</span>
+                <b style={{ marginTop: 4, fontSize: 15, fontFamily: sans, color: SOFT }}>{ANIMALS[b]}</b>
+              </span>
+            ))}
+            {FACE.map((f, a) => (
+              <Fragment key={a}>
+                <span style={{ height: cell, display: "flex", alignItems: "center", gap: 4, paddingLeft: 2 }}>
+                  <span style={{ fontSize: 30, lineHeight: 1 }}>{f}</span>
+                  <b style={{ fontSize: 17, fontFamily: sans, whiteSpace: "nowrap" }}>{ANIMALS[a]}</b>
+                </span>
+                {FACE.map((_, b) => {
+                  const k = rel(a, b);
+                  const st = k ? KIND[k] : null;
+                  return (
+                    <span
+                      key={b}
+                      style={{
+                        height: cell,
+                        borderRadius: 8,
+                        display: "grid",
+                        placeItems: "center",
+                        fontSize: 30,
+                        fontWeight: 800,
+                        fontFamily: sans,
+                        background: st ? st.bg : a === b ? "rgba(33,27,23,.12)" : "rgba(33,27,23,.04)",
+                        color: st ? st.fg : SOFT,
+                      }}
+                    >
+                      {st ? st.mark : a === b ? "=" : ""}
+                    </span>
+                  );
+                })}
+              </Fragment>
+            ))}
+          </div>
+        </div>
+        <div style={{ position: "absolute", top: top + 28 + 70 + 12 * (cell + 2) + 30, left: REEL.side, width: 800 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px 20px", fontFamily: sans, fontSize: 28 }}>
+            {Object.values(KIND).map((k) => (
+              <span key={k.name} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <span
+                  style={{ width: 44, height: 44, borderRadius: 8, background: k.bg, color: k.fg, border: "2px solid rgba(244,236,219,.5)", display: "grid", placeItems: "center", fontWeight: 800 }}
+                >
+                  {k.mark}
+                </span>
+                <span>
+                  <b>{k.say}</b> <span style={{ color: "rgba(244,236,219,.7)" }}>{k.name}</span>
+                </span>
+              </span>
+            ))}
+          </div>
+          <p style={{ marginTop: 30, textAlign: "center", fontSize: 34, fontWeight: 800, color: "#f1cf7a" }}>띠는 여덟 글자 중 한 글자일 뿐이옵니다</p>
+          <p style={{ marginTop: 8, textAlign: "center", fontSize: 28, color: "rgba(244,236,219,.8)", fontFamily: sans }}>진짜 궁합은 두 사람의 사주에 · 프로필 링크에서</p>
+        </div>
+      </ReelFrame>
+    );
+  }
+
   if (c === "son-reel") {
     const y = Number(q.y ?? 2026);
     const m = Number(q.m ?? 10);
