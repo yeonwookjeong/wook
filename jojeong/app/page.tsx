@@ -86,7 +86,9 @@ export default async function Home() {
           // people read something complete before being asked to pay.
           me
             ? { href: "/reports/gukjeong", label: `${me.person.name}님 무료 운세 보기`, sub: "2026년 운세와 사주 분석까지 · 무료" }
-            : { href: "/reports/gukjeong", label: "내 사주 무료로 보기", sub: "생년월일만 넣으면 2026년 운세와 사주 분석을 바로 보여 드려요" }
+            : // ?new=1 asks for a chart: without it the report falls back to a court this browser enthroned
+              // (lib/subject.ts), which right after "다른 사람 보기" brings back the chart just let go.
+              { href: "/reports/gukjeong?new=1", label: "내 사주 무료로 보기", sub: "생년월일만 넣으면 2026년 운세와 사주 분석을 바로 보여 드려요" }
         }
       />
 
