@@ -225,24 +225,6 @@ function PinBanner({ k }: { k: 0 | 1 | 2 | null }) {
             fill="#15233d"
             opacity={0.95}
           />
-          {/* 관상감 정전: a long tiled roof with upturned eaves and lit lattice doors. */}
-          <g>
-            <rect x={1250} y={985} width={740} height={150} fill="#2b1f1d" />
-            <rect x={1250} y={985} width={740} height={14} fill="#5a2b23" />
-            {[0, 1, 2, 3, 4, 5].map((i) => (
-              <rect key={i} x={1282 + i * 118} y={1015} width={90} height={110} fill="url(#pinWin)" opacity={0.9} />
-            ))}
-            {[0, 1, 2, 3, 4, 5, 6].map((i) => (
-              <rect key={`c${i}`} x={1262 + i * 118} y={995} width={16} height={140} fill="#7a2e22" />
-            ))}
-            <ellipse cx={1620} cy={1150} rx={520} ry={70} fill="rgba(255,190,110,.28)" />
-            <path d="M1120 975 Q1190 955 1270 948 L1970 948 Q2050 955 2120 975 Q2060 900 1995 872 L1245 872 Q1180 900 1120 975 Z" fill="url(#pinRoof)" />
-            {[0, 1, 2, 3, 4].map((i) => (
-              <path key={`t${i}`} d={`M${1200 - i * 8} ${890 + i * 14} Q1620 ${862 + i * 14} ${2040 + i * 8} ${890 + i * 14}`} stroke="rgba(255,255,255,.07)" strokeWidth={3} fill="none" />
-            ))}
-            <path d="M1245 872 Q1620 836 1995 872" stroke="#4a403b" strokeWidth={10} fill="none" />
-            <rect x={1250} y={948} width={740} height={8} fill="#6b5a3a" opacity={0.7} />
-          </g>
           {/* A waning moon: the morning moon of these days. */}
           <circle cx={1300} cy={430} r={58} fill="#fff4d6" opacity={0.95} />
           <circle cx={1326} cy={414} r={56} fill="#132a4c" />
@@ -381,6 +363,35 @@ function PinBanner({ k }: { k: 0 | 1 | 2 | null }) {
         <div style={{ position: "absolute", left: 1080 + 80, top: 130, width: 920, textAlign: "center", textShadow: "0 3px 18px rgba(0,0,0,.6)" }}>
           <p style={{ fontSize: 34, letterSpacing: "0.4em", color: GOLD, fontWeight: 800 }}>鄭 訓導</p>
           <p style={{ marginTop: 10, fontSize: 58, fontWeight: 800 }}>명과학 훈도 정가</p>
+        </div>
+        {/* The 관상감 main hall, far behind 정 훈도: the same painting, smaller and dimmer, so it reads as distance. */}
+        <div
+          style={{
+            position: "absolute",
+            left: 1620 - 470,
+            top: 820,
+            width: 940,
+            height: 360,
+            overflow: "hidden",
+            maskImage: "linear-gradient(90deg, transparent, #000 16%, #000 84%, transparent)",
+            WebkitMaskImage: "linear-gradient(90deg, transparent, #000 16%, #000 84%, transparent)",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              maskImage: "linear-gradient(180deg, transparent 0%, #000 38%, #000 82%, transparent 100%)",
+              WebkitMaskImage: "linear-gradient(180deg, transparent 0%, #000 38%, #000 82%, transparent 100%)",
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/cards/gwansanggam.webp"
+              alt=""
+              style={{ position: "absolute", left: -20, top: -745, width: 1346, height: 1682, maxWidth: "none", filter: "brightness(.72) saturate(.9) blur(1px)" }}
+            />
+          </div>
         </div>
         <div style={{ position: "absolute", left: 1620 - 340, top: 520, width: 680, height: 680, borderRadius: "50%", background: "radial-gradient(circle, rgba(241,207,122,.2), transparent 68%)" }} />
         {/* eslint-disable-next-line @next/next/no-img-element */}
