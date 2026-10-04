@@ -198,6 +198,56 @@ function PinBanner({ k }: { k: 0 | 1 | 2 | null }) {
         {/* One milky way across the whole row. */}
         <div style={{ position: "absolute", left: -300, top: 40, width: 3840, height: 420, transform: "rotate(-6deg)", background: "radial-gradient(ellipse at center, rgba(200,212,255,.22), rgba(200,212,255,.08) 45%, transparent 72%)" }} />
 
+        {/* Far mountains behind the whole row, and the main hall of the 관상감 behind 정 훈도, so the middle third
+            is a courtyard too, not an empty sky. */}
+        <svg style={{ position: "absolute", left: 0, top: 0 }} width={3240} height={1440}>
+          <defs>
+            <linearGradient id="pinMt" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#2c4a78" />
+              <stop offset="1" stopColor="#182a48" />
+            </linearGradient>
+            <linearGradient id="pinRoof" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#3b3433" />
+              <stop offset="1" stopColor="#141010" />
+            </linearGradient>
+            <radialGradient id="pinWin" cx="0.5" cy="0.5" r="0.5">
+              <stop offset="0" stopColor="#ffe4a8" />
+              <stop offset="1" stopColor="#e79a45" />
+            </radialGradient>
+          </defs>
+          <path
+            d="M0 930 L180 860 L360 900 L560 800 L760 880 L980 790 L1220 860 L1420 770 L1620 840 L1840 760 L2060 850 L2280 790 L2500 880 L2720 800 L2940 870 L3240 820 L3240 1100 L0 1100 Z"
+            fill="url(#pinMt)"
+            opacity={0.95}
+          />
+          <path
+            d="M0 990 L240 940 L470 980 L700 920 L930 975 L1160 930 L1400 985 L1620 940 L1850 985 L2080 935 L2320 980 L2550 925 L2780 975 L3010 935 L3240 970 L3240 1120 L0 1120 Z"
+            fill="#15233d"
+            opacity={0.95}
+          />
+          {/* 관상감 정전: a long tiled roof with upturned eaves and lit lattice doors. */}
+          <g>
+            <rect x={1250} y={985} width={740} height={150} fill="#2b1f1d" />
+            <rect x={1250} y={985} width={740} height={14} fill="#5a2b23" />
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+              <rect key={i} x={1282 + i * 118} y={1015} width={90} height={110} fill="url(#pinWin)" opacity={0.9} />
+            ))}
+            {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+              <rect key={`c${i}`} x={1262 + i * 118} y={995} width={16} height={140} fill="#7a2e22" />
+            ))}
+            <ellipse cx={1620} cy={1150} rx={520} ry={70} fill="rgba(255,190,110,.28)" />
+            <path d="M1120 975 Q1190 955 1270 948 L1970 948 Q2050 955 2120 975 Q2060 900 1995 872 L1245 872 Q1180 900 1120 975 Z" fill="url(#pinRoof)" />
+            {[0, 1, 2, 3, 4].map((i) => (
+              <path key={`t${i}`} d={`M${1200 - i * 8} ${890 + i * 14} Q1620 ${862 + i * 14} ${2040 + i * 8} ${890 + i * 14}`} stroke="rgba(255,255,255,.07)" strokeWidth={3} fill="none" />
+            ))}
+            <path d="M1245 872 Q1620 836 1995 872" stroke="#4a403b" strokeWidth={10} fill="none" />
+            <rect x={1250} y={948} width={740} height={8} fill="#6b5a3a" opacity={0.7} />
+          </g>
+          {/* A waning moon: the morning moon of these days. */}
+          <circle cx={1300} cy={430} r={58} fill="#fff4d6" opacity={0.95} />
+          <circle cx={1326} cy={414} r={56} fill="#132a4c" />
+        </svg>
+
         {/* The hall on the left and its mirror on the right, fading into one courtyard. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
