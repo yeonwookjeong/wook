@@ -196,7 +196,7 @@ function PinBanner({ k }: { k: 0 | 1 | 2 | null }) {
           <span key={i} style={{ position: "absolute", left: st.x, top: st.y, width: st.r, height: st.r, borderRadius: "50%", background: "#fff6dc", opacity: st.o }} />
         ))}
         {/* One milky way across the whole row. */}
-        <div style={{ position: "absolute", left: -200, top: 120, width: 3640, height: 300, transform: "rotate(-4deg)", background: "radial-gradient(ellipse at center, rgba(190,205,255,.16), transparent 70%)" }} />
+        <div style={{ position: "absolute", left: -300, top: 40, width: 3840, height: 420, transform: "rotate(-6deg)", background: "radial-gradient(ellipse at center, rgba(200,212,255,.22), rgba(200,212,255,.08) 45%, transparent 72%)" }} />
 
         {/* The hall on the left and its mirror on the right, fading into one courtyard. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -221,8 +221,75 @@ function PinBanner({ k }: { k: 0 | 1 | 2 | null }) {
             WebkitMaskImage: fade("90deg"),
           }}
         />
-        {/* The courtyard's warm ground and lantern glow, continuous under all three. */}
-        <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 260, background: "radial-gradient(ellipse 1300px 240px at 1620px 260px, rgba(240,170,90,.38), transparent 75%)" }} />
+        {/* One stone courtyard under all three: the same floor, the same joints, lanterns standing across the seams. */}
+        <div
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: 330,
+            background:
+              "linear-gradient(180deg, rgba(60,46,42,0) 0%, rgba(70,54,48,.85) 26%, #4a3a33 60%, #3a2d29 100%)",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: 230,
+            opacity: 0.35,
+            background:
+              "repeating-linear-gradient(180deg, transparent 0 44px, rgba(20,14,12,.7) 44px 46px), repeating-linear-gradient(90deg, transparent 0 178px, rgba(20,14,12,.55) 178px 180px)",
+          }}
+        />
+        <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 360, background: "radial-gradient(ellipse 1500px 300px at 1620px 360px, rgba(240,170,90,.42), transparent 75%)" }} />
+        {[1080, 2160].map((x) => (
+          <div key={x} style={{ position: "absolute", left: x - 44, bottom: 120, width: 88 }}>
+            <div style={{ width: 88, height: 18, background: "#2a211e", borderRadius: 4 }} />
+            <div
+              style={{
+                margin: "0 auto",
+                width: 62,
+                height: 82,
+                background: "radial-gradient(circle at 50% 45%, #ffe2a3, #f0a94c 55%, #b5651d)",
+                border: "6px solid #2a211e",
+                boxShadow: "0 0 70px 26px rgba(255,190,110,.45)",
+              }}
+            />
+            <div style={{ margin: "0 auto", width: 26, height: 70, background: "#2a211e" }} />
+            <div style={{ width: 88, height: 16, background: "#2a211e", borderRadius: 4 }} />
+          </div>
+        ))}
+        {/* 북두칠성 drawn across the middle and right thirds: the 관상감 watched these stars. */}
+        <svg style={{ position: "absolute", left: 0, top: 0 }} width={3240} height={700}>
+          {(() => {
+            const pts: [number, number][] = [
+              [1830, 520],
+              [2050, 470],
+              [2260, 430],
+              [2470, 400],
+              [2560, 250],
+              [2860, 230],
+              [2900, 420],
+            ];
+            const line = pts.map(([x, y]) => `${x},${y}`).join(" ");
+            return (
+              <>
+                <polyline points={line} fill="none" stroke="rgba(241,207,122,.45)" strokeWidth={3} strokeDasharray="10 10" />
+                <line x1={2470} y1={400} x2={2900} y2={420} stroke="rgba(241,207,122,.45)" strokeWidth={3} strokeDasharray="10 10" />
+                {pts.map(([x, y], i) => (
+                  <g key={i}>
+                    <circle cx={x} cy={y} r={22} fill="rgba(255,240,200,.18)" />
+                    <circle cx={x} cy={y} r={9} fill="#fff4d6" />
+                  </g>
+                ))}
+              </>
+            );
+          })()}
+        </svg>
         <div style={{ position: "absolute", left: 0, right: 0, top: 0, height: 700, background: "linear-gradient(180deg, rgba(10,22,40,.6), transparent)" }} />
 
         {/* ① the name and the hook, on a sheet of 한지 that reads first in the grid */}
