@@ -203,7 +203,7 @@ function PinBanner({ k }: { k: 0 | 1 | 2 | null }) {
         <svg style={{ position: "absolute", left: 0, top: 0 }} width={3240} height={1440}>
           <defs>
             <linearGradient id="pinMt" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#2c4a78" />
+              <stop offset="0" stopColor="#24406a" />
               <stop offset="1" stopColor="#182a48" />
             </linearGradient>
             <linearGradient id="pinRoof" x1="0" y1="0" x2="0" y2="1">
@@ -215,19 +215,29 @@ function PinBanner({ k }: { k: 0 | 1 | 2 | null }) {
               <stop offset="1" stopColor="#e79a45" />
             </radialGradient>
           </defs>
+          <filter id="pinHaze">
+            <feGaussianBlur stdDeviation="3" />
+          </filter>
+          {/* Two ridges of far hills, soft and close to the sky's colour, so they read as distance, not shapes. */}
           <path
-            d="M0 930 L180 860 L360 900 L560 800 L760 880 L980 790 L1220 860 L1420 770 L1620 840 L1840 760 L2060 850 L2280 790 L2500 880 L2720 800 L2940 870 L3240 820 L3240 1100 L0 1100 Z"
+            d="M0 900 C 260 840, 420 880, 620 830 S 980 800, 1240 850 S 1640 790, 1900 830 S 2300 860, 2560 810 S 3000 850, 3240 820 L3240 1120 L0 1120 Z"
             fill="url(#pinMt)"
-            opacity={0.95}
+            opacity={0.7}
+            filter="url(#pinHaze)"
           />
           <path
-            d="M0 990 L240 940 L470 980 L700 920 L930 975 L1160 930 L1400 985 L1620 940 L1850 985 L2080 935 L2320 980 L2550 925 L2780 975 L3010 935 L3240 970 L3240 1120 L0 1120 Z"
-            fill="#15233d"
-            opacity={0.95}
+            d="M0 975 C 300 935, 520 965, 760 940 S 1180 960, 1420 935 S 1860 965, 2100 940 S 2560 930, 2800 955 S 3100 940, 3240 950 L3240 1140 L0 1140 Z"
+            fill="#16263f"
+            opacity={0.85}
+            filter="url(#pinHaze)"
           />
           {/* A waning moon: the morning moon of these days. */}
-          <circle cx={1300} cy={430} r={58} fill="#fff4d6" opacity={0.95} />
-          <circle cx={1326} cy={414} r={56} fill="#132a4c" />
+          {/* Cut out with a mask, not painted over, so no dark disc shows against the sky. */}
+          <mask id="pinMoon">
+            <circle cx={1300} cy={430} r={58} fill="#fff" />
+            <circle cx={1326} cy={414} r={56} fill="#000" />
+          </mask>
+          <circle cx={1300} cy={430} r={58} fill="#fff4d6" opacity={0.95} mask="url(#pinMoon)" />
         </svg>
 
         {/* The hall on the left and its mirror on the right, fading into one courtyard. */}
@@ -253,7 +263,8 @@ function PinBanner({ k }: { k: 0 | 1 | 2 | null }) {
             WebkitMaskImage: fade("90deg"),
           }}
         />
-        {/* One stone courtyard under all three: the same floor, the same joints, lanterns standing across the seams. */}
+        {/* One courtyard floor under all three, lit warm like the painting's, with no lines drawn on it; the lanterns stand
+            inside the middle third, clear of the seams, so no post shows half of one. */}
         <div
           style={{
             position: "absolute",
@@ -262,23 +273,11 @@ function PinBanner({ k }: { k: 0 | 1 | 2 | null }) {
             bottom: 0,
             height: 330,
             background:
-              "linear-gradient(180deg, rgba(60,46,42,0) 0%, rgba(70,54,48,.85) 26%, #4a3a33 60%, #3a2d29 100%)",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: 230,
-            opacity: 0.35,
-            background:
-              "repeating-linear-gradient(180deg, transparent 0 44px, rgba(20,14,12,.7) 44px 46px), repeating-linear-gradient(90deg, transparent 0 178px, rgba(20,14,12,.55) 178px 180px)",
+              "linear-gradient(180deg, rgba(92,72,58,0) 0%, rgba(110,86,66,.8) 30%, #6a5240 62%, #4a3a30 100%)",
           }}
         />
         <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 360, background: "radial-gradient(ellipse 1500px 300px at 1620px 360px, rgba(240,170,90,.42), transparent 75%)" }} />
-        {[1080, 2160].map((x) => (
+        {[1250, 1990].map((x) => (
           <div key={x} style={{ position: "absolute", left: x - 44, bottom: 120, width: 88 }}>
             <div style={{ width: 88, height: 18, background: "#2a211e", borderRadius: 4 }} />
             <div
