@@ -2,7 +2,9 @@
 // leave the camera: never the picture. Everything here is pure, so the same points always read the same.
 
 export type Pt = [number, number];
-export type Face = { pts: Pt[]; aspect: number }; // points in 0–1 of the frame, and the frame's width / height
+// Points in 0–1 of the frame, the frame's width / height, and each point's depth (MediaPipe's z, on the scale of x)
+// when known: lengths are then measured in 3D, so a chin raised or lowered a little does not stretch the face.
+export type Face = { pts: Pt[]; aspect: number; z?: number[] };
 
 // Point numbers on the MediaPipe face mesh, as the picture shows them (left = the image's left).
 export const IDX = {
@@ -47,10 +49,11 @@ export type Metrics = {
 
 export function measure(face: Face): Metrics {
   const R = level(face);
-  const d = (a: number, b: number) => Math.hypot(R[a][0] - R[b][0], R[a][1] - R[b][1]);
-  const up = R[9][1] - R[10][1];
-  const mid = R[2][1] - R[9][1];
-  const low = R[152][1] - R[2][1];
+  const Z = face.z?.map((z) => z * face.aspect);
+  const d = (a: number, b: number) => Math.hypot(R[a][0] - R[b][0], R[a][1] - R[b][1], Z ? Z[a] - Z[b] : 0);
+  const up = d(9, 10);
+  const mid = d(2, 9);
+  const low = d(152, 2);
   const sum = up + mid + low;
   const eyeW = (d(33, 133) + d(263, 362)) / 2;
   const tiltOf = (inner: number, outer: number) =>
@@ -59,7 +62,7 @@ export function measure(face: Face): Metrics {
     upper: up / sum,
     middle: mid / sum,
     lower: low / sum,
-    ratio: (R[152][1] - R[10][1]) / d(234, 454),
+    ratio: d(10, 152) / d(234, 454),
     jaw: d(172, 397) / d(234, 454),
     tilt: (tiltOf(133, 33) + tiltOf(362, 263)) / 2,
     open: (d(159, 145) / d(33, 133) + d(386, 374) / d(263, 362)) / 2,
@@ -80,7 +83,8 @@ export function medianFace(faces: Face[]): Face {
     return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
   };
   const pts = faces[0].pts.map((_, i): Pt => [mid(faces.map((f) => f.pts[i][0])), mid(faces.map((f) => f.pts[i][1]))]);
-  return { pts, aspect: mid(faces.map((f) => f.aspect)) };
+  const z = faces.every((f) => f.z) ? faces[0].pts.map((_, i) => mid(faces.map((f) => f.z![i]))) : undefined;
+  return { pts, aspect: mid(faces.map((f) => f.aspect)), z };
 }
 
 // Each measure's cut-offs, low then high: below the first reads one way, above the second the other.
@@ -99,11 +103,21 @@ export const BANDS: Record<Exclude<keyof Metrics, "upper" | "middle" | "lower">,
 };
 export type BandKey = keyof typeof BANDS;
 
-// 0, 1 or 2 for a measure, and whether it sits within 3% of a cut-off (a reading that may flip on a retake).
+// 0, 1 or 2 for a measure, and whether it sits within 4% of a cut-off (a reading a retake could tip either way).
 export function band(key: BandKey, v: number): { step: 0 | 1 | 2; near: boolean } {
   const [lo, hi] = BANDS[key].cut;
-  const near = [lo, hi].some((c) => Math.abs(v - c) <= Math.max(Math.abs(c) * 0.03, key === "tilt" ? 0.6 : 0));
+  const near = [lo, hi].some((c) => Math.abs(v - c) <= Math.max(Math.abs(c) * 0.04, key === "tilt" ? 0.8 : 0));
   return { step: v < lo ? 0 : v > hi ? 2 : 1, near };
+}
+
+// A measure's word. On the edge between two words it names both ("보통·긴 편"), the same way from either side,
+// so a retake that lands a hair across the line still reads the same.
+export function wordOf(key: BandKey, v: number): string {
+  const { words, cut } = BANDS[key];
+  const margin = (c: number) => Math.max(Math.abs(c) * 0.04, key === "tilt" ? 0.8 : 0);
+  if (Math.abs(v - cut[0]) <= margin(cut[0])) return `${words[0]}·${words[1]}`;
+  if (Math.abs(v - cut[1]) <= margin(cut[1])) return `${words[1]}·${words[2]}`;
+  return words[band(key, v).step];
 }
 
 export type Hyeong = { el: "木" | "火" | "土" | "金" | "水"; name: string; look: string };
@@ -121,11 +135,15 @@ function hyeongAt(ratio: number, jaw: number): Hyeong["el"] {
   return "水";
 }
 // The face's 오행 type, and the type a nudge of the measures would give instead (겸형) when it sits on an edge.
-export function hyeong(m: Metrics): { main: Hyeong; mixed: Hyeong | null } {
+// `label` names both in a fixed order (목·화·토·금·수), so either side of the edge reads the same.
+export function hyeong(m: Metrics): { main: Hyeong; mixed: Hyeong | null; label: string } {
   const main = hyeongAt(m.ratio, m.jaw);
-  const nudges: [number, number][] = [[0.02, 0], [-0.02, 0], [0, 0.015], [0, -0.015]];
+  const nudges: [number, number][] = [[0.045, 0], [-0.045, 0], [0, 0.03], [0, -0.03]];
   const other = nudges.map(([a, b]) => hyeongAt(m.ratio + a, m.jaw + b)).find((e) => e !== main);
-  return { main: HYEONG[main], mixed: other ? HYEONG[other] : null };
+  const order = "木火土金水";
+  const both = other ? [main, other].sort((a, b) => order.indexOf(a) - order.indexOf(b)) : [main];
+  const label = both.map((e) => HYEONG[e].name.slice(0, 1)).join("·") + "형";
+  return { main: HYEONG[main], mixed: other ? HYEONG[other] : null, label };
 }
 
 // 용모파기: the Joseon way of describing a wanted person's looks, written from the measures.

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { FaceLandmarker, FaceLandmarkerResult } from "@mediapipe/tasks-vision";
-import { BANDS, band, bounty, hyeong, IDX, level, measure, medianFace, yongmo, type BandKey, type Face, type Metrics, type Pt } from "@/lib/gwansang";
+import { BANDS, band, bounty, hyeong, IDX, level, measure, medianFace, wordOf, yongmo, type BandKey, type Face, type Metrics, type Pt } from "@/lib/gwansang";
 
 // The 관상 capture test (/lab/gwansang): the camera shows a guide, and the face is taken only once it is the
 // right size, centred, facing straight, expressionless and well lit for HOLD_MS in a row. The frames of that
@@ -61,12 +61,12 @@ function judge(r: FaceLandmarkerResult, light: number, relaxed: boolean): { chec
   const shapes = Object.fromEntries((r.faceBlendshapes?.[0]?.categories ?? []).map((c) => [c.categoryName, c.score]));
   const avg = (a: string, b: string) => ((shapes[a] ?? 0) + (shapes[b] ?? 0)) / 2;
   const pose = poseOf(r);
-  const yawOk = pose ? Math.abs(pose.yaw) <= 7 * k : Math.abs((lm[1].x - lm[234].x) / (lm[454].x - lm[234].x) - 0.5) <= 0.06 * k;
+  const yawOk = pose ? Math.abs(pose.yaw) <= 6 * k : Math.abs((lm[1].x - lm[234].x) / (lm[454].x - lm[234].x) - 0.5) <= 0.06 * k;
   const checks: Check[] = [
     { key: "size", ok: faceH >= (relaxed ? 0.32 : 0.42) && faceH <= (relaxed ? 0.85 : 0.72), tip: faceH < 0.42 ? "조금 더 가까이 와 주세요" : "조금 뒤로 물러나 주세요" },
     { key: "center", ok: Math.abs(lm[1].x - 0.5) <= 0.1 * k && Math.abs(lm[1].y - 0.5) <= 0.12 * k, tip: "얼굴을 테두리 가운데로 맞춰 주세요" },
     { key: "yaw", ok: yawOk, tip: "고개를 돌리지 말고 정면을 봐 주세요" },
-    { key: "pitch", ok: !pose || Math.abs(pose.pitch) <= 8 * k, tip: "턱을 들거나 숙이지 말고 정면을 봐 주세요" },
+    { key: "pitch", ok: !pose || Math.abs(pose.pitch) <= 6 * k, tip: "턱을 들거나 숙이지 말고 정면을 봐 주세요" },
     { key: "roll", ok: !pose || Math.abs(pose.roll) <= 8 * k, tip: "고개를 옆으로 기울이지 말아 주세요" },
     { key: "smile", ok: avg("mouthSmileLeft", "mouthSmileRight") < 0.4 * k, tip: "웃지 말고 무표정으로 해 주세요" },
     { key: "mouth", ok: (shapes.jawOpen ?? 0) < 0.25 * k, tip: "입을 다물어 주세요" },
@@ -224,7 +224,7 @@ export default function GwansangLab() {
           if (j.checks.every((c) => c.ok)) {
             const h = hold.current;
             if (!h.t0) h.t0 = now;
-            h.faces.push({ pts: r.faceLandmarks[0].map((p): Pt => [p.x, p.y]), aspect: video.videoWidth / video.videoHeight });
+            h.faces.push({ pts: r.faceLandmarks[0].map((p): Pt => [p.x, p.y]), z: r.faceLandmarks[0].map((p) => p.z), aspect: video.videoWidth / video.videoHeight });
             const p = Math.min(1, (now - h.t0) / HOLD_MS);
             setProgress(p);
             if (p >= 1 && h.faces.length >= MIN_FRAMES) {
@@ -268,7 +268,7 @@ export default function GwansangLab() {
         setMessage("사진에서 얼굴을 찾지 못했어요. 정면에서 밝게 찍은 사진으로 다시 골라 주세요.");
         return;
       }
-      finish({ pts: lm.map((p): Pt => [p.x, p.y]), aspect }, [], "photo");
+      finish({ pts: lm.map((p): Pt => [p.x, p.y]), z: lm.map((p) => p.z), aspect }, [], "photo");
     } catch {
       setPhase("idle");
       setMessage("사진을 읽지 못했어요. JPG나 PNG 사진으로 다시 골라 주세요.");
@@ -445,10 +445,10 @@ function ResultView({ result }: { result: Result }) {
         <InkFace face={result.face} />
         <div className="mt-2 flex items-center justify-center gap-3">
           <span className="grid h-11 w-11 place-items-center rounded bg-seal font-myeongjo text-2xl text-hanji">{h.main.el}</span>
-          <span className="font-myeongjo text-2xl font-extrabold">{h.main.name}</span>
+          <span className="font-myeongjo text-2xl font-extrabold">{h.label}</span>
           <span className="text-[13px] text-ink-soft">{h.main.look}</span>
         </div>
-        {h.mixed && <p className="mt-1 text-center text-[12.5px] text-ink-soft">경계에 있어 {h.mixed.name} 기운이 섞인 겸형이에요</p>}
+        {h.mixed && <p className="mt-1 text-center text-[12.5px] text-ink-soft">{h.main.name}과 {h.mixed.name}의 경계에 있는 겸형이에요</p>}
         <div className="mt-4 flex flex-col gap-1.5">
           {parts.map(([n, v, age]) => (
             <div key={n} className="grid grid-cols-[4.5em_1fr_3.2em] items-center gap-2 text-[12.5px]">
@@ -479,17 +479,14 @@ function ResultView({ result }: { result: Result }) {
                     {fmt(key, v)}
                     {sd !== undefined && <span className="block text-[10.5px] text-ink-soft">±{key === "tilt" ? sd.toFixed(1) : sd.toFixed(3)}</span>}
                   </td>
-                  <td className="pl-2 text-right">
-                    {BANDS[key].words[b.step]}
-                    {b.near && <span className="block text-[10.5px] font-bold text-seal">경계</span>}
-                  </td>
+                  <td className="pl-2 text-right">{b.near ? <b className="text-seal">{wordOf(key, v)}</b> : wordOf(key, v)}</td>
                 </tr>
               );
             })}
           </tbody>
         </table>
         <p className="mt-2 px-1 text-[10.5px] leading-relaxed text-ink-soft">
-          ±는 1.5초 동안 찍힌 사진들 사이의 흔들림이에요. &apos;경계&apos;는 기준선 3% 안쪽이라 다시 찍으면 풀이가 바뀔 수 있는 항목이에요.
+          ±는 1.5초 동안 찍힌 사진들 사이의 흔들림이에요. 붉은 풀이는 기준선 가까이에 있어 두 풀이를 함께 적은 항목이에요.
         </p>
       </section>
 
@@ -506,7 +503,7 @@ function ResultView({ result }: { result: Result }) {
 function HistoryTable({ history, onClear }: { history: Reading[]; onClear: () => void }) {
   const rows = [...history].reverse();
   const when = (t: number) => new Date(t + 9 * 3600000).toISOString().slice(11, 16);
-  const words = (r: Reading, key: BandKey) => BANDS[key].words[band(key, r.m[key]).step];
+  const words = (r: Reading, key: BandKey) => wordOf(key, r.m[key]);
   return (
     <section className="doc-paper px-3 py-4">
       <h2 className="flex items-baseline justify-between px-1 font-myeongjo font-extrabold">
@@ -533,8 +530,8 @@ function HistoryTable({ history, onClear }: { history: Reading[]; onClear: () =>
             <tr className="border-t border-seal/10">
               <td className="py-1 text-left">오행형</td>
               {rows.map((r, i) => {
-                const v = hyeong(r.m).main.name;
-                const diff = i > 0 && v !== hyeong(rows[i - 1].m).main.name;
+                const v = hyeong(r.m).label;
+                const diff = i > 0 && v !== hyeong(rows[i - 1].m).label;
                 return (
                   <td key={r.at} className={`px-1 text-center ${diff ? "font-bold text-seal" : ""}`}>
                     {v}
@@ -551,6 +548,7 @@ function HistoryTable({ history, onClear }: { history: Reading[]; onClear: () =>
                   return (
                     <td key={r.at} className={`px-1 text-center ${diff ? "font-bold text-seal" : ""}`}>
                       {v}
+                      <span className="block text-[9.5px] font-normal text-ink-soft tabular-nums">{fmt(key, r.m[key])}</span>
                     </td>
                   );
                 })}
