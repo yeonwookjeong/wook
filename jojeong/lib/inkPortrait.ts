@@ -116,18 +116,26 @@ export function inkPortrait(src: CanvasImageSource, w0: number, h0: number, pts:
   g.fill(poly(IDX.lips));
   g.restore();
 
-  // 진영 title down the right edge, and a seal.
+  stampTitle(g, OW, name);
+  return c;
+}
+
+// A 진영 title down the right edge and a red seal under it, sized for a picture `width` pixels wide.
+export function stampTitle(g: CanvasRenderingContext2D, width: number, name: string) {
+  const k = width / 600;
   const serif = getComputedStyle(document.body).getPropertyValue("--font-myeongjo").trim() || "serif";
   const label = [...name.slice(0, 6), " ", "진", "영"];
+  const x = width - 48 * k;
+  g.save();
   g.fillStyle = "#2a1d14";
   g.textAlign = "center";
-  g.font = `700 34px ${serif}`;
-  label.forEach((ch, j) => g.fillText(ch, OW - 48, 70 + j * 40));
-  const sy = 60 + label.length * 40;
+  g.font = `700 ${34 * k}px ${serif}`;
+  label.forEach((ch, j) => g.fillText(ch, x, (70 + j * 40) * k));
+  const sy = (60 + label.length * 40) * k;
   g.fillStyle = "#b23a2c";
-  g.fillRect(OW - 68, sy, 40, 40);
+  g.fillRect(x - 20 * k, sy, 40 * k, 40 * k);
   g.fillStyle = "#f6ead8";
-  g.font = `700 15px ${serif}`;
-  g.fillText(name.replace(/\s/g, "").slice(0, 2), OW - 48, sy + 26);
-  return c;
+  g.font = `700 ${15 * k}px ${serif}`;
+  g.fillText(name.replace(/\s/g, "").slice(0, 2), x, sy + 26 * k);
+  g.restore();
 }

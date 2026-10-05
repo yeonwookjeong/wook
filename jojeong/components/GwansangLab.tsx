@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { FaceLandmarker, FaceLandmarkerResult } from "@mediapipe/tasks-vision";
-import { inkPortrait } from "@/lib/inkPortrait";
+import { inkPortrait, stampTitle } from "@/lib/inkPortrait";
+import { DRESSES, type Dress, type Look } from "@/lib/portraitPrompt";
 import { BANDS, band, bounty, hyeong, IDX, level, measure, medianFace, wordOf, yongmo, type BandKey, type Face, type Metrics, type Pt } from "@/lib/gwansang";
 
 // The 관상 capture test (/lab/gwansang): the camera shows a guide, and the face is taken only once it is the
@@ -384,6 +385,7 @@ export default function GwansangLab() {
         </section>
       )}
 
+      {result && phase === "done" && <PortraitStudio result={result} />}
       {result && phase === "done" && <ResultView result={result} />}
       {history.length > 0 && phase !== "camera" && <HistoryTable history={history} onClear={() => saveHistory([])} />}
     </div>
@@ -448,6 +450,181 @@ function InkPortraitView({ snap }: { snap: Snap }) {
       </label>
       <p className="text-[11px] text-ink-soft">그림을 길게 눌러 저장할 수 있어요 · 그림은 이 폰 안에서만 그려져요</p>
     </div>
+  );
+}
+
+// The face's proportions as a plain line sketch: the only picture "record" mode sends.
+function sketchDataUrl(face: Face): string {
+  const R = level(face);
+  const xs = R.map((p) => p[0]);
+  const ys = R.map((p) => p[1]);
+  const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
+  const s = Math.min(400 / (x1 - x0), 520 / (y1 - y0));
+  const T = R.map(([x, y]): Pt => [(x - (x0 + x1) / 2) * s + 256, (y - (y0 + y1) / 2) * s + 320]);
+  const at = (ids: readonly number[]) => ids.map((i) => T[i]);
+  const c = document.createElement("canvas");
+  c.width = 512;
+  c.height = 640;
+  const g = c.getContext("2d")!;
+  g.fillStyle = "#fff";
+  g.fillRect(0, 0, 512, 640);
+  g.strokeStyle = "#000";
+  g.lineWidth = 3;
+  g.lineCap = "round";
+  for (const [ids, closed] of [
+    [IDX.oval, true], [IDX.rBrow, true], [IDX.lBrow, true], [IDX.rEyeUp, false], [IDX.rEyeLo, false], [IDX.lEyeUp, false],
+    [IDX.lEyeLo, false], [IDX.bridge, false], [IDX.noseBase, false], [IDX.lips, true], [IDX.mouth, false],
+  ] as const)
+    g.stroke(new Path2D(smooth(at(ids), closed)));
+  return c.toDataURL("image/png");
+}
+
+// The face cut out of the captured frame, small: what "photo" mode sends once the viewer agrees.
+function photoDataUrl(snap: Snap): string {
+  const W = snap.canvas.width;
+  const H = snap.canvas.height;
+  const xs = snap.pts.map((p) => p[0] * W);
+  const ys = snap.pts.map((p) => p[1] * H);
+  const fh = Math.max(...ys) - Math.min(...ys);
+  const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
+  const y0 = Math.min(...ys) - fh * 0.6;
+  const h = fh * 2.2;
+  const w = h * 0.78;
+  const c = document.createElement("canvas");
+  c.width = 480;
+  c.height = 616;
+  const g = c.getContext("2d")!;
+  g.fillStyle = "#fff";
+  g.fillRect(0, 0, c.width, c.height);
+  g.drawImage(snap.canvas, cx - w / 2, y0, w, h, 0, 0, c.width, c.height);
+  return c.toDataURL("image/jpeg", 0.85);
+}
+
+async function compose(src: string, name: string): Promise<string> {
+  const img = new Image();
+  img.src = src;
+  await img.decode();
+  const c = document.createElement("canvas");
+  c.width = img.naturalWidth;
+  c.height = img.naturalHeight;
+  const g = c.getContext("2d")!;
+  g.drawImage(img, 0, 0);
+  stampTitle(g, c.width, name);
+  return c.toDataURL("image/jpeg", 0.92);
+}
+
+type Painting = { raw: string; shown: string; mode: "record" | "photo"; model: string; ms: number; usage: { input: number | null; output: number | null } };
+
+// 도화서: the measures (and, if the viewer agrees, the face) go to an image model that paints a flattering portrait.
+function PortraitStudio({ result }: { result: Result }) {
+  const [dress, setDress] = useState<Dress>("gwanbok");
+  const [look, setLook] = useState<Look>({ gender: "unsaid", hair: "short" });
+  const [consent, setConsent] = useState(false);
+  const [name, setName] = useState("무명씨");
+  const [busy, setBusy] = useState<"record" | "photo" | null>(null);
+  const [error, setError] = useState("");
+  const [art, setArt] = useState<Painting | null>(null);
+
+  async function order(mode: "record" | "photo") {
+    if (busy) return;
+    setBusy(mode);
+    setError("");
+    try {
+      const res = await fetch("/api/portrait", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          mode,
+          dress,
+          look,
+          metrics: result.m,
+          sketch: sketchDataUrl(result.face),
+          photo: mode === "photo" && result.snap ? photoDataUrl(result.snap) : undefined,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.image) {
+        setError(`${data.error ?? "그림을 받지 못했어요."}${data.detail ? ` (${data.detail})` : ""}`);
+        return;
+      }
+      setArt({ raw: data.image, shown: await compose(data.image, name.trim() || "무명씨"), mode, model: data.model, ms: data.ms, usage: data.usage });
+    } catch {
+      setError("화원에게 닿지 못했어요. 연결을 확인하고 다시 맡겨 주세요.");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function rename(v: string) {
+    setName(v);
+    if (art) {
+      const shown = await compose(art.raw, v.trim() || "무명씨");
+      setArt((a) => (a ? { ...a, shown } : a));
+    }
+  }
+
+  const seg = (on: boolean) => `rounded-full border px-3 py-1.5 text-[12.5px] font-bold ${on ? "border-ink bg-ink text-hanji" : "border-ink/20 text-ink-soft"}`;
+  return (
+    <section className="doc-paper flex flex-col gap-3 px-5 py-5">
+      <h2 className="text-center font-myeongjo text-lg font-extrabold">도화서에 초상화 맡기기</h2>
+      <p className="text-center text-[12px] text-ink-soft">치수는 냉정하게, 그림은 기분 좋게. 화원이 실물보다 조금 더 보기 좋게 그려 드려요.</p>
+      <div className="flex flex-wrap justify-center gap-1.5">
+        {(Object.keys(DRESSES) as Dress[]).map((d) => (
+          <button key={d} type="button" className={seg(dress === d)} onClick={() => setDress(d)}>
+            {DRESSES[d].label}
+          </button>
+        ))}
+      </div>
+
+      {art && (
+        <div className="flex flex-col items-center gap-2">
+          {/* eslint-disable-next-line @next/next/no-img-element -- a painting returned as a data URL */}
+          <img src={art.shown} alt="도화서 화원이 그린 초상화" className="w-full max-w-[340px] rounded shadow-[0_2px_12px_rgba(0,0,0,0.2)]" />
+          <label className="flex items-center gap-2 text-[12.5px] text-ink-soft">
+            족자에 적을 이름
+            <input value={name} maxLength={6} onChange={(e) => rename(e.target.value)} className="w-28 rounded border border-ink/20 bg-white/70 px-2 py-1 text-ink" />
+          </label>
+          <p className="text-[10.5px] text-ink-soft tabular-nums">
+            {art.mode === "photo" ? "사진을 보고" : "기록만 보고"} 그림 · {art.model} · {(art.ms / 1000).toFixed(0)}초 · 토큰 입력 {art.usage.input ?? "?"} / 출력 {art.usage.output ?? "?"}
+          </p>
+        </div>
+      )}
+
+      <div className="flex flex-col gap-2 rounded-xl border border-ink/15 bg-white/50 px-3 py-3">
+        <p className="text-[12.5px] font-bold">기록만 보고 그리기 · 사진은 보내지 않아요</p>
+        <div className="flex flex-wrap gap-1.5">
+          {([["man", "남"], ["woman", "여"], ["unsaid", "밝히지 않음"]] as const).map(([v, t]) => (
+            <button key={v} type="button" className={seg(look.gender === v)} onClick={() => setLook({ ...look, gender: v })}>
+              {t}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {([["short", "짧은 머리"], ["long", "긴 머리"], ["tied", "묶은 머리"]] as const).map(([v, t]) => (
+            <button key={v} type="button" className={seg(look.hair === v)} onClick={() => setLook({ ...look, hair: v })}>
+              {t}
+            </button>
+          ))}
+        </div>
+        <button type="button" disabled={!!busy} onClick={() => order("record")} className="rounded-full bg-ink px-4 py-2.5 text-[14px] font-bold text-hanji disabled:opacity-50">
+          {busy === "record" ? "화원이 기록을 보며 그리는 중… (20~60초)" : "기록만 보고 그려 받기"}
+        </button>
+      </div>
+
+      {result.snap && (
+        <div className="flex flex-col gap-2 rounded-xl border border-seal/30 bg-white/50 px-3 py-3">
+          <p className="text-[12.5px] font-bold">얼굴을 보고 그리기 · 더 닮게 나와요</p>
+          <label className="flex items-start gap-2 text-[12px] leading-relaxed">
+            <input type="checkbox" className="mt-1" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
+            얼굴 부분 사진을 그림 그리는 데에만 Google AI(Gemini)로 보내는 데 동의해요. 훈도사주는 사진을 저장하지 않아요.
+          </label>
+          <button type="button" disabled={!!busy || !consent} onClick={() => order("photo")} className="rounded-full bg-seal px-4 py-2.5 text-[14px] font-bold text-hanji disabled:opacity-50">
+            {busy === "photo" ? "화원이 얼굴을 보며 그리는 중… (20~60초)" : "얼굴 보고 그려 받기"}
+          </button>
+        </div>
+      )}
+      {error && <p className="text-center text-[12.5px] font-bold text-seal">{error}</p>}
+    </section>
   );
 }
 

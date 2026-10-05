@@ -233,6 +233,10 @@ export async function lastReportError(): Promise<{ at: number; message: string }
   const e = raw ? (JSON.parse(raw) as { at: number; message: string }) : null;
   return e && Date.now() - e.at < 2 * 86400000 ? e : null;
 }
+// A per-day counter of painted portraits (/api/portrait), a spending guard like the one below.
+export async function countPortraitToday(): Promise<number> {
+  return backend().incr(`stats:portraits:${new Date().toISOString().slice(0, 10)}`);
+}
 // A per-day counter of freshly written reports (a spending guard).
 export async function countReportToday(): Promise<number> {
   return backend().incr(`stats:reports:${new Date().toISOString().slice(0, 10)}`);
