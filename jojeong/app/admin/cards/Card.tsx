@@ -4,7 +4,7 @@ import { ILGAN, ILJU_TAG_TEXT, iljuFacts, jiaziNo, nextDayOf, stemCure, stemMatc
 import { josa } from "@/lib/josa";
 import { pickDays } from "@/lib/taekil";
 import { figureById, figureChart } from "@/lib/figures";
-import { monthPillarOf, rankMonth, SIXTY, type IljuMonth } from "@/lib/iljuRank";
+import { ILJU_IMAGE, monthPillarOf, rankMonth, SIXTY, type IljuMonth } from "@/lib/iljuRank";
 import { ANIMALS, BRANCHES, BRANCHES_KO, STEMS, STEMS_KO } from "@/lib/saju";
 
 // Social cards, 1080×1440 (Instagram 3:4, the profile grid's own shape, so nothing is cropped there), drawn in the site's own look. Owner only. Each slide is one URL
@@ -53,6 +53,73 @@ function Frame({ children, dark = false }: { children: React.ReactNode; dark?: b
 // starts near y 1700 and the like column's heart near y 1150 (x past 900), so content may run down to about 1640.
 const REEL = { top: 250, side: 100, bottom: 1640 };
 
+// The night behind every reel: a few stars (thick at the top and bottom, thin where the content sits), the
+// 북두칠성 in the top corner the 관상감 watched, a waning moon, far ridges along the foot, and a thin gold double
+// rule just inside the edge. All of it stays faint so it never competes with the table on top.
+function reelStars(): { x: number; y: number; r: number; o: number }[] {
+  let seed = 11;
+  const rnd = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
+  return Array.from({ length: 170 }, () => {
+    const y = rnd() * 1920;
+    const inContent = y > 520 && y < 1600;
+    return { x: rnd() * 1080, y, r: 1.4 + rnd() * 2.6, o: (inContent ? 0.12 : 0.3) + rnd() * (inContent ? 0.15 : 0.5) };
+  });
+}
+
+function ReelBackdrop() {
+  const stars = reelStars();
+  const dipper: [number, number][] = [
+    [70, 150], [140, 128], [205, 118], [268, 122], [292, 70], [372, 58], [388, 112],
+  ];
+  return (
+    <svg style={{ position: "absolute", inset: 0 }} width={1080} height={1920} aria-hidden>
+      <defs>
+        <radialGradient id="rbGlow" cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0" stopColor="#f1cf7a" stopOpacity="0.16" />
+          <stop offset="1" stopColor="#f1cf7a" stopOpacity="0" />
+        </radialGradient>
+        <linearGradient id="rbRidge" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#24406a" />
+          <stop offset="1" stopColor="#14243c" />
+        </linearGradient>
+        <filter id="rbSoft" x="-20%" y="-50%" width="140%" height="200%">
+          <feGaussianBlur stdDeviation="40" />
+        </filter>
+        <mask id="rbMoon">
+          <circle cx={960} cy={150} r={40} fill="#fff" />
+          <circle cx={978} cy={138} r={38} fill="#000" />
+        </mask>
+      </defs>
+      {/* A faint milky way, and a warm glow behind the title. */}
+      <ellipse cx={540} cy={330} rx={620} ry={210} fill="url(#rbGlow)" />
+      <rect x={-200} y={80} width={1480} height={240} fill="rgba(200,212,255,.07)" transform="rotate(-12 540 210)" filter="url(#rbSoft)" />
+      {stars.map((st, i) => (
+        <circle key={i} cx={st.x} cy={st.y} r={st.r / 2} fill="#fff6dc" opacity={st.o} />
+      ))}
+      <polyline points={dipper.map(([x, y]) => `${x},${y}`).join(" ")} fill="none" stroke="rgba(241,207,122,.32)" strokeWidth={2} strokeDasharray="6 7" />
+      <line x1={268} y1={122} x2={388} y2={112} stroke="rgba(241,207,122,.32)" strokeWidth={2} strokeDasharray="6 7" />
+      {dipper.map(([x, y], i) => (
+        <circle key={i} cx={x} cy={y} r={4.5} fill="#fff4d6" opacity={0.75} />
+      ))}
+      <circle cx={960} cy={150} r={40} fill="#fff4d6" opacity={0.85} mask="url(#rbMoon)" />
+      {/* Far ridges along the foot (under the account row, so only the picture's edge shows them). */}
+      <path d="M0 1730 C 160 1680, 300 1720, 460 1690 S 760 1650, 920 1700 S 1040 1690, 1080 1680 L1080 1920 L0 1920 Z" fill="url(#rbRidge)" opacity={0.55} />
+      <path d="M0 1800 C 200 1760, 380 1790, 560 1770 S 880 1750, 1080 1780 L1080 1920 L0 1920 Z" fill="#101d31" opacity={0.7} />
+      {/* A thin gold double rule just inside the edge, with small corner knots. */}
+      <rect x={26} y={26} width={1028} height={1868} fill="none" stroke="rgba(241,207,122,.28)" strokeWidth={2} rx={6} />
+      <rect x={36} y={36} width={1008} height={1848} fill="none" stroke="rgba(241,207,122,.14)" strokeWidth={1.5} rx={4} />
+      {[
+        [26, 26],
+        [1054, 26],
+        [26, 1894],
+        [1054, 1894],
+      ].map(([x, y], i) => (
+        <rect key={i} x={x - 7} y={y - 7} width={14} height={14} fill="#f1cf7a" opacity={0.5} transform={`rotate(45 ${x} ${y})`} />
+      ))}
+    </svg>
+  );
+}
+
 function ReelFrame({ children }: { children: React.ReactNode }) {
   return (
     <div
@@ -69,6 +136,7 @@ function ReelFrame({ children }: { children: React.ReactNode }) {
         overflow: "hidden",
       }}
     >
+      <ReelBackdrop />
       {children}
     </div>
   );
@@ -203,7 +271,7 @@ function PinBanner({ k }: { k: 0 | 1 | 2 | null }) {
         <svg style={{ position: "absolute", left: 0, top: 0 }} width={3240} height={1440}>
           <defs>
             <linearGradient id="pinMt" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#2c4a78" />
+              <stop offset="0" stopColor="#24406a" />
               <stop offset="1" stopColor="#182a48" />
             </linearGradient>
             <linearGradient id="pinRoof" x1="0" y1="0" x2="0" y2="1">
@@ -215,19 +283,29 @@ function PinBanner({ k }: { k: 0 | 1 | 2 | null }) {
               <stop offset="1" stopColor="#e79a45" />
             </radialGradient>
           </defs>
+          <filter id="pinHaze">
+            <feGaussianBlur stdDeviation="3" />
+          </filter>
+          {/* Two ridges of far hills, soft and close to the sky's colour, so they read as distance, not shapes. */}
           <path
-            d="M0 930 L180 860 L360 900 L560 800 L760 880 L980 790 L1220 860 L1420 770 L1620 840 L1840 760 L2060 850 L2280 790 L2500 880 L2720 800 L2940 870 L3240 820 L3240 1100 L0 1100 Z"
+            d="M0 900 C 260 840, 420 880, 620 830 S 980 800, 1240 850 S 1640 790, 1900 830 S 2300 860, 2560 810 S 3000 850, 3240 820 L3240 1120 L0 1120 Z"
             fill="url(#pinMt)"
-            opacity={0.95}
+            opacity={0.7}
+            filter="url(#pinHaze)"
           />
           <path
-            d="M0 990 L240 940 L470 980 L700 920 L930 975 L1160 930 L1400 985 L1620 940 L1850 985 L2080 935 L2320 980 L2550 925 L2780 975 L3010 935 L3240 970 L3240 1120 L0 1120 Z"
-            fill="#15233d"
-            opacity={0.95}
+            d="M0 975 C 300 935, 520 965, 760 940 S 1180 960, 1420 935 S 1860 965, 2100 940 S 2560 930, 2800 955 S 3100 940, 3240 950 L3240 1140 L0 1140 Z"
+            fill="#16263f"
+            opacity={0.85}
+            filter="url(#pinHaze)"
           />
           {/* A waning moon: the morning moon of these days. */}
-          <circle cx={1300} cy={430} r={58} fill="#fff4d6" opacity={0.95} />
-          <circle cx={1326} cy={414} r={56} fill="#132a4c" />
+          {/* Cut out with a mask, not painted over, so no dark disc shows against the sky. */}
+          <mask id="pinMoon">
+            <circle cx={1300} cy={430} r={58} fill="#fff" />
+            <circle cx={1326} cy={414} r={56} fill="#000" />
+          </mask>
+          <circle cx={1300} cy={430} r={58} fill="#fff4d6" opacity={0.95} mask="url(#pinMoon)" />
         </svg>
 
         {/* The hall on the left and its mirror on the right, fading into one courtyard. */}
@@ -253,7 +331,8 @@ function PinBanner({ k }: { k: 0 | 1 | 2 | null }) {
             WebkitMaskImage: fade("90deg"),
           }}
         />
-        {/* One stone courtyard under all three: the same floor, the same joints, lanterns standing across the seams. */}
+        {/* One courtyard floor under all three, lit warm like the painting's, with no lines drawn on it; the lanterns stand
+            inside the middle third, clear of the seams, so no post shows half of one. */}
         <div
           style={{
             position: "absolute",
@@ -262,23 +341,11 @@ function PinBanner({ k }: { k: 0 | 1 | 2 | null }) {
             bottom: 0,
             height: 330,
             background:
-              "linear-gradient(180deg, rgba(60,46,42,0) 0%, rgba(70,54,48,.85) 26%, #4a3a33 60%, #3a2d29 100%)",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: 230,
-            opacity: 0.35,
-            background:
-              "repeating-linear-gradient(180deg, transparent 0 44px, rgba(20,14,12,.7) 44px 46px), repeating-linear-gradient(90deg, transparent 0 178px, rgba(20,14,12,.55) 178px 180px)",
+              "linear-gradient(180deg, rgba(92,72,58,0) 0%, rgba(110,86,66,.8) 30%, #6a5240 62%, #4a3a30 100%)",
           }}
         />
         <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 360, background: "radial-gradient(ellipse 1500px 300px at 1620px 360px, rgba(240,170,90,.42), transparent 75%)" }} />
-        {[1080, 2160].map((x) => (
+        {[1250, 1990].map((x) => (
           <div key={x} style={{ position: "absolute", left: x - 44, bottom: 120, width: 88 }}>
             <div style={{ width: 88, height: 18, background: "#2a211e", borderRadius: 4 }} />
             <div
@@ -332,12 +399,17 @@ function PinBanner({ k }: { k: 0 | 1 | 2 | null }) {
           <p style={{ display: "inline-block", padding: "8px 22px", border: `3px solid ${SEAL}`, color: SEAL, fontSize: 30, fontWeight: 800, letterSpacing: "0.12em" }}>
             觀象監 · 훈도사주
           </p>
-          <p style={{ marginTop: 40, fontSize: 104, fontWeight: 800, lineHeight: 1.18, letterSpacing: "-0.02em" }}>
-            조선 관상감이
+          {/* The site's promise, the same words as its first screen and the profile: what is said fits one person. */}
+          <p style={{ marginTop: 40, fontSize: 96, fontWeight: 800, lineHeight: 1.18, letterSpacing: "-0.02em" }}>
+            누구에게나
             <br />
-            읽어 주는
+            맞는 말 말고
             <br />
-            <span style={{ color: SEAL }}>내 사주</span>
+            <span style={{ color: SEAL }}>
+              나한테만
+              <br />
+              맞는 사주
+            </span>
           </p>
           <p style={{ marginTop: 34, fontSize: 32, fontWeight: 800, color: SOFT, fontFamily: sans, letterSpacing: "0.02em" }}>
             사주 · 연애 · 궁합 · 신년 운세 · 택일
@@ -806,6 +878,538 @@ export async function Card({ q }: { q: CardQuery }) {
         <div style={{ position: "absolute", top: tableTop + 32 + 50 + 12 * rowH + 34, left: 150, width: 780, textAlign: "center" }}>
           <p style={{ fontSize: 34, lineHeight: 1.45, fontWeight: 800, color: "#f1cf7a" }}>띠는 여덟 글자 중 한 글자일 뿐이옵니다</p>
           <p style={{ marginTop: 8, fontSize: 28, lineHeight: 1.45, color: "rgba(244,236,219,.8)", fontFamily: sans }}>찰떡은 육합, 부딪힘은 충 · 진짜 궁합은 두 사람의 여덟 글자로</p>
+        </div>
+      </ReelFrame>
+    );
+  }
+
+  if (c === "tti-grid") {
+    // Every pair of 띠 in one table, like the MBTI 궁합표 people save: no made-up percentages, only the four
+    // relations between year branches (육합 · 삼합 · 충 · 원진), each a fixed rule anyone can check.
+    const FACE = ["🐭", "🐮", "🐯", "🐰", "🐲", "🐍", "🐴", "🐑", "🐵", "🐔", "🐶", "🐷"];
+    const WONJIN = [7, 6, 9, 8, 11, 10, 1, 0, 3, 2, 5, 4];
+    const KIND = {
+      hap: { mark: "♥", bg: SEAL, fg: HANJI, name: "육합", say: "찰떡" },
+      samhap: { mark: "◎", bg: "#a87a22", fg: HANJI, name: "삼합", say: "한편" },
+      chung: { mark: "✕", bg: "#1f3448", fg: HANJI, name: "충", say: "부딪힘" },
+      wonjin: { mark: "△", bg: "#d4cbbd", fg: INK, name: "원진", say: "묘하게 서운" },
+    } as const;
+    const rel = (a: number, b: number): keyof typeof KIND | null =>
+      a === b ? null : (a + b) % 12 === 1 ? "hap" : (a - b + 12) % 4 === 0 ? "samhap" : (a - b + 12) % 12 === 6 ? "chung" : WONJIN[a] === b ? "wonjin" : null;
+    // Big and centred on the picture: the table is what people stop for. Its right edge runs under the like
+    // column (x past 900, from y ~1150), like the MBTI tables it answers; the cells there stay readable around it.
+    const width = 940;
+    const left = (1080 - width) / 2;
+    const head = 110;
+    const cell = 64;
+    const top = 430;
+    const grid = `${head}px repeat(12, ${cell}px)`;
+    return (
+      <ReelFrame>
+        <div style={{ position: "absolute", top: REEL.top, left: REEL.side, right: REEL.side, textAlign: "center" }}>
+          <p style={{ fontSize: 34, fontWeight: 800, letterSpacing: "0.06em", color: GOLD }}>명리의 합 · 충으로 그린</p>
+          <p style={{ marginTop: 14, fontSize: 84, fontWeight: 800, lineHeight: 1.12 }}>
+            12띠 <span style={{ color: "#f1cf7a" }}>찐궁합표</span>
+          </p>
+        </div>
+        <div className="doc-paper" style={{ position: "absolute", top, left, width, padding: "14px", color: INK }}>
+          <div style={{ display: "grid", gridTemplateColumns: grid, gap: 2 }}>
+            <span />
+            {FACE.map((f, b) => (
+              <span key={b} style={{ height: 80, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>
+                <span style={{ fontSize: 38 }}>{f}</span>
+                <b style={{ marginTop: 5, fontSize: 17, fontFamily: sans, color: SOFT, whiteSpace: "nowrap" }}>{ANIMALS[b]}</b>
+              </span>
+            ))}
+            {FACE.map((f, a) => (
+              <Fragment key={a}>
+                <span style={{ height: cell, display: "flex", alignItems: "center", gap: 5, paddingLeft: 2 }}>
+                  <span style={{ fontSize: 36, lineHeight: 1 }}>{f}</span>
+                  <b style={{ fontSize: 19, fontFamily: sans, whiteSpace: "nowrap" }}>{ANIMALS[a]}</b>
+                </span>
+                {FACE.map((_, b) => {
+                  const k = rel(a, b);
+                  const st = k ? KIND[k] : null;
+                  return (
+                    <span
+                      key={b}
+                      style={{
+                        height: cell,
+                        borderRadius: 10,
+                        display: "grid",
+                        placeItems: "center",
+                        fontSize: 36,
+                        fontWeight: 800,
+                        fontFamily: sans,
+                        background: st ? st.bg : a === b ? "rgba(33,27,23,.12)" : "rgba(33,27,23,.04)",
+                        color: st ? st.fg : a === b ? SOFT : "rgba(98,86,76,.45)",
+                      }}
+                    >
+                      {st ? st.mark : a === b ? "=" : "–"}
+                    </span>
+                  );
+                })}
+              </Fragment>
+            ))}
+          </div>
+        </div>
+        <div style={{ position: "absolute", top: top + 28 + 80 + 12 * (cell + 2) + 28, left, width }}>
+          <div style={{ display: "grid", gridTemplateColumns: "auto auto", justifyContent: "center", gap: "10px 70px", fontFamily: sans, fontSize: 27 }}>
+            {/* Every mark in the table is named here, the plain cells and the diagonal too. */}
+            {[
+              ...Object.values(KIND),
+              { mark: "–", bg: "#f3ecdf", fg: SOFT, name: "합·충 없음", say: "무난" },
+              { mark: "=", bg: "#e0d8ca", fg: SOFT, name: "", say: "같은 띠" },
+            ].map((k) => (
+              <span key={k.say} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <span
+                  style={{ width: 44, height: 44, borderRadius: 8, background: k.bg, color: k.fg, border: "2px solid rgba(244,236,219,.5)", display: "grid", placeItems: "center", fontWeight: 800 }}
+                >
+                  {k.mark}
+                </span>
+                <span>
+                  <b>{k.say}</b> <span style={{ color: "rgba(244,236,219,.7)" }}>{k.name}</span>
+                </span>
+              </span>
+            ))}
+          </div>
+          <p style={{ marginTop: 18, textAlign: "center", fontSize: 32, fontWeight: 800, color: "#f1cf7a" }}>띠는 여덟 글자 중 한 글자일 뿐이옵니다</p>
+          <p style={{ marginTop: 8, textAlign: "center", fontSize: 28, color: "rgba(244,236,219,.8)", fontFamily: sans }}>진짜 궁합은 두 사람의 사주에 · 프로필 링크에서</p>
+        </div>
+      </ReelFrame>
+    );
+  }
+
+  if (c === "yeokma-reel") {
+    // A checklist anyone can score without knowing their chart: the 역마 (寅申巳亥) temper in everyday scenes.
+    const ITEMS = [
+      "집에만 있으면 이틀 만에 답답해진다",
+      "여행은 가는 날보다 계획 짜는 날이 더 신난다",
+      "이사·이직 얘기만 나오면 마음이 먼저 가 있다",
+      "단골보다 처음 가 보는 가게가 끌린다",
+      "낯선 동네에서도 금방 길을 익힌다",
+      "앉아 있는 일보다 돌아다니는 일이 편하다",
+      "한곳에 3년쯤 있으면 뭐라도 바꾸고 싶어진다",
+    ];
+    return (
+      <ReelFrame>
+        <div style={{ position: "absolute", top: REEL.top, left: REEL.side, right: REEL.side, textAlign: "center" }}>
+          <p style={{ fontSize: 34, fontWeight: 800, letterSpacing: "0.06em", color: GOLD }}>몇 개나 해당되시옵니까?</p>
+          <p style={{ marginTop: 14, fontSize: 84, fontWeight: 800, lineHeight: 1.15 }}>
+            셋 이상이면
+            <br />
+            <span style={{ color: "#f1cf7a" }}>역마살</span>
+          </p>
+        </div>
+        <div className="doc-paper" style={{ position: "absolute", top: 560, left: REEL.side, right: REEL.side, padding: "34px 44px", color: INK }}>
+          {ITEMS.map((t, i) => (
+            <div
+              key={t}
+              style={{ display: "flex", alignItems: "center", gap: 22, height: 106, borderTop: i ? "1.5px solid rgba(179,38,30,.15)" : "none", fontFamily: sans }}
+            >
+              <span style={{ width: 46, height: 46, flexShrink: 0, border: `4px solid ${SEAL}`, borderRadius: 8 }} />
+              <span style={{ fontSize: 36, fontWeight: 700, lineHeight: 1.3, letterSpacing: "-0.02em" }}>{t}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{ position: "absolute", top: 560 + 68 + 7 * 106 + 44, left: REEL.side, right: REEL.side, textAlign: "center" }}>
+          <p style={{ fontSize: 34, lineHeight: 1.45, fontWeight: 800, color: "#f1cf7a" }}>떠돌이 팔자가 아니라, 움직여야 풀리는 사람</p>
+          <p style={{ marginTop: 8, fontSize: 28, lineHeight: 1.45, color: "rgba(244,236,219,.8)", fontFamily: sans }}>
+            사주표 아래 줄에 寅·申·巳·亥가 있는지 · 프로필 링크에서
+          </p>
+        </div>
+      </ReelFrame>
+    );
+  }
+
+  if (c === "tti-bunryu") {
+    // One situation split into roles across the twelve 띠, so a whole group chat finds itself in it (the idea of
+    // the "MBTI별 분류" posts, drawn in our own paper and voice). The travel split is the 명리 grouping itself: 역마 寅申巳亥, 도화 子午卯酉, 화개 辰戌丑未.
+    const SECTIONS: { head: string; rows: [string, number[]][] }[] = [
+      {
+        head: "빡쳤을 때",
+        rows: [
+          ["그 자리에서 바로 터지는 쪽", [2, 6, 9]],
+          ["얼굴에 다 쓰여 있는 쪽", [3, 8]],
+          ["조용히 계산 끝내 놓는 쪽", [0, 5]],
+          ["참고 참다 한 번에 터지는 쪽", [1, 7, 10]],
+          ["자고 일어나면 잊는 쪽", [4, 11]],
+        ],
+      },
+      {
+        head: "단톡방에서",
+        rows: [
+          ["\"그래서 언제 어디서?\" 정리하는 쪽", [2, 4]],
+          ["ㅋㅋㅋ 리액션 담당", [6, 8, 11]],
+          ["다 읽고 말 없는 쪽", [1, 5]],
+          ["새벽 2시에 갑자기 살아나는 쪽", [0]],
+          ["오타 보면 못 참는 쪽", [9]],
+          ["생일 제일 먼저 챙기는 쪽", [3, 7, 10]],
+        ],
+      },
+      {
+        head: "여행 가면",
+        rows: [
+          ["일정 짜고 앞장서는 쪽", [2, 8, 5, 11]],
+          ["사진 찍고 찍히는 쪽", [0, 6, 3, 9]],
+          ["숙소가 제일 행복한 쪽", [4, 10, 1, 7]],
+        ],
+      },
+    ];
+    const FACE = ["🐭", "🐮", "🐯", "🐰", "🐲", "🐍", "🐴", "🐑", "🐵", "🐔", "🐶", "🐷"];
+    const emoji = '"Noto Color Emoji", "Apple Color Emoji", sans-serif';
+    return (
+      <ReelFrame>
+        <div style={{ position: "absolute", top: REEL.top, left: REEL.side, right: REEL.side, textAlign: "center" }}>
+          <p style={{ fontSize: 34, fontWeight: 800, letterSpacing: "0.06em", color: GOLD }}>단톡방에 보내 보시옵소서</p>
+          <p style={{ marginTop: 14, fontSize: 80, fontWeight: 800, lineHeight: 1.15 }}>
+            열두 띠, 이럴 때
+            <br />
+            <span style={{ color: "#f1cf7a" }}>갈리옵니다</span>
+          </p>
+        </div>
+        {/* Inset 140 a side: centred, and the names at the right end stay left of the like column (x 900). */}
+        <div className="doc-paper" style={{ position: "absolute", top: 530, left: 140, right: 140, padding: "24px 36px 26px", color: INK }}>
+          {SECTIONS.map((sec, si) => (
+            <div key={sec.head} style={{ marginTop: si ? 16 : 0 }}>
+              <p style={{ display: "flex", alignItems: "center", gap: 14, height: 52 }}>
+                <span style={{ padding: "4px 16px", border: `3px solid ${SEAL}`, color: SEAL, fontSize: 30, fontWeight: 800 }}>{sec.head}</span>
+                <span style={{ flex: 1, height: 2, background: "rgba(179,38,30,.25)" }} />
+              </p>
+              {sec.rows.map(([label, bs]) => (
+                <div
+                  key={label}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 56, borderBottom: "1.5px solid rgba(179,38,30,.12)", fontFamily: sans }}
+                >
+                  <span style={{ fontSize: 30, fontWeight: 700, letterSpacing: "-0.03em", whiteSpace: "nowrap" }}>{label}</span>
+                  <span style={{ display: "flex", gap: 14, whiteSpace: "nowrap" }}>
+                    {bs.map((x) => (
+                      <span key={x} style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                        <span style={{ fontSize: 30, fontFamily: emoji, lineHeight: 1 }}>{FACE[x]}</span>
+                        <b style={{ fontSize: 25, color: "#17304a" }}>{ANIMALS[x]}</b>
+                      </span>
+                    ))}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+        <p style={{ position: "absolute", top: 1592, left: 0, right: 0, textAlign: "center", fontSize: 26, color: "rgba(244,236,219,.75)", fontFamily: sans }}>
+          여행 편은 사주의 역마 · 도화 · 화개로 나눴사옵니다
+        </p>
+      </ReelFrame>
+    );
+  }
+
+  if (c === "tti-month") {
+    // 10월 (戊戌월, 한로 10/8부터) for each 띠: the relation of 戌 to the 띠's branch, and one line. The same lines as the
+    // 10월 threads (호랑이·개·돼지·토끼·용), so the reel and the posts agree.
+    const FACE = ["🐭", "🐮", "🐯", "🐰", "🐲", "🐍", "🐴", "🐑", "🐵", "🐔", "🐶", "🐷"];
+    const emoji = '"Noto Color Emoji", "Apple Color Emoji", sans-serif';
+    const GOOD = "#2f6b4f";
+    const ROWS: [string, string, "good" | "care" | "calm"][] = [
+      ["무난", "조용히 정리하기 좋은 달", "calm"],
+      ["형", "농담 한마디도 한 번 거르기", "care"],
+      ["삼합", "1년 치 사람이 몰려오는 달", "good"],
+      ["육합", "마음 묶이는 사람이 생기는 달", "good"],
+      ["충", "먼저 움직이면 풀리는 달", "care"],
+      ["원진", "오해는 그날 바로 풀기", "care"],
+      ["반합", "크게 한 번 해 볼 만한 달", "good"],
+      ["형", "고집 하나만 내려놓기", "care"],
+      ["방합", "같은 편이 생기는 달", "good"],
+      ["방합", "미뤄 둔 일 마무리하기 좋은 달", "good"],
+      ["내 달", "올해 애쓴 게 돌아오는 달", "good"],
+      ["천문", "촉이 맞아떨어지는 달", "calm"],
+    ];
+    const tone = { good: GOOD, care: SEAL, calm: "#5b6b7d" };
+    return (
+      <ReelFrame>
+        <div style={{ position: "absolute", top: REEL.top, left: REEL.side, right: REEL.side, textAlign: "center" }}>
+          <p style={{ fontSize: 34, fontWeight: 800, letterSpacing: "0.06em", color: GOLD }}>10월 8일 한로부터 한 달</p>
+          <p style={{ marginTop: 14, fontSize: 80, fontWeight: 800, lineHeight: 1.15 }}>
+            열두 띠, <span style={{ color: "#f1cf7a" }}>이달의 한 줄</span>
+          </p>
+        </div>
+        {/* Inset 140 a side: centred, and the right end stays left of the like column. */}
+        <div className="doc-paper" style={{ position: "absolute", top: 470, left: 140, right: 140, padding: "18px 34px", color: INK }}>
+          {ROWS.map(([rel, line, t], b) => (
+            <div
+              key={b}
+              style={{ display: "flex", alignItems: "center", gap: 16, height: 80, borderTop: b ? "1.5px solid rgba(179,38,30,.13)" : "none", fontFamily: sans }}
+            >
+              <span style={{ width: 150, flexShrink: 0, display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 38, fontFamily: emoji, lineHeight: 1 }}>{FACE[b]}</span>
+                <b style={{ fontSize: 28, whiteSpace: "nowrap" }}>{ANIMALS[b]}</b>
+              </span>
+              <span style={{ width: 84, flexShrink: 0, textAlign: "center", fontSize: 22, fontWeight: 800, color: tone[t], border: `2px solid ${tone[t]}`, borderRadius: 999, padding: "2px 0" }}>
+                {rel}
+              </span>
+              <span style={{ fontSize: 29, fontWeight: 700, letterSpacing: "-0.03em", whiteSpace: "nowrap" }}>{line}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{ position: "absolute", top: 470 + 36 + 12 * 80 + 30, left: 140, right: 140, textAlign: "center" }}>
+          <p style={{ fontSize: 32, fontWeight: 800, color: "#f1cf7a" }}>띠는 여덟 글자 중 한 글자일 뿐이옵니다</p>
+          <p style={{ marginTop: 6, fontSize: 26, color: "rgba(244,236,219,.8)", fontFamily: sans }}>10월은 개(戌)의 달 · 내 사주의 10월은 프로필 링크에서</p>
+        </div>
+      </ReelFrame>
+    );
+  }
+
+  if (c === "samjae-reel") {
+    // Every 띠's 삼재, grouped the way 삼재 comes: three 띠 together, three years at a time (亥卯未 → 巳午未 years,
+    // 寅午戌 → 申酉戌, 巳酉丑 → 亥子丑, 申子辰 → 寅卯辰). Birth years 1962–2009, the same as the 띠 threads.
+    const FACE = ["🐭", "🐮", "🐯", "🐰", "🐲", "🐍", "🐴", "🐑", "🐵", "🐔", "🐶", "🐷"];
+    const emoji = '"Noto Color Emoji", "Apple Color Emoji", sans-serif';
+    const years = (b: number) => [0, 1, 2, 3].map((k) => String(1962 + ((b - 2 + 12) % 12) + 12 * k).slice(2)).join("·");
+    const GROUPS: { span: string; now: boolean; bs: number[] }[] = [
+      { span: "2025 ~ 2027", now: true, bs: [11, 3, 7] },
+      { span: "2028 ~ 2030", now: false, bs: [2, 6, 10] },
+      { span: "2031 ~ 2033", now: false, bs: [5, 9, 1] },
+      { span: "2034 ~ 2036", now: false, bs: [8, 0, 4] },
+    ];
+    return (
+      <ReelFrame>
+        <div style={{ position: "absolute", top: REEL.top, left: REEL.side, right: REEL.side, textAlign: "center" }}>
+          <p style={{ fontSize: 34, fontWeight: 800, letterSpacing: "0.06em", color: GOLD }}>삼재는 언제 들고, 언제 나가나</p>
+          <p style={{ marginTop: 14, fontSize: 84, fontWeight: 800, lineHeight: 1.12 }}>
+            열두 띠 <span style={{ color: "#f1cf7a" }}>삼재표</span>
+          </p>
+        </div>
+        <div className="doc-paper" style={{ position: "absolute", top: 450, left: 140, right: 140, padding: "16px 30px 20px", color: INK, fontFamily: sans }}>
+          {GROUPS.map((g, gi) => (
+            <div key={g.span} style={{ marginTop: gi ? 14 : 0 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 46, borderBottom: `2.5px solid ${g.now ? SEAL : "rgba(33,27,23,.35)"}` }}>
+                <b style={{ fontSize: 30, color: g.now ? SEAL : INK, fontVariantNumeric: "tabular-nums" }}>{g.span}</b>
+                <span
+                  style={{
+                    fontSize: 22,
+                    fontWeight: 800,
+                    padding: "3px 14px",
+                    borderRadius: 999,
+                    background: g.now ? SEAL : "transparent",
+                    color: g.now ? HANJI : SOFT,
+                    border: g.now ? "none" : `2px solid ${SOFT}`,
+                  }}
+                >
+                  {g.now ? "지금 · 2026 눌삼재" : `${g.span.slice(0, 4)}년 입춘부터`}
+                </span>
+              </div>
+              {g.bs.map((b) => (
+                <div key={b} style={{ display: "flex", alignItems: "center", height: 58, borderBottom: "1.5px solid rgba(179,38,30,.12)" }}>
+                  <span style={{ width: 190, display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 38, fontFamily: emoji, lineHeight: 1 }}>{FACE[b]}</span>
+                    <b style={{ fontSize: 30, whiteSpace: "nowrap" }}>{ANIMALS[b]}띠</b>
+                  </span>
+                  <span style={{ width: 290, fontSize: 29, fontWeight: 700, letterSpacing: "0.01em", fontVariantNumeric: "tabular-nums", color: "#17304a" }}>{years(b)}년생</span>
+                  <b style={{ marginLeft: 14, fontSize: 24, color: g.now ? SEAL : SOFT, whiteSpace: "nowrap" }}>{g.now ? "내년 날삼재로 끝" : `${Number(g.span.slice(0, 4)) - 2026}년 뒤 시작`}</b>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+        <div style={{ position: "absolute", top: 1430, left: 140, right: 140, textAlign: "center" }}>
+          <p style={{ fontSize: 30, fontWeight: 800, color: "#f1cf7a" }}>들삼재 → 눌삼재 → 날삼재, 세 해에 걸쳐 지나가옵니다</p>
+          <p style={{ marginTop: 8, fontSize: 25, lineHeight: 1.45, color: "rgba(244,236,219,.8)", fontFamily: sans }}>
+            사주의 해는 입춘(2월 4일 무렵)에 바뀌옵니다
+            <br />
+            삼재보다 센 건 내 사주 · 프로필 링크에서
+          </p>
+        </div>
+      </ReelFrame>
+    );
+  }
+
+  if (c === "nayin-reel") {
+    // The 납음 (물상) of each birth year, two years to a name, 1966–2005: a table everyone finds their year in.
+    const ROWS: [number, string, string, number][] = [
+      [1966, "天河水", "은하수", 4], [1968, "大驛土", "큰길의 흙", 2], [1970, "釵釧金", "비녀와 팔찌", 3], [1972, "桑柘木", "뽕나무", 0],
+      [1974, "大溪水", "큰 시냇물", 4], [1976, "沙中土", "모래 속 흙", 2], [1978, "天上火", "하늘의 불", 1], [1980, "石榴木", "석류나무", 0],
+      [1982, "大海水", "큰 바닷물", 4], [1984, "海中金", "바닷속 쇠", 3], [1986, "爐中火", "화로 속 불", 1], [1988, "大林木", "큰 숲", 0],
+      [1990, "路傍土", "길가의 흙", 2], [1992, "劍鋒金", "칼끝의 쇠", 3], [1994, "山頭火", "산꼭대기 불", 1], [1996, "澗下水", "골짜기 물", 4],
+      [1998, "城頭土", "성벽 위 흙", 2], [2000, "白蠟金", "하얀 밀랍 쇠", 3], [2002, "楊柳木", "버드나무", 0], [2004, "泉中水", "샘물", 4],
+    ];
+    const EL = ["#3d6656", "#b3261e", "#a87a22", "#8a8378", "#1f3448"];
+    const half = [ROWS.slice(0, 10), ROWS.slice(10)];
+    return (
+      <ReelFrame>
+        <div style={{ position: "absolute", top: REEL.top, left: REEL.side, right: REEL.side, textAlign: "center" }}>
+          <p style={{ fontSize: 34, fontWeight: 800, letterSpacing: "0.06em", color: GOLD }}>두 해씩 같은 이름을 나눠 갖사옵니다</p>
+          <p style={{ marginTop: 14, fontSize: 80, fontWeight: 800, lineHeight: 1.12 }}>
+            태어난 해의 <span style={{ color: "#f1cf7a" }}>물상</span>
+          </p>
+        </div>
+        <div className="doc-paper" style={{ position: "absolute", top: 450, left: 100, right: 100, padding: "18px 22px", color: INK, fontFamily: sans, display: "flex", gap: 18 }}>
+          {half.map((col, ci) => (
+            <div key={ci} style={{ flex: 1, minWidth: 0 }}>
+              {col.map(([y, hanja, ko, el]) => (
+                <div key={y} style={{ display: "flex", alignItems: "center", gap: 12, height: 92, borderBottom: "1.5px solid rgba(179,38,30,.12)" }}>
+                  <span style={{ width: 8, height: 58, borderRadius: 4, background: EL[el], flexShrink: 0 }} />
+                  <b style={{ width: 118, fontSize: 31, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
+                    {String(y).slice(2)}·{String(y + 1).slice(2)}
+                  </b>
+                  <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.2, minWidth: 0 }}>
+                    <b style={{ fontSize: 30, letterSpacing: "-0.03em", whiteSpace: "nowrap", color: EL[el] }}>{ko}</b>
+                    <span style={{ fontSize: 20, color: SOFT, letterSpacing: "0.12em" }}>{hanja}</span>
+                  </span>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+        <div style={{ position: "absolute", top: 450 + 36 + 10 * 92 + 34, left: 100, right: 100, textAlign: "center" }}>
+          <p style={{ fontSize: 30, fontWeight: 800, color: "#f1cf7a" }}>나무 · 불 · 흙 · 쇠 · 물, 그대는 어떤 기운의 해에 태어났사옵니까</p>
+          <p style={{ marginTop: 8, fontSize: 25, color: "rgba(244,236,219,.8)", fontFamily: sans }}>1월~2월 초 생일은 앞 해 · 내 사주 전체는 프로필 링크에서</p>
+        </div>
+      </ReelFrame>
+    );
+  }
+
+  if (c === "gan-open" || c === "gan-words") {
+    // Ten 일간, one answer each, every one of them a good or a fond one (the MBTI posts that spread give every type
+    // something to keep). The answer follows the 일간's 물상: 병화 the sun shows all at once, 정화 the candle burns slow.
+    const SETS = {
+      "gan-open": {
+        kicker: "한 번 열면 끝까지인 사람도 있사옵니다",
+        title: ["일간별", "마음 여는 데 걸리는 시간"],
+        items: ["1주", "3일", "3분", "3달", "1년", "2주", "같이 고생 한 번", "6개월", "하루", "????"],
+        notes: ["곧아서 아니면 아님", "어디든 금방 어울림", "처음부터 다 보여 줌", "속으로 천천히 탐", "늦지만 열면 평생", "챙기다 보면 열림", "의리로 열림", "검증이 끝나야", "넓게 받아들임", "촉이 정함"],
+      },
+      "gan-words": {
+        kicker: "말과 속이 다른 한마디",
+        title: ["일간별", "믿으면 안 되는 말"],
+        items: ["\"하나도 안 서운해\"", "\"난 아무거나 다 좋아\"", "\"이건 진짜 비밀이야\"", "\"나 진짜 괜찮아\"", "\"생각해 볼게\"", "\"나는 안 챙겨도 돼\"", "\"딱 한 잔만\"", "\"대충 해도 돼\"", "\"이번 달은 아낄 거야\"", "\"나 별생각 없어\""],
+        notes: ["자존심이 큰 나무", "취향은 확실한 덩굴", "다 비추는 해", "속으로 타는 촛불", "이미 답은 정해짐", "남 먼저 챙기는 밭", "화끈한 무쇠", "완벽주의 보석", "씀씀이도 큰 물", "생각이 제일 많음"],
+      },
+    } as const;
+    const set = SETS[c];
+    const EL = ["#3d6656", "#3d6656", "#b3261e", "#b3261e", "#a87a22", "#a87a22", "#8a8378", "#8a8378", "#1f3448", "#1f3448"];
+    const KO = ["갑목", "을목", "병화", "정화", "무토", "기토", "경금", "신금", "임수", "계수"];
+    const long = set.items.some((x) => x.length > 7);
+    return (
+      <ReelFrame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: REEL.top, left: REEL.side, right: REEL.side, textAlign: "center" }}>
+          <p style={{ fontSize: 34, fontWeight: 800, letterSpacing: "0.06em", color: GOLD }}>{set.kicker}</p>
+          <p style={{ marginTop: 12, fontSize: 40, fontWeight: 800, color: "rgba(244,236,219,.85)" }}>{set.title[0]}</p>
+          <p style={{ marginTop: 2, fontSize: 72, fontWeight: 800, lineHeight: 1.12, color: "#f1cf7a", whiteSpace: "nowrap" }}>{set.title[1]}</p>
+        </div>
+        <div className="doc-paper" style={{ position: "absolute", top: 520, left: 100, right: 100, padding: "20px", color: INK, display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 16px" }}>
+          {set.items.map((it, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 16, height: 150, padding: "0 14px", borderRadius: 14, background: "rgba(255,255,255,.55)", border: "1.5px solid rgba(179,38,30,.15)", minWidth: 0 }}>
+              <span style={{ width: 84, height: 84, flexShrink: 0, borderRadius: 14, background: EL[i], color: i === 6 || i === 7 ? INK : HANJI, display: "grid", placeItems: "center", fontSize: 56, fontFamily: brush, lineHeight: 1 }}>
+                {STEMS[i]}
+              </span>
+              <span style={{ display: "flex", flexDirection: "column", minWidth: 0, fontFamily: sans }}>
+                <span style={{ fontSize: 22, fontWeight: 700, color: SOFT }}>{KO[i]}</span>
+                <b style={{ fontSize: long ? 29 : 40, lineHeight: 1.2, letterSpacing: "-0.03em", color: EL[i] === "#8a8378" ? INK : EL[i] }}>{it}</b>
+                <span style={{ marginTop: 2, fontSize: 19, color: SOFT, letterSpacing: "-0.02em" }}>{set.notes[i]}</span>
+              </span>
+            </div>
+          ))}
+        </div>
+        <div style={{ position: "absolute", top: 520 + 40 + 5 * 150 + 4 * 14 + 30, left: 100, right: 100, textAlign: "center" }}>
+          <p style={{ fontSize: 30, fontWeight: 800, color: "#f1cf7a" }}>일간 = 태어난 날의 위 글자</p>
+          <p style={{ marginTop: 6, fontSize: 26, color: "rgba(244,236,219,.8)", fontFamily: sans }}>내 일간을 모르시면 프로필 링크에서 생일만 넣으시옵소서</p>
+        </div>
+      </ReelFrame>
+    );
+  }
+
+  if (c === "ilju60") {
+    // All sixty day pillars on one sheet, a row per 일간 and the six pillars of that 일간 across it in 60갑자 order,
+    // each with the site's own picture of it (ILJU_IMAGE, the season words dropped so it fits the cell).
+    const EL = ["#3d6656", "#3d6656", "#b3261e", "#b3261e", "#a87a22", "#a87a22", "#8a8378", "#8a8378", "#1f3448", "#1f3448"];
+    const KO = ["갑목", "을목", "병화", "정화", "무토", "기토", "경금", "신금", "임수", "계수"];
+    const short = (t: string) => t.replace(/^(한겨울|이른 봄|초여름|한여름|늦여름|초가을|늦가을|초겨울|여름밤|가을밤|봄비 갠 뒤|봄|여름|가을|겨울) /, "");
+    const rowH = 112;
+    return (
+      <ReelFrame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: REEL.top - 10, left: 40, right: 40, textAlign: "center" }}>
+          <p style={{ fontSize: 30, fontWeight: 800, letterSpacing: "0.06em", color: GOLD }}>그대는 어떤 풍경에서 태어났사옵니까</p>
+          <p style={{ marginTop: 6, fontSize: 68, fontWeight: 800, lineHeight: 1.1 }}>
+            60일주 <span style={{ color: "#f1cf7a" }}>한 장 정리</span>
+          </p>
+        </div>
+        <div className="doc-paper" style={{ position: "absolute", top: 380, left: 40, right: 40, padding: "14px", color: INK }}>
+          {Array.from({ length: 10 }, (_, s) => (
+            <div key={s} style={{ display: "grid", gridTemplateColumns: "92px repeat(6, 1fr)", gap: 5, height: rowH, paddingBlock: 3 }}>
+              <span style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, borderRadius: 10, background: EL[s], color: s === 6 || s === 7 ? INK : HANJI }}>
+                <span style={{ fontSize: 50, fontFamily: brush, lineHeight: 1 }}>{STEMS[s]}</span>
+                <span style={{ fontSize: 17, fontWeight: 800, fontFamily: sans }}>{KO[s]}</span>
+              </span>
+              {Array.from({ length: 6 }, (_, k) => {
+                const no = s + 10 * k;
+                const b = no % 12;
+                const hanja = STEMS[s] + BRANCHES[b];
+                return (
+                  <span
+                    key={k}
+                    style={{ display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 8px", borderRadius: 10, background: "rgba(255,255,255,.6)", border: "1.5px solid rgba(179,38,30,.13)", minWidth: 0, fontFamily: sans }}
+                  >
+                    <b style={{ fontSize: 25, lineHeight: 1.1, color: EL[s] === "#8a8378" ? INK : EL[s] }}>
+                      {STEMS_KO[s]}
+                      {BRANCHES_KO[b]}
+                    </b>
+                    <span style={{ marginTop: 3, fontSize: 17, lineHeight: 1.22, letterSpacing: "-0.04em", color: SOFT, wordBreak: "keep-all" }}>{short(ILJU_IMAGE[hanja])}</span>
+                  </span>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+        <div style={{ position: "absolute", top: 380 + 28 + 10 * rowH + 26, left: 40, right: 40, textAlign: "center" }}>
+          <p style={{ fontSize: 30, fontWeight: 800, color: "#f1cf7a" }}>일주 = 태어난 날의 두 글자</p>
+          <p style={{ marginTop: 6, fontSize: 25, color: "rgba(244,236,219,.8)", fontFamily: sans }}>저장해 두고 친구 일주도 찾아보시옵소서 · 내 일주는 프로필 링크에서</p>
+        </div>
+      </ReelFrame>
+    );
+  }
+
+  if (c === "jaemul-oct") {
+    // "우리 집에 이 년생 있으면": the birth years whose year stem is wood (甲·乙). From 한로 (10/8) the month is 戊戌, earth
+    // above and below, and earth is what wood rules: its 재성 (甲 → 편재, 乙 → 정재). Counted from the year stem, said so.
+    const YEARS = [1954, 1955, 1964, 1965, 1974, 1975, 1984, 1985, 1994, 1995, 2004, 2005];
+    const ganzhi = (y: number) => {
+      const i = (y - 4 + 600) % 60;
+      return { gz: STEMS_KO[i % 10] + BRANCHES_KO[i % 12], animal: ANIMALS[i % 12] };
+    };
+    return (
+      <ReelFrame>
+        <div style={{ position: "absolute", top: REEL.top, left: 60, right: 60, textAlign: "center" }}>
+          <p style={{ fontSize: 40, fontWeight: 800, color: "rgba(244,236,219,.9)" }}>우리 집에 이 년생 있으면</p>
+          <p style={{ marginTop: 12, fontSize: 74, fontWeight: 800, lineHeight: 1.15, color: "#f1cf7a" }}>
+            10월 8일부터
+            <br />
+            재물이 들어오옵니다
+          </p>
+        </div>
+        <div style={{ position: "absolute", top: 560, left: 140, right: 140, display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "22px 18px" }}>
+          {YEARS.map((y) => {
+            const g = ganzhi(y);
+            return (
+              <div key={y} style={{ textAlign: "center", padding: "18px 0 14px", borderRadius: 16, background: "rgba(241,207,122,.08)", border: "2px solid rgba(241,207,122,.35)" }}>
+                <p style={{ fontSize: 45, fontWeight: 800, color: "#f7e7b4", fontVariantNumeric: "tabular-nums", letterSpacing: "-0.01em" }}>{y}년생</p>
+                <p style={{ marginTop: 4, fontSize: 24, color: "rgba(244,236,219,.7)", fontFamily: sans }}>
+                  {g.gz} · {g.animal}띠
+                </p>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ position: "absolute", top: 1330, left: 90, right: 90, textAlign: "center" }}>
+          <p style={{ fontSize: 31, fontWeight: 800, lineHeight: 1.45, color: "#f1cf7a" }}>
+            태어난 해의 첫 글자가 갑·을, 나무의 해
+            <br />
+            10월은 흙의 달, 나무에게 흙은 재물이옵니다
+          </p>
+          <p style={{ marginTop: 14, fontSize: 25, lineHeight: 1.5, color: "rgba(244,236,219,.8)", fontFamily: sans }}>
+            들어온 만큼 새기 쉬운 달이니 반은 지키시옵소서
+            <br />
+            1월~2월 초 생일은 앞 해 · 내 사주의 10월은 프로필 링크에서
+          </p>
         </div>
       </ReelFrame>
     );
