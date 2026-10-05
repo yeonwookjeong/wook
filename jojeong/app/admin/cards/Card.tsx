@@ -53,6 +53,73 @@ function Frame({ children, dark = false }: { children: React.ReactNode; dark?: b
 // starts near y 1700 and the like column's heart near y 1150 (x past 900), so content may run down to about 1640.
 const REEL = { top: 250, side: 100, bottom: 1640 };
 
+// The night behind every reel: a few stars (thick at the top and bottom, thin where the content sits), the
+// 북두칠성 in the top corner the 관상감 watched, a waning moon, far ridges along the foot, and a thin gold double
+// rule just inside the edge. All of it stays faint so it never competes with the table on top.
+function reelStars(): { x: number; y: number; r: number; o: number }[] {
+  let seed = 11;
+  const rnd = () => ((seed = (seed * 9301 + 49297) % 233280) / 233280);
+  return Array.from({ length: 170 }, () => {
+    const y = rnd() * 1920;
+    const inContent = y > 520 && y < 1600;
+    return { x: rnd() * 1080, y, r: 1.4 + rnd() * 2.6, o: (inContent ? 0.12 : 0.3) + rnd() * (inContent ? 0.15 : 0.5) };
+  });
+}
+
+function ReelBackdrop() {
+  const stars = reelStars();
+  const dipper: [number, number][] = [
+    [70, 150], [140, 128], [205, 118], [268, 122], [292, 70], [372, 58], [388, 112],
+  ];
+  return (
+    <svg style={{ position: "absolute", inset: 0 }} width={1080} height={1920} aria-hidden>
+      <defs>
+        <radialGradient id="rbGlow" cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0" stopColor="#f1cf7a" stopOpacity="0.16" />
+          <stop offset="1" stopColor="#f1cf7a" stopOpacity="0" />
+        </radialGradient>
+        <linearGradient id="rbRidge" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#24406a" />
+          <stop offset="1" stopColor="#14243c" />
+        </linearGradient>
+        <filter id="rbSoft" x="-20%" y="-50%" width="140%" height="200%">
+          <feGaussianBlur stdDeviation="40" />
+        </filter>
+        <mask id="rbMoon">
+          <circle cx={960} cy={150} r={40} fill="#fff" />
+          <circle cx={978} cy={138} r={38} fill="#000" />
+        </mask>
+      </defs>
+      {/* A faint milky way, and a warm glow behind the title. */}
+      <ellipse cx={540} cy={330} rx={620} ry={210} fill="url(#rbGlow)" />
+      <rect x={-200} y={80} width={1480} height={240} fill="rgba(200,212,255,.07)" transform="rotate(-12 540 210)" filter="url(#rbSoft)" />
+      {stars.map((st, i) => (
+        <circle key={i} cx={st.x} cy={st.y} r={st.r / 2} fill="#fff6dc" opacity={st.o} />
+      ))}
+      <polyline points={dipper.map(([x, y]) => `${x},${y}`).join(" ")} fill="none" stroke="rgba(241,207,122,.32)" strokeWidth={2} strokeDasharray="6 7" />
+      <line x1={268} y1={122} x2={388} y2={112} stroke="rgba(241,207,122,.32)" strokeWidth={2} strokeDasharray="6 7" />
+      {dipper.map(([x, y], i) => (
+        <circle key={i} cx={x} cy={y} r={4.5} fill="#fff4d6" opacity={0.75} />
+      ))}
+      <circle cx={960} cy={150} r={40} fill="#fff4d6" opacity={0.85} mask="url(#rbMoon)" />
+      {/* Far ridges along the foot (under the account row, so only the picture's edge shows them). */}
+      <path d="M0 1730 C 160 1680, 300 1720, 460 1690 S 760 1650, 920 1700 S 1040 1690, 1080 1680 L1080 1920 L0 1920 Z" fill="url(#rbRidge)" opacity={0.55} />
+      <path d="M0 1800 C 200 1760, 380 1790, 560 1770 S 880 1750, 1080 1780 L1080 1920 L0 1920 Z" fill="#101d31" opacity={0.7} />
+      {/* A thin gold double rule just inside the edge, with small corner knots. */}
+      <rect x={26} y={26} width={1028} height={1868} fill="none" stroke="rgba(241,207,122,.28)" strokeWidth={2} rx={6} />
+      <rect x={36} y={36} width={1008} height={1848} fill="none" stroke="rgba(241,207,122,.14)" strokeWidth={1.5} rx={4} />
+      {[
+        [26, 26],
+        [1054, 26],
+        [26, 1894],
+        [1054, 1894],
+      ].map(([x, y], i) => (
+        <rect key={i} x={x - 7} y={y - 7} width={14} height={14} fill="#f1cf7a" opacity={0.5} transform={`rotate(45 ${x} ${y})`} />
+      ))}
+    </svg>
+  );
+}
+
 function ReelFrame({ children }: { children: React.ReactNode }) {
   return (
     <div
@@ -69,6 +136,7 @@ function ReelFrame({ children }: { children: React.ReactNode }) {
         overflow: "hidden",
       }}
     >
+      <ReelBackdrop />
       {children}
     </div>
   );
