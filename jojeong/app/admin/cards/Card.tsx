@@ -1029,6 +1029,61 @@ export async function Card({ q }: { q: CardQuery }) {
     );
   }
 
+  if (c === "tti-month") {
+    // 10월 (戊戌월, 한로 10/8부터) for each 띠: the relation of 戌 to the 띠's branch, and one line. The same lines as the
+    // 10월 threads (호랑이·개·돼지·토끼·용), so the reel and the posts agree.
+    const FACE = ["🐭", "🐮", "🐯", "🐰", "🐲", "🐍", "🐴", "🐑", "🐵", "🐔", "🐶", "🐷"];
+    const emoji = '"Noto Color Emoji", "Apple Color Emoji", sans-serif';
+    const GOOD = "#2f6b4f";
+    const ROWS: [string, string, "good" | "care" | "calm"][] = [
+      ["무난", "조용히 정리하기 좋은 달", "calm"],
+      ["형", "농담 한마디도 한 번 거르기", "care"],
+      ["삼합", "1년 치 사람이 몰려오는 달", "good"],
+      ["육합", "마음 묶이는 사람이 생기는 달", "good"],
+      ["충", "먼저 움직이면 풀리는 달", "care"],
+      ["원진", "오해는 그날 바로 풀기", "care"],
+      ["반합", "크게 한 번 해 볼 만한 달", "good"],
+      ["형", "고집 하나만 내려놓기", "care"],
+      ["방합", "같은 편이 생기는 달", "good"],
+      ["방합", "미뤄 둔 일 마무리하기 좋은 달", "good"],
+      ["내 달", "올해 애쓴 게 돌아오는 달", "good"],
+      ["천문", "촉이 맞아떨어지는 달", "calm"],
+    ];
+    const tone = { good: GOOD, care: SEAL, calm: "#5b6b7d" };
+    return (
+      <ReelFrame>
+        <div style={{ position: "absolute", top: REEL.top, left: REEL.side, right: REEL.side, textAlign: "center" }}>
+          <p style={{ fontSize: 34, fontWeight: 800, letterSpacing: "0.06em", color: GOLD }}>10월 8일 한로부터 한 달</p>
+          <p style={{ marginTop: 14, fontSize: 80, fontWeight: 800, lineHeight: 1.15 }}>
+            열두 띠, <span style={{ color: "#f1cf7a" }}>이달의 한 줄</span>
+          </p>
+        </div>
+        {/* Inset 140 a side: centred, and the right end stays left of the like column. */}
+        <div className="doc-paper" style={{ position: "absolute", top: 470, left: 140, right: 140, padding: "18px 34px", color: INK }}>
+          {ROWS.map(([rel, line, t], b) => (
+            <div
+              key={b}
+              style={{ display: "flex", alignItems: "center", gap: 16, height: 80, borderTop: b ? "1.5px solid rgba(179,38,30,.13)" : "none", fontFamily: sans }}
+            >
+              <span style={{ width: 150, flexShrink: 0, display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 38, fontFamily: emoji, lineHeight: 1 }}>{FACE[b]}</span>
+                <b style={{ fontSize: 28, whiteSpace: "nowrap" }}>{ANIMALS[b]}</b>
+              </span>
+              <span style={{ width: 84, flexShrink: 0, textAlign: "center", fontSize: 22, fontWeight: 800, color: tone[t], border: `2px solid ${tone[t]}`, borderRadius: 999, padding: "2px 0" }}>
+                {rel}
+              </span>
+              <span style={{ fontSize: 29, fontWeight: 700, letterSpacing: "-0.03em", whiteSpace: "nowrap" }}>{line}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{ position: "absolute", top: 470 + 36 + 12 * 80 + 30, left: 140, right: 140, textAlign: "center" }}>
+          <p style={{ fontSize: 32, fontWeight: 800, color: "#f1cf7a" }}>띠는 여덟 글자 중 한 글자일 뿐이옵니다</p>
+          <p style={{ marginTop: 6, fontSize: 26, color: "rgba(244,236,219,.8)", fontFamily: sans }}>10월은 개(戌)의 달 · 내 사주의 10월은 프로필 링크에서</p>
+        </div>
+      </ReelFrame>
+    );
+  }
+
   if (c === "son-reel") {
     const y = Number(q.y ?? 2026);
     const m = Number(q.m ?? 10);
