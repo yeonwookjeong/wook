@@ -24,7 +24,8 @@ type Pose = { yaw: number; pitch: number; roll: number };
 type Reading = { at: number; source: "camera" | "photo"; frames: number; m: Metrics };
 // The frame a painting may be ordered from, with its own face points: held in memory on this page only.
 type Snap = { canvas: HTMLCanvasElement; pts: Pt[] };
-type Result = Reading & { face: Face; spread: Partial<Record<BandKey, number>>; snap: Snap | null };
+type Painting = { img: HTMLImageElement; pts: Pt[] | null };
+type Result = Reading & { face: Face; spread: Partial<Record<BandKey, number>>; snap: Snap | null; painting: Painting | null; paintNote: string };
 
 // One still-image reader for the page: photos, and the painting that comes back (to pin the chart's notes).
 let imageReader: Promise<FaceLandmarker> | null = null;
@@ -124,7 +125,8 @@ export default function GwansangLab() {
   const imageLm = useRef<FaceLandmarker | null>(null);
   const rafRef = useRef(0);
   const hold = useRef<{ t0: number; faces: Face[] }>({ t0: 0, faces: [] });
-  const [phase, setPhase] = useState<"idle" | "loading" | "camera" | "done">("idle");
+  const [phase, setPhase] = useState<"idle" | "loading" | "camera" | "painting" | "done">("idle");
+  const [waited, setWaited] = useState(0);
   const [message, setMessage] = useState("");
   const [checks, setChecks] = useState<Check[]>([]);
   const [pose, setPose] = useState<Pose | null>(null);
@@ -137,6 +139,16 @@ export default function GwansangLab() {
   const history = useMemo(() => parseHistory(raw), [raw]);
 
   useEffect(() => () => stopCamera(), []);
+  // Seconds spent waiting for the painting, for the loading screen's messages.
+  useEffect(() => {
+    if (phase !== "painting") return;
+    const started = Date.now();
+    const t = setInterval(() => setWaited(Math.floor((Date.now() - started) / 1000)), 1000);
+    return () => {
+      clearInterval(t);
+      setWaited(0);
+    };
+  }, [phase]);
   useEffect(() => {
     relaxedRef.current = relaxed;
   }, [relaxed]);
@@ -156,8 +168,34 @@ export default function GwansangLab() {
     }
     const reading: Reading = { at: Date.now(), source, frames: Math.max(1, frames.length), m };
     saveHistory([...parseHistory(rawHistory()), reading]);
-    setResult({ ...reading, face, spread, snap });
-    setPhase("done");
+    if (!snap) {
+      setResult({ ...reading, face, spread, snap, painting: null, paintNote: "" });
+      setPhase("done");
+      return;
+    }
+    // Everything waits for the painting, then shows at once; a failed painting falls back to the line drawing.
+    setResult(null);
+    setPhase("painting");
+    paint(snap).then(({ painting, note }) => {
+      setResult({ ...reading, face, spread, snap, painting, paintNote: note });
+      setPhase("done");
+    });
+  }
+
+  async function paint(snap: Snap): Promise<{ painting: Painting | null; note: string }> {
+    try {
+      const res = await fetch("/api/portrait", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ photo: photoDataUrl(snap) }),
+        signal: AbortSignal.timeout(110_000),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.image) return { painting: null, note: data.error ?? "그림을 받지 못했어요." };
+      return { painting: await loadPainting(data.image), note: `${data.model} · ${(data.ms / 1000).toFixed(0)}초 · 길게 눌러 저장` };
+    } catch {
+      return { painting: null, note: "그림이 늦어져 선화로 보여 드려요." };
+    }
   }
 
   async function startCamera() {
@@ -297,7 +335,7 @@ export default function GwansangLab() {
 
   return (
     <div className="mt-5 flex flex-col gap-4">
-      {phase !== "camera" && (
+      {phase !== "camera" && phase !== "painting" && (
         <section className="doc-paper flex flex-col gap-3 px-5 py-5">
           <p className="text-[14px] leading-relaxed">
             테두리에 얼굴을 맞추고 <b>정면 · 무표정</b>으로 {HOLD_MS / 1000}초 버티면 자동으로 찍혀요. 같은 사람이 여러 번 찍어서 결과가 같게
@@ -389,8 +427,9 @@ export default function GwansangLab() {
         </section>
       )}
 
+      {phase === "painting" && <PaintingWait waited={waited} />}
       {result && phase === "done" && <ResultView result={result} />}
-      {history.length > 0 && phase !== "camera" && <HistoryTable history={history} onClear={() => saveHistory([])} />}
+      {history.length > 0 && phase !== "camera" && phase !== "painting" && <HistoryTable history={history} onClear={() => saveHistory([])} />}
     </div>
   );
 }
@@ -475,31 +514,12 @@ async function loadPainting(src: string): Promise<{ img: HTMLImageElement; pts: 
 // off, and rename it; each change redraws at once. The line drawing stands in while it is painted, and stays
 // when painting fails.
 function ResultPortrait({ result }: { result: Result }) {
-  const [painting, setPainting] = useState<{ img: HTMLImageElement; pts: Pt[] | null } | null>(null);
-  const [status, setStatus] = useState("관상가가 도식을 그리는 중이에요 · 20~60초");
+  const painting = result.painting;
   const [name, setName] = useState("무명씨");
-  const [faceOnly, setFaceOnly] = useState(false);
+  const [faceOnly, setFaceOnly] = useState(true);
   const [boxes, setBoxes] = useState(true);
   const [hidden, setHidden] = useState<number[]>([]);
-  const asked = useRef(0);
   const notes = useMemo(() => chartNotes(result.m), [result]);
-
-  useEffect(() => {
-    if (!result.snap || asked.current === result.at) return;
-    asked.current = result.at;
-    const photo = photoDataUrl(result.snap);
-    fetch("/api/portrait", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ photo }) })
-      .then((r) => r.json().then((data) => ({ ok: r.ok, data })))
-      .then(async ({ ok, data }) => {
-        if (!ok || !data.image) {
-          setStatus(data.error ?? "그림을 받지 못했어요.");
-          return;
-        }
-        setPainting(await loadPainting(data.image));
-        setStatus(`${data.model} · ${(data.ms / 1000).toFixed(0)}초 · 길게 눌러 저장`);
-      })
-      .catch(() => setStatus("화원에게 닿지 못했어요."));
-  }, [result]);
 
   const shown = useMemo(() => {
     if (!painting) return null;
@@ -527,11 +547,9 @@ function ResultPortrait({ result }: { result: Result }) {
         // eslint-disable-next-line @next/next/no-img-element -- a chart drawn on this device
         <img src={shown} alt="관상 도식" className="w-full rounded shadow-[0_2px_12px_rgba(0,0,0,0.2)]" />
       ) : (
-        <div className="animate-pulse">
-          <InkFace face={result.face} />
-        </div>
+        <InkFace face={result.face} />
       )}
-      <p className="text-[11px] text-ink-soft">{status}</p>
+      <p className="text-[11px] text-ink-soft">{result.paintNote}</p>
       {shown && (
         <div className="flex w-full flex-col gap-2 rounded-xl border border-ink/15 bg-white/50 px-3 py-3">
           <div className="flex flex-wrap gap-1.5">
@@ -570,6 +588,30 @@ function ResultPortrait({ result }: { result: Result }) {
 
 function fmt(key: BandKey, v: number) {
   return key === "tilt" ? `${v >= 0 ? "+" : ""}${v.toFixed(1)}°` : v.toFixed(2);
+}
+
+// While the painting is made: one screen, a few lines that change as the wait goes on.
+function PaintingWait({ waited }: { waited: number }) {
+  const lines = [
+    "관상가가 얼굴을 살피고 있어요",
+    "삼정과 오관을 재는 중이에요",
+    "화원이 붓을 고르는 중이에요",
+    "얼굴을 그리고 있어요",
+    "눈빛에 생기를 넣는 중이에요",
+    "비단에 색을 올리는 중이에요",
+    "도식에 주석을 다는 중이에요",
+  ];
+  return (
+    <section className="doc-paper flex flex-col items-center gap-4 px-5 py-10 text-center">
+      <div className="relative h-20 w-20">
+        <div className="absolute inset-0 animate-spin rounded-full border-4 border-hanji-deep border-t-seal" />
+        <div className="absolute inset-3 grid place-items-center rounded-full bg-seal font-myeongjo text-xl font-extrabold text-hanji">觀</div>
+      </div>
+      <p className="font-myeongjo text-lg font-extrabold">{lines[Math.min(lines.length - 1, Math.floor(waited / 6))]}</p>
+      <p className="text-[12px] text-ink-soft tabular-nums">보통 20~60초 걸려요 · {waited}초</p>
+      <p className="text-[11px] text-jade">그림이 완성되면 관상 도식과 풀이를 한 번에 보여 드려요</p>
+    </section>
+  );
 }
 
 function ResultView({ result }: { result: Result }) {
