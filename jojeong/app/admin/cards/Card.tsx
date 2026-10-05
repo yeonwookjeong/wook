@@ -949,6 +949,70 @@ export async function Card({ q }: { q: CardQuery }) {
     );
   }
 
+  if (c === "tti-bunryu") {
+    // The "MBTI별 정확한 분류" reel in 띠: white paper, words only, one situation split into roles so a whole group
+    // chat finds itself in it. The travel split is the 명리 grouping itself: 역마 寅申巳亥, 도화 子午卯酉, 화개 辰戌丑未.
+    const SECTIONS: { head: string; rows: [string, number[]][] }[] = [
+      {
+        head: "빡쳤을 때",
+        rows: [
+          ["그 자리에서 바로 터지는 쪽", [2, 6, 9]],
+          ["얼굴에 다 쓰여 있는 쪽", [3, 8]],
+          ["조용히 계산 끝내 놓는 쪽", [0, 5]],
+          ["참고 참다 한 번에 터지는 쪽", [1, 7, 10]],
+          ["자고 일어나면 잊는 쪽", [4, 11]],
+        ],
+      },
+      {
+        head: "단톡방에서",
+        rows: [
+          ["\"그래서 언제 어디서?\" 정리하는 쪽", [2, 4]],
+          ["ㅋㅋㅋ 리액션 담당", [6, 8, 11]],
+          ["다 읽고 말 없는 쪽", [1, 5]],
+          ["새벽 2시에 갑자기 살아나는 쪽", [0]],
+          ["오타 보면 못 참는 쪽", [9]],
+          ["생일 제일 먼저 챙기는 쪽", [3, 7, 10]],
+        ],
+      },
+      {
+        head: "여행 가면",
+        rows: [
+          ["일정 짜고 앞장서는 쪽", [2, 8, 5, 11]],
+          ["사진 찍고 찍히는 쪽", [0, 6, 3, 9]],
+          ["숙소가 제일 행복한 쪽", [4, 10, 1, 7]],
+        ],
+      },
+    ];
+    return (
+      <div
+        data-card
+        style={{ position: "fixed", inset: 0, width: 1080, height: 1920, zIndex: 50, background: "#fffdf8", color: "#1a1a1a", fontFamily: sans, overflow: "hidden" }}
+      >
+        <div style={{ position: "absolute", top: REEL.top, left: REEL.side, right: REEL.side, textAlign: "center" }}>
+          <p style={{ fontSize: 86, fontWeight: 900, lineHeight: 1.15, letterSpacing: "-0.03em" }}>
+            띠별 정확한 분류<span style={{ color: SEAL }}>ㅋㅋ</span>
+          </p>
+        </div>
+        {/* The block is as wide as its longest line and centred under the title. */}
+        <div style={{ position: "absolute", top: 400, left: 0, right: 0, display: "flex", justifyContent: "center" }}>
+          <div>
+            {SECTIONS.map((sec, si) => (
+              <div key={sec.head} style={{ marginTop: si ? 50 : 0 }}>
+                <p style={{ fontSize: 42, fontWeight: 900, color: SEAL }}>*{sec.head}</p>
+                {sec.rows.map(([label, bs]) => (
+                  <p key={label} style={{ marginTop: 15, fontSize: 39, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.25, whiteSpace: "nowrap" }}>
+                    {label} <span style={{ color: "#aaa" }}>-</span> <b style={{ color: "#1f4e8c", fontWeight: 900 }}>{bs.map((x) => ANIMALS[x]).join(", ")}</b>
+                  </p>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+        <p style={{ position: "absolute", top: 1636, left: 0, right: 0, textAlign: "center", fontSize: 32, fontWeight: 800, color: "#555" }}>@hundosaju</p>
+      </div>
+    );
+  }
+
   if (c === "son-reel") {
     const y = Number(q.y ?? 2026);
     const m = Number(q.m ?? 10);
