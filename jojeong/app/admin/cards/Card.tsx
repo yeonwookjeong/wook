@@ -950,8 +950,8 @@ export async function Card({ q }: { q: CardQuery }) {
   }
 
   if (c === "tti-bunryu") {
-    // The "MBTI별 정확한 분류" reel in 띠: white paper, words only, one situation split into roles so a whole group
-    // chat finds itself in it. The travel split is the 명리 grouping itself: 역마 寅申巳亥, 도화 子午卯酉, 화개 辰戌丑未.
+    // One situation split into roles across the twelve 띠, so a whole group chat finds itself in it (the idea of
+    // the "MBTI별 분류" posts, drawn in our own paper and voice). The travel split is the 명리 grouping itself: 역마 寅申巳亥, 도화 子午卯酉, 화개 辰戌丑未.
     const SECTIONS: { head: string; rows: [string, number[]][] }[] = [
       {
         head: "빡쳤을 때",
@@ -983,33 +983,49 @@ export async function Card({ q }: { q: CardQuery }) {
         ],
       },
     ];
+    const FACE = ["🐭", "🐮", "🐯", "🐰", "🐲", "🐍", "🐴", "🐑", "🐵", "🐔", "🐶", "🐷"];
+    const emoji = '"Noto Color Emoji", "Apple Color Emoji", sans-serif';
     return (
-      <div
-        data-card
-        style={{ position: "fixed", inset: 0, width: 1080, height: 1920, zIndex: 50, background: "#fffdf8", color: "#1a1a1a", fontFamily: sans, overflow: "hidden" }}
-      >
+      <ReelFrame>
         <div style={{ position: "absolute", top: REEL.top, left: REEL.side, right: REEL.side, textAlign: "center" }}>
-          <p style={{ fontSize: 86, fontWeight: 900, lineHeight: 1.15, letterSpacing: "-0.03em" }}>
-            띠별 정확한 분류<span style={{ color: SEAL }}>ㅋㅋ</span>
+          <p style={{ fontSize: 34, fontWeight: 800, letterSpacing: "0.06em", color: GOLD }}>단톡방에 보내 보시옵소서</p>
+          <p style={{ marginTop: 14, fontSize: 80, fontWeight: 800, lineHeight: 1.15 }}>
+            열두 띠, 이럴 때
+            <br />
+            <span style={{ color: "#f1cf7a" }}>갈리옵니다</span>
           </p>
         </div>
-        {/* The block is as wide as its longest line and centred under the title. */}
-        <div style={{ position: "absolute", top: 400, left: 0, right: 0, display: "flex", justifyContent: "center" }}>
-          <div>
-            {SECTIONS.map((sec, si) => (
-              <div key={sec.head} style={{ marginTop: si ? 50 : 0 }}>
-                <p style={{ fontSize: 42, fontWeight: 900, color: SEAL }}>*{sec.head}</p>
-                {sec.rows.map(([label, bs]) => (
-                  <p key={label} style={{ marginTop: 15, fontSize: 39, fontWeight: 700, letterSpacing: "-0.03em", lineHeight: 1.25, whiteSpace: "nowrap" }}>
-                    {label} <span style={{ color: "#aaa" }}>-</span> <b style={{ color: "#1f4e8c", fontWeight: 900 }}>{bs.map((x) => ANIMALS[x]).join(", ")}</b>
-                  </p>
-                ))}
-              </div>
-            ))}
-          </div>
+        {/* Inset 140 a side: centred, and the names at the right end stay left of the like column (x 900). */}
+        <div className="doc-paper" style={{ position: "absolute", top: 530, left: 140, right: 140, padding: "24px 36px 26px", color: INK }}>
+          {SECTIONS.map((sec, si) => (
+            <div key={sec.head} style={{ marginTop: si ? 16 : 0 }}>
+              <p style={{ display: "flex", alignItems: "center", gap: 14, height: 52 }}>
+                <span style={{ padding: "4px 16px", border: `3px solid ${SEAL}`, color: SEAL, fontSize: 30, fontWeight: 800 }}>{sec.head}</span>
+                <span style={{ flex: 1, height: 2, background: "rgba(179,38,30,.25)" }} />
+              </p>
+              {sec.rows.map(([label, bs]) => (
+                <div
+                  key={label}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 56, borderBottom: "1.5px solid rgba(179,38,30,.12)", fontFamily: sans }}
+                >
+                  <span style={{ fontSize: 30, fontWeight: 700, letterSpacing: "-0.03em", whiteSpace: "nowrap" }}>{label}</span>
+                  <span style={{ display: "flex", gap: 14, whiteSpace: "nowrap" }}>
+                    {bs.map((x) => (
+                      <span key={x} style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                        <span style={{ fontSize: 30, fontFamily: emoji, lineHeight: 1 }}>{FACE[x]}</span>
+                        <b style={{ fontSize: 25, color: "#17304a" }}>{ANIMALS[x]}</b>
+                      </span>
+                    ))}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ))}
         </div>
-        <p style={{ position: "absolute", top: 1636, left: 0, right: 0, textAlign: "center", fontSize: 32, fontWeight: 800, color: "#555" }}>@hundosaju</p>
-      </div>
+        <p style={{ position: "absolute", top: 1592, left: 0, right: 0, textAlign: "center", fontSize: 26, color: "rgba(244,236,219,.75)", fontFamily: sans }}>
+          여행 편은 사주의 역마 · 도화 · 화개로 나눴사옵니다
+        </p>
+      </ReelFrame>
     );
   }
 
