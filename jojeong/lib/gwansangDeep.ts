@@ -5,11 +5,11 @@
 
 import { BANDS, level, thirdDev, type BandKey, type Face, type Metrics } from "./gwansang";
 
-// Four grades, so what needs care is said plainly: 좋음, 무난, 주의 (a weak point to prepare for) and 경계 (a
-// clear weak point). Each comes from a score of 0–3; several scores are averaged before grading.
-export type Grade = "좋음" | "무난" | "주의" | "경계" | "측정 안 함";
+// Four grades, two on each side so neither reads as the odd one out: 대길 and 길 (good), 주의 (a weak point to
+// prepare for) and 경계 (a clear weak point). Each comes from a score of 0–3; several scores are averaged before grading.
+export type Grade = "대길" | "길" | "주의" | "경계" | "측정 안 함";
 export const gradeOf = (score: number | null): Grade =>
-  score === null ? "측정 안 함" : score >= 2.5 ? "좋음" : score >= 1.5 ? "무난" : score >= 0.5 ? "주의" : "경계";
+  score === null ? "측정 안 함" : score >= 2.5 ? "대길" : score >= 1.5 ? "길" : score >= 0.5 ? "주의" : "경계";
 export const avg = (...v: (number | null)[]): number | null => {
   const k = v.filter((x): x is number => x !== null);
   return k.length ? k.reduce((a, b) => a + b, 0) / k.length : null;
@@ -130,7 +130,7 @@ export function peaks(m: Metrics, x: Deep): Peaks {
   if (sunk.length)
     return { peaks: list, caution: true, verdict: `${sunk.map((p) => p.name).join("·")}이 꺼진 상`,
       note: `${sunk.map((p) => p.part).join(", ")} 쪽 산이 낮아 그 자리가 맡은 시기와 일에서 힘이 덜 실려요. 아래 영역 풀이의 '대비'를 먼저 챙기세요.` };
-  if (list.filter((p) => p.grade === "좋음").length >= 3)
+  if (list.filter((p) => p.grade === "대길").length >= 3)
     return { peaks: list, caution: false, verdict: "오악조귀(五嶽朝歸)", note: "다섯 산이 고루 솟아 서로 받쳐 주는 형이에요. 운이 한쪽으로 쏠리지 않고 고르게 들어온다 봅니다." };
   return { peaks: list, caution: false, verdict: "오악이 무난히 어우러짐", note: "크게 꺼지거나 튀는 곳 없이 다섯 산이 어우러진 형이에요." };
 }

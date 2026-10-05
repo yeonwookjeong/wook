@@ -726,7 +726,7 @@ function ReadingView({ result }: { result: Result }) {
   const r = useMemo(() => gwansangReading(result.m, deepMeasure(result.face)), [result]);
   const [born, setBorn] = useState("");
   const age = /^(19|20)\d\d$/.test(born) ? new Date().getFullYear() - Number(born) + 1 : null;
-  const MOOD: Record<string, string> = { 활짝: "bg-seal text-hanji", 무난: "bg-hanji-deep text-ink", 주의: "border border-seal/60 text-seal", 고비: "bg-ink text-hanji" };
+  const MOOD: Record<string, string> = { 활짝: "bg-seal text-hanji", 순조: "bg-seal/15 text-seal", 주의: "border border-seal/60 text-seal", 고비: "bg-ink text-hanji" };
   return (
     <>
       <section className="doc-paper px-5 py-5">
@@ -768,6 +768,12 @@ function ReadingView({ result }: { result: Result }) {
         <h2 className="px-1 font-myeongjo font-extrabold">
           영역별 관상 <span className="text-[12px] font-normal text-ink-soft">· 십이궁을 묶어 본 여섯 갈래</span>
         </h2>
+        <p className="mt-1 flex flex-wrap items-center gap-1 px-1 text-[11px] text-ink-soft">
+          {(["대길", "길", "주의", "경계"] as const).map((g) => (
+            <span key={g} className={`rounded px-1.5 py-0.5 font-bold ${GRADE_STYLE[g]}`}>{g}</span>
+          ))}
+          <span>· 앞의 둘은 좋은 쪽, 뒤의 둘은 조심할 쪽이에요</span>
+        </p>
         <div className="mt-2 grid grid-cols-1 gap-2">
           {r.cards.map((c) => (
             <div key={c.key} className="rounded-xl border border-ink/10 bg-white/50 px-3 py-3">
@@ -828,8 +834,8 @@ function ReadingView({ result }: { result: Result }) {
 }
 
 const GRADE_STYLE: Record<Grade, string> = {
-  좋음: "bg-seal text-hanji",
-  무난: "bg-hanji-deep text-ink",
+  대길: "bg-seal text-hanji",
+  길: "bg-seal/15 text-seal",
   주의: "border border-seal/60 text-seal",
   경계: "bg-ink text-hanji",
   "측정 안 함": "text-ink-soft/70",
@@ -879,7 +885,7 @@ function DeepView({ result }: { result: Result }) {
           ))}
         </ul>
         <p className="mt-2 px-1 text-[10.5px] leading-relaxed text-ink-soft">
-          판정은 좋음 · 무난 · 주의 · 경계 네 단계예요. 기준은 첫 초안이에요. 실제 촬영 결과를 모아 기준값을 맞춰 갈 거예요. 코 높이와 산근은 카메라 촬영에서만 잴 수 있어요.
+          판정은 대길 · 길(좋은 쪽)과 주의 · 경계(조심할 쪽) 네 단계예요. 기준은 첫 초안이에요. 실제 촬영 결과를 모아 기준값을 맞춰 갈 거예요. 코 높이와 산근은 카메라 촬영에서만 잴 수 있어요.
         </p>
       </section>
     </>

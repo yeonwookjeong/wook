@@ -1,13 +1,13 @@
 // The 관상 free reading, computed only (no writer, no cost), built like the saju free reading (lib/freeReading.ts):
 // a headline, strengths, what to watch for and how to prepare, six area cards, and a flow through the ages
-// (유년운기). Four grades throughout (좋음 · 무난 · 주의 · 경계): the weak points are said plainly, each with what
+// (유년운기). Four grades throughout (대길 · 길 · 주의 · 경계): the weak points are said plainly, each with what
 // to do about it. Every line rests on the measures (lib/gwansang.ts, lib/gwansangDeep.ts) and says which.
 
 import { BANDS, hyeong, leadThird, THIRD_NAME, thirdDev, type Metrics } from "./gwansang";
 import { avg, gradeOf, palaces, peaks, pos, type Deep, type Grade, type Palace } from "./gwansangDeep";
 
 export type Card = { key: string; title: string; hanja: string; grade: Grade; line: string; tipLabel: "살리는 법" | "대비"; tip: string; why: string };
-export type FlowMood = "활짝" | "무난" | "주의" | "고비";
+export type FlowMood = "활짝" | "순조" | "주의" | "고비";
 export type Flow = { from: number; to: number; part: string; mood: FlowMood; line: string; prep: string | null; why: string };
 export type Watch = { name: string; grade: Grade; line: string; prep: string };
 export type GwansangReading = {
@@ -19,9 +19,9 @@ export type GwansangReading = {
   flow: Flow[];
 };
 
-// Four lines per grade: [좋음, 무난, 주의, 경계].
+// Four lines per grade: [대길, 길, 주의, 경계].
 type Four = [string, string, string, string];
-const at = (g: Grade, four: Four) => four[g === "좋음" ? 0 : g === "무난" ? 1 : g === "주의" ? 2 : 3];
+const at = (g: Grade, four: Four) => four[g === "대길" ? 0 : g === "길" ? 1 : g === "주의" ? 2 : 3];
 
 // Each palace: what a strong one gives, and for a weak one what tends to go wrong and how to prepare.
 const PALACE: Record<string, { good: string; caution: string; warn: string; prep: string }> = {
@@ -219,7 +219,7 @@ function flowOf(m: Metrics, pl: Palace[], centre: number | null, south: number |
   ];
   return spans.map((x) => {
     const g = gradeOf(x.score);
-    const mood: FlowMood = g === "좋음" ? "활짝" : g === "주의" ? "주의" : g === "경계" ? "고비" : "무난";
+    const mood: FlowMood = g === "대길" ? "활짝" : g === "주의" ? "주의" : g === "경계" ? "고비" : "순조";
     return { from: x.from, to: x.to, part: x.part, mood, line: at(g, x.lines), prep: mood === "주의" || mood === "고비" ? x.prep : null, why: x.why };
   });
 }
@@ -234,7 +234,8 @@ export function gwansangReading(m: Metrics, x: Deep): GwansangReading {
   // Palaces read from the same measure count once (관록궁 and 부모궁 both rest on the forehead's height).
   const basis = (name: string) => (name === "부모궁" ? "관록궁" : name);
   const once = (list: Palace[]) => list.filter((p, i) => list.findIndex((q) => basis(q.name) === basis(p.name)) === i);
-  const strengths = once(pl.filter((p) => p.grade === "좋음"))
+  // The best palaces first: every 대길, then 길 to fill three.
+  const strengths = once(pl.filter((p) => p.grade === "대길" || p.grade === "길").sort((a, b) => (b.score ?? 0) - (a.score ?? 0)))
     .slice(0, 3)
     .map((p) => ({ name: p.name, line: PALACE[p.name].good }));
   // Every 경계 and 주의 palace, worst first, each with how to prepare.
