@@ -8,15 +8,17 @@ import { gwansangReading, type Judged } from "@/lib/gwansangReading";
 import { chartNotes, leadThird, likeness, thirdDev, BANDS, band, hyeong, IDX, level, measure, medianFace, wordOf, type BandKey, type Face, type Metrics, type Pt } from "@/lib/gwansang";
 
 // The 관상 capture test (/lab/gwansang): the camera shows a guide, and the face is taken only once it is the
-// right size, centred, facing straight, expressionless and well lit for HOLD_MS in a row. The frames of that
+// right size, centred, facing straight, expressionless and well lit for HOLD_MS in a row (a slip shorter than
+// GRACE_MS is skipped, not restarted), while the measuring lines are drawn over it step by step. The frames of that
 // hold are merged point by point (lib/gwansang.ts medianFace). Nothing leaves the device: the last frame stays
 // in memory only, for a painting the viewer may order (/api/portrait); past readings (numbers only) stay in this
 // browser, to compare retakes.
 
 const WASM = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/wasm";
 const MODEL = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
-const HOLD_MS = 1500;
-const MIN_FRAMES = 10;
+const HOLD_MS = 4000;
+const MIN_FRAMES = 30;
+const GRACE_MS = 350; // a blink or twitch shorter than this skips its frames instead of starting over
 const HISTORY_KEY = "gwansang-lab-history";
 const LIKENESS_RETRY = 75; // below this the painting is asked for once more
 const KEYS = Object.keys(BANDS) as BandKey[];
@@ -33,8 +35,21 @@ type Result = Reading & { face: Face; spread: Partial<Record<BandKey, number>>; 
 let imageReader: Promise<FaceLandmarker> | null = null;
 const imageLandmarker = () => (imageReader ??= makeLandmarker("IMAGE"));
 
+// The lines drawn over the face while it is being measured, one group per step of the hold (see SCAN_STEPS).
+type Link = { start: number; end: number };
+let scanLinks: Link[][] = [];
+const chain = (ids: number[]): Link[] => ids.slice(1).map((end, i) => ({ start: ids[i], end }));
+const SCAN_STEPS = ["얼굴 윤곽을 잡는 중", "눈썹과 눈을 재는 중", "코와 광대를 재는 중", "입과 턱을 재는 중", "삼정 비율을 맞추는 중"];
+
 async function makeLandmarker(mode: "VIDEO" | "IMAGE"): Promise<FaceLandmarker> {
   const { FaceLandmarker: FL, FilesetResolver } = await import("@mediapipe/tasks-vision");
+  scanLinks = [
+    FL.FACE_LANDMARKS_FACE_OVAL,
+    [...FL.FACE_LANDMARKS_LEFT_EYEBROW, ...FL.FACE_LANDMARKS_RIGHT_EYEBROW, ...FL.FACE_LANDMARKS_LEFT_EYE, ...FL.FACE_LANDMARKS_RIGHT_EYE],
+    [...chain([168, 6, 197, 195, 5, 4, 1, 2]), ...chain([129, 64, 98, 97, 2, 326, 327, 294, 358]), ...chain([234, 117, 118, 101]), ...chain([454, 346, 347, 330])],
+    [...FL.FACE_LANDMARKS_LIPS, ...chain([172, 136, 150, 149, 176, 148, 152, 377, 400, 378, 379, 365, 397])],
+    [],
+  ];
   const fileset = await FilesetResolver.forVisionTasks(WASM);
   const options = (delegate: "GPU" | "CPU") => ({
     baseOptions: { modelAssetPath: MODEL, delegate },
@@ -126,7 +141,7 @@ export default function GwansangLab() {
   const videoLm = useRef<FaceLandmarker | null>(null);
   const imageLm = useRef<FaceLandmarker | null>(null);
   const rafRef = useRef(0);
-  const hold = useRef<{ t0: number; faces: Face[] }>({ t0: 0, faces: [] });
+  const hold = useRef<{ t0: number; lastOk?: number; lastAt?: number; held?: number; faces: Face[] }>({ t0: 0, faces: [] });
   const [phase, setPhase] = useState<"idle" | "loading" | "camera" | "painting" | "done">("idle");
   const [waited, setWaited] = useState(0);
   const [retrying, setRetrying] = useState(false);
@@ -134,6 +149,9 @@ export default function GwansangLab() {
   const [checks, setChecks] = useState<Check[]>([]);
   const [pose, setPose] = useState<Pose | null>(null);
   const [progress, setProgress] = useState(0);
+  const [scanPts, setScanPts] = useState<Pt[] | null>(null);
+  // A chosen photo is read in the same steps as the camera, shown over the photo before the result.
+  const [photoScan, setPhotoScan] = useState<{ src: string; w: number; h: number; pts: Pt[]; step: number } | null>(null);
   const [dims, setDims] = useState({ w: 3, h: 4 });
   const [relaxed, setRelaxed] = useState(false);
   const relaxedRef = useRef(false);
@@ -220,6 +238,8 @@ export default function GwansangLab() {
 
   async function startCamera() {
     setResult(null);
+    setProgress(0);
+    setScanPts(null);
     setMessage("");
     setPhase("loading");
     try {
@@ -274,6 +294,7 @@ export default function GwansangLab() {
         const r = lm.detectForVideo(video, now);
         if (!r.faceLandmarks.length) {
           hold.current = { t0: 0, faces: [] };
+          setScanPts(null);
           const key = "none";
           if (key !== lastKey) {
             lastKey = key;
@@ -290,9 +311,15 @@ export default function GwansangLab() {
           setPose(j.pose);
           if (j.checks.every((c) => c.ok)) {
             const h = hold.current;
-            if (!h.t0) h.t0 = now;
+            // Held time counts frame by frame, at most 0.1 s per frame: a stalled frame (the engine's first
+            // run, a busy phone) does not skip the hold ahead.
+            const at = performance.now();
+            h.held = h.t0 ? (h.held ?? 0) + Math.min(at - (h.lastAt ?? at), 100) : 0;
+            if (!h.t0) h.t0 = at;
+            h.lastOk = h.lastAt = at;
+            if (h.faces.length % 2 === 0) setScanPts(r.faceLandmarks[0].map((p): Pt => [p.x, p.y]));
             h.faces.push({ pts: r.faceLandmarks[0].map((p): Pt => [p.x, p.y]), z: r.faceLandmarks[0].map((p) => p.z), aspect: video.videoWidth / video.videoHeight });
-            const p = Math.min(1, (now - h.t0) / HOLD_MS);
+            const p = Math.min(1, (h.held ?? 0) / HOLD_MS);
             setProgress(p);
             if (p >= 1 && h.faces.length >= MIN_FRAMES) {
               const frames = h.faces;
@@ -305,9 +332,12 @@ export default function GwansangLab() {
               finish(medianFace(frames), frames, "camera", { canvas, pts: frames[frames.length - 1].pts });
               return;
             }
+          } else if (hold.current.t0 && performance.now() - (hold.current.lastOk ?? 0) < GRACE_MS) {
+            hold.current.lastAt = performance.now(); // a slip in the grace window adds no held time
           } else {
             hold.current = { t0: 0, faces: [] };
             setProgress(0);
+            setScanPts(null);
           }
         }
       }
@@ -339,14 +369,22 @@ export default function GwansangLab() {
         return;
       }
       const pts = lm.map((p): Pt => [p.x, p.y]);
+      const src = cv.toDataURL("image/jpeg", 0.85);
+      for (let step = 0; step < SCAN_STEPS.length; step++) {
+        setPhotoScan({ src, w: cv.width, h: cv.height, pts, step });
+        await new Promise((ok) => setTimeout(ok, 700));
+      }
+      setPhotoScan(null);
       finish({ pts, z: lm.map((p) => p.z), aspect }, [], "photo", { canvas: cv, pts });
     } catch {
+      setPhotoScan(null);
       setPhase("idle");
       setMessage("사진을 읽지 못했어요. JPG나 PNG 사진으로 다시 골라 주세요.");
     }
   }
 
   const failing = checks.find((c) => !c.ok);
+  const scanStep = Math.min(SCAN_STEPS.length - 1, Math.floor(progress * SCAN_STEPS.length));
   const ready = checks.length > 0 && !failing;
   // The guide: an oval the face should fill, the eye line and the centre line, in the video's own pixels.
   const ry = dims.h * 0.3;
@@ -355,7 +393,21 @@ export default function GwansangLab() {
 
   return (
     <div className="mt-5 flex flex-col gap-4">
-      {phase !== "camera" && phase !== "painting" && (
+      {photoScan && (
+        <section className="flex flex-col gap-3">
+          <div className="relative w-full overflow-hidden rounded-2xl bg-ink" style={{ aspectRatio: `${photoScan.w} / ${photoScan.h}` }}>
+            {/* eslint-disable-next-line @next/next/no-img-element -- a local data URL */}
+            <img src={photoScan.src} alt="" className="absolute inset-0 h-full w-full object-cover" />
+            <svg viewBox={`0 0 ${photoScan.w} ${photoScan.h}`} className="absolute inset-0 h-full w-full" aria-hidden>
+              <ScanLines pts={photoScan.pts} step={photoScan.step} w={photoScan.w} h={photoScan.h} mirror={false} />
+            </svg>
+            <p className="absolute inset-x-0 bottom-3 mx-auto w-fit rounded-full bg-ink/80 px-4 py-1.5 text-[13px] font-bold text-hanji">
+              {SCAN_STEPS[photoScan.step]}… ({photoScan.step + 1}/{SCAN_STEPS.length})
+            </p>
+          </div>
+        </section>
+      )}
+      {phase !== "camera" && phase !== "painting" && !photoScan && (
         <section className="doc-paper flex flex-col gap-3 px-5 py-5">
           <p className="text-[14px] leading-relaxed">
             테두리에 얼굴을 맞추고 <b>정면 · 무표정</b>으로 {HOLD_MS / 1000}초 버티면 자동으로 찍혀요. 같은 사람이 여러 번 찍어서 결과가 같게
@@ -402,22 +454,20 @@ export default function GwansangLab() {
               </defs>
               <rect width={dims.w} height={dims.h} fill="#000" opacity="0.45" mask="url(#guide-hole)" />
               <ellipse cx={dims.w / 2} cy={dims.h * 0.5} rx={rx} ry={ry} fill="none" stroke={ready ? "#e3b04b" : "#f4ecdb"} strokeWidth={dims.w / 120} opacity="0.9" />
-              <ellipse
-                cx={dims.w / 2}
-                cy={dims.h * 0.5}
-                rx={rx}
-                ry={ry}
+              {/* The hold's progress, clockwise from the top of the guide (a rotated ellipse would swap its axes). */}
+              <path
+                d={`M ${dims.w / 2} ${dims.h * 0.5 - ry} A ${rx} ${ry} 0 1 1 ${dims.w / 2} ${dims.h * 0.5 + ry} A ${rx} ${ry} 0 1 1 ${dims.w / 2} ${dims.h * 0.5 - ry}`}
                 fill="none"
                 stroke="#b3261e"
                 strokeWidth={dims.w / 60}
                 strokeDasharray={`${ringLen * progress} ${ringLen}`}
-                transform={`rotate(-90 ${dims.w / 2} ${dims.h * 0.5})`}
               />
               <line x1={dims.w / 2 - rx} x2={dims.w / 2 + rx} y1={dims.h * 0.43} y2={dims.h * 0.43} stroke="#f4ecdb" strokeDasharray="10 10" strokeWidth={dims.w / 300} opacity="0.7" />
               <line x1={dims.w / 2} x2={dims.w / 2} y1={dims.h * 0.5 - ry * 0.55} y2={dims.h * 0.5 + ry * 0.35} stroke="#f4ecdb" strokeDasharray="10 10" strokeWidth={dims.w / 300} opacity="0.7" />
+              {scanPts && progress > 0 && <ScanLines pts={scanPts} step={scanStep} w={dims.w} h={dims.h} />}
             </svg>
             <p className="absolute inset-x-0 bottom-3 mx-auto w-fit rounded-full bg-ink/80 px-4 py-1.5 text-[13px] font-bold text-hanji">
-              {checks.length === 0 ? "얼굴을 찾는 중…" : failing ? failing.tip : progress > 0 ? "그대로 계세요…" : "좋아요"}
+              {checks.length === 0 ? "얼굴을 찾는 중…" : failing ? failing.tip : progress > 0 ? `${SCAN_STEPS[scanStep]}… 그대로 계세요` : "좋아요"}
             </p>
           </div>
           <div className="doc-paper px-4 py-3 text-[11.5px] text-ink-soft">
@@ -451,6 +501,30 @@ export default function GwansangLab() {
       {result && phase === "done" && <ResultView result={result} />}
       {history.length > 0 && phase !== "camera" && phase !== "painting" && <HistoryTable history={history} onClear={() => saveHistory([])} />}
     </div>
+  );
+}
+
+// The measuring lines over the camera, step by step: the outline first, then brows and eyes, nose and cheeks,
+// mouth and chin, and last the three lines that split the face into 삼정. Mirrored like the video.
+function ScanLines({ pts, step, w, h, mirror = true }: { pts: Pt[]; step: number; w: number; h: number; mirror?: boolean }) {
+  const X = (i: number) => (mirror ? 1 - pts[i][0] : pts[i][0]) * w;
+  const Y = (i: number) => pts[i][1] * h;
+  const sw = w / 260;
+  const browY = (Y(105) + Y(334)) / 2;
+  return (
+    <g fill="none" strokeLinecap="round">
+      {scanLinks.slice(0, step + 1).map((links, k) => (
+        <g key={k} stroke={k === step ? "#e3b04b" : "#f4ecdb"} strokeWidth={sw} opacity={k === step ? 0.95 : 0.55}>
+          {links.map((l, i) => (
+            <line key={i} x1={X(l.start)} y1={Y(l.start)} x2={X(l.end)} y2={Y(l.end)} />
+          ))}
+        </g>
+      ))}
+      {step === SCAN_STEPS.length - 1 &&
+        [Y(10), browY, Y(2), Y(152)].map((y, i) => (
+          <line key={i} x1={X(234)} x2={X(454)} y1={y} y2={y} stroke="#b3261e" strokeWidth={sw * 1.4} strokeDasharray={`${sw * 4} ${sw * 3}`} />
+        ))}
+    </g>
   );
 }
 
