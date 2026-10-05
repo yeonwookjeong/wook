@@ -1,7 +1,7 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import Anthropic from "@anthropic-ai/sdk";
-import { GoogleGenAI, ThinkingLevel } from "@google/genai";
+import { GoogleGenAI, ThinkingLevel, type GenerateContentResponseUsageMetadata } from "@google/genai";
 import { chartBrief, pairBrief } from "./brief";
 import { coupleBrief } from "./couple";
 import { decodePerson, profileOf, RELATIONS, relationOf } from "./pairToken";
@@ -16,6 +16,7 @@ import { dayStart, KINDS, parseSearch, pickDays, searchDay, taekilBrief } from "
 import type { Gender } from "./profile";
 import type { Pillars } from "./saju";
 import { getProfile } from "./store";
+import { recordAiUsage } from "./aiUsage";
 import { courtOfReader, subjectFor } from "./subject";
 
 // Written reports: the engine's chart brief goes to a language model, which writes the reading in 정 훈도's
@@ -29,7 +30,7 @@ const isGemini = REPORT_MODEL.startsWith("gemini");
 export const aiEnabled = () =>
   Boolean(isGemini ? process.env.GEMINI_API_KEY : process.env.ANTHROPIC_API_KEY) || process.env.REPORT_MOCK === "1";
 
-export type ReportJob = { key: string; system: string; prompt: string; title: string; modern: boolean };
+export type ReportJob = { key: string; product: string; system: string; prompt: string; title: string; modern: boolean };
 export type JobRequest = { product: string; court?: string; m?: string; t?: string; a?: string; b?: string; rel?: string; p?: string; kind?: string; from?: string; n?: string; d?: string; y?: string };
 
 // `v`: which prompt writes it. v5 is kept only to find the reports bought before v6, so they open as they were read.
@@ -133,7 +134,7 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
   const past = product.id === "yeonun" && req.y !== undefined && Number(req.y) < thisYear();
   const prompt = userPrompt(past ? { ...spec, chapters: YEONUN_PAST_TOC } : spec, subjectLine, briefs);
   const key = createHash("sha256").update([v, REPORT_MODEL, product.id, system, prompt].join("\n")).digest("base64url");
-  return { key, system, prompt, title: product.title, modern: Boolean(product.modern) };
+  return { key, product: product.id, system, prompt, title: product.title, modern: Boolean(product.modern) };
 }
 
 // The deep reports (재물·연애·직업) get their own evidence and ten-year calendar (lib/domains.ts).
@@ -178,8 +179,18 @@ export async function writeReport(job: ReportJob, onText: (t: string) => void): 
     }
   }
   const final = await stream.finalMessage();
-  if (final.stop_reason !== "end_turn") return null;
-  return text;
+  const ok = final.stop_reason === "end_turn";
+  const u = final.usage;
+  await recordAiUsage({
+    at: Date.now(),
+    model: final.model,
+    product: job.product,
+    input: u.input_tokens + (u.cache_read_input_tokens ?? 0) + (u.cache_creation_input_tokens ?? 0),
+    output: u.output_tokens,
+    thinking: 0,
+    ok,
+  });
+  return ok ? text : null;
 }
 
 let gemini: GoogleGenAI | null = null;
@@ -197,6 +208,8 @@ async function writeWithGemini(job: ReportJob, onText: (t: string) => void): Pro
   });
   let text = "";
   let finish: string | undefined;
+  let usage: GenerateContentResponseUsageMetadata | undefined;
+  let model: string | undefined;
   for await (const chunk of stream) {
     const t = chunk.text;
     if (t) {
@@ -204,6 +217,18 @@ async function writeWithGemini(job: ReportJob, onText: (t: string) => void): Pro
       onText(t);
     }
     finish = chunk.candidates?.[0]?.finishReason ?? finish;
+    usage = chunk.usageMetadata ?? usage; // the running total; the last chunk carries the final count
+    model = chunk.modelVersion ?? model;
   }
-  return finish === "STOP" && text ? text : null;
+  const ok = finish === "STOP" && Boolean(text);
+  await recordAiUsage({
+    at: Date.now(),
+    model: model ?? REPORT_MODEL,
+    product: job.product,
+    input: usage?.promptTokenCount ?? 0,
+    output: usage?.candidatesTokenCount ?? 0,
+    thinking: usage?.thoughtsTokenCount ?? 0,
+    ok,
+  });
+  return ok ? text : null;
 }

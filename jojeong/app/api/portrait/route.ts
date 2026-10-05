@@ -1,6 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { portraitPrompt } from "@/lib/portraitPrompt";
 import { countPortraitToday } from "@/lib/store";
+import { recordAiUsage } from "@/lib/aiUsage";
 
 // POST { photo } → { image } — the viewer's face crop (sent only after they agree) restyled by an image model in
 // the 관상 result's shared Joseon style (lib/portraitPrompt.ts, /lab/gwansang). Nothing is stored here: the
@@ -52,12 +53,22 @@ export async function POST(request: Request) {
         config: { responseModalities: ["IMAGE"], imageConfig: { aspectRatio: "3:4" } },
       });
       const img = res.candidates?.[0]?.content?.parts?.find((p) => p.inlineData?.data)?.inlineData;
+      const u = res.usageMetadata;
+      // Every painting is billed, kept or not: logged for /admin's AI cost table.
+      await recordAiUsage({
+        at: Date.now(),
+        model: res.modelVersion ?? model,
+        product: "portrait",
+        input: u?.promptTokenCount ?? 0,
+        output: u?.candidatesTokenCount ?? 0,
+        thinking: u?.thoughtsTokenCount ?? 0,
+        ok: Boolean(img?.data),
+      });
       if (!img?.data)
         return Response.json(
           { error: "화원이 이 그림은 그리지 못하겠다고 하네요. 다시 찍어 보세요.", reason: res.candidates?.[0]?.finishReason ?? null },
           { status: 422 },
         );
-      const u = res.usageMetadata;
       return Response.json({
         image: `data:${img.mimeType ?? "image/png"};base64,${img.data}`,
         model,
