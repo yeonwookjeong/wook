@@ -172,3 +172,52 @@ export function bounty(m: Metrics): number {
   const h = steps.reduce((a, s) => (a * 31 + s + 7) % 100003, 17);
   return 10 + (h % 90);
 }
+
+// 관상 도식: the notes written around the portrait, each pinned to a face point, and the two boxes under it.
+// The point numbers are MediaPipe's; `side` is the side of the picture the note sits on.
+export type ChartNote = { anchor: number; side: "L" | "R"; title: string; note: string };
+
+export function chartNotes(m: Metrics): ChartNote[] {
+  const st = (k: BandKey) => band(k, m[k]).step;
+  const forehead =
+    m.upper >= 0.26 ? ["넓고 훤한 이마", "초년운이 밝음"] : m.upper <= 0.2 ? ["아담한 이마", "스스로 일어서는 초년"] : ["반듯한 이마", "무난한 초년"];
+  const brow = [["눈썹이 눈에 가까움", "결단이 빠름"], ["가지런한 눈썹", "벗과 형제 복"], ["높고 시원한 눈썹", "도량이 넓음"]][st("brow")];
+  const tilt = st("tilt");
+  const open = st("open");
+  const eye =
+    tilt === 2 && open === 2 ? ["눈꼬리 올라간 큰 눈", "기세와 총명"]
+    : tilt === 2 ? ["올라간 눈꼬리", "밀고 나가는 힘"]
+    : tilt === 0 ? ["순하게 처진 눈꼬리", "온화하고 인복 많음"]
+    : open === 2 ? ["크고 맑은 눈", "감수성이 풍부함"]
+    : open === 0 ? ["가늘고 긴 눈", "신중하고 속이 깊음"]
+    : ["반듯한 눈", "균형 잡힌 판단"];
+  const gap = [["좁은 미간", "한 곳을 파는 집중력"], ["알맞은 미간", "안정된 마음"], ["넓은 미간", "너그러운 마음"]][st("gap")];
+  const nose = [["곧고 날렵한 코", "깔끔한 재물 관리"], ["반듯한 코", "꾸준히 쌓이는 재물"], ["넉넉한 콧방울", "재물 그릇이 큼"]][st("nose")];
+  const mouthWord = ["작은 입", "단정한 입", "큰 입"][st("mouth")];
+  const lipWord = ["얇은 입술", "", "도톰한 입술"][st("lip")];
+  const mouthNote = st("lip") === 2 ? "정이 많음" : st("lip") === 0 ? "말이 정확함" : st("mouth") === 2 ? "통이 크고 앞장섬" : "말을 아끼는 신중함";
+  const philtrum = [["짧은 인중", "빠른 실행력"], ["알맞은 인중", "건강한 기운"], ["긴 인중", "끈기와 장수"]][st("philtrum")];
+  const jaw = [["갸름한 턱", "섬세한 감각"], ["둥근 턱", "말년이 안정됨"], ["모난 턱", "끈기와 책임감"]][st("jaw")];
+  return [
+    { anchor: 151, side: "L", title: forehead[0], note: forehead[1] },
+    { anchor: 33, side: "L", title: eye[0], note: eye[1] },
+    { anchor: 61, side: "L", title: lipWord ? `${mouthWord} · ${lipWord}` : mouthWord, note: mouthNote },
+    { anchor: 164, side: "L", title: philtrum[0], note: philtrum[1] },
+    { anchor: 334, side: "R", title: brow[0], note: brow[1] },
+    { anchor: 168, side: "R", title: gap[0], note: gap[1] },
+    { anchor: 294, side: "R", title: nose[0], note: nose[1] },
+    { anchor: 377, side: "R", title: jaw[0], note: jaw[1] },
+  ];
+}
+
+export function chartSummary(m: Metrics): { trait: string[]; luck: string[] } {
+  const notes = chartNotes(m);
+  const pick = (a: number) => notes.find((n) => n.anchor === a)!.note;
+  const thirds: [string, number][] = [["초년", m.upper], ["중년", m.middle], ["말년", m.lower]];
+  const rank = [...thirds].sort((a, b) => b[1] - a[1]).map((t) => t[0]);
+  const word = (t: string) => ["가장 크게 피어남", "꾸준히 쌓여 감", "차분히 다져 감"][rank.indexOf(t)];
+  return {
+    trait: [pick(33), pick(334), pick(377)],
+    luck: thirds.map(([t]) => `${t} — ${word(t)}`),
+  };
+}

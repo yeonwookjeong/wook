@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { FaceLandmarker, FaceLandmarkerResult } from "@mediapipe/tasks-vision";
-import { stampTitle } from "@/lib/stampTitle";
+import { drawChart } from "@/lib/gwansangChart";
 import { BANDS, band, bounty, hyeong, IDX, level, measure, medianFace, wordOf, yongmo, type BandKey, type Face, type Metrics, type Pt } from "@/lib/gwansang";
 
 // The 관상 capture test (/lab/gwansang): the camera shows a guide, and the face is taken only once it is the
@@ -24,6 +24,10 @@ type Reading = { at: number; source: "camera" | "photo"; frames: number; m: Metr
 // The frame a painting may be ordered from, with its own face points: held in memory on this page only.
 type Snap = { canvas: HTMLCanvasElement; pts: Pt[] };
 type Result = Reading & { face: Face; spread: Partial<Record<BandKey, number>>; snap: Snap | null };
+
+// One still-image reader for the page: photos, and the painting that comes back (to pin the chart's notes).
+let imageReader: Promise<FaceLandmarker> | null = null;
+const imageLandmarker = () => (imageReader ??= makeLandmarker("IMAGE"));
 
 async function makeLandmarker(mode: "VIDEO" | "IMAGE"): Promise<FaceLandmarker> {
   const { FaceLandmarker: FL, FilesetResolver } = await import("@mediapipe/tasks-vision");
@@ -126,7 +130,6 @@ export default function GwansangLab() {
   const [progress, setProgress] = useState(0);
   const [dims, setDims] = useState({ w: 3, h: 4 });
   const [relaxed, setRelaxed] = useState(false);
-  const [paint, setPaint] = useState(false);
   const relaxedRef = useRef(false);
   const [result, setResult] = useState<Result | null>(null);
   const raw = useSyncExternalStore(subscribeHistory, rawHistory, () => "[]");
@@ -260,7 +263,7 @@ export default function GwansangLab() {
     setPhase("loading");
     setMessage("");
     try {
-      imageLm.current ??= await makeLandmarker("IMAGE");
+      imageLm.current ??= await imageLandmarker();
       const bmp = await createImageBitmap(file);
       const k = Math.min(1, 1024 / Math.max(bmp.width, bmp.height));
       const cv = document.createElement("canvas");
@@ -319,18 +322,11 @@ export default function GwansangLab() {
               }}
             />
           </label>
-          <label className="flex items-start gap-2 rounded-xl border border-seal/30 bg-white/50 px-3 py-2.5 text-[12.5px] leading-relaxed">
-            <input type="checkbox" className="mt-1" checked={paint} onChange={(e) => setPaint(e.target.checked)} />
-            <span>
-              <b>관상 결과를 조선 초상화로도 받기</b>
-              <span className="block text-[11.5px] text-ink-soft">얼굴 부분 사진을 그림 그리는 데에만 Google AI(Gemini)로 보내는 데 동의해요. 저장되지 않아요.</span>
-            </span>
-          </label>
           <label className="flex items-center justify-center gap-2 text-[12.5px] text-ink-soft">
             <input type="checkbox" checked={relaxed} onChange={(e) => setRelaxed(e.target.checked)} /> 판정 느슨하게 (잘 안 찍힐 때)
           </label>
           {message && <p className="text-center text-[13px] font-bold text-seal">{message}</p>}
-          <p className="text-center text-[11.5px] text-jade">관상은 이 폰 안에서만 재요. 사진은 어디에도 저장되지 않고, 그림을 맡길 때 동의한 경우에만 얼굴 부분이 그림용으로 전송돼요.</p>
+          <p className="text-center text-[11.5px] text-jade">관상은 이 폰 안에서 재요. 관상 그림을 그리려고 얼굴 부분 사진이 Google AI(Gemini)로 전송되고, 어디에도 저장되지 않아요.</p>
         </section>
       )}
 
@@ -392,7 +388,7 @@ export default function GwansangLab() {
         </section>
       )}
 
-      {result && phase === "done" && <ResultView result={result} paint={paint} />}
+      {result && phase === "done" && <ResultView result={result} />}
       {history.length > 0 && phase !== "camera" && <HistoryTable history={history} onClear={() => saveHistory([])} />}
     </div>
   );
@@ -460,26 +456,28 @@ function photoDataUrl(snap: Snap): string {
   return c.toDataURL("image/jpeg", 0.88);
 }
 
-async function compose(src: string, name: string): Promise<string> {
-  const img = new Image();
-  img.src = src;
-  await img.decode();
-  const c = document.createElement("canvas");
-  c.width = img.naturalWidth;
-  c.height = img.naturalHeight;
-  const g = c.getContext("2d")!;
-  g.drawImage(img, 0, 0);
-  stampTitle(g, c.width, name);
-  return c.toDataURL("image/jpeg", 0.92);
+async function chart(src: string, result: Result, name: string): Promise<string> {
+  const painting = new Image();
+  painting.src = src;
+  await painting.decode();
+  let paintPts: Pt[] | null = null;
+  try {
+    const found = (await imageLandmarker()).detect(painting).faceLandmarks[0];
+    if (found) paintPts = found.map((p): Pt => [p.x, p.y]);
+  } catch {}
+  const h = hyeong(result.m);
+  const order = "木火土金水";
+  const els = (h.mixed ? [h.main.el, h.mixed.el] : [h.main.el]).sort((a, b) => order.indexOf(a) - order.indexOf(b));
+  return drawChart({ painting, paintPts, facePts: result.face.pts, m: result.m, title: h.label, hanja: `${els.join("")}形`, name });
 }
 
-// The result's portrait, for viewers who agreed before the capture: the face crop goes to /api/portrait and
-// comes back painted in the shared style, with the site's own 진영 title. The line drawing stands in while it
-// is painted, and stays when painting fails.
+// The result's portrait: the face crop goes to /api/portrait, comes back painted in the shared style, and is laid
+// out as a 관상 도식 with notes pinned to the face. The line drawing stands in while it is painted, and stays
+// when painting fails.
 function ResultPortrait({ result }: { result: Result }) {
   const [raw, setRaw] = useState<string | null>(null);
   const [shown, setShown] = useState<string | null>(null);
-  const [status, setStatus] = useState("화원이 그리는 중이에요 · 20~60초");
+  const [status, setStatus] = useState("관상가가 도식을 그리는 중이에요 · 20~60초");
   const [name, setName] = useState("무명씨");
   const asked = useRef(0);
 
@@ -495,7 +493,7 @@ function ResultPortrait({ result }: { result: Result }) {
           return;
         }
         setRaw(data.image);
-        setShown(await compose(data.image, "무명씨"));
+        setShown(await chart(data.image, result, "무명씨"));
         setStatus(`${data.model} · ${(data.ms / 1000).toFixed(0)}초 · 길게 눌러 저장`);
       })
       .catch(() => setStatus("화원에게 닿지 못했어요."));
@@ -503,14 +501,14 @@ function ResultPortrait({ result }: { result: Result }) {
 
   async function rename(v: string) {
     setName(v);
-    if (raw) setShown(await compose(raw, v.trim() || "무명씨"));
+    if (raw) setShown(await chart(raw, result, v.trim() || "무명씨"));
   }
 
   return (
     <div className="flex flex-col items-center gap-2">
       {shown ? (
         // eslint-disable-next-line @next/next/no-img-element -- a painting returned as a data URL
-        <img src={shown} alt="조선 초상화로 그린 얼굴" className="w-full max-w-[320px] rounded shadow-[0_2px_12px_rgba(0,0,0,0.2)]" />
+        <img src={shown} alt="관상 도식" className="w-full rounded shadow-[0_2px_12px_rgba(0,0,0,0.2)]" />
       ) : (
         <div className={raw === null ? "animate-pulse" : ""}>
           <InkFace face={result.face} />
@@ -518,7 +516,7 @@ function ResultPortrait({ result }: { result: Result }) {
       )}
       {shown && (
         <label className="flex items-center gap-2 text-[12.5px] text-ink-soft">
-          족자에 적을 이름
+          도식에 적을 이름
           <input value={name} maxLength={6} onChange={(e) => rename(e.target.value)} className="w-28 rounded border border-ink/20 bg-white/70 px-2 py-1 text-ink" />
         </label>
       )}
@@ -531,7 +529,7 @@ function fmt(key: BandKey, v: number) {
   return key === "tilt" ? `${v >= 0 ? "+" : ""}${v.toFixed(1)}°` : v.toFixed(2);
 }
 
-function ResultView({ result, paint }: { result: Result; paint: boolean }) {
+function ResultView({ result }: { result: Result }) {
   const { m } = result;
   const h = hyeong(m);
   const parts: [string, number, string][] = [
@@ -546,7 +544,7 @@ function ResultView({ result, paint }: { result: Result; paint: boolean }) {
         <p className="text-center text-xs font-extrabold text-seal">
           {result.source === "camera" ? `카메라 · ${result.frames}장의 중간값` : "사진 한 장"}
         </p>
-        {paint && result.snap ? <ResultPortrait result={result} /> : <InkFace face={result.face} />}
+        {result.snap ? <ResultPortrait result={result} /> : <InkFace face={result.face} />}
         <div className="mt-2 flex items-center justify-center gap-3">
           <span className="grid h-11 w-11 place-items-center rounded bg-seal font-myeongjo text-2xl text-hanji">{h.main.el}</span>
           <span className="font-myeongjo text-2xl font-extrabold">{h.label}</span>
