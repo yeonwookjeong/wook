@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { FaceLandmarker, FaceLandmarkerResult } from "@mediapipe/tasks-vision";
-import { DRESSES, STYLES, type Dress, type Style } from "@/lib/portraitPrompt";
+import { GROUPS, VERSIONS, type VersionKey } from "@/lib/portraitPrompt";
 import { stampTitle } from "@/lib/stampTitle";
 import { BANDS, band, bounty, hyeong, IDX, level, measure, medianFace, wordOf, yongmo, type BandKey, type Face, type Metrics, type Pt } from "@/lib/gwansang";
 
@@ -467,35 +467,36 @@ async function compose(src: string, name: string): Promise<string> {
   return c.toDataURL("image/jpeg", 0.92);
 }
 
-type Painting = { raw: string; shown: string; style: Style; model: string; ms: number; usage: { input: number | null; output: number | null } };
+type Painting = { id: number; raw: string; shown: string; version: VersionKey; model: string; ms: number; usage: { input: number | null; output: number | null } };
 
-// 도화서: for those who want a picture, their face restyled as a Joseon painting by an image model.
+// 도화서: for those who want a picture, their own face as a Joseon character, at its best (or as a caricature).
+// Each painting stays on the page, newest first, to compare versions.
 function PortraitStudio({ result }: { result: Result }) {
-  const [dress, setDress] = useState<Dress>("gwanbok");
   const [consent, setConsent] = useState(false);
   const [name, setName] = useState("무명씨");
-  const [busy, setBusy] = useState<Style | null>(null);
+  const [busy, setBusy] = useState<VersionKey | null>(null);
   const [error, setError] = useState("");
-  const [art, setArt] = useState<Painting | null>(null);
+  const [art, setArt] = useState<Painting[]>([]);
   const snap = result.snap;
   if (!snap) return null;
 
-  async function order(style: Style) {
+  async function order(version: VersionKey) {
     if (busy || !snap) return;
-    setBusy(style);
+    setBusy(version);
     setError("");
     try {
       const res = await fetch("/api/portrait", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ style, dress, metrics: result.m, photo: photoDataUrl(snap) }),
+        body: JSON.stringify({ version, metrics: result.m, photo: photoDataUrl(snap) }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.image) {
         setError(`${data.error ?? "그림을 받지 못했어요."}${data.detail ? ` (${data.detail})` : ""}`);
         return;
       }
-      setArt({ raw: data.image, shown: await compose(data.image, name.trim() || "무명씨"), style, model: data.model, ms: data.ms, usage: data.usage });
+      const shown = await compose(data.image, name.trim() || "무명씨");
+      setArt((list) => [{ id: Date.now(), raw: data.image, shown, version, model: data.model, ms: data.ms, usage: data.usage }, ...list]);
     } catch {
       setError("화원에게 닿지 못했어요. 연결을 확인하고 다시 맡겨 주세요.");
     } finally {
@@ -505,58 +506,61 @@ function PortraitStudio({ result }: { result: Result }) {
 
   async function rename(v: string) {
     setName(v);
-    if (art) {
-      const shown = await compose(art.raw, v.trim() || "무명씨");
-      setArt((a) => (a ? { ...a, shown } : a));
-    }
+    const label = v.trim() || "무명씨";
+    const redone = await Promise.all(art.map(async (a) => ({ id: a.id, shown: await compose(a.raw, label) })));
+    setArt((list) => list.map((a) => ({ ...a, shown: redone.find((r) => r.id === a.id)?.shown ?? a.shown })));
   }
 
-  const seg = (on: boolean) => `rounded-full border px-3 py-1.5 text-[12.5px] font-bold ${on ? "border-ink bg-ink text-hanji" : "border-ink/20 text-ink-soft"}`;
   return (
     <section className="doc-paper flex flex-col gap-3 px-5 py-5">
       <h2 className="text-center font-myeongjo text-lg font-extrabold">도화서에 그림 맡기기</h2>
-      <p className="text-center text-[12px] text-ink-soft">원하는 분만 눌러 주세요. 내 얼굴을 조선 그림으로 그려 드려요.</p>
-
-      {art && (
-        <div className="flex flex-col items-center gap-2">
-          {/* eslint-disable-next-line @next/next/no-img-element -- a painting returned as a data URL */}
-          <img src={art.shown} alt="도화서 화원이 그린 그림" className="w-full max-w-[340px] rounded shadow-[0_2px_12px_rgba(0,0,0,0.2)]" />
-          <label className="flex items-center gap-2 text-[12.5px] text-ink-soft">
-            족자에 적을 이름
-            <input value={name} maxLength={6} onChange={(e) => rename(e.target.value)} className="w-28 rounded border border-ink/20 bg-white/70 px-2 py-1 text-ink" />
-          </label>
-          <p className="text-[10.5px] text-ink-soft tabular-nums">
-            {STYLES[art.style].label} · {art.model} · {(art.ms / 1000).toFixed(0)}초 · 토큰 입력 {art.usage.input ?? "?"} / 출력 {art.usage.output ?? "?"} · 길게 눌러 저장
-          </p>
-        </div>
-      )}
-
-      <div className="flex flex-wrap justify-center gap-1.5">
-        {(Object.keys(DRESSES) as Dress[]).map((d) => (
-          <button key={d} type="button" className={seg(dress === d)} onClick={() => setDress(d)}>
-            {DRESSES[d].label}
-          </button>
-        ))}
-      </div>
+      <p className="text-center text-[12px] text-ink-soft">원하는 분만 눌러 주세요. 내 얼굴 그대로, 조선에서 가장 빛나는 날로 그려 드려요.</p>
       <label className="flex items-start gap-2 text-[12px] leading-relaxed">
         <input type="checkbox" className="mt-1" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
         얼굴 부분 사진을 그림 그리는 데에만 Google AI(Gemini)로 보내는 데 동의해요. 훈도사주는 사진을 저장하지 않아요.
       </label>
-      <div className="grid grid-cols-2 gap-2">
-        {(Object.keys(STYLES) as Style[]).map((st) => (
-          <button
-            key={st}
-            type="button"
-            disabled={!!busy || !consent}
-            onClick={() => order(st)}
-            className={`flex flex-col items-center rounded-2xl px-3 py-3 font-bold disabled:opacity-50 ${st === "eojin" ? "bg-seal text-hanji" : "bg-ink text-hanji"}`}
-          >
-            <span className="text-[14px]">{busy === st ? "그리는 중… (20~60초)" : STYLES[st].label}</span>
-            <span className="mt-0.5 text-[10.5px] font-normal opacity-80">{STYLES[st].note}</span>
-          </button>
-        ))}
-      </div>
+      {GROUPS.map(({ group, note }) => (
+        <div key={group} className="flex flex-col gap-1.5">
+          <p className="text-[12.5px] font-bold">
+            {group} <span className="font-normal text-ink-soft">· {note}</span>
+          </p>
+          <div className="grid grid-cols-4 gap-1.5">
+            {(Object.keys(VERSIONS) as VersionKey[])
+              .filter((k) => VERSIONS[k].group === group)
+              .map((k) => (
+                <button
+                  key={k}
+                  type="button"
+                  disabled={!!busy || !consent}
+                  onClick={() => order(k)}
+                  className={`rounded-xl px-1 py-2.5 text-[13px] font-bold text-hanji disabled:opacity-40 ${group === "멋지게" ? "bg-jjok" : group === "예쁘게" ? "bg-seal" : "bg-ink"} ${busy === k ? "animate-pulse" : ""}`}
+                >
+                  {busy === k ? "그리는 중" : VERSIONS[k].label}
+                </button>
+              ))}
+          </div>
+        </div>
+      ))}
+      {busy && <p className="text-center text-[12px] text-ink-soft">화원이 {VERSIONS[busy].label} 그림을 그리는 중이에요 · 20~60초</p>}
       {error && <p className="text-center text-[12.5px] font-bold text-seal">{error}</p>}
+
+      {art.length > 0 && (
+        <div className="flex flex-col items-center gap-4 pt-2">
+          <label className="flex items-center gap-2 text-[12.5px] text-ink-soft">
+            족자에 적을 이름
+            <input value={name} maxLength={6} onChange={(e) => rename(e.target.value)} className="w-28 rounded border border-ink/20 bg-white/70 px-2 py-1 text-ink" />
+          </label>
+          {art.map((a) => (
+            <figure key={a.id} className="flex w-full flex-col items-center gap-1">
+              {/* eslint-disable-next-line @next/next/no-img-element -- a painting returned as a data URL */}
+              <img src={a.shown} alt={`${VERSIONS[a.version].label} 그림`} className="w-full max-w-[340px] rounded shadow-[0_2px_12px_rgba(0,0,0,0.2)]" />
+              <figcaption className="text-[10.5px] text-ink-soft tabular-nums">
+                {VERSIONS[a.version].label} · {a.model} · {(a.ms / 1000).toFixed(0)}초 · 토큰 입력 {a.usage.input ?? "?"} / 출력 {a.usage.output ?? "?"} · 길게 눌러 저장
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      )}
     </section>
   );
 }

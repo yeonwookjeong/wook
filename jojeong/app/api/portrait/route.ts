@@ -1,11 +1,11 @@
 import { GoogleGenAI } from "@google/genai";
 import type { Metrics } from "@/lib/gwansang";
-import { DRESSES, portraitPrompt, STYLES, type Dress, type Style } from "@/lib/portraitPrompt";
+import { portraitPrompt, VERSIONS, type VersionKey } from "@/lib/portraitPrompt";
 import { countPortraitToday } from "@/lib/store";
 
-// POST { style, dress, metrics, photo } → { image } — the viewer's face crop (sent only after they agree) restyled
-// as a Joseon painting by an image model (/lab/gwansang): a faithful 어진 or a 풍속화 caricature that plays up
-// the features the 관상 measures found striking. Nothing is stored here: the picture passes through.
+// POST { version, metrics, photo } → { image } — the viewer's face crop (sent only after they agree) restyled by
+// an image model as one of the Joseon versions in lib/portraitPrompt.ts (/lab/gwansang). Nothing is stored
+// here: the picture passes through.
 //
 // The model is PORTRAIT_MODEL (a comma list, tried in order; a name the API does not know is skipped).
 
@@ -19,7 +19,7 @@ const DAILY_LIMIT = Number(process.env.PORTRAIT_DAILY_LIMIT ?? 40);
 const MAX_B64 = 1_500_000;
 let localCount = 0; // a fallback cap when the store is out of reach
 
-type Body = { style?: string; dress?: string; metrics?: Metrics; photo?: string };
+type Body = { version?: string; metrics?: Metrics; photo?: string };
 
 const b64 = (dataUrl: string | undefined, mime: string) => {
   const m = dataUrl?.match(/^data:([a-z/+-]+);base64,([A-Za-z0-9+/=]+)$/);
@@ -29,11 +29,10 @@ const b64 = (dataUrl: string | undefined, mime: string) => {
 
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => ({}))) as Body;
-  const style = body.style && body.style in STYLES ? (body.style as Style) : null;
-  const dress = body.dress && body.dress in DRESSES ? (body.dress as Dress) : null;
+  const version = body.version && body.version in VERSIONS ? (body.version as VersionKey) : null;
   const m = body.metrics;
   const photo = b64(body.photo, "image/jpeg");
-  if (!style || !dress || !m || typeof m.ratio !== "number" || !photo)
+  if (!version || !m || typeof m.ratio !== "number" || !photo)
     return Response.json({ error: "그림 주문서가 비었어요. 다시 찍어 주세요." }, { status: 400 });
   if (!process.env.GEMINI_API_KEY)
     return Response.json({ error: "화원이 아직 출근 전이에요. (이 배포에 GEMINI_API_KEY가 없어요)" }, { status: 503 });
@@ -42,7 +41,7 @@ export async function POST(request: Request) {
   if (count > DAILY_LIMIT) return Response.json({ error: "오늘 그릴 수 있는 그림이 다 찼어요. 내일 다시 맡겨 주세요." }, { status: 429 });
 
   // The photo first, then the instruction: an edit of this picture, not a new one.
-  const parts = [{ inlineData: photo }, { text: portraitPrompt(style, dress, m) }];
+  const parts = [{ inlineData: photo }, { text: portraitPrompt(version, m) }];
 
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   let lastError = "";
@@ -57,7 +56,7 @@ export async function POST(request: Request) {
       const img = res.candidates?.[0]?.content?.parts?.find((p) => p.inlineData?.data)?.inlineData;
       if (!img?.data)
         return Response.json(
-          { error: "화원이 이 그림은 그리지 못하겠다고 하네요. 다른 옷차림이나 사진으로 다시 맡겨 주세요.", reason: res.candidates?.[0]?.finishReason ?? null },
+          { error: "화원이 이 그림은 그리지 못하겠다고 하네요. 다른 버전이나 사진으로 다시 맡겨 주세요.", reason: res.candidates?.[0]?.finishReason ?? null },
           { status: 422 },
         );
       const u = res.usageMetadata;
