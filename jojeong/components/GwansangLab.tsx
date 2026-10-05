@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "reac
 import type { FaceLandmarker, FaceLandmarkerResult } from "@mediapipe/tasks-vision";
 import { drawChart } from "@/lib/gwansangChart";
 import { deepMeasure, palaces, peaks, type Grade } from "@/lib/gwansangDeep";
-import { chartNotes, BANDS, band, bounty, hyeong, IDX, level, measure, medianFace, wordOf, yongmo, type BandKey, type Face, type Metrics, type Pt } from "@/lib/gwansang";
+import { chartNotes, likeness, BANDS, band, bounty, hyeong, IDX, level, measure, medianFace, wordOf, yongmo, type BandKey, type Face, type Metrics, type Pt } from "@/lib/gwansang";
 
 // The 관상 capture test (/lab/gwansang): the camera shows a guide, and the face is taken only once it is the
 // right size, centred, facing straight, expressionless and well lit for HOLD_MS in a row. The frames of that
@@ -17,6 +17,7 @@ const MODEL = "https://storage.googleapis.com/mediapipe-models/face_landmarker/f
 const HOLD_MS = 1500;
 const MIN_FRAMES = 10;
 const HISTORY_KEY = "gwansang-lab-history";
+const LIKENESS_RETRY = 75; // below this the painting is asked for once more
 const KEYS = Object.keys(BANDS) as BandKey[];
 
 type Check = { key: string; ok: boolean; tip: string };
@@ -24,7 +25,7 @@ type Pose = { yaw: number; pitch: number; roll: number };
 type Reading = { at: number; source: "camera" | "photo"; frames: number; m: Metrics };
 // The frame a painting may be ordered from, with its own face points: held in memory on this page only.
 type Snap = { canvas: HTMLCanvasElement; pts: Pt[] };
-type Painting = { img: HTMLImageElement; pts: Pt[] | null };
+type Painting = { img: HTMLImageElement; pts: Pt[] | null; face: Face | null };
 type Result = Reading & { face: Face; spread: Partial<Record<BandKey, number>>; snap: Snap | null; painting: Painting | null; paintNote: string };
 
 // One still-image reader for the page: photos, and the painting that comes back (to pin the chart's notes).
@@ -127,6 +128,7 @@ export default function GwansangLab() {
   const hold = useRef<{ t0: number; faces: Face[] }>({ t0: 0, faces: [] });
   const [phase, setPhase] = useState<"idle" | "loading" | "camera" | "painting" | "done">("idle");
   const [waited, setWaited] = useState(0);
+  const [retrying, setRetrying] = useState(false);
   const [message, setMessage] = useState("");
   const [checks, setChecks] = useState<Check[]>([]);
   const [pose, setPose] = useState<Pose | null>(null);
@@ -176,25 +178,42 @@ export default function GwansangLab() {
     // Everything waits for the painting, then shows at once; a failed painting falls back to the line drawing.
     setResult(null);
     setPhase("painting");
-    paint(snap).then(({ painting, note }) => {
+    paint(snap, m).then(({ painting, note }) => {
       setResult({ ...reading, face, spread, snap, painting, paintNote: note });
       setPhase("done");
     });
   }
 
-  async function paint(snap: Snap): Promise<{ painting: Painting | null; note: string }> {
-    try {
+  // Paint, then measure the painted face against the real one; a painting that drifted is asked for once more
+  // (strictly), and the closer of the two is kept.
+  async function paint(snap: Snap, m: Metrics): Promise<{ painting: Painting | null; note: string }> {
+    const photo = photoDataUrl(snap);
+    const once = async (strict: boolean) => {
       const res = await fetch("/api/portrait", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ photo: photoDataUrl(snap) }),
+        body: JSON.stringify({ photo, strict }),
         signal: AbortSignal.timeout(110_000),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data.image) return { painting: null, note: data.error ?? "그림을 받지 못했어요." };
-      return { painting: await loadPainting(data.image), note: `${data.model} · ${(data.ms / 1000).toFixed(0)}초 · 길게 눌러 저장` };
-    } catch {
-      return { painting: null, note: "그림이 늦어져 선화로 보여 드려요." };
+      if (!res.ok || !data.image) throw new Error(data.error ?? "그림을 받지 못했어요.");
+      const painting = await loadPainting(data.image);
+      const score = painting.face ? likeness(measure(painting.face), m) : null;
+      return { painting, score, model: data.model as string, ms: data.ms as number };
+    };
+    try {
+      let best = await once(false);
+      if (best.score !== null && best.score < LIKENESS_RETRY) {
+        setRetrying(true);
+        const again = await once(true).catch(() => null);
+        if (again && (again.score ?? 0) > best.score) best = again;
+      }
+      const score = best.score === null ? "닮음 측정 불가" : `닮음 ${best.score}점`;
+      return { painting: best.painting, note: `${score} · ${best.model} · ${(best.ms / 1000).toFixed(0)}초 · 길게 눌러 저장` };
+    } catch (e) {
+      return { painting: null, note: e instanceof Error && e.name !== "TimeoutError" ? e.message : "그림이 늦어져 선화로 보여 드려요." };
+    } finally {
+      setRetrying(false);
     }
   }
 
@@ -427,7 +446,7 @@ export default function GwansangLab() {
         </section>
       )}
 
-      {phase === "painting" && <PaintingWait waited={waited} />}
+      {phase === "painting" && <PaintingWait waited={waited} retrying={retrying} />}
       {result && phase === "done" && <ResultView result={result} />}
       {history.length > 0 && phase !== "camera" && phase !== "painting" && <HistoryTable history={history} onClear={() => saveHistory([])} />}
     </div>
@@ -497,16 +516,18 @@ function photoDataUrl(snap: Snap): string {
 }
 
 // The painting as an image, and the face points found on it (none when the reader finds no face there).
-async function loadPainting(src: string): Promise<{ img: HTMLImageElement; pts: Pt[] | null }> {
+async function loadPainting(src: string): Promise<Painting> {
   const img = new Image();
   img.src = src;
   await img.decode();
-  let pts: Pt[] | null = null;
   try {
     const found = (await imageLandmarker()).detect(img).faceLandmarks[0];
-    if (found) pts = found.map((p): Pt => [p.x, p.y]);
+    if (found) {
+      const pts = found.map((p): Pt => [p.x, p.y]);
+      return { img, pts, face: { pts, z: found.map((p) => p.z), aspect: img.naturalWidth / img.naturalHeight } };
+    }
   } catch {}
-  return { img, pts };
+  return { img, pts: null, face: null };
 }
 
 // The result's portrait: the face crop goes to /api/portrait, comes back painted in the shared style, and is laid
@@ -591,7 +612,7 @@ function fmt(key: BandKey, v: number) {
 }
 
 // While the painting is made: one screen, a few lines that change as the wait goes on.
-function PaintingWait({ waited }: { waited: number }) {
+function PaintingWait({ waited, retrying }: { waited: number; retrying: boolean }) {
   const lines = [
     "관상가가 얼굴을 살피고 있어요",
     "삼정과 오관을 재는 중이에요",
@@ -607,8 +628,10 @@ function PaintingWait({ waited }: { waited: number }) {
         <div className="absolute inset-0 animate-spin rounded-full border-4 border-hanji-deep border-t-seal" />
         <div className="absolute inset-3 grid place-items-center rounded-full bg-seal font-myeongjo text-xl font-extrabold text-hanji">觀</div>
       </div>
-      <p className="font-myeongjo text-lg font-extrabold">{lines[Math.min(lines.length - 1, Math.floor(waited / 6))]}</p>
-      <p className="text-[12px] text-ink-soft tabular-nums">보통 20~60초 걸려요 · {waited}초</p>
+      <p className="font-myeongjo text-lg font-extrabold">
+        {retrying ? "덜 닮아서 한 번 더 그리는 중이에요" : lines[Math.min(lines.length - 1, Math.floor(waited / 6))]}
+      </p>
+      <p className="text-[12px] text-ink-soft tabular-nums">보통 30~90초 걸려요 · {waited}초</p>
       <p className="text-[11px] text-jade">그림이 완성되면 관상 도식과 풀이를 한 번에 보여 드려요</p>
     </section>
   );

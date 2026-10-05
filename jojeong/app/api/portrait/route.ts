@@ -10,7 +10,8 @@ import { countPortraitToday } from "@/lib/store";
 
 export const maxDuration = 120;
 
-const MODELS = (process.env.PORTRAIT_MODEL ?? "gemini-3.1-flash-image,gemini-3.1-flash-image-preview")
+// Nano Banana Pro first: it holds a person's identity best; the Flash image model is the fallback.
+const MODELS = (process.env.PORTRAIT_MODEL ?? "gemini-3-pro-image,gemini-3-pro-image-preview,gemini-3.1-flash-image,gemini-3.1-flash-image-preview")
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
@@ -18,7 +19,7 @@ const DAILY_LIMIT = Number(process.env.PORTRAIT_DAILY_LIMIT ?? 40);
 const MAX_B64 = 1_500_000;
 let localCount = 0; // a fallback cap when the store is out of reach
 
-type Body = { photo?: string };
+type Body = { photo?: string; strict?: boolean };
 
 const b64 = (dataUrl: string | undefined, mime: string) => {
   const m = dataUrl?.match(/^data:([a-z/+-]+);base64,([A-Za-z0-9+/=]+)$/);
@@ -38,7 +39,7 @@ export async function POST(request: Request) {
   if (count > DAILY_LIMIT) return Response.json({ error: "오늘 그릴 수 있는 그림이 다 찼어요. 내일 다시 맡겨 주세요." }, { status: 429 });
 
   // The photo first, then the instruction: an edit of this picture, not a new one.
-  const parts = [{ inlineData: photo }, { text: portraitPrompt() }];
+  const parts = [{ inlineData: photo }, { text: portraitPrompt(body.strict === true) }];
 
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   let lastError = "";

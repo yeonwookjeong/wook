@@ -221,3 +221,11 @@ export function chartSummary(m: Metrics): { trait: string[]; luck: string[] } {
     luck: thirds.map(([t]) => `${t} — ${word(t)}`),
   };
 }
+
+// How closely a painting's face keeps the sitter's proportions, 0–100: the mean relative difference of the measures
+// that make a face recognisable (eye openness is left out: painters may brighten eyes without changing the person).
+export function likeness(painted: Metrics, real: Metrics): number {
+  const keys = ["ratio", "jaw", "gap", "nose", "mouth", "brow", "philtrum"] as const;
+  const diff = keys.reduce((s, k) => s + Math.abs(painted[k] - real[k]) / Math.abs(real[k]), 0) / keys.length;
+  return Math.round(100 * Math.max(0, 1 - diff * 2.5));
+}
