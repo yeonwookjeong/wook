@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { FaceLandmarker, FaceLandmarkerResult } from "@mediapipe/tasks-vision";
-import { GROUPS, VERSIONS, type VersionKey } from "@/lib/portraitPrompt";
 import { stampTitle } from "@/lib/stampTitle";
 import { BANDS, band, bounty, hyeong, IDX, level, measure, medianFace, wordOf, yongmo, type BandKey, type Face, type Metrics, type Pt } from "@/lib/gwansang";
 
@@ -127,6 +126,7 @@ export default function GwansangLab() {
   const [progress, setProgress] = useState(0);
   const [dims, setDims] = useState({ w: 3, h: 4 });
   const [relaxed, setRelaxed] = useState(false);
+  const [paint, setPaint] = useState(false);
   const relaxedRef = useRef(false);
   const [result, setResult] = useState<Result | null>(null);
   const raw = useSyncExternalStore(subscribeHistory, rawHistory, () => "[]");
@@ -319,6 +319,13 @@ export default function GwansangLab() {
               }}
             />
           </label>
+          <label className="flex items-start gap-2 rounded-xl border border-seal/30 bg-white/50 px-3 py-2.5 text-[12.5px] leading-relaxed">
+            <input type="checkbox" className="mt-1" checked={paint} onChange={(e) => setPaint(e.target.checked)} />
+            <span>
+              <b>관상 결과를 조선 초상화로도 받기</b>
+              <span className="block text-[11.5px] text-ink-soft">얼굴 부분 사진을 그림 그리는 데에만 Google AI(Gemini)로 보내는 데 동의해요. 저장되지 않아요.</span>
+            </span>
+          </label>
           <label className="flex items-center justify-center gap-2 text-[12.5px] text-ink-soft">
             <input type="checkbox" checked={relaxed} onChange={(e) => setRelaxed(e.target.checked)} /> 판정 느슨하게 (잘 안 찍힐 때)
           </label>
@@ -385,8 +392,7 @@ export default function GwansangLab() {
         </section>
       )}
 
-      {result && phase === "done" && <PortraitStudio result={result} />}
-      {result && phase === "done" && <ResultView result={result} />}
+      {result && phase === "done" && <ResultView result={result} paint={paint} />}
       {history.length > 0 && phase !== "camera" && <HistoryTable history={history} onClear={() => saveHistory([])} />}
     </div>
   );
@@ -467,101 +473,57 @@ async function compose(src: string, name: string): Promise<string> {
   return c.toDataURL("image/jpeg", 0.92);
 }
 
-type Painting = { id: number; raw: string; shown: string; version: VersionKey; model: string; ms: number; usage: { input: number | null; output: number | null } };
-
-// 도화서: for those who want a picture, their own face as a Joseon character, at its best (or as a caricature).
-// Each painting stays on the page, newest first, to compare versions.
-function PortraitStudio({ result }: { result: Result }) {
-  const [consent, setConsent] = useState(false);
+// The result's portrait, for viewers who agreed before the capture: the face crop goes to /api/portrait and
+// comes back painted in the shared style, with the site's own 진영 title. The line drawing stands in while it
+// is painted, and stays when painting fails.
+function ResultPortrait({ result }: { result: Result }) {
+  const [raw, setRaw] = useState<string | null>(null);
+  const [shown, setShown] = useState<string | null>(null);
+  const [status, setStatus] = useState("화원이 그리는 중이에요 · 20~60초");
   const [name, setName] = useState("무명씨");
-  const [busy, setBusy] = useState<VersionKey | null>(null);
-  const [error, setError] = useState("");
-  const [art, setArt] = useState<Painting[]>([]);
-  const snap = result.snap;
-  if (!snap) return null;
+  const asked = useRef(0);
 
-  async function order(version: VersionKey) {
-    if (busy || !snap) return;
-    setBusy(version);
-    setError("");
-    try {
-      const res = await fetch("/api/portrait", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ version, metrics: result.m, photo: photoDataUrl(snap) }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data.image) {
-        setError(`${data.error ?? "그림을 받지 못했어요."}${data.detail ? ` (${data.detail})` : ""}`);
-        return;
-      }
-      const shown = await compose(data.image, name.trim() || "무명씨");
-      setArt((list) => [{ id: Date.now(), raw: data.image, shown, version, model: data.model, ms: data.ms, usage: data.usage }, ...list]);
-    } catch {
-      setError("화원에게 닿지 못했어요. 연결을 확인하고 다시 맡겨 주세요.");
-    } finally {
-      setBusy(null);
-    }
-  }
+  useEffect(() => {
+    if (!result.snap || asked.current === result.at) return;
+    asked.current = result.at;
+    const photo = photoDataUrl(result.snap);
+    fetch("/api/portrait", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ photo }) })
+      .then((r) => r.json().then((data) => ({ ok: r.ok, data })))
+      .then(async ({ ok, data }) => {
+        if (!ok || !data.image) {
+          setStatus(data.error ?? "그림을 받지 못했어요.");
+          return;
+        }
+        setRaw(data.image);
+        setShown(await compose(data.image, "무명씨"));
+        setStatus(`${data.model} · ${(data.ms / 1000).toFixed(0)}초 · 길게 눌러 저장`);
+      })
+      .catch(() => setStatus("화원에게 닿지 못했어요."));
+  }, [result]);
 
   async function rename(v: string) {
     setName(v);
-    const label = v.trim() || "무명씨";
-    const redone = await Promise.all(art.map(async (a) => ({ id: a.id, shown: await compose(a.raw, label) })));
-    setArt((list) => list.map((a) => ({ ...a, shown: redone.find((r) => r.id === a.id)?.shown ?? a.shown })));
+    if (raw) setShown(await compose(raw, v.trim() || "무명씨"));
   }
 
   return (
-    <section className="doc-paper flex flex-col gap-3 px-5 py-5">
-      <h2 className="text-center font-myeongjo text-lg font-extrabold">도화서에 그림 맡기기</h2>
-      <p className="text-center text-[12px] text-ink-soft">원하는 분만 눌러 주세요. 내 얼굴 그대로, 조선에서 가장 빛나는 날로 그려 드려요.</p>
-      <label className="flex items-start gap-2 text-[12px] leading-relaxed">
-        <input type="checkbox" className="mt-1" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
-        얼굴 부분 사진을 그림 그리는 데에만 Google AI(Gemini)로 보내는 데 동의해요. 훈도사주는 사진을 저장하지 않아요.
-      </label>
-      {GROUPS.map(({ group, note }) => (
-        <div key={group} className="flex flex-col gap-1.5">
-          <p className="text-[12.5px] font-bold">
-            {group} <span className="font-normal text-ink-soft">· {note}</span>
-          </p>
-          <div className="grid grid-cols-4 gap-1.5">
-            {(Object.keys(VERSIONS) as VersionKey[])
-              .filter((k) => VERSIONS[k].group === group)
-              .map((k) => (
-                <button
-                  key={k}
-                  type="button"
-                  disabled={!!busy || !consent}
-                  onClick={() => order(k)}
-                  className={`rounded-xl px-1 py-2.5 text-[13px] font-bold text-hanji disabled:opacity-40 ${group === "멋지게" ? "bg-jjok" : group === "예쁘게" ? "bg-seal" : "bg-ink"} ${busy === k ? "animate-pulse" : ""}`}
-                >
-                  {busy === k ? "그리는 중" : VERSIONS[k].label}
-                </button>
-              ))}
-          </div>
-        </div>
-      ))}
-      {busy && <p className="text-center text-[12px] text-ink-soft">화원이 {VERSIONS[busy].label} 그림을 그리는 중이에요 · 20~60초</p>}
-      {error && <p className="text-center text-[12.5px] font-bold text-seal">{error}</p>}
-
-      {art.length > 0 && (
-        <div className="flex flex-col items-center gap-4 pt-2">
-          <label className="flex items-center gap-2 text-[12.5px] text-ink-soft">
-            족자에 적을 이름
-            <input value={name} maxLength={6} onChange={(e) => rename(e.target.value)} className="w-28 rounded border border-ink/20 bg-white/70 px-2 py-1 text-ink" />
-          </label>
-          {art.map((a) => (
-            <figure key={a.id} className="flex w-full flex-col items-center gap-1">
-              {/* eslint-disable-next-line @next/next/no-img-element -- a painting returned as a data URL */}
-              <img src={a.shown} alt={`${VERSIONS[a.version].label} 그림`} className="w-full max-w-[340px] rounded shadow-[0_2px_12px_rgba(0,0,0,0.2)]" />
-              <figcaption className="text-[10.5px] text-ink-soft tabular-nums">
-                {VERSIONS[a.version].label} · {a.model} · {(a.ms / 1000).toFixed(0)}초 · 토큰 입력 {a.usage.input ?? "?"} / 출력 {a.usage.output ?? "?"} · 길게 눌러 저장
-              </figcaption>
-            </figure>
-          ))}
+    <div className="flex flex-col items-center gap-2">
+      {shown ? (
+        // eslint-disable-next-line @next/next/no-img-element -- a painting returned as a data URL
+        <img src={shown} alt="조선 초상화로 그린 얼굴" className="w-full max-w-[320px] rounded shadow-[0_2px_12px_rgba(0,0,0,0.2)]" />
+      ) : (
+        <div className={raw === null ? "animate-pulse" : ""}>
+          <InkFace face={result.face} />
         </div>
       )}
-    </section>
+      {shown && (
+        <label className="flex items-center gap-2 text-[12.5px] text-ink-soft">
+          족자에 적을 이름
+          <input value={name} maxLength={6} onChange={(e) => rename(e.target.value)} className="w-28 rounded border border-ink/20 bg-white/70 px-2 py-1 text-ink" />
+        </label>
+      )}
+      <p className="text-[11px] text-ink-soft">{status}</p>
+    </div>
   );
 }
 
@@ -569,7 +531,7 @@ function fmt(key: BandKey, v: number) {
   return key === "tilt" ? `${v >= 0 ? "+" : ""}${v.toFixed(1)}°` : v.toFixed(2);
 }
 
-function ResultView({ result }: { result: Result }) {
+function ResultView({ result, paint }: { result: Result; paint: boolean }) {
   const { m } = result;
   const h = hyeong(m);
   const parts: [string, number, string][] = [
@@ -584,7 +546,7 @@ function ResultView({ result }: { result: Result }) {
         <p className="text-center text-xs font-extrabold text-seal">
           {result.source === "camera" ? `카메라 · ${result.frames}장의 중간값` : "사진 한 장"}
         </p>
-        <InkFace face={result.face} />
+        {paint && result.snap ? <ResultPortrait result={result} /> : <InkFace face={result.face} />}
         <div className="mt-2 flex items-center justify-center gap-3">
           <span className="grid h-11 w-11 place-items-center rounded bg-seal font-myeongjo text-2xl text-hanji">{h.main.el}</span>
           <span className="font-myeongjo text-2xl font-extrabold">{h.label}</span>
