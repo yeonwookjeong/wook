@@ -907,6 +907,48 @@ export async function Card({ q }: { q: CardQuery }) {
     );
   }
 
+  if (c === "yeokma-reel") {
+    // A checklist anyone can score without knowing their chart: the 역마 (寅申巳亥) temper in everyday scenes.
+    const ITEMS = [
+      "집에만 있으면 이틀 만에 답답해진다",
+      "여행은 가는 날보다 계획 짜는 날이 더 신난다",
+      "이사·이직 얘기만 나오면 마음이 먼저 가 있다",
+      "단골보다 처음 가 보는 가게가 끌린다",
+      "낯선 동네에서도 금방 길을 익힌다",
+      "앉아 있는 일보다 돌아다니는 일이 편하다",
+      "한곳에 3년쯤 있으면 뭐라도 바꾸고 싶어진다",
+    ];
+    return (
+      <ReelFrame>
+        <div style={{ position: "absolute", top: REEL.top, left: REEL.side, right: REEL.side, textAlign: "center" }}>
+          <p style={{ fontSize: 34, fontWeight: 800, letterSpacing: "0.06em", color: GOLD }}>몇 개나 해당되시옵니까?</p>
+          <p style={{ marginTop: 14, fontSize: 84, fontWeight: 800, lineHeight: 1.15 }}>
+            셋 이상이면
+            <br />
+            <span style={{ color: "#f1cf7a" }}>역마살</span>
+          </p>
+        </div>
+        <div className="doc-paper" style={{ position: "absolute", top: 560, left: REEL.side, right: REEL.side, padding: "34px 44px", color: INK }}>
+          {ITEMS.map((t, i) => (
+            <div
+              key={t}
+              style={{ display: "flex", alignItems: "center", gap: 22, height: 106, borderTop: i ? "1.5px solid rgba(179,38,30,.15)" : "none", fontFamily: sans }}
+            >
+              <span style={{ width: 46, height: 46, flexShrink: 0, border: `4px solid ${SEAL}`, borderRadius: 8 }} />
+              <span style={{ fontSize: 36, fontWeight: 700, lineHeight: 1.3, letterSpacing: "-0.02em" }}>{t}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{ position: "absolute", top: 560 + 68 + 7 * 106 + 44, left: REEL.side, right: REEL.side, textAlign: "center" }}>
+          <p style={{ fontSize: 34, lineHeight: 1.45, fontWeight: 800, color: "#f1cf7a" }}>떠돌이 팔자가 아니라, 움직여야 풀리는 사람</p>
+          <p style={{ marginTop: 8, fontSize: 28, lineHeight: 1.45, color: "rgba(244,236,219,.8)", fontFamily: sans }}>
+            사주표 아래 줄에 寅·申·巳·亥가 있는지 · 프로필 링크에서
+          </p>
+        </div>
+      </ReelFrame>
+    );
+  }
+
   if (c === "son-reel") {
     const y = Number(q.y ?? 2026);
     const m = Number(q.m ?? 10);
