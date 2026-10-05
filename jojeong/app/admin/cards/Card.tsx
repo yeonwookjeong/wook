@@ -1084,6 +1084,115 @@ export async function Card({ q }: { q: CardQuery }) {
     );
   }
 
+  if (c === "samjae-reel") {
+    // Every 띠's 삼재, grouped the way 삼재 comes: three 띠 together, three years at a time (亥卯未 → 巳午未 years,
+    // 寅午戌 → 申酉戌, 巳酉丑 → 亥子丑, 申子辰 → 寅卯辰). Birth years 1962–2009, the same as the 띠 threads.
+    const FACE = ["🐭", "🐮", "🐯", "🐰", "🐲", "🐍", "🐴", "🐑", "🐵", "🐔", "🐶", "🐷"];
+    const emoji = '"Noto Color Emoji", "Apple Color Emoji", sans-serif';
+    const years = (b: number) => [0, 1, 2, 3].map((k) => String(1962 + ((b - 2 + 12) % 12) + 12 * k).slice(2)).join("·");
+    const GROUPS: { span: string; now: boolean; bs: number[] }[] = [
+      { span: "2025 ~ 2027", now: true, bs: [11, 3, 7] },
+      { span: "2028 ~ 2030", now: false, bs: [2, 6, 10] },
+      { span: "2031 ~ 2033", now: false, bs: [5, 9, 1] },
+      { span: "2034 ~ 2036", now: false, bs: [8, 0, 4] },
+    ];
+    return (
+      <ReelFrame>
+        <div style={{ position: "absolute", top: REEL.top, left: REEL.side, right: REEL.side, textAlign: "center" }}>
+          <p style={{ fontSize: 34, fontWeight: 800, letterSpacing: "0.06em", color: GOLD }}>삼재는 언제 들고, 언제 나가나</p>
+          <p style={{ marginTop: 14, fontSize: 84, fontWeight: 800, lineHeight: 1.12 }}>
+            열두 띠 <span style={{ color: "#f1cf7a" }}>삼재표</span>
+          </p>
+        </div>
+        <div className="doc-paper" style={{ position: "absolute", top: 450, left: 140, right: 140, padding: "16px 30px 20px", color: INK, fontFamily: sans }}>
+          {GROUPS.map((g, gi) => (
+            <div key={g.span} style={{ marginTop: gi ? 14 : 0 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 46, borderBottom: `2.5px solid ${g.now ? SEAL : "rgba(33,27,23,.35)"}` }}>
+                <b style={{ fontSize: 30, color: g.now ? SEAL : INK, fontVariantNumeric: "tabular-nums" }}>{g.span}</b>
+                <span
+                  style={{
+                    fontSize: 22,
+                    fontWeight: 800,
+                    padding: "3px 14px",
+                    borderRadius: 999,
+                    background: g.now ? SEAL : "transparent",
+                    color: g.now ? HANJI : SOFT,
+                    border: g.now ? "none" : `2px solid ${SOFT}`,
+                  }}
+                >
+                  {g.now ? "지금 · 2026 눌삼재" : `${g.span.slice(0, 4)}년 입춘부터`}
+                </span>
+              </div>
+              {g.bs.map((b) => (
+                <div key={b} style={{ display: "flex", alignItems: "center", height: 58, borderBottom: "1.5px solid rgba(179,38,30,.12)" }}>
+                  <span style={{ width: 190, display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 38, fontFamily: emoji, lineHeight: 1 }}>{FACE[b]}</span>
+                    <b style={{ fontSize: 30, whiteSpace: "nowrap" }}>{ANIMALS[b]}띠</b>
+                  </span>
+                  <span style={{ width: 290, fontSize: 29, fontWeight: 700, letterSpacing: "0.01em", fontVariantNumeric: "tabular-nums", color: "#17304a" }}>{years(b)}년생</span>
+                  <b style={{ marginLeft: 14, fontSize: 24, color: g.now ? SEAL : SOFT, whiteSpace: "nowrap" }}>{g.now ? "내년 날삼재로 끝" : `${Number(g.span.slice(0, 4)) - 2026}년 뒤 시작`}</b>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+        <div style={{ position: "absolute", top: 1430, left: 140, right: 140, textAlign: "center" }}>
+          <p style={{ fontSize: 30, fontWeight: 800, color: "#f1cf7a" }}>들삼재 → 눌삼재 → 날삼재, 세 해에 걸쳐 지나가옵니다</p>
+          <p style={{ marginTop: 8, fontSize: 25, lineHeight: 1.45, color: "rgba(244,236,219,.8)", fontFamily: sans }}>
+            사주의 해는 입춘(2월 4일 무렵)에 바뀌옵니다
+            <br />
+            삼재보다 센 건 내 사주 · 프로필 링크에서
+          </p>
+        </div>
+      </ReelFrame>
+    );
+  }
+
+  if (c === "nayin-reel") {
+    // The 납음 (물상) of each birth year, two years to a name, 1966–2005: a table everyone finds their year in.
+    const ROWS: [number, string, string, number][] = [
+      [1966, "天河水", "은하수", 4], [1968, "大驛土", "큰길의 흙", 2], [1970, "釵釧金", "비녀와 팔찌", 3], [1972, "桑柘木", "뽕나무", 0],
+      [1974, "大溪水", "큰 시냇물", 4], [1976, "沙中土", "모래 속 흙", 2], [1978, "天上火", "하늘의 불", 1], [1980, "石榴木", "석류나무", 0],
+      [1982, "大海水", "큰 바닷물", 4], [1984, "海中金", "바닷속 쇠", 3], [1986, "爐中火", "화로 속 불", 1], [1988, "大林木", "큰 숲", 0],
+      [1990, "路傍土", "길가의 흙", 2], [1992, "劍鋒金", "칼끝의 쇠", 3], [1994, "山頭火", "산꼭대기 불", 1], [1996, "澗下水", "골짜기 물", 4],
+      [1998, "城頭土", "성벽 위 흙", 2], [2000, "白蠟金", "하얀 밀랍 쇠", 3], [2002, "楊柳木", "버드나무", 0], [2004, "泉中水", "샘물", 4],
+    ];
+    const EL = ["#3d6656", "#b3261e", "#a87a22", "#8a8378", "#1f3448"];
+    const half = [ROWS.slice(0, 10), ROWS.slice(10)];
+    return (
+      <ReelFrame>
+        <div style={{ position: "absolute", top: REEL.top, left: REEL.side, right: REEL.side, textAlign: "center" }}>
+          <p style={{ fontSize: 34, fontWeight: 800, letterSpacing: "0.06em", color: GOLD }}>두 해씩 같은 이름을 나눠 갖사옵니다</p>
+          <p style={{ marginTop: 14, fontSize: 80, fontWeight: 800, lineHeight: 1.12 }}>
+            태어난 해의 <span style={{ color: "#f1cf7a" }}>물상</span>
+          </p>
+        </div>
+        <div className="doc-paper" style={{ position: "absolute", top: 450, left: 100, right: 100, padding: "18px 22px", color: INK, fontFamily: sans, display: "flex", gap: 18 }}>
+          {half.map((col, ci) => (
+            <div key={ci} style={{ flex: 1, minWidth: 0 }}>
+              {col.map(([y, hanja, ko, el]) => (
+                <div key={y} style={{ display: "flex", alignItems: "center", gap: 12, height: 92, borderBottom: "1.5px solid rgba(179,38,30,.12)" }}>
+                  <span style={{ width: 8, height: 58, borderRadius: 4, background: EL[el], flexShrink: 0 }} />
+                  <b style={{ width: 118, fontSize: 31, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
+                    {String(y).slice(2)}·{String(y + 1).slice(2)}
+                  </b>
+                  <span style={{ display: "flex", flexDirection: "column", lineHeight: 1.2, minWidth: 0 }}>
+                    <b style={{ fontSize: 30, letterSpacing: "-0.03em", whiteSpace: "nowrap", color: EL[el] }}>{ko}</b>
+                    <span style={{ fontSize: 20, color: SOFT, letterSpacing: "0.12em" }}>{hanja}</span>
+                  </span>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+        <div style={{ position: "absolute", top: 450 + 36 + 10 * 92 + 34, left: 100, right: 100, textAlign: "center" }}>
+          <p style={{ fontSize: 30, fontWeight: 800, color: "#f1cf7a" }}>나무 · 불 · 흙 · 쇠 · 물, 그대는 어떤 기운의 해에 태어났사옵니까</p>
+          <p style={{ marginTop: 8, fontSize: 25, color: "rgba(244,236,219,.8)", fontFamily: sans }}>1월~2월 초 생일은 앞 해 · 내 사주 전체는 프로필 링크에서</p>
+        </div>
+      </ReelFrame>
+    );
+  }
+
   if (c === "son-reel") {
     const y = Number(q.y ?? 2026);
     const m = Number(q.m ?? 10);
