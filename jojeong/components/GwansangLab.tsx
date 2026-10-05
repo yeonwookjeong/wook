@@ -3,8 +3,8 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { FaceLandmarker, FaceLandmarkerResult } from "@mediapipe/tasks-vision";
 import { drawChart } from "@/lib/gwansangChart";
-import { deepMeasure, palaces, peaks, type Grade } from "@/lib/gwansangDeep";
-import { gwansangReading, type Judged } from "@/lib/gwansangReading";
+import { deepMeasure, type Grade } from "@/lib/gwansangDeep";
+import { gwansangReading } from "@/lib/gwansangReading";
 import { chartNotes, leadThird, likeness, thirdDev, BANDS, band, hyeong, IDX, level, measure, medianFace, wordOf, type BandKey, type Face, type Metrics, type Pt } from "@/lib/gwansang";
 
 // The 관상 capture test (/lab/gwansang): the camera shows a guide, and the face is taken only once it is the
@@ -713,184 +713,169 @@ function PaintingWait({ waited, retrying }: { waited: number; retrying: boolean 
 }
 
 function ResultView({ result }: { result: Result }) {
-  const { m } = result;
-  const h = hyeong(m);
-  const dev = thirdDev(m);
-  const lead = leadThird(m);
-  const parts: [string, number, string, number, boolean][] = [
-    ["상정", m.upper, "초년", dev.upper, lead === "upper"],
-    ["중정", m.middle, "중년", dev.middle, lead === "middle"],
-    ["하정", m.lower, "말년", dev.lower, lead === "lower"],
-  ];
-  return (
-    <>
-      <section className="doc-paper px-5 py-5">
-        <p className="text-center text-xs font-extrabold text-seal">
-          {result.source === "camera" ? `카메라 · ${result.frames}장의 중간값` : "사진 한 장"}
-        </p>
-        {result.snap ? <ResultPortrait result={result} /> : <InkFace face={result.face} />}
-        <div className="mt-2 flex items-center justify-center gap-3">
-          <span className="grid h-11 w-11 place-items-center rounded bg-seal font-myeongjo text-2xl text-hanji">{h.main.el}</span>
-          <span className="font-myeongjo text-2xl font-extrabold">{h.label}</span>
-          <span className="text-[13px] text-ink-soft">{h.main.look}</span>
-        </div>
-        {h.mixed && <p className="mt-1 text-center text-[12.5px] text-ink-soft">{h.main.name}과 {h.mixed.name}의 경계에 있는 겸형이에요</p>}
-        <div className="mt-4 flex flex-col gap-1.5">
-          {parts.map(([n, v, age, d, isLead]) => (
-            <div key={n} className="grid grid-cols-[4.5em_1fr_5.6em] items-center gap-2 text-[12.5px]">
-              <span>
-                {n} <span className="text-ink-soft">{age}</span>
-              </span>
-              <span className="h-2.5 overflow-hidden rounded bg-hanji-deep">
-                <span className={`block h-full ${isLead ? "bg-seal" : "bg-jade"}`} style={{ width: `${v * 200}%` }} />
-              </span>
-              <span className="text-right tabular-nums">
-                {(v * 100).toFixed(1)}%
-                <span className={`block text-[10.5px] ${isLead ? "font-bold text-seal" : "text-ink-soft"}`}>
-                  보통 대비 {d >= 0 ? "+" : ""}
-                  {Math.round(d * 100)}%
-                </span>
-              </span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="doc-paper px-4 py-4">
-        <h2 className="px-1 font-myeongjo font-extrabold">오관 치수</h2>
-        <table className="mt-2 w-full text-[12.5px] tabular-nums">
-          <tbody>
-            {KEYS.map((key) => {
-              const v = m[key];
-              const b = band(key, v);
-              const sd = result.spread[key];
-              return (
-                <tr key={key} className="border-t border-seal/10">
-                  <td className="py-1.5 text-left text-ink-soft">{BANDS[key].label}</td>
-                  <td className="px-1 text-right">
-                    {fmt(key, v)}
-                    {sd !== undefined && <span className="block text-[10.5px] text-ink-soft">±{key === "tilt" ? sd.toFixed(1) : sd.toFixed(3)}</span>}
-                  </td>
-                  <td className="pl-2 text-right">{b.near ? <b className="text-seal">{wordOf(key, v)}</b> : wordOf(key, v)}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        <p className="mt-2 px-1 text-[10.5px] leading-relaxed text-ink-soft">
-          ±는 1.5초 동안 찍힌 사진들 사이의 흔들림이에요. 붉은 풀이는 기준선 가까이에 있어 두 풀이를 함께 적은 항목이에요.
-        </p>
-      </section>
-
-      <ReadingView result={result} />
-      <DeepView result={result} />
-    </>
-  );
-}
-
-// The 관상 free reading (lib/gwansangReading.ts): headline, strengths, temperament, 삼정, 오관, cards and the flow through the ages.
-function ReadingView({ result }: { result: Result }) {
-  const r = useMemo(() => gwansangReading(result.m, deepMeasure(result.face)), [result]);
+  const x = useMemo(() => deepMeasure(result.face), [result]);
+  const r = useMemo(() => gwansangReading(result.m, x), [result, x]);
   const [born, setBorn] = useState("");
   const age = /^(19|20)\d\d$/.test(born) ? new Date().getFullYear() - Number(born) + 1 : null;
-  const MOOD: Record<string, string> = { 활짝: "bg-seal text-hanji", 순조: "bg-seal/15 text-seal", 주의: "border border-seal/60 text-seal", 고비: "bg-ink text-hanji" };
+  const { m } = result;
+  const dev = thirdDev(m);
+  const lead = leadThird(m);
   return (
     <>
+      {/* 1. The portrait and the whole reading in a breath. */}
       <section className="doc-paper px-5 py-5">
-        <p className="text-center text-xs font-extrabold text-seal">관상 총평</p>
-        <h2 className="mt-1 text-center font-myeongjo text-xl font-extrabold">{r.headline}</h2>
-        <p className="mt-2 text-[14px] leading-relaxed">{r.summary}</p>
+        <p className="text-center text-xs font-extrabold text-seal">
+          {result.source === "camera" ? `카메라 · ${result.frames}장을 겹쳐 잰 관상` : "사진 한 장으로 본 관상"}
+        </p>
+        {result.snap ? <ResultPortrait result={result} /> : <InkFace face={result.face} />}
+        <p className="mt-4 text-center text-[12px] font-bold text-ink-soft">{r.sub}</p>
+        <h2 className="mt-1 text-center font-myeongjo text-[22px] font-extrabold leading-snug">{r.headline}</h2>
+        <p className="mt-2 flex flex-wrap justify-center gap-1.5">
+          {r.keywords.map((k) => (
+            <span key={k.text} className={`rounded-full px-2.5 py-0.5 text-[12px] font-bold ${k.caution ? "border border-ink/30 text-ink" : "bg-seal/10 text-seal"}`}>
+              {k.text}
+            </span>
+          ))}
+        </p>
+        <p className="mt-3 text-[14px] leading-[1.75]">{r.summary}</p>
         {r.strengths.length > 0 && (
-          <div className="mt-3">
-            <p className="text-[12.5px] font-bold text-seal">타고난 강점</p>
-            <ul className="mt-1 flex flex-col gap-1 text-[13px]">
-              {r.strengths.map((x) => (
-                <li key={x.name}>
-                  <b>{x.name}</b> · {x.line}
+          <div className="mt-4">
+            <p className="text-[13px] font-extrabold text-seal">타고난 무기</p>
+            <ul className="mt-1.5 flex flex-col gap-1.5 text-[13.5px] leading-relaxed">
+              {r.strengths.map((s) => (
+                <li key={s.name}>
+                  <b>{s.name}</b>
+                  <br />
+                  {s.line}.
                 </li>
               ))}
             </ul>
           </div>
         )}
         {r.watch.length > 0 && (
-          <div className="mt-3 rounded-xl border border-ink/20 bg-white/50 px-3 py-2.5">
-            <p className="text-[12.5px] font-bold">조심할 점과 대비</p>
-            <ul className="mt-1.5 flex flex-col gap-2 text-[13px]">
-              {r.watch.map((x) => (
-                <li key={x.name}>
+          <div className="mt-4 rounded-xl border border-ink/15 bg-white/50 px-3 py-3">
+            <p className="text-[13px] font-extrabold">미리 챙길 것</p>
+            <ul className="mt-1.5 flex flex-col gap-2.5 text-[13.5px] leading-relaxed">
+              {r.watch.map((w) => (
+                <li key={w.name}>
                   <p className="flex items-center gap-1.5">
-                    <span className={`rounded px-1.5 py-0.5 text-[10.5px] font-bold ${GRADE_STYLE[x.grade]}`}>{x.grade}</span>
-                    <b>{x.name}</b>
+                    <Badge g={w.grade} />
+                    <b>{w.name}</b>
                   </p>
-                  <p className="mt-0.5 leading-relaxed">{x.line}</p>
-                  <p className="text-[12.5px] text-jade">대비 → {x.prep}</p>
+                  <p className="mt-0.5">{w.line}.</p>
+                  <p className="text-[13px] font-bold text-jade">→ {w.prep}</p>
                 </li>
               ))}
             </ul>
           </div>
         )}
+        <Legend />
       </section>
 
-      <section className="doc-paper px-4 py-4">
-        <h2 className="px-1 font-myeongjo font-extrabold">
-          성격 · 빛과 그림자 <span className="text-[12px] font-normal text-ink-soft">· 같은 기질의 두 얼굴</span>
-        </h2>
-        <ul className="mt-2 flex flex-col divide-y divide-ink/10">
+      {/* 2. 오행형: the face's type and the temperament it carries. */}
+      <Sec title="오행으로 본 얼굴" intro="관상은 얼굴 생김을 나무·불·흙·쇠·물 다섯 가지로 나눠, 그 사람의 기질을 먼저 봐요.">
+        <div className="flex items-center gap-3 px-1">
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded bg-seal font-myeongjo text-2xl text-hanji">{r.hyeong.el}</span>
+          <div>
+            <p className="font-myeongjo text-xl font-extrabold">{r.hyeong.label}</p>
+            <p className="text-[12.5px] text-ink-soft">{r.hyeong.look}</p>
+          </div>
+        </div>
+        <p className="mt-3 px-1 text-[14px] leading-[1.75]">{r.hyeong.nature}</p>
+        {r.hyeong.mixed && <p className="mt-1.5 px-1 text-[13px] leading-relaxed text-ink-soft">{r.hyeong.mixed}</p>}
+      </Sec>
+
+      {/* 3. Temperament, feature by feature. */}
+      <Sec title="성격 · 빛과 그림자" intro="얼굴 생김마다 기질이 하나씩 담겨 있어요. 같은 기질이 잘 쓰이면 빛, 지나치면 그림자가 돼요.">
+        <ul className="flex flex-col divide-y divide-ink/10">
           {r.traits.map((t) => (
-            <li key={t.key} className="px-1 py-2 text-[13px]">
-              <p>
-                <b>{t.part}</b> <span className="text-ink-soft">· {t.word}</span>
+            <li key={t.key} className="px-1 py-2.5 text-[13.5px]">
+              <p className="font-bold">
+                {t.part} <span className="font-normal text-ink-soft">· {t.word}</span>
               </p>
-              <p className="mt-0.5 leading-relaxed">
-                <span className="mr-1 rounded bg-seal/15 px-1 text-[11px] font-bold text-seal">빛</span>
+              <p className="mt-1 leading-relaxed">
+                <span className="mr-1.5 rounded bg-seal/15 px-1.5 text-[11px] font-bold text-seal">빛</span>
                 {t.light}
               </p>
               <p className="mt-0.5 leading-relaxed">
-                <span className="mr-1 rounded bg-ink px-1 text-[11px] font-bold text-hanji">그림자</span>
+                <span className="mr-1.5 rounded bg-ink px-1.5 text-[11px] font-bold text-hanji">그림자</span>
                 {t.shadow}
               </p>
-              <p className="mt-0.5 text-[10.5px] text-ink-soft tabular-nums">근거: {t.why}</p>
             </li>
           ))}
         </ul>
-      </section>
+      </Sec>
 
-      <JudgedList title="삼정 풀이" note="이마, 코, 턱이 맡은 초년, 중년, 말년" items={r.thirds} />
-      <JudgedList title="오관 풀이" note="눈썹, 눈, 코, 입, 귀의 다섯 벼슬" items={r.organs} />
-
-      <section className="doc-paper px-4 py-4">
-        <h2 className="px-1 font-myeongjo font-extrabold">
-          영역별 관상 <span className="text-[12px] font-normal text-ink-soft">· 십이궁을 묶어 본 여섯 갈래</span>
-        </h2>
-        <p className="mt-1 flex flex-wrap items-center gap-1 px-1 text-[11px] text-ink-soft">
-          {(["대길", "길", "주의", "경계"] as const).map((g) => (
-            <span key={g} className={`rounded px-1.5 py-0.5 font-bold ${GRADE_STYLE[g]}`}>{g}</span>
-          ))}
-          <span>· 앞의 둘은 좋은 쪽, 뒤의 둘은 조심할 쪽이에요</span>
-        </p>
-        <div className="mt-2 grid grid-cols-1 gap-2">
-          {r.cards.map((c) => (
-            <div key={c.key} className="rounded-xl border border-ink/10 bg-white/50 px-3 py-3">
-              <p className="flex items-center gap-2">
-                <span className="grid h-7 w-7 place-items-center rounded bg-ink font-myeongjo text-[14px] text-hanji">{c.hanja}</span>
-                <b className="flex-1 text-[14px]">{c.title}</b>
-                <span className={`rounded px-1.5 py-0.5 text-[11px] font-bold ${GRADE_STYLE[c.grade]}`}>{c.grade}</span>
-              </p>
-              <p className="mt-1.5 text-[13px] leading-relaxed">{c.line}</p>
-              <p className={`mt-1 text-[12.5px] ${c.tipLabel === "대비" ? "font-bold text-seal" : "text-jade"}`}>
-                {c.tipLabel} → {c.tip}
-              </p>
-              <p className="mt-1 text-[10.5px] text-ink-soft tabular-nums">근거: {c.why}</p>
+      {/* 4. 삼정: the three spans of life, with the bars that show them. */}
+      <Sec
+        title="삼정 · 초년 중년 말년"
+        hanja="三停"
+        intro="얼굴을 이마, 눈썹에서 코끝, 인중에서 턱까지 세 마디로 나눠요. 각각 초년, 중년, 말년을 맡아서, 긴 마디의 시기에 힘이 실린다고 봐요."
+      >
+        <div className="mb-3 flex flex-col gap-1.5 px-1">
+          {(["upper", "middle", "lower"] as const).map((k) => (
+            <div key={k} className="grid grid-cols-[5.2em_1fr_6.6em] items-center gap-2 text-[12.5px]">
+              <span>
+                {THIRD_LABEL[k]}
+              </span>
+              <span className="relative h-2.5 overflow-hidden rounded bg-hanji-deep">
+                <span className="absolute inset-y-0 left-1/2 w-px bg-ink/40" />
+                <span
+                  className={`absolute inset-y-0 ${lead === k ? "bg-seal" : "bg-jade"}`}
+                  style={dev[k] >= 0 ? { left: "50%", width: `${Math.min(50, dev[k] * 250)}%` } : { right: "50%", width: `${Math.min(50, -dev[k] * 250)}%` }}
+                />
+              </span>
+              <span className={`text-right tabular-nums ${lead === k ? "font-bold text-seal" : "text-ink-soft"}`}>
+                보통보다 {Math.abs(Math.round(dev[k] * 100))}% {dev[k] >= 0 ? "길어요" : "짧아요"}
+              </span>
             </div>
           ))}
         </div>
-      </section>
+        <Items items={r.thirds.map((j) => ({ key: j.key, title: j.name, tag: j.hanja, sub: j.sub, grade: j.grade, line: j.line, prep: j.prep, plain: j.why }))} />
+      </Sec>
 
-      <section className="doc-paper px-4 py-4">
-        <h2 className="px-1 font-myeongjo font-extrabold">
-          유년운기 <span className="text-[12px] font-normal text-ink-soft">· 나이마다 얼굴의 어디를 보는가</span>
-        </h2>
-        <label className="mt-2 flex items-center gap-2 px-1 text-[12px] text-ink-soft">
+      {/* 5. 오관. */}
+      <Sec
+        title="오관 · 다섯 벼슬"
+        hanja="五官"
+        intro="눈썹, 눈, 코, 입, 귀를 나라의 다섯 관리로 봐요. 저마다 맡은 일이 있어서, 관리가 튼튼하면 그 일이 잘 풀린다고 해요."
+      >
+        <Items items={r.organs.map((j) => ({ key: j.key, title: j.name, tag: j.hanja, sub: j.sub, grade: j.grade, line: j.line, prep: j.prep, plain: j.why }))} />
+      </Sec>
+
+      {/* 6. 오악. */}
+      <Sec
+        title="오악 · 얼굴의 다섯 산"
+        hanja="五嶽"
+        intro="이마, 코, 턱, 양 광대를 다섯 산으로 봐요. 산이 고루 솟아 서로 받쳐 주면 운이 한쪽으로 쏠리지 않는다고 해요."
+      >
+        <div className="mb-3 rounded-xl bg-seal/5 px-3 py-3">
+          <p className={`font-myeongjo text-[17px] font-extrabold ${r.peaks.caution ? "text-ink" : "text-seal"}`}>{r.peaks.plain}</p>
+          <p className="text-[11.5px] text-ink-soft">{r.peaks.verdict}</p>
+          <p className="mt-1.5 text-[13.5px] leading-relaxed">{r.peaks.note}</p>
+        </div>
+        <Items items={r.peaks.list.map((p) => ({ key: p.name, title: p.name, tag: p.part, sub: p.means, grade: p.grade, line: p.line, prep: p.prep, plain: p.plain }))} />
+      </Sec>
+
+      {/* 7. Life areas. */}
+      <Sec title="영역별 관상" intro="십이궁과 오악을 삶의 여섯 갈래로 묶어 본 풀이예요. 좋은 쪽은 살리는 법을, 조심할 쪽은 대비를 적었어요.">
+        <Items
+          items={r.cards.map((c) => ({ key: c.key, title: c.title, tag: c.hanja, grade: c.grade, line: c.line, tip: { label: c.tipLabel, text: c.tip }, plain: c.why }))}
+        />
+      </Sec>
+
+      {/* 8. 십이궁. */}
+      <Sec
+        title="십이궁 · 얼굴 열두 자리"
+        hanja="十二宮"
+        intro="얼굴을 열두 자리로 나눠 자리마다 삶의 한 부분을 맡겨요. 그 자리가 넉넉하고 밝으면 그 일이 잘 풀린다고 봐요."
+      >
+        <Items items={r.palaces.map((p) => ({ key: p.name, title: p.name, tag: p.hanja, sub: `${p.where} · ${p.rules}`, about: p.about, grade: p.grade, line: p.line, prep: p.prep, plain: p.plain }))} />
+      </Sec>
+
+      {/* 9. 유년운기. */}
+      <Sec title="유년운기 · 나이마다 보는 자리" intro="옛 관상서는 나이마다 얼굴의 다른 자리를 봤어요. 태어난 해를 넣으면 지금 어느 시기인지 짚어 드려요.">
+        <label className="flex items-center gap-2 px-1 text-[12.5px] text-ink-soft">
           태어난 해
           <input
             value={born}
@@ -905,51 +890,149 @@ function ReadingView({ result }: { result: Result }) {
           {r.flow.map((f) => {
             const now = age !== null && age >= f.from && age <= f.to;
             return (
-              <li key={f.from} className={`flex items-start gap-2 rounded-lg px-2 py-2 ${now ? "bg-seal/10 ring-1 ring-seal/40" : ""}`}>
-                <span className="w-16 shrink-0 text-[12px] font-bold tabular-nums">
-                  {f.from}~{f.to}세{now && <span className="block text-[10.5px] text-seal">지금</span>}
+              <li key={f.from} className={`flex items-start gap-2 rounded-lg px-2 py-2.5 ${now ? "bg-seal/10 ring-1 ring-seal/40" : ""}`}>
+                <span className="w-16 shrink-0 text-[12.5px] font-bold tabular-nums">
+                  {f.from}~{f.to}세{now && <span className="block text-[11px] text-seal">지금</span>}
                 </span>
-                <span className="min-w-0 flex-1 text-[12.5px]">
-                  <b>{f.part}</b> · {f.line}
-                  {f.prep && <span className="block text-[12px] font-bold text-seal">대비 → {f.prep}</span>}
-                  <span className="block text-[10.5px] text-ink-soft">근거: {f.why}</span>
+                <span className="min-w-0 flex-1 text-[13.5px] leading-relaxed">
+                  <span className="text-[12px] text-ink-soft">{f.part}</span>
+                  <span className="block">{f.line}</span>
+                  {f.prep && <span className="block text-[13px] font-bold text-jade">→ {f.prep}</span>}
                 </span>
-                <span className={`shrink-0 rounded px-1.5 py-0.5 text-[11px] font-bold ${MOOD[f.mood]}`}>{f.mood}</span>
+                <span className={`shrink-0 rounded px-1.5 py-0.5 text-[11px] font-bold ${MOOD_STYLE[f.mood]}`}>{f.mood}</span>
               </li>
             );
           })}
         </ol>
-        <p className="mt-2 px-1 text-[10.5px] leading-relaxed text-ink-soft">
+        <p className="mt-2 px-1 text-[11px] leading-relaxed text-ink-soft">
           『마의상법』의 유년도를 여섯 마디로 줄여 본 흐름이에요. 관상은 마음과 살아온 날을 따라 바뀐다고 했어요(相隨心生).
         </p>
-      </section>
+      </Sec>
+
+      <MeasureDetails result={result} r={r} />
     </>
   );
 }
 
-// 삼정 and 오관: each part graded, read, and for a weak one what to prepare.
-function JudgedList({ title, note, items }: { title: string; note: string; items: Judged[] }) {
+const THIRD_LABEL = { upper: "이마 · 초년", middle: "코 · 중년", lower: "턱 · 말년" } as const;
+const MOOD_STYLE: Record<string, string> = { 활짝: "bg-seal text-hanji", 순조: "bg-seal/15 text-seal", 주의: "border border-seal/60 text-seal", 고비: "bg-ink text-hanji" };
+
+function Sec({ title, hanja, intro, children }: { title: string; hanja?: string; intro?: string; children: React.ReactNode }) {
   return (
-    <section className="doc-paper px-4 py-4">
-      <h2 className="px-1 font-myeongjo font-extrabold">
-        {title} <span className="text-[12px] font-normal text-ink-soft">· {note}</span>
+    <section className="doc-paper px-4 py-5">
+      <h2 className="px-1 font-myeongjo text-[19px] font-extrabold">
+        {title}
+        {hanja && <span className="ml-1.5 text-[12px] font-normal text-ink-soft">{hanja}</span>}
       </h2>
-      <div className="mt-2 grid grid-cols-1 gap-2">
-        {items.map((j) => (
-          <div key={j.key} className="rounded-xl border border-ink/10 bg-white/50 px-3 py-3">
-            <p className="flex items-center gap-2">
-              <span className="rounded bg-ink px-1.5 py-0.5 font-myeongjo text-[12px] text-hanji">{j.hanja}</span>
-              <b className="text-[14px]">{j.name}</b>
-              <span className="min-w-0 flex-1 truncate text-[11.5px] text-ink-soft">{j.sub}</span>
-              <span className={`shrink-0 rounded px-1.5 py-0.5 text-[11px] font-bold ${GRADE_STYLE[j.grade]}`}>{j.grade}</span>
-            </p>
-            {j.grade !== "측정 안 함" && <p className="mt-1.5 text-[13px] leading-relaxed">{j.line}</p>}
-            {j.prep && <p className="mt-1 text-[12.5px] font-bold text-seal">대비 → {j.prep}</p>}
-            <p className="mt-1 text-[10.5px] text-ink-soft tabular-nums">근거: {j.why}</p>
-          </div>
-        ))}
-      </div>
+      {intro && <p className="mt-1 px-1 text-[12.5px] leading-relaxed text-ink-soft">{intro}</p>}
+      <div className="mt-3">{children}</div>
     </section>
+  );
+}
+
+function Badge({ g }: { g: Grade }) {
+  return <span className={`shrink-0 rounded px-1.5 py-0.5 text-[11px] font-bold ${GRADE_STYLE[g]}`}>{g}</span>;
+}
+
+function Legend() {
+  return (
+    <p className="mt-4 flex flex-wrap items-center justify-center gap-1 text-[11px] text-ink-soft">
+      {(["대길", "길", "주의", "경계"] as const).map((g) => (
+        <Badge key={g} g={g} />
+      ))}
+      <span>· 앞의 둘은 좋은 쪽, 뒤의 둘은 미리 챙길 쪽</span>
+    </p>
+  );
+}
+
+// One graded reading: what the part is, the verdict in a sentence, what to do about it, and what it was read from.
+type Item = {
+  key: string;
+  title: string;
+  tag?: string;
+  sub?: string;
+  about?: string;
+  grade: Grade;
+  line: string;
+  prep?: string | null;
+  tip?: { label: string; text: string };
+  plain?: string;
+};
+function Items({ items }: { items: Item[] }) {
+  return (
+    <div className="flex flex-col gap-2">
+      {items.map((j) => (
+        <div key={j.key} className="rounded-xl border border-ink/10 bg-white/50 px-3 py-3">
+          <p className="flex items-center gap-2">
+            {j.tag && <span className="shrink-0 rounded bg-ink px-1.5 py-0.5 font-myeongjo text-[12px] text-hanji">{j.tag}</span>}
+            <b className="min-w-0 flex-1 text-[15px]">{j.title}</b>
+            <Badge g={j.grade} />
+          </p>
+          {j.sub && <p className="mt-1 text-[12px] text-ink-soft">{j.sub}</p>}
+          {j.about && <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft">{j.about}</p>}
+          <p className="mt-1.5 text-[14px] leading-[1.7]">{j.line.endsWith("요") ? `${j.line}.` : j.line}</p>
+          {j.prep && <p className="mt-1 text-[13px] font-bold leading-relaxed text-jade">대비 → {j.prep}</p>}
+          {j.tip && (
+            <p className={`mt-1 text-[13px] leading-relaxed ${j.tip.label === "대비" ? "font-bold text-jade" : "text-seal"}`}>
+              {j.tip.label} → {j.tip.text}
+            </p>
+          )}
+          {j.plain && j.grade !== "측정 안 함" && <p className="mt-1.5 text-[11px] text-ink-soft">이렇게 봤어요 · {j.plain}</p>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// The numbers behind the reading, folded away: each measure, its retake spread and its band, and the
+// palaces' and mountains' measures.
+function MeasureDetails({ result, r }: { result: Result; r: ReturnType<typeof gwansangReading> }) {
+  const { m } = result;
+  return (
+    <details className="doc-paper px-4 py-4">
+      <summary className="cursor-pointer px-1 font-myeongjo font-extrabold">측정값 자세히 보기</summary>
+      <table className="mt-3 w-full text-[12.5px] tabular-nums">
+        <tbody>
+          <tr className="border-t border-seal/10">
+            <td className="py-1.5 text-ink-soft">삼정 (이마 · 코 · 턱)</td>
+            <td colSpan={2} className="text-right">
+              {(m.upper * 100).toFixed(1)}% · {(m.middle * 100).toFixed(1)}% · {(m.lower * 100).toFixed(1)}%
+            </td>
+          </tr>
+          {KEYS.map((key) => {
+            const v = m[key];
+            const b = band(key, v);
+            const sd = result.spread[key];
+            return (
+              <tr key={key} className="border-t border-seal/10">
+                <td className="py-1.5 text-left text-ink-soft">{BANDS[key].label}</td>
+                <td className="px-1 text-right">
+                  {fmt(key, v)}
+                  {sd !== undefined && <span className="block text-[10.5px] text-ink-soft">±{key === "tilt" ? sd.toFixed(1) : sd.toFixed(3)}</span>}
+                </td>
+                <td className="pl-2 text-right">{b.near ? <b className="text-seal">{wordOf(key, v)}</b> : wordOf(key, v)}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      <ul className="mt-3 flex flex-col gap-1 text-[11.5px] text-ink-soft tabular-nums">
+        {r.peaks.list.map((p) => (
+          <li key={p.name}>
+            <b className="text-ink">{p.name}</b> · {p.why}
+          </li>
+        ))}
+        {r.palaces.map((p) => (
+          <li key={p.name}>
+            <b className="text-ink">{p.name}</b> · {p.why}
+          </li>
+        ))}
+      </ul>
+      <p className="mt-2 px-1 text-[10.5px] leading-relaxed text-ink-soft">
+        ±는 촬영 중 찍힌 사진들 사이의 흔들림이에요. 붉은 글씨는 기준선 가까이라 두 풀이를 함께 적은 항목이에요. 기준선은 정면 얼굴 37명을 재어
+        다섯 명 중 한 명이 양 끝에 들도록 잡았고, 실제 촬영이 모이면 다시 맞춰요.
+      </p>
+    </details>
   );
 }
 
@@ -960,57 +1043,6 @@ const GRADE_STYLE: Record<Grade, string> = {
   경계: "bg-ink text-hanji",
   "측정 안 함": "text-ink-soft/70",
 };
-
-// 오악 and 십이궁, each verdict with the measure it rests on (lib/gwansangDeep.ts).
-function DeepView({ result }: { result: Result }) {
-  const x = useMemo(() => deepMeasure(result.face), [result]);
-  const pk = peaks(result.m, x);
-  const pl = palaces(result.m, x);
-  const badge = (gr: Grade) => <span className={`shrink-0 rounded px-1.5 py-0.5 text-[11px] font-bold ${GRADE_STYLE[gr]}`}>{gr}</span>;
-  return (
-    <>
-      <section className="doc-paper px-4 py-4">
-        <h2 className="px-1 font-myeongjo font-extrabold">
-          오악 <span className="text-[12px] font-normal text-ink-soft">· 얼굴의 다섯 산</span>
-        </h2>
-        <p className={`mt-2 px-1 font-myeongjo text-lg font-extrabold ${pk.caution ? "text-ink" : "text-seal"}`}>{pk.verdict}</p>
-        <p className="px-1 text-[13px] leading-relaxed">{pk.note}</p>
-        <ul className="mt-2 flex flex-col gap-1.5">
-          {pk.peaks.map((p) => (
-            <li key={p.name} className="flex items-center gap-2 border-t border-seal/10 pt-1.5 text-[12.5px]">
-              <b className="w-16 shrink-0">{p.name}</b>
-              <span className="w-14 shrink-0 text-ink-soft">{p.part}</span>
-              <span className="min-w-0 flex-1 text-[11px] text-ink-soft tabular-nums">{p.why}</span>
-              {badge(p.grade)}
-            </li>
-          ))}
-        </ul>
-      </section>
-      <section className="doc-paper px-4 py-4">
-        <h2 className="px-1 font-myeongjo font-extrabold">
-          십이궁 <span className="text-[12px] font-normal text-ink-soft">· 얼굴 열두 자리가 맡은 삶</span>
-        </h2>
-        <ul className="mt-2 flex flex-col gap-2">
-          {pl.map((p) => (
-            <li key={p.name} className="flex items-start gap-2 border-t border-seal/10 pt-2">
-              <div className="min-w-0 flex-1">
-                <p className="text-[13px]">
-                  <b>{p.name}</b> <span className="text-[11px] text-ink-soft">{p.hanja} · {p.where}</span>
-                </p>
-                <p className="text-[12px]">{p.rules}</p>
-                <p className="text-[10.5px] text-ink-soft tabular-nums">{p.why}</p>
-              </div>
-              {badge(p.grade)}
-            </li>
-          ))}
-        </ul>
-        <p className="mt-2 px-1 text-[10.5px] leading-relaxed text-ink-soft">
-          판정은 대길 · 길(좋은 쪽)과 주의 · 경계(조심할 쪽) 네 단계예요. 기준은 첫 초안이에요. 실제 촬영 결과를 모아 기준값을 맞춰 갈 거예요. 코 높이와 산근은 카메라 촬영에서만 잴 수 있어요.
-        </p>
-      </section>
-    </>
-  );
-}
 
 function HistoryTable({ history, onClear }: { history: Reading[]; onClear: () => void }) {
   const rows = [...history].reverse();

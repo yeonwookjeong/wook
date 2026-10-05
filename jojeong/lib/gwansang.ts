@@ -129,6 +129,17 @@ export const BANDS: Record<Exclude<keyof Metrics, "upper" | "middle" | "lower">,
   philtrum: { label: "인중/하정", cut: [0.171, 0.238], noise: 0.007, words: ["짧은 인중", "보통", "긴 인중"] },
 };
 export type BandKey = keyof typeof BANDS;
+// The part of the face each measure is about, for evidence written in words ("미간 넓음").
+export const BAND_PART: Record<BandKey, string> = {
+  ratio: "얼굴 길이", jaw: "턱", tilt: "눈꼬리", open: "눈", gap: "미간", nose: "콧방울", mouth: "입", lip: "입술", brow: "눈썹과 눈 사이", philtrum: "인중",
+};
+// In four steps like the grades: the middle word says which way it leans ("턱 보통(갸름 쪽)").
+export const plainOf = (m: Metrics, k: BandKey) => {
+  const [w0, w1, w2] = BANDS[k].words;
+  const [lo, hi] = BANDS[k].cut;
+  const v = m[k];
+  return `${BAND_PART[k]} ${v < lo ? w0 : v > hi ? w2 : v < (lo + hi) / 2 ? `${w1}(${w0.replace(/ 편$/, "")} 쪽)` : `${w1}(${w2.replace(/ 편$/, "")} 쪽)`}`;
+};
 
 // 0, 1 or 2 for a measure, and whether it sits within 4% of a cut-off (a reading a retake could tip either way).
 export function band(key: BandKey, v: number): { step: 0 | 1 | 2; near: boolean } {
@@ -146,13 +157,19 @@ export function wordOf(key: BandKey, v: number): string {
   return words[band(key, v).step];
 }
 
-export type Hyeong = { el: "木" | "火" | "土" | "金" | "水"; name: string; look: string };
+// Each type: its look, a nickname for the headline, and its nature at its best and its other side.
+export type Hyeong = { el: "木" | "火" | "土" | "金" | "水"; name: string; look: string; nick: string; nature: string };
 const HYEONG: Record<Hyeong["el"], Hyeong> = {
-  木: { el: "木", name: "목형", look: "길고 곧은 얼굴" },
-  火: { el: "火", name: "화형", look: "위가 넓고 턱이 뾰족한 얼굴" },
-  土: { el: "土", name: "토형", look: "넓고 두터운 얼굴" },
-  金: { el: "金", name: "금형", look: "각지고 반듯한 얼굴" },
-  水: { el: "水", name: "수형", look: "둥글고 부드러운 얼굴" },
+  木: { el: "木", name: "목형", look: "길고 곧은 얼굴", nick: "곧게 뻗는 나무의 얼굴",
+    nature: "나무처럼 위로 뻗는 사람이에요. 배우고 오르려는 힘이 크고 뜻이 곧아요. 다만 꺾이는 걸 못 견뎌, 굽힐 때 굽히지 못하고 고집으로 버티기 쉬워요." },
+  火: { el: "火", name: "화형", look: "위가 넓고 턱이 뾰족한 얼굴", nick: "번뜩이는 불꽃의 얼굴",
+    nature: "불처럼 번뜩이는 재주와 열정이 있어요. 머리 회전이 빠르고 사람을 끄는 매력이 있어요. 다만 빨리 타오르는 만큼 빨리 식어, 끝마무리가 약해지기 쉬워요." },
+  土: { el: "土", name: "토형", look: "넓고 두터운 얼굴", nick: "듬직한 흙산의 얼굴",
+    nature: "흙처럼 믿음직하고 사람을 넉넉히 품어요. 한번 맡은 일은 끝까지 지고 가요. 다만 한번 정하면 잘 움직이지 않아, 변화가 필요할 때 한 박자 늦기 쉬워요." },
+  金: { el: "金", name: "금형", look: "각지고 반듯한 얼굴", nick: "반듯하게 벼린 쇠의 얼굴",
+    nature: "쇠처럼 원칙이 분명하고 결단이 빨라요. 맺고 끊음이 확실해 믿고 맡기기 좋은 사람이에요. 다만 날이 서 있어, 가까운 사람이 어려워하거나 상처받기 쉬워요." },
+  水: { el: "水", name: "수형", look: "둥글고 부드러운 얼굴", nick: "어디든 스며드는 물의 얼굴",
+    nature: "물처럼 어디든 스며드는 적응력과 지혜가 있어요. 사람을 편하게 하고 상황을 읽는 눈이 밝아요. 다만 흐르는 대로 가다 보면 내 중심을 잃고 남에게 맞춰 주기만 하기 쉬워요." },
 };
 // Quartiles of the same faces: the longest quarter 木, the narrowest jaws 火, the widest jaws 土 (shorter) or
 // 金 (longer), the rest 水.

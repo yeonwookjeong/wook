@@ -3,7 +3,7 @@
 // centred on the faces measured so far, and meant to be recalibrated against real captures (/lab/gwansang
 // shows the raw numbers for that).
 
-import { BANDS, level, THIRD_CUT, thirdDev, type BandKey, type Face, type Metrics } from "./gwansang";
+import { BANDS, level, plainOf, THIRD_CUT, thirdDev, type BandKey, type Face, type Metrics } from "./gwansang";
 
 // Four grades, two on each side so neither reads as the odd one out: 대길 and 길 (good), 주의 (a weak point to
 // prepare for) and 경계 (a clear weak point). Each comes from a score of 0–3; several scores are averaged before grading.
@@ -60,6 +60,25 @@ export function pos(v: number, [lo, hi]: readonly [number, number], lowIsGood = 
   return s < 0 ? 0 : s < 0.5 ? 1 : s < 1 ? 2 : 3;
 }
 export const bandScore = (k: BandKey, v: number) => pos(v, BANDS[k].cut);
+// The deep measures in words, for evidence a reader can follow.
+// Four words, one per grade step, so a 주의 reading never rests on a word that says "보통".
+const DEEP_WORD: Record<keyof typeof CUT, [string, string, string]> = {
+  forehead: ["이마 너비", "좁은", "넓은"],
+  cheek: ["광대", "밋밋한", "도드라진"],
+  noseLen: ["코 길이", "짧은", "긴"],
+  noseProj: ["코 높이", "낮은", "높은"],
+  root: ["콧대 뿌리(산근)", "낮은", "높은"],
+  browLen: ["눈썹 길이", "짧은", "긴"],
+  glabella: ["두 눈썹 사이(인당)", "좁은", "넓은"],
+};
+const fourWord = (step: number, lo: string, hi: string) => [`${lo} 편`, `조금 ${lo} 편`, `조금 ${hi} 편`, `${hi} 편`][step];
+export const deepWord = (k: keyof typeof CUT, v: number | null) => {
+  if (v === null) return null;
+  const [part, lo, hi] = DEEP_WORD[k];
+  return `${part} ${fourWord(pos(v, CUT[k]), lo, hi)}`;
+};
+export const thirdWord = (part: string, dev: number) => `${part} ${fourWord(pos(dev, [-THIRD_CUT, THIRD_CUT]), "짧은", "긴")}`;
+const words = (...w: (string | null)[]) => w.filter(Boolean).join(" · ");
 export const deep = (k: keyof typeof CUT, v: number | null) => (v === null ? null : pos(v, CUT[k]));
 export const third = (dev: number) => pos(dev, [-THIRD_CUT, THIRD_CUT]);
 // Eye corners read best at their usual tilt: the further from it either way, the lower. The usual tilt is the
@@ -70,7 +89,8 @@ export const tiltScore = (t: number) => {
   return d < 1 ? 3 : d < 2.2 ? 2 : d < 3.6 ? 1 : 0;
 };
 
-export type Palace = { name: string; hanja: string; where: string; rules: string; score: number | null; grade: Grade; why: string };
+// `why` gives the measures in numbers (for the measurement details), `plain` the same in words.
+export type Palace = { name: string; hanja: string; where: string; rules: string; score: number | null; grade: Grade; why: string; plain: string };
 
 const f2 = (v: number) => v.toFixed(2);
 const pct = (d: number) => `${d >= 0 ? "+" : ""}${Math.round(d * 100)}%`;
@@ -78,8 +98,22 @@ const pct = (d: number) => `${d >= 0 ? "+" : ""}${Math.round(d * 100)}%`;
 export function palaces(m: Metrics, x: Deep): Palace[] {
   const dev = thirdDev(m);
   const P = (name: string, hanja: string, where: string, rules: string, score: number | null, why: string): Palace => ({
-    name, hanja, where, rules, score, grade: gradeOf(score), why,
+    name, hanja, where, rules, score, grade: gradeOf(score), why, plain: PLAIN[name],
   });
+  const PLAIN: Record<string, string> = {
+    명궁: words(deepWord("glabella", x.glabella), plainOf(m, "gap")),
+    재백궁: words(plainOf(m, "nose"), deepWord("noseProj", x.noseProj)),
+    형제궁: words(deepWord("browLen", x.browLen)),
+    전택궁: words(plainOf(m, "brow")),
+    남녀궁: "아직 재지 않아요",
+    노복궁: words(thirdWord("하정(인중~턱)", dev.lower), plainOf(m, "jaw")),
+    처첩궁: words(plainOf(m, "tilt")),
+    질액궁: words(deepWord("root", x.root) ?? "사진으로는 깊이를 알 수 없어요"),
+    천이궁: words(deepWord("forehead", x.forehead)),
+    관록궁: words(thirdWord("이마 높이", dev.upper)),
+    복덕궁: words(deepWord("forehead", x.forehead), deepWord("browLen", x.browLen)),
+    부모궁: words(thirdWord("이마 높이", dev.upper)),
+  };
   return [
     P("명궁", "命宮", "인당(두 눈썹 사이)", "타고난 뜻과 마음의 크기", avg(deep("glabella", x.glabella), bandScore("gap", m.gap)),
       `인당 너비 ${f2(x.glabella)} (눈 너비 기준) · 미간 ${f2(m.gap)}`),
@@ -104,8 +138,8 @@ export function palaces(m: Metrics, x: Deep): Palace[] {
   ];
 }
 
-export type Peak = { name: string; part: string; score: number | null; grade: Grade; why: string };
-export type Peaks = { peaks: Peak[]; verdict: string; note: string; caution: boolean };
+export type Peak = { name: string; part: string; score: number | null; grade: Grade; why: string; plain: string };
+export type Peaks = { peaks: Peak[]; verdict: string; plain: string; note: string; caution: boolean };
 
 // 오악: forehead (남악), chin (북악), nose (중악) and the two cheekbones (동악·서악), and how they hold together.
 export function peaks(m: Metrics, x: Deep): Peaks {
@@ -114,24 +148,24 @@ export function peaks(m: Metrics, x: Deep): Peaks {
   const north = avg(third(dev.lower), bandScore("jaw", m.jaw))!;
   const centre = avg(deep("noseLen", x.noseLen), deep("noseProj", x.noseProj))!;
   const cheek = deep("cheek", x.cheek)!;
-  const K = (name: string, part: string, score: number, why: string): Peak => ({ name, part, score, grade: gradeOf(score), why });
+  const K = (name: string, part: string, score: number, why: string, plain: string): Peak => ({ name, part, score, grade: gradeOf(score), why, plain });
   const list = [
-    K("남악", "이마", south, `상정 보통 대비 ${pct(dev.upper)} · 이마 너비 ${f2(x.forehead)}`),
-    K("북악", "턱", north, `하정 보통 대비 ${pct(dev.lower)} · 턱 너비 ${f2(m.jaw)}`),
-    K("중악", "코", centre, `코 길이 ${f2(x.noseLen)}${x.noseProj === null ? "" : ` · 코 높이 ${f2(x.noseProj)}`}`),
-    K("동악·서악", "양 광대", cheek, `광대 돌출 ${f2(x.cheek)}`),
+    K("남악", "이마", south, `상정 보통 대비 ${pct(dev.upper)} · 이마 너비 ${f2(x.forehead)}`, words(thirdWord("이마 높이", dev.upper), deepWord("forehead", x.forehead))),
+    K("북악", "턱", north, `하정 보통 대비 ${pct(dev.lower)} · 턱 너비 ${f2(m.jaw)}`, words(thirdWord("하정(인중~턱)", dev.lower), plainOf(m, "jaw"))),
+    K("중악", "코", centre, `코 길이 ${f2(x.noseLen)}${x.noseProj === null ? "" : ` · 코 높이 ${f2(x.noseProj)}`}`, words(deepWord("noseLen", x.noseLen), deepWord("noseProj", x.noseProj))),
+    K("동악·서악", "양 광대", cheek, `광대 돌출 ${f2(x.cheek)}`, words(deepWord("cheek", x.cheek))),
   ];
   const sunk = list.filter((p) => p.grade === "경계");
   if (centre >= 2.5 && cheek < 1)
-    return { peaks: list, caution: true, verdict: "고봉독립(孤峰獨立)",
+    return { peaks: list, caution: true, verdict: "고봉독립(孤峰獨立)", plain: "코만 홀로 우뚝한 얼굴",
       note: "코만 우뚝하고 광대가 받쳐 주지 못하는 형이에요. 혼자 힘으로 이루는 대신, 도와줄 사람이 곁에 적어 지치기 쉬워요. 큰일일수록 함께할 사람을 먼저 구하세요." };
   if (cheek >= 2.5 && centre < 1)
-    return { peaks: list, caution: true, verdict: "관골이 중악을 누름",
+    return { peaks: list, caution: true, verdict: "관골이 중악을 누름", plain: "광대가 코보다 센 얼굴",
       note: "광대가 코보다 센 형이에요. 주변의 기세에 내 몫이 눌리기 쉬워요. 동업이나 공동 투자는 몫과 책임을 글로 남겨 두세요." };
   if (sunk.length)
-    return { peaks: list, caution: true, verdict: `${sunk.map((p) => p.name).join("·")}이 꺼진 상`,
+    return { peaks: list, caution: true, verdict: `${sunk.map((p) => p.name).join("·")}이 꺼진 상`, plain: `${sunk.map((p) => p.part).join("과 ")} 쪽 산이 낮은 얼굴`,
       note: `${sunk.map((p) => p.part).join(", ")} 쪽 산이 낮아 그 자리가 맡은 시기와 일에서 힘이 덜 실려요. 아래 영역 풀이의 '대비'를 먼저 챙기세요.` };
   if (list.filter((p) => p.grade === "대길").length >= 3)
-    return { peaks: list, caution: false, verdict: "오악조귀(五嶽朝歸)", note: "다섯 산이 고루 솟아 서로 받쳐 주는 형이에요. 운이 한쪽으로 쏠리지 않고 고르게 들어온다 봅니다." };
-  return { peaks: list, caution: false, verdict: "오악이 무난히 어우러짐", note: "크게 꺼지거나 튀는 곳 없이 다섯 산이 어우러진 형이에요." };
+    return { peaks: list, caution: false, verdict: "오악조귀(五嶽朝歸)", plain: "다섯 산이 고루 솟은 얼굴", note: "다섯 산이 고루 솟아 서로 받쳐 주는 형이에요. 운이 한쪽으로 쏠리지 않고 고르게 들어온다 봅니다." };
+  return { peaks: list, caution: false, verdict: "오악이 무난히 어우러짐", plain: "모난 데 없이 고른 얼굴", note: "크게 꺼지거나 튀는 곳 없이 다섯 산이 어우러진 형이에요." };
 }
