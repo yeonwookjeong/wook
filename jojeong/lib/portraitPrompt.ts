@@ -1,5 +1,6 @@
 // The 관상 result's portrait: the viewer's own face repainted by an image model in one shared style, the same for
-// everyone: black ink brushwork on white hanji, like the face plates of an old 관상 book, close on the face. It
+// everyone: a Joseon genre painting (풍속화) in the manner of Shin Yun-bok, fine ink lines with soft mineral
+// colour washes on warm aged hanji, close on the face. It
 // may look painted, never like someone else:
 // the face's geometry is held fixed and only the surface is restyled (the page also measures the painting and
 // asks once more with `strict` when it drifted).
@@ -15,16 +16,19 @@ const KEEP = [
 
 export function portraitPrompt(strict = false): string {
   return [
-    "Redraw the person in the attached photo as a Korean ink-brush portrait: black ink on white hanji paper, like the illustrated face plates of an old Korean physiognomy (gwansang) book.",
+    "Redraw the person in the attached photo as a figure from a late-Joseon Korean genre painting (pungsokhwa) in the manner of Shin Yun-bok (Hyewon):",
+    "fine, even ink outlines drawn with a thin brush, filled with soft, flat washes of muted mineral colour on warm aged hanji paper.",
     KEEP,
     ...(strict
       ? ["A first attempt drifted from their real face. This time trace their features from the photo as faithfully as a tracing, and only restyle the surface."]
       : []),
-    "Style only: black ink alone, no colour at all; confident brush lines of varying thickness for the contours, eyes, brows, nose and lips,",
-    "light grey ink washes for soft shading, hair in rich black ink with a few dry-brush strokes, the paper's fibres faintly visible.",
-    "Keep it clean and dignified: calm, bright eyes and a composed expression close to the photo's. No anime, no cartoon, no doll face.",
+    "Style only: delicate ink line work for the contours, eyes, brows, nose and lips; skin in a pale warm wash with the faintest blush, shaded only lightly;",
+    "hair in soft black ink with fine strands. Colours are few and quiet: indigo blue, cinnabar red, ochre and ink, slightly faded like an old painting,",
+    "with the paper's fibres and gentle age stains faintly visible. Calm, bright eyes and a composed expression close to the photo's.",
+    "It must read as a painting, not a photo filter, and as this person, not a generic Joseon face. No anime, no cartoon, no doll face, no glossy digital look.",
     "Framing: a close-up of the head and the top of the shoulders, facing the viewer, the face filling about 60% of the picture's height, centred.",
-    "A white hanbok collar (dongjeong) drawn in a few ink lines, nothing on the head. The background is plain white hanji, left empty.",
+    "Dress them in a hanbok jeogori: a white collar (dongjeong) over indigo or cinnabar cloth, with a coloured coat-string (goreum). Keep their own hairstyle; nothing on the head.",
+    "The background is plain warm hanji, left empty, so the face stands out.",
     "Leave out the photo's background, glasses and modern clothes. Do not write any text, letters, characters, seal, signature or watermark. No frame.",
   ].join(" ");
 }
