@@ -1198,6 +1198,63 @@ export async function Card({ q }: { q: CardQuery }) {
     );
   }
 
+  if (c === "gan-open" || c === "gan-words" || c === "gan-joseon") {
+    // Ten 일간, one answer each, every one of them a good or a fond one (the MBTI posts that spread give every type
+    // something to keep). The answer follows the 일간's 물상: 병화 the sun shows all at once, 정화 the candle burns slow.
+    const SETS = {
+      "gan-open": {
+        kicker: "한 번 열면 끝까지인 사람도 있사옵니다",
+        title: ["일간별", "마음 여는 데 걸리는 시간"],
+        items: ["1주", "3일", "3분", "3달", "1년", "2주", "같이 고생 한 번", "6개월", "하루", "????"],
+        notes: ["곧아서 아니면 아님", "어디든 금방 어울림", "처음부터 다 보여 줌", "속으로 천천히 탐", "늦지만 열면 평생", "챙기다 보면 열림", "의리로 열림", "검증이 끝나야", "넓게 받아들임", "촉이 정함"],
+      },
+      "gan-words": {
+        kicker: "말과 속이 다른 한마디",
+        title: ["일간별", "믿으면 안 되는 말"],
+        items: ["\"하나도 안 서운해\"", "\"난 아무거나 다 좋아\"", "\"이건 진짜 비밀이야\"", "\"나 진짜 괜찮아\"", "\"생각해 볼게\"", "\"나는 안 챙겨도 돼\"", "\"딱 한 잔만\"", "\"대충 해도 돼\"", "\"이번 달은 아낄 거야\"", "\"나 별생각 없어\""],
+        notes: ["자존심이 큰 나무", "취향은 확실한 덩굴", "다 비추는 해", "속으로 타는 촛불", "이미 답은 정해짐", "남 먼저 챙기는 밭", "화끈한 무쇠", "완벽주의 보석", "씀씀이도 큰 물", "생각이 제일 많음"],
+      },
+      "gan-joseon": {
+        kicker: "조선에 태어났다면",
+        title: ["일간별", "내 벼슬과 일"],
+        items: ["장군", "역관", "명창", "집현전 학자", "영의정", "내의원 의원", "포도대장", "도화서 화원", "거상", "관상감 훈도"],
+        notes: ["곧게 앞장서는 큰 나무", "어디든 스며드는 덩굴", "무대가 필요한 해", "밤새 타는 촛불", "나라의 중심 큰 산", "기르고 살피는 밭", "결단의 무쇠", "섬세한 눈의 보석", "큰 흐름을 타는 물", "하늘을 읽는 이슬 · 소신의 자리"],
+      },
+    } as const;
+    const set = SETS[c];
+    const EL = ["#3d6656", "#3d6656", "#b3261e", "#b3261e", "#a87a22", "#a87a22", "#8a8378", "#8a8378", "#1f3448", "#1f3448"];
+    const KO = ["갑목", "을목", "병화", "정화", "무토", "기토", "경금", "신금", "임수", "계수"];
+    const long = set.items.some((x) => x.length > 7);
+    return (
+      <ReelFrame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: REEL.top, left: REEL.side, right: REEL.side, textAlign: "center" }}>
+          <p style={{ fontSize: 34, fontWeight: 800, letterSpacing: "0.06em", color: GOLD }}>{set.kicker}</p>
+          <p style={{ marginTop: 12, fontSize: 40, fontWeight: 800, color: "rgba(244,236,219,.85)" }}>{set.title[0]}</p>
+          <p style={{ marginTop: 2, fontSize: 72, fontWeight: 800, lineHeight: 1.12, color: "#f1cf7a", whiteSpace: "nowrap" }}>{set.title[1]}</p>
+        </div>
+        <div className="doc-paper" style={{ position: "absolute", top: 520, left: 100, right: 100, padding: "20px", color: INK, display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 16px" }}>
+          {set.items.map((it, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 16, height: 150, padding: "0 14px", borderRadius: 14, background: "rgba(255,255,255,.55)", border: "1.5px solid rgba(179,38,30,.15)", minWidth: 0 }}>
+              <span style={{ width: 84, height: 84, flexShrink: 0, borderRadius: 14, background: EL[i], color: i === 6 || i === 7 ? INK : HANJI, display: "grid", placeItems: "center", fontSize: 56, fontFamily: brush, lineHeight: 1 }}>
+                {STEMS[i]}
+              </span>
+              <span style={{ display: "flex", flexDirection: "column", minWidth: 0, fontFamily: sans }}>
+                <span style={{ fontSize: 22, fontWeight: 700, color: SOFT }}>{KO[i]}</span>
+                <b style={{ fontSize: long ? 29 : 40, lineHeight: 1.2, letterSpacing: "-0.03em", color: EL[i] === "#8a8378" ? INK : EL[i] }}>{it}</b>
+                <span style={{ marginTop: 2, fontSize: 19, color: SOFT, letterSpacing: "-0.02em" }}>{set.notes[i]}</span>
+              </span>
+            </div>
+          ))}
+        </div>
+        <div style={{ position: "absolute", top: 520 + 40 + 5 * 150 + 4 * 14 + 30, left: 100, right: 100, textAlign: "center" }}>
+          <p style={{ fontSize: 30, fontWeight: 800, color: "#f1cf7a" }}>일간 = 태어난 날의 위 글자</p>
+          <p style={{ marginTop: 6, fontSize: 26, color: "rgba(244,236,219,.8)", fontFamily: sans }}>내 일간을 모르시면 프로필 링크에서 생일만 넣으시옵소서</p>
+        </div>
+      </ReelFrame>
+    );
+  }
+
   if (c === "son-reel") {
     const y = Number(q.y ?? 2026);
     const m = Number(q.m ?? 10);
