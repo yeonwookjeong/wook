@@ -4,7 +4,7 @@ import { ILGAN, ILJU_TAG_TEXT, iljuFacts, jiaziNo, nextDayOf, stemCure, stemMatc
 import { josa } from "@/lib/josa";
 import { pickDays } from "@/lib/taekil";
 import { figureById, figureChart } from "@/lib/figures";
-import { monthPillarOf, rankMonth, SIXTY, type IljuMonth } from "@/lib/iljuRank";
+import { ILJU_IMAGE, monthPillarOf, rankMonth, SIXTY, type IljuMonth } from "@/lib/iljuRank";
 import { ANIMALS, BRANCHES, BRANCHES_KO, STEMS, STEMS_KO } from "@/lib/saju";
 
 // Social cards, 1080×1440 (Instagram 3:4, the profile grid's own shape, so nothing is cropped there), drawn in the site's own look. Owner only. Each slide is one URL
@@ -1198,7 +1198,7 @@ export async function Card({ q }: { q: CardQuery }) {
     );
   }
 
-  if (c === "gan-open" || c === "gan-words" || c === "gan-joseon") {
+  if (c === "gan-open" || c === "gan-words") {
     // Ten 일간, one answer each, every one of them a good or a fond one (the MBTI posts that spread give every type
     // something to keep). The answer follows the 일간's 물상: 병화 the sun shows all at once, 정화 the candle burns slow.
     const SETS = {
@@ -1213,12 +1213,6 @@ export async function Card({ q }: { q: CardQuery }) {
         title: ["일간별", "믿으면 안 되는 말"],
         items: ["\"하나도 안 서운해\"", "\"난 아무거나 다 좋아\"", "\"이건 진짜 비밀이야\"", "\"나 진짜 괜찮아\"", "\"생각해 볼게\"", "\"나는 안 챙겨도 돼\"", "\"딱 한 잔만\"", "\"대충 해도 돼\"", "\"이번 달은 아낄 거야\"", "\"나 별생각 없어\""],
         notes: ["자존심이 큰 나무", "취향은 확실한 덩굴", "다 비추는 해", "속으로 타는 촛불", "이미 답은 정해짐", "남 먼저 챙기는 밭", "화끈한 무쇠", "완벽주의 보석", "씀씀이도 큰 물", "생각이 제일 많음"],
-      },
-      "gan-joseon": {
-        kicker: "조선에 태어났다면",
-        title: ["일간별", "내 벼슬과 일"],
-        items: ["장군", "역관", "명창", "집현전 학자", "영의정", "내의원 의원", "포도대장", "도화서 화원", "거상", "관상감 훈도"],
-        notes: ["곧게 앞장서는 큰 나무", "어디든 스며드는 덩굴", "무대가 필요한 해", "밤새 타는 촛불", "나라의 중심 큰 산", "기르고 살피는 밭", "결단의 무쇠", "섬세한 눈의 보석", "큰 흐름을 타는 물", "하늘을 읽는 이슬 · 소신의 자리"],
       },
     } as const;
     const set = SETS[c];
@@ -1250,6 +1244,57 @@ export async function Card({ q }: { q: CardQuery }) {
         <div style={{ position: "absolute", top: 520 + 40 + 5 * 150 + 4 * 14 + 30, left: 100, right: 100, textAlign: "center" }}>
           <p style={{ fontSize: 30, fontWeight: 800, color: "#f1cf7a" }}>일간 = 태어난 날의 위 글자</p>
           <p style={{ marginTop: 6, fontSize: 26, color: "rgba(244,236,219,.8)", fontFamily: sans }}>내 일간을 모르시면 프로필 링크에서 생일만 넣으시옵소서</p>
+        </div>
+      </ReelFrame>
+    );
+  }
+
+  if (c === "ilju60") {
+    // All sixty day pillars on one sheet, a row per 일간 and the six pillars of that 일간 across it in 60갑자 order,
+    // each with the site's own picture of it (ILJU_IMAGE, the season words dropped so it fits the cell).
+    const EL = ["#3d6656", "#3d6656", "#b3261e", "#b3261e", "#a87a22", "#a87a22", "#8a8378", "#8a8378", "#1f3448", "#1f3448"];
+    const KO = ["갑목", "을목", "병화", "정화", "무토", "기토", "경금", "신금", "임수", "계수"];
+    const short = (t: string) => t.replace(/^(한겨울|이른 봄|초여름|한여름|늦여름|초가을|늦가을|초겨울|여름밤|가을밤|봄비 갠 뒤|봄|여름|가을|겨울) /, "");
+    const rowH = 112;
+    return (
+      <ReelFrame>
+        <BrushFont hf={String(q.hf ?? "")} />
+        <div style={{ position: "absolute", top: REEL.top - 10, left: 40, right: 40, textAlign: "center" }}>
+          <p style={{ fontSize: 30, fontWeight: 800, letterSpacing: "0.06em", color: GOLD }}>그대는 어떤 풍경에서 태어났사옵니까</p>
+          <p style={{ marginTop: 6, fontSize: 68, fontWeight: 800, lineHeight: 1.1 }}>
+            60일주 <span style={{ color: "#f1cf7a" }}>한 장 정리</span>
+          </p>
+        </div>
+        <div className="doc-paper" style={{ position: "absolute", top: 380, left: 40, right: 40, padding: "14px", color: INK }}>
+          {Array.from({ length: 10 }, (_, s) => (
+            <div key={s} style={{ display: "grid", gridTemplateColumns: "92px repeat(6, 1fr)", gap: 5, height: rowH, paddingBlock: 3 }}>
+              <span style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2, borderRadius: 10, background: EL[s], color: s === 6 || s === 7 ? INK : HANJI }}>
+                <span style={{ fontSize: 50, fontFamily: brush, lineHeight: 1 }}>{STEMS[s]}</span>
+                <span style={{ fontSize: 17, fontWeight: 800, fontFamily: sans }}>{KO[s]}</span>
+              </span>
+              {Array.from({ length: 6 }, (_, k) => {
+                const no = s + 10 * k;
+                const b = no % 12;
+                const hanja = STEMS[s] + BRANCHES[b];
+                return (
+                  <span
+                    key={k}
+                    style={{ display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 8px", borderRadius: 10, background: "rgba(255,255,255,.6)", border: "1.5px solid rgba(179,38,30,.13)", minWidth: 0, fontFamily: sans }}
+                  >
+                    <b style={{ fontSize: 25, lineHeight: 1.1, color: EL[s] === "#8a8378" ? INK : EL[s] }}>
+                      {STEMS_KO[s]}
+                      {BRANCHES_KO[b]}
+                    </b>
+                    <span style={{ marginTop: 3, fontSize: 17, lineHeight: 1.22, letterSpacing: "-0.04em", color: SOFT, wordBreak: "keep-all" }}>{short(ILJU_IMAGE[hanja])}</span>
+                  </span>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+        <div style={{ position: "absolute", top: 380 + 28 + 10 * rowH + 26, left: 40, right: 40, textAlign: "center" }}>
+          <p style={{ fontSize: 30, fontWeight: 800, color: "#f1cf7a" }}>일주 = 태어난 날의 두 글자</p>
+          <p style={{ marginTop: 6, fontSize: 25, color: "rgba(244,236,219,.8)", fontFamily: sans }}>저장해 두고 친구 일주도 찾아보시옵소서 · 내 일주는 프로필 링크에서</p>
         </div>
       </ReelFrame>
     );
