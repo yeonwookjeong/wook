@@ -1300,6 +1300,53 @@ export async function Card({ q }: { q: CardQuery }) {
     );
   }
 
+  if (c === "jaemul-oct") {
+    // "우리 집에 이 년생 있으면": the birth years whose year stem is wood (甲·乙). From 한로 (10/8) the month is 戊戌, earth
+    // above and below, and earth is what wood rules: its 재성 (甲 → 편재, 乙 → 정재). Counted from the year stem, said so.
+    const YEARS = [1954, 1955, 1964, 1965, 1974, 1975, 1984, 1985, 1994, 1995, 2004, 2005];
+    const ganzhi = (y: number) => {
+      const i = (y - 4 + 600) % 60;
+      return { gz: STEMS_KO[i % 10] + BRANCHES_KO[i % 12], animal: ANIMALS[i % 12] };
+    };
+    return (
+      <ReelFrame>
+        <div style={{ position: "absolute", top: REEL.top, left: 60, right: 60, textAlign: "center" }}>
+          <p style={{ fontSize: 40, fontWeight: 800, color: "rgba(244,236,219,.9)" }}>우리 집에 이 년생 있으면</p>
+          <p style={{ marginTop: 12, fontSize: 74, fontWeight: 800, lineHeight: 1.15, color: "#f1cf7a" }}>
+            10월 8일부터
+            <br />
+            재물이 들어오옵니다
+          </p>
+        </div>
+        <div style={{ position: "absolute", top: 560, left: 140, right: 140, display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "22px 18px" }}>
+          {YEARS.map((y) => {
+            const g = ganzhi(y);
+            return (
+              <div key={y} style={{ textAlign: "center", padding: "18px 0 14px", borderRadius: 16, background: "rgba(241,207,122,.08)", border: "2px solid rgba(241,207,122,.35)" }}>
+                <p style={{ fontSize: 45, fontWeight: 800, color: "#f7e7b4", fontVariantNumeric: "tabular-nums", letterSpacing: "-0.01em" }}>{y}년생</p>
+                <p style={{ marginTop: 4, fontSize: 24, color: "rgba(244,236,219,.7)", fontFamily: sans }}>
+                  {g.gz} · {g.animal}띠
+                </p>
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ position: "absolute", top: 1330, left: 90, right: 90, textAlign: "center" }}>
+          <p style={{ fontSize: 31, fontWeight: 800, lineHeight: 1.45, color: "#f1cf7a" }}>
+            태어난 해의 첫 글자가 갑·을, 나무의 해
+            <br />
+            10월은 흙의 달, 나무에게 흙은 재물이옵니다
+          </p>
+          <p style={{ marginTop: 14, fontSize: 25, lineHeight: 1.5, color: "rgba(244,236,219,.8)", fontFamily: sans }}>
+            들어온 만큼 새기 쉬운 달이니 반은 지키시옵소서
+            <br />
+            1월~2월 초 생일은 앞 해 · 내 사주의 10월은 프로필 링크에서
+          </p>
+        </div>
+      </ReelFrame>
+    );
+  }
+
   if (c === "son-reel") {
     const y = Number(q.y ?? 2026);
     const m = Number(q.m ?? 10);
