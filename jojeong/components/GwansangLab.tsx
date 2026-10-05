@@ -4,7 +4,8 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "reac
 import type { FaceLandmarker, FaceLandmarkerResult } from "@mediapipe/tasks-vision";
 import { drawChart } from "@/lib/gwansangChart";
 import { deepMeasure, palaces, peaks, type Grade } from "@/lib/gwansangDeep";
-import { chartNotes, likeness, BANDS, band, bounty, hyeong, IDX, level, measure, medianFace, wordOf, yongmo, type BandKey, type Face, type Metrics, type Pt } from "@/lib/gwansang";
+import { gwansangReading } from "@/lib/gwansangReading";
+import { chartNotes, leadThird, likeness, thirdDev, BANDS, band, bounty, hyeong, IDX, level, measure, medianFace, wordOf, yongmo, type BandKey, type Face, type Metrics, type Pt } from "@/lib/gwansang";
 
 // The 관상 capture test (/lab/gwansang): the camera shows a guide, and the face is taken only once it is the
 // right size, centred, facing straight, expressionless and well lit for HOLD_MS in a row. The frames of that
@@ -640,12 +641,13 @@ function PaintingWait({ waited, retrying }: { waited: number; retrying: boolean 
 function ResultView({ result }: { result: Result }) {
   const { m } = result;
   const h = hyeong(m);
-  const parts: [string, number, string][] = [
-    ["상정", m.upper, "초년"],
-    ["중정", m.middle, "중년"],
-    ["하정", m.lower, "말년"],
+  const dev = thirdDev(m);
+  const lead = leadThird(m);
+  const parts: [string, number, string, number, boolean][] = [
+    ["상정", m.upper, "초년", dev.upper, lead === "upper"],
+    ["중정", m.middle, "중년", dev.middle, lead === "middle"],
+    ["하정", m.lower, "말년", dev.lower, lead === "lower"],
   ];
-  const top = Math.max(m.upper, m.middle, m.lower);
   return (
     <>
       <section className="doc-paper px-5 py-5">
@@ -660,15 +662,21 @@ function ResultView({ result }: { result: Result }) {
         </div>
         {h.mixed && <p className="mt-1 text-center text-[12.5px] text-ink-soft">{h.main.name}과 {h.mixed.name}의 경계에 있는 겸형이에요</p>}
         <div className="mt-4 flex flex-col gap-1.5">
-          {parts.map(([n, v, age]) => (
-            <div key={n} className="grid grid-cols-[4.5em_1fr_3.2em] items-center gap-2 text-[12.5px]">
+          {parts.map(([n, v, age, d, isLead]) => (
+            <div key={n} className="grid grid-cols-[4.5em_1fr_5.6em] items-center gap-2 text-[12.5px]">
               <span>
                 {n} <span className="text-ink-soft">{age}</span>
               </span>
               <span className="h-2.5 overflow-hidden rounded bg-hanji-deep">
-                <span className={`block h-full ${v === top ? "bg-seal" : "bg-jade"}`} style={{ width: `${v * 200}%` }} />
+                <span className={`block h-full ${isLead ? "bg-seal" : "bg-jade"}`} style={{ width: `${v * 200}%` }} />
               </span>
-              <span className="text-right tabular-nums">{(v * 100).toFixed(1)}%</span>
+              <span className="text-right tabular-nums">
+                {(v * 100).toFixed(1)}%
+                <span className={`block text-[10.5px] ${isLead ? "font-bold text-seal" : "text-ink-soft"}`}>
+                  보통 대비 {d >= 0 ? "+" : ""}
+                  {Math.round(d * 100)}%
+                </span>
+              </span>
             </div>
           ))}
         </div>
@@ -700,6 +708,7 @@ function ResultView({ result }: { result: Result }) {
         </p>
       </section>
 
+      <ReadingView result={result} />
       <DeepView result={result} />
 
       <section className="rounded-2xl border-2 border-ink/70 bg-hanji-deep px-5 py-5">
@@ -707,6 +716,104 @@ function ResultView({ result }: { result: Result }) {
         <p className="mt-1 text-center text-[12px] text-ink-soft">용모파기 · 이런 얼굴을 보거든 관아에 고하라</p>
         <p className="mt-3 font-myeongjo text-[15px] leading-loose">{yongmo(m).join(" ")}</p>
         <p className="mt-3 text-right font-myeongjo text-lg font-extrabold text-seal">현상금 엽전 {bounty(m)}냥</p>
+      </section>
+    </>
+  );
+}
+
+// The 관상 free reading (lib/gwansangReading.ts): headline, strengths, cards and the flow through the ages.
+function ReadingView({ result }: { result: Result }) {
+  const r = useMemo(() => gwansangReading(result.m, deepMeasure(result.face)), [result]);
+  const [born, setBorn] = useState("");
+  const age = /^(19|20)\d\d$/.test(born) ? new Date().getFullYear() - Number(born) + 1 : null;
+  const MOOD: Record<string, string> = { 활짝: "bg-seal text-hanji", 무난: "bg-hanji-deep text-ink", 다지기: "border border-ink/30 text-ink-soft" };
+  return (
+    <>
+      <section className="doc-paper px-5 py-5">
+        <p className="text-center text-xs font-extrabold text-seal">관상 총평</p>
+        <h2 className="mt-1 text-center font-myeongjo text-xl font-extrabold">{r.headline}</h2>
+        <p className="mt-2 text-[14px] leading-relaxed">{r.summary}</p>
+        {r.strengths.length > 0 && (
+          <div className="mt-3">
+            <p className="text-[12.5px] font-bold text-seal">타고난 강점</p>
+            <ul className="mt-1 flex flex-col gap-1 text-[13px]">
+              {r.strengths.map((x) => (
+                <li key={x.name}>
+                  <b>{x.name}</b> · {x.line}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {r.works.length > 0 && (
+          <div className="mt-3">
+            <p className="text-[12.5px] font-bold text-jade">채우면 좋은 점</p>
+            <ul className="mt-1 flex flex-col gap-1 text-[13px]">
+              {r.works.map((x) => (
+                <li key={x.name}>
+                  <b>{x.name}</b> · {x.line}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </section>
+
+      <section className="doc-paper px-4 py-4">
+        <h2 className="px-1 font-myeongjo font-extrabold">
+          영역별 관상 <span className="text-[12px] font-normal text-ink-soft">· 십이궁을 묶어 본 여섯 갈래</span>
+        </h2>
+        <div className="mt-2 grid grid-cols-1 gap-2">
+          {r.cards.map((c) => (
+            <div key={c.key} className="rounded-xl border border-ink/10 bg-white/50 px-3 py-3">
+              <p className="flex items-center gap-2">
+                <span className="grid h-7 w-7 place-items-center rounded bg-ink font-myeongjo text-[14px] text-hanji">{c.hanja}</span>
+                <b className="flex-1 text-[14px]">{c.title}</b>
+                <span className={`rounded px-1.5 py-0.5 text-[11px] font-bold ${GRADE_STYLE[c.grade]}`}>{c.grade}</span>
+              </p>
+              <p className="mt-1.5 text-[13px] leading-relaxed">{c.line}</p>
+              <p className="mt-1 text-[12.5px] text-jade">→ {c.tip}</p>
+              <p className="mt-1 text-[10.5px] text-ink-soft tabular-nums">근거: {c.why}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="doc-paper px-4 py-4">
+        <h2 className="px-1 font-myeongjo font-extrabold">
+          유년운기 <span className="text-[12px] font-normal text-ink-soft">· 나이마다 얼굴의 어디를 보는가</span>
+        </h2>
+        <label className="mt-2 flex items-center gap-2 px-1 text-[12px] text-ink-soft">
+          태어난 해
+          <input
+            value={born}
+            onChange={(e) => setBorn(e.target.value.replace(/\D/g, "").slice(0, 4))}
+            inputMode="numeric"
+            placeholder="예: 1994"
+            className="w-24 rounded border border-ink/20 bg-white/70 px-2 py-1 text-ink"
+          />
+          {age !== null && <span>· 올해 {age}세(세는나이)</span>}
+        </label>
+        <ol className="mt-2 flex flex-col gap-1.5">
+          {r.flow.map((f) => {
+            const now = age !== null && age >= f.from && age <= f.to;
+            return (
+              <li key={f.from} className={`flex items-start gap-2 rounded-lg px-2 py-2 ${now ? "bg-seal/10 ring-1 ring-seal/40" : ""}`}>
+                <span className="w-16 shrink-0 text-[12px] font-bold tabular-nums">
+                  {f.from}~{f.to}세{now && <span className="block text-[10.5px] text-seal">지금</span>}
+                </span>
+                <span className="min-w-0 flex-1 text-[12.5px]">
+                  <b>{f.part}</b> · {f.line}
+                  <span className="block text-[10.5px] text-ink-soft">근거: {f.why}</span>
+                </span>
+                <span className={`shrink-0 rounded px-1.5 py-0.5 text-[11px] font-bold ${MOOD[f.mood]}`}>{f.mood}</span>
+              </li>
+            );
+          })}
+        </ol>
+        <p className="mt-2 px-1 text-[10.5px] leading-relaxed text-ink-soft">
+          『마의상법』의 유년도를 여섯 마디로 줄여 본 흐름이에요. 관상은 마음과 살아온 날을 따라 바뀐다고 했어요(相隨心生).
+        </p>
       </section>
     </>
   );

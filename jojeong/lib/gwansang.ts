@@ -75,6 +75,28 @@ export function measure(face: Face): Metrics {
   };
 }
 
+// 삼정 against the faces measured so far, not against an even third each: the camera sets the forehead's top at
+// the mesh's upper edge, below the real hairline, so the 상정 always reads short in raw shares. Each third is read
+// as how far it sits above or below its usual share (+0.10 = a tenth longer than usual).
+export const THIRD_REF = { upper: 0.21, middle: 0.395, lower: 0.395 } as const;
+export type Third = keyof typeof THIRD_REF;
+export const THIRD_NAME: Record<Third, { part: string; age: string }> = {
+  upper: { part: "상정", age: "초년" },
+  middle: { part: "중정", age: "중년" },
+  lower: { part: "하정", age: "말년" },
+};
+export function thirdDev(m: Metrics): Record<Third, number> {
+  return { upper: m.upper / THIRD_REF.upper - 1, middle: m.middle / THIRD_REF.middle - 1, lower: m.lower / THIRD_REF.lower - 1 };
+}
+// 0 short, 1 usual, 2 long.
+export const thirdStep = (dev: number): 0 | 1 | 2 => (dev < -0.07 ? 0 : dev > 0.07 ? 2 : 1);
+// The third that stands out most, or null when all three sit within their usual range.
+export function leadThird(m: Metrics): Third | null {
+  const d = thirdDev(m);
+  const top = (Object.keys(d) as Third[]).sort((a, b) => d[b] - d[a])[0];
+  return d[top] > 0.04 ? top : null;
+}
+
 // The middle of several readings of one face, point by point: one blink or twitch in a burst does not move it.
 export function medianFace(faces: Face[]): Face {
   const mid = (v: number[]) => {
@@ -149,9 +171,9 @@ export function hyeong(m: Metrics): { main: Hyeong; mixed: Hyeong | null; label:
 // 용모파기: the Joseon way of describing a wanted person's looks, written from the measures.
 export function yongmo(m: Metrics): string[] {
   const s = (k: BandKey) => band(k, m[k]).step;
-  const top = Math.max(m.upper, m.middle, m.lower);
+  const lead = leadThird(m);
   const lines = [
-    m.upper === top ? "이마가 넓고 훤하며" : m.middle === top ? "콧대가 길게 뻗어 얼굴 가운데가 길고" : "턱 아래가 길고 두툼하며",
+    lead === "upper" ? "이마가 넓고 훤하며" : lead === "middle" ? "콧대가 길게 뻗어 얼굴 가운데가 길고" : lead === "lower" ? "턱 아래가 길고 두툼하며" : "이마와 코와 턱이 고르게 나뉘고",
     ["얼굴이 넓적한 편이고", "얼굴은 길지도 넓지도 않고", "얼굴이 길쭉한 편이고"][s("ratio")],
     ["턱끝이 뾰족하다.", "턱은 둥글다.", "턱이 모가 났다."][s("jaw")],
     ["눈꼬리가 아래로 처졌고", "눈매가 반듯하고", "눈꼬리가 위로 치켜 올라갔고"][s("tilt")],
@@ -180,7 +202,7 @@ export type ChartNote = { anchor: number; side: "L" | "R"; title: string; note: 
 export function chartNotes(m: Metrics): ChartNote[] {
   const st = (k: BandKey) => band(k, m[k]).step;
   const forehead =
-    m.upper >= 0.26 ? ["넓고 훤한 이마", "초년운이 밝음"] : m.upper <= 0.2 ? ["아담한 이마", "스스로 일어서는 초년"] : ["반듯한 이마", "무난한 초년"];
+    [["아담한 이마", "스스로 일어서는 초년"], ["반듯한 이마", "무난한 초년"], ["넓고 훤한 이마", "초년운이 밝음"]][thirdStep(thirdDev(m).upper)];
   const brow = [["눈썹이 눈에 가까움", "결단이 빠름"], ["가지런한 눈썹", "벗과 형제 복"], ["높고 시원한 눈썹", "도량이 넓음"]][st("brow")];
   const tilt = st("tilt");
   const open = st("open");
@@ -213,12 +235,11 @@ export function chartNotes(m: Metrics): ChartNote[] {
 export function chartSummary(m: Metrics): { trait: string[]; luck: string[] } {
   const notes = chartNotes(m);
   const pick = (a: number) => notes.find((n) => n.anchor === a)!.note;
-  const thirds: [string, number][] = [["초년", m.upper], ["중년", m.middle], ["말년", m.lower]];
-  const rank = [...thirds].sort((a, b) => b[1] - a[1]).map((t) => t[0]);
-  const word = (t: string) => ["가장 크게 피어남", "꾸준히 쌓여 감", "차분히 다져 감"][rank.indexOf(t)];
+  const d = thirdDev(m);
+  const word = (dev: number) => ["차분히 다져 감", "꾸준히 쌓여 감", "크게 피어남"][thirdStep(dev)];
   return {
     trait: [pick(33), pick(334), pick(377)],
-    luck: thirds.map(([t]) => `${t} — ${word(t)}`),
+    luck: (Object.keys(THIRD_NAME) as Third[]).map((t) => `${THIRD_NAME[t].age} — ${word(d[t])}`),
   };
 }
 

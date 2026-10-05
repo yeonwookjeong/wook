@@ -3,7 +3,7 @@
 // centred on the faces measured so far, and meant to be recalibrated against real captures (/lab/gwansang
 // shows the raw numbers for that).
 
-import { band, level, type Face, type Metrics } from "./gwansang";
+import { band, level, thirdDev, thirdStep, type Face, type Metrics } from "./gwansang";
 
 export type Grade = "상" | "중" | "보완" | "측정 안 함";
 export type Deep = {
@@ -58,8 +58,9 @@ export function palaces(m: Metrics, x: Deep): Palace[] {
   const jaw = band("jaw", m.jaw).step;
   const proj = x.noseProj === null ? null : step("noseProj", x.noseProj);
   const root = x.root === null ? null : step("root", x.root);
-  const upper = m.upper >= 0.24 ? 2 : m.upper <= 0.19 ? 0 : 1;
-  const lowFull = m.lower >= 0.38 && jaw !== 0 ? 2 : m.lower <= 0.33 || jaw === 0 ? 0 : 1;
+  const dev = thirdDev(m);
+  const upper = thirdStep(dev.upper);
+  const lowFull = thirdStep(dev.lower) === 2 && jaw !== 0 ? 2 : thirdStep(dev.lower) === 0 || jaw === 0 ? 0 : 1;
   return [
     {
       name: "명궁", hanja: "命宮", where: "인당(두 눈썹 사이)", rules: "타고난 뜻과 마음의 크기",
@@ -109,7 +110,7 @@ export function palaces(m: Metrics, x: Deep): Palace[] {
     {
       name: "관록궁", hanja: "官祿宮", where: "이마 한가운데", rules: "벼슬, 직장, 명예",
       grade: g(upper as 0 | 1 | 2),
-      why: `상정 ${(m.upper * 100).toFixed(1)}% (이마 윗선은 머리카락에 가려 낮게 잡혀요)`,
+      why: `상정 ${(m.upper * 100).toFixed(1)}% (보통 얼굴 대비 ${dev.upper >= 0 ? "+" : ""}${Math.round(dev.upper * 100)}%)`,
     },
     {
       name: "복덕궁", hanja: "福德宮", where: "눈썹 위 이마 양쪽(천창)", rules: "타고난 복과 마음의 여유",
@@ -130,10 +131,11 @@ export type Peaks = { peaks: Peak[]; verdict: string; note: string };
 // 오악: forehead (남악), chin (북악), nose (중악) and the two cheekbones (동악·서악), and how they hold together.
 export function peaks(m: Metrics, x: Deep): Peaks {
   const g = (s: number): Grade => (s >= 1.5 ? "상" : s >= 0.5 ? "중" : "보완");
-  const upper = m.upper >= 0.24 ? 2 : m.upper <= 0.19 ? 0 : 1;
+  const dev = thirdDev(m);
+  const upper = thirdStep(dev.upper);
   const south = (upper + step("forehead", x.forehead)) / 2;
   const jaw = band("jaw", m.jaw).step;
-  const north = ((m.lower >= 0.38 ? 2 : m.lower <= 0.33 ? 0 : 1) + (jaw === 0 ? 0 : jaw === 2 ? 2 : 1)) / 2;
+  const north = (thirdStep(dev.lower) + (jaw === 0 ? 0 : jaw === 2 ? 2 : 1)) / 2;
   const centre = x.noseProj === null ? step("noseLen", x.noseLen) : (step("noseLen", x.noseLen) + step("noseProj", x.noseProj)) / 2;
   const cheek = step("cheek", x.cheek);
   const list: Peak[] = [
