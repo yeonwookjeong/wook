@@ -101,7 +101,7 @@ const PALACE: Record<string, { good: string; caution: string; warn: string; prep
 function cardsOf(m: Metrics, pl: Palace[], centre: number | null): Card[] {
   const s = (name: string) => pl.find((x) => x.name === name)!.score;
   const b = (k: keyof typeof BANDS) => pos(m[k], BANDS[k].cut);
-  const lower = pos(thirdDev(m).lower, [-0.07, 0.07]);
+  const lower = third(thirdDev(m).lower);
   const card = (key: string, title: string, hanja: string, score: number | null, lines: Four, tips: Four, why: string): Card => {
     const grade = gradeOf(score);
     const bad = grade === "주의" || grade === "경계";
@@ -310,10 +310,10 @@ const THIRD_TEXT: Record<"upper" | "middle" | "lower", { lines: Four; prep: stri
 const ORGAN_TEXT: Record<string, { lines: Four; prep: string }> = {
   눈썹: {
     lines: [
-      "눈썹이 눈보다 길고 눈과 넉넉히 떨어져 형제, 벗의 덕이 두텁고 이름이 오래 가요",
+      "눈썹이 길게 뻗고 눈과 넉넉히 떨어져 형제, 벗의 덕이 두텁고 이름이 오래 가요",
       "눈썹이 고르게 자리 잡아 사람 사이가 원만하고 평판이 무난해요",
       "눈썹이 짧거나 눈에 바짝 붙어 성미가 급하고 형제, 벗의 도움이 얇아요",
-      "눈썹이 눈을 덮듯 붙거나 눈보다 많이 짧아 사람 일로 속앓이가 잦은 상이에요",
+      "눈썹이 짧은 편인 데다 눈에 바짝 내려앉아 사람 일로 속앓이가 잦은 상이에요",
     ],
     prep: "친구, 형제와 돈거래는 하지 말고, 화가 날 땐 하루 묵힌 뒤 말하세요. 눈썹 꼬리를 길게 다듬는 것도 예부터 권한 방법이에요",
   },

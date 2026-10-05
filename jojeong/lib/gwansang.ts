@@ -78,7 +78,9 @@ export function measure(face: Face): Metrics {
 // 삼정 against the faces measured so far, not against an even third each: the camera sets the forehead's top at
 // the mesh's upper edge, below the real hairline, so the 상정 always reads short in raw shares. Each third is read
 // as how far it sits above or below its usual share (+0.10 = a tenth longer than usual).
-export const THIRD_REF = { upper: 0.21, middle: 0.395, lower: 0.395 } as const;
+export const THIRD_REF = { upper: 0.201, middle: 0.38, lower: 0.423 } as const;
+// How far from the usual share counts as long or short: about a fifth of faces fall past it on each side.
+export const THIRD_CUT = 0.045;
 export type Third = keyof typeof THIRD_REF;
 export const THIRD_NAME: Record<Third, { part: string; age: string }> = {
   upper: { part: "상정", age: "초년" },
@@ -89,12 +91,12 @@ export function thirdDev(m: Metrics): Record<Third, number> {
   return { upper: m.upper / THIRD_REF.upper - 1, middle: m.middle / THIRD_REF.middle - 1, lower: m.lower / THIRD_REF.lower - 1 };
 }
 // 0 short, 1 usual, 2 long.
-export const thirdStep = (dev: number): 0 | 1 | 2 => (dev < -0.07 ? 0 : dev > 0.07 ? 2 : 1);
+export const thirdStep = (dev: number): 0 | 1 | 2 => (dev < -THIRD_CUT ? 0 : dev > THIRD_CUT ? 2 : 1);
 // The third that stands out most, or null when all three sit within their usual range.
 export function leadThird(m: Metrics): Third | null {
   const d = thirdDev(m);
   const top = (Object.keys(d) as Third[]).sort((a, b) => d[b] - d[a])[0];
-  return d[top] > 0.04 ? top : null;
+  return d[top] > 0.03 ? top : null;
 }
 
 // The middle of several readings of one face, point by point: one blink or twitch in a burst does not move it.
@@ -109,36 +111,38 @@ export function medianFace(faces: Face[]): Face {
   return { pts, aspect: mid(faces.map((f) => f.aspect)), z };
 }
 
-// Each measure's cut-offs, low then high: below the first reads one way, above the second the other.
-// Tuned on a handful of faces; meant to be revised against real captures.
-export const BANDS: Record<Exclude<keyof Metrics, "upper" | "middle" | "lower">, { label: string; cut: [number, number]; words: [string, string, string] }> = {
-  ratio: { label: "얼굴 세로/가로", cut: [1.08, 1.3], words: ["넓은 편", "보통", "긴 편"] },
-  jaw: { label: "턱 너비/광대 너비", cut: [0.72, 0.82], words: ["갸름", "보통", "각진 편"] },
-  tilt: { label: "눈꼬리 기울기", cut: [-1, 4], words: ["처짐", "수평", "올라감"] },
-  open: { label: "눈 뜬 정도", cut: [0.26, 0.36], words: ["가는 눈", "보통", "큰 눈"] },
-  gap: { label: "미간/눈 너비", cut: [0.9, 1.15], words: ["좁음", "눈 하나", "넓음"] },
-  nose: { label: "콧방울/미간", cut: [0.95, 1.15], words: ["좁은 코", "보통", "넓은 코"] },
-  mouth: { label: "입/콧방울", cut: [1.25, 1.5], words: ["작은 입", "보통", "큰 입"] },
-  lip: { label: "입술 두께/입 너비", cut: [0.25, 0.38], words: ["얇음", "보통", "도톰"] },
-  brow: { label: "눈썹-눈 간격", cut: [0.45, 0.62], words: ["가까움", "보통", "넓음"] },
-  philtrum: { label: "인중/하정", cut: [0.26, 0.36], words: ["짧은 인중", "보통", "긴 인중"] },
+// Each measure's cut-offs, low then high: below the first reads one way, above the second the other. Set at the
+// 20th and 80th percentiles of 37 front-facing faces from public face-restoration test sets (deepface, CodeFormer,
+// GFPGAN), so about a fifth of people land on each side. `noise` is how far the same face moves between shots
+// (the same photos re-read scaled, shifted and turned); within it of a cut, a reading names both words.
+// Most of those faces are Western: revise against real captures once there are enough.
+export const BANDS: Record<Exclude<keyof Metrics, "upper" | "middle" | "lower">, { label: string; cut: [number, number]; noise: number; words: [string, string, string] }> = {
+  ratio: { label: "얼굴 세로/가로", cut: [1.12, 1.22], noise: 0.013, words: ["넓은 편", "보통", "긴 편"] },
+  jaw: { label: "턱 너비/광대 너비", cut: [0.786, 0.818], noise: 0.005, words: ["갸름", "보통", "각진 편"] },
+  tilt: { label: "눈꼬리 기울기", cut: [1, 5.5], noise: 0.5, words: ["처짐", "수평", "올라감"] },
+  open: { label: "눈 뜬 정도", cut: [0.252, 0.346], noise: 0.0125, words: ["가는 눈", "보통", "큰 눈"] },
+  gap: { label: "미간/눈 너비", cut: [1.168, 1.355], noise: 0.027, words: ["좁음", "눈 하나", "넓음"] },
+  nose: { label: "콧방울/미간", cut: [0.982, 1.169], noise: 0.023, words: ["좁은 코", "보통", "넓은 코"] },
+  mouth: { label: "입/콧방울", cut: [1.381, 1.612], noise: 0.031, words: ["작은 입", "보통", "큰 입"] },
+  lip: { label: "입술 두께/입 너비", cut: [0.265, 0.389], noise: 0.013, words: ["얇음", "보통", "도톰"] },
+  brow: { label: "눈썹-눈 간격", cut: [0.606, 0.708], noise: 0.018, words: ["가까움", "보통", "넓음"] },
+  philtrum: { label: "인중/하정", cut: [0.171, 0.238], noise: 0.007, words: ["짧은 인중", "보통", "긴 인중"] },
 };
 export type BandKey = keyof typeof BANDS;
 
 // 0, 1 or 2 for a measure, and whether it sits within 4% of a cut-off (a reading a retake could tip either way).
 export function band(key: BandKey, v: number): { step: 0 | 1 | 2; near: boolean } {
   const [lo, hi] = BANDS[key].cut;
-  const near = [lo, hi].some((c) => Math.abs(v - c) <= Math.max(Math.abs(c) * 0.04, key === "tilt" ? 0.8 : 0));
+  const near = [lo, hi].some((c) => Math.abs(v - c) <= BANDS[key].noise);
   return { step: v < lo ? 0 : v > hi ? 2 : 1, near };
 }
 
 // A measure's word. On the edge between two words it names both ("보통·긴 편"), the same way from either side,
 // so a retake that lands a hair across the line still reads the same.
 export function wordOf(key: BandKey, v: number): string {
-  const { words, cut } = BANDS[key];
-  const margin = (c: number) => Math.max(Math.abs(c) * 0.04, key === "tilt" ? 0.8 : 0);
-  if (Math.abs(v - cut[0]) <= margin(cut[0])) return `${words[0]}·${words[1]}`;
-  if (Math.abs(v - cut[1]) <= margin(cut[1])) return `${words[1]}·${words[2]}`;
+  const { words, cut, noise } = BANDS[key];
+  if (Math.abs(v - cut[0]) <= noise) return `${words[0]}·${words[1]}`;
+  if (Math.abs(v - cut[1]) <= noise) return `${words[1]}·${words[2]}`;
   return words[band(key, v).step];
 }
 
@@ -150,17 +154,19 @@ const HYEONG: Record<Hyeong["el"], Hyeong> = {
   金: { el: "金", name: "금형", look: "각지고 반듯한 얼굴" },
   水: { el: "水", name: "수형", look: "둥글고 부드러운 얼굴" },
 };
+// Quartiles of the same faces: the longest quarter 木, the narrowest jaws 火, the widest jaws 土 (shorter) or
+// 金 (longer), the rest 水.
 function hyeongAt(ratio: number, jaw: number): Hyeong["el"] {
-  if (ratio >= 1.3) return "木";
-  if (jaw >= 0.82) return ratio < 1.12 ? "土" : "金";
-  if (jaw < 0.72) return "火";
+  if (ratio >= 1.215) return "木";
+  if (jaw >= 0.818) return ratio < 1.162 ? "土" : "金";
+  if (jaw < 0.788) return "火";
   return "水";
 }
 // The face's 오행 type, and the type a nudge of the measures would give instead (겸형) when it sits on an edge.
 // `label` names both in a fixed order (목·화·토·금·수), so either side of the edge reads the same.
 export function hyeong(m: Metrics): { main: Hyeong; mixed: Hyeong | null; label: string } {
   const main = hyeongAt(m.ratio, m.jaw);
-  const nudges: [number, number][] = [[0.045, 0], [-0.045, 0], [0, 0.03], [0, -0.03]];
+  const nudges: [number, number][] = [[BANDS.ratio.noise, 0], [-BANDS.ratio.noise, 0], [0, BANDS.jaw.noise], [0, -BANDS.jaw.noise]];
   const other = nudges.map(([a, b]) => hyeongAt(m.ratio + a, m.jaw + b)).find((e) => e !== main);
   const order = "木火土金水";
   const both = other ? [main, other].sort((a, b) => order.indexOf(a) - order.indexOf(b)) : [main];

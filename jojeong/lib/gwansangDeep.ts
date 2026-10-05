@@ -3,7 +3,7 @@
 // centred on the faces measured so far, and meant to be recalibrated against real captures (/lab/gwansang
 // shows the raw numbers for that).
 
-import { BANDS, level, thirdDev, type BandKey, type Face, type Metrics } from "./gwansang";
+import { BANDS, level, THIRD_CUT, thirdDev, type BandKey, type Face, type Metrics } from "./gwansang";
 
 // Four grades, two on each side so neither reads as the odd one out: 대길 and 길 (good), 주의 (a weak point to
 // prepare for) and 경계 (a clear weak point). Each comes from a score of 0–3; several scores are averaged before grading.
@@ -41,19 +41,19 @@ export function deepMeasure(face: Face): Deep {
   };
 }
 
-// low / high cut-offs for the deep measures (draft).
+// low / high cut-offs for the deep measures: 20th and 80th percentiles of the same faces as BANDS.
 const CUT = {
-  forehead: [0.78, 0.9],
-  cheek: [1.12, 1.26],
-  noseLen: [0.29, 0.34],
-  noseProj: [0.6, 0.8],
-  root: [0.08, 0.16],
-  browLen: [1.3, 1.55],
-  glabella: [0.8, 1.0],
+  forehead: [0.817, 0.864],
+  cheek: [1.201, 1.23],
+  noseLen: [0.272, 0.297],
+  noseProj: [0.654, 0.734],
+  root: [0.112, 0.129],
+  browLen: [1.549, 1.678],
+  glabella: [0.887, 0.977],
 } as const;
 
 // Where a value sits against its cut-offs, as a score: below the low cut 0 (경계), the lower half of the usual
-// range 1 (주의), the upper half 2 (무난), above the high cut 3 (좋음). `lowIsGood` turns it round.
+// range 1 (주의), the upper half 2 (길), above the high cut 3 (대길). `lowIsGood` turns it round.
 export function pos(v: number, [lo, hi]: readonly [number, number], lowIsGood = false): number {
   const s0 = (v - lo) / (hi - lo);
   const s = lowIsGood ? 1 - s0 : s0;
@@ -61,12 +61,13 @@ export function pos(v: number, [lo, hi]: readonly [number, number], lowIsGood = 
 }
 export const bandScore = (k: BandKey, v: number) => pos(v, BANDS[k].cut);
 export const deep = (k: keyof typeof CUT, v: number | null) => (v === null ? null : pos(v, CUT[k]));
-export const third = (dev: number) => pos(dev, [-0.07, 0.07]);
-// Eye corners read best at their usual tilt: the further from it either way, the lower. The usual tilt is about
-// +5° (outer corners a little above the inner ones, as in most Korean faces measured so far).
+export const third = (dev: number) => pos(dev, [-THIRD_CUT, THIRD_CUT]);
+// Eye corners read best at their usual tilt: the further from it either way, the lower. The usual tilt is the
+// middle of the faces BANDS was set on (about +3°, outer corners a little above the inner ones); the steps are
+// about half the spread between people, so the four grades are each reached by a good share of faces.
 export const tiltScore = (t: number) => {
-  const d = Math.abs(t - 5);
-  return d < 3 ? 3 : d < 5 ? 2 : d < 7 ? 1 : 0;
+  const d = Math.abs(t - 3);
+  return d < 1 ? 3 : d < 2.2 ? 2 : d < 3.6 ? 1 : 0;
 };
 
 export type Palace = { name: string; hanja: string; where: string; rules: string; score: number | null; grade: Grade; why: string };
@@ -91,7 +92,7 @@ export function palaces(m: Metrics, x: Deep): Palace[] {
     P("노복궁", "奴僕宮", "턱 양옆(지각)", "아랫사람과 따르는 사람", avg(third(dev.lower), bandScore("jaw", m.jaw)),
       `하정 보통 대비 ${pct(dev.lower)} · 턱 너비 ${f2(m.jaw)}`),
     P("처첩궁", "妻妾宮", "눈꼬리 끝(어미)", "배우자와 연애의 인연", tiltScore(m.tilt),
-      `눈꼬리 기울기 ${m.tilt >= 0 ? "+" : ""}${m.tilt.toFixed(1)}° (+5° 안팎이 안정)`),
+      `눈꼬리 기울기 ${m.tilt >= 0 ? "+" : ""}${m.tilt.toFixed(1)}° (+3° 안팎이 안정)`),
     P("질액궁", "疾厄宮", "산근(두 눈 사이 콧대)", "건강과 고비를 넘는 힘", deep("root", x.root),
       x.root === null ? "사진 한 장으로는 깊이를 알 수 없어요" : `산근 높이 ${f2(x.root)}`),
     P("천이궁", "遷移宮", "이마 양 끝(역마)", "이동, 이사, 해외의 운", deep("forehead", x.forehead),
