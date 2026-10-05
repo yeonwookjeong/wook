@@ -71,7 +71,7 @@ export function drawChart(input: ChartInput): string {
   const seal = "#b23a2c";
 
   // The board: hanji with a double rule.
-  g.fillStyle = "#f1e8d4";
+  g.fillStyle = "#f7f3ea"; // white hanji, the same paper as the ink painting
   g.fillRect(0, 0, W, height);
   g.strokeStyle = "#8a7356";
   g.lineWidth = 3;

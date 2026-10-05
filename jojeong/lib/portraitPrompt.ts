@@ -1,5 +1,6 @@
 // The 관상 result's portrait: the viewer's own face repainted by an image model in one shared style, the same for
-// everyone: a warm Korean colour painting, close on the face. It may look painted, never like someone else:
+// everyone: black ink brushwork on white hanji, like the face plates of an old 관상 book, close on the face. It
+// may look painted, never like someone else:
 // the face's geometry is held fixed and only the surface is restyled (the page also measures the painting and
 // asks once more with `strict` when it drifted).
 
@@ -14,15 +15,16 @@ const KEEP = [
 
 export function portraitPrompt(strict = false): string {
   return [
-    "Repaint the person in the attached photo in a refined Korean traditional colour-painting style.",
+    "Redraw the person in the attached photo as a Korean ink-brush portrait: black ink on white hanji paper, like the illustrated face plates of an old Korean physiognomy (gwansang) book.",
     KEEP,
     ...(strict
       ? ["A first attempt drifted from their real face. This time trace their features from the photo as faithfully as a tracing, and only restyle the surface."]
       : []),
-    "Style only: visible soft brush texture, gentle mineral-pigment colours, a fine ink line on the contours, warm glowing light, luminous eyes with catchlights.",
-    "The only flattery allowed is on the surface: an even, healthy skin tone and soft flattering light. No anime, no doll face, no plastic skin.",
+    "Style only: black ink alone, no colour at all; confident brush lines of varying thickness for the contours, eyes, brows, nose and lips,",
+    "light grey ink washes for soft shading, hair in rich black ink with a few dry-brush strokes, the paper's fibres faintly visible.",
+    "Keep it clean and dignified: calm, bright eyes and a composed expression close to the photo's. No anime, no cartoon, no doll face.",
     "Framing: a close-up of the head and the top of the shoulders, facing the viewer, the face filling about 60% of the picture's height, centred.",
-    "They wear a plain white hanbok collar (dongjeong), nothing on the head. A soft plain background of warm aged silk.",
+    "A white hanbok collar (dongjeong) drawn in a few ink lines, nothing on the head. The background is plain white hanji, left empty.",
     "Leave out the photo's background, glasses and modern clothes. Do not write any text, letters, characters, seal, signature or watermark. No frame.",
   ].join(" ");
 }
