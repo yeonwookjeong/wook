@@ -874,10 +874,10 @@ export async function Card({ q }: { q: CardQuery }) {
                         fontWeight: 800,
                         fontFamily: sans,
                         background: st ? st.bg : a === b ? "rgba(33,27,23,.12)" : "rgba(33,27,23,.04)",
-                        color: st ? st.fg : SOFT,
+                        color: st ? st.fg : a === b ? SOFT : "rgba(98,86,76,.45)",
                       }}
                     >
-                      {st ? st.mark : a === b ? "=" : ""}
+                      {st ? st.mark : a === b ? "=" : "–"}
                     </span>
                   );
                 })}
@@ -886,9 +886,14 @@ export async function Card({ q }: { q: CardQuery }) {
           </div>
         </div>
         <div style={{ position: "absolute", top: top + 28 + 80 + 12 * (cell + 2) + 28, left, width }}>
-          <div style={{ display: "grid", gridTemplateColumns: "auto auto", justifyContent: "center", gap: "12px 80px", fontFamily: sans, fontSize: 28 }}>
-            {Object.values(KIND).map((k) => (
-              <span key={k.name} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "auto auto", justifyContent: "center", gap: "10px 70px", fontFamily: sans, fontSize: 27 }}>
+            {/* Every mark in the table is named here, the plain cells and the diagonal too. */}
+            {[
+              ...Object.values(KIND),
+              { mark: "–", bg: "#f3ecdf", fg: SOFT, name: "합·충 없음", say: "무난" },
+              { mark: "=", bg: "#e0d8ca", fg: SOFT, name: "", say: "같은 띠" },
+            ].map((k) => (
+              <span key={k.say} style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <span
                   style={{ width: 44, height: 44, borderRadius: 8, background: k.bg, color: k.fg, border: "2px solid rgba(244,236,219,.5)", display: "grid", placeItems: "center", fontWeight: 800 }}
                 >
@@ -900,7 +905,7 @@ export async function Card({ q }: { q: CardQuery }) {
               </span>
             ))}
           </div>
-          <p style={{ marginTop: 30, textAlign: "center", fontSize: 34, fontWeight: 800, color: "#f1cf7a" }}>띠는 여덟 글자 중 한 글자일 뿐이옵니다</p>
+          <p style={{ marginTop: 18, textAlign: "center", fontSize: 32, fontWeight: 800, color: "#f1cf7a" }}>띠는 여덟 글자 중 한 글자일 뿐이옵니다</p>
           <p style={{ marginTop: 8, textAlign: "center", fontSize: 28, color: "rgba(244,236,219,.8)", fontFamily: sans }}>진짜 궁합은 두 사람의 사주에 · 프로필 링크에서</p>
         </div>
       </ReelFrame>
