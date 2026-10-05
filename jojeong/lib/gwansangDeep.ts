@@ -3,9 +3,17 @@
 // centred on the faces measured so far, and meant to be recalibrated against real captures (/lab/gwansang
 // shows the raw numbers for that).
 
-import { band, level, thirdDev, thirdStep, type Face, type Metrics } from "./gwansang";
+import { BANDS, level, thirdDev, type BandKey, type Face, type Metrics } from "./gwansang";
 
-export type Grade = "상" | "중" | "보완" | "측정 안 함";
+// Four grades, so what needs care is said plainly: 좋음, 무난, 주의 (a weak point to prepare for) and 경계 (a
+// clear weak point). Each comes from a score of 0–3; several scores are averaged before grading.
+export type Grade = "좋음" | "무난" | "주의" | "경계" | "측정 안 함";
+export const gradeOf = (score: number | null): Grade =>
+  score === null ? "측정 안 함" : score >= 2.5 ? "좋음" : score >= 1.5 ? "무난" : score >= 0.5 ? "주의" : "경계";
+export const avg = (...v: (number | null)[]): number | null => {
+  const k = v.filter((x): x is number => x !== null);
+  return k.length ? k.reduce((a, b) => a + b, 0) / k.length : null;
+};
 export type Deep = {
   forehead: number; // upper forehead width / cheek width
   cheek: number; // cheek width / mean of forehead and jaw widths: how far the cheekbones stand out
@@ -43,114 +51,86 @@ const CUT = {
   browLen: [1.3, 1.55],
   glabella: [0.8, 1.0],
 } as const;
-const step = (k: keyof typeof CUT, v: number): 0 | 1 | 2 => (v < CUT[k][0] ? 0 : v > CUT[k][1] ? 2 : 1);
 
-export type Palace = { name: string; hanja: string; where: string; rules: string; grade: Grade; why: string };
+// Where a value sits against its cut-offs, as a score: below the low cut 0 (경계), the lower half of the usual
+// range 1 (주의), the upper half 2 (무난), above the high cut 3 (좋음). `lowIsGood` turns it round.
+export function pos(v: number, [lo, hi]: readonly [number, number], lowIsGood = false): number {
+  const s0 = (v - lo) / (hi - lo);
+  const s = lowIsGood ? 1 - s0 : s0;
+  return s < 0 ? 0 : s < 0.5 ? 1 : s < 1 ? 2 : 3;
+}
+const band = (k: BandKey, v: number) => pos(v, BANDS[k].cut);
+const deep = (k: keyof typeof CUT, v: number | null) => (v === null ? null : pos(v, CUT[k]));
+const third = (dev: number) => pos(dev, [-0.07, 0.07]);
+// Eye corners read best at their usual tilt: the further from it either way, the lower. The usual tilt is about
+// +5° (outer corners a little above the inner ones, as in most Korean faces measured so far).
+const tiltScore = (t: number) => {
+  const d = Math.abs(t - 5);
+  return d < 3 ? 3 : d < 5 ? 2 : d < 7 ? 1 : 0;
+};
+
+export type Palace = { name: string; hanja: string; where: string; rules: string; score: number | null; grade: Grade; why: string };
 
 const f2 = (v: number) => v.toFixed(2);
+const pct = (d: number) => `${d >= 0 ? "+" : ""}${Math.round(d * 100)}%`;
 
 export function palaces(m: Metrics, x: Deep): Palace[] {
-  const g = (s: 0 | 1 | 2, best: 0 | 2 = 2): Grade => (s === best ? "상" : s === 1 ? "중" : "보완");
-  const tilt = band("tilt", m.tilt).step;
-  const brow = band("brow", m.brow).step;
-  const gap = band("gap", m.gap).step;
-  const nose = band("nose", m.nose).step;
-  const jaw = band("jaw", m.jaw).step;
-  const proj = x.noseProj === null ? null : step("noseProj", x.noseProj);
-  const root = x.root === null ? null : step("root", x.root);
   const dev = thirdDev(m);
-  const upper = thirdStep(dev.upper);
-  const lowFull = thirdStep(dev.lower) === 2 && jaw !== 0 ? 2 : thirdStep(dev.lower) === 0 || jaw === 0 ? 0 : 1;
+  const P = (name: string, hanja: string, where: string, rules: string, score: number | null, why: string): Palace => ({
+    name, hanja, where, rules, score, grade: gradeOf(score), why,
+  });
   return [
-    {
-      name: "명궁", hanja: "命宮", where: "인당(두 눈썹 사이)", rules: "타고난 뜻과 마음의 크기",
-      grade: g(Math.max(step("glabella", x.glabella), gap === 2 ? 2 : 0) as 0 | 1 | 2),
-      why: `인당 너비 ${f2(x.glabella)} (눈 너비 기준) · 미간 ${f2(m.gap)}`,
-    },
-    {
-      name: "재백궁", hanja: "財帛宮", where: "코와 콧방울", rules: "재물을 모으고 지키는 힘",
-      grade: proj === null ? g(nose) : g(Math.round((proj + nose) / 2) as 0 | 1 | 2),
-      why: `콧방울 ${f2(m.nose)}${x.noseProj === null ? "" : ` · 코 높이 ${f2(x.noseProj)}`}`,
-    },
-    {
-      name: "형제궁", hanja: "兄弟宮", where: "눈썹", rules: "형제와 벗의 인연",
-      grade: g(step("browLen", x.browLen)),
-      why: `눈썹 길이 ${f2(x.browLen)} (눈 너비 기준, 눈보다 길수록 좋음)`,
-    },
-    {
-      name: "전택궁", hanja: "田宅宮", where: "눈과 눈썹 사이", rules: "집과 터, 부동산",
-      grade: g(brow),
-      why: `눈썹-눈 간격 ${f2(m.brow)}`,
-    },
-    {
-      name: "남녀궁", hanja: "男女宮", where: "눈 아래 와잠", rules: "자녀의 인연",
-      grade: "측정 안 함",
-      why: "눈 아래 살집은 카메라로 재기 어려워 아직 보지 않아요",
-    },
-    {
-      name: "노복궁", hanja: "奴僕宮", where: "턱 양옆(지각)", rules: "아랫사람과 따르는 사람",
-      grade: g(lowFull as 0 | 1 | 2),
-      why: `하정 ${(m.lower * 100).toFixed(1)}% · 턱 너비 ${f2(m.jaw)}`,
-    },
-    {
-      name: "처첩궁", hanja: "妻妾宮", where: "눈꼬리 끝(어미)", rules: "배우자와 연애의 인연",
-      grade: tilt === 1 ? "상" : "중",
-      why: `눈꼬리 기울기 ${m.tilt >= 0 ? "+" : ""}${m.tilt.toFixed(1)}° (평평할수록 안정)`,
-    },
-    {
-      name: "질액궁", hanja: "疾厄宮", where: "산근(두 눈 사이 콧대)", rules: "건강과 고비를 넘는 힘",
-      grade: root === null ? "측정 안 함" : g(root),
-      why: x.root === null ? "사진 한 장으로는 깊이를 알 수 없어요" : `산근 높이 ${f2(x.root)}`,
-    },
-    {
-      name: "천이궁", hanja: "遷移宮", where: "이마 양 끝(역마)", rules: "이동, 이사, 해외의 운",
-      grade: g(step("forehead", x.forehead)),
-      why: `이마 너비 ${f2(x.forehead)} (광대 너비 기준)`,
-    },
-    {
-      name: "관록궁", hanja: "官祿宮", where: "이마 한가운데", rules: "벼슬, 직장, 명예",
-      grade: g(upper as 0 | 1 | 2),
-      why: `상정 ${(m.upper * 100).toFixed(1)}% (보통 얼굴 대비 ${dev.upper >= 0 ? "+" : ""}${Math.round(dev.upper * 100)}%)`,
-    },
-    {
-      name: "복덕궁", hanja: "福德宮", where: "눈썹 위 이마 양쪽(천창)", rules: "타고난 복과 마음의 여유",
-      grade: g(Math.round((step("forehead", x.forehead) + step("browLen", x.browLen)) / 2) as 0 | 1 | 2),
-      why: `이마 너비 ${f2(x.forehead)} · 눈썹 길이 ${f2(x.browLen)}`,
-    },
-    {
-      name: "부모궁", hanja: "父母宮", where: "이마 위 좌우(일각·월각)", rules: "부모와 윗사람의 덕",
-      grade: g(upper as 0 | 1 | 2),
-      why: `이마 높이로 추정 · 상정 ${(m.upper * 100).toFixed(1)}%`,
-    },
+    P("명궁", "命宮", "인당(두 눈썹 사이)", "타고난 뜻과 마음의 크기", avg(deep("glabella", x.glabella), band("gap", m.gap)),
+      `인당 너비 ${f2(x.glabella)} (눈 너비 기준) · 미간 ${f2(m.gap)}`),
+    P("재백궁", "財帛宮", "코와 콧방울", "재물을 모으고 지키는 힘", avg(band("nose", m.nose), deep("noseProj", x.noseProj)),
+      `콧방울 ${f2(m.nose)}${x.noseProj === null ? "" : ` · 코 높이 ${f2(x.noseProj)}`}`),
+    P("형제궁", "兄弟宮", "눈썹", "형제와 벗의 인연", deep("browLen", x.browLen),
+      `눈썹 길이 ${f2(x.browLen)} (눈 너비 기준, 눈보다 길수록 좋음)`),
+    P("전택궁", "田宅宮", "눈과 눈썹 사이", "집과 터, 부동산", band("brow", m.brow), `눈썹-눈 간격 ${f2(m.brow)}`),
+    P("남녀궁", "男女宮", "눈 아래 와잠", "자녀의 인연", null, "눈 아래 살집은 카메라로 재기 어려워 아직 보지 않아요"),
+    P("노복궁", "奴僕宮", "턱 양옆(지각)", "아랫사람과 따르는 사람", avg(third(dev.lower), band("jaw", m.jaw)),
+      `하정 보통 대비 ${pct(dev.lower)} · 턱 너비 ${f2(m.jaw)}`),
+    P("처첩궁", "妻妾宮", "눈꼬리 끝(어미)", "배우자와 연애의 인연", tiltScore(m.tilt),
+      `눈꼬리 기울기 ${m.tilt >= 0 ? "+" : ""}${m.tilt.toFixed(1)}° (+5° 안팎이 안정)`),
+    P("질액궁", "疾厄宮", "산근(두 눈 사이 콧대)", "건강과 고비를 넘는 힘", deep("root", x.root),
+      x.root === null ? "사진 한 장으로는 깊이를 알 수 없어요" : `산근 높이 ${f2(x.root)}`),
+    P("천이궁", "遷移宮", "이마 양 끝(역마)", "이동, 이사, 해외의 운", deep("forehead", x.forehead),
+      `이마 너비 ${f2(x.forehead)} (광대 너비 기준)`),
+    P("관록궁", "官祿宮", "이마 한가운데", "벼슬, 직장, 명예", third(dev.upper), `상정 보통 대비 ${pct(dev.upper)}`),
+    P("복덕궁", "福德宮", "눈썹 위 이마 양쪽(천창)", "타고난 복과 마음의 여유", avg(deep("forehead", x.forehead), deep("browLen", x.browLen)),
+      `이마 너비 ${f2(x.forehead)} · 눈썹 길이 ${f2(x.browLen)}`),
+    P("부모궁", "父母宮", "이마 위 좌우(일각·월각)", "부모와 윗사람의 덕", third(dev.upper), `이마 높이로 추정 · 상정 보통 대비 ${pct(dev.upper)}`),
   ];
 }
 
-export type Peak = { name: string; part: string; grade: Grade; why: string };
-export type Peaks = { peaks: Peak[]; verdict: string; note: string };
+export type Peak = { name: string; part: string; score: number | null; grade: Grade; why: string };
+export type Peaks = { peaks: Peak[]; verdict: string; note: string; caution: boolean };
 
 // 오악: forehead (남악), chin (북악), nose (중악) and the two cheekbones (동악·서악), and how they hold together.
 export function peaks(m: Metrics, x: Deep): Peaks {
-  const g = (s: number): Grade => (s >= 1.5 ? "상" : s >= 0.5 ? "중" : "보완");
   const dev = thirdDev(m);
-  const upper = thirdStep(dev.upper);
-  const south = (upper + step("forehead", x.forehead)) / 2;
-  const jaw = band("jaw", m.jaw).step;
-  const north = (thirdStep(dev.lower) + (jaw === 0 ? 0 : jaw === 2 ? 2 : 1)) / 2;
-  const centre = x.noseProj === null ? step("noseLen", x.noseLen) : (step("noseLen", x.noseLen) + step("noseProj", x.noseProj)) / 2;
-  const cheek = step("cheek", x.cheek);
-  const list: Peak[] = [
-    { name: "남악", part: "이마", grade: g(south), why: `상정 ${(m.upper * 100).toFixed(1)}% · 이마 너비 ${f2(x.forehead)}` },
-    { name: "북악", part: "턱", grade: g(north), why: `하정 ${(m.lower * 100).toFixed(1)}% · 턱 너비 ${f2(m.jaw)}` },
-    { name: "중악", part: "코", grade: g(centre), why: `코 길이 ${f2(x.noseLen)}${x.noseProj === null ? "" : ` · 코 높이 ${f2(x.noseProj)}`}` },
-    { name: "동악·서악", part: "양 광대", grade: g(cheek), why: `광대 돌출 ${f2(x.cheek)}` },
+  const south = avg(third(dev.upper), deep("forehead", x.forehead))!;
+  const north = avg(third(dev.lower), band("jaw", m.jaw))!;
+  const centre = avg(deep("noseLen", x.noseLen), deep("noseProj", x.noseProj))!;
+  const cheek = deep("cheek", x.cheek)!;
+  const K = (name: string, part: string, score: number, why: string): Peak => ({ name, part, score, grade: gradeOf(score), why });
+  const list = [
+    K("남악", "이마", south, `상정 보통 대비 ${pct(dev.upper)} · 이마 너비 ${f2(x.forehead)}`),
+    K("북악", "턱", north, `하정 보통 대비 ${pct(dev.lower)} · 턱 너비 ${f2(m.jaw)}`),
+    K("중악", "코", centre, `코 길이 ${f2(x.noseLen)}${x.noseProj === null ? "" : ` · 코 높이 ${f2(x.noseProj)}`}`),
+    K("동악·서악", "양 광대", cheek, `광대 돌출 ${f2(x.cheek)}`),
   ];
-  const tops = list.filter((p) => p.grade === "상").length;
-  const lows = list.filter((p) => p.grade === "보완").length;
-  if (centre >= 1.5 && cheek === 0)
-    return { peaks: list, verdict: "고봉독립(孤峰獨立)", note: "코만 우뚝하고 광대가 받쳐 주지 못하는 형이에요. 남의 도움보다 혼자 힘으로 이루는 사람이라 봅니다." };
-  if (cheek === 2 && centre < 0.5)
-    return { peaks: list, verdict: "관골이 중악을 누름", note: "광대가 코보다 힘이 센 형이에요. 주변의 기세가 강하니 내 몫을 분명히 챙기라 합니다." };
-  if (tops >= 3 && lows === 0)
-    return { peaks: list, verdict: "오악조귀(五嶽朝歸)", note: "다섯 산이 고루 솟아 서로 받쳐 주는 형이에요. 운이 한쪽으로 쏠리지 않고 고르게 들어온다 봅니다." };
-  return { peaks: list, verdict: "오악이 무난히 어우러짐", note: "크게 기운 곳 없이 다섯 산이 무난히 어우러진 형이에요." };
+  const sunk = list.filter((p) => p.grade === "경계");
+  if (centre >= 2.5 && cheek < 1)
+    return { peaks: list, caution: true, verdict: "고봉독립(孤峰獨立)",
+      note: "코만 우뚝하고 광대가 받쳐 주지 못하는 형이에요. 혼자 힘으로 이루는 대신, 도와줄 사람이 곁에 적어 지치기 쉬워요. 큰일일수록 함께할 사람을 먼저 구하세요." };
+  if (cheek >= 2.5 && centre < 1)
+    return { peaks: list, caution: true, verdict: "관골이 중악을 누름",
+      note: "광대가 코보다 센 형이에요. 주변의 기세에 내 몫이 눌리기 쉬워요. 동업이나 공동 투자는 몫과 책임을 글로 남겨 두세요." };
+  if (sunk.length)
+    return { peaks: list, caution: true, verdict: `${sunk.map((p) => p.name).join("·")}이 꺼진 상`,
+      note: `${sunk.map((p) => p.part).join(", ")} 쪽 산이 낮아 그 자리가 맡은 시기와 일에서 힘이 덜 실려요. 아래 영역 풀이의 '대비'를 먼저 챙기세요.` };
+  if (list.filter((p) => p.grade === "좋음").length >= 3)
+    return { peaks: list, caution: false, verdict: "오악조귀(五嶽朝歸)", note: "다섯 산이 고루 솟아 서로 받쳐 주는 형이에요. 운이 한쪽으로 쏠리지 않고 고르게 들어온다 봅니다." };
+  return { peaks: list, caution: false, verdict: "오악이 무난히 어우러짐", note: "크게 꺼지거나 튀는 곳 없이 다섯 산이 어우러진 형이에요." };
 }

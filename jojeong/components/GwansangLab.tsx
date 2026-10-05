@@ -726,7 +726,7 @@ function ReadingView({ result }: { result: Result }) {
   const r = useMemo(() => gwansangReading(result.m, deepMeasure(result.face)), [result]);
   const [born, setBorn] = useState("");
   const age = /^(19|20)\d\d$/.test(born) ? new Date().getFullYear() - Number(born) + 1 : null;
-  const MOOD: Record<string, string> = { 활짝: "bg-seal text-hanji", 무난: "bg-hanji-deep text-ink", 다지기: "border border-ink/30 text-ink-soft" };
+  const MOOD: Record<string, string> = { 활짝: "bg-seal text-hanji", 무난: "bg-hanji-deep text-ink", 주의: "border border-seal/60 text-seal", 고비: "bg-ink text-hanji" };
   return (
     <>
       <section className="doc-paper px-5 py-5">
@@ -745,13 +745,18 @@ function ReadingView({ result }: { result: Result }) {
             </ul>
           </div>
         )}
-        {r.works.length > 0 && (
-          <div className="mt-3">
-            <p className="text-[12.5px] font-bold text-jade">채우면 좋은 점</p>
-            <ul className="mt-1 flex flex-col gap-1 text-[13px]">
-              {r.works.map((x) => (
+        {r.watch.length > 0 && (
+          <div className="mt-3 rounded-xl border border-ink/20 bg-white/50 px-3 py-2.5">
+            <p className="text-[12.5px] font-bold">조심할 점과 대비</p>
+            <ul className="mt-1.5 flex flex-col gap-2 text-[13px]">
+              {r.watch.map((x) => (
                 <li key={x.name}>
-                  <b>{x.name}</b> · {x.line}
+                  <p className="flex items-center gap-1.5">
+                    <span className={`rounded px-1.5 py-0.5 text-[10.5px] font-bold ${GRADE_STYLE[x.grade]}`}>{x.grade}</span>
+                    <b>{x.name}</b>
+                  </p>
+                  <p className="mt-0.5 leading-relaxed">{x.line}</p>
+                  <p className="text-[12.5px] text-jade">대비 → {x.prep}</p>
                 </li>
               ))}
             </ul>
@@ -772,7 +777,9 @@ function ReadingView({ result }: { result: Result }) {
                 <span className={`rounded px-1.5 py-0.5 text-[11px] font-bold ${GRADE_STYLE[c.grade]}`}>{c.grade}</span>
               </p>
               <p className="mt-1.5 text-[13px] leading-relaxed">{c.line}</p>
-              <p className="mt-1 text-[12.5px] text-jade">→ {c.tip}</p>
+              <p className={`mt-1 text-[12.5px] ${c.tipLabel === "대비" ? "font-bold text-seal" : "text-jade"}`}>
+                {c.tipLabel} → {c.tip}
+              </p>
               <p className="mt-1 text-[10.5px] text-ink-soft tabular-nums">근거: {c.why}</p>
             </div>
           ))}
@@ -804,6 +811,7 @@ function ReadingView({ result }: { result: Result }) {
                 </span>
                 <span className="min-w-0 flex-1 text-[12.5px]">
                   <b>{f.part}</b> · {f.line}
+                  {f.prep && <span className="block text-[12px] font-bold text-seal">대비 → {f.prep}</span>}
                   <span className="block text-[10.5px] text-ink-soft">근거: {f.why}</span>
                 </span>
                 <span className={`shrink-0 rounded px-1.5 py-0.5 text-[11px] font-bold ${MOOD[f.mood]}`}>{f.mood}</span>
@@ -820,9 +828,10 @@ function ReadingView({ result }: { result: Result }) {
 }
 
 const GRADE_STYLE: Record<Grade, string> = {
-  상: "bg-seal text-hanji",
-  중: "bg-hanji-deep text-ink",
-  보완: "border border-ink/30 text-ink-soft",
+  좋음: "bg-seal text-hanji",
+  무난: "bg-hanji-deep text-ink",
+  주의: "border border-seal/60 text-seal",
+  경계: "bg-ink text-hanji",
   "측정 안 함": "text-ink-soft/70",
 };
 
@@ -838,7 +847,7 @@ function DeepView({ result }: { result: Result }) {
         <h2 className="px-1 font-myeongjo font-extrabold">
           오악 <span className="text-[12px] font-normal text-ink-soft">· 얼굴의 다섯 산</span>
         </h2>
-        <p className="mt-2 px-1 font-myeongjo text-lg font-extrabold text-seal">{pk.verdict}</p>
+        <p className={`mt-2 px-1 font-myeongjo text-lg font-extrabold ${pk.caution ? "text-ink" : "text-seal"}`}>{pk.verdict}</p>
         <p className="px-1 text-[13px] leading-relaxed">{pk.note}</p>
         <ul className="mt-2 flex flex-col gap-1.5">
           {pk.peaks.map((p) => (
@@ -870,7 +879,7 @@ function DeepView({ result }: { result: Result }) {
           ))}
         </ul>
         <p className="mt-2 px-1 text-[10.5px] leading-relaxed text-ink-soft">
-          판정 기준은 첫 초안이에요. 실제 촬영 결과를 모아 기준값을 맞춰 갈 거예요. 코 높이와 산근은 카메라 촬영에서만 잴 수 있어요.
+          판정은 좋음 · 무난 · 주의 · 경계 네 단계예요. 기준은 첫 초안이에요. 실제 촬영 결과를 모아 기준값을 맞춰 갈 거예요. 코 높이와 산근은 카메라 촬영에서만 잴 수 있어요.
         </p>
       </section>
     </>
