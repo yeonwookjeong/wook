@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { FaceLandmarker, FaceLandmarkerResult } from "@mediapipe/tasks-vision";
 import { drawChart } from "@/lib/gwansangChart";
+import { deepMeasure, palaces, peaks, type Grade } from "@/lib/gwansangDeep";
 import { chartNotes, BANDS, band, bounty, hyeong, IDX, level, measure, medianFace, wordOf, yongmo, type BandKey, type Face, type Metrics, type Pt } from "@/lib/gwansang";
 
 // The 관상 capture test (/lab/gwansang): the camera shows a guide, and the face is taken only once it is the
@@ -634,11 +635,71 @@ function ResultView({ result }: { result: Result }) {
         </p>
       </section>
 
+      <DeepView result={result} />
+
       <section className="rounded-2xl border-2 border-ink/70 bg-hanji-deep px-5 py-5">
         <p className="text-center font-myeongjo text-2xl font-extrabold tracking-[0.3em]">容貌疤記</p>
         <p className="mt-1 text-center text-[12px] text-ink-soft">용모파기 · 이런 얼굴을 보거든 관아에 고하라</p>
         <p className="mt-3 font-myeongjo text-[15px] leading-loose">{yongmo(m).join(" ")}</p>
         <p className="mt-3 text-right font-myeongjo text-lg font-extrabold text-seal">현상금 엽전 {bounty(m)}냥</p>
+      </section>
+    </>
+  );
+}
+
+const GRADE_STYLE: Record<Grade, string> = {
+  상: "bg-seal text-hanji",
+  중: "bg-hanji-deep text-ink",
+  보완: "border border-ink/30 text-ink-soft",
+  "측정 안 함": "text-ink-soft/70",
+};
+
+// 오악 and 십이궁, each verdict with the measure it rests on (lib/gwansangDeep.ts).
+function DeepView({ result }: { result: Result }) {
+  const x = useMemo(() => deepMeasure(result.face), [result]);
+  const pk = peaks(result.m, x);
+  const pl = palaces(result.m, x);
+  const badge = (gr: Grade) => <span className={`shrink-0 rounded px-1.5 py-0.5 text-[11px] font-bold ${GRADE_STYLE[gr]}`}>{gr}</span>;
+  return (
+    <>
+      <section className="doc-paper px-4 py-4">
+        <h2 className="px-1 font-myeongjo font-extrabold">
+          오악 <span className="text-[12px] font-normal text-ink-soft">· 얼굴의 다섯 산</span>
+        </h2>
+        <p className="mt-2 px-1 font-myeongjo text-lg font-extrabold text-seal">{pk.verdict}</p>
+        <p className="px-1 text-[13px] leading-relaxed">{pk.note}</p>
+        <ul className="mt-2 flex flex-col gap-1.5">
+          {pk.peaks.map((p) => (
+            <li key={p.name} className="flex items-center gap-2 border-t border-seal/10 pt-1.5 text-[12.5px]">
+              <b className="w-16 shrink-0">{p.name}</b>
+              <span className="w-14 shrink-0 text-ink-soft">{p.part}</span>
+              <span className="min-w-0 flex-1 text-[11px] text-ink-soft tabular-nums">{p.why}</span>
+              {badge(p.grade)}
+            </li>
+          ))}
+        </ul>
+      </section>
+      <section className="doc-paper px-4 py-4">
+        <h2 className="px-1 font-myeongjo font-extrabold">
+          십이궁 <span className="text-[12px] font-normal text-ink-soft">· 얼굴 열두 자리가 맡은 삶</span>
+        </h2>
+        <ul className="mt-2 flex flex-col gap-2">
+          {pl.map((p) => (
+            <li key={p.name} className="flex items-start gap-2 border-t border-seal/10 pt-2">
+              <div className="min-w-0 flex-1">
+                <p className="text-[13px]">
+                  <b>{p.name}</b> <span className="text-[11px] text-ink-soft">{p.hanja} · {p.where}</span>
+                </p>
+                <p className="text-[12px]">{p.rules}</p>
+                <p className="text-[10.5px] text-ink-soft tabular-nums">{p.why}</p>
+              </div>
+              {badge(p.grade)}
+            </li>
+          ))}
+        </ul>
+        <p className="mt-2 px-1 text-[10.5px] leading-relaxed text-ink-soft">
+          판정 기준은 첫 초안이에요. 실제 촬영 결과를 모아 기준값을 맞춰 갈 거예요. 코 높이와 산근은 카메라 촬영에서만 잴 수 있어요.
+        </p>
       </section>
     </>
   );
