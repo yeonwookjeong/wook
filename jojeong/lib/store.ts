@@ -320,3 +320,25 @@ export async function readCounters(keys: string[]): Promise<number[]> {
     return keys.map(() => 0);
   }
 }
+
+// ── 정 훈도에게 묻기 (lib/ask.ts): one room per chart, kept whole under its id, and the list of rooms for the
+// owner's page. The id is long and random: the link to the room is its key.
+export async function getAskRoomRaw(roomId: string): Promise<string | null> {
+  if (!/^[\w-]{16,64}$/.test(roomId)) return null;
+  return backend().get(`ask:room:${roomId}`);
+}
+export async function setAskRoomRaw(roomId: string, raw: string) {
+  await backend().set(`ask:room:${roomId}`, raw);
+}
+export async function newAskRoomId(): Promise<string> {
+  const roomId = id(18);
+  await backend().push("ask:rooms", roomId);
+  return roomId;
+}
+export async function askRoomIds(): Promise<string[]> {
+  return backend().list("ask:rooms");
+}
+export async function deleteAskRoom(roomId: string) {
+  await backend().set(`ask:room:${roomId}`, "");
+  await backend().remove("ask:rooms", roomId);
+}
