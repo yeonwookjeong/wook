@@ -1,11 +1,12 @@
-// What the 도화서 painter is told: a Joseon portrait, flattering the way court painters were, true to the
-// sitter's proportions. In "record" mode the painter never sees a photo, only the 관상 measures and a line
-// sketch of the face's proportions; in "photo" mode it sees the face the viewer chose to send.
+// What the 도화서 painter is told. Both styles restyle the viewer's own photo (sent only after they agree), and
+// keep the person: an image model told to "paint a portrait" invents a stranger, one told to restyle this photo
+// keeps the face. "eojin" is a faithful court portrait with no more than a court painter's tidying;
+// "pungsok" is a 김홍도-style genre caricature that plays up the features the 관상 measures found striking.
 
 import { band, BANDS, type BandKey, type Metrics } from "./gwansang";
 
 export type Dress = "gwanbok" | "seonbi" | "yeoin";
-export type Look = { gender: "man" | "woman" | "unsaid"; hair: "short" | "long" | "tied" };
+export type Style = "eojin" | "pungsok";
 export const DRESSES: Record<Dress, { label: string; prompt: string }> = {
   gwanbok: {
     label: "관복",
@@ -17,52 +18,60 @@ export const DRESSES: Record<Dress, { label: string; prompt: string }> = {
   },
   yeoin: {
     label: "여인",
-    prompt: "a Joseon noblewoman's dress: hair parted in the middle and gathered into a low chignon held by a gold binyeo hairpin, a jade-green dangui jacket with gold-stamped patterns over a deep red skirt",
+    prompt: "a Joseon noblewoman's dress: hair parted in the middle and gathered into a low chignon held by a gold binyeo hairpin, a jade-green dangui jacket with gold-stamped patterns",
   },
 };
-
-const PHRASES: Record<BandKey, [string, string, string]> = {
-  ratio: ["a broad, wide face", "a balanced oval face", "a long oval face"],
-  jaw: ["a tapered, pointed chin", "a rounded jaw", "a square, strong jaw"],
-  tilt: ["gently downturned outer eye corners", "level eyes", "upturned outer eye corners"],
-  open: ["narrow, elongated eyes", "medium-sized eyes", "large, clear eyes"],
-  gap: ["close-set eyes", "eyes about one eye-width apart", "wide-set eyes"],
-  nose: ["a slender nose", "a straight nose", "broad nostrils"],
-  mouth: ["a small mouth", "a medium mouth", "a wide mouth"],
-  lip: ["thin lips", "medium lips", "full lips"],
-  brow: ["brows sitting low and close to the eyes", "brows at a medium height", "brows set high above the eyes"],
-  philtrum: ["a short philtrum", "a medium philtrum", "a long philtrum"],
+export const STYLES: Record<Style, { label: string; note: string }> = {
+  eojin: { label: "어진처럼 · 닮게", note: "궁중 초상화 그림체로, 얼굴은 그대로" },
+  pungsok: { label: "풍속화처럼 · 웃기게", note: "김홍도풍 캐리커처, 내 관상 특징을 과장" },
 };
 
-export function featureLine(m: Metrics): string {
-  const third = m.upper >= m.middle && m.upper >= m.lower ? "a high forehead" : m.middle >= m.lower ? "a long midface" : "a long lower face";
-  const parts = (Object.keys(BANDS) as BandKey[]).map((k) => PHRASES[k][band(k, m[k]).step]);
-  return [third, ...parts].join(", ");
+// The features to play up in a caricature: the measures that fell outside 보통, in plain words.
+const STRIKING: Record<BandKey, [string, string]> = {
+  ratio: ["a broad, wide face", "a long face"],
+  jaw: ["a pointed chin", "a square jaw"],
+  tilt: ["droopy outer eye corners", "upturned, cat-like eye corners"],
+  open: ["narrow eyes", "big round eyes"],
+  gap: ["close-set eyes", "wide-set eyes"],
+  nose: ["a slender nose", "broad nostrils"],
+  mouth: ["a small mouth", "a wide mouth"],
+  lip: ["thin lips", "full lips"],
+  brow: ["low brows hugging the eyes", "high, arched brows"],
+  philtrum: ["a short philtrum", "a long philtrum"],
+};
+export function striking(m: Metrics): string[] {
+  return (Object.keys(BANDS) as BandKey[]).flatMap((k) => {
+    const { step, near } = band(k, m[k]);
+    return step === 1 || near ? [] : [STRIKING[k][step === 0 ? 0 : 1]];
+  });
 }
 
-export function portraitPrompt(mode: "record" | "photo", dress: Dress, m: Metrics, look: Look): string {
-  const style = [
-    "You are a court painter of the Joseon dynasty's Dohwaseo, the royal painting bureau.",
-    "Paint an original Joseon portrait painting (chosang-hwa), not a photo and not a photo filter:",
-    "mineral pigments on aged beige silk, fine brown ink outlines, delicate brushwork on the skin, soft back-colouring (baechae),",
-    "a half-length bust facing straight ahead, the face large (about 40% of the picture's height), a plain silk background.",
-    "Flatter the sitter the way court painters did: healthy even skin, a calm, dignified, quietly confident expression, a gentle warmth in the eyes,",
-    "while keeping their real facial proportions so friends would recognise them at once.",
-    `Clothing: ${DRESSES[dress].prompt}.`,
-    "Do not write any text, letters, characters, seal, signature or watermark. No frame, no border.",
-  ];
-  if (mode === "photo")
+const KEEP =
+  "This is the same person, restyled, not a new person: keep exactly their face shape and width, eye shape, eye size and spacing, " +
+  "eyelids, eyebrows, nose, lips, ears, hairline, skin tone, age and gender presentation. Someone who knows them must recognise them at a glance.";
+const NO_TEXT = "Do not write any text, letters, characters, seal, signature or watermark. No frame, no border.";
+
+export function portraitPrompt(style: Style, dress: Dress, m: Metrics): string {
+  if (style === "eojin")
     return [
-      ...style,
-      "The attached photo shows the sitter. Keep their identity: face shape, hairline, eyes, nose, mouth and skin tone.",
-      "Change only the clothing and headwear to the dress above; leave out the photo's background, glasses, earphones and modern clothes.",
+      "Restyle the person in the attached photo as a Joseon dynasty court portrait painting (chosang-hwa) by a Dohwaseo painter.",
+      KEEP,
+      "The only touch-ups allowed are a court painter's: an even skin tone, tidy hair, a calm composed expression close to the photo's.",
+      "Style: mineral pigments on aged beige silk, fine brown ink outlines, soft back-colouring on the skin, a plain silk background,",
+      "a half-length bust facing the viewer, the face large (about 40% of the picture's height).",
+      `Clothing: ${DRESSES[dress].prompt}; the headwear sits on their real hairline. Leave out the photo's background, glasses and modern clothes.`,
+      NO_TEXT,
     ].join(" ");
-  const who = look.gender === "man" ? "a man" : look.gender === "woman" ? "a woman" : "an adult";
-  const hair = { short: "short hair", long: "long hair", tied: "hair tied back" }[look.hair];
+  const play = striking(m);
   return [
-    ...style,
-    "You cannot see the sitter. Paint from the bureau's measurement record and the attached line sketch,",
-    "which traces only the face's outline and features: follow its proportions, not its style.",
-    `The sitter is ${who} with ${hair} (under the headwear if any). Record of the face: ${featureLine(m)}.`,
+    "Turn the person in the attached photo into a humorous Joseon genre-painting caricature in the style of Kim Hong-do (18th century pungsokhwa):",
+    "loose, confident ink brush lines with light colour washes on hanji paper, a big head on a small body, warm and playful, never mean.",
+    KEEP.replace("keep exactly", "keep recognisable"),
+    play.length
+      ? `Exaggerate these features of theirs by about a third, the way a caricaturist would: ${play.join(", ")}.`
+      : "Exaggerate their most distinctive feature a little, the way a caricaturist would.",
+    "Give them a cheeky, good-natured grin and a lively pose (fanning themselves with a folding fan, or mid-laugh), plain paper background.",
+    `Clothing: ${DRESSES[dress].prompt}.`,
+    NO_TEXT,
   ].join(" ");
 }

@@ -2,14 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { FaceLandmarker, FaceLandmarkerResult } from "@mediapipe/tasks-vision";
-import { inkPortrait, stampTitle } from "@/lib/inkPortrait";
-import { DRESSES, type Dress, type Look } from "@/lib/portraitPrompt";
+import { DRESSES, STYLES, type Dress, type Style } from "@/lib/portraitPrompt";
+import { stampTitle } from "@/lib/stampTitle";
 import { BANDS, band, bounty, hyeong, IDX, level, measure, medianFace, wordOf, yongmo, type BandKey, type Face, type Metrics, type Pt } from "@/lib/gwansang";
 
 // The 관상 capture test (/lab/gwansang): the camera shows a guide, and the face is taken only once it is the
 // right size, centred, facing straight, expressionless and well lit for HOLD_MS in a row. The frames of that
 // hold are merged point by point (lib/gwansang.ts medianFace). Nothing leaves the device: the last frame stays
-// in memory only to paint the ink portrait (lib/inkPortrait.ts); past readings (numbers only) stay in this
+// in memory only, for a painting the viewer may order (/api/portrait); past readings (numbers only) stay in this
 // browser, to compare retakes.
 
 const WASM = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/wasm";
@@ -22,7 +22,7 @@ const KEYS = Object.keys(BANDS) as BandKey[];
 type Check = { key: string; ok: boolean; tip: string };
 type Pose = { yaw: number; pitch: number; roll: number };
 type Reading = { at: number; source: "camera" | "photo"; frames: number; m: Metrics };
-// The frame the portrait is painted from, with its own face points: held in memory on this page only.
+// The frame a painting may be ordered from, with its own face points: held in memory on this page only.
 type Snap = { canvas: HTMLCanvasElement; pts: Pt[] };
 type Result = Reading & { face: Face; spread: Partial<Record<BandKey, number>>; snap: Snap | null };
 
@@ -323,7 +323,7 @@ export default function GwansangLab() {
             <input type="checkbox" checked={relaxed} onChange={(e) => setRelaxed(e.target.checked)} /> 판정 느슨하게 (잘 안 찍힐 때)
           </label>
           {message && <p className="text-center text-[13px] font-bold text-seal">{message}</p>}
-          <p className="text-center text-[11.5px] text-jade">사진은 이 폰 안에서만 쓰여요. 그림을 그리는 동안만 화면에 머물고, 어디에도 올라가거나 저장되지 않아요. 기록에 남는 건 얼굴 치수뿐이에요.</p>
+          <p className="text-center text-[11.5px] text-jade">관상은 이 폰 안에서만 재요. 사진은 어디에도 저장되지 않고, 그림을 맡길 때 동의한 경우에만 얼굴 부분이 그림용으로 전송돼요.</p>
         </section>
       )}
 
@@ -433,52 +433,6 @@ function InkFace({ face }: { face: Face }) {
   );
 }
 
-// The frame painted as a 수묵 초상, with the name the viewer types on its title.
-function InkPortraitView({ snap }: { snap: Snap }) {
-  const [name, setName] = useState("무명씨");
-  const url = useMemo(
-    () => inkPortrait(snap.canvas, snap.canvas.width, snap.canvas.height, snap.pts, name.trim() || "무명씨").toDataURL("image/jpeg", 0.9),
-    [snap, name],
-  );
-  return (
-    <div className="flex flex-col items-center gap-2">
-      {/* eslint-disable-next-line @next/next/no-img-element -- a data URL painted on this device */}
-      <img src={url} alt="수묵으로 그린 초상" className="w-full max-w-[320px] rounded shadow-[0_2px_12px_rgba(0,0,0,0.18)]" />
-      <label className="flex items-center gap-2 text-[12.5px] text-ink-soft">
-        족자에 적을 이름
-        <input value={name} maxLength={6} onChange={(e) => setName(e.target.value)} className="w-28 rounded border border-ink/20 bg-white/70 px-2 py-1 text-ink" />
-      </label>
-      <p className="text-[11px] text-ink-soft">그림을 길게 눌러 저장할 수 있어요 · 그림은 이 폰 안에서만 그려져요</p>
-    </div>
-  );
-}
-
-// The face's proportions as a plain line sketch: the only picture "record" mode sends.
-function sketchDataUrl(face: Face): string {
-  const R = level(face);
-  const xs = R.map((p) => p[0]);
-  const ys = R.map((p) => p[1]);
-  const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs), Math.min(...ys), Math.max(...ys)];
-  const s = Math.min(400 / (x1 - x0), 520 / (y1 - y0));
-  const T = R.map(([x, y]): Pt => [(x - (x0 + x1) / 2) * s + 256, (y - (y0 + y1) / 2) * s + 320]);
-  const at = (ids: readonly number[]) => ids.map((i) => T[i]);
-  const c = document.createElement("canvas");
-  c.width = 512;
-  c.height = 640;
-  const g = c.getContext("2d")!;
-  g.fillStyle = "#fff";
-  g.fillRect(0, 0, 512, 640);
-  g.strokeStyle = "#000";
-  g.lineWidth = 3;
-  g.lineCap = "round";
-  for (const [ids, closed] of [
-    [IDX.oval, true], [IDX.rBrow, true], [IDX.lBrow, true], [IDX.rEyeUp, false], [IDX.rEyeLo, false], [IDX.lEyeUp, false],
-    [IDX.lEyeLo, false], [IDX.bridge, false], [IDX.noseBase, false], [IDX.lips, true], [IDX.mouth, false],
-  ] as const)
-    g.stroke(new Path2D(smooth(at(ids), closed)));
-  return c.toDataURL("image/png");
-}
-
 // The face cut out of the captured frame, small: what "photo" mode sends once the viewer agrees.
 function photoDataUrl(snap: Snap): string {
   const W = snap.canvas.width;
@@ -491,13 +445,13 @@ function photoDataUrl(snap: Snap): string {
   const h = fh * 2.2;
   const w = h * 0.78;
   const c = document.createElement("canvas");
-  c.width = 480;
-  c.height = 616;
+  c.width = 640;
+  c.height = 820;
   const g = c.getContext("2d")!;
   g.fillStyle = "#fff";
   g.fillRect(0, 0, c.width, c.height);
   g.drawImage(snap.canvas, cx - w / 2, y0, w, h, 0, 0, c.width, c.height);
-  return c.toDataURL("image/jpeg", 0.85);
+  return c.toDataURL("image/jpeg", 0.88);
 }
 
 async function compose(src: string, name: string): Promise<string> {
@@ -513,41 +467,35 @@ async function compose(src: string, name: string): Promise<string> {
   return c.toDataURL("image/jpeg", 0.92);
 }
 
-type Painting = { raw: string; shown: string; mode: "record" | "photo"; model: string; ms: number; usage: { input: number | null; output: number | null } };
+type Painting = { raw: string; shown: string; style: Style; model: string; ms: number; usage: { input: number | null; output: number | null } };
 
-// 도화서: the measures (and, if the viewer agrees, the face) go to an image model that paints a flattering portrait.
+// 도화서: for those who want a picture, their face restyled as a Joseon painting by an image model.
 function PortraitStudio({ result }: { result: Result }) {
   const [dress, setDress] = useState<Dress>("gwanbok");
-  const [look, setLook] = useState<Look>({ gender: "unsaid", hair: "short" });
   const [consent, setConsent] = useState(false);
   const [name, setName] = useState("무명씨");
-  const [busy, setBusy] = useState<"record" | "photo" | null>(null);
+  const [busy, setBusy] = useState<Style | null>(null);
   const [error, setError] = useState("");
   const [art, setArt] = useState<Painting | null>(null);
+  const snap = result.snap;
+  if (!snap) return null;
 
-  async function order(mode: "record" | "photo") {
-    if (busy) return;
-    setBusy(mode);
+  async function order(style: Style) {
+    if (busy || !snap) return;
+    setBusy(style);
     setError("");
     try {
       const res = await fetch("/api/portrait", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          mode,
-          dress,
-          look,
-          metrics: result.m,
-          sketch: sketchDataUrl(result.face),
-          photo: mode === "photo" && result.snap ? photoDataUrl(result.snap) : undefined,
-        }),
+        body: JSON.stringify({ style, dress, metrics: result.m, photo: photoDataUrl(snap) }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.image) {
         setError(`${data.error ?? "그림을 받지 못했어요."}${data.detail ? ` (${data.detail})` : ""}`);
         return;
       }
-      setArt({ raw: data.image, shown: await compose(data.image, name.trim() || "무명씨"), mode, model: data.model, ms: data.ms, usage: data.usage });
+      setArt({ raw: data.image, shown: await compose(data.image, name.trim() || "무명씨"), style, model: data.model, ms: data.ms, usage: data.usage });
     } catch {
       setError("화원에게 닿지 못했어요. 연결을 확인하고 다시 맡겨 주세요.");
     } finally {
@@ -566,8 +514,23 @@ function PortraitStudio({ result }: { result: Result }) {
   const seg = (on: boolean) => `rounded-full border px-3 py-1.5 text-[12.5px] font-bold ${on ? "border-ink bg-ink text-hanji" : "border-ink/20 text-ink-soft"}`;
   return (
     <section className="doc-paper flex flex-col gap-3 px-5 py-5">
-      <h2 className="text-center font-myeongjo text-lg font-extrabold">도화서에 초상화 맡기기</h2>
-      <p className="text-center text-[12px] text-ink-soft">치수는 냉정하게, 그림은 기분 좋게. 화원이 실물보다 조금 더 보기 좋게 그려 드려요.</p>
+      <h2 className="text-center font-myeongjo text-lg font-extrabold">도화서에 그림 맡기기</h2>
+      <p className="text-center text-[12px] text-ink-soft">원하는 분만 눌러 주세요. 내 얼굴을 조선 그림으로 그려 드려요.</p>
+
+      {art && (
+        <div className="flex flex-col items-center gap-2">
+          {/* eslint-disable-next-line @next/next/no-img-element -- a painting returned as a data URL */}
+          <img src={art.shown} alt="도화서 화원이 그린 그림" className="w-full max-w-[340px] rounded shadow-[0_2px_12px_rgba(0,0,0,0.2)]" />
+          <label className="flex items-center gap-2 text-[12.5px] text-ink-soft">
+            족자에 적을 이름
+            <input value={name} maxLength={6} onChange={(e) => rename(e.target.value)} className="w-28 rounded border border-ink/20 bg-white/70 px-2 py-1 text-ink" />
+          </label>
+          <p className="text-[10.5px] text-ink-soft tabular-nums">
+            {STYLES[art.style].label} · {art.model} · {(art.ms / 1000).toFixed(0)}초 · 토큰 입력 {art.usage.input ?? "?"} / 출력 {art.usage.output ?? "?"} · 길게 눌러 저장
+          </p>
+        </div>
+      )}
+
       <div className="flex flex-wrap justify-center gap-1.5">
         {(Object.keys(DRESSES) as Dress[]).map((d) => (
           <button key={d} type="button" className={seg(dress === d)} onClick={() => setDress(d)}>
@@ -575,54 +538,24 @@ function PortraitStudio({ result }: { result: Result }) {
           </button>
         ))}
       </div>
-
-      {art && (
-        <div className="flex flex-col items-center gap-2">
-          {/* eslint-disable-next-line @next/next/no-img-element -- a painting returned as a data URL */}
-          <img src={art.shown} alt="도화서 화원이 그린 초상화" className="w-full max-w-[340px] rounded shadow-[0_2px_12px_rgba(0,0,0,0.2)]" />
-          <label className="flex items-center gap-2 text-[12.5px] text-ink-soft">
-            족자에 적을 이름
-            <input value={name} maxLength={6} onChange={(e) => rename(e.target.value)} className="w-28 rounded border border-ink/20 bg-white/70 px-2 py-1 text-ink" />
-          </label>
-          <p className="text-[10.5px] text-ink-soft tabular-nums">
-            {art.mode === "photo" ? "사진을 보고" : "기록만 보고"} 그림 · {art.model} · {(art.ms / 1000).toFixed(0)}초 · 토큰 입력 {art.usage.input ?? "?"} / 출력 {art.usage.output ?? "?"}
-          </p>
-        </div>
-      )}
-
-      <div className="flex flex-col gap-2 rounded-xl border border-ink/15 bg-white/50 px-3 py-3">
-        <p className="text-[12.5px] font-bold">기록만 보고 그리기 · 사진은 보내지 않아요</p>
-        <div className="flex flex-wrap gap-1.5">
-          {([["man", "남"], ["woman", "여"], ["unsaid", "밝히지 않음"]] as const).map(([v, t]) => (
-            <button key={v} type="button" className={seg(look.gender === v)} onClick={() => setLook({ ...look, gender: v })}>
-              {t}
-            </button>
-          ))}
-        </div>
-        <div className="flex flex-wrap gap-1.5">
-          {([["short", "짧은 머리"], ["long", "긴 머리"], ["tied", "묶은 머리"]] as const).map(([v, t]) => (
-            <button key={v} type="button" className={seg(look.hair === v)} onClick={() => setLook({ ...look, hair: v })}>
-              {t}
-            </button>
-          ))}
-        </div>
-        <button type="button" disabled={!!busy} onClick={() => order("record")} className="rounded-full bg-ink px-4 py-2.5 text-[14px] font-bold text-hanji disabled:opacity-50">
-          {busy === "record" ? "화원이 기록을 보며 그리는 중… (20~60초)" : "기록만 보고 그려 받기"}
-        </button>
-      </div>
-
-      {result.snap && (
-        <div className="flex flex-col gap-2 rounded-xl border border-seal/30 bg-white/50 px-3 py-3">
-          <p className="text-[12.5px] font-bold">얼굴을 보고 그리기 · 더 닮게 나와요</p>
-          <label className="flex items-start gap-2 text-[12px] leading-relaxed">
-            <input type="checkbox" className="mt-1" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
-            얼굴 부분 사진을 그림 그리는 데에만 Google AI(Gemini)로 보내는 데 동의해요. 훈도사주는 사진을 저장하지 않아요.
-          </label>
-          <button type="button" disabled={!!busy || !consent} onClick={() => order("photo")} className="rounded-full bg-seal px-4 py-2.5 text-[14px] font-bold text-hanji disabled:opacity-50">
-            {busy === "photo" ? "화원이 얼굴을 보며 그리는 중… (20~60초)" : "얼굴 보고 그려 받기"}
+      <label className="flex items-start gap-2 text-[12px] leading-relaxed">
+        <input type="checkbox" className="mt-1" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
+        얼굴 부분 사진을 그림 그리는 데에만 Google AI(Gemini)로 보내는 데 동의해요. 훈도사주는 사진을 저장하지 않아요.
+      </label>
+      <div className="grid grid-cols-2 gap-2">
+        {(Object.keys(STYLES) as Style[]).map((st) => (
+          <button
+            key={st}
+            type="button"
+            disabled={!!busy || !consent}
+            onClick={() => order(st)}
+            className={`flex flex-col items-center rounded-2xl px-3 py-3 font-bold disabled:opacity-50 ${st === "eojin" ? "bg-seal text-hanji" : "bg-ink text-hanji"}`}
+          >
+            <span className="text-[14px]">{busy === st ? "그리는 중… (20~60초)" : STYLES[st].label}</span>
+            <span className="mt-0.5 text-[10.5px] font-normal opacity-80">{STYLES[st].note}</span>
           </button>
-        </div>
-      )}
+        ))}
+      </div>
       {error && <p className="text-center text-[12.5px] font-bold text-seal">{error}</p>}
     </section>
   );
@@ -647,7 +580,7 @@ function ResultView({ result }: { result: Result }) {
         <p className="text-center text-xs font-extrabold text-seal">
           {result.source === "camera" ? `카메라 · ${result.frames}장의 중간값` : "사진 한 장"}
         </p>
-        {result.snap ? <InkPortraitView snap={result.snap} /> : <InkFace face={result.face} />}
+        <InkFace face={result.face} />
         <div className="mt-2 flex items-center justify-center gap-3">
           <span className="grid h-11 w-11 place-items-center rounded bg-seal font-myeongjo text-2xl text-hanji">{h.main.el}</span>
           <span className="font-myeongjo text-2xl font-extrabold">{h.label}</span>
