@@ -168,33 +168,6 @@ export function hyeong(m: Metrics): { main: Hyeong; mixed: Hyeong | null; label:
   return { main: HYEONG[main], mixed: other ? HYEONG[other] : null, label };
 }
 
-// 용모파기: the Joseon way of describing a wanted person's looks, written from the measures.
-export function yongmo(m: Metrics): string[] {
-  const s = (k: BandKey) => band(k, m[k]).step;
-  const lead = leadThird(m);
-  const lines = [
-    lead === "upper" ? "이마가 넓고 훤하며" : lead === "middle" ? "콧대가 길게 뻗어 얼굴 가운데가 길고" : lead === "lower" ? "턱 아래가 길고 두툼하며" : "이마와 코와 턱이 고르게 나뉘고",
-    ["얼굴이 넓적한 편이고", "얼굴은 길지도 넓지도 않고", "얼굴이 길쭉한 편이고"][s("ratio")],
-    ["턱끝이 뾰족하다.", "턱은 둥글다.", "턱이 모가 났다."][s("jaw")],
-    ["눈꼬리가 아래로 처졌고", "눈매가 반듯하고", "눈꼬리가 위로 치켜 올라갔고"][s("tilt")],
-    ["눈이 가늘고 길며", "눈은 크지도 작지도 않으며", "눈이 크고 또렷하며"][s("open")],
-    ["미간이 좁다.", "미간은 눈 하나가 들어갈 만하다.", "미간이 시원하게 넓다."][s("gap")],
-    ["콧방울이 작고", "코는 반듯하고", "콧방울이 넉넉하고"][s("nose")],
-    ["입이 작으며", "입은 알맞으며", "입이 크며"][s("mouth")],
-    ["입술이 얇다.", "입술은 보통이다.", "입술이 도톰하다."][s("lip")],
-    ["인중이 짧다.", "", "인중이 길다."][s("philtrum")],
-  ];
-  return lines.filter(Boolean);
-}
-
-// A bounty between 10 and 99 냥, from the face's words rather than its raw numbers, so a retake that reads the
-// same face the same way names the same price.
-export function bounty(m: Metrics): number {
-  const steps = (Object.keys(BANDS) as BandKey[]).map((k) => band(k, m[k]).step);
-  const h = steps.reduce((a, s) => (a * 31 + s + 7) % 100003, 17);
-  return 10 + (h % 90);
-}
-
 // 관상 도식: the notes written around the portrait, each pinned to a face point, and the two boxes under it.
 // The point numbers are MediaPipe's; `side` is the side of the picture the note sits on.
 export type ChartNote = { anchor: number; side: "L" | "R"; title: string; note: string };

@@ -59,12 +59,12 @@ export function pos(v: number, [lo, hi]: readonly [number, number], lowIsGood = 
   const s = lowIsGood ? 1 - s0 : s0;
   return s < 0 ? 0 : s < 0.5 ? 1 : s < 1 ? 2 : 3;
 }
-const band = (k: BandKey, v: number) => pos(v, BANDS[k].cut);
-const deep = (k: keyof typeof CUT, v: number | null) => (v === null ? null : pos(v, CUT[k]));
-const third = (dev: number) => pos(dev, [-0.07, 0.07]);
+export const bandScore = (k: BandKey, v: number) => pos(v, BANDS[k].cut);
+export const deep = (k: keyof typeof CUT, v: number | null) => (v === null ? null : pos(v, CUT[k]));
+export const third = (dev: number) => pos(dev, [-0.07, 0.07]);
 // Eye corners read best at their usual tilt: the further from it either way, the lower. The usual tilt is about
 // +5° (outer corners a little above the inner ones, as in most Korean faces measured so far).
-const tiltScore = (t: number) => {
+export const tiltScore = (t: number) => {
   const d = Math.abs(t - 5);
   return d < 3 ? 3 : d < 5 ? 2 : d < 7 ? 1 : 0;
 };
@@ -80,15 +80,15 @@ export function palaces(m: Metrics, x: Deep): Palace[] {
     name, hanja, where, rules, score, grade: gradeOf(score), why,
   });
   return [
-    P("명궁", "命宮", "인당(두 눈썹 사이)", "타고난 뜻과 마음의 크기", avg(deep("glabella", x.glabella), band("gap", m.gap)),
+    P("명궁", "命宮", "인당(두 눈썹 사이)", "타고난 뜻과 마음의 크기", avg(deep("glabella", x.glabella), bandScore("gap", m.gap)),
       `인당 너비 ${f2(x.glabella)} (눈 너비 기준) · 미간 ${f2(m.gap)}`),
-    P("재백궁", "財帛宮", "코와 콧방울", "재물을 모으고 지키는 힘", avg(band("nose", m.nose), deep("noseProj", x.noseProj)),
+    P("재백궁", "財帛宮", "코와 콧방울", "재물을 모으고 지키는 힘", avg(bandScore("nose", m.nose), deep("noseProj", x.noseProj)),
       `콧방울 ${f2(m.nose)}${x.noseProj === null ? "" : ` · 코 높이 ${f2(x.noseProj)}`}`),
     P("형제궁", "兄弟宮", "눈썹", "형제와 벗의 인연", deep("browLen", x.browLen),
       `눈썹 길이 ${f2(x.browLen)} (눈 너비 기준, 눈보다 길수록 좋음)`),
-    P("전택궁", "田宅宮", "눈과 눈썹 사이", "집과 터, 부동산", band("brow", m.brow), `눈썹-눈 간격 ${f2(m.brow)}`),
+    P("전택궁", "田宅宮", "눈과 눈썹 사이", "집과 터, 부동산", bandScore("brow", m.brow), `눈썹-눈 간격 ${f2(m.brow)}`),
     P("남녀궁", "男女宮", "눈 아래 와잠", "자녀의 인연", null, "눈 아래 살집은 카메라로 재기 어려워 아직 보지 않아요"),
-    P("노복궁", "奴僕宮", "턱 양옆(지각)", "아랫사람과 따르는 사람", avg(third(dev.lower), band("jaw", m.jaw)),
+    P("노복궁", "奴僕宮", "턱 양옆(지각)", "아랫사람과 따르는 사람", avg(third(dev.lower), bandScore("jaw", m.jaw)),
       `하정 보통 대비 ${pct(dev.lower)} · 턱 너비 ${f2(m.jaw)}`),
     P("처첩궁", "妻妾宮", "눈꼬리 끝(어미)", "배우자와 연애의 인연", tiltScore(m.tilt),
       `눈꼬리 기울기 ${m.tilt >= 0 ? "+" : ""}${m.tilt.toFixed(1)}° (+5° 안팎이 안정)`),
@@ -110,7 +110,7 @@ export type Peaks = { peaks: Peak[]; verdict: string; note: string; caution: boo
 export function peaks(m: Metrics, x: Deep): Peaks {
   const dev = thirdDev(m);
   const south = avg(third(dev.upper), deep("forehead", x.forehead))!;
-  const north = avg(third(dev.lower), band("jaw", m.jaw))!;
+  const north = avg(third(dev.lower), bandScore("jaw", m.jaw))!;
   const centre = avg(deep("noseLen", x.noseLen), deep("noseProj", x.noseProj))!;
   const cheek = deep("cheek", x.cheek)!;
   const K = (name: string, part: string, score: number, why: string): Peak => ({ name, part, score, grade: gradeOf(score), why });
