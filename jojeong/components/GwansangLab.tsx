@@ -2,12 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { FaceLandmarker, FaceLandmarkerResult } from "@mediapipe/tasks-vision";
+import { inkPortrait } from "@/lib/inkPortrait";
 import { BANDS, band, bounty, hyeong, IDX, level, measure, medianFace, wordOf, yongmo, type BandKey, type Face, type Metrics, type Pt } from "@/lib/gwansang";
 
 // The 관상 capture test (/lab/gwansang): the camera shows a guide, and the face is taken only once it is the
 // right size, centred, facing straight, expressionless and well lit for HOLD_MS in a row. The frames of that
-// hold are merged point by point (lib/gwansang.ts medianFace). Nothing leaves the device: the picture is read
-// here and dropped; past readings stay in this browser only, to compare retakes.
+// hold are merged point by point (lib/gwansang.ts medianFace). Nothing leaves the device: the last frame stays
+// in memory only to paint the ink portrait (lib/inkPortrait.ts); past readings (numbers only) stay in this
+// browser, to compare retakes.
 
 const WASM = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/wasm";
 const MODEL = "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
@@ -19,7 +21,9 @@ const KEYS = Object.keys(BANDS) as BandKey[];
 type Check = { key: string; ok: boolean; tip: string };
 type Pose = { yaw: number; pitch: number; roll: number };
 type Reading = { at: number; source: "camera" | "photo"; frames: number; m: Metrics };
-type Result = Reading & { face: Face; spread: Partial<Record<BandKey, number>> };
+// The frame the portrait is painted from, with its own face points: held in memory on this page only.
+type Snap = { canvas: HTMLCanvasElement; pts: Pt[] };
+type Result = Reading & { face: Face; spread: Partial<Record<BandKey, number>>; snap: Snap | null };
 
 async function makeLandmarker(mode: "VIDEO" | "IMAGE"): Promise<FaceLandmarker> {
   const { FaceLandmarker: FL, FilesetResolver } = await import("@mediapipe/tasks-vision");
@@ -138,7 +142,7 @@ export default function GwansangLab() {
     streamRef.current = null;
   }
 
-  function finish(face: Face, frames: Face[], source: "camera" | "photo") {
+  function finish(face: Face, frames: Face[], source: "camera" | "photo", snap: Snap | null) {
     const m = measure(face);
     const spread: Partial<Record<BandKey, number>> = {};
     if (frames.length > 1) {
@@ -147,7 +151,7 @@ export default function GwansangLab() {
     }
     const reading: Reading = { at: Date.now(), source, frames: Math.max(1, frames.length), m };
     saveHistory([...parseHistory(rawHistory()), reading]);
-    setResult({ ...reading, face, spread });
+    setResult({ ...reading, face, spread, snap });
     setPhase("done");
   }
 
@@ -230,8 +234,12 @@ export default function GwansangLab() {
             if (p >= 1 && h.faces.length >= MIN_FRAMES) {
               const frames = h.faces;
               hold.current = { t0: 0, faces: [] };
+              const canvas = document.createElement("canvas");
+              canvas.width = video.videoWidth;
+              canvas.height = video.videoHeight;
+              canvas.getContext("2d")!.drawImage(video, 0, 0);
               stopCamera();
-              finish(medianFace(frames), frames, "camera");
+              finish(medianFace(frames), frames, "camera", { canvas, pts: frames[frames.length - 1].pts });
               return;
             }
           } else {
@@ -261,14 +269,14 @@ export default function GwansangLab() {
       bmp.close();
       const r = imageLm.current.detect(cv);
       const aspect = cv.width / cv.height;
-      cv.width = cv.height = 0; // drop the pixels at once
       const lm = r.faceLandmarks[0];
       if (!lm) {
         setPhase("idle");
         setMessage("사진에서 얼굴을 찾지 못했어요. 정면에서 밝게 찍은 사진으로 다시 골라 주세요.");
         return;
       }
-      finish({ pts: lm.map((p): Pt => [p.x, p.y]), z: lm.map((p) => p.z), aspect }, [], "photo");
+      const pts = lm.map((p): Pt => [p.x, p.y]);
+      finish({ pts, z: lm.map((p) => p.z), aspect }, [], "photo", { canvas: cv, pts });
     } catch {
       setPhase("idle");
       setMessage("사진을 읽지 못했어요. JPG나 PNG 사진으로 다시 골라 주세요.");
@@ -314,7 +322,7 @@ export default function GwansangLab() {
             <input type="checkbox" checked={relaxed} onChange={(e) => setRelaxed(e.target.checked)} /> 판정 느슨하게 (잘 안 찍힐 때)
           </label>
           {message && <p className="text-center text-[13px] font-bold text-seal">{message}</p>}
-          <p className="text-center text-[11.5px] text-jade">사진은 이 기기 안에서만 읽고 바로 버려요. 남는 건 얼굴 점의 위치뿐이에요.</p>
+          <p className="text-center text-[11.5px] text-jade">사진은 이 폰 안에서만 쓰여요. 그림을 그리는 동안만 화면에 머물고, 어디에도 올라가거나 저장되지 않아요. 기록에 남는 건 얼굴 치수뿐이에요.</p>
         </section>
       )}
 
@@ -423,6 +431,26 @@ function InkFace({ face }: { face: Face }) {
   );
 }
 
+// The frame painted as a 수묵 초상, with the name the viewer types on its title.
+function InkPortraitView({ snap }: { snap: Snap }) {
+  const [name, setName] = useState("무명씨");
+  const url = useMemo(
+    () => inkPortrait(snap.canvas, snap.canvas.width, snap.canvas.height, snap.pts, name.trim() || "무명씨").toDataURL("image/jpeg", 0.9),
+    [snap, name],
+  );
+  return (
+    <div className="flex flex-col items-center gap-2">
+      {/* eslint-disable-next-line @next/next/no-img-element -- a data URL painted on this device */}
+      <img src={url} alt="수묵으로 그린 초상" className="w-full max-w-[320px] rounded shadow-[0_2px_12px_rgba(0,0,0,0.18)]" />
+      <label className="flex items-center gap-2 text-[12.5px] text-ink-soft">
+        족자에 적을 이름
+        <input value={name} maxLength={6} onChange={(e) => setName(e.target.value)} className="w-28 rounded border border-ink/20 bg-white/70 px-2 py-1 text-ink" />
+      </label>
+      <p className="text-[11px] text-ink-soft">그림을 길게 눌러 저장할 수 있어요 · 그림은 이 폰 안에서만 그려져요</p>
+    </div>
+  );
+}
+
 function fmt(key: BandKey, v: number) {
   return key === "tilt" ? `${v >= 0 ? "+" : ""}${v.toFixed(1)}°` : v.toFixed(2);
 }
@@ -442,7 +470,7 @@ function ResultView({ result }: { result: Result }) {
         <p className="text-center text-xs font-extrabold text-seal">
           {result.source === "camera" ? `카메라 · ${result.frames}장의 중간값` : "사진 한 장"}
         </p>
-        <InkFace face={result.face} />
+        {result.snap ? <InkPortraitView snap={result.snap} /> : <InkFace face={result.face} />}
         <div className="mt-2 flex items-center justify-center gap-3">
           <span className="grid h-11 w-11 place-items-center rounded bg-seal font-myeongjo text-2xl text-hanji">{h.main.el}</span>
           <span className="font-myeongjo text-2xl font-extrabold">{h.label}</span>
