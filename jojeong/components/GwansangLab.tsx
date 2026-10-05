@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { FaceLandmarker, FaceLandmarkerResult } from "@mediapipe/tasks-vision";
 import { drawChart } from "@/lib/gwansangChart";
-import { BANDS, band, bounty, hyeong, IDX, level, measure, medianFace, wordOf, yongmo, type BandKey, type Face, type Metrics, type Pt } from "@/lib/gwansang";
+import { chartNotes, BANDS, band, bounty, hyeong, IDX, level, measure, medianFace, wordOf, yongmo, type BandKey, type Face, type Metrics, type Pt } from "@/lib/gwansang";
 
 // The 관상 capture test (/lab/gwansang): the camera shows a guide, and the face is taken only once it is the
 // right size, centred, facing straight, expressionless and well lit for HOLD_MS in a row. The frames of that
@@ -456,30 +456,32 @@ function photoDataUrl(snap: Snap): string {
   return c.toDataURL("image/jpeg", 0.88);
 }
 
-async function chart(src: string, result: Result, name: string): Promise<string> {
-  const painting = new Image();
-  painting.src = src;
-  await painting.decode();
-  let paintPts: Pt[] | null = null;
+// The painting as an image, and the face points found on it (none when the reader finds no face there).
+async function loadPainting(src: string): Promise<{ img: HTMLImageElement; pts: Pt[] | null }> {
+  const img = new Image();
+  img.src = src;
+  await img.decode();
+  let pts: Pt[] | null = null;
   try {
-    const found = (await imageLandmarker()).detect(painting).faceLandmarks[0];
-    if (found) paintPts = found.map((p): Pt => [p.x, p.y]);
+    const found = (await imageLandmarker()).detect(img).faceLandmarks[0];
+    if (found) pts = found.map((p): Pt => [p.x, p.y]);
   } catch {}
-  const h = hyeong(result.m);
-  const order = "木火土金水";
-  const els = (h.mixed ? [h.main.el, h.mixed.el] : [h.main.el]).sort((a, b) => order.indexOf(a) - order.indexOf(b));
-  return drawChart({ painting, paintPts, facePts: result.face.pts, m: result.m, title: h.label, hanja: `${els.join("")}形`, name });
+  return { img, pts };
 }
 
 // The result's portrait: the face crop goes to /api/portrait, comes back painted in the shared style, and is laid
-// out as a 관상 도식 with notes pinned to the face. The line drawing stands in while it is painted, and stays
+// out as a 관상 도식 with notes pinned to the face. The viewer can crop to the face, switch notes and the boxes
+// off, and rename it; each change redraws at once. The line drawing stands in while it is painted, and stays
 // when painting fails.
 function ResultPortrait({ result }: { result: Result }) {
-  const [raw, setRaw] = useState<string | null>(null);
-  const [shown, setShown] = useState<string | null>(null);
+  const [painting, setPainting] = useState<{ img: HTMLImageElement; pts: Pt[] | null } | null>(null);
   const [status, setStatus] = useState("관상가가 도식을 그리는 중이에요 · 20~60초");
   const [name, setName] = useState("무명씨");
+  const [faceOnly, setFaceOnly] = useState(false);
+  const [boxes, setBoxes] = useState(true);
+  const [hidden, setHidden] = useState<number[]>([]);
   const asked = useRef(0);
+  const notes = useMemo(() => chartNotes(result.m), [result]);
 
   useEffect(() => {
     if (!result.snap || asked.current === result.at) return;
@@ -492,35 +494,75 @@ function ResultPortrait({ result }: { result: Result }) {
           setStatus(data.error ?? "그림을 받지 못했어요.");
           return;
         }
-        setRaw(data.image);
-        setShown(await chart(data.image, result, "무명씨"));
+        setPainting(await loadPainting(data.image));
         setStatus(`${data.model} · ${(data.ms / 1000).toFixed(0)}초 · 길게 눌러 저장`);
       })
       .catch(() => setStatus("화원에게 닿지 못했어요."));
   }, [result]);
 
-  async function rename(v: string) {
-    setName(v);
-    if (raw) setShown(await chart(raw, result, v.trim() || "무명씨"));
-  }
+  const shown = useMemo(() => {
+    if (!painting) return null;
+    const h = hyeong(result.m);
+    const order = "木火土金水";
+    const els = (h.mixed ? [h.main.el, h.mixed.el] : [h.main.el]).sort((a, b) => order.indexOf(a) - order.indexOf(b));
+    return drawChart({
+      painting: painting.img,
+      paintPts: painting.pts,
+      facePts: result.face.pts,
+      m: result.m,
+      title: h.label,
+      hanja: `${els.join("")}形`,
+      name: name.trim() || "무명씨",
+      faceOnly,
+      hidden,
+      boxes,
+    });
+  }, [painting, result, name, faceOnly, hidden, boxes]);
 
+  const chip = (on: boolean) => `rounded-full border px-2.5 py-1 text-[11.5px] font-bold ${on ? "border-ink bg-ink text-hanji" : "border-ink/20 text-ink-soft line-through"}`;
   return (
     <div className="flex flex-col items-center gap-2">
       {shown ? (
-        // eslint-disable-next-line @next/next/no-img-element -- a painting returned as a data URL
+        // eslint-disable-next-line @next/next/no-img-element -- a chart drawn on this device
         <img src={shown} alt="관상 도식" className="w-full rounded shadow-[0_2px_12px_rgba(0,0,0,0.2)]" />
       ) : (
-        <div className={raw === null ? "animate-pulse" : ""}>
+        <div className="animate-pulse">
           <InkFace face={result.face} />
         </div>
       )}
-      {shown && (
-        <label className="flex items-center gap-2 text-[12.5px] text-ink-soft">
-          도식에 적을 이름
-          <input value={name} maxLength={6} onChange={(e) => rename(e.target.value)} className="w-28 rounded border border-ink/20 bg-white/70 px-2 py-1 text-ink" />
-        </label>
-      )}
       <p className="text-[11px] text-ink-soft">{status}</p>
+      {shown && (
+        <div className="flex w-full flex-col gap-2 rounded-xl border border-ink/15 bg-white/50 px-3 py-3">
+          <div className="flex flex-wrap gap-1.5">
+            <button type="button" className={chip(faceOnly)} onClick={() => setFaceOnly(!faceOnly)}>
+              얼굴만 보기
+            </button>
+            <button type="button" className={chip(boxes)} onClick={() => setBoxes(!boxes)}>
+              성격 · 운세
+            </button>
+          </div>
+          <p className="text-[11px] text-ink-soft">특징 켜고 끄기</p>
+          <div className="flex flex-wrap gap-1.5">
+            {notes.map((n) => {
+              const on = !hidden.includes(n.anchor);
+              return (
+                <button
+                  key={n.anchor}
+                  type="button"
+                  className={chip(on)}
+                  onClick={() => setHidden(on ? [...hidden, n.anchor] : hidden.filter((a) => a !== n.anchor))}
+                >
+                  {n.title}
+                </button>
+              );
+            })}
+          </div>
+          <label className="flex items-center gap-2 text-[12px] text-ink-soft">
+            도식에 적을 이름
+            <input value={name} maxLength={6} onChange={(e) => setName(e.target.value)} className="w-28 rounded border border-ink/20 bg-white/70 px-2 py-1 text-ink" />
+          </label>
+        </div>
+      )}
     </div>
   );
 }

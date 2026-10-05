@@ -8,12 +8,13 @@ const KEEP =
 
 export function portraitPrompt(): string {
   return [
-    "Restyle the person in the attached photo as a Joseon dynasty portrait painting by a master of the royal painting bureau (Dohwaseo).",
+    "Restyle the person in the attached photo as a true-to-life Joseon dynasty portrait painting, with the realism of Yun Du-seo's self-portrait.",
     KEEP,
-    "Make it the most flattering version of them, as they look on their very best day: clear radiant skin, bright calm eyes,",
-    "a clean jawline, neat glossy hair, a composed, quietly confident expression. Idealise the way a court painter would, but never change who they are.",
+    "Realism first: real facial proportions, natural three-dimensional shading, real skin texture, their actual eye and lip shapes;",
+    "not anime, not a cartoon, not a webtoon, not doll-like, not over-smoothed, no enlarged eyes, no slimmed face.",
+    "Flattery only as a careful court painter would allow: an even skin tone, neat hair, a calm and quietly confident expression close to the photo's.",
     "Clothing: a plain white hanbok with a white collar band (dongjeong), nothing on the head. Leave out the photo's background, glasses and modern clothes.",
-    "Style: an exquisite Joseon colour portrait on aged beige silk, mineral pigments, fine brown ink outlines, soft back-colouring on the skin,",
+    "Technique: mineral pigments on aged beige silk, fine brown ink outlines, delicate brushwork on the skin, soft back-colouring;",
     "a plain silk background, a half-length bust facing the viewer, the face large (about 40% of the picture's height).",
     "Do not write any text, letters, characters, seal, signature or watermark. No frame, no border.",
   ].join(" ");
