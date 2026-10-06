@@ -1518,7 +1518,11 @@ export async function Card({ q }: { q: CardQuery }) {
     if (!mp) return null;
     // ?wk=2026-10-05,…,2026-10-11: the same slides for the seven days of one week instead of a month.
     const wk = typeof q.wk === "string" && /^\d{4}-\d{2}-\d{2}(,\d{4}-\d{2}-\d{2}){0,6}$/.test(q.wk) ? daysOf(q.wk.split(",")) : null;
-    const rows = wk ? rankDays(wk) : rankMonth(mp.stem, mp.branch);
+    // &wd=…: the work days among them (the 고비 is picked from these), &rest=연휴: what follows them (주말 by default).
+    const wd = typeof q.wd === "string" ? q.wd.split(",") : [];
+    const wkDates = typeof q.wk === "string" ? q.wk.split(",") : [];
+    const rest = typeof q.rest === "string" && q.rest ? q.rest : "주말";
+    const rows = wk ? rankDays(wk, { work: wkDates.flatMap((d, i) => (wd.includes(d) ? [i] : [])), rest }) : rankMonth(mp.stem, mp.branch);
     const span = wk ? `${wk[0].md}(${wk[0].short}) ~ ${wk.at(-1)!.md}(${wk.at(-1)!.short})` : `${mp.term} ${mp.from} ~ ${mp.to}`;
     const label = wk ? (q.wl ? String(q.wl) : "이번 주") : mp.label;
     const unit = wk ? "주" : "달";
@@ -1538,7 +1542,7 @@ export async function Card({ q }: { q: CardQuery }) {
             </p>
             <p style={{ marginTop: 16, fontSize: 30, lineHeight: 1.3, color: "rgba(244,236,219,.85)", fontFamily: sans }}>
               {span}
-              {wk && " · 칸 옆 글자는 가장 좋은 요일"}
+              {wk && " · 칸 옆은 넘겨야 할 고비 요일"}
             </p>
           </div>
           <div className="doc-paper" style={{ position: "absolute", top: 480, left: REEL.side, right: REEL.side, padding: "18px 14px", color: INK, display: "flex", gap: 12 }}>
@@ -1562,7 +1566,7 @@ export async function Card({ q }: { q: CardQuery }) {
                       <span style={{ width: 36, flexShrink: 0, textAlign: "right", fontSize: 24, fontWeight: 800, color: top ? SEAL : INK }}>{r.rank}</span>
                       <span style={{ width: 76, flexShrink: 0, whiteSpace: "nowrap", fontSize: 34, lineHeight: 1, color: SEAL, fontFamily: brush }}>{r.hanja}</span>
                       <span style={{ flex: 1, minWidth: 0, whiteSpace: "nowrap", fontSize: 23, fontWeight: 800 }}>{r.name.replace("일주", "")}</span>
-                      {r.bestDay && <span style={{ flexShrink: 0, fontSize: 19, fontWeight: 800, color: GOLD }}>{r.bestDay}</span>}
+                      {r.mark && <span style={{ flexShrink: 0, fontSize: 19, fontWeight: 800, color: SEAL }}>{r.mark}</span>}
                     </div>
                   );
                 })}
@@ -1647,24 +1651,26 @@ export async function Card({ q }: { q: CardQuery }) {
             <Label>{head}</Label>
             <p style={{ marginTop: 10, fontSize: 56, fontWeight: 800, lineHeight: 1.25 }}>미리 대비하면 되는 일주</p>
             <p style={{ marginTop: 8, fontSize: 26, color: SOFT, fontFamily: sans }}>
-              {wk ? "나쁜 주가 아니라, 하루만 알고 준비하면 되는 주예요" : "나쁜 달이 아니라, 알고 준비하면 되는 달이에요"}
+              {wk ? `나쁜 주가 아니라, 고비 하루만 넘기면 ${rest}예요` : "나쁜 달이 아니라, 알고 준비하면 되는 달이에요"}
             </p>
             <div style={{ marginTop: 18 }}>
               {rows.slice(-5).map((r) => (
-                <div key={r.no} style={{ display: "flex", gap: 22, padding: "11px 0", borderTop: "1.5px solid rgba(179,38,30,.15)" }}>
+                <div key={r.no} style={{ display: "flex", gap: 22, padding: wk ? "26px 0" : "11px 0", borderTop: "1.5px solid rgba(179,38,30,.15)" }}>
                   <span style={{ width: 110, fontSize: 50, color: SEAL, fontFamily: brush, lineHeight: 1.1 }}>{r.hanja}</span>
                   <div style={{ flex: 1, minWidth: 0, fontFamily: sans }}>
                     <p style={{ fontSize: 33, fontWeight: 800, fontFamily: serif }}>
                       {r.name} <span style={{ marginLeft: 6, fontSize: 22, color: SOFT, fontWeight: 400 }}>{r.rank}위 · {r.hard ?? r.short}</span>
                     </p>
                     {(
-                      [
-                        ["피할 것", r.avoid, SEAL, "rgba(179,38,30,.1)"],
-                        ["이렇게", r.prep, "#3d6656", "rgba(61,102,86,.12)"],
-                        ["좋은 점", r.bright, "#a87a22", "rgba(168,122,34,.14)"],
-                      ] as const
+                      (wk
+                        ? [["피할 것", r.avoid, SEAL, "rgba(179,38,30,.1)"]]
+                        : [
+                            ["피할 것", r.avoid, SEAL, "rgba(179,38,30,.1)"],
+                            ["이렇게", r.prep, "#3d6656", "rgba(61,102,86,.12)"],
+                            ["좋은 점", r.bright, "#a87a22", "rgba(168,122,34,.14)"],
+                          ]) as [string, string, string, string][]
                     ).map(([tag, text, fg, bg]) => (
-                      <p key={tag} style={{ marginTop: 5, display: "flex", alignItems: "flex-start", gap: 12, fontSize: 24, lineHeight: 1.4 }}>
+                      <p key={tag} style={{ marginTop: wk ? 14 : 5, display: "flex", alignItems: "flex-start", gap: 12, fontSize: wk ? 32 : 24, lineHeight: 1.4 }}>
                         <span style={{ flexShrink: 0, width: 92, marginTop: 1, padding: "1px 0", borderRadius: 8, background: bg, color: fg, fontSize: 19, fontWeight: 800, textAlign: "center" }}>{tag}</span>
                         <span style={{ flex: 1, minWidth: 0 }}>{text}</span>
                       </p>
@@ -1690,7 +1696,9 @@ export async function Card({ q }: { q: CardQuery }) {
             <p style={{ marginTop: 4, fontSize: 46, fontWeight: 800 }}>
               {list[0].rank}위 ~ {list.at(-1)!.rank}위
             </p>
-            <p style={{ marginTop: 6, fontSize: 21, color: SOFT, fontFamily: sans }}>내 일주는 프로필 링크에서</p>
+            <p style={{ marginTop: 6, fontSize: 21, color: SOFT, fontFamily: sans }}>
+              {wk ? `요일은 넘겨야 할 고비, 그날 피할 것 · ${rest}까지 버티시옵소서` : "내 일주는 프로필 링크에서"}
+            </p>
             <div style={{ marginTop: 10, display: "flex", gap: 30 }}>
               {cols.map((col, i) => (
                 <div key={i} style={{ flex: 1, minWidth: 0 }}>

@@ -77,8 +77,8 @@ export type IljuMonth = {
   tags: string[];
   // A week's ranking only: the pillar's hardest day in a few words, for the five at the foot.
   hard?: string;
-  // and the short label of its best day ("수"), for the reel's table.
-  bestDay?: string;
+  // and the short label of the day the reel's table marks next to it ("수": the day to get through).
+  mark?: string;
 };
 
 export type MonthPillar = { stem: number; branch: number; from: string; to: string; label: string; term: string; nextTerm: string };
@@ -290,36 +290,106 @@ export function daysOf(dates: string[]): DayIn[] {
   });
 }
 const asDay = (t: string) => t.replace(/이달/g, "그날").replace(/ 달(?=이|$|[,. ])/g, " 날");
-export function rankDays(days: DayIn[]): IljuMonth[] {
+
+// "이 날만 넘기면 연휴": for each pillar the work day it meets hardest (its 고비), and one thing to avoid that day.
+// What to avoid comes from that day's ten god for the pillar and how the day's branch meets its own; the lists
+// run from most to least fitting, and no two pillars of one week get the same line.
+type GodGroup = "재" | "관" | "비겁" | "식상" | "인성";
+const GROUP: Record<TenGod, GodGroup> = { 정재: "재", 편재: "재", 정관: "관", 편관: "관", 비견: "비겁", 겁재: "비겁", 식신: "식상", 상관: "식상", 정인: "인성", 편인: "인성" };
+const AVOID_GOD: Record<TenGod, string[]> = {
+  편재: ['"이건 기회야" 하며 지르는 결제 참기', "솔깃한 투자 얘기에 바로 답하지 않기", "기분 내서 한턱 크게 쏘지 않기", "할인한다고 안 살 것까지 담지 않기", "지갑 열기 전에 하루만 미루기", "남의 대박 얘기에 흔들리지 않기"],
+  정재: ["계약서·견적서 금액 두 번 보기", "자잘한 구독료·배달비 새는 것 막기", "돈 얘기는 말 말고 글로 남기기", "카드값·이체 날짜 놓치지 않기", "영수증·정산 미루지 않기", "작은 돈 계산 흐리게 넘기지 않기"],
+  편관: ["남의 일까지 \"제가 할게요\" 하지 않기", "무리한 야근 떠맡지 않기", "마감 직전까지 미루지 않기", "윗사람 앞에서 억지로 버티지 않기", "퇴근 시간 넘겨 붙잡히지 않기", "책임질 말 함부로 하지 않기", "급한 일부터 받지 말고 순서 정하기", "몸이 보내는 신호 무시하지 않기", "남 눈치에 내 일 밀리지 않기"],
+  정관: ["지각·회의 시간 놓치지 않기", "결재 서류 대충 올리지 않기", "규칙 건너뛰는 지름길 타지 않기", "평가 자리에서 남 탓하지 않기", "보고는 미루지 말고 먼저 하기", "약속한 기한 넘기지 않기"],
+  상관: ["회의에서 한마디 덧붙이지 않기", "윗사람 말에 말대꾸하지 않기", "메신저에 뒷말 남기지 않기", "할 말은 글로 한 번 정리하고 하기", "농담이 선 넘지 않게 하기", "남의 실수 공개적으로 짚지 않기"],
+  식신: ["일 벌이지 말고 하던 것 하나 끝내기", "점심·야식 과식하지 않기", "퇴근 후 약속 두 개 잡지 않기", "\"이따 하지\" 하고 미루지 않기", "늦게까지 놀다 다음 날 버리지 않기"],
+  겁재: ["동료에게 돈 빌려주지 않기", "더치페이 미루다 손해 보지 않기", "경쟁자에게 내 계획 먼저 말하지 않기", "남 따라 충동구매하지 않기", "남의 성과에 배 아파하지 않기", "N빵 계산 흐리게 넘기지 않기", "보증·대신 결제 해 주지 않기"],
+  비견: ["동료와 공(功) 다투지 않기", "혼자 다 하려 들지 않기", "친구 부탁 덜컥 들어주지 않기", "고집 꺾고 한 번 양보하기", "내 방식만 맞다고 우기지 않기"],
+  편인: ["혼자 끙끙 앓지 않기", "읽씹에 괜한 의심 키우지 않기", "새벽까지 검색하다 늦잠 자지 않기", "딴생각에 빠져 일 미루지 않기", "확인 안 된 소문 믿지 않기", "혼자 결론 내리고 서운해하지 않기"],
+  정인: ["남에게 결정 미루지 않기", "부탁받은 일 깜빡하지 않기", "편하다고 할 일 미루지 않기", "조언만 듣고 그대로 두지 않기", "도와준 사람에게 고맙다는 말 미루지 않기", "남의 말만 믿고 확인 건너뛰지 않기"],
+};
+// A clash (충) is the sharpest thing that day: its own lines come first, by what kind of force clashes.
+const AVOID_CLASH: Record<GodGroup, string[]> = {
+  재: ["기분 따라 장바구니 결제 멈추기", "카드 한도까지 긁지 않기", "돈 문제로 언성 높이지 않기"],
+  관: ["상사 지적에 바로 받아치지 않기", "윗사람과 정면으로 부딪히지 않기", "홧김에 퇴사 얘기 꺼내지 않기"],
+  비겁: ["친구와 돈 문제로 다투지 않기", "동료와 자존심 싸움하지 않기", "단톡방에서 편 가르지 않기"],
+  식상: ["단톡방에 감정 섞인 말 올리지 않기", "연인과 사소한 걸로 다투지 않기", "SNS에 하소연 올리지 않기"],
+  인성: ["가족과 아침부터 다투지 않기", "참다가 한꺼번에 터뜨리지 않기", "괜한 서운함 쌓아 두지 않기"],
+};
+// 寅申·巳亥 are the moving branches (역마): when they clash, the road comes first.
+const AVOID_MOVE = ["출퇴근길 서두르지 않기", "운전할 때 휴대폰 보지 않기", "약속 장소·시간 두 번 확인하기"];
+const AVOID_REL: Record<string, string[]> = {
+  형: ["메일·문서 오타 두 번 확인하기", "감정 섞인 말은 삼키기"],
+  원진: ["속으로 꿍한 채 퇴근하지 않기", "괜히 예민해진 말투 조심하기"],
+  파: ["잡힌 약속 갑자기 바꾸지 않기"],
+  해: ["남의 일에 끼어들지 않기"],
+};
+
+const AVOID_ALL = [...new Set([...Object.values(AVOID_GOD).flat(), ...Object.values(AVOID_CLASH).flat(), ...AVOID_MOVE, ...Object.values(AVOID_REL).flat()])];
+
+// rest: what comes after the work days ("연휴", "주말"); work: indexes of `days` that are work days (all by default).
+export function rankDays(days: DayIn[], opts: { work?: number[]; rest?: string } = {}): IljuMonth[] {
+  const work = opts.work?.length ? opts.work : days.map((_, i) => i);
+  const rest = opts.rest ?? "주말";
   const rows = SIXTY.map(({ no, stem, branch }) => {
     const hanja = `${STEMS[stem]}${BRANCHES[branch]}`;
     const per = days.map((d) => meet(stem, branch, d.stem, d.branch));
     const bi = per.reduce((b, m, i) => (m.score > per[b].score ? i : b), 0);
-    const wi = per.reduce((b, m, i) => (m.score < per[b].score ? i : b), 0);
-    const best = per[bi];
-    const worst = per[wi];
+    const ci = work.reduce((b, i) => (per[i].score < per[b].score ? i : b), work[0]);
+    const crux = per[ci];
+    const day = days[ci];
+    const god = tenGod(stem, day.stem);
+    const rel = meetings(branch, day.branch);
+    const moving = (branch === 2 || branch === 8 || branch === 5 || branch === 11) && rel.includes("충");
+    const same = (Object.keys(GROUP) as TenGod[]).filter((g) => g !== god && GROUP[g] === GROUP[god]);
+    const candidates = [
+      ...(moving ? AVOID_MOVE : []),
+      ...(rel.includes("충") ? AVOID_CLASH[GROUP[god]] : []),
+      ...AVOID_GOD[god],
+      ...rel.flatMap((m) => AVOID_REL[m] ?? []),
+      ...AVOID_CLASH[GROUP[god]],
+      // Still taken: the same kind of force's other lines, then any line left, so no two pillars share one.
+      ...same.flatMap((g) => AVOID_GOD[g]),
+      ...AVOID_ALL,
+    ];
     return {
-      no,
-      stem,
-      branch,
-      hanja,
-      name: `${STEMS_KO[stem]}${BRANCHES_KO[branch]}일주`,
-      image: ILJU_IMAGE[hanja],
-      rank: 0,
-      score: Math.round(per.reduce((a, m) => a + m.score, 0) * 10) / 10,
-      line: `${days[bi].label}이 가장 좋아요. ${asDay(best.line)}`,
-      short: `${days[bi].label} · ${asDay(best.short)}`,
-      tips: best.tips.map(asDay),
-      avoid: asDay(worst.avoid),
-      prep: asDay(worst.prep),
-      bright: asDay(worst.bright),
-      tags: best.tags,
-      // A hard day's own words: its clash when it has one, else what its ten god asks for (never "귀인이 돕는 날").
-      hard: `${days[wi].label} · ${asDay(worst.tags.some((t) => t === "충" || t === "형" || t === "천간충") ? worst.short : GOD_ALONE[tenGod(stem, days[wi].stem)])}`,
-      bestDay: days[bi].short,
+      row: {
+        no,
+        stem,
+        branch,
+        hanja,
+        name: `${STEMS_KO[stem]}${BRANCHES_KO[branch]}일주`,
+        image: ILJU_IMAGE[hanja],
+        rank: 0,
+        score: Math.round(per.reduce((a, m) => a + m.score, 0) * 10) / 10,
+        line: "",
+        short: "",
+        tips: per[bi].tips.map(asDay),
+        avoid: asDay(crux.avoid),
+        prep: asDay(crux.prep),
+        bright: asDay(crux.bright),
+        tags: per[bi].tags,
+        hard: "",
+        mark: day.short,
+      } as IljuMonth,
+      crux: per[ci].score,
+      day,
+      candidates,
     };
   });
-  rows.sort((a, b) => b.score - a.score || a.no - b.no);
-  rows.forEach((r, i) => (r.rank = i + 1));
-  return rows;
+  // Hardest days pick first, so the sharpest lines go where they fit best; then every pillar takes its first
+  // line not yet used this week.
+  const used = new Set<string>();
+  for (const x of [...rows].sort((a, b) => a.crux - b.crux)) {
+    const avoid = x.candidates.find((c) => !used.has(c)) ?? x.candidates[0];
+    used.add(avoid);
+    x.row.short = `${x.day.short} · ${avoid}`;
+    x.row.hard = `${x.day.label}만 넘기면 ${rest}`;
+    x.row.avoid = avoid;
+    x.row.line = `${x.day.label}만 넘기면 ${rest}예요. 그날은 ${avoid}.`;
+  }
+  const out = rows.map((x) => x.row);
+  out.sort((a, b) => b.score - a.score || a.no - b.no);
+  out.forEach((r, i) => (r.rank = i + 1));
+  return out;
 }
