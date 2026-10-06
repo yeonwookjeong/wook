@@ -291,7 +291,7 @@ export function daysOf(dates: string[]): DayIn[] {
 }
 const asDay = (t: string) => t.replace(/이달/g, "그날").replace(/ 달(?=이|$|[,. ])/g, " 날");
 
-// "이 날만 넘기면 연휴": for each pillar the work day it meets hardest (its 고비), and one thing to avoid that day.
+// For each pillar the work day it meets hardest (its 고비), and one thing to avoid that day.
 // What to avoid comes from that day's ten god for the pillar and how the day's branch meets its own; the lists
 // run from most to least fitting, and no two pillars of one week get the same line.
 type GodGroup = "재" | "관" | "비겁" | "식상" | "인성";
@@ -327,10 +327,9 @@ const AVOID_REL: Record<string, string[]> = {
 
 const AVOID_ALL = [...new Set([...Object.values(AVOID_GOD).flat(), ...Object.values(AVOID_CLASH).flat(), ...AVOID_MOVE, ...Object.values(AVOID_REL).flat()])];
 
-// rest: what comes after the work days ("연휴", "주말"); work: indexes of `days` that are work days (all by default).
-export function rankDays(days: DayIn[], opts: { work?: number[]; rest?: string } = {}): IljuMonth[] {
+// work: indexes of `days` that are work days (all by default); the 고비 is picked among them.
+export function rankDays(days: DayIn[], opts: { work?: number[] } = {}): IljuMonth[] {
   const work = opts.work?.length ? opts.work : days.map((_, i) => i);
-  const rest = opts.rest ?? "주말";
   const rows = SIXTY.map(({ no, stem, branch }) => {
     const hanja = `${STEMS[stem]}${BRANCHES[branch]}`;
     const per = days.map((d) => meet(stem, branch, d.stem, d.branch));
@@ -384,9 +383,10 @@ export function rankDays(days: DayIn[], opts: { work?: number[]; rest?: string }
     const avoid = x.candidates.find((c) => !used.has(c)) ?? x.candidates[0];
     used.add(avoid);
     x.row.short = `${x.day.short} · ${avoid}`;
-    x.row.hard = `${x.day.label}만 넘기면 ${rest}`;
+    // "수요일만 넘기면 연휴" reads as if the holiday began on Thursday: the day is named as the week's 고비 only.
+    x.row.hard = `${x.day.label}이 고비`;
     x.row.avoid = avoid;
-    x.row.line = `${x.day.label}만 넘기면 ${rest}예요. 그날은 ${avoid}.`;
+    x.row.line = `${x.day.label}이 이번 주 고비예요. 그날은 ${avoid}.`;
   }
   const out = rows.map((x) => x.row);
   out.sort((a, b) => b.score - a.score || a.no - b.no);

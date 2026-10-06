@@ -1518,11 +1518,11 @@ export async function Card({ q }: { q: CardQuery }) {
     if (!mp) return null;
     // ?wk=2026-10-05,…,2026-10-11: the same slides for the seven days of one week instead of a month.
     const wk = typeof q.wk === "string" && /^\d{4}-\d{2}-\d{2}(,\d{4}-\d{2}-\d{2}){0,6}$/.test(q.wk) ? daysOf(q.wk.split(",")) : null;
-    // &wd=…: the work days among them (the 고비 is picked from these), &rest=연휴: what follows them (주말 by default).
+    // &wd=…: the work days among them (the 고비 is picked from these), &rest=연휴: what follows them, for the list pages (주말 by default).
     const wd = typeof q.wd === "string" ? q.wd.split(",") : [];
     const wkDates = typeof q.wk === "string" ? q.wk.split(",") : [];
     const rest = typeof q.rest === "string" && q.rest ? q.rest : "주말";
-    const rows = wk ? rankDays(wk, { work: wkDates.flatMap((d, i) => (wd.includes(d) ? [i] : [])), rest }) : rankMonth(mp.stem, mp.branch);
+    const rows = wk ? rankDays(wk, { work: wkDates.flatMap((d, i) => (wd.includes(d) ? [i] : [])) }) : rankMonth(mp.stem, mp.branch);
     const span = wk ? `${wk[0].md}(${wk[0].short}) ~ ${wk.at(-1)!.md}(${wk.at(-1)!.short})` : `${mp.term} ${mp.from} ~ ${mp.to}`;
     const label = wk ? (q.wl ? String(q.wl) : "이번 주") : mp.label;
     const unit = wk ? "주" : "달";
@@ -1609,7 +1609,7 @@ export async function Card({ q }: { q: CardQuery }) {
               {q.say ? String(q.say) : wk ? "이번 주 1위!" : "이달의 1위!"}
             </div>
           </div>
-          <ThumbTitle top={`60일주 운세 랭킹 · ${wk ? label : mp.term} ${wk ? span : `${mp.from} ~ ${mp.to}`}`} main={`${wk ? "이번 주" : mp.label} 1위 · ${top.name}`} />
+          <ThumbTitle top={wk ? `60일주 운세 랭킹 · ${span}` : `60일주 운세 랭킹 · ${mp.term} ${mp.from} ~ ${mp.to}`} main={`${wk ? "이번 주" : mp.label} 1위 · ${top.name}`} />
         </Frame>
       );
     }
@@ -1651,7 +1651,7 @@ export async function Card({ q }: { q: CardQuery }) {
             <Label>{head}</Label>
             <p style={{ marginTop: 10, fontSize: 56, fontWeight: 800, lineHeight: 1.25 }}>미리 대비하면 되는 일주</p>
             <p style={{ marginTop: 8, fontSize: 26, color: SOFT, fontFamily: sans }}>
-              {wk ? `나쁜 주가 아니라, 고비 하루만 넘기면 ${rest}예요` : "나쁜 달이 아니라, 알고 준비하면 되는 달이에요"}
+              {wk ? "나쁜 주가 아니라, 고비 하루만 조심하면 되는 주예요" : "나쁜 달이 아니라, 알고 준비하면 되는 달이에요"}
             </p>
             <div style={{ marginTop: 18 }}>
               {rows.slice(-5).map((r) => (
