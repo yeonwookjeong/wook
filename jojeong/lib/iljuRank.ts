@@ -437,3 +437,28 @@ export function rankDays(days: DayIn[], opts: { work?: number[] } = {}): IljuMon
   }
   return rows.map((x) => x.row);
 }
+
+// A slide shows several pillars side by side: no line may appear twice on it. Tips already shown above are
+// dropped, and a repeated thing to avoid is swapped for the next one its own ten god for the period gives.
+export function distinctOnSlide(rows: IljuMonth[], periodStem?: number): IljuMonth[] {
+  const seenTips = new Set<string>();
+  const seenAvoid = new Set<string>();
+  const seenTail = new Set<string>();
+  return rows.map((r) => {
+    const tips = r.tips.filter((t) => !seenTips.has(t));
+    tips.forEach((t) => seenTips.add(t));
+    // "X하고, Y한 달이에요.": when Y was said above, the pillar's own ten-god sentence instead.
+    const tail = r.line.includes(", ") ? r.line.slice(r.line.indexOf(", ") + 2) : "";
+    const line = tail && seenTail.has(tail) && periodStem !== undefined ? `${GOD_LINE[tenGod(r.stem, periodStem)]}.` : r.line;
+    if (tail) seenTail.add(tail);
+    let avoid = r.avoid;
+    if (seenAvoid.has(avoid) && periodStem !== undefined) {
+      const god = tenGod(r.stem, periodStem);
+      // and not one that says what the advice next to it says ("혼자 끙끙" twice in one row)
+      const head = r.prep.split(" ")[0];
+      avoid = [...AVOID_GOD[god], ...AVOID_CLASH[GROUP[god]], ...AVOID_ALL].find((a) => !seenAvoid.has(a) && !a.startsWith(head)) ?? avoid;
+    }
+    seenAvoid.add(avoid);
+    return { ...r, tips, avoid, line };
+  });
+}
