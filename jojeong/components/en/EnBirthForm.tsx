@@ -21,6 +21,7 @@ export default function EnBirthForm() {
   const [hour, setHour] = useState("");
   const [minute, setMinute] = useState("");
   const [pm, setPm] = useState(false);
+  const [sex, setSex] = useState<"" | "f" | "m">("");
   const [noTime, setNoTime] = useState(false);
   const [query, setQuery] = useState("");
   const [city, setCity] = useState<City | null>(null);
@@ -41,6 +42,7 @@ export default function EnBirthForm() {
     const date = `${y}-${pad(m)}-${pad(d)}`;
     const time = noTime ? "" : `${pad((Number(hour) % 12) + (pm ? 12 : 0))}:${pad(Number(minute))}`;
     const q = new URLSearchParams({ d: date });
+    if (sex) q.set("g", sex);
     if (!noTime) {
       q.set("t", time);
       q.set("c", place!.id);
@@ -141,6 +143,24 @@ export default function EnBirthForm() {
           <span className="text-[11px] font-normal text-ink-soft">Used to correct your birth time to the sun&rsquo;s time where you were born.</span>
         </div>
       )}
+      <fieldset className="flex flex-col gap-1 text-[13px] font-bold">
+        <legend className="mb-1">
+          Sex at birth <span className="font-normal text-ink-soft">(optional)</span>
+        </legend>
+        <div className="flex overflow-hidden rounded border border-ink/20" role="group" aria-label="Sex at birth">
+          {([["f", "Female"], ["m", "Male"], ["", "Skip"]] as const).map(([v, label]) => (
+            <button
+              key={label}
+              type="button"
+              onClick={() => setSex(v)}
+              className={`flex-1 py-2 font-bold ${sex === v ? "bg-ink text-hanji" : "bg-white/70 text-ink-soft"}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <span className="text-[11px] font-normal text-ink-soft">Only used to set the direction of your ten-year luck cycles, as tradition does.</span>
+      </fieldset>
       {error && <p className="text-[13px] font-bold text-seal">{error}</p>}
       <button type="submit" className="mt-1 rounded-full bg-seal px-5 py-3 font-bold text-hanji">
         Read my four pillars · free
