@@ -28,6 +28,18 @@ const b64 = (dataUrl: string | undefined, mime: string) => {
   return { mimeType: m[1], data: m[2] };
 };
 
+// A 2K PNG can pass Vercel's 4.5 MB response limit once in base64: re-encoded as a JPEG it is a fraction of
+// that. If sharp is not there, the picture goes back as it came.
+async function toJpeg(data: string, mime: string): Promise<{ data: string; mime: string }> {
+  try {
+    const { default: sharp } = await import("sharp");
+    const buf = await sharp(Buffer.from(data, "base64")).jpeg({ quality: 90, mozjpeg: true }).toBuffer();
+    return { data: buf.toString("base64"), mime: "image/jpeg" };
+  } catch {
+    return { data, mime };
+  }
+}
+
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => ({}))) as Body;
   const photo = b64(body.photo, "image/jpeg");
@@ -70,8 +82,9 @@ export async function POST(request: Request) {
           { error: "화원이 이 그림은 그리지 못하겠다고 하네요. 다시 찍어 보세요.", reason: res.candidates?.[0]?.finishReason ?? null },
           { status: 422 },
         );
+      const out = await toJpeg(img.data, img.mimeType ?? "image/png");
       return Response.json({
-        image: `data:${img.mimeType ?? "image/png"};base64,${img.data}`,
+        image: `data:${out.mime};base64,${out.data}`,
         model,
         ms: Date.now() - started,
         usage: { input: u?.promptTokenCount ?? null, output: u?.candidatesTokenCount ?? null },
