@@ -24,6 +24,8 @@ export type Order = {
   // A set covers several reports for the same chart; `product` is then the first of them.
   set?: SetId;
   bundle?: ProductId[];
+  // A set: the report page it was bought on (orders made before this was kept have none).
+  from?: ProductId;
   amount: number;
   // "canceled": refunded in the Toss admin (learned through the webhook); the report closes again.
   status: "ready" | "paid" | "canceled";
@@ -64,7 +66,13 @@ export async function paidOrders(limit = 5000): Promise<Order[]> {
   return raws.flatMap((raw) => (raw ? [JSON.parse(raw) as Order] : []));
 }
 
-export async function createOrder(product: ProductId, req: JobRequest, who: string, amount: number, set?: { set: SetId; bundle: ProductId[] }): Promise<Order> {
+export async function createOrder(
+  product: ProductId,
+  req: JobRequest,
+  who: string,
+  amount: number,
+  set?: { set: SetId; bundle: ProductId[]; from?: ProductId },
+): Promise<Order> {
   // Toss wants 6–64 characters of [A-Za-z0-9_-=]; unguessable, since the id is also the link to the report.
   const src = (await cookies()).get(SRC_COOKIE)?.value;
   const order: Order = {
