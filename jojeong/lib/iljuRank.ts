@@ -77,8 +77,9 @@ export type IljuMonth = {
   tags: string[];
   // A week's ranking only: the pillar's hardest day in a few words, for the five at the foot.
   hard?: string;
-  // and the short label of the day the reel's table marks next to it ("수": the day to get through).
+  // and the day(s) the reel's table marks next to it ("수", "화·목"), a 고비 (hard) or the week's good day (good).
   mark?: string;
+  kind?: "hard" | "good";
 };
 
 export type MonthPillar = { stem: number; branch: number; from: string; to: string; label: string; term: string; nextTerm: string };
@@ -327,30 +328,67 @@ const AVOID_REL: Record<string, string[]> = {
 
 const AVOID_ALL = [...new Set([...Object.values(AVOID_GOD).flat(), ...Object.values(AVOID_CLASH).flat(), ...AVOID_MOVE, ...Object.values(AVOID_REL).flat()])];
 
-// work: indexes of `days` that are work days (all by default); the 고비 is picked among them.
+// What to make of a good work day, by that day's ten god for the pillar; a 합, 귀인 or 천간합 that day comes first.
+const TAKE_GOD: Record<TenGod, string[]> = {
+  정재: ["밀린 정산·적금 시작하기", "계약·결제는 이날로 잡기", "가계부 한 번 정리하기", "자동이체·구독 한 번 정리하기", "받을 돈 먼저 챙기기"],
+  편재: ["들어온 부업·거래 제안 들어 보기", "미뤄 둔 중고 판매 올리기", "새 사람 소개 자리에 나가기", "미뤄 둔 영업 연락 돌리기", "작은 투자 공부 시작하기"],
+  정관: ["보고·결재는 이날 올리기", "발표·면접은 이날로 잡기", "윗사람에게 먼저 의견 내기", "평가받을 결과물 이날 내기", "공식 서류·신청 이날 넣기"],
+  편관: ["미뤄 둔 어려운 일 정면으로 끝내기", "맡은 일 하나 확실히 매듭짓기", "버거운 숙제부터 먼저 하기", "운동 강도 한 단계 올리기", "피하던 통화 먼저 걸기"],
+  식신: ["미뤄 둔 취미 하나 시작하기", "맛집 점심 약속 잡기", "떠오른 아이디어 바로 적어 두기", "퇴근 후 좋아하는 것 하나 하기", "요리 하나 새로 해 보기"],
+  상관: ["기획안 먼저 던져 보기", "하고 싶던 말 글로 정리해 전하기", "내 작업물 밖에 보여 주기", "SNS에 내 이야기 하나 올리기", "새 방식 하나 시도해 보기"],
+  정인: ["선배에게 조언 구하기", "자격증·공부 첫 장 펴기", "믿는 사람에게 고민 털어놓기", "부모님께 안부 전화 드리기", "배우고 싶던 강의 신청하기"],
+  편인: ["혼자 깊게 파고들 일 하기", "읽고 싶던 책 첫 장 펴기", "조용히 계획 다시 짜기", "혼자 산책하며 생각 정리하기", "다이어리 한 장 채우기"],
+  비견: ["동료와 같이 하는 일 벌이기", "같이 운동할 사람 찾기", "오래 못 본 친구에게 연락하기", "팀 점심 먼저 제안하기", "같이 공부할 사람 모으기"],
+  겁재: ["경쟁 PT·발표에 먼저 나서기", "실력 보여 줄 자리 잡기", "미뤄 둔 도전 신청하기", "연봉·조건 이야기 꺼내 보기", "승부 보는 일 이날 하기"],
+};
+const TAKE_TAG: Record<string, string[]> = {
+  귀인: ["막힌 일은 이날 도움 청하기", "어려운 부탁은 이날 꺼내기"],
+  합: ["협업·모임 자리에 나가기", "어색했던 사람과 밥 한 끼 하기"],
+  천간합: ["들어온 제안 한 번 받아 보기", "반가운 연락에 먼저 답하기"],
+};
+const TAKE_ALL = [...new Set([...Object.values(TAKE_TAG).flat(), ...Object.values(TAKE_GOD).flat()])];
+
+// The work days that really clash with a pillar: its day branch met head-on (충), the clash everyone reads. A 형 or
+// a 천간충 alone is too mild to call a 고비; a 천간충 on the same day makes it the sharpest kind (천극지충).
+function hardDays(stem: number, branch: number, days: DayIn[], work: number[]) {
+  return work
+    .filter((i) => meetings(branch, days[i].branch).includes("충"))
+    .map((i) => ({ i, sev: 3 + (stemClash(stem, days[i].stem) ? 2 : 0) }));
+}
+
+// work: indexes of `days` that are work days (all by default). A pillar with a real clash on a work day gets its
+// 고비 (every such day named) and one thing to avoid on the sharpest; one without gets its best work day and one
+// thing to make of it. No two pillars of a week share a line.
 export function rankDays(days: DayIn[], opts: { work?: number[] } = {}): IljuMonth[] {
   const work = opts.work?.length ? opts.work : days.map((_, i) => i);
   const rows = SIXTY.map(({ no, stem, branch }) => {
     const hanja = `${STEMS[stem]}${BRANCHES[branch]}`;
     const per = days.map((d) => meet(stem, branch, d.stem, d.branch));
-    const bi = per.reduce((b, m, i) => (m.score > per[b].score ? i : b), 0);
-    const ci = work.reduce((b, i) => (per[i].score < per[b].score ? i : b), work[0]);
-    const crux = per[ci];
-    const day = days[ci];
+    const hard = hardDays(stem, branch, days, work);
+    const sharp = hard.length ? hard.reduce((a, b) => (b.sev > a.sev || (b.sev === a.sev && per[b.i].score < per[a.i].score) ? b : a)).i : -1;
+    const good = work.reduce((b, i) => (per[i].score > per[b].score ? i : b), work[0]);
+    const at = sharp >= 0 ? sharp : good;
+    const day = days[at];
     const god = tenGod(stem, day.stem);
     const rel = meetings(branch, day.branch);
-    const moving = (branch === 2 || branch === 8 || branch === 5 || branch === 11) && rel.includes("충");
-    const same = (Object.keys(GROUP) as TenGod[]).filter((g) => g !== god && GROUP[g] === GROUP[god]);
-    const candidates = [
-      ...(moving ? AVOID_MOVE : []),
-      ...(rel.includes("충") ? AVOID_CLASH[GROUP[god]] : []),
-      ...AVOID_GOD[god],
-      ...rel.flatMap((m) => AVOID_REL[m] ?? []),
-      ...AVOID_CLASH[GROUP[god]],
-      // Still taken: the same kind of force's other lines, then any line left, so no two pillars share one.
-      ...same.flatMap((g) => AVOID_GOD[g]),
-      ...AVOID_ALL,
-    ];
+    let candidates: string[];
+    if (sharp >= 0) {
+      const moving = (branch === 2 || branch === 8 || branch === 5 || branch === 11) && rel.includes("충");
+      const same = (Object.keys(GROUP) as TenGod[]).filter((g) => g !== god && GROUP[g] === GROUP[god]);
+      candidates = [
+        ...(moving ? AVOID_MOVE : []),
+        ...(rel.includes("충") || stemClash(stem, day.stem) ? AVOID_CLASH[GROUP[god]] : []),
+        ...AVOID_GOD[god],
+        ...rel.flatMap((m) => AVOID_REL[m] ?? []),
+        ...AVOID_CLASH[GROUP[god]],
+        // Still taken: the same kind of force's other lines, then any line left, so no two pillars share one.
+        ...same.flatMap((g) => AVOID_GOD[g]),
+        ...AVOID_ALL,
+      ];
+    } else {
+      candidates = [...per[at].tags.flatMap((t) => TAKE_TAG[t] ?? []), ...TAKE_GOD[god], ...TAKE_ALL];
+    }
+    const sorted = [...hard].sort((a, b) => a.i - b.i);
     return {
       row: {
         no,
@@ -363,30 +401,38 @@ export function rankDays(days: DayIn[], opts: { work?: number[] } = {}): IljuMon
         score: Math.round(per.reduce((a, m) => a + m.score, 0) * 10) / 10,
         line: "",
         short: "",
-        tips: per[bi].tips.map(asDay),
-        avoid: asDay(crux.avoid),
-        prep: asDay(crux.prep),
-        bright: asDay(crux.bright),
-        tags: per[bi].tags,
-        hard: "",
-        mark: day.short,
+        tips: per[good].tips.map(asDay),
+        avoid: "",
+        prep: asDay(per[at].prep),
+        bright: asDay(per[at].bright),
+        tags: per[at].tags,
+        kind: sharp >= 0 ? "hard" : "good",
+        // the reel marks the 고비 day(s), or the good day
+        mark: sharp >= 0 ? sorted.map((x) => days[x.i].short).join("·") : day.short,
       } as IljuMonth,
-      crux: per[ci].score,
+      // Sharper clashes choose their line first, then the best good days.
+      order: sharp >= 0 ? -10 - hard.reduce((a, x) => a + x.sev, 0) : -per[at].score,
+      hardNames: sorted.map((x) => days[x.i].label).join("·"),
       day,
       candidates,
     };
   });
-  // Hardest days pick first, so the sharpest lines go where they fit best; then every pillar takes its first
-  // line not yet used this week.
   const used = new Set<string>();
-  for (const x of [...rows].sort((a, b) => a.crux - b.crux)) {
-    const avoid = x.candidates.find((c) => !used.has(c)) ?? x.candidates[0];
-    used.add(avoid);
-    x.row.short = `${x.day.short} · ${avoid}`;
-    // "수요일만 넘기면 연휴" reads as if the holiday began on Thursday: the day is named as the week's 고비 only.
-    x.row.hard = `${x.day.label}이 고비`;
-    x.row.avoid = avoid;
-    x.row.line = `${x.day.label}이 이번 주 고비예요. 그날은 ${avoid}.`;
+  for (const x of [...rows].sort((a, b) => a.order - b.order)) {
+    const pick = x.candidates.find((c) => !used.has(c)) ?? x.candidates[0];
+    used.add(pick);
+    if (x.row.kind === "hard") {
+      x.row.avoid = pick;
+      const sharpest = x.order <= -15;
+      x.row.hard = `${x.hardNames}이 ${sharpest ? "가장 센 고비" : "고비"}`;
+      x.row.short = `${x.row.mark} 고비 · ${pick}`;
+      x.row.line = `${x.hardNames}이 이번 주 ${sharpest ? "가장 센 " : ""}고비예요. 그날은 ${pick}.`;
+    } else {
+      x.row.avoid = pick;
+      x.row.hard = `${x.day.label}이 좋은 날`;
+      x.row.short = `${x.day.short} 좋음 · ${pick}`;
+      x.row.line = `부딪히는 날 없는 한 주예요. ${x.day.label}엔 ${pick}.`;
+    }
   }
   const out = rows.map((x) => x.row);
   out.sort((a, b) => b.score - a.score || a.no - b.no);
