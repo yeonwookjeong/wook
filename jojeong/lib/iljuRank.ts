@@ -75,6 +75,10 @@ export type IljuMonth = {
   prep: string; // what to do instead,
   bright: string; // and what still goes well
   tags: string[];
+  // A week's ranking only: the pillar's hardest day in a few words, for the five at the foot.
+  hard?: string;
+  // and the short label of its best day ("수"), for the reel's table.
+  bestDay?: string;
 };
 
 export type MonthPillar = { stem: number; branch: number; from: string; to: string; label: string; term: string; nextTerm: string };
@@ -259,6 +263,61 @@ export function rankMonth(ms: number, mb: number): IljuMonth[] {
     const hanja = `${STEMS[stem]}${BRANCHES[branch]}`;
     const m = meet(stem, branch, ms, mb);
     return { no, stem, branch, hanja, name: `${STEMS_KO[stem]}${BRANCHES_KO[branch]}일주`, image: ILJU_IMAGE[hanja], rank: 0, ...m };
+  });
+  rows.sort((a, b) => b.score - a.score || a.no - b.no);
+  rows.forEach((r, i) => (r.rank = i + 1));
+  return rows;
+}
+
+// The sixty for a run of days (a short work week): each day's pillar meets every pillar the way a month does,
+// the scores add up, and the words come from the pillar's best day (its hardest day for the five at the foot).
+// The month's sentences say "달"; here they say "날".
+export type DayIn = { stem: number; branch: number; label: string; short: string; md: string }; // "수요일", "수", "10/7"
+const WEEKDAY = ["일", "월", "화", "수", "목", "금", "토"];
+// "2026-10-07" → that day's pillar (at noon, KST calendar date) and its weekday.
+export function daysOf(dates: string[]): DayIn[] {
+  return dates.map((iso) => {
+    const [y, m, d] = iso.split("-").map(Number);
+    const ec = Solar.fromYmdHms(y, m, d, 12, 0, 0).getLunar().getEightChar();
+    const wd = WEEKDAY[new Date(Date.UTC(y, m - 1, d)).getUTCDay()];
+    return {
+      stem: STEMS.indexOf(ec.getDayGan() as (typeof STEMS)[number]),
+      branch: BRANCHES.indexOf(ec.getDayZhi() as (typeof BRANCHES)[number]),
+      label: `${wd}요일`,
+      short: wd,
+      md: `${m}/${d}`,
+    };
+  });
+}
+const asDay = (t: string) => t.replace(/이달/g, "그날").replace(/ 달(?=이|$|[,. ])/g, " 날");
+export function rankDays(days: DayIn[]): IljuMonth[] {
+  const rows = SIXTY.map(({ no, stem, branch }) => {
+    const hanja = `${STEMS[stem]}${BRANCHES[branch]}`;
+    const per = days.map((d) => meet(stem, branch, d.stem, d.branch));
+    const bi = per.reduce((b, m, i) => (m.score > per[b].score ? i : b), 0);
+    const wi = per.reduce((b, m, i) => (m.score < per[b].score ? i : b), 0);
+    const best = per[bi];
+    const worst = per[wi];
+    return {
+      no,
+      stem,
+      branch,
+      hanja,
+      name: `${STEMS_KO[stem]}${BRANCHES_KO[branch]}일주`,
+      image: ILJU_IMAGE[hanja],
+      rank: 0,
+      score: Math.round(per.reduce((a, m) => a + m.score, 0) * 10) / 10,
+      line: `${days[bi].label}이 가장 좋아요. ${asDay(best.line)}`,
+      short: `${days[bi].label} · ${asDay(best.short)}`,
+      tips: best.tips.map(asDay),
+      avoid: asDay(worst.avoid),
+      prep: asDay(worst.prep),
+      bright: asDay(worst.bright),
+      tags: best.tags,
+      // A hard day's own words: its clash when it has one, else what its ten god asks for (never "귀인이 돕는 날").
+      hard: `${days[wi].label} · ${asDay(worst.tags.some((t) => t === "충" || t === "형" || t === "천간충") ? worst.short : GOD_ALONE[tenGod(stem, days[wi].stem)])}`,
+      bestDay: days[bi].short,
+    };
   });
   rows.sort((a, b) => b.score - a.score || a.no - b.no);
   rows.forEach((r, i) => (r.rank = i + 1));

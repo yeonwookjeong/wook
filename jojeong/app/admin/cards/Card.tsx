@@ -4,7 +4,7 @@ import { ILGAN, ILJU_TAG_TEXT, iljuFacts, jiaziNo, nextDayOf, stemCure, stemMatc
 import { josa } from "@/lib/josa";
 import { pickDays } from "@/lib/taekil";
 import { figureById, figureChart } from "@/lib/figures";
-import { ILJU_IMAGE, monthPillarOf, rankMonth, SIXTY, type IljuMonth } from "@/lib/iljuRank";
+import { daysOf, ILJU_IMAGE, monthPillarOf, rankDays, rankMonth, SIXTY, type IljuMonth } from "@/lib/iljuRank";
 import { ANIMALS, BRANCHES, BRANCHES_KO, STEMS, STEMS_KO } from "@/lib/saju";
 
 // Social cards, 1080×1440 (Instagram 3:4, the profile grid's own shape, so nothing is cropped there), drawn in the site's own look. Owner only. Each slide is one URL
@@ -1516,8 +1516,13 @@ export async function Card({ q }: { q: CardQuery }) {
     const m = Number(q.m ?? 10);
     const mp = monthPillarOf(y, m);
     if (!mp) return null;
-    const rows = rankMonth(mp.stem, mp.branch);
-    const head = `60일주 운세 랭킹 · ${mp.label} (${mp.term}~${mp.nextTerm})`;
+    // ?wk=2026-10-05,…,2026-10-11: the same slides for the seven days of one week instead of a month.
+    const wk = typeof q.wk === "string" && /^\d{4}-\d{2}-\d{2}(,\d{4}-\d{2}-\d{2}){0,6}$/.test(q.wk) ? daysOf(q.wk.split(",")) : null;
+    const rows = wk ? rankDays(wk) : rankMonth(mp.stem, mp.branch);
+    const span = wk ? `${wk[0].md}(${wk[0].short}) ~ ${wk.at(-1)!.md}(${wk.at(-1)!.short})` : `${mp.term} ${mp.from} ~ ${mp.to}`;
+    const label = wk ? (q.wl ? String(q.wl) : "이번 주") : mp.label;
+    const unit = wk ? "주" : "달";
+    const head = wk ? `60일주 운세 랭킹 · ${label} (${span})` : `60일주 운세 랭킹 · ${mp.label} (${mp.term}~${mp.nextTerm})`;
     const stars = (r: IljuMonth) => "★★★★★".slice(0, 5 - Math.floor((r.rank - 1) / 12)) + "☆☆☆☆☆".slice(0, Math.floor((r.rank - 1) / 12));
     const hf = <BrushFont hf={String(q.hf ?? "")} />;
 
@@ -1527,12 +1532,13 @@ export async function Card({ q }: { q: CardQuery }) {
         <ReelFrame>
           {hf}
           <div style={{ position: "absolute", top: REEL.top, left: REEL.side, right: REEL.side, textAlign: "center" }}>
-            <p style={{ fontSize: 34, fontWeight: 800, letterSpacing: "0.08em", color: GOLD }}>60일주 운세 랭킹 · {mp.label}</p>
+            <p style={{ fontSize: 34, fontWeight: 800, letterSpacing: "0.08em", color: GOLD }}>60일주 운세 랭킹 · {label}</p>
             <p style={{ marginTop: 14, fontSize: 80, fontWeight: 800, lineHeight: 1.1, whiteSpace: "nowrap" }}>
-              {m}월, 내 일주는 <span style={{ color: "#f1cf7a" }}>몇 위?</span>
+              {wk ? "이번 주" : `${m}월`}, 내 일주는 <span style={{ color: "#f1cf7a" }}>몇 위?</span>
             </p>
             <p style={{ marginTop: 16, fontSize: 30, lineHeight: 1.3, color: "rgba(244,236,219,.85)", fontFamily: sans }}>
-              {mp.term} {mp.from} ~ {mp.to}
+              {span}
+              {wk && " · 칸 옆 글자는 가장 좋은 요일"}
             </p>
           </div>
           <div className="doc-paper" style={{ position: "absolute", top: 480, left: REEL.side, right: REEL.side, padding: "18px 14px", color: INK, display: "flex", gap: 12 }}>
@@ -1556,6 +1562,7 @@ export async function Card({ q }: { q: CardQuery }) {
                       <span style={{ width: 36, flexShrink: 0, textAlign: "right", fontSize: 24, fontWeight: 800, color: top ? SEAL : INK }}>{r.rank}</span>
                       <span style={{ width: 76, flexShrink: 0, whiteSpace: "nowrap", fontSize: 34, lineHeight: 1, color: SEAL, fontFamily: brush }}>{r.hanja}</span>
                       <span style={{ flex: 1, minWidth: 0, whiteSpace: "nowrap", fontSize: 23, fontWeight: 800 }}>{r.name.replace("일주", "")}</span>
+                      {r.bestDay && <span style={{ flexShrink: 0, fontSize: 19, fontWeight: 800, color: GOLD }}>{r.bestDay}</span>}
                     </div>
                   );
                 })}
@@ -1564,7 +1571,7 @@ export async function Card({ q }: { q: CardQuery }) {
           </div>
           <div style={{ position: "absolute", top: 1384, left: REEL.side, width: 780, textAlign: "center" }}>
             <p style={{ fontSize: 30, lineHeight: 1.4, fontWeight: 800, color: "#f1cf7a" }}>내 일주를 모르면? 프로필 링크에서 생년월일만 넣으면 바로</p>
-            <p style={{ marginTop: 10, fontSize: 26, lineHeight: 1.4, color: "rgba(244,236,219,.75)", fontFamily: sans }}>저장해 두고 이번 달 내내 꺼내 보시옵소서</p>
+            <p style={{ marginTop: 10, fontSize: 26, lineHeight: 1.4, color: "rgba(244,236,219,.75)", fontFamily: sans }}>저장해 두고 이번 {unit} 내내 꺼내 보시옵소서</p>
           </div>
         </ReelFrame>
       );
@@ -1575,10 +1582,10 @@ export async function Card({ q }: { q: CardQuery }) {
         <Frame dark>
           {hf}
           <CornerBrand />
-          <p style={{ position: "absolute", top: 72, right: 70, fontSize: 30, fontWeight: 800, color: GOLD }}>{mp.label}</p>
+          <p style={{ position: "absolute", top: 72, right: 70, fontSize: 30, fontWeight: 800, color: GOLD }}>{wk ? span : mp.label}</p>
           <div className="doc-paper" style={{ position: "absolute", top: 160, left: 150, right: 150, height: 700, textAlign: "center", color: INK, paddingTop: 50 }}>
             <p style={{ display: "inline-block", padding: "10px 26px", background: INK, color: HANJI, fontSize: 34, fontWeight: 800 }}>
-              {mp.label} 일주 랭킹 <span style={{ color: "#f1cf7a" }}>1위</span>
+              {wk ? "이번 주" : mp.label} 일주 랭킹 <span style={{ color: "#f1cf7a" }}>1위</span>
             </p>
             <div style={{ position: "absolute", top: 34, right: 34 }}>
               <Medal n={1} size={96} />
@@ -1595,10 +1602,10 @@ export async function Card({ q }: { q: CardQuery }) {
               <img src="/hundo-face.png" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             </div>
             <div style={{ position: "absolute", left: -12, top: -84, padding: "12px 22px", background: "#fff", color: INK, borderRadius: 22, fontSize: 32, fontWeight: 800, whiteSpace: "nowrap", boxShadow: "0 8px 20px rgba(0,0,0,.3)" }}>
-              {q.say ? String(q.say) : "이달의 1위!"}
+              {q.say ? String(q.say) : wk ? "이번 주 1위!" : "이달의 1위!"}
             </div>
           </div>
-          <ThumbTitle top={`60일주 운세 랭킹 · ${mp.term} ${mp.from} ~ ${mp.to}`} main={`${mp.label} 1위 · ${top.name}`} />
+          <ThumbTitle top={`60일주 운세 랭킹 · ${wk ? label : mp.term} ${wk ? span : `${mp.from} ~ ${mp.to}`}`} main={`${wk ? "이번 주" : mp.label} 1위 · ${top.name}`} />
         </Frame>
       );
     }
@@ -1608,10 +1615,10 @@ export async function Card({ q }: { q: CardQuery }) {
           {hf}
           <div style={{ position: "absolute", top: 120, left: 90, right: 90 }}>
             <Label>{head}</Label>
-            <p style={{ marginTop: 10, fontSize: 66, fontWeight: 800 }}>이달의 TOP 3</p>
-            <div style={{ marginTop: 30, display: "flex", flexDirection: "column", gap: 28 }}>
+            <p style={{ marginTop: 10, fontSize: 66, fontWeight: 800 }}>{wk ? "이번 주" : "이달의"} TOP 3</p>
+            <div style={{ marginTop: 26, display: "flex", flexDirection: "column", gap: 22 }}>
               {rows.slice(0, 3).map((r) => (
-                <div key={r.no} className="doc-paper" style={{ display: "flex", gap: 26, padding: "36px 32px" }}>
+                <div key={r.no} className="doc-paper" style={{ display: "flex", gap: 26, padding: "30px 32px" }}>
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, width: 160 }}>
                     <Medal n={r.rank} size={86} />
                     <span style={{ fontSize: 66, color: SEAL, fontFamily: brush, lineHeight: 1 }}>{r.hanja}</span>
@@ -1639,14 +1646,16 @@ export async function Card({ q }: { q: CardQuery }) {
           <div style={{ position: "absolute", top: 100, left: 90, right: 90 }}>
             <Label>{head}</Label>
             <p style={{ marginTop: 10, fontSize: 56, fontWeight: 800, lineHeight: 1.25 }}>미리 대비하면 되는 일주</p>
-            <p style={{ marginTop: 8, fontSize: 26, color: SOFT, fontFamily: sans }}>나쁜 달이 아니라, 알고 준비하면 되는 달이에요</p>
+            <p style={{ marginTop: 8, fontSize: 26, color: SOFT, fontFamily: sans }}>
+              {wk ? "나쁜 주가 아니라, 하루만 알고 준비하면 되는 주예요" : "나쁜 달이 아니라, 알고 준비하면 되는 달이에요"}
+            </p>
             <div style={{ marginTop: 18 }}>
               {rows.slice(-5).map((r) => (
                 <div key={r.no} style={{ display: "flex", gap: 22, padding: "11px 0", borderTop: "1.5px solid rgba(179,38,30,.15)" }}>
                   <span style={{ width: 110, fontSize: 50, color: SEAL, fontFamily: brush, lineHeight: 1.1 }}>{r.hanja}</span>
                   <div style={{ flex: 1, minWidth: 0, fontFamily: sans }}>
                     <p style={{ fontSize: 33, fontWeight: 800, fontFamily: serif }}>
-                      {r.name} <span style={{ marginLeft: 6, fontSize: 22, color: SOFT, fontWeight: 400 }}>{r.rank}위 · {r.short}</span>
+                      {r.name} <span style={{ marginLeft: 6, fontSize: 22, color: SOFT, fontWeight: 400 }}>{r.rank}위 · {r.hard ?? r.short}</span>
                     </p>
                     {(
                       [
