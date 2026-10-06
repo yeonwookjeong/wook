@@ -6,11 +6,20 @@ const STYLE = ["bg-ink/10 text-ink", "bg-ink/5 text-ink-soft", "bg-gold/25 text-
 // The calendar starts at this year, so the free taste is the year the reader is in; next year is already the hook.
 const FREE_YEARS = 1;
 
+// Money and work: a quiet first year gave no reason to look further, so before purchase the nearest best year
+// (◎) and the nearest year to watch (✕) after it show too, by name only; why they are so stays in the report.
+const PEEK: Domain[] = ["jaemul", "jikup"];
+
 // The ten-year calendar of a deep report, computed year by year (lib/domains.ts). Before purchase only the
-// first year shows; the rest are placeholders, so nothing paid is in the page source.
+// first year shows (and, for money and work, the next ◎ and ✕ by name); the rest are placeholders, so nothing
+// paid is in the page source.
 export default function DecadeTable({ name, domain, years, locked }: { name: string; domain: Domain; years: DecadeYear[]; locked: boolean }) {
   if (!years.length) return null;
-  const shown = locked ? years.slice(0, FREE_YEARS) : years;
+  const later = years.slice(FREE_YEARS);
+  const peek = locked && PEEK.includes(domain) ? [later.find((y) => y.grade === 2), later.find((y) => y.grade === -1)].filter((y) => y !== undefined) : [];
+  peek.sort((a, b) => a.year - b.year);
+  const shown = locked ? [...years.slice(0, FREE_YEARS), ...peek] : years;
+  const peeked = new Set(peek.map((y) => y.year));
   return (
     <section className="doc-paper mt-4 px-5 pt-6 pb-5">
       <h2 className="text-center font-myeongjo text-lg font-extrabold">
@@ -29,7 +38,11 @@ export default function DecadeTable({ name, domain, years, locked }: { name: str
             <span className={`h-fit shrink-0 rounded-md px-1.5 py-0.5 text-xs font-extrabold ${STYLE[y.grade + 1]}`}>{MARK[y.grade + 1]}</span>
             <span className="min-w-0 flex-1">
               <b className="block text-[14px]">{y.tag}</b>
-              <span className="text-[12px] leading-snug text-ink-soft">{y.why.join(" · ") || "특별히 드는 기운이 없는 해예요"}</span>
+              {peeked.has(y.year) ? (
+                <span className="text-[12px] leading-snug font-bold text-seal">🔒 왜 그런지, 그해 무엇을 할지는 보고서에</span>
+              ) : (
+                <span className="text-[12px] leading-snug text-ink-soft">{y.why.join(" · ") || "특별히 드는 기운이 없는 해예요"}</span>
+              )}
             </span>
           </li>
         ))}
@@ -46,7 +59,7 @@ export default function DecadeTable({ name, domain, years, locked }: { name: str
             ))}
           </div>
           <span className="absolute inset-0 flex items-center justify-center text-center font-myeongjo text-sm font-extrabold text-seal">
-            🔒 {years[FREE_YEARS].year}~{years.at(-1)!.year}년은 결제하면 열려요
+            🔒 {peek.length ? "나머지 해와 그 이유는" : `${years[FREE_YEARS].year}~${years.at(-1)!.year}년은`} 결제하면 열려요
           </span>
         </div>
       )}

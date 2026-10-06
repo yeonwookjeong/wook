@@ -3,11 +3,13 @@ import PayButton from "./PayButton";
 import { hanjaNum } from "@/lib/hanjaNum";
 import { josa } from "@/lib/josa";
 import { payEnabled } from "@/lib/pay";
-import { PRICE, productById, saleLabel, saleNow, SETS, setsWith, type Product, type ProductId } from "@/lib/products";
+import { PRICE, productById, saleLabel, saleNow, SETS, setsWith, type Product, type ProductId, type SetId } from "@/lib/products";
 import { newYearOf } from "@/lib/yeonun";
 
 // Where the written report would begin, before it is bought: its chapters, the price, and the payment.
 // Everything above it (the chart and how it was read) stays free.
+const FRONT_SET: Partial<Record<ProductId, SetId>> = { jaemul: "all", jikup: "all" };
+
 export default function Paywall({
   product,
   request,
@@ -30,6 +32,24 @@ export default function Paywall({
   const ny = newYearOf();
   const sets = request.p ? setsWith(product.id).filter((s) => s !== "ny" || (ny !== null && (request.y === undefined || request.y === String(ny)))) : [];
   const titleIn = (id: ProductId) => (id === "yeonun" && ny !== null ? `${ny} 신년운세` : productById(id)!.title);
+  // Money and work showed three sets under the single report and sold least: one set in front, the rest folded.
+  const lead = FRONT_SET[product.id];
+  const front = lead && sets.includes(lead) ? [lead] : sets;
+  const folded = sets.filter((s) => !front.includes(s));
+  const setButton = (s: SetId) => {
+    const list = SETS[s].products;
+    const regular = list.length * PRICE;
+    return (
+      <div key={s}>
+        <PayButton
+          secondary
+          request={{ set: s, p: request.p, from: product.id }}
+          label={`${SETS[s].title} ${SETS[s].price.toLocaleString("ko-KR")}원 (정가 ${regular.toLocaleString("ko-KR")}원)`}
+        />
+        <p className="mt-1 text-[11px] text-ink-soft">{josa(list.map(titleIn).join(" · "), "을/를")} 이 사주로 한 번에</p>
+      </div>
+    );
+  };
   return (
     <section id="report-start" className="doc-paper mt-6 scroll-mt-4 px-5 pt-6 pb-6">
       <h2 className="text-center font-myeongjo text-lg font-extrabold">{heading}</h2>
@@ -56,20 +76,13 @@ export default function Paywall({
         {payEnabled() ? (
           <>
             <PayButton request={request} label={`${price.toLocaleString("ko-KR")}원 결제하고 보기`} />
-            {sets.map((s) => {
-              const list = SETS[s].products;
-              const regular = list.length * PRICE;
-              return (
-                <div key={s}>
-                  <PayButton
-                    secondary
-                    request={{ set: s, p: request.p, from: product.id }}
-                    label={`${SETS[s].title} ${SETS[s].price.toLocaleString("ko-KR")}원 (정가 ${regular.toLocaleString("ko-KR")}원)`}
-                  />
-                  <p className="mt-1 text-[11px] text-ink-soft">{josa(list.map(titleIn).join(" · "), "을/를")} 이 사주로 한 번에</p>
-                </div>
-              );
-            })}
+            {front.map(setButton)}
+            {folded.length > 0 && (
+              <details className="mt-3 text-left">
+                <summary className="cursor-pointer text-center text-[12px] font-bold text-ink-soft">다른 세트 보기 ▾</summary>
+                {folded.map(setButton)}
+              </details>
+            )}
           </>
         ) : (
           <button type="button" disabled className="mt-4 w-full rounded-2xl bg-seal/60 py-4 font-myeongjo text-lg font-extrabold text-hanji">
