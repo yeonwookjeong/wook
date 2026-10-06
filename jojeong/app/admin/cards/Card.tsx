@@ -1610,7 +1610,7 @@ export async function Card({ q }: { q: CardQuery }) {
             <p style={{ marginTop: 22, fontSize: 30, color: SOFT }}>{top.image}</p>
             <p style={{ marginTop: 10, fontSize: 200, lineHeight: 1.05, color: SEAL, fontFamily: brush }}>{top.hanja}</p>
             <p style={{ marginTop: 6, fontSize: 64, fontWeight: 800 }}>{top.name}</p>
-            <p style={{ marginTop: 14, padding: "0 50px", fontSize: 30, lineHeight: 1.45, color: SOFT, fontFamily: sans }}>{wk ? top.short : top.line}</p>
+            <p style={{ marginTop: 14, padding: "0 50px", fontSize: 30, lineHeight: 1.45, color: SOFT, fontFamily: sans }}>{wk ? `${top.line} ${top.short}` : top.line}</p>
           </div>
           <div style={{ position: "absolute", top: 745, left: 64 }}>
             <div style={{ width: 170, height: 170, borderRadius: "50%", overflow: "hidden", border: `6px solid ${GOLD}`, background: HANJI, boxShadow: "0 10px 24px rgba(0,0,0,.4)" }}>
@@ -1641,13 +1641,12 @@ export async function Card({ q }: { q: CardQuery }) {
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ fontSize: 42, fontWeight: 800 }}>{r.name}</p>
-                    {wk ? (
-                      // A week: just its one line, no tips under it.
-                      <p style={{ marginTop: 10, fontSize: 34, lineHeight: 1.4, color: r.kind === "hard" ? SEAL : INK, fontFamily: sans, fontWeight: 700 }}>{r.short}</p>
-                    ) : (
-                      <p style={{ marginTop: 6, fontSize: 28, lineHeight: 1.45, color: INK, fontFamily: sans }}>{r.line}</p>
+                    {wk && (
+                      // A week: its one line first, then the week in a sentence and what to make of it.
+                      <p style={{ marginTop: 6, fontSize: 30, lineHeight: 1.4, color: r.kind === "hard" ? SEAL : INK, fontFamily: sans, fontWeight: 800 }}>{r.short}</p>
                     )}
-                    {(wk ? [] : r.tips.slice(0, 2)).map((t) => (
+                    <p style={{ marginTop: 6, fontSize: 28, lineHeight: 1.45, color: INK, fontFamily: sans }}>{r.line}</p>
+                    {r.tips.slice(0, 2).map((t) => (
                       <p key={t} style={{ marginTop: 8, fontSize: 25, lineHeight: 1.4, color: SOFT, fontFamily: sans }}>
                         <b style={{ color: SEAL }}>✓</b> {t}
                       </p>
@@ -1672,22 +1671,20 @@ export async function Card({ q }: { q: CardQuery }) {
             </p>
             <div style={{ marginTop: 18 }}>
               {distinctOnSlide(rows.slice(-5), wk ? undefined : mp.stem).map((r) => (
-                <div key={r.no} style={{ display: "flex", gap: 22, padding: wk ? "26px 0" : "11px 0", borderTop: "1.5px solid rgba(179,38,30,.15)" }}>
+                <div key={r.no} style={{ display: "flex", gap: 22, padding: "11px 0", borderTop: "1.5px solid rgba(179,38,30,.15)" }}>
                   <span style={{ width: 110, fontSize: 50, color: SEAL, fontFamily: brush, lineHeight: 1.1 }}>{r.hanja}</span>
                   <div style={{ flex: 1, minWidth: 0, fontFamily: sans }}>
                     <p style={{ fontSize: 33, fontWeight: 800, fontFamily: serif }}>
                       {r.name} <span style={{ marginLeft: 6, fontSize: 22, color: SOFT, fontWeight: 400 }}>{r.rank}위</span>
                     </p>
                     {(
-                      (wk
-                        ? [["조심할 것", r.avoid, SEAL, "rgba(179,38,30,.1)"]]
-                        : [
-                            ["피할 것", r.avoid, SEAL, "rgba(179,38,30,.1)"],
-                            ["이렇게", r.prep, "#3d6656", "rgba(61,102,86,.12)"],
-                            ["좋은 점", r.bright, "#a87a22", "rgba(168,122,34,.14)"],
-                          ]) as [string, string, string, string][]
+                      [
+                        [wk ? "조심할 것" : "피할 것", r.avoid, SEAL, "rgba(179,38,30,.1)"],
+                        ["이렇게", r.prep, "#3d6656", "rgba(61,102,86,.12)"],
+                        ["좋은 점", r.bright, "#a87a22", "rgba(168,122,34,.14)"],
+                      ] as [string, string, string, string][]
                     ).map(([tag, text, fg, bg]) => (
-                      <p key={tag} style={{ marginTop: wk ? 14 : 5, display: "flex", alignItems: "flex-start", gap: 12, fontSize: wk ? 32 : 24, lineHeight: 1.4 }}>
+                      <p key={tag} style={{ marginTop: 5, display: "flex", alignItems: "flex-start", gap: 12, fontSize: 24, lineHeight: 1.4 }}>
                         <span style={{ flexShrink: 0, width: 92, marginTop: 1, padding: "1px 0", borderRadius: 8, background: bg, color: fg, fontSize: 19, fontWeight: 800, textAlign: "center" }}>{tag}</span>
                         <span style={{ flex: 1, minWidth: 0 }}>{text}</span>
                       </p>
