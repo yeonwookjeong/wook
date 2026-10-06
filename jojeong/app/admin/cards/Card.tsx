@@ -4,7 +4,7 @@ import { ILGAN, ILJU_TAG_TEXT, iljuFacts, jiaziNo, nextDayOf, stemCure, stemMatc
 import { josa } from "@/lib/josa";
 import { pickDays } from "@/lib/taekil";
 import { figureById, figureChart } from "@/lib/figures";
-import { daysOf, ILJU_IMAGE, monthPillarOf, rankDays, rankMonth, SIXTY, type IljuMonth } from "@/lib/iljuRank";
+import { daysOf, distinctOnSlide, ILJU_IMAGE, monthPillarOf, rankDays, rankMonth, SIXTY, type IljuMonth } from "@/lib/iljuRank";
 import { ANIMALS, BRANCHES, BRANCHES_KO, STEMS, STEMS_KO } from "@/lib/saju";
 
 // Social cards, 1080×1440 (Instagram 3:4, the profile grid's own shape, so nothing is cropped there), drawn in the site's own look. Owner only. Each slide is one URL
@@ -1619,7 +1619,7 @@ export async function Card({ q }: { q: CardQuery }) {
             <Label>{head}</Label>
             <p style={{ marginTop: 10, fontSize: 66, fontWeight: 800 }}>{wk ? "이번 주" : "이달의"} TOP 3</p>
             <div style={{ marginTop: 26, display: "flex", flexDirection: "column", gap: 22 }}>
-              {rows.slice(0, 3).map((r) => (
+              {distinctOnSlide(rows.slice(0, 3), wk ? undefined : mp.stem).map((r) => (
                 <div key={r.no} className="doc-paper" style={{ display: "flex", gap: 26, padding: "30px 32px" }}>
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, width: 160 }}>
                     <Medal n={r.rank} size={86} />
@@ -1657,12 +1657,12 @@ export async function Card({ q }: { q: CardQuery }) {
               {wk ? "나쁜 주가 아니라, 한 가지만 조심하면 되는 주예요" : "나쁜 달이 아니라, 알고 준비하면 되는 달이에요"}
             </p>
             <div style={{ marginTop: 18 }}>
-              {rows.slice(-5).map((r) => (
+              {distinctOnSlide(rows.slice(-5), wk ? undefined : mp.stem).map((r) => (
                 <div key={r.no} style={{ display: "flex", gap: 22, padding: wk ? "26px 0" : "11px 0", borderTop: "1.5px solid rgba(179,38,30,.15)" }}>
                   <span style={{ width: 110, fontSize: 50, color: SEAL, fontFamily: brush, lineHeight: 1.1 }}>{r.hanja}</span>
                   <div style={{ flex: 1, minWidth: 0, fontFamily: sans }}>
                     <p style={{ fontSize: 33, fontWeight: 800, fontFamily: serif }}>
-                      {r.name} <span style={{ marginLeft: 6, fontSize: 22, color: SOFT, fontWeight: 400 }}>{wk ? `${r.rank}위` : `${r.rank}위 · ${r.short}`}</span>
+                      {r.name} <span style={{ marginLeft: 6, fontSize: 22, color: SOFT, fontWeight: 400 }}>{r.rank}위</span>
                     </p>
                     {(
                       (wk
