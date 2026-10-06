@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ownedOrders } from "@/lib/pay";
 import { productById, SETS } from "@/lib/products";
+import MoveOrders from "@/components/MoveOrders";
 
 export const metadata: Metadata = { title: "내 보고서", robots: { index: false } };
 
@@ -53,6 +54,7 @@ export default async function MyReportsPage() {
           })}
         </ul>
       )}
+      <MoveOrders has={orders.length > 0} />
     </>
   );
 }

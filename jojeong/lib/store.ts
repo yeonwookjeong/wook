@@ -127,6 +127,29 @@ export async function getShare(code: string): Promise<string | null> {
   return backend().get(`share:${code}`);
 }
 
+// Moving purchases to another browser (an iPhone home-screen app keeps its own cookies, apart from Safari): the
+// order ids under a one-time code that lives ten minutes. Eight letters from 31 that can't be misread (no 0/O,
+// 1/I/L), so guessing one in time is out of reach.
+const XFER_ABC = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+export async function putTransfer(orderIds: string[]): Promise<string> {
+  const bytes = randomBytes(8);
+  const code = Array.from(bytes, (b) => XFER_ABC[b % XFER_ABC.length]).join("");
+  await backend().set(`xfer:${code}`, JSON.stringify(orderIds), 600);
+  return code;
+}
+export async function takeTransfer(code: string): Promise<string[] | null> {
+  const c = code.toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (c.length !== 8) return null;
+  const raw = await backend().get(`xfer:${c}`);
+  if (!raw || raw === "used") return null;
+  await backend().set(`xfer:${c}`, "used", 600);
+  try {
+    return JSON.parse(raw) as string[];
+  } catch {
+    return null;
+  }
+}
+
 export async function createCourt(kingName: string, king: Pillars): Promise<Court> {
   const court: Court = { id: id(6), kingName, king, ownerToken: id(18), createdAt: Date.now() };
   await backend().set(`court:${court.id}`, JSON.stringify(court));
