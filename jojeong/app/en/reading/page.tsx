@@ -4,6 +4,7 @@ import { cityById } from "@/lib/cities";
 import { ANIMAL_EN, BRANCH_RO, ELEMENT_EN, enReading, MOOD_EN, STEM_RO } from "@/lib/en/saju";
 import { BRANCH_EL } from "@/lib/myeongri";
 import { Cloud, SealHead } from "@/components/en/Deco";
+import InstallPrompt from "@/components/InstallPrompt";
 import { computeProfile, type Gender } from "@/lib/profile";
 import { BRANCHES, computePillars, resolveBirthTime, STEMS, type BirthInput } from "@/lib/saju";
 
@@ -343,6 +344,7 @@ export default async function EnReadingPage({ searchParams }: PageProps<"/en/rea
         <p className="font-myeongjo text-[17px] font-extrabold">Coming soon from Hundo</p>
         <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">Your full life reading, love and compatibility, and each year ahead in detail.</p>
       </section>
+      <InstallPrompt lang="en" className="mt-4" />
       <Link href="/en" className="mt-4 block text-center text-[13px] font-bold text-seal underline">
         Read another chart
       </Link>

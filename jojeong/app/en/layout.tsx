@@ -8,6 +8,8 @@ export const metadata: Metadata = {
   title: { default: "Hundo Saju · Korean Four Pillars of Destiny", template: "%s · Hundo Saju" },
   description: "Your Korean saju (Four Pillars of Destiny), read by Hundo, a scholar of the Joseon royal observatory.",
   robots: { index: false, follow: false },
+  manifest: "/en/manifest.webmanifest",
+  appleWebApp: { capable: true, title: "Hundo Saju", statusBarStyle: "default" },
 };
 
 function Seal() {

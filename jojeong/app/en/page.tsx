@@ -1,6 +1,7 @@
 import Link from "next/link";
 import EnBirthForm from "@/components/en/EnBirthForm";
 import IntroSheet from "@/components/en/IntroSheet";
+import InstallPrompt from "@/components/InstallPrompt";
 import { Cloud, IlwolBanner } from "@/components/en/Deco";
 
 // The English front page: who reads your fate and what you get, then the form. A first visit also gets a short
@@ -46,6 +47,7 @@ export default function EnHome() {
           Saju 101: a five-minute guide
         </Link>
       </p>
+      <InstallPrompt lang="en" className="mt-6" />
       <IntroSheet />
     </>
   );

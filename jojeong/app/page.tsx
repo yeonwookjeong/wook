@@ -2,6 +2,7 @@ import Link from "next/link";
 import { forgetMeAction } from "@/app/actions";
 import FreeTiles, { type FreeTile } from "@/components/FreeTiles";
 import Keep from "@/components/Keep";
+import InstallPrompt from "@/components/InstallPrompt";
 import RoyalDoc from "@/components/RoyalDoc";
 import { hanjaNum } from "@/lib/hanjaNum";
 import StoreHero from "@/components/StoreHero";
@@ -245,6 +246,8 @@ export default async function Home() {
         <h2 className="text-center font-myeongjo text-lg font-extrabold">무료로 보기</h2>
         <FreeTiles tiles={FREE} className="mt-3" />
       </section>
+
+      <InstallPrompt className="mt-8" />
     </>
   );
 }
