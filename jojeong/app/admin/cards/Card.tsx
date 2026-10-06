@@ -1561,7 +1561,21 @@ export async function Card({ q }: { q: CardQuery }) {
                         background: top ? "rgba(212,175,95,.22)" : r.rank > 55 ? "rgba(33,27,23,.05)" : "transparent",
                       }}
                     >
-                      <span style={{ width: 36, flexShrink: 0, textAlign: "right", fontSize: 24, fontWeight: 800, color: top ? SEAL : INK }}>{r.rank}</span>
+                      {/* 1–3위: a gold, silver and bronze medal in place of the number */}
+                      <span
+                        style={{
+                          width: 36,
+                          flexShrink: 0,
+                          textAlign: "right",
+                          fontSize: top ? 28 : 24,
+                          lineHeight: 1,
+                          fontWeight: 800,
+                          color: top ? SEAL : INK,
+                          fontFamily: top ? '"Noto Color Emoji", "Apple Color Emoji", sans-serif' : undefined,
+                        }}
+                      >
+                        {top ? ["🥇", "🥈", "🥉"][r.rank - 1] : r.rank}
+                      </span>
                       <span style={{ width: 76, flexShrink: 0, whiteSpace: "nowrap", fontSize: 34, lineHeight: 1, color: SEAL, fontFamily: brush }}>{r.hanja}</span>
                       <span style={{ flex: 1, minWidth: 0, whiteSpace: "nowrap", fontSize: 23, fontWeight: 800 }}>{r.name.replace("일주", "")}</span>
                       {r.mark && <span style={{ flexShrink: 0, fontSize: 19, fontWeight: 800, color: r.kind === "hard" ? SEAL : "#3d6656" }}>{r.mark}</span>}
