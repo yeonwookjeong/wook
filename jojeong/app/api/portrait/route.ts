@@ -50,7 +50,8 @@ export async function POST(request: Request) {
       const res = await ai.models.generateContent({
         model,
         contents: [{ role: "user", parts }],
-        config: { responseModalities: ["IMAGE"], imageConfig: { aspectRatio: "3:4" } },
+        // 2K on the Pro model: the same price as its default 1K, and the fine brush lines need the pixels.
+        config: { responseModalities: ["IMAGE"], imageConfig: { aspectRatio: "3:4", ...(model.includes("pro") ? { imageSize: "2K" } : {}) } },
       });
       const img = res.candidates?.[0]?.content?.parts?.find((p) => p.inlineData?.data)?.inlineData;
       const u = res.usageMetadata;
