@@ -80,6 +80,10 @@ export type IljuMonth = {
   // and the day(s) the reel's table marks next to it ("수", "화·목"), a 고비 (hard) or the week's good day (good).
   mark?: string;
   kind?: "hard" | "good";
+  // A week: another sentence for the week (from the next-best work day), used when `line` was said above.
+  alt?: string;
+  // A week: the ten god of the day its advice comes from, so a repeated piece of advice is swapped for one of its kind.
+  god?: TenGod;
 };
 
 export type MonthPillar = { stem: number; branch: number; from: string; to: string; label: string; term: string; nextTerm: string };
@@ -290,7 +294,7 @@ export function daysOf(dates: string[]): DayIn[] {
     };
   });
 }
-const asDay = (t: string) => t.replace(/이달/g, "그날").replace(/ 달(?=이|$|[,. ])/g, " 날");
+const asWeek = (t: string) => t.replace(/이달/g, "이번 주").replace(/ 달(?=이|$|[,. ])/g, " 주").replace(/주이에요/g, "주예요");
 
 // For each pillar the work day it meets hardest (its 고비), and one thing to avoid that day.
 // What to avoid comes from that day's ten god for the pillar and how the day's branch meets its own; the lists
@@ -379,12 +383,18 @@ export function rankDays(days: DayIn[], opts: { work?: number[] } = {}): IljuMon
         image: ILJU_IMAGE[hanja],
         rank: 0,
         score: Math.round(per.reduce((a, m) => a + m.score, 0) * 10) / 10,
-        line: "",
+        // the week in a sentence, from its best work day's ten god ("돈이 차곡차곡 쌓이는 주예요")
+        line: `${asWeek(GOD_LINE[tenGod(stem, days[good].stem)])}.`,
+        alt: (() => {
+          const next = work.filter((i) => i !== good).sort((a, b) => per[b].score - per[a].score)[0];
+          return next === undefined ? undefined : `${asWeek(GOD_LINE[tenGod(stem, days[next].stem)])}.`;
+        })(),
         short: "",
-        tips: per[good].tips.map(asDay),
+        tips: [...new Set([...per[good].tips, ...work.filter((i) => i !== good).flatMap((i) => per[i].tips)])].map(asWeek),
+        god: tenGod(stem, days[sharp >= 0 ? sharp : worst].stem),
         avoid: "",
-        prep: "",
-        bright: "",
+        prep: asWeek(per[sharp >= 0 ? sharp : worst].prep),
+        bright: asWeek(per[sharp >= 0 ? sharp : worst].bright),
         tags: per[good].tags,
       } as IljuMonth,
       per,
@@ -433,7 +443,6 @@ export function rankDays(days: DayIn[], opts: { work?: number[] } = {}): IljuMon
     p.x.row.kind = p.kind === "good" ? "good" : "hard";
     p.x.row.avoid = pick;
     p.x.row.short = pick;
-    p.x.row.line = `이번 주 한 마디: ${pick}.`;
   }
   return rows.map((x) => x.row);
 }
@@ -444,13 +453,18 @@ export function distinctOnSlide(rows: IljuMonth[], periodStem?: number): IljuMon
   const seenTips = new Set<string>();
   const seenAvoid = new Set<string>();
   const seenTail = new Set<string>();
+  const seenLine = new Set<string>();
+  const seenPrep = new Set<string>();
+  const seenBright = new Set<string>();
   return rows.map((r) => {
     const tips = r.tips.filter((t) => !seenTips.has(t));
     tips.forEach((t) => seenTips.add(t));
     // "X하고, Y한 달이에요.": when Y was said above, the pillar's own ten-god sentence instead.
     const tail = r.line.includes(", ") ? r.line.slice(r.line.indexOf(", ") + 2) : "";
-    const line = tail && seenTail.has(tail) && periodStem !== undefined ? `${GOD_LINE[tenGod(r.stem, periodStem)]}.` : r.line;
+    let line = tail && seenTail.has(tail) && periodStem !== undefined ? `${GOD_LINE[tenGod(r.stem, periodStem)]}.` : r.line;
+    if (seenLine.has(line) && r.alt && !seenLine.has(r.alt)) line = r.alt;
     if (tail) seenTail.add(tail);
+    seenLine.add(line);
     let avoid = r.avoid;
     if (seenAvoid.has(avoid) && periodStem !== undefined) {
       const god = tenGod(r.stem, periodStem);
@@ -459,6 +473,15 @@ export function distinctOnSlide(rows: IljuMonth[], periodStem?: number): IljuMon
       avoid = [...AVOID_GOD[god], ...AVOID_CLASH[GROUP[god]], ...AVOID_ALL].find((a) => !seenAvoid.has(a) && !a.startsWith(head)) ?? avoid;
     }
     seenAvoid.add(avoid);
-    return { ...r, tips, avoid, line };
+    // The advice beside it repeats when two pillars share a ten god: another of the same kind of force then.
+    const g = r.god ?? (periodStem !== undefined ? tenGod(r.stem, periodStem) : undefined);
+    const kin = g ? (Object.keys(GROUP) as TenGod[]).filter((x) => GROUP[x] === GROUP[g]) : [];
+    const prepPool = [...kin.map((x) => PREP[x]), ...(g ? TAKE_GOD[g] : []), ...kin.flatMap((x) => TAKE_GOD[x]), ...Object.values(PREP)];
+    const prep = seenPrep.has(r.prep) ? (prepPool.find((x) => !seenPrep.has(x) && x.split(" ")[0] !== avoid.split(" ")[0]) ?? r.prep) : r.prep;
+    seenPrep.add(prep);
+    const brightPool = [...kin.map((x) => BRIGHT[x]), ...Object.values(BRIGHT)];
+    const bright = seenBright.has(r.bright) ? (brightPool.find((x) => !seenBright.has(x)) ?? r.bright) : r.bright;
+    seenBright.add(bright);
+    return { ...r, tips, avoid, line, prep, bright };
   });
 }
