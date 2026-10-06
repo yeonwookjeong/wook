@@ -10,7 +10,7 @@ import { track } from "@/lib/stats";
 // POST { product, p } or, for a two-person report, { product, a, b, rel } → a new order for that exact report, priced here.
 export async function POST(request: Request) {
   if (!payEnabled()) return Response.json({ error: "결제 준비 중이에요." }, { status: 503 });
-  const body = (await request.json().catch(() => ({}))) as JobRequest & { set?: string };
+  const body = (await request.json().catch(() => ({}))) as JobRequest & { set?: string; from?: string };
 
   // A set: its reports for one saved chart, at the set's price.
   const set = setOf(body.set);
@@ -24,7 +24,9 @@ export async function POST(request: Request) {
     const req: JobRequest = { product: lead, p: body.p, ...(ny !== null && { y: String(ny) }) };
     const job = await jobFor(req);
     if ("error" in job) return Response.json({ error: job.error }, { status: job.status });
-    const order = await createOrder(lead, req, `${decodePerson(req.p)?.name}님`, SETS[set].price, { set, bundle: [lead, ...rest] });
+    // The report page the set was bought on, for the owner's table (only one of the set's own reports counts).
+    const from = SETS[set].products.find((p) => p === body.from);
+    const order = await createOrder(lead, req, `${decodePerson(req.p)?.name}님`, SETS[set].price, { set, bundle: [lead, ...rest], ...(from && { from }) });
     await track(`co:${saleKey(lead, set, undefined)}`);
     return Response.json({ orderId: order.id, amount: order.amount, orderName: ny ? `${SETS[set].title} (${ny} 신년운세 포함)` : SETS[set].title, clientKey: payClientKey(), mock: payMock() });
   }

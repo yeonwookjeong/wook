@@ -63,7 +63,7 @@ export default function Paywall({
                 <div key={s}>
                   <PayButton
                     secondary
-                    request={{ set: s, p: request.p }}
+                    request={{ set: s, p: request.p, from: product.id }}
                     label={`${SETS[s].title} ${SETS[s].price.toLocaleString("ko-KR")}원 (정가 ${regular.toLocaleString("ko-KR")}원)`}
                   />
                   <p className="mt-1 text-[11px] text-ink-soft">{josa(list.map(titleIn).join(" · "), "을/를")} 이 사주로 한 번에</p>

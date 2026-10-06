@@ -395,6 +395,13 @@ function SalesTable({ period, stats, paid, refunds }: { period: Period; stats: R
     paid.reduce<Record<string, number>>((a, o) => ((a[o.method || "기타"] = (a[o.method || "기타"] ?? 0) + 1), a), {}),
   ).sort((a, b) => b[1] - a[1]);
   const sets = paid.filter((o) => o.set).length;
+  // Where the sets were bought: the report page the buyer was on.
+  const setFrom = Object.entries(
+    paid.filter((o) => o.set).reduce<Record<string, number>>((a, o) => {
+      const k = o.from ? (productById(o.from)?.title ?? o.from) : "기록 전";
+      return (a[k] = (a[k] ?? 0) + 1), a;
+    }, {}),
+  ).sort((a, b) => (a[0] === "기록 전" ? 1 : b[0] === "기록 전" ? -1 : b[1] - a[1]));
   const pct = (a: number, b: number) => (b ? `${Math.round((a / b) * 100)}%` : "–");
   return (
     <section className="doc-paper mt-4 px-3 py-4">
@@ -470,6 +477,9 @@ function SalesTable({ period, stats, paid, refunds }: { period: Period; stats: R
         <p className="mt-2 px-1 text-[11.5px] text-ink-soft">
           결제 수단 · {methods.map(([m, c]) => `${m} ${c}건`).join(" · ")}
         </p>
+      )}
+      {setFrom.length > 0 && (
+        <p className="mt-1 px-1 text-[11.5px] text-ink-soft">세트를 산 화면 · {setFrom.map(([k, c]) => `${k} ${c}건`).join(" · ")}</p>
       )}
       <p className="mt-2 px-1 text-[10.5px] leading-relaxed text-ink-soft">
         조회는 결제 전 보고서 화면을 본 수, 결제창은 결제 버튼을 누른 수예요(오늘부터 집계). 결제와 매출은 첫 결제부터 모두 반영돼요. 전환 = 결제 ÷ 조회. 연운은

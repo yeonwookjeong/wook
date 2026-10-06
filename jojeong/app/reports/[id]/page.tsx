@@ -602,6 +602,16 @@ async function OpenReport({
         <div id="report-start" className="scroll-mt-4">
           <AiReport request={{ product: product.id, order: unlock.id }} chapters={chaptersOf(product.id)} modern />
         </div>
+        {/* Who reads about love usually has someone in mind: the two-person reading is the next question. */}
+        {product.id === "yeonae" && (
+          <Link href="/reports/gunghap?from=yeonae" className="doc-paper mt-6 flex items-center gap-3 px-5 py-4">
+            <span className="min-w-0 flex-1">
+              <b className="block font-myeongjo">마음에 둔 사람이 있다면, 그 사람과는 어떨까요?</b>
+              <span className="block text-[12px] text-ink-soft">두 사람이 왜 끌리고 어디서 부딪히는지, 오래 가려면 무엇을 지킬지 봐 드려요</span>
+            </span>
+            <span className="shrink-0 text-sm font-bold text-seal">궁합 보기 →</span>
+          </Link>
+        )}
       </>
     );
   return (
