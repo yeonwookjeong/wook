@@ -75,7 +75,7 @@ export default async function AskRoomPage({ params }: PageProps<"/admin/ask/[id]
       </section>
 
       <section className="doc-paper mt-3 px-4 py-3">
-        <AskForm room={room.id} />
+        <AskForm room={room.id} suggest={last?.role === "hundo" ? last.next : undefined} />
       </section>
 
       <details className="doc-paper mt-4 px-5 py-4">

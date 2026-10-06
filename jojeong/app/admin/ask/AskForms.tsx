@@ -30,7 +30,7 @@ export function OpenRoomForm() {
 }
 
 // The question box: a topic first (one question = one topic), then up to 200 characters.
-export function AskForm({ room }: { room: string }) {
+export function AskForm({ room, suggest }: { room: string; suggest?: string }) {
   const [state, action, pending] = useActionState<FormState, FormData>(askAction, { error: null });
   const [text, setText] = useState("");
   return (
@@ -51,6 +51,11 @@ export function AskForm({ room }: { room: string }) {
           </label>
         ))}
       </fieldset>
+      {suggest && !text && (
+        <button type="button" onClick={() => setText(suggest.slice(0, MAX))} className="self-start rounded-xl border border-seal/40 bg-white/70 px-3 py-1.5 text-left text-[13px] text-seal">
+          이어서 여쭙기: {suggest}
+        </button>
+      )}
       <textarea
         name="question"
         value={text}

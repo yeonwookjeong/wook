@@ -23,6 +23,8 @@ export type AskMessage = {
   topic?: Topic;
   // When a question held several topics: the ones he offers to take first, nothing spent yet.
   choices?: string[];
+  // A follow-up question he suggests, in the guest's own voice: shown as a button that fills the question box.
+  next?: string;
 };
 
 export type AskRoom = {
@@ -83,7 +85,7 @@ const SYSTEM = `너는 '정 훈도'다. 조선 관상감 명과학의 막내 관
 【이런 사람 · 이런 길】 질문에 대한 구체적인 답. 사람을 묻는다면 하나의 인물상으로 그린다: 어떤 기운(일간이나 띠를 예로 들어도 좋다), 어떤 말버릇과 행동, 처음 만났을 때 어떤 장면에서 끌리는지. 여러 성격을 나열해 서로 어긋나게 하지 않는다. 피해야 할 사람도 하나 짚는다. 일·돈·사람을 묻는다면 같은 깊이로 구체적인 선택지와 장면을 준다.
 【때】 이달·다음 달·올해 안에서 달 단위로, 절기 날짜까지. 근거의 달별 판정과 같은 방향으로.
 【오늘부터】 바로 해 볼 수 있는 일 2가지. 구체적인 행동으로.
-【정 훈도 한마디】 짧은 마무리, 그리고 이 상담에서 이어서 여쭈면 좋을 질문 하나를 "다음엔 ~을 여쭈어 보시옵소서"로 권한다.
+【정 훈도 한마디】 짧은 마무리 한두 문장. 다음 질문을 권하는 말은 여기 쓰지 않는다(아래 [[다음]]으로 따로 낸다).
 전체 900~1,400자.
 
 [이어지는 답 — '이번 질문'에 '이어지는 상담'이라고 적혀 있으면 위 틀 대신 이 틀]
@@ -93,13 +95,14 @@ const SYSTEM = `너는 '정 훈도'다. 조선 관상감 명과학의 막내 관
 【이런 사람 · 이런 길】 첫 답보다 한 걸음 더 들어간 구체적인 답. 전에 그린 인물상·선택지와 어긋나지 않고, 그것을 바탕으로 좁힌다.
 【때】 전에 말한 때와 같은 방향으로, 이번 질문에 맞게 더 좁혀서.
 【오늘부터】 전에 권한 일과 겹치지 않는 1~2가지.
-【정 훈도 한마디】 마무리와 다음 질문 권하기. 전에 권한 질문과 겹치지 않게.
+【정 훈도 한마디】 짧은 마무리 한두 문장. 다음 질문은 [[다음]]으로 따로 낸다.
 【그대는】은 쓰지 않는다(이미 한 이야기라서). 전체 700~1,200자.
 
 [기억]
 - '상담 메모'와 '최근 대화'를 반드시 읽고 이어서 말한다. 전에 나온 사람·사건·조언을 알아보고 필요하면 짚는다("지난번 말씀하신 그분은…").
 - 전에 한 말과 어긋나지 않는다. 상황이나 달이 바뀌어 말이 달라지면 왜 달라졌는지 한 줄로 밝힌다.
 - 메모에 없는 일을 있었던 것처럼 말하지 않는다.
+- 손님이 말하지 않은 고민·사건·관계(가족과의 갈등, 이별, 빚 등)를 "마음에 남아 계실" 것처럼 넘겨짚지 않는다. 사주에 그런 기운이 보여도 "~하기 쉬운 자리"라는 경향으로만 말한다.
 
 [하지 않는 것]
 - 건강 진단, 약, 법률 판단, 특정 투자 종목·코인·도박, 수익 장담: "그건 전문가께 여쭈시옵소서"라고 하고, 사주로 볼 수 있는 부분(성향, 때, 조심할 점)만 말한다.
@@ -117,7 +120,8 @@ const SYSTEM = `너는 '정 훈도'다. 조선 관상감 명과학의 막내 관
 (최대 4개, 다른 말 없이)
 
 [출력 형식]
-- 답을 다 쓴 뒤 줄을 바꿔 정확히 [[메모]] 한 줄을 쓰고, 그 아래에 고쳐 쓴 상담 메모 전체를 쓴다.
+- 답을 다 쓴 뒤 줄을 바꿔 정확히 [[다음]] 한 줄을 쓰고, 그 아래 한 줄에 손님이 이어서 물을 만한 질문 하나를 손님의 말투로 쓴다(예: 그런 사람은 어디서 만날 수 있을까?). 30자 안, 이번 질문을 한 걸음 더 파고드는 것, 손님이 꺼낸 적 없는 고민은 고르지 않는다. 사극 말투로 쓰지 않는다.
+- 그다음 줄을 바꿔 정확히 [[메모]] 한 줄을 쓰고, 그 아래에 고쳐 쓴 상담 메모 전체를 쓴다.
 - 메모는 다음 상담 때 네가 읽을 기록이다. 손님 상황, 대화에 나온 사람(호칭·관계), 손님이 털어놓은 사건과 날짜, 네가 드린 핵심 조언, 아직 안 풀린 고민을 '- '로 시작하는 줄로, 900자 안. 지난 메모에서 여전히 맞는 것은 남기고, 틀리거나 지난 것은 고친다.`;
 
 const kstDate = (t = Date.now()) => new Date(t + 9 * 3600000).toISOString().slice(0, 10);
@@ -172,7 +176,7 @@ export async function ask(room: AskRoom, question: string, topic: Topic, chosen?
     process.env.ASK_MOCK === "1"
       ? !chosen && /그리고|또/.test(q)
         ? "[[여러 주제]]\n- 연애: 그 사람과의 앞날\n- 일: 이직할 때"
-        : `그대의 물음에 한 줄로 아뢰자면, 서두르지 않는 쪽이 맞사옵니다.\n\n(시험용 답변 · 질문: ${q})\n\n[[메모]]\n- ${kstDate()} ${topic} 질문: ${q}\n${room.memo}`
+        : `그대의 물음에 한 줄로 아뢰자면, 서두르지 않는 쪽이 맞사옵니다.\n\n(시험용 답변 · 질문: ${q})\n\n[[다음]]\n그런 사람은 어디서 만날 수 있을까?\n\n[[메모]]\n- ${kstDate()} ${topic} 질문: ${q}\n${room.memo}`
       : await writeReport({ key: `ask:${room.id}`, system: SYSTEM, prompt, title: "정 훈도에게 묻기", modern: false }, () => {});
   if (!text) return { ok: false, error: "답을 쓰다 끊겼사옵니다. 잠시 뒤 다시 여쭈시옵소서." };
 
@@ -193,8 +197,10 @@ export async function ask(room: AskRoom, question: string, topic: Topic, chosen?
       choices,
     });
   } else {
-    const [answer, memo] = text.split("[[메모]]");
-    room.messages.push({ role: "hundo", text: answer.trim(), at: now, topic });
+    const [body, memo] = text.split("[[메모]]");
+    const [answer, after] = body.split("[[다음]]");
+    const next = after?.trim().split("\n")[0].replace(/^[-·•\s"“]+|["”\s]+$/g, "").slice(0, 40);
+    room.messages.push({ role: "hundo", text: answer.trim(), at: now, topic, ...(next ? { next } : {}) });
     if (memo?.trim()) room.memo = memo.trim().slice(0, 1500);
     room.used += 1;
   }
