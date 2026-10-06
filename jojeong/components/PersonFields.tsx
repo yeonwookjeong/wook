@@ -20,8 +20,9 @@ export default function PersonFields({
   prefix = "",
   nameLabel,
   unknownHour,
-  genderLabel = "성별 (선택 · 10년 대운 풀이에 쓰이옵니다)",
+  genderLabel,
   modern = false,
+  binaryGender = false,
   defaultName,
   foldExtras = false,
 }: {
@@ -33,17 +34,31 @@ export default function PersonFields({
   nameLabel: string;
   unknownHour: string;
   genderLabel?: string;
+  // Only 남/여 (no "밝히지 않음"): where the reading cannot go deep without it.
+  binaryGender?: boolean;
 }) {
+  // The site's forms (modern) have no gender picked in advance: left alone, most people kept "밝히지 않음" and
+  // lost the 10-year flow and the spouse star. The choice is required, "밝히지 않음" stays one of them.
+  const pick = modern;
+  const label = genderLabel ?? (modern ? "성별 · 10년 흐름과 배우자 자리를 볼 때 쓰여요" : "성별 (선택 · 10년 대운 풀이에 쓰이옵니다)");
+  const genders = binaryGender ? GENDERS.filter((g) => g.value) : GENDERS;
   const extras = (
     <>
       <BirthTimeFields unknownLabel={unknownHour} prefix={prefix} modern={modern} />
 
       <fieldset className="flex flex-col gap-1.5">
-        <legend className="mb-1.5 text-sm font-semibold text-ink-soft">{genderLabel}</legend>
-        <div className="grid grid-cols-3 gap-2">
-          {GENDERS.map((g) => (
+        <legend className="mb-1.5 text-sm font-semibold text-ink-soft">{label}</legend>
+        <div className={`grid gap-2 ${genders.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
+          {genders.map((g) => (
             <label key={g.value} className="cursor-pointer">
-              <input type="radio" name={`${prefix}gender`} value={g.value} defaultChecked={g.value === ""} className="peer sr-only" />
+              <input
+                type="radio"
+                name={`${prefix}gender`}
+                value={g.value}
+                defaultChecked={!pick && g.value === ""}
+                required={pick}
+                className="peer sr-only"
+              />
               <span className={choice}>{g.label}</span>
             </label>
           ))}

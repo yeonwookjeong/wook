@@ -168,19 +168,27 @@ export function domainCard(domain: Domain, pillars: Pillars, gender: Gender | nu
     const shaken = chartOf(p).some((s) => s.branch !== null && s.pos !== "일" && meetings(seat, s.branch).some((m) => m === "충" || m === "형" || m === "원진"));
     const bound = chartOf(p).some((s) => s.branch !== null && s.pos !== "일" && meetings(seat, s.branch).includes("육합"));
     const dohwa = chartOf(p).some((s) => s.branch !== null && salsAt(p, s.branch).includes("도화"));
+    // The seat's 합 is also one of the rare findings shown above this card ("한번 정을 준 사람과 오래 가요"):
+    // the verdict says the same thing in the same words, never "안정" for a seat that is bound.
     const [type, line] = shaken
-      ? ["늦게 피는 인연", "배우자 자리가 흔들리는 구조예요. 일찍 만난 인연보다, 한 번 겪고 난 뒤 만나는 사람이 오래가요."]
+      ? bound
+        ? ["늦게 피는 인연", "배우자 자리가 합으로 묶여 정은 깊은데, 부딪히는 글자도 함께 있어요. 서두른 인연보다, 한 번 겪고 난 뒤 만나는 사람이 오래가요."]
+        : ["늦게 피는 인연", "배우자 자리가 흔들리는 구조예요. 일찍 만난 인연보다, 한 번 겪고 난 뒤 만나는 사람이 오래가요."]
       : spouse >= 25
-        ? ["인연이 많은 사람", "배우자 기운이 넉넉해 사람이 자주 들어와요. 고르는 눈이 연애의 전부예요."]
+        ? bound
+          ? ["인연이 많은 사람", "배우자 기운이 넉넉해 사람이 자주 들어와요. 그런데 배우자 자리가 합으로 묶여 한번 정을 주면 오래 가니, 고르는 눈이 연애의 전부예요."]
+          : ["인연이 많은 사람", "배우자 기운이 넉넉해 사람이 자주 들어와요. 고르는 눈이 연애의 전부예요."]
         : spouse < 8
           ? ["스스로 찾아가야 하는 사람", "배우자 기운이 적어 기다리면 늦어져요. 내가 먼저 움직일 때 인연이 와요."]
-          : ["한 사람과 깊어지는 사람", "배우자 자리가 안정돼 있어요. 넓게보다 한 사람과 깊게 가는 연애가 맞아요."];
+          : bound
+            ? ["한 사람과 깊어지는 사람", "배우자 자리가 합으로 묶여 있어요. 한번 정을 준 사람과 오래, 깊게 가는 연애가 맞아요."]
+            : ["한 사람과 깊어지는 사람", "배우자 자리가 안정돼 있어요. 넓게보다 한 사람과 깊게 가는 연애가 맞아요."];
     return {
       type,
       line,
       facts: [
         { label: "배우자 기운", value: `${Math.round(spouse)}%`, note: spouse >= 25 ? "사람이 잘 들어오는 편이에요" : spouse >= 8 ? "보통이에요" : "적은 편이라 먼저 움직여야 해요" },
-        { label: "배우자 자리", value: shaken ? "흔들림" : bound ? "묶임" : "안정", note: shaken ? "부딪히는 글자가 있어 시기를 고르는 게 중요해요" : bound ? "합으로 묶여 정이 깊은 대신 쉽게 못 놓아요" : "큰 흔들림 없이 안정적이에요" },
+        { label: "배우자 자리", value: shaken ? (bound ? "묶임·흔들림" : "흔들림") : bound ? "묶임" : "안정", note: shaken ? (bound ? "정은 깊은데 부딪히는 글자도 있어 시기를 고르는 게 중요해요" : "부딪히는 글자가 있어 시기를 고르는 게 중요해요") : bound ? "합으로 묶여 정이 깊은 대신 쉽게 못 놓아요" : "큰 흔들림 없이 안정적이에요" },
         { label: "도화", value: dohwa ? "있음" : "없음", note: dohwa ? "사람을 끄는 매력이 있어 먼저 다가오는 사람이 많아요" : "첫눈보다 알수록 끌리는 매력이에요" },
       ],
     };

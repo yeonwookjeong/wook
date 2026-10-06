@@ -59,10 +59,10 @@ export default function GunghapForm({ savedName, product = "gunghap" }: { savedN
           </label>
         </div>
       )}
-      {!useSaved && <PersonFields prefix="a_" nameLabel="내 이름" unknownHour="모름" genderLabel="성별 (선택)" modern />}
+      {!useSaved && <PersonFields prefix="a_" nameLabel="내 이름" unknownHour="모름" modern />}
 
       <h3 className="mt-2 border-t border-seal/20 pt-4 font-myeongjo font-extrabold">{copy.other}</h3>
-      <PersonFields prefix="b_" nameLabel={copy.otherName} unknownHour="모름" genderLabel="성별 (선택)" modern />
+      <PersonFields prefix="b_" nameLabel={copy.otherName} unknownHour="모름" modern />
 
       {state.error && (
         <p role="alert" className="rounded-xl bg-seal/10 px-4 py-3 text-sm text-seal">

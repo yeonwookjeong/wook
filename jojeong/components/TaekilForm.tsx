@@ -67,12 +67,12 @@ export default function TaekilForm({ savedName, months, initial = "wedding" }: {
           </label>
         </div>
       )}
-      {!useSaved && <PersonFields prefix="a_" nameLabel="내 이름" unknownHour="모름" genderLabel="성별 (선택)" modern />}
+      {!useSaved && <PersonFields prefix="a_" nameLabel="내 이름" unknownHour="모름" modern />}
 
       {KINDS[kind].people === 2 && (
         <>
           <h3 className="mt-2 border-t border-seal/20 pt-4 font-myeongjo font-extrabold">{kind === "wedding" ? "결혼할 상대" : "함께하는 사람 (예비 배우자)"}</h3>
-          <PersonFields prefix="b_" nameLabel="상대 이름" unknownHour="모름" genderLabel="성별 (선택)" modern />
+          <PersonFields prefix="b_" nameLabel="상대 이름" unknownHour="모름" modern />
         </>
       )}
 
