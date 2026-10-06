@@ -1177,9 +1177,9 @@ export async function Card({ q }: { q: CardQuery }) {
             열두 띠 <span style={{ color: "#f1cf7a" }}>삼재표</span>
           </p>
         </div>
-        <div className="doc-paper" style={{ position: "absolute", top: 450, left: 140, right: 140, padding: "16px 30px 20px", color: INK, fontFamily: sans }}>
+        <div className="doc-paper" style={{ position: "absolute", top: 440, left: 140, right: 140, padding: "16px 30px 18px", color: INK, fontFamily: sans }}>
           {GROUPS.map((g, gi) => (
-            <div key={g.span} style={{ marginTop: gi ? 14 : 0 }}>
+            <div key={g.span} style={{ marginTop: gi ? 10 : 0 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 46, borderBottom: `2.5px solid ${g.now ? SEAL : "rgba(33,27,23,.35)"}` }}>
                 <b style={{ fontSize: 30, color: g.now ? SEAL : INK, fontVariantNumeric: "tabular-nums" }}>{g.span}</b>
                 <span
@@ -1197,7 +1197,7 @@ export async function Card({ q }: { q: CardQuery }) {
                 </span>
               </div>
               {g.bs.map((b) => (
-                <div key={b} style={{ display: "flex", alignItems: "center", height: 58, borderBottom: "1.5px solid rgba(179,38,30,.12)" }}>
+                <div key={b} style={{ display: "flex", alignItems: "center", height: 52, borderBottom: "1.5px solid rgba(179,38,30,.12)" }}>
                   <span style={{ width: 190, display: "flex", alignItems: "center", gap: 8 }}>
                     <span style={{ fontSize: 38, fontFamily: emoji, lineHeight: 1 }}>{FACE[b]}</span>
                     <b style={{ fontSize: 30, whiteSpace: "nowrap" }}>{ANIMALS[b]}띠</b>
@@ -1209,9 +1209,26 @@ export async function Card({ q }: { q: CardQuery }) {
             </div>
           ))}
         </div>
-        <div style={{ position: "absolute", top: 1430, left: 140, right: 140, textAlign: "center" }}>
-          <p style={{ fontSize: 30, fontWeight: 800, color: "#f1cf7a" }}>들삼재 → 눌삼재 → 날삼재, 세 해에 걸쳐 지나가옵니다</p>
-          <p style={{ marginTop: 8, fontSize: 25, lineHeight: 1.45, color: "rgba(244,236,219,.8)", fontFamily: sans }}>
+        {/* What 삼재 is and what its three years are called: the words the table uses, said once. */}
+        <div style={{ position: "absolute", top: 1338, left: 140, right: 140, textAlign: "center" }}>
+          <p style={{ fontSize: 28, fontWeight: 800, color: "#f1cf7a" }}>삼재(三災) · 띠마다 12년에 한 번, 조심하라 일러 온 세 해</p>
+          <div style={{ marginTop: 14, display: "flex", gap: 12 }}>
+            {[
+              ["들삼재", "첫해", "삼재가 들어오는 해"],
+              ["눌삼재", "둘째 해", "눌러앉아 머무는 해"],
+              ["날삼재", "셋째 해", "빠져나가는 해"],
+            ].map(([name, when, what], i) => (
+              <div key={name} style={{ flex: 1, padding: "10px 6px", borderRadius: 14, border: `2px solid ${i === 1 ? "#f1cf7a" : "rgba(241,207,122,.45)"}`, background: i === 1 ? "rgba(241,207,122,.12)" : "transparent" }}>
+                <p style={{ fontSize: 30, fontWeight: 800, color: HANJI }}>
+                  {name} <span style={{ fontSize: 21, fontWeight: 700, color: "rgba(244,236,219,.7)", fontFamily: sans }}>{when}</span>
+                </p>
+                <p style={{ marginTop: 4, fontSize: 22, color: "rgba(244,236,219,.85)", fontFamily: sans }}>{what}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{ position: "absolute", top: 1528, left: 140, right: 140, textAlign: "center" }}>
+          <p style={{ fontSize: 25, lineHeight: 1.45, color: "rgba(244,236,219,.8)", fontFamily: sans }}>
             사주의 해는 입춘(2월 4일 무렵)에 바뀌옵니다
             <br />
             삼재보다 센 건 내 사주 · 프로필 링크에서
