@@ -1557,7 +1557,7 @@ export async function Card({ q }: { q: CardQuery }) {
                         display: "flex",
                         alignItems: "center",
                         gap: 8,
-                        height: 42,
+                        height: 46,
                         padding: "0 8px",
                         borderTop: r.rank % 20 === 1 ? "none" : "1.5px solid rgba(179,38,30,.13)",
                         background: top ? "rgba(212,175,95,.22)" : r.rank > 55 ? "rgba(33,27,23,.05)" : "transparent",
@@ -1573,7 +1573,7 @@ export async function Card({ q }: { q: CardQuery }) {
               </div>
             ))}
           </div>
-          <div style={{ position: "absolute", top: 1384, left: REEL.side, width: 780, textAlign: "center" }}>
+          <div style={{ position: "absolute", top: 1470, left: REEL.side, right: REEL.side, textAlign: "center" }}>
             <p style={{ fontSize: 30, lineHeight: 1.4, fontWeight: 800, color: "#f1cf7a" }}>내 일주를 모르면? 프로필 링크에서 생년월일만 넣으면 바로</p>
             <p style={{ marginTop: 10, fontSize: 26, lineHeight: 1.4, color: "rgba(244,236,219,.75)", fontFamily: sans }}>저장해 두고 이번 {unit} 내내 꺼내 보시옵소서</p>
           </div>
