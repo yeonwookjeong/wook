@@ -1518,10 +1518,9 @@ export async function Card({ q }: { q: CardQuery }) {
     if (!mp) return null;
     // ?wk=2026-10-05,…,2026-10-11: the same slides for the seven days of one week instead of a month.
     const wk = typeof q.wk === "string" && /^\d{4}-\d{2}-\d{2}(,\d{4}-\d{2}-\d{2}){0,6}$/.test(q.wk) ? daysOf(q.wk.split(",")) : null;
-    // &wd=…: the work days among them (the 고비 is picked from these), &rest=연휴: what follows them, for the list pages (주말 by default).
+    // &wd=…: the work days among them; a 고비 or a good day is only ever one of these.
     const wd = typeof q.wd === "string" ? q.wd.split(",") : [];
     const wkDates = typeof q.wk === "string" ? q.wk.split(",") : [];
-    const rest = typeof q.rest === "string" && q.rest ? q.rest : "주말";
     const rows = wk ? rankDays(wk, { work: wkDates.flatMap((d, i) => (wd.includes(d) ? [i] : [])) }) : rankMonth(mp.stem, mp.branch);
     const span = wk ? `${wk[0].md}(${wk[0].short}) ~ ${wk.at(-1)!.md}(${wk.at(-1)!.short})` : `${mp.term} ${mp.from} ~ ${mp.to}`;
     const label = wk ? (q.wl ? String(q.wl) : "이번 주") : mp.label;
@@ -1542,7 +1541,7 @@ export async function Card({ q }: { q: CardQuery }) {
             </p>
             <p style={{ marginTop: 16, fontSize: 30, lineHeight: 1.3, color: "rgba(244,236,219,.85)", fontFamily: sans }}>
               {span}
-              {wk && " · 칸 옆은 넘겨야 할 고비 요일"}
+              {wk && " · 칸 옆: 빨강은 고비, 초록은 좋은 요일"}
             </p>
           </div>
           <div className="doc-paper" style={{ position: "absolute", top: 480, left: REEL.side, right: REEL.side, padding: "18px 14px", color: INK, display: "flex", gap: 12 }}>
@@ -1566,7 +1565,7 @@ export async function Card({ q }: { q: CardQuery }) {
                       <span style={{ width: 36, flexShrink: 0, textAlign: "right", fontSize: 24, fontWeight: 800, color: top ? SEAL : INK }}>{r.rank}</span>
                       <span style={{ width: 76, flexShrink: 0, whiteSpace: "nowrap", fontSize: 34, lineHeight: 1, color: SEAL, fontFamily: brush }}>{r.hanja}</span>
                       <span style={{ flex: 1, minWidth: 0, whiteSpace: "nowrap", fontSize: 23, fontWeight: 800 }}>{r.name.replace("일주", "")}</span>
-                      {r.mark && <span style={{ flexShrink: 0, fontSize: 19, fontWeight: 800, color: SEAL }}>{r.mark}</span>}
+                      {r.mark && <span style={{ flexShrink: 0, fontSize: 19, fontWeight: 800, color: r.kind === "hard" ? SEAL : "#3d6656" }}>{r.mark}</span>}
                     </div>
                   );
                 })}
@@ -1643,6 +1642,42 @@ export async function Card({ q }: { q: CardQuery }) {
           <Brand />
         </Frame>
       );
+    if (c === "rank-care" && wk) {
+      // A week's last slide: every 일주 with a real 고비 (its day branch clashed on a work day), by day.
+      const hardRows = rows.filter((r) => r.kind === "hard");
+      const byDay = wk.filter((d) => hardRows.some((r) => r.mark === d.short)).map((d) => ({ d, list: hardRows.filter((r) => r.mark === d.short) }));
+      return (
+        <Frame>
+          {hf}
+          <div style={{ position: "absolute", top: 96, left: 90, right: 90 }}>
+            <Label>{head}</Label>
+            <p style={{ marginTop: 6, fontSize: 48, fontWeight: 800, lineHeight: 1.2 }}>이번 주 고비가 있는 일주</p>
+            <p style={{ marginTop: 6, fontSize: 23, color: SOFT, fontFamily: sans }}>태어난 날 아래 글자가 그날과 정면으로 부딪혀요 · 명단에 없으면 무난한 주예요</p>
+            {byDay.map(({ d, list }) => (
+              <div key={d.md} style={{ marginTop: 12 }}>
+                <p style={{ fontSize: 30, fontWeight: 800, color: SEAL, borderBottom: `2.5px solid ${SEAL}`, paddingBottom: 4 }}>
+                  {d.label} {d.md}
+                </p>
+                {list.map((r) => (
+                  <div key={r.no} style={{ display: "flex", alignItems: "center", gap: 14, padding: "4px 0", borderBottom: "1.5px solid rgba(179,38,30,.12)" }}>
+                    <span style={{ width: 80, fontSize: 36, color: SEAL, fontFamily: brush, lineHeight: 1 }}>{r.hanja}</span>
+                    <span style={{ width: 150, fontSize: 27, fontWeight: 800, whiteSpace: "nowrap" }}>
+                      {r.name.replace("일주", "")}
+                      <span style={{ marginLeft: 6, fontSize: 17, color: SOFT, fontWeight: 400 }}>{r.rank}위</span>
+                    </span>
+                    <span style={{ flex: 1, minWidth: 0, fontSize: 24, fontFamily: sans, whiteSpace: "nowrap" }}>
+                      {r.hard?.includes("가장 센") && <b style={{ color: SEAL }}>★ </b>}
+                      {r.avoid}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+          <Brand />
+        </Frame>
+      );
+    }
     if (c === "rank-care")
       return (
         <Frame>
@@ -1684,10 +1719,13 @@ export async function Card({ q }: { q: CardQuery }) {
         </Frame>
       );
     if (c === "rank-rest") {
-      // 4위~55위 in two pages of two columns, every pillar with its line.
+      // 4위~55위 in two pages of two columns, every pillar with its line (a week: 4위~60위, 29 a page, since its
+      // last slide lists the 고비 instead of the bottom five).
       const page = Math.min(2, Math.max(1, Number(q.p ?? 1)));
-      const list = rows.slice(3 + (page - 1) * 26, 3 + page * 26);
-      const cols = [list.slice(0, 13), list.slice(13)];
+      const per = wk ? 29 : 26;
+      const list = rows.slice(3 + (page - 1) * per, 3 + page * per);
+      const half = Math.ceil(list.length / 2);
+      const cols = [list.slice(0, half), list.slice(half)];
       return (
         <Frame>
           {hf}
@@ -1697,20 +1735,20 @@ export async function Card({ q }: { q: CardQuery }) {
               {list[0].rank}위 ~ {list.at(-1)!.rank}위
             </p>
             <p style={{ marginTop: 6, fontSize: 21, color: SOFT, fontFamily: sans }}>
-              {wk ? `요일은 넘겨야 할 고비, 그날 피할 것 · ${rest}까지 버티시옵소서` : "내 일주는 프로필 링크에서"}
+              {wk ? "고비 요일엔 피할 것, 좋은 요일엔 해 볼 것 · 내 일주는 프로필 링크에서" : "내 일주는 프로필 링크에서"}
             </p>
             <div style={{ marginTop: 10, display: "flex", gap: 30 }}>
               {cols.map((col, i) => (
                 <div key={i} style={{ flex: 1, minWidth: 0 }}>
                   {col.map((r) => (
-                    <div key={r.no} style={{ display: "flex", alignItems: "center", gap: 12, padding: "5px 0", borderTop: "1.5px solid rgba(179,38,30,.15)" }}>
+                    <div key={r.no} style={{ display: "flex", alignItems: "center", gap: 12, padding: wk ? "3px 0" : "5px 0", borderTop: "1.5px solid rgba(179,38,30,.15)" }}>
                       <span style={{ width: 40, fontSize: 25, fontWeight: 800, textAlign: "right" }}>{r.rank}</span>
                       <span style={{ width: 62, fontSize: 30, color: SEAL, fontFamily: brush, lineHeight: 1 }}>{r.hanja}</span>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontSize: 23, fontWeight: 800 }}>
+                        <p style={{ fontSize: wk ? 21 : 23, fontWeight: 800, lineHeight: wk ? 1.25 : undefined }}>
                           {r.name} <span style={{ fontSize: 15, color: GOLD }}>{stars(r)}</span>
                         </p>
-                        <p style={{ fontSize: 19, color: SOFT, fontFamily: sans, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.short}</p>
+                        <p style={{ fontSize: wk ? 17 : 19, lineHeight: wk ? 1.3 : undefined, color: r.kind === "hard" ? SEAL : SOFT, fontFamily: sans, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.short}</p>
                       </div>
                     </div>
                   ))}
