@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import EnLang from "@/components/en/EnLang";
+import { Obang } from "@/components/en/Deco";
 
 // The English site, in preparation: hidden from search until it opens.
 export const metadata: Metadata = {
@@ -34,8 +35,10 @@ export default function EnLayout({ children }: LayoutProps<"/en">) {
           What is saju?
         </Link>
       </header>
+      <Obang className="mt-3" />
       {children}
       <footer className="mt-10 border-t border-ink/10 pt-4 text-center text-[11px] leading-relaxed text-ink-soft">
+        <Obang className="mb-3" />
         <p>Hundo Saju · hundosaju.com</p>
         <p>Saju is a centuries-old Korean tradition, offered here for reflection and fun, not as advice for medical, legal or money decisions.</p>
         <p className="mt-1">

@@ -128,17 +128,52 @@ function workTypes(share: (g: GodGroup) => number) {
   return types.sort((a, b) => b.score - a.score).slice(0, 3);
 }
 
-export function domainCard(domain: Domain, pillars: Pillars, gender: Gender | null): DomainCard | null {
+// The verdicts behind each card, without words: the Korean card below and the English reading (lib/en/saju.ts)
+// both read them, so the two languages never disagree.
+export type DomainFacts =
+  | { domain: "jaemul"; craft: number; money: number; store: boolean; rival: boolean; weak: boolean }
+  | { domain: "yeonae"; spouse: number; shaken: boolean; bound: boolean; dohwa: boolean }
+  | { domain: "jikup"; types: { name: string; basis: GodGroup; score: number; where: string }[]; sals: string[] };
+
+export function domainFacts(domain: Domain, pillars: Pillars, gender: Gender | null): DomainFacts | null {
   const c = ctxOf(pillars, gender);
   if (!c) return null;
   const { p, r, share } = c;
   if (domain === "jaemul") {
     const wealthEl = (stemEl(p.dayStem) + 2) % 5;
-    const craft = share("식상");
     const money = share("재성");
-    const store = chartOf(p).some((s) => s.branch === STORE[wealthEl]);
-    const rival = share("비겁") >= 30 && money < 20;
-    const weak = (r.strength === "신약" || r.strength === "극신약") && money >= 30;
+    return {
+      domain,
+      craft: share("식상"),
+      money,
+      store: chartOf(p).some((s) => s.branch === STORE[wealthEl]),
+      rival: share("비겁") >= 30 && money < 20,
+      weak: (r.strength === "신약" || r.strength === "극신약") && money >= 30,
+    };
+  }
+  if (domain === "yeonae") {
+    const groups = spouseGroups(c.gender);
+    const seat = p.dayBranch;
+    return {
+      domain,
+      spouse: groups.reduce((a, g) => a + share(g), 0) / groups.length,
+      shaken: chartOf(p).some((s) => s.branch !== null && s.pos !== "일" && meetings(seat, s.branch).some((m) => m === "충" || m === "형" || m === "원진")),
+      bound: chartOf(p).some((s) => s.branch !== null && s.pos !== "일" && meetings(seat, s.branch).includes("육합")),
+      dohwa: chartOf(p).some((s) => s.branch !== null && salsAt(p, s.branch).includes("도화")),
+    };
+  }
+  return {
+    domain,
+    types: workTypes(share) as { name: string; basis: GodGroup; score: number; where: string }[],
+    sals: [...new Set(chartOf(p).flatMap((s) => (s.branch === null ? [] : salsAt(p, s.branch).filter((x) => x in WORK_SAL))))],
+  };
+}
+
+export function domainCard(domain: Domain, pillars: Pillars, gender: Gender | null): DomainCard | null {
+  const f = domainFacts(domain, pillars, gender);
+  if (!f) return null;
+  if (f.domain === "jaemul") {
+    const { craft, money, store, rival, weak } = f;
     const [type, line] =
       craft >= 10 && money >= 10
         ? ["재주로 버는 사람", "잘하는 것이 그대로 돈이 되는 흐름이 살아 있어요. 내 이름을 걸고 파는 일에서 돈이 붙어요."]
@@ -161,13 +196,8 @@ export function domainCard(domain: Domain, pillars: Pillars, gender: Gender | nu
       ],
     };
   }
-  if (domain === "yeonae") {
-    const groups = spouseGroups(c.gender);
-    const spouse = groups.reduce((a, g) => a + share(g), 0) / groups.length;
-    const seat = p.dayBranch;
-    const shaken = chartOf(p).some((s) => s.branch !== null && s.pos !== "일" && meetings(seat, s.branch).some((m) => m === "충" || m === "형" || m === "원진"));
-    const bound = chartOf(p).some((s) => s.branch !== null && s.pos !== "일" && meetings(seat, s.branch).includes("육합"));
-    const dohwa = chartOf(p).some((s) => s.branch !== null && salsAt(p, s.branch).includes("도화"));
+  if (f.domain === "yeonae") {
+    const { spouse, shaken, bound, dohwa } = f;
     const [type, line] = shaken
       ? ["늦게 피는 인연", "배우자 자리가 흔들리는 구조예요. 일찍 만난 인연보다, 한 번 겪고 난 뒤 만나는 사람이 오래가요."]
       : spouse >= 25
@@ -185,8 +215,8 @@ export function domainCard(domain: Domain, pillars: Pillars, gender: Gender | nu
       ],
     };
   }
-  const scores = workTypes(share).map((w) => [w.name, w.score, w.where] as [string, number, string]);
-  const sals = [...new Set(chartOf(p).flatMap((s) => (s.branch === null ? [] : salsAt(p, s.branch).filter((x) => x in WORK_SAL))))];
+  const scores = f.types.map((w) => [w.name, w.score, w.where] as [string, number, string]);
+  const sals = f.sals;
   return {
     type: `${scores[0][0]} 인재`,
     line: `${scores[0][2]}에서 가장 빛나요. 두 번째는 ${scores[1][0]}이라, 둘을 섞은 자리가 가장 오래 가요.`,

@@ -1,13 +1,18 @@
 import Link from "next/link";
 import EnBirthForm from "@/components/en/EnBirthForm";
 import IntroSheet from "@/components/en/IntroSheet";
+import { Cloud, IlwolBanner } from "@/components/en/Deco";
 
 // The English front page: who reads your fate and what you get, then the form. A first visit also gets a short
 // welcome sheet (components/en/IntroSheet.tsx); /en/saju-101 tells the whole story.
 export default function EnHome() {
   return (
     <>
-      <section className="mt-8 text-center">
+      {/* The Sun, Moon and Five Peaks screen, in a lacquered frame, as behind the Joseon throne. */}
+      <div className="mt-5 overflow-hidden rounded-lg border-[6px] border-[#5a3a22] shadow-[0_4px_16px_rgba(0,0,0,0.18)]">
+        <IlwolBanner />
+      </div>
+      <section className="mt-6 text-center">
         <p className="font-myeongjo text-sm font-extrabold tracking-[0.4em] text-seal">四 柱</p>
         <h1 className="mt-2 font-myeongjo text-[28px] font-extrabold leading-tight">Your destiny, read the Korean way</h1>
         <p className="mt-3 text-[14px] leading-relaxed text-ink-soft">
@@ -30,7 +35,8 @@ export default function EnHome() {
         ))}
       </ul>
 
-      <div className="mt-6">
+      <Cloud className="mt-6" />
+      <div className="mt-4">
         <EnBirthForm />
       </div>
 

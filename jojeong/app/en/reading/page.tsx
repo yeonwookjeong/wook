@@ -3,6 +3,7 @@ import Link from "next/link";
 import { cityById } from "@/lib/cities";
 import { ANIMAL_EN, BRANCH_RO, ELEMENT_EN, enReading, MOOD_EN, STEM_RO } from "@/lib/en/saju";
 import { BRANCH_EL } from "@/lib/myeongri";
+import { Cloud, SealHead } from "@/components/en/Deco";
 import { computeProfile, type Gender } from "@/lib/profile";
 import { BRANCHES, computePillars, resolveBirthTime, STEMS, type BirthInput } from "@/lib/saju";
 
@@ -42,7 +43,7 @@ function chartFor(d: string, t: string, c: string, g: string) {
 
 function Cell({ stem, branch }: { stem: number | null; branch: number | null }) {
   if (stem === null || branch === null)
-    return <div className="grid h-[132px] place-items-center rounded-lg border border-dashed border-ink/25 text-[11px] text-ink-soft">unknown</div>;
+    return <div className="grid h-[132px] place-items-center rounded-lg border border-dashed border-hanji/30 text-[11px] text-hanji/60">unknown</div>;
   const se = ELEMENT_EN[Math.floor(stem / 2)];
   const be = ELEMENT_EN[BRANCH_EL[branch]];
   return (
@@ -59,14 +60,16 @@ function Cell({ stem, branch }: { stem: number | null; branch: number | null }) 
   );
 }
 
-function Sec({ tag, children }: { tag: string; children: React.ReactNode }) {
+function Sec({ hanja, title, sub, children }: { hanja: string; title: string; sub?: string; children: React.ReactNode }) {
   return (
     <section className="doc-paper mt-3 px-5 py-5">
-      <p className="text-xs font-extrabold tracking-[0.2em] text-seal">{tag}</p>
+      <SealHead hanja={hanja} title={title} sub={sub} />
       {children}
     </section>
   );
 }
+
+const AREA_SUB: Record<string, string> = { money: "jaemul · how money comes and stays", love: "yeonae · how love finds you", work: "jigeop · where you shine" };
 
 const MOOD_STYLE: Record<string, string> = {
   활짝: "bg-seal text-hanji",
@@ -97,11 +100,11 @@ export default async function EnReadingPage({ searchParams }: PageProps<"/en/rea
     <>
       {/* The chart. */}
       <section className="doc-paper mt-6 px-5 py-5">
-        <p className="text-center text-xs font-extrabold tracking-[0.3em] text-seal">YOUR FOUR PILLARS · 四柱</p>
-        <div className="mt-3 grid grid-cols-4 gap-2">
+        <SealHead hanja="四柱" title="Your Four Pillars" sub="saju · eight characters of your birth" />
+        <div className="mt-3 grid grid-cols-4 gap-2 rounded-xl border-[5px] border-[#5a3a22] bg-[#3b2616] p-2 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.15)]">
           {r.pillars.map((x) => (
             <div key={x.label}>
-              <p className="mb-1 text-center text-[11px] font-bold text-ink-soft">{x.label}</p>
+              <p className="mb-1 text-center text-[11px] font-bold text-hanji/80">{x.label}</p>
               <Cell stem={x.stem} branch={x.branch} />
             </div>
           ))}
@@ -114,7 +117,7 @@ export default async function EnReadingPage({ searchParams }: PageProps<"/en/rea
       </section>
 
       {/* Who you are, and how strong. */}
-      <Sec tag="YOUR DAY MASTER · 日干">
+      <Sec hanja="日干" title="Your Day Master" sub="ilgan · who you are at the core">
         <div className="mt-2 flex items-center gap-3">
           <span className="grid h-14 w-14 shrink-0 place-items-center rounded-lg font-myeongjo text-3xl text-hanji" style={{ background: dmEl.color }}>
             {STEMS[r.dayMaster.stem]}
@@ -147,16 +150,21 @@ export default async function EnReadingPage({ searchParams }: PageProps<"/en/rea
       </Sec>
 
       {/* The classic scene. */}
-      <Sec tag="YOUR CHART IN ONE PICTURE">
+      <Sec hanja="象" title="Your chart in one picture" sub="a classic image from the old masters">
         <p className="mt-2 font-myeongjo text-[26px] font-extrabold">{r.scene.hanja}</p>
         <p className="font-myeongjo text-[17px] font-extrabold">{r.scene.en[0].toUpperCase() + r.scene.en.slice(1)}</p>
         <p className="mt-2 text-[14px] leading-[1.75]">{r.scene.line}</p>
         <p className="mt-2 text-[11.5px] text-ink-soft">Saju masters gave classic four-character names to charts like yours.</p>
       </Sec>
 
+      <Cloud className="mt-5" />
+
       {/* What lifts you. */}
       <section className="mt-3 rounded-2xl px-5 py-5 text-hanji" style={{ background: lucky.color }}>
-        <p className="text-xs font-extrabold tracking-[0.2em] opacity-80">YOUR LUCKY ELEMENT · 用神</p>
+        <p className="flex items-center gap-2 text-xs font-extrabold tracking-[0.2em] opacity-90">
+          <span className="grid h-8 w-8 -rotate-3 place-items-center rounded-[4px] border-2 border-hanji font-myeongjo text-[13px] tracking-normal">用神</span>
+          YOUR LUCKY ELEMENT
+        </p>
         <p className="mt-1 font-myeongjo text-[30px] font-extrabold">
           {lucky.hanja} {lucky.name}
         </p>
@@ -179,7 +187,7 @@ export default async function EnReadingPage({ searchParams }: PageProps<"/en/rea
       </section>
 
       {/* The elements, as they are to you. */}
-      <Sec tag="FIVE ELEMENTS · 五行">
+      <Sec hanja="五行" title="Five Elements" sub="ohaeng · what you have, and what you lack">
         <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft">
           In saju each element means something different depending on your Day Master. Here is what they are to a {dmEl.name} person.
         </p>
@@ -211,7 +219,7 @@ export default async function EnReadingPage({ searchParams }: PageProps<"/en/rea
       </Sec>
 
       {/* The five powers. */}
-      <Sec tag="YOUR FIVE POWERS · 十星">
+      <Sec hanja="十星" title="Your Five Powers" sub="sipseong · the ten gods in five groups">
         <div className="mt-3 flex flex-col gap-2">
           {[...r.powers].sort((a, b) => b.pct - a.pct).map((x) => (
             <div key={x.group} className="grid grid-cols-[6.5em_1fr_5.2em] items-center gap-2 text-[13px]">
@@ -237,8 +245,47 @@ export default async function EnReadingPage({ searchParams }: PageProps<"/en/rea
         <p className="mt-2 text-[11px] text-ink-soft">&ldquo;top 10%&rdquo; compares your share with charts across all birth dates.</p>
       </Sec>
 
+      {/* Special stars. */}
+      <Sec hanja="神殺" title="Stars in your chart" sub="sinsal · special marks the old masters looked for">
+        {r.stars.length ? (
+          <ul className="mt-3 flex flex-col gap-2.5">
+            {r.stars.map((x) => (
+              <li key={x.name} className="rounded-xl border border-ink/10 bg-white/50 px-3 py-3">
+                <p className="flex items-baseline justify-between gap-2">
+                  <b className="text-[15px]">{x.plain[0].toUpperCase() + x.plain.slice(1)}</b>
+                  {x.rate !== null && <span className="shrink-0 text-[11px] font-bold text-seal">{x.rate < 0.01 ? "under 1" : Math.round(x.rate * 100)} in 100 people</span>}
+                </p>
+                <p className="text-[11.5px] text-ink-soft">{x.name}</p>
+                <p className="mt-1 text-[13.5px] leading-relaxed">{x.line}</p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-3 text-[13.5px] leading-relaxed">No special star stands out. Your chart speaks through its elements and powers alone.</p>
+        )}
+      </Sec>
+
+      {/* Money, love, work. */}
+      {r.areas.map((a) => (
+        <Sec key={a.key} hanja={a.hanja} title={a.title} sub={AREA_SUB[a.key]}>
+          <p className="mt-3 font-myeongjo text-[19px] font-extrabold">{a.type}</p>
+          <p className="mt-1 text-[14px] leading-[1.75]">{a.line}</p>
+          <dl className="mt-3 flex flex-col divide-y divide-ink/10 rounded-xl border border-ink/10 bg-white/50">
+            {a.facts.map((x) => (
+              <div key={x.label} className="grid grid-cols-[7.5em_4.5em_1fr] items-baseline gap-2 px-3 py-2 text-[12.5px]">
+                <dt className="text-ink-soft">{x.label}</dt>
+                <dd className="font-bold">{x.value}</dd>
+                <dd className="text-ink-soft">{x.note}</dd>
+              </div>
+            ))}
+          </dl>
+        </Sec>
+      ))}
+
+      <Cloud className="mt-5" />
+
       {/* This year. */}
-      <Sec tag={`${r.year.year} · ${STEMS[r.year.stem]}${BRANCHES[r.year.branch]}`}>
+      <Sec hanja={`${STEMS[r.year.stem]}${BRANCHES[r.year.branch]}`} title={`Your ${r.year.year}`} sub="this year meets your chart">
         <p className="mt-1 font-myeongjo text-[20px] font-extrabold">
           The year of the {ELEMENT_EN[Math.floor(r.year.stem / 2)].name} {ANIMAL_EN[r.year.branch]}
         </p>
@@ -250,7 +297,7 @@ export default async function EnReadingPage({ searchParams }: PageProps<"/en/rea
       </Sec>
 
       {/* Ten-year luck. */}
-      <Sec tag="TEN-YEAR LUCK · 大運">
+      <Sec hanja="大運" title="Ten-Year Luck" sub="daeun · the seasons of your life">
         {r.flow ? (
           <>
             <p className="mt-1 text-[12.5px] leading-relaxed text-ink-soft">
@@ -287,7 +334,7 @@ export default async function EnReadingPage({ searchParams }: PageProps<"/en/rea
         )}
       </Sec>
 
-      <Sec tag="YOUR ZODIAC ANIMAL · 띠">
+      <Sec hanja="띠" title="Your Zodiac Animal" sub="tti · from your year pillar">
         <p className="mt-1 font-myeongjo text-[22px] font-extrabold">The {r.animal}</p>
         <p className="mt-1 text-[12.5px] text-ink-soft">From your year pillar. In saju it is only one of eight characters, not the whole story.</p>
       </Sec>

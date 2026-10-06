@@ -4,6 +4,7 @@
 
 import { freeReadingOf, type Mood } from "../freeReading";
 import { GROUP_OF, groupElement, HIDDEN, luckFit, readChart, tenGod, type GodGroup, type Strength } from "../myeongri";
+import { domainFacts, type DomainFacts } from "../domains";
 import type { Profile } from "../profile";
 import { isFull, type Pillars } from "../saju";
 
@@ -139,6 +140,86 @@ const DECADE_EN: Record<GodGroup, [young: string, adult: string, late: string]> 
   인성: ["growing up studying and cared for", "learning and earning credentials", "a mind at ease"],
 };
 
+// The special stars (신살) the free reading names, in English. Same set and same rates as the Korean page.
+const STAR_EN: Record<string, { name: string; plain: string; line: string }> = {
+  천을귀인: { name: "Cheoneul Gwiin", plain: "the Noble Helper", line: "When you hit a dead end, someone always reaches out a hand." },
+  도화: { name: "Dohwa", plain: "the Peach Blossom", line: "You draw eyes without trying. Charm, style and expression are your weapons." },
+  역마: { name: "Yeokma", plain: "the Traveling Horse", line: "Luck opens when you move: new cities, trips abroad, a change of job." },
+  화개: { name: "Hwagae", plain: "the Flower Canopy", line: "You go deep alone. Study, art and research are where you belong." },
+  문창귀인: { name: "Munchang Gwiin", plain: "the Scholar Star", line: "Words, exams and planning: you shine in work done with the mind." },
+  양인: { name: "Yangin", plain: "the Blade", line: "Once decided, you push through. Mind the flashes of temper and it is a great weapon." },
+  괴강: { name: "Goegang", plain: "the Chief", line: "You play big and can't stay under others for long. When it goes well, it goes very well." },
+  백호: { name: "Baekho", plain: "the White Tiger", line: "Tremendous drive. Watch for rushing and for injuries." },
+};
+
+// Money, love and work: the same verdicts as the Korean cards (lib/domains.ts domainFacts), told in English.
+export type EnArea = { key: string; title: string; hanja: string; type: string; line: string; facts: { label: string; value: string; note: string }[] };
+const WORK_EN: Record<string, { name: string; where: string }> = {
+  관성: { name: "Organisation", where: "taking a role and rising through an organisation" },
+  인성: { name: "Expert", where: "a field where learning and credentials earn respect" },
+  식상: { name: "Maker", where: "making things with your own hands and mind" },
+  재성: { name: "Business", where: "setting up deals and moving people and money" },
+  비겁: { name: "Independent", where: "standing on your own name: freelance or your own shop" },
+};
+const WORK_STAR: Record<string, string> = {
+  역마: "work that moves: travel, overseas, field work",
+  문창귀인: "writing, study and planning",
+  화개: "research, art and specialist depth",
+  양인: "competitive work and hard technical skill",
+  천을귀인: "bosses and seniors who help when work gets stuck",
+};
+
+function areaOf(f: DomainFacts): EnArea {
+  if (f.domain === "jaemul") {
+    const [type, line] =
+      f.craft >= 10 && f.money >= 10
+        ? ["Earns by talent", "What you're good at turns straight into money. Selling under your own name pays."]
+        : f.money >= 10
+          ? ["Earns by spotting chances", "You read the flow of money well, but making things yourself is weaker. Picking the right deal and people is your money."]
+          : f.craft >= 10
+            ? ["Talent first", "Plenty of talent, a weak link to money. Practise pricing and selling your work."]
+            : ["Builds it slowly", "Money energy doesn't stand out, so steady beats lucky. Salary and savings are your strongest tools."];
+    return {
+      key: "money", title: "Money", hanja: "財", type, line,
+      facts: [
+        { label: "Money energy", value: `${f.money}%`, note: f.money >= 30 ? "Plenty of it" : f.money >= 10 ? "Average" : "On the low side" },
+        { label: "Money vault", value: f.store ? "Yes" : "No", note: f.store ? "You can hold on to what comes in" : "Set up automatic savings so money stays" },
+        {
+          label: "Leaks",
+          value: f.rival ? "Yes" : f.weak ? "Careful" : "Small",
+          note: f.rival ? "Others take a share: partnerships, guarantees and lending drain you" : f.weak ? "The money is bigger than your strength; steady beats big" : "No big leak in the structure",
+        },
+      ],
+    };
+  }
+  if (f.domain === "yeonae") {
+    const [type, line] = f.shaken
+      ? ["Love that blooms late", "Your spouse seat gets shaken. Someone you meet after a lesson or two tends to last longer than an early love."]
+      : f.spouse >= 25
+        ? ["Many connections", "Partner energy is plentiful and people keep coming. Choosing well is the whole game."]
+        : f.spouse < 8
+          ? ["Make the first move", "Partner energy is light, so waiting makes it late. Love comes when you go out to meet it."]
+          : ["One deep love", "Your spouse seat is steady. Going deep with one person suits you better than going wide."];
+    return {
+      key: "love", title: "Love", hanja: "緣", type, line,
+      facts: [
+        { label: "Partner energy", value: `${Math.round(f.spouse)}%`, note: f.spouse >= 25 ? "People come to you easily" : f.spouse >= 8 ? "Average" : "Light: take the first step" },
+        { label: "Spouse seat", value: f.shaken ? "Shaken" : f.bound ? "Bound" : "Steady", note: f.shaken ? "Clashing characters: timing matters" : f.bound ? "Tied by a combination: deep affection, hard to let go" : "Calm and stable" },
+        { label: "Peach Blossom", value: f.dohwa ? "Yes" : "No", note: f.dohwa ? "Your charm makes people approach first" : "A charm that grows the more people know you" },
+      ],
+    };
+  }
+  const [a, b] = f.types;
+  return {
+    key: "work", title: "Work", hanja: "業", type: `The ${WORK_EN[a.basis].name} type`,
+    line: `You shine most in ${WORK_EN[a.basis].where}. Second comes ${WORK_EN[b.basis].name}, so a role mixing the two lasts longest.`,
+    facts: [
+      ...f.types.map((t) => ({ label: WORK_EN[t.basis].name, value: `${t.score} pts`, note: "" })),
+      ...(f.sals.length ? [{ label: "Work star", value: STAR_EN[f.sals[0]].plain.replace(/^the /, ""), note: `Good with ${WORK_STAR[f.sals[0]]}` }] : []),
+    ],
+  };
+}
+
 const yearPillar = (y: number) => ({ stem: (((y - 4) % 10) + 10) % 10, branch: (((y - 4) % 12) + 12) % 12 });
 
 export type EnReading = {
@@ -149,6 +230,8 @@ export type EnReading = {
   scene: { hanja: string; en: string; line: string };
   elements: { el: number; name: string; hanja: string; color: string; count: number; power: GodGroup; powerName: string; is: string }[];
   missing: { el: number; line: string }[];
+  stars: { name: string; plain: string; line: string; rate: number | null }[];
+  areas: EnArea[];
   powers: { group: GodGroup; name: string; korean: string; pct: number; rank: string | null }[];
   strongest: { name: string; line: string };
   weakest: { name: string; line: string };
@@ -238,6 +321,11 @@ export function enReading(p: Pillars, profile: Profile | null, now = new Date().
           };
         })
       : null,
+    stars: free.sals.flatMap((x) => (STAR_EN[x.name] ? [{ ...STAR_EN[x.name], rate: x.rate }] : [])),
+    areas: (["jaemul", "yeonae", "jikup"] as const).flatMap((d) => {
+      const f = domainFacts(d, p, profile?.gender ?? null);
+      return f ? [areaOf(f)] : [];
+    }),
     animal: ANIMAL_EN[p.yearBranch],
     hourKnown: p.hourBranch !== null,
   };

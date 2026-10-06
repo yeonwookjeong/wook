@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { IlwolBanner, SealHead } from "@/components/en/Deco";
 
 export const metadata: Metadata = { title: "Saju 101" };
 
@@ -89,7 +90,10 @@ const SECTIONS: { h: string; hanja: string; body: React.ReactNode }[] = [
 export default function Saju101() {
   return (
     <>
-      <section className="mt-8 text-center">
+      <div className="mt-5 overflow-hidden rounded-lg border-[6px] border-[#5a3a22]">
+        <IlwolBanner />
+      </div>
+      <section className="mt-6 text-center">
         <p className="font-myeongjo text-sm font-extrabold tracking-[0.4em] text-seal">入 門</p>
         <h1 className="mt-2 font-myeongjo text-[28px] font-extrabold">Saju 101</h1>
         <p className="mt-2 text-[14px] text-ink-soft">A five-minute guide to Korea&rsquo;s way of reading destiny</p>
@@ -97,10 +101,10 @@ export default function Saju101() {
       <div className="mt-6 flex flex-col gap-3">
         {SECTIONS.map((s) => (
           <section key={s.h} className="doc-paper px-5 py-5">
-            <h2 className="font-myeongjo text-[19px] font-extrabold">
-              {s.h} <span className="ml-1 text-[12px] font-normal text-ink-soft">{s.hanja}</span>
+            <h2>
+              <SealHead hanja={s.hanja} title={s.h} />
             </h2>
-            <div className="mt-2 flex flex-col gap-2 text-[14px] leading-[1.75]">{s.body}</div>
+            <div className="mt-3 flex flex-col gap-2 text-[14px] leading-[1.75]">{s.body}</div>
           </section>
         ))}
       </div>
