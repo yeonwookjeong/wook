@@ -21,6 +21,7 @@ export async function openRoomAction(_prev: FormState, formData: FormData): Prom
   let roomId: string;
   try {
     const person = await personOf(formData, "", "손님");
+    if (!person.gender) return { error: "성별을 골라 주세요. 배우자의 별과 10년 흐름을 볼 때 꼭 필요해요." };
     roomId = (await createRoom(encodePerson(person))).id;
   } catch (e) {
     if (e instanceof BirthInputError) return { error: e.message };
@@ -48,6 +49,7 @@ export async function attachOtherAction(_prev: FormState, formData: FormData): P
   if (!room) return { error: "방을 찾지 못했어요." };
   try {
     const other = await personOf(formData, "b_", "상대");
+    if (!other.gender) return { error: "상대의 성별을 골라 주세요." };
     room.other = encodePerson(other);
     room.otherLabel = String(formData.get("label") ?? "").trim().slice(0, 12) || "그 사람";
   } catch (e) {

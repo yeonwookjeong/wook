@@ -20,7 +20,7 @@ export function OpenRoomForm() {
   const [state, action, pending] = useActionState<FormState, FormData>(openRoomAction, { error: null });
   return (
     <form onSubmit={keepValues(action)} className="mt-3 flex flex-col gap-3">
-      <PersonFields nameLabel="손님 이름" unknownHour="모름" modern />
+      <PersonFields nameLabel="손님 이름" unknownHour="모름" modern binaryGender genderLabel="성별 · 배우자의 별과 10년 흐름을 볼 때 꼭 필요해요" />
       <ErrorLine error={state.error} />
       <button type="submit" disabled={pending} className="rounded-xl bg-ink py-3 text-sm font-extrabold text-hanji disabled:opacity-60">
         {pending ? "방을 여는 중이에요…" : "상담방 열기"}
@@ -104,7 +104,7 @@ export function AttachOtherForm({ room }: { room: string }) {
         <span className="font-semibold text-ink-soft">손님이 부르는 호칭</span>
         <input name="label" placeholder="그 사람, 남자친구, 팀장님 …" maxLength={12} className="rounded-lg border border-ink/15 bg-white/70 px-3 py-2" />
       </label>
-      <PersonFields prefix="b_" nameLabel="상대 이름" unknownHour="모름" modern />
+      <PersonFields prefix="b_" nameLabel="상대 이름" unknownHour="모름" modern binaryGender genderLabel="상대 성별" />
       <ErrorLine error={state.error} />
       <button type="submit" disabled={pending} className="rounded-xl border-2 border-ink py-2.5 text-sm font-extrabold disabled:opacity-60">
         {pending ? "붙이는 중…" : "상대 사주 붙이기"}
