@@ -157,6 +157,25 @@ function InnerRule({ width, accent }: { width: number; accent: string }) {
   );
 }
 
+// A column of 훈도의 사주 이야기 (app/column/[slug]/opengraph-image.tsx): its section and level, the topic large and
+// the subtitle under it, as the title shows on the page.
+export function columnImage({ level, head, sub }: { level: string; head: string; sub?: string }) {
+  return render(
+    <div style={{ ...frame(1200, 630), justifyContent: "center", paddingBottom: 110 }}>
+      <InnerRule width={1200} accent={C.seal} />
+      <div style={{ fontSize: 30, color: C.seal, fontWeight: 800, letterSpacing: 2 }}>{`훈도의 사주 이야기 · ${level}`}</div>
+      <div style={{ marginTop: 22, fontSize: head.length > 18 ? 60 : 72, fontWeight: 800, textAlign: "center", maxWidth: 1000 }}>{head}</div>
+      {sub && <div style={{ marginTop: 18, fontSize: 36, color: C.soft, textAlign: "center", maxWidth: 960 }}>{sub}</div>}
+      <div style={{ position: "absolute", left: 80, bottom: 56, display: "flex" }}>
+        <Portrait mood="face" size={130} />
+      </div>
+      <div style={{ position: "absolute", right: 90, bottom: 66, display: "flex", fontSize: 30, color: C.gold, fontWeight: 800 }}>{SITE_NAME}</div>
+    </div>,
+    1200,
+    630,
+  );
+}
+
 // The preview of a friend's shared result (app/s/[kind]/[token]): who, a badge (the rank or the day pillar), the
 // verdict large, and one line under it.
 export function shareImage({ top, badge, big, small }: { top: string; badge?: string; big: string; small: string }) {
