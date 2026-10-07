@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { forgetMeAction } from "@/app/actions";
 import FreeTiles, { type FreeTile } from "@/components/FreeTiles";
+import { COLUMNS } from "@/lib/columns";
 import Keep from "@/components/Keep";
 import RoyalDoc from "@/components/RoyalDoc";
 import { hanjaNum } from "@/lib/hanjaNum";
@@ -244,6 +245,23 @@ export default async function Home() {
       <section className="mt-8">
         <h2 className="text-center font-myeongjo text-lg font-extrabold">무료로 보기</h2>
         <FreeTiles tiles={FREE} className="mt-3" />
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-center font-myeongjo text-lg font-extrabold">훈도의 사주 이야기</h2>
+        <ul className="mt-3 flex flex-col gap-2">
+          {COLUMNS.slice(-3).reverse().map((c) => (
+            <li key={c.slug}>
+              <Link href={`/column/${c.slug}`} className="doc-paper block px-4 py-3">
+                <b className="block font-myeongjo text-[15px] leading-snug">{c.title}</b>
+                <span className="mt-0.5 block text-[12px] text-ink-soft">{c.level} · 읽는 글</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <Link href="/column" className="mt-2 block text-center text-[13px] font-bold text-seal">
+          이야기 전체 보기 →
+        </Link>
       </section>
     </>
   );

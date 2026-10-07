@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { siteUrl } from "@/lib/brand";
+import { COLUMNS } from "@/lib/columns";
 import { SHELF } from "@/lib/products";
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -12,6 +13,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     page("/king", 0.7),
     page("/samjae", 0.6),
     page("/ranking", 0.7),
+    page("/column", 0.7),
+    ...COLUMNS.map((c) => page(`/column/${c.slug}`, 0.6)),
     page("/about", 0.5),
     page("/terms", 0.2),
     page("/refund", 0.2),
