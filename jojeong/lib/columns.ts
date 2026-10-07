@@ -578,7 +578,7 @@ export const COLUMNS: Column[] = [
 export const columnBySlug = (slug: string) => COLUMNS.find((c) => c.slug === slug) ?? null;
 
 // Today in Korea, as YYYY-MM-DD: an article dated later is written but not yet public.
-const kstToday = () => new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
+export const kstToday = () => new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
 export const isPublished = (c: Column) => c.date <= kstToday();
 // Newest first.
 export const publishedColumns = () => COLUMNS.filter(isPublished).sort((a, b) => b.date.localeCompare(a.date));
