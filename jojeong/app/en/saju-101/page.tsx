@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { IlwolBanner, SealHead } from "@/components/en/Deco";
+import { SealHead } from "@/components/en/Deco";
+import EnHero from "@/components/en/EnHero";
 
 export const metadata: Metadata = { title: "Saju 101" };
 
@@ -90,9 +91,7 @@ const SECTIONS: { h: string; hanja: string; body: React.ReactNode }[] = [
 export default function Saju101() {
   return (
     <>
-      <div className="mt-5 overflow-hidden rounded-lg border-[6px] border-[#5a3a22]">
-        <IlwolBanner />
-      </div>
+      <EnHero compact title="入門 · SAJU 101" line="" />
       <section className="mt-6 text-center">
         <p className="font-myeongjo text-sm font-extrabold tracking-[0.4em] text-seal">入 門</p>
         <h1 className="mt-2 font-myeongjo text-[28px] font-extrabold">Saju 101</h1>
