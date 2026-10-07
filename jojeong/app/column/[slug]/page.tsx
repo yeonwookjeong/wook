@@ -191,8 +191,8 @@ export default async function ColumnPage({ params, searchParams }: PageProps<"/c
       </article>
 
       <Link href="/reports/pyeongsaeng" className="mt-8 block rounded-2xl bg-seal px-5 py-4 text-center text-hanji">
-        <b className="block font-myeongjo text-lg">내 여덟 글자 무료로 보기</b>
-        <span className="mt-0.5 block text-[12.5px] opacity-90">생일만 넣으면 내 사주표와 칸마다의 풀이가 바로 나와요</span>
+        <b className="block font-myeongjo text-lg">평생 사주 첫 장, 무료로 펼쳐 보기</b>
+        <span className="mt-0.5 block text-[12.5px] opacity-90">생일만 넣으면 내 사주표와 칸마다의 풀이까지 무료예요</span>
       </Link>
 
       <AdSlot />
