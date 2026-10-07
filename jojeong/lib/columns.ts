@@ -1,5 +1,9 @@
 // 훈도의 사주 이야기: articles anyone can read without entering a birthday, written from what the SNS posts
 // showed people want to know, at length. Plain text in blocks, so each page renders as real, crawlable prose.
+//
+// What a column gives and what it keeps (agreed with the owner): a column teaches the concepts, freely and well,
+// so a reader can find things in their own chart. It never shows what the paid readings do: how one person's
+// combination is read, timing (대운·세운), 용신 and what to do about it, roles and talents, or how the engine works.
 
 export type ColumnBlock =
   | { t: "p"; text: string }
@@ -12,6 +16,8 @@ export type ColumnBlock =
 export type Column = {
   slug: string;
   level: "입문" | "심화";
+  // Written as "주제, 부제" or "질문? 부제": the whole line is the search title, and on screen the part after the
+  // comma or question mark goes to its own line (titleLines).
   title: string;
   // One line for search results and the list: what the reader will know after reading.
   summary: string;
@@ -576,6 +582,12 @@ const kstToday = () => new Date(Date.now() + 9 * 3600000).toISOString().slice(0,
 export const isPublished = (c: Column) => c.date <= kstToday();
 // Newest first.
 export const publishedColumns = () => COLUMNS.filter(isPublished).sort((a, b) => b.date.localeCompare(a.date));
+
+// The title as shown: the topic, then the subtitle on a line of its own. "A, B" → ["A", "B"]; "A? B" → ["A?", "B"].
+export const titleLines = (title: string): [string, string?] => {
+  const m = title.match(/^(.+?)(,|\?)\s+(.+)$/);
+  return m ? [m[2] === "?" ? `${m[1]}?` : m[1], m[3]] : [title];
+};
 
 // "2026-10-07" → "2026년 10월 7일"
 export const columnDate = (d: string) => {
