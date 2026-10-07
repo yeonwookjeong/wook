@@ -13,6 +13,7 @@ import SignInForm from "./SignInForm";
 import { isPreview, newYearOf, thisYear } from "@/lib/yeonun";
 import { inPeriods, PERIODS, readStats, type Period } from "@/lib/stats";
 import { SHARE_FROM, STEP_FROM, STEP_LABEL } from "@/lib/nextStep";
+import { COLUMNS, publishedColumns, titleLines } from "@/lib/columns";
 import { SOURCES } from "@/lib/source";
 import { DailyTable, SourceTable } from "./Insights";
 
@@ -68,7 +69,11 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
     ...["reading", "sinbun"].map((k) => `sl:${k}`),
     ...SOURCES.map((s) => `src:${s}`),
     ...SALE_KEYS.flatMap((k) => [`view:${k}`, `co:${k}`]),
+    ...COLUMNS.map((c) => `cv:${c.slug}`),
   ]);
+  // All columns read, the sum of each one's count.
+  const readsIn = (p: Period) => COLUMNS.reduce((a, c) => a + (stats[`cv:${c.slug}`]?.[p] ?? 0), 0);
+  stats.cv = Object.fromEntries(PERIODS.map(({ key }) => [key, readsIn(key)])) as Record<Period, number>;
   // Paid orders per period.
   const paidBy = Object.fromEntries(PERIODS.map(({ key }) => [key, { n: 0, won: 0 }])) as Record<Period, { n: number; won: number }>;
   for (const o of paid)
@@ -300,6 +305,15 @@ const ROWS: { key: string; label: string; group?: string }[] = [
   { key: "reading", label: "무료 사주 분석" },
 ];
 
+// 훈도의 사주 이야기: reads of every column and of each one open now (newest first); its button on to the
+// free reading is the `to:column` row above.
+function columnRows(): { key: string; label: string; group?: string }[] {
+  return [
+    { key: "cv", label: "글 조회 (전체)", group: "사주 이야기 (칼럼)" },
+    ...publishedColumns().map((c) => ({ key: `cv:${c.slug}`, label: `　└ ${titleLines(c.title)[0]}` })),
+  ];
+}
+
 function StatsTable({ stats, paidBy }: { stats: Record<string, Record<Period, number>>; paidBy: Record<Period, { n: number; won: number }> }) {
   const n = (v: number) => v.toLocaleString("ko-KR");
   const pct = (a: number, b: number) => (b ? `${Math.round((a / b) * 100)}%` : "–");
@@ -320,7 +334,7 @@ function StatsTable({ stats, paidBy }: { stats: Record<string, Record<Period, nu
             </tr>
           </thead>
           <tbody>
-            {ROWS.map((r) => (
+            {[...ROWS, ...columnRows()].map((r) => (
               <tr key={r.key} className={r.group ? "border-t border-seal/20" : ""}>
                 <td className="py-1 text-left">
                   {r.group && <span className="block pt-1 text-[10px] font-extrabold text-seal">{r.group}</span>}
