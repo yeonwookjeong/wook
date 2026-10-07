@@ -4,20 +4,21 @@ import { notFound } from "next/navigation";
 import AdSlot from "@/components/AdSlot";
 import EightCells from "@/components/EightCells";
 import { SITE_NAME, siteUrl } from "@/lib/brand";
-import { COLUMNS, columnBySlug, columnDate, type ColumnBlock } from "@/lib/columns";
+import { columnBySlug, columnDate, isPublished, publishedColumns, type ColumnBlock } from "@/lib/columns";
 import { hanjaNum } from "@/lib/hanjaNum";
 
 // One article of 훈도의 사주 이야기 (lib/columns.ts): readable as it is, with no birthday asked, then a way on to
 // the reader's own chart.
 
-export function generateStaticParams() {
-  return COLUMNS.map((c) => ({ slug: c.slug }));
-}
+// Articles are written ahead and open on their date (lib/columns.ts), so the page is decided per request.
+// ?preview=1 shows one before its day, for the owner to check.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: PageProps<"/column/[slug]">): Promise<Metadata> {
   const c = columnBySlug((await params).slug);
   if (!c) return {};
   return {
+    ...(!isPublished(c) && { robots: { index: false } }),
     title: c.title,
     description: c.summary,
     alternates: { canonical: `/column/${c.slug}` },
@@ -42,7 +43,7 @@ function sectionsOf(body: ColumnBlock[]): Section[] {
   return out;
 }
 
-function Block({ b, lead }: { b: ColumnBlock; lead?: boolean }) {
+function Block({ b, lead, open }: { b: ColumnBlock; lead?: boolean; open: (slug: string) => boolean }) {
   switch (b.t) {
     case "h2":
       return null;
@@ -74,6 +75,11 @@ function Block({ b, lead }: { b: ColumnBlock; lead?: boolean }) {
         <div className="mt-4 border-l-2 border-seal/40 pl-3">
           <p className="font-bold">{b.q}</p>
           <p className="mt-1 text-[15.5px] leading-relaxed">{b.a}</p>
+          {b.link && open(b.link) && (
+            <Link href={`/column/${b.link}`} className="mt-1.5 inline-block text-[13.5px] font-bold text-seal">
+              자세히 읽기 →
+            </Link>
+          )}
         </div>
       );
     case "term":
@@ -90,10 +96,14 @@ function Block({ b, lead }: { b: ColumnBlock; lead?: boolean }) {
   }
 }
 
-export default async function ColumnPage({ params }: PageProps<"/column/[slug]">) {
+export default async function ColumnPage({ params, searchParams }: PageProps<"/column/[slug]">) {
   const c = columnBySlug((await params).slug);
-  if (!c) notFound();
-  const others = COLUMNS.filter((o) => o.slug !== c.slug).slice(0, 3);
+  const preview = (await searchParams).preview === "1";
+  if (!c || (!isPublished(c) && !preview)) notFound();
+  const live = publishedColumns();
+  // A link to an article not yet open shows only in preview, so readers never meet a missing page.
+  const open = (slug: string) => preview || live.some((o) => o.slug === slug);
+  const others = live.filter((o) => o.slug !== c.slug).slice(0, 3);
   const [lead, ...sections] = sectionsOf(c.body);
   const ld = {
     "@context": "https://schema.org",
@@ -151,7 +161,7 @@ export default async function ColumnPage({ params }: PageProps<"/column/[slug]">
         </nav>
         <div className="mt-5">
           {lead.blocks.map((b, i) => (
-            <Block key={i} b={b} lead={i === 0} />
+            <Block key={i} b={b} lead={i === 0} open={open} />
           ))}
         </div>
         {sections.map((s, i) => (
@@ -164,7 +174,7 @@ export default async function ColumnPage({ params }: PageProps<"/column/[slug]">
             </h2>
             <div className="mt-3">
               {s.blocks.map((b, j) => (
-                <Block key={j} b={b} />
+                <Block key={j} b={b} open={open} />
               ))}
             </div>
           </section>

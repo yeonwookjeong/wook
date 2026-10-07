@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { COLUMNS, columnDate } from "@/lib/columns";
+import { columnDate, publishedColumns } from "@/lib/columns";
 
 export const metadata: Metadata = {
   title: "훈도의 사주 이야기",
@@ -8,9 +8,12 @@ export const metadata: Metadata = {
   alternates: { canonical: "/column" },
 };
 
+// Refreshed hourly so an article dated today appears without a deploy.
+export const revalidate = 3600;
+
 // The list of 훈도의 사주 이야기, newest first.
 export default function ColumnListPage() {
-  const list = [...COLUMNS].sort((a, b) => b.date.localeCompare(a.date));
+  const list = publishedColumns().sort((a, b) => b.date.localeCompare(a.date));
   return (
     <>
       <section className="mt-6 text-center">
