@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import ColumnTitle from "@/components/ColumnTitle";
 import { columnDate, publishedColumns } from "@/lib/columns";
 
 export const metadata: Metadata = {
@@ -31,7 +32,9 @@ export default function ColumnListPage() {
               <span className="text-[11px] font-extrabold text-seal">
                 {c.level} · {columnDate(c.date)}
               </span>
-              <b className="mt-1 block font-myeongjo text-[17px] leading-snug">{c.title}</b>
+              <b className="mt-1 block font-myeongjo text-[17px] leading-snug">
+                <ColumnTitle title={c.title} />
+              </b>
               <span className="mt-1 block text-[13px] leading-relaxed text-ink-soft">{c.summary}</span>
             </Link>
           </li>

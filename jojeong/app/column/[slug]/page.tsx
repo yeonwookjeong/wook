@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import AdSlot from "@/components/AdSlot";
+import ColumnTitle from "@/components/ColumnTitle";
 import EightCells from "@/components/EightCells";
 import { SITE_NAME, siteUrl } from "@/lib/brand";
 import { columnBySlug, columnDate, isPublished, publishedColumns, type ColumnBlock } from "@/lib/columns";
@@ -121,7 +122,9 @@ export default async function ColumnPage({ params, searchParams }: PageProps<"/c
       <p className="text-[12px] font-extrabold text-seal">
         <Link href="/column">훈도의 사주 이야기</Link> · {c.level}
       </p>
-      <h1 className="mt-2 font-myeongjo text-[26px] leading-tight font-extrabold">{c.title}</h1>
+      <h1 className="mt-2 font-myeongjo text-[26px] leading-tight font-extrabold">
+        <ColumnTitle title={c.title} />
+      </h1>
       <p className="mt-2 text-[12px] text-ink-soft">{columnDate(c.date)} · 정 훈도</p>
     </header>
   );
@@ -201,7 +204,9 @@ export default async function ColumnPage({ params, searchParams }: PageProps<"/c
             {others.map((o) => (
               <li key={o.slug}>
                 <Link href={`/column/${o.slug}`} className="block py-3">
-                  <b className="block font-myeongjo">{o.title}</b>
+                  <b className="block font-myeongjo">
+                    <ColumnTitle title={o.title} />
+                  </b>
                   <span className="mt-0.5 block text-[12.5px] text-ink-soft">{o.summary}</span>
                 </Link>
               </li>

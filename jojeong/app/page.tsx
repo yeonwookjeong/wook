@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { forgetMeAction } from "@/app/actions";
 import FreeTiles, { type FreeTile } from "@/components/FreeTiles";
+import ColumnTitle from "@/components/ColumnTitle";
 import { publishedColumns } from "@/lib/columns";
 import Keep from "@/components/Keep";
 import RoyalDoc from "@/components/RoyalDoc";
@@ -253,7 +254,9 @@ export default async function Home() {
           {publishedColumns().slice(0, 3).map((c) => (
             <li key={c.slug}>
               <Link href={`/column/${c.slug}`} className="doc-paper block px-4 py-3">
-                <b className="block font-myeongjo text-[15px] leading-snug">{c.title}</b>
+                <b className="block font-myeongjo text-[15px] leading-snug">
+                  <ColumnTitle title={c.title} />
+                </b>
                 <span className="mt-0.5 block text-[12px] text-ink-soft">{c.level} · 읽는 글</span>
               </Link>
             </li>
