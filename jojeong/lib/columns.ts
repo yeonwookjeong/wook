@@ -6,6 +6,7 @@ export type ColumnBlock =
   | { t: "h2"; text: string }
   | { t: "list"; items: string[] }
   | { t: "qa"; q: string; a: string }
+  | { t: "term"; k: string; v: string } // a one-line glossary box
   | { t: "eight" }; // the sample chart with its eight cells numbered (components/EightCells.tsx)
 
 export type Column = {
@@ -15,6 +16,8 @@ export type Column = {
   // One line for search results and the list: what the reader will know after reading.
   summary: string;
   date: string; // YYYY-MM-DD (KST), shown on the page
+  // What the reader will know after reading: the box at the top.
+  points: string[];
   body: ColumnBlock[];
 };
 
@@ -25,6 +28,7 @@ export const COLUMNS: Column[] = [
     title: "사주 여덟 칸 읽는 법, 처음 보는 사람을 위한 사주표 안내",
     summary: "사주표의 네 기둥과 여덟 글자가 각각 무엇을 뜻하는지, 위 칸과 아래 칸, 색깔, 읽는 순서까지 처음부터 차근차근 설명해요.",
     date: "2026-10-07",
+    points: ["사주표의 네 기둥과 여덟 글자가 무엇인지", "칸마다 무엇을 보는지: 나, 띠, 성미, 배우자 자리", "시를 모를 때, 띠와 달이 바뀌는 날 같은 자주 묻는 질문"],
     body: [
       { t: "p", text: "사주를 처음 보면 한자 여덟 개가 네모 칸에 들어 있는 표부터 마주하게 돼요. 낯설어 보이지만 규칙은 단순해요. 이 글 하나만 읽으면 내 사주표에서 '나'는 어디에 있고, 띠는 어디에 있고, 성격과 배우자 자리는 어느 칸인지 스스로 찾을 수 있어요." },
 
@@ -49,6 +53,7 @@ export const COLUMNS: Column[] = [
       { t: "h2", text: "위 칸은 하늘 글자, 아래 칸은 땅 글자" },
       { t: "p", text: "기둥의 위 칸에 들어가는 글자를 천간(天干), 하늘 글자라고 해요. 갑·을·병·정·무·기·경·신·임·계, 모두 열 개예요. 겉으로 드러나는 기운, 남들이 보는 모습에 가까워요." },
       { t: "p", text: "아래 칸에 들어가는 글자는 지지(地支), 땅 글자예요. 자·축·인·묘·진·사·오·미·신·유·술·해, 모두 열두 개이고 쥐, 소, 범, 토끼, 용, 뱀, 말, 양, 원숭이, 닭, 개, 돼지의 열두 띠 동물과 똑같아요. 속마음, 현실의 바탕에 가까워요." },
+      { t: "term", k: "일간(日干)", v: "태어난 날의 위 글자. 사주의 주인공인 '나' 자신이에요." },
       { t: "p", text: "그래서 같은 사람이라도 위 칸과 아래 칸이 다르면 '겉과 속이 다르다'는 말을 듣기도 해요. 겉으로는 차분한데 속은 뜨겁다거나, 겉은 털털한데 속은 섬세하다거나요." },
 
       { t: "h2", text: "칸 색깔은 다섯 가지 기운, 오행" },
