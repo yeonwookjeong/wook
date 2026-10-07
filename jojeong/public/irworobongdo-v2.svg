@@ -1,0 +1,175 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="420" viewBox="0 0 390 420" preserveAspectRatio="xMidYMax slice">
+  <!-- 일월오봉도 (Sun, Moon and Five Peaks): the screen behind every Joseon throne, as a four-panel folding screen.
+       Mineral blues and greens (석청·석록) on a deep sky, red-trunked pines, two waterfalls and rolling waves. -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0f2140"/>
+      <stop offset="0.55" stop-color="#1d3d5e"/>
+      <stop offset="1" stop-color="#2f5f73"/>
+    </linearGradient>
+    <linearGradient id="peakC" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#b9e0c4"/>
+      <stop offset="0.18" stop-color="#6fb391"/>
+      <stop offset="0.55" stop-color="#2f7b64"/>
+      <stop offset="1" stop-color="#173f37"/>
+    </linearGradient>
+    <linearGradient id="peakS" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a6d6b6"/>
+      <stop offset="0.25" stop-color="#58a080"/>
+      <stop offset="1" stop-color="#16392f"/>
+    </linearGradient>
+    <linearGradient id="peakFar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7fb3a0"/>
+      <stop offset="1" stop-color="#244d4a"/>
+    </linearGradient>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2d6a92"/>
+      <stop offset="1" stop-color="#132f52"/>
+    </linearGradient>
+    <linearGradient id="fall" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#d8ecf2" stop-opacity="0.75"/>
+    </linearGradient>
+    <linearGradient id="trunk" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#6e2416"/>
+      <stop offset="0.5" stop-color="#a8432a"/>
+      <stop offset="1" stop-color="#6e2416"/>
+    </linearGradient>
+    <radialGradient id="sunGlow">
+      <stop offset="0.45" stop-color="#ff6a3d" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#ff6a3d" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="moonGlow">
+      <stop offset="0.45" stop-color="#fff6dc" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#fff6dc" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="sunFace" cx="0.4" cy="0.38">
+      <stop offset="0" stop-color="#f05a32"/>
+      <stop offset="1" stop-color="#b9261a"/>
+    </radialGradient>
+    <radialGradient id="moonFace" cx="0.4" cy="0.38">
+      <stop offset="0" stop-color="#fffaf0"/>
+      <stop offset="1" stop-color="#e6dcc0"/>
+    </radialGradient>
+    <!-- silk weave, very faint -->
+    <pattern id="silk" width="4" height="4" patternUnits="userSpaceOnUse">
+      <path d="M0 0.5 H4 M0.5 0 V4" stroke="#ffffff" stroke-opacity="0.012" stroke-width="0.6"/>
+    </pattern>
+    <!-- one wave crest, repeated -->
+    <path id="crest" d="M0 8 q7 -11 14 -3 q3 3 0 6 q-3 2 -5 -1" fill="none"/>
+    <!-- one pine cluster -->
+    <g id="needles">
+      <path d="M-26 0 Q0 -14 26 0 Q0 7 -26 0 Z" fill="#1d4a34"/>
+      <path d="M-24 -1 Q0 -13 24 -1" fill="none" stroke="#3f7d58" stroke-width="2.2"/>
+      <path d="M-18 -2 l3 -4 M-10 -4 l2 -5 M-2 -5 l1 -5 M6 -5 l-1 -5 M14 -4 l-2 -5 M21 -2 l-3 -4" stroke="#6aa57a" stroke-width="1" stroke-linecap="round"/>
+    </g>
+  </defs>
+
+  <rect width="390" height="420" fill="url(#sky)"/>
+  <rect width="390" height="420" fill="url(#silk)"/>
+
+  <!-- moon (left) and sun (right) -->
+  <circle cx="98" cy="186" r="44" fill="url(#moonGlow)"/>
+  <circle cx="98" cy="186" r="22" fill="url(#moonFace)"/>
+  <circle cx="292" cy="186" r="44" fill="url(#sunGlow)"/>
+  <circle cx="292" cy="186" r="22" fill="url(#sunFace)"/>
+
+  <!-- far peaks at the edges -->
+  <path d="M-30 342 C -5 300, 12 262, 30 256 C 48 262, 70 300, 96 342 Z" fill="url(#peakFar)" stroke="#0e2a28" stroke-width="1.2"/>
+  <path d="M294 342 C 320 300, 342 262, 360 256 C 378 262, 395 300, 420 342 Z" fill="url(#peakFar)" stroke="#0e2a28" stroke-width="1.2"/>
+
+  <!-- the centre peak, tallest -->
+  <path d="M104 342 C 128 280, 158 176, 195 140 C 232 176, 262 280, 286 342 Z" fill="url(#peakC)" stroke="#0e2a28" stroke-width="1.6"/>
+  <g fill="none" stroke="#e8f6ea" stroke-opacity="0.55" stroke-width="1.1" stroke-linecap="round">
+    <path d="M195 146 C 190 180, 182 220, 176 262"/>
+    <path d="M195 146 C 202 186, 212 226, 222 270"/>
+    <path d="M186 172 C 178 200, 168 228, 160 252"/>
+  </g>
+  <g fill="none" stroke="#0e2a28" stroke-opacity="0.45" stroke-width="1" stroke-linecap="round">
+    <path d="M150 262 q10 -6 20 0 M210 250 q10 -6 20 0 M168 300 q12 -7 24 0 M214 296 q11 -6 22 0"/>
+  </g>
+
+  <!-- the two middle peaks -->
+  <path d="M14 342 C 40 284, 70 222, 100 206 C 130 222, 158 284, 186 342 Z" fill="url(#peakS)" stroke="#0e2a28" stroke-width="1.5"/>
+  <path d="M204 342 C 232 284, 260 222, 290 206 C 320 222, 350 284, 376 342 Z" fill="url(#peakS)" stroke="#0e2a28" stroke-width="1.5"/>
+  <g fill="none" stroke="#e8f6ea" stroke-opacity="0.5" stroke-width="1" stroke-linecap="round">
+    <path d="M100 212 C 94 240, 86 268, 78 300"/>
+    <path d="M100 212 C 108 244, 118 276, 128 306"/>
+    <path d="M290 212 C 284 240, 276 268, 268 300"/>
+    <path d="M290 212 C 298 244, 308 276, 318 306"/>
+  </g>
+  <g fill="none" stroke="#0e2a28" stroke-opacity="0.4" stroke-width="1" stroke-linecap="round">
+    <path d="M58 300 q9 -6 18 0 M112 292 q9 -6 18 0 M248 300 q9 -6 18 0 M302 292 q9 -6 18 0"/>
+  </g>
+
+  <!-- waterfalls between the peaks -->
+  <path d="M150 268 q-2 36 1 74 h7 q-3 -38 -2 -74 Z" fill="url(#fall)"/>
+  <path d="M234 268 q2 36 -1 74 h-7 q3 -38 2 -74 Z" fill="url(#fall)"/>
+  <g fill="#ffffff" fill-opacity="0.7">
+    <ellipse cx="154" cy="342" rx="9" ry="2.5"/>
+    <ellipse cx="231" cy="342" rx="9" ry="2.5"/>
+  </g>
+
+  <!-- pines, red trunks rising at both edges -->
+  <g>
+    <path d="M30 352 C 22 300, 40 268, 30 230 C 24 206, 36 190, 46 176" fill="none" stroke="url(#trunk)" stroke-width="7" stroke-linecap="round"/>
+    <path d="M32 286 C 46 278, 58 274, 70 262" fill="none" stroke="#8e3720" stroke-width="3.2" stroke-linecap="round"/>
+    <path d="M30 238 C 18 232, 10 226, 4 216" fill="none" stroke="#8e3720" stroke-width="2.8" stroke-linecap="round"/>
+    <use href="#needles" transform="translate(50 176) scale(1.15)"/>
+    <use href="#needles" transform="translate(70 258) scale(0.95)"/>
+    <use href="#needles" transform="translate(10 212) scale(0.8)"/>
+    <use href="#needles" transform="translate(36 236) scale(0.7)"/>
+  </g>
+  <g transform="translate(390 0) scale(-1 1)">
+    <path d="M30 352 C 22 300, 40 268, 30 230 C 24 206, 36 190, 46 176" fill="none" stroke="url(#trunk)" stroke-width="7" stroke-linecap="round"/>
+    <path d="M32 286 C 46 278, 58 274, 70 262" fill="none" stroke="#8e3720" stroke-width="3.2" stroke-linecap="round"/>
+    <path d="M30 238 C 18 232, 10 226, 4 216" fill="none" stroke="#8e3720" stroke-width="2.8" stroke-linecap="round"/>
+    <use href="#needles" transform="translate(50 176) scale(1.15)"/>
+    <use href="#needles" transform="translate(70 258) scale(0.95)"/>
+    <use href="#needles" transform="translate(10 212) scale(0.8)"/>
+    <use href="#needles" transform="translate(36 236) scale(0.7)"/>
+  </g>
+
+  <!-- the sea: rows of scalloped waves, as painted on the screens -->
+  <rect y="338" width="390" height="82" fill="url(#sea)"/>
+    <g>
+      <g fill="#2a6491" fill-opacity="0.50" stroke="#eaf4f7" stroke-opacity="0.95" stroke-width="1.5"><path d="M-26 354 a13 13 0 0 1 26 0" /><path d="M0 354 a13 13 0 0 1 26 0" /><path d="M26 354 a13 13 0 0 1 26 0" /><path d="M52 354 a13 13 0 0 1 26 0" /><path d="M78 354 a13 13 0 0 1 26 0" /><path d="M104 354 a13 13 0 0 1 26 0" /><path d="M130 354 a13 13 0 0 1 26 0" /><path d="M156 354 a13 13 0 0 1 26 0" /><path d="M182 354 a13 13 0 0 1 26 0" /><path d="M208 354 a13 13 0 0 1 26 0" /><path d="M234 354 a13 13 0 0 1 26 0" /><path d="M260 354 a13 13 0 0 1 26 0" /><path d="M286 354 a13 13 0 0 1 26 0" /><path d="M312 354 a13 13 0 0 1 26 0" /><path d="M338 354 a13 13 0 0 1 26 0" /><path d="M364 354 a13 13 0 0 1 26 0" /><path d="M390 354 a13 13 0 0 1 26 0" /></g>
+      <g fill="none" stroke="#eaf4f7" stroke-opacity="0.57" stroke-width="0.9" stroke-linecap="round"><path d="M-21 350 q8 -7 16 0" /><path d="M5 350 q8 -7 16 0" /><path d="M31 350 q8 -7 16 0" /><path d="M57 350 q8 -7 16 0" /><path d="M83 350 q8 -7 16 0" /><path d="M109 350 q8 -7 16 0" /><path d="M135 350 q8 -7 16 0" /><path d="M161 350 q8 -7 16 0" /><path d="M187 350 q8 -7 16 0" /><path d="M213 350 q8 -7 16 0" /><path d="M239 350 q8 -7 16 0" /><path d="M265 350 q8 -7 16 0" /><path d="M291 350 q8 -7 16 0" /><path d="M317 350 q8 -7 16 0" /><path d="M343 350 q8 -7 16 0" /><path d="M369 350 q8 -7 16 0" /><path d="M395 350 q8 -7 16 0" /></g>
+    </g>
+    <g>
+      <g fill="#2a6491" fill-opacity="0.56" stroke="#eaf4f7" stroke-opacity="0.85" stroke-width="1.5"><path d="M-13 365 a13 13 0 0 1 26 0" /><path d="M13 365 a13 13 0 0 1 26 0" /><path d="M39 365 a13 13 0 0 1 26 0" /><path d="M65 365 a13 13 0 0 1 26 0" /><path d="M91 365 a13 13 0 0 1 26 0" /><path d="M117 365 a13 13 0 0 1 26 0" /><path d="M143 365 a13 13 0 0 1 26 0" /><path d="M169 365 a13 13 0 0 1 26 0" /><path d="M195 365 a13 13 0 0 1 26 0" /><path d="M221 365 a13 13 0 0 1 26 0" /><path d="M247 365 a13 13 0 0 1 26 0" /><path d="M273 365 a13 13 0 0 1 26 0" /><path d="M299 365 a13 13 0 0 1 26 0" /><path d="M325 365 a13 13 0 0 1 26 0" /><path d="M351 365 a13 13 0 0 1 26 0" /><path d="M377 365 a13 13 0 0 1 26 0" /></g>
+      <g fill="none" stroke="#eaf4f7" stroke-opacity="0.51" stroke-width="0.9" stroke-linecap="round"><path d="M-8 361 q8 -7 16 0" /><path d="M18 361 q8 -7 16 0" /><path d="M44 361 q8 -7 16 0" /><path d="M70 361 q8 -7 16 0" /><path d="M96 361 q8 -7 16 0" /><path d="M122 361 q8 -7 16 0" /><path d="M148 361 q8 -7 16 0" /><path d="M174 361 q8 -7 16 0" /><path d="M200 361 q8 -7 16 0" /><path d="M226 361 q8 -7 16 0" /><path d="M252 361 q8 -7 16 0" /><path d="M278 361 q8 -7 16 0" /><path d="M304 361 q8 -7 16 0" /><path d="M330 361 q8 -7 16 0" /><path d="M356 361 q8 -7 16 0" /><path d="M382 361 q8 -7 16 0" /></g>
+    </g>
+    <g>
+      <g fill="#2a6491" fill-opacity="0.62" stroke="#eaf4f7" stroke-opacity="0.75" stroke-width="1.5"><path d="M-26 376 a13 13 0 0 1 26 0" /><path d="M0 376 a13 13 0 0 1 26 0" /><path d="M26 376 a13 13 0 0 1 26 0" /><path d="M52 376 a13 13 0 0 1 26 0" /><path d="M78 376 a13 13 0 0 1 26 0" /><path d="M104 376 a13 13 0 0 1 26 0" /><path d="M130 376 a13 13 0 0 1 26 0" /><path d="M156 376 a13 13 0 0 1 26 0" /><path d="M182 376 a13 13 0 0 1 26 0" /><path d="M208 376 a13 13 0 0 1 26 0" /><path d="M234 376 a13 13 0 0 1 26 0" /><path d="M260 376 a13 13 0 0 1 26 0" /><path d="M286 376 a13 13 0 0 1 26 0" /><path d="M312 376 a13 13 0 0 1 26 0" /><path d="M338 376 a13 13 0 0 1 26 0" /><path d="M364 376 a13 13 0 0 1 26 0" /><path d="M390 376 a13 13 0 0 1 26 0" /></g>
+      <g fill="none" stroke="#eaf4f7" stroke-opacity="0.45" stroke-width="0.9" stroke-linecap="round"><path d="M-21 372 q8 -7 16 0" /><path d="M5 372 q8 -7 16 0" /><path d="M31 372 q8 -7 16 0" /><path d="M57 372 q8 -7 16 0" /><path d="M83 372 q8 -7 16 0" /><path d="M109 372 q8 -7 16 0" /><path d="M135 372 q8 -7 16 0" /><path d="M161 372 q8 -7 16 0" /><path d="M187 372 q8 -7 16 0" /><path d="M213 372 q8 -7 16 0" /><path d="M239 372 q8 -7 16 0" /><path d="M265 372 q8 -7 16 0" /><path d="M291 372 q8 -7 16 0" /><path d="M317 372 q8 -7 16 0" /><path d="M343 372 q8 -7 16 0" /><path d="M369 372 q8 -7 16 0" /><path d="M395 372 q8 -7 16 0" /></g>
+    </g>
+    <g>
+      <g fill="#2a6491" fill-opacity="0.68" stroke="#eaf4f7" stroke-opacity="0.65" stroke-width="1.5"><path d="M-13 387 a13 13 0 0 1 26 0" /><path d="M13 387 a13 13 0 0 1 26 0" /><path d="M39 387 a13 13 0 0 1 26 0" /><path d="M65 387 a13 13 0 0 1 26 0" /><path d="M91 387 a13 13 0 0 1 26 0" /><path d="M117 387 a13 13 0 0 1 26 0" /><path d="M143 387 a13 13 0 0 1 26 0" /><path d="M169 387 a13 13 0 0 1 26 0" /><path d="M195 387 a13 13 0 0 1 26 0" /><path d="M221 387 a13 13 0 0 1 26 0" /><path d="M247 387 a13 13 0 0 1 26 0" /><path d="M273 387 a13 13 0 0 1 26 0" /><path d="M299 387 a13 13 0 0 1 26 0" /><path d="M325 387 a13 13 0 0 1 26 0" /><path d="M351 387 a13 13 0 0 1 26 0" /><path d="M377 387 a13 13 0 0 1 26 0" /></g>
+      <g fill="none" stroke="#eaf4f7" stroke-opacity="0.39" stroke-width="0.9" stroke-linecap="round"><path d="M-8 383 q8 -7 16 0" /><path d="M18 383 q8 -7 16 0" /><path d="M44 383 q8 -7 16 0" /><path d="M70 383 q8 -7 16 0" /><path d="M96 383 q8 -7 16 0" /><path d="M122 383 q8 -7 16 0" /><path d="M148 383 q8 -7 16 0" /><path d="M174 383 q8 -7 16 0" /><path d="M200 383 q8 -7 16 0" /><path d="M226 383 q8 -7 16 0" /><path d="M252 383 q8 -7 16 0" /><path d="M278 383 q8 -7 16 0" /><path d="M304 383 q8 -7 16 0" /><path d="M330 383 q8 -7 16 0" /><path d="M356 383 q8 -7 16 0" /><path d="M382 383 q8 -7 16 0" /></g>
+    </g>
+    <g>
+      <g fill="#2a6491" fill-opacity="0.74" stroke="#eaf4f7" stroke-opacity="0.55" stroke-width="1.5"><path d="M-26 398 a13 13 0 0 1 26 0" /><path d="M0 398 a13 13 0 0 1 26 0" /><path d="M26 398 a13 13 0 0 1 26 0" /><path d="M52 398 a13 13 0 0 1 26 0" /><path d="M78 398 a13 13 0 0 1 26 0" /><path d="M104 398 a13 13 0 0 1 26 0" /><path d="M130 398 a13 13 0 0 1 26 0" /><path d="M156 398 a13 13 0 0 1 26 0" /><path d="M182 398 a13 13 0 0 1 26 0" /><path d="M208 398 a13 13 0 0 1 26 0" /><path d="M234 398 a13 13 0 0 1 26 0" /><path d="M260 398 a13 13 0 0 1 26 0" /><path d="M286 398 a13 13 0 0 1 26 0" /><path d="M312 398 a13 13 0 0 1 26 0" /><path d="M338 398 a13 13 0 0 1 26 0" /><path d="M364 398 a13 13 0 0 1 26 0" /><path d="M390 398 a13 13 0 0 1 26 0" /></g>
+      <g fill="none" stroke="#eaf4f7" stroke-opacity="0.33" stroke-width="0.9" stroke-linecap="round"><path d="M-21 394 q8 -7 16 0" /><path d="M5 394 q8 -7 16 0" /><path d="M31 394 q8 -7 16 0" /><path d="M57 394 q8 -7 16 0" /><path d="M83 394 q8 -7 16 0" /><path d="M109 394 q8 -7 16 0" /><path d="M135 394 q8 -7 16 0" /><path d="M161 394 q8 -7 16 0" /><path d="M187 394 q8 -7 16 0" /><path d="M213 394 q8 -7 16 0" /><path d="M239 394 q8 -7 16 0" /><path d="M265 394 q8 -7 16 0" /><path d="M291 394 q8 -7 16 0" /><path d="M317 394 q8 -7 16 0" /><path d="M343 394 q8 -7 16 0" /><path d="M369 394 q8 -7 16 0" /><path d="M395 394 q8 -7 16 0" /></g>
+    </g>
+    <g>
+      <g fill="#2a6491" fill-opacity="0.80" stroke="#eaf4f7" stroke-opacity="0.45" stroke-width="1.5"><path d="M-13 409 a13 13 0 0 1 26 0" /><path d="M13 409 a13 13 0 0 1 26 0" /><path d="M39 409 a13 13 0 0 1 26 0" /><path d="M65 409 a13 13 0 0 1 26 0" /><path d="M91 409 a13 13 0 0 1 26 0" /><path d="M117 409 a13 13 0 0 1 26 0" /><path d="M143 409 a13 13 0 0 1 26 0" /><path d="M169 409 a13 13 0 0 1 26 0" /><path d="M195 409 a13 13 0 0 1 26 0" /><path d="M221 409 a13 13 0 0 1 26 0" /><path d="M247 409 a13 13 0 0 1 26 0" /><path d="M273 409 a13 13 0 0 1 26 0" /><path d="M299 409 a13 13 0 0 1 26 0" /><path d="M325 409 a13 13 0 0 1 26 0" /><path d="M351 409 a13 13 0 0 1 26 0" /><path d="M377 409 a13 13 0 0 1 26 0" /></g>
+      <g fill="none" stroke="#eaf4f7" stroke-opacity="0.27" stroke-width="0.9" stroke-linecap="round"><path d="M-8 405 q8 -7 16 0" /><path d="M18 405 q8 -7 16 0" /><path d="M44 405 q8 -7 16 0" /><path d="M70 405 q8 -7 16 0" /><path d="M96 405 q8 -7 16 0" /><path d="M122 405 q8 -7 16 0" /><path d="M148 405 q8 -7 16 0" /><path d="M174 405 q8 -7 16 0" /><path d="M200 405 q8 -7 16 0" /><path d="M226 405 q8 -7 16 0" /><path d="M252 405 q8 -7 16 0" /><path d="M278 405 q8 -7 16 0" /><path d="M304 405 q8 -7 16 0" /><path d="M330 405 q8 -7 16 0" /><path d="M356 405 q8 -7 16 0" /><path d="M382 405 q8 -7 16 0" /></g>
+    </g>
+    <g>
+      <g fill="#2a6491" fill-opacity="0.86" stroke="#eaf4f7" stroke-opacity="0.35" stroke-width="1.5"><path d="M-26 420 a13 13 0 0 1 26 0" /><path d="M0 420 a13 13 0 0 1 26 0" /><path d="M26 420 a13 13 0 0 1 26 0" /><path d="M52 420 a13 13 0 0 1 26 0" /><path d="M78 420 a13 13 0 0 1 26 0" /><path d="M104 420 a13 13 0 0 1 26 0" /><path d="M130 420 a13 13 0 0 1 26 0" /><path d="M156 420 a13 13 0 0 1 26 0" /><path d="M182 420 a13 13 0 0 1 26 0" /><path d="M208 420 a13 13 0 0 1 26 0" /><path d="M234 420 a13 13 0 0 1 26 0" /><path d="M260 420 a13 13 0 0 1 26 0" /><path d="M286 420 a13 13 0 0 1 26 0" /><path d="M312 420 a13 13 0 0 1 26 0" /><path d="M338 420 a13 13 0 0 1 26 0" /><path d="M364 420 a13 13 0 0 1 26 0" /><path d="M390 420 a13 13 0 0 1 26 0" /></g>
+      <g fill="none" stroke="#eaf4f7" stroke-opacity="0.21" stroke-width="0.9" stroke-linecap="round"><path d="M-21 416 q8 -7 16 0" /><path d="M5 416 q8 -7 16 0" /><path d="M31 416 q8 -7 16 0" /><path d="M57 416 q8 -7 16 0" /><path d="M83 416 q8 -7 16 0" /><path d="M109 416 q8 -7 16 0" /><path d="M135 416 q8 -7 16 0" /><path d="M161 416 q8 -7 16 0" /><path d="M187 416 q8 -7 16 0" /><path d="M213 416 q8 -7 16 0" /><path d="M239 416 q8 -7 16 0" /><path d="M265 416 q8 -7 16 0" /><path d="M291 416 q8 -7 16 0" /><path d="M317 416 q8 -7 16 0" /><path d="M343 416 q8 -7 16 0" /><path d="M369 416 q8 -7 16 0" /><path d="M395 416 q8 -7 16 0" /></g>
+    </g>
+  <path d="M0 338 H390" stroke="#0e2a28" stroke-width="2"/>
+  <g fill="#ffffff" fill-opacity="0.8"><circle cx="60" cy="343" r="1.6"/><circle cx="140" cy="346" r="1.3"/><circle cx="252" cy="344" r="1.6"/><circle cx="330" cy="347" r="1.3"/></g>
+
+  <!-- the folding screen: four panels, gilt hinges, red lacquer frame -->
+  <g stroke="#d6b25e" stroke-opacity="0.55" stroke-width="1">
+    <path d="M97.5 8 V412 M195 8 V412 M292.5 8 V412"/>
+  </g>
+  <g stroke="#000000" stroke-opacity="0.18" stroke-width="2">
+    <path d="M99 8 V412 M196.5 8 V412 M294 8 V412"/>
+  </g>
+  <rect x="3.5" y="3.5" width="383" height="413" fill="none" stroke="#7a1f18" stroke-width="7"/>
+  <rect x="8" y="8" width="374" height="404" fill="none" stroke="#d6b25e" stroke-width="1.3"/>
+</svg>

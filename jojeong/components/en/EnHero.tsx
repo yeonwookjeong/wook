@@ -8,7 +8,7 @@ export default function EnHero({ compact = false, title = "HUNDO SAJU", line = "
     <header className="relative mt-4 overflow-hidden rounded-3xl shadow-[0_10px_30px_rgb(33_27_23/0.25)]">
       <div className={`relative ${compact ? "h-[200px]" : "h-[340px]"}`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/irworobongdo.svg" alt="" width={390} height={340} className={`absolute inset-0 size-full object-cover ${compact ? "object-[center_52%]" : "object-bottom"}`} />
+        <img src="/irworobongdo-v2.svg" alt="" width={390} height={340} className={`absolute inset-0 size-full object-cover ${compact ? "object-[center_52%]" : "object-bottom"}`} />
         <div className={`absolute inset-x-0 top-0 flex flex-col items-center text-center ${compact ? "pt-4" : "pt-6"}`}>
           <p className="text-[10.5px] font-bold tracking-[0.25em] text-[#f3ead0]/85">KOREAN FOUR PILLARS OF DESTINY</p>
           {/* 현판: black lacquer board, gold rim and gilded letters */}
