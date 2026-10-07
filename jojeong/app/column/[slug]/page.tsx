@@ -21,11 +21,15 @@ export async function generateMetadata({ params }: PageProps<"/column/[slug]">):
     title: c.title,
     description: c.summary,
     alternates: { canonical: `/column/${c.slug}` },
-    openGraph: { type: "article", title: c.title, description: c.summary, publishedTime: c.date },
+    openGraph: {
+      type: "article",
+      title: c.title,
+      description: c.summary,
+      publishedTime: c.date,
+    },
   };
 }
 
-type Design = "a" | "b" | "c";
 type Section = { head: string | null; blocks: ColumnBlock[] };
 
 // The blocks before the first heading are the lead; each heading opens a section.
@@ -38,9 +42,7 @@ function sectionsOf(body: ColumnBlock[]): Section[] {
   return out;
 }
 
-const SECTION_ICON = ["柱", "圖", "天", "色", "要", "問", "讀", "命"];
-
-function Block({ b, design, lead }: { b: ColumnBlock; design: Design; lead?: boolean }) {
+function Block({ b, lead }: { b: ColumnBlock; lead?: boolean }) {
   switch (b.t) {
     case "h2":
       return null;
@@ -48,7 +50,7 @@ function Block({ b, design, lead }: { b: ColumnBlock; design: Design; lead?: boo
       return (
         <p
           className={`mt-3 text-[16px] leading-[1.85] first:mt-0 ${
-            lead && design === "a"
+            lead
               ? "first-letter:float-left first-letter:mt-1 first-letter:mr-1.5 first-letter:font-myeongjo first-letter:text-[44px] first-letter:leading-[0.9] first-letter:font-extrabold first-letter:text-seal"
               : ""
           }`}
@@ -68,17 +70,7 @@ function Block({ b, design, lead }: { b: ColumnBlock; design: Design; lead?: boo
         </ul>
       );
     case "qa":
-      return design === "b" ? (
-        <details className="group mt-3 rounded-xl border border-seal/20 bg-white/40 px-4 py-3">
-          <summary className="flex cursor-pointer list-none items-start justify-between gap-2 font-bold [&::-webkit-details-marker]:hidden">
-            <span>{b.q}</span>
-            <span className="text-ink-soft transition group-open:rotate-180" aria-hidden="true">
-              ▾
-            </span>
-          </summary>
-          <p className="mt-2 text-[15.5px] leading-relaxed">{b.a}</p>
-        </details>
-      ) : (
+      return (
         <div className="mt-4 border-l-2 border-seal/40 pl-3">
           <p className="font-bold">{b.q}</p>
           <p className="mt-1 text-[15.5px] leading-relaxed">{b.a}</p>
@@ -98,11 +90,9 @@ function Block({ b, design, lead }: { b: ColumnBlock; design: Design; lead?: boo
   }
 }
 
-export default async function ColumnPage({ params, searchParams }: PageProps<"/column/[slug]">) {
+export default async function ColumnPage({ params }: PageProps<"/column/[slug]">) {
   const c = columnBySlug((await params).slug);
   if (!c) notFound();
-  const d = (await searchParams).d;
-  const design: Design = d === "b" || d === "c" ? d : "a";
   const others = COLUMNS.filter((o) => o.slug !== c.slug).slice(0, 3);
   const [lead, ...sections] = sectionsOf(c.body);
   const ld = {
@@ -143,101 +133,49 @@ export default async function ColumnPage({ params, searchParams }: PageProps<"/c
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
 
-      {design === "a" && (
-        <article className="doc-paper mt-6 px-5 py-6">
-          {header}
-          {points}
-          <div className="mt-5">
-            {lead.blocks.map((b, i) => (
-              <Block key={i} b={b} design={design} lead={i === 0} />
+      <article className="doc-paper mt-6 px-5 py-6">
+        {header}
+        {points}
+        <nav className="mt-3 rounded-xl border border-ink/10 bg-white/40 px-4 py-3" aria-label="목차">
+          <p className="text-[12px] font-extrabold text-ink-soft">목차</p>
+          <ol className="mt-1.5 flex flex-col gap-1.5 text-[14px]">
+            {sections.map((s, i) => (
+              <li key={i}>
+                <a href={`#s${i + 1}`} className="flex gap-2">
+                  <span className="w-5 shrink-0 font-myeongjo font-extrabold text-seal">{hanjaNum(i + 1)}</span>
+                  <span className="underline decoration-seal/30 underline-offset-4">{s.head}</span>
+                </a>
+              </li>
             ))}
-          </div>
-          {sections.map((s, i) => (
-            <section key={i} className="mt-9">
-              <h2 className="flex items-start gap-3">
-                <span className="flex size-8 shrink-0 items-center justify-center border-2 border-seal/60 font-myeongjo text-[15px] font-extrabold text-seal">
-                  {hanjaNum(i + 1)}
-                </span>
-                <span className="font-myeongjo text-xl leading-snug font-extrabold">{s.head}</span>
-              </h2>
-              <div className="mt-3">
-                {s.blocks.map((b, j) => (
-                  <Block key={j} b={b} design={design} />
-                ))}
-              </div>
-            </section>
+          </ol>
+        </nav>
+        <div className="mt-5">
+          {lead.blocks.map((b, i) => (
+            <Block key={i} b={b} lead={i === 0} />
           ))}
-          <div className="mt-10 flex items-center justify-end gap-3">
-            <span className="font-myeongjo text-[13px] text-ink-soft">정 훈도 씀</span>
-            <span className="flex size-12 rotate-[-4deg] items-center justify-center rounded-sm border-2 border-seal bg-seal/90 font-myeongjo text-[15px] leading-none font-extrabold text-hanji [writing-mode:vertical-rl]">
-              訓導
-            </span>
-          </div>
-        </article>
-      )}
-
-      {design === "b" && (
-        <article className="mt-6">
-          {header}
-          <div className="mt-4">
-            {lead.blocks.map((b, i) => (
-              <Block key={i} b={b} design={design} />
-            ))}
-          </div>
-          {sections.map((s, i) => (
-            <section key={i} className="doc-paper mt-4 px-5 py-5">
-              <h2 className="flex items-center gap-3">
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-seal font-myeongjo text-lg font-extrabold text-hanji">
-                  {SECTION_ICON[i % SECTION_ICON.length]}
-                </span>
-                <span className="font-myeongjo text-[19px] leading-snug font-extrabold">{s.head}</span>
-              </h2>
-              <div className="mt-3">
-                {s.blocks.map((b, j) => (
-                  <Block key={j} b={b} design={design} />
-                ))}
-              </div>
-            </section>
-          ))}
-        </article>
-      )}
-
-      {design === "c" && (
-        <article className="mt-6">
-          {header}
-          {points}
-          <nav className="mt-3 rounded-xl border border-ink/10 px-4 py-3" aria-label="목차">
-            <p className="text-[12px] font-extrabold text-ink-soft">목차</p>
-            <ol className="mt-1.5 flex flex-col gap-1 text-[14px]">
-              {sections.map((s, i) => (
-                <li key={i}>
-                  <a href={`#s${i + 1}`} className="text-ink underline decoration-seal/30 underline-offset-4">
-                    {i + 1}. {s.head}
-                  </a>
-                </li>
+        </div>
+        {sections.map((s, i) => (
+          <section key={i} id={`s${i + 1}`} className="mt-9 scroll-mt-4">
+            <h2 className="flex items-start gap-3">
+              <span className="flex size-8 shrink-0 items-center justify-center border-2 border-seal/60 font-myeongjo text-[15px] font-extrabold text-seal">
+                {hanjaNum(i + 1)}
+              </span>
+              <span className="font-myeongjo text-xl leading-snug font-extrabold">{s.head}</span>
+            </h2>
+            <div className="mt-3">
+              {s.blocks.map((b, j) => (
+                <Block key={j} b={b} />
               ))}
-            </ol>
-          </nav>
-          <div className="mt-5">
-            {lead.blocks.map((b, i) => (
-              <Block key={i} b={b} design={design} />
-            ))}
-          </div>
-          {sections.map((s, i) => (
-            <section key={i} id={`s${i + 1}`} className="mt-8 scroll-mt-4">
-              <h2 className="border-b border-seal/20 pb-2 font-myeongjo text-xl leading-snug font-extrabold">
-                <span className="mr-1.5 text-seal">{i + 1}.</span>
-                {s.head}
-              </h2>
-              <div className="mt-3">
-                {s.blocks.map((b, j) => (
-                  <Block key={j} b={b} design={design} />
-                ))}
-              </div>
-            </section>
-          ))}
-        </article>
-      )}
+            </div>
+          </section>
+        ))}
+        <div className="mt-10 flex items-center justify-end gap-3">
+          <span className="font-myeongjo text-[13px] text-ink-soft">정 훈도 씀</span>
+          <span className="flex size-12 rotate-[-4deg] items-center justify-center rounded-sm border-2 border-seal bg-seal/90 font-myeongjo text-[15px] leading-none font-extrabold text-hanji [writing-mode:vertical-rl]">
+            訓導
+          </span>
+        </div>
+      </article>
 
       <Link href="/reports/pyeongsaeng" className="mt-8 block rounded-2xl bg-seal px-5 py-4 text-center text-hanji">
         <b className="block font-myeongjo text-lg">내 여덟 글자 무료로 보기</b>

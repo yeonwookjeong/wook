@@ -18,8 +18,7 @@ export default function ColumnListPage() {
         <h1 className="mt-2 font-myeongjo text-3xl font-extrabold">훈도의 사주 이야기</h1>
         <p className="mt-2 text-[13.5px] leading-relaxed text-ink-soft">
           사주를 처음 보는 분도 읽을 수 있게,
-          <br />
-          칸 하나, 글자 하나씩 풀어 드려요.
+          <br />칸 하나, 글자 하나씩 풀어 드려요.
         </p>
       </section>
       <ul className="mt-6 flex flex-col gap-3">
