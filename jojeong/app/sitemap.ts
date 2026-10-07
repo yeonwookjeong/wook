@@ -1,6 +1,10 @@
 import type { MetadataRoute } from "next";
 import { siteUrl } from "@/lib/brand";
+import { publishedColumns } from "@/lib/columns";
 import { SHELF } from "@/lib/products";
+
+// Refreshed hourly: columns open on their dates.
+export const revalidate = 3600;
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = siteUrl();
@@ -12,6 +16,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     page("/king", 0.7),
     page("/samjae", 0.6),
     page("/ranking", 0.7),
+    page("/column", 0.7),
+    ...publishedColumns().map((c) => page(`/column/${c.slug}`, 0.6)),
     page("/about", 0.5),
     page("/terms", 0.2),
     page("/refund", 0.2),
