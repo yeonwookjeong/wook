@@ -35,6 +35,8 @@ const WORDS = {
   },
 };
 
+const SUMMARY_LABEL = "한눈에";
+
 // "## [장 이름] 헤드라인" + paragraphs → sections. Works on partial text while it streams in.
 function parse(text: string): { sections: Section[]; failed: boolean } {
   const failed = text.includes(MARK_ERROR);
@@ -128,7 +130,16 @@ export default function AiReport({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [body]);
 
-  const { sections, failed } = parse(text);
+  const parsed = parse(text);
+  const { failed } = parsed;
+  // Money and work reports end on a "한눈에" summary (lib/reportPrompts.ts SUMMARY_BLOCK): shown open, as rows.
+  const sections = parsed.sections.filter((s) => s.label !== SUMMARY_LABEL);
+  const summary = parsed.sections.find((s) => s.label === SUMMARY_LABEL);
+  const summaryRows = (summary?.paras ?? [])
+    .flatMap((p) => p.split("\n"))
+    .map((l) => /^\[([^\]]+)\]\s*(.+)$/.exec(l.trim()))
+    .filter((m) => m !== null)
+    .map((m) => ({ label: m[1], text: m[2] }));
 
   if (state === "error" && !sections.length)
     return (
@@ -140,7 +151,7 @@ export default function AiReport({
 
   // While it is being written nothing of it is shown: the report appears whole, as a finished document.
   if (state !== "done" && state !== "error") {
-    const written = state === "writing" ? Math.max(0, sections.length - 1) : 0;
+    const written = state === "writing" ? Math.max(0, parsed.sections.length - 1) : 0;
     return (
       <div className="doc-paper mt-4 px-5 py-6">
         <div className="flex flex-col items-center gap-2 text-center">
@@ -200,6 +211,24 @@ export default function AiReport({
           </div>
         </details>
       ))}
+
+      {summary && summaryRows.length > 0 && (
+        <section className="doc-paper mt-2 px-5 py-5">
+          <p className="text-center font-myeongjo text-xs font-extrabold tracking-[0.4em] text-seal">한 눈 에</p>
+          {summary.headline && <h3 className="mt-1 text-center font-myeongjo text-[17px] leading-snug font-extrabold">{summary.headline}</h3>}
+          <dl className="mt-4 flex flex-col divide-y divide-seal/10">
+            {summaryRows.map((r, i) => {
+              const key = r.label.includes("소름");
+              return (
+                <div key={i} className={`flex flex-col gap-0.5 py-2.5 ${key ? "-mx-2 rounded-lg bg-seal/10 px-2" : ""}`}>
+                  <dt className="text-[11px] font-extrabold text-seal">{r.label}</dt>
+                  <dd className={`text-[15px] leading-relaxed ${key ? "font-bold" : ""}`}>{r.text}</dd>
+                </div>
+              );
+            })}
+          </dl>
+        </section>
+      )}
 
       {(failed || state === "error") && sections.length > 0 && (
         <p className="rounded-xl bg-seal/10 px-4 py-3 text-center text-sm text-seal">{w.stoppedMidway}</p>

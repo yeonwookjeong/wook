@@ -105,8 +105,27 @@ const FOCUS_V6: Partial<Record<ProductId, string>> = {
 - 마지막 장은 앞 장 요약이 아니다: 정 훈도가 이 사주를 보며 가장 오래 들여다본 조합 하나(이 사주에만 있는 것)로 여는 짧은 편지로 쓰고, 앞 장들을 그 조합 하나로 엮은 뒤, 이 사람의 실제 연도로 된 연표(3~5개 해, 해마다 할 일 한 줄)와 기억할 한 문장으로 끝낸다.`,
 };
 
-export type PromptVersion = "v5" | "v6";
-export const PROMPT_NOW: PromptVersion = "v6";
+// v7: money and work borrow what readers of 四柱推命-style prompts found uncanny — the role one should take
+// rather than a job title, the talents that turn into money, and a closing summary card (AiReport "한눈에").
+const SUMMARY_BLOCK = `- 마지막 장을 다 쓴 뒤, 아래 요약을 덧붙인다. 이것만은 장 밖에 쓰고, 이 형식을 그대로 따른다(줄마다 한 문장, 40자 안팎, 사주 용어 없이):
+## [한눈에] 이 사람만을 위한 한 줄 헤드라인
+[한 줄 요약] 이 사람을 한 문장으로
+[돈] 가장 잘 맞는 돈 버는 방식
+[역할] 맡아야 할 역할 1순위
+[재능] 돈으로 이어지는 재능 하나
+[가장 소름 돋는 포인트] 브리프의 '이 사람만의 특징'에서 나온, 같은 일주라도 다른 사람에게는 해당하지 않는 한 가지
+- 요약은 앞 장에서 한 말과 어긋나지 않게, 새 내용 없이 앞 장을 압축한다.`;
+const JOB_NAMES = `- 어울리는 일은 요즘 실제 직업 이름으로 세 가지, 각각 "왜 그대에게 맞는지"를 성향으로 설명.`;
+const JOB_ROLES = `- '어울리는 일 세 가지' 장은 직업 이름이 아니라 이 사람이 맡아야 할 역할 세 가지(1~3순위)로 쓴다. 역할은 행동으로 그린 한 문장이다(예: "흩어진 일을 모아 판을 굴리는 사람"). 역할마다 왜 이 사람에게 맞는지 사주를 쉬운 말로 짚고, 그 역할이 쓰이는 요즘 직업을 두세 개 예로 든다. 1순위 역할은 가장 강한 기운에서 나온다.`;
+const MONEY_TALENTS = `- 첫 장에서 '돈으로 바로 이어지는 재능' 두세 가지를 짚는다. 재능은 행동으로 그린다(예: "남의 말을 듣고 한 장짜리 문서로 정리하는 손"). 각 재능이 실제로 돈이 되는 자리(본업에서 몸값이 되는 장면, 부업, 작은 사업)까지 이어서 말한다. 근거는 재주의 기운(식상)이 재물(재성)로 이어지는 흐름과 가장 강한 기운이다.`;
+const FOCUS_V7: Partial<Record<ProductId, string>> = {
+  ...FOCUS_V6,
+  jaemul: `${FOCUS_V6.jaemul}\n${MONEY_TALENTS}\n${SUMMARY_BLOCK}`,
+  jikup: `${FOCUS_V6.jikup!.replace(JOB_NAMES, JOB_ROLES)}\n${SUMMARY_BLOCK}`,
+};
+
+export type PromptVersion = "v5" | "v6" | "v7";
+export const PROMPT_NOW: PromptVersion = "v7";
 
 const specsOf = (focus: Partial<Record<ProductId, string>>): Partial<Record<ProductId, ReportSpec>> =>
   Object.fromEntries(
@@ -114,7 +133,11 @@ const specsOf = (focus: Partial<Record<ProductId, string>>): Partial<Record<Prod
       .filter(([id]) => !PRODUCTS.find((p) => p.id === id)!.free)
       .map(([id, f]) => [id, { chapters: PRODUCTS.find((p) => p.id === id)!.toc, focus: f }]),
   );
-export const SPECS: Record<PromptVersion, Partial<Record<ProductId, ReportSpec>>> = { v5: specsOf(FOCUS), v6: specsOf(FOCUS_V6) };
+export const SPECS: Record<PromptVersion, Partial<Record<ProductId, ReportSpec>>> = {
+  v5: specsOf(FOCUS),
+  v6: specsOf(FOCUS_V6),
+  v7: specsOf(FOCUS_V7),
+};
 
 export const REPORT_SPECS: Partial<Record<ProductId, ReportSpec>> = Object.fromEntries(
   // Only what is sold is written: a free report stays computed, with no writer and no cost.

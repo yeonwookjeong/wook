@@ -17,6 +17,9 @@ const V6_SINCE = Date.parse("2026-09-30T15:05:00Z");
 // When the five-grade life flow went live (lib/freeReading.ts). Orders paid before it keep the report they were
 // first written with, which was told three grades.
 const GRADES5_SINCE = Date.parse("2026-10-02T04:30:00Z");
+// When the v7 prompt went live (money and work: roles, money talents, the 한눈에 summary). Orders paid before it
+// keep the v6 report they were first written with.
+const V7_SINCE = Date.parse("2026-10-07T04:00:00Z");
 
 // POST { product, court?, m?, t?, p?, a?, b?, rel?, order? } → the report as plain text, streamed while it is being written (or all at
 // once when it was written before). A failure midway ends the stream with MARK_ERROR.
@@ -42,9 +45,11 @@ export async function POST(request: Request) {
   const legacy = boughtBefore ? await jobFor(req, "v5") : null;
   // Paid before the five grades: what was first written then (v6 with the three-grade brief), else v5's.
   const oldGrades = order && (order.paidAt ?? order.createdAt) < GRADES5_SINCE ? await jobFor(req, "v6", true) : null;
+  const beforeV7 = order && (order.paidAt ?? order.createdAt) < V7_SINCE ? await jobFor(req, "v6") : null;
   const cached =
     (legacy && !("error" in legacy) ? await getReportText(legacy.key) : null) ??
     (oldGrades && !("error" in oldGrades) ? await getReportText(oldGrades.key) : null) ??
+    (beforeV7 && !("error" in beforeV7) ? await getReportText(beforeV7.key) : null) ??
     (await getReportText(job.key));
   if (cached) return new Response(cached, { headers: { "content-type": "text/plain; charset=utf-8", "x-report": "cached" } });
 
