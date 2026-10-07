@@ -164,7 +164,7 @@ export const COLUMNS: Column[] = [
   {
     slug: "unknown-hour",
     level: "입문",
-    date: "2026-10-08",
+    date: "2026-10-12",
     title: "태어난 시간을 모르면 사주를 못 볼까? 시를 모를 때 보는 법",
     summary:
       "태어난 시를 몰라도 여섯 글자로 사주를 볼 수 있어요. 시를 모를 때 알 수 있는 것과 아쉬운 것, 시간을 찾아보는 곳, 열두 시 시간표까지 정리했어요.",
@@ -382,7 +382,7 @@ export const COLUMNS: Column[] = [
   {
     slug: "jeolgi-month",
     level: "입문",
-    date: "2026-10-12",
+    date: "2026-10-08",
     title: "사주의 한 달은 1일이 아니라 절기로 바뀐다, 달 초에 태어났다면",
     summary:
       "사주에서 태어난 달은 매달 3~9일 무렵 오는 절기로 바뀌어요. 열두 절기와 그 날짜, 달 초에 태어난 사람이 자기 '태어난 달'을 확인하는 법을 정리했어요.",
@@ -574,7 +574,8 @@ export const columnBySlug = (slug: string) => COLUMNS.find((c) => c.slug === slu
 // Today in Korea, as YYYY-MM-DD: an article dated later is written but not yet public.
 const kstToday = () => new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
 export const isPublished = (c: Column) => c.date <= kstToday();
-export const publishedColumns = () => COLUMNS.filter(isPublished);
+// Newest first.
+export const publishedColumns = () => COLUMNS.filter(isPublished).sort((a, b) => b.date.localeCompare(a.date));
 
 // "2026-10-07" → "2026년 10월 7일"
 export const columnDate = (d: string) => {

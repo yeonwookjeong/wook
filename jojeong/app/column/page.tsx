@@ -13,7 +13,7 @@ export const revalidate = 3600;
 
 // The list of 훈도의 사주 이야기, newest first.
 export default function ColumnListPage() {
-  const list = publishedColumns().sort((a, b) => b.date.localeCompare(a.date));
+  const list = publishedColumns();
   return (
     <>
       <section className="mt-6 text-center">

@@ -250,7 +250,7 @@ export default async function Home() {
       <section className="mt-8">
         <h2 className="text-center font-myeongjo text-lg font-extrabold">훈도의 사주 이야기</h2>
         <ul className="mt-3 flex flex-col gap-2">
-          {publishedColumns().slice(-3).reverse().map((c) => (
+          {publishedColumns().slice(0, 3).map((c) => (
             <li key={c.slug}>
               <Link href={`/column/${c.slug}`} className="doc-paper block px-4 py-3">
                 <b className="block font-myeongjo text-[15px] leading-snug">{c.title}</b>
