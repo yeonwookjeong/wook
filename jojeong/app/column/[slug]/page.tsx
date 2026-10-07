@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import AdSlot from "@/components/AdSlot";
 import ColumnTitle from "@/components/ColumnTitle";
 import EightCells from "@/components/EightCells";
+import TrackLink from "@/components/TrackLink";
+import TrackView from "@/components/TrackView";
 import { SITE_NAME, siteUrl } from "@/lib/brand";
 import { columnBySlug, columnDate, isPublished, publishedColumns, type ColumnBlock } from "@/lib/columns";
 import { hanjaNum } from "@/lib/hanjaNum";
@@ -145,6 +147,8 @@ export default async function ColumnPage({ params, searchParams }: PageProps<"/c
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
+      {/* Read counts for the owner's dashboard; a preview before the day is not a read. */}
+      {isPublished(c) && <TrackView column={c.slug} />}
 
       <article className="doc-paper mt-6 px-5 py-6">
         {header}
@@ -190,10 +194,15 @@ export default async function ColumnPage({ params, searchParams }: PageProps<"/c
         </div>
       </article>
 
-      <Link href="/reports/pyeongsaeng" className="mt-8 block rounded-2xl bg-seal px-5 py-4 text-center text-hanji">
+      <TrackLink
+        event="to_saju"
+        from="column"
+        href="/reports/pyeongsaeng"
+        className="mt-8 block rounded-2xl bg-seal px-5 py-4 text-center text-hanji"
+      >
         <b className="block font-myeongjo text-lg">평생 사주 첫 장, 무료로 펼쳐 보기</b>
         <span className="mt-0.5 block text-[12.5px] opacity-90">생일만 넣으면 내 사주표와 칸마다의 풀이까지 무료예요</span>
-      </Link>
+      </TrackLink>
 
       <AdSlot />
 

@@ -23,8 +23,19 @@ const dayKey = (e: string, day: string) => `st:${e}:d:${day}`;
 const allKey = (e: string) => `st:${e}:all`;
 
 // Also `view:<sale>` (a paid report's page seen by a shopper) and `co:<sale>` (its payment window opened), per
-// line of the sales table (lib/sales.ts).
-export async function track(event: StatEvent | `view:${string}` | `co:${string}` | `to:${string}` | `src:${string}` | `sh:${string}` | `sv:${string}` | `sl:${string}`) {
+// line of the sales table (lib/sales.ts), and `cv:<slug>` (a column of 훈도의 사주 이야기 read, lib/columns.ts).
+export async function track(
+  event:
+    | StatEvent
+    | `view:${string}`
+    | `co:${string}`
+    | `to:${string}`
+    | `src:${string}`
+    | `sh:${string}`
+    | `sv:${string}`
+    | `sl:${string}`
+    | `cv:${string}`,
+) {
   await bumpCounters([dayKey(event, kstDay()), allKey(event)]);
 }
 
