@@ -1,16 +1,18 @@
 import { CHARACTER } from "@/lib/brand";
 
 // The English front page's hero, built like the Korean one (components/Hero.tsx): the Sun, Moon and Five Peaks
-// folding screen that stood behind every Joseon throne (public/irworobongdo.svg), the name on a lacquered palace
+// folding screen that stood behind every Joseon throne (public/irworobongdo.webp, painted with an image model from the palace screens), the name on a lacquered palace
 // signboard (현판), and Hundo bowing from the corner. `compact` is the shorter strip for inner pages.
 export default function EnHero({ compact = false, title = "HUNDO SAJU", line = "The Joseon court read its fate. Now read yours." }: { compact?: boolean; title?: string; line?: string }) {
   return (
     <header className="relative mt-4 overflow-hidden rounded-3xl shadow-[0_10px_30px_rgb(33_27_23/0.25)]">
-      <div className={`relative ${compact ? "h-[200px]" : "h-[340px]"}`}>
+      <div className={`relative ${compact ? "h-[200px]" : "h-[360px]"}`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/irworobongdo-v2.svg" alt="" width={390} height={340} className={`absolute inset-0 size-full object-cover ${compact ? "object-[center_52%]" : "object-bottom"}`} />
+        <img src="/irworobongdo.webp" alt="" width={864} height={852} className={`absolute inset-0 size-full object-cover ${compact ? "object-[center_22%]" : "object-[center_30%]"}`} />
+        {/* a little shade at the top and bottom so the signboard and the button read on the busy painting */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/35" />
         <div className={`absolute inset-x-0 top-0 flex flex-col items-center text-center ${compact ? "pt-4" : "pt-6"}`}>
-          <p className="text-[10.5px] font-bold tracking-[0.25em] text-[#f3ead0]/85">KOREAN FOUR PILLARS OF DESTINY</p>
+          <p className="text-[10.5px] font-bold tracking-[0.25em] text-[#f3ead0]/85">四柱 · SAJU SINCE JOSEON</p>
           {/* 현판: black lacquer board, gold rim and gilded letters */}
           <div className="mt-2 rounded-[6px] border-[3px] border-[#b8862f] bg-[#1c1712] p-[3px] shadow-[0_6px_14px_rgb(0_0_0/0.45)]">
             <div className="rounded-[3px] border border-[#e2bc68]/70 px-5 py-1.5">

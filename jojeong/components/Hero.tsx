@@ -1,14 +1,15 @@
 import { CHARACTER, CHARACTER_NAME, SERVICE_NAME } from "@/lib/brand";
 
 // Landing hero: the 일월오봉도 that stood behind every Joseon throne, painted as a four-panel folding screen, with
-// the title hung on a palace signboard (현판). 정 훈도 only bows from the corner. The painting lives in
-// public/irworobongdo.svg so the landing link preview (app/opengraph-image.tsx) can reuse it.
+// the title hung on a palace signboard (현판). 정 훈도 only bows from the corner. The painting is
+// public/irworobongdo.webp; the link preview (app/opengraph-image.tsx) still draws public/irworobongdo.svg.
 export default function Hero() {
   return (
     <header className="animate-rise relative mt-4 overflow-hidden rounded-3xl shadow-[0_10px_30px_rgb(33_27_23/0.25)]">
       <div className="relative h-[360px]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/irworobongdo.svg" alt="" width={390} height={360} className="absolute inset-0 size-full object-cover object-bottom" />
+        <img src="/irworobongdo.webp" alt="" width={864} height={852} className="absolute inset-0 size-full object-cover object-center" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-transparent to-black/35" />
         <div className="absolute inset-x-0 top-0 flex flex-col items-center pt-6 text-center">
           <p className="text-[11px] font-bold tracking-[0.25em] text-[#f3ead0]/85">조선 왕실도 사주를 봤다</p>
           {/* 현판: black lacquer board, gold rim and gilded letters */}
