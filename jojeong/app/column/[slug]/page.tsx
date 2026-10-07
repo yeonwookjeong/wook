@@ -27,9 +27,13 @@ export async function generateMetadata({ params }: PageProps<"/column/[slug]">):
     alternates: { canonical: `/column/${c.slug}` },
     openGraph: {
       type: "article",
+      url: `/column/${c.slug}`,
+      siteName: SITE_NAME,
+      locale: "ko_KR",
       title: c.title,
       description: c.summary,
       publishedTime: c.date,
+      section: "훈도의 사주 이야기",
     },
   };
 }
@@ -108,16 +112,35 @@ export default async function ColumnPage({ params, searchParams }: PageProps<"/c
   const open = (slug: string) => preview || live.some((o) => o.slug === slug);
   const others = live.filter((o) => o.slug !== c.slug).slice(0, 3);
   const [lead, ...sections] = sectionsOf(c.body);
-  const ld = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    headline: c.title,
-    description: c.summary,
-    datePublished: c.date,
-    author: { "@type": "Organization", name: SITE_NAME },
-    publisher: { "@type": "Organization", name: SITE_NAME },
-    mainEntityOfPage: `${siteUrl()}/column/${c.slug}`,
-  };
+  // For search engines: the article (with its card image and dates) and where it sits in the site.
+  const base = siteUrl();
+  const url = `${base}/column/${c.slug}`;
+  const org = { "@type": "Organization", name: SITE_NAME, url: base, logo: { "@type": "ImageObject", url: `${base}/hundo-face.png` } };
+  const ld = [
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: c.title,
+      description: c.summary,
+      image: [`${url}/opengraph-image`],
+      datePublished: `${c.date}T00:00:00+09:00`,
+      dateModified: `${c.date}T00:00:00+09:00`,
+      inLanguage: "ko-KR",
+      articleSection: "훈도의 사주 이야기",
+      author: org,
+      publisher: org,
+      mainEntityOfPage: url,
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: SITE_NAME, item: base },
+        { "@type": "ListItem", position: 2, name: "훈도의 사주 이야기", item: `${base}/column` },
+        { "@type": "ListItem", position: 3, name: c.title, item: url },
+      ],
+    },
+  ];
 
   const header = (
     <header>
