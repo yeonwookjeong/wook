@@ -342,3 +342,14 @@ export async function deleteAskRoom(roomId: string) {
   await backend().set(`ask:room:${roomId}`, "");
   await backend().remove("ask:rooms", roomId);
 }
+
+// Threads numbers (lib/threads.ts): the access token, the list of post ids and one record per post, as JSON.
+export async function getThreadsRaw(key: string): Promise<string | null> {
+  return backend().get(`th:${key}`);
+}
+export async function getThreadsRawMany(keys: string[]): Promise<(string | null)[]> {
+  return backend().mget(keys.map((k) => `th:${k}`));
+}
+export async function setThreadsRaw(key: string, raw: string) {
+  await backend().set(`th:${key}`, raw);
+}
