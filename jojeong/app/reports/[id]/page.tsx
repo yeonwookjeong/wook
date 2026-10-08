@@ -399,13 +399,7 @@ async function OpenReport({
   const free = self ? freeReadingOf(pillars, profile) : null;
   // The free reading: the chart analysis, then the four computed blocks (powers, 신살, money·love·work, the
   // flow of life). Shown on the free year reading and on the life report before purchase.
-  // Until the life report is owned, the free reading tells what each thing is and keeps why and when for it
-  // (components/LockedLine.tsx); bought (or given), everything opens.
-  const lifeOwned =
-    (product.id === "pyeongsaeng" && Boolean(paid)) ||
-    (self && me ? Boolean(await ownedOrderFor("pyeongsaeng", { product: "pyeongsaeng", p: me.token })) : false);
-  const lifeHref = product.id === "pyeongsaeng" ? "#report-start" : `/reports/pyeongsaeng${query ? `?${query}` : ""}`;
-  const intro = distinct && <ChartIntro name={name} d={distinct} slots={reading.chart.slots} lockHref={lifeOwned ? null : lifeHref} />;
+  const intro = distinct && <ChartIntro name={name} d={distinct} slots={reading.chart.slots} />;
   // The card of this reading, for a story (the day pillar, the five powers, money·love·work, how rare the build is).
   const ilju = free ? iljuFacts(pillars.dayStem, pillars.dayBranch) : null;
   const sameLine = distinct?.ilju ? `같은 ${hanjaKo(distinct.ilju.name)}일주 중 약 ${Math.max(1, Math.round(distinct.ilju.rate * 100))}%만 이 구조` : "";
@@ -442,10 +436,8 @@ async function OpenReport({
     ) : null;
   const fullIntro = intro && (
     <>
-      <ChartIntro name={name} d={distinct} slots={reading.chart.slots} chips={!free} lockHref={lifeOwned ? null : lifeHref} />
-      {free && (
-        <FreeReading name={name} r={free} query={query} addGender={`${next}?new=1`} onLifeReport={product.id === "pyeongsaeng"} locked={!lifeOwned} />
-      )}
+      <ChartIntro name={name} d={distinct} slots={reading.chart.slots} chips={!free} />
+      {free && <FreeReading name={name} r={free} query={query} addGender={`${next}?new=1`} onLifeReport={product.id === "pyeongsaeng"} />}
     </>
   );
   // Without gender or the hour, the remembered chart is simply entered again with them.
