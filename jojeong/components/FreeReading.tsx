@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Domain } from "@/lib/domains";
 import { MOODS, type FreeReading as Reading } from "@/lib/freeReading";
 import { perHundred } from "@/lib/rarity";
+import LockedLine from "./LockedLine";
 
 const TOPIC: Record<Domain, string> = { jaemul: "돈", yeonae: "사랑", jikup: "일" };
 // The five grades of a decade, with the colour its bar is drawn in (lib/freeReading.ts moodOf).
@@ -72,20 +73,32 @@ function Card({ hanja, title, children }: { hanja: string; title: string; childr
 // money, love and work, and the ten-year flow of life. Each ends where a paid report goes further.
 // `onLifeReport`: this card sits on the 평생 사주 page itself, so the link to that report goes down to its payment
 // (a link to the page one is on goes nowhere); it is the Paywall when locked, the written report once bought.
+// `locked`: the reader does not own the life report yet, so the reasons and the timing stay for it: a verdict
+// each, one line of the stars and of the strengths, and the decades as bars with only the present one in words.
 export default function FreeReading({
   name,
   r,
   query,
   addGender,
   onLifeReport = false,
+  locked = false,
 }: {
   name: string;
   r: Reading;
   query: string;
   addGender: string;
   onLifeReport?: boolean;
+  locked?: boolean;
 }) {
   const q = query ? `?${query}` : "";
+  const lifeHref = onLifeReport ? "#report-start" : `/reports/pyeongsaeng${q}`;
+  // The first sentence of a strength (what it is); the second (its cost) is the paid report's.
+  const first = (line: string) => (locked ? line.split(/(?<=[.!?])\s+/)[0] : line);
+  // What the bars already show, said with the reader's own years: the next decade that lifts, the next to go easy in.
+  const ahead = locked && r.flow ? r.flow.filter((f) => !f.past && !f.now && !f.young) : [];
+  // The nearest ones, and the hard one only within thirty years (no one needs to hear about their eighties now).
+  const lift = ahead.find((f) => f.level >= 4);
+  const ease = ahead.find((f) => f.level <= 2 && f.from <= new Date().getFullYear() + 30);
   return (
     <>
       <Card hanja="性 向" title={`${name}님의 성향 지도`}>
@@ -110,21 +123,22 @@ export default function FreeReading({
           <p className="rounded-xl bg-seal/5 px-3 py-2">
             <b className="text-seal">가장 강한 힘 · {r.strong.name}</b>
             <br />
-            {r.strong.line}
+            {first(r.strong.line)}
           </p>
           <p className="rounded-xl bg-ink/5 px-3 py-2">
             <b>가장 약한 힘 · {r.weak.name}</b>
             <br />
-            {r.weak.line}
+            {first(r.weak.line)}
           </p>
         </div>
+        {locked && <LockedLine href={lifeHref} chapter="edge" />}
         <p className="mt-2 text-[11px] text-ink-soft">상위·하위는 1950~2008년에 태어날 수 있는 모든 날·시의 사주와 비교했어요.</p>
       </Card>
 
       <Card hanja="神 殺" title={`${name}님 사주 속 별`}>
         {r.sals.length ? (
           <ul className="mt-3 flex flex-col divide-y divide-seal/10">
-            {r.sals.map((s) => (
+            {r.sals.map((s, i) => (
               <li key={s.name} className="py-2.5">
                 <p className="flex items-baseline gap-2">
                   <b className="font-myeongjo">{s.plain}</b>
@@ -133,7 +147,11 @@ export default function FreeReading({
                     <span className="ml-auto shrink-0 rounded-full bg-seal/10 px-2 py-0.5 text-[11px] font-bold text-seal">{perHundred(s.rate)}</span>
                   )}
                 </p>
-                <p className="mt-0.5 text-[13px] leading-relaxed text-ink/85">{s.line}</p>
+                {locked && i > 0 ? (
+                  <LockedLine href={lifeHref} chapter="people" />
+                ) : (
+                  <p className="mt-0.5 text-[13px] leading-relaxed text-ink/85">{s.line}</p>
+                )}
               </li>
             ))}
           </ul>
@@ -166,7 +184,9 @@ export default function FreeReading({
       <Card hanja="運 路" title={`${name}님의 인생 흐름`}>
         {r.flow ? (
           <>
-            <p className="mt-1 text-center text-[12px] text-ink-soft">10년마다 바뀌는 큰 흐름(대운)이에요. 막대가 길수록 힘이 붙는 시기, 누르면 이유가 펼쳐져요</p>
+            <p className="mt-1 text-center text-[12px] text-ink-soft">
+              10년마다 바뀌는 큰 흐름(대운)이에요. 막대가 길수록 힘이 붙는 시기{locked ? "예요" : ", 누르면 이유가 펼쳐져요"}
+            </p>
             <ol className="mt-4 flex flex-col gap-1.5">
               {r.flow.map((f) => (
                 <li key={f.from} className={`rounded-xl ${f.now ? "border-2 border-seal bg-seal/5" : "border border-transparent"} ${f.past ? "opacity-75" : ""}`}>
@@ -190,13 +210,21 @@ export default function FreeReading({
                           </span>
                           {f.now && <span className="shrink-0 text-[11px] font-extrabold text-seal">지금</span>}
                         </span>
-                        <span className="mt-1 block text-[13px] leading-snug">{f.line}</span>
+                        {locked && !f.now ? (
+                          <span aria-hidden="true" className="mt-1 block text-[13px] leading-snug blur-[4px] select-none">
+                            이 10년에 무엇이 오고 무엇을 준비할지 풀어 드려요
+                          </span>
+                        ) : (
+                          <span className="mt-1 block text-[13px] leading-snug">{f.line}</span>
+                        )}
                       </span>
-                      <span className="mt-0.5 shrink-0 text-[11px] text-ink-soft transition group-open:rotate-180" aria-hidden="true">
-                        ▾
-                      </span>
+                      {!locked && (
+                        <span className="mt-0.5 shrink-0 text-[11px] text-ink-soft transition group-open:rotate-180" aria-hidden="true">
+                          ▾
+                        </span>
+                      )}
                     </summary>
-                    <p className="px-3 pt-0 pb-3 pl-[5.9rem] text-[12px] leading-relaxed text-ink-soft">{f.why}</p>
+                    {!locked && <p className="px-3 pt-0 pb-3 pl-[5.9rem] text-[12px] leading-relaxed text-ink-soft">{f.why}</p>}
                   </details>
                 </li>
               ))}
@@ -212,7 +240,25 @@ export default function FreeReading({
             <p className="mt-2 text-[11px] leading-relaxed text-ink-soft">
               대운은 1월 1일이 아니라 태어난 날 무렵에 넘어가요. 바뀌는 해 앞뒤 1년쯤은 두 흐름이 섞여 느껴져요.
             </p>
-            {onLifeReport ? (
+            {locked ? (
+              <>
+                {(lift || ease) && (
+                  <div className="mt-3 rounded-xl bg-seal/5 px-3 py-2.5 text-[13px] leading-relaxed">
+                    {lift && (
+                      <p>
+                        {name}님에게 다음으로 힘이 {lift.level === 5 ? "크게 " : ""}붙는 10년은 <b className="text-seal">{lift.from}년 무렵부터</b>예요.
+                      </p>
+                    )}
+                    {ease && (
+                      <p>
+                        크게 벌이기보다 다져야 할 10년은 <b>{ease.from}년 무렵부터</b>예요.
+                      </p>
+                    )}
+                  </div>
+                )}
+                <LockedLine href={lifeHref} chapter="next" className="mt-2" />
+              </>
+            ) : onLifeReport ? (
               <a href="#report-start" className="mt-3 block text-right text-[12px] font-bold text-seal">
                 시기마다 무슨 일이 생기는지 · 아래에서 이어 보기 ↓
               </a>
