@@ -16,6 +16,7 @@ import { dayStart, KINDS, parseSearch, pickDays, searchDay, taekilBrief } from "
 import type { Gender } from "./profile";
 import type { Pillars } from "./saju";
 import { getProfile } from "./store";
+import type { Usage } from "./aiCost";
 import { courtOfReader, subjectFor } from "./subject";
 
 // Written reports: the engine's chart brief goes to a language model, which writes the reading in 정 훈도's
@@ -149,7 +150,8 @@ export function anthropic() {
 }
 
 // Streams the report text as it is written; resolves with the full text (or null when it did not finish).
-export async function writeReport(job: ReportJob, onText: (t: string) => void): Promise<string | null> {
+// `onUsage` hears the tokens the call used (lib/aiCost.ts), for the owner's cost view.
+export async function writeReport(job: ReportJob, onText: (t: string) => void, onUsage?: (u: Usage) => void): Promise<string | null> {
   // Local UI testing without an API key: stream a canned report.
   if (process.env.REPORT_MOCK === "1" && !(isGemini ? process.env.GEMINI_API_KEY : process.env.ANTHROPIC_API_KEY)) {
     const { MOCK_REPORT } = await import("./reportMock");
@@ -159,7 +161,7 @@ export async function writeReport(job: ReportJob, onText: (t: string) => void): 
     }
     return MOCK_REPORT;
   }
-  if (isGemini) return writeWithGemini(job, onText);
+  if (isGemini) return writeWithGemini(job, onText, onUsage);
   const stream = anthropic().beta.messages.stream({
     model: REPORT_MODEL,
     max_tokens: 32000,
@@ -178,13 +180,20 @@ export async function writeReport(job: ReportJob, onText: (t: string) => void): 
     }
   }
   const final = await stream.finalMessage();
+  onUsage?.({
+    model: final.model ?? REPORT_MODEL,
+    input: final.usage.input_tokens,
+    output: final.usage.output_tokens,
+    cacheRead: final.usage.cache_read_input_tokens ?? 0,
+    cacheWrite: final.usage.cache_creation_input_tokens ?? 0,
+  });
   if (final.stop_reason !== "end_turn") return null;
   return text;
 }
 
 let gemini: GoogleGenAI | null = null;
 
-async function writeWithGemini(job: ReportJob, onText: (t: string) => void): Promise<string | null> {
+async function writeWithGemini(job: ReportJob, onText: (t: string) => void, onUsage?: (u: Usage) => void): Promise<string | null> {
   gemini ??= new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   const stream = await gemini.models.generateContentStream({
     model: REPORT_MODEL,
@@ -197,7 +206,9 @@ async function writeWithGemini(job: ReportJob, onText: (t: string) => void): Pro
   });
   let text = "";
   let finish: string | undefined;
+  let usage: { promptTokenCount?: number; candidatesTokenCount?: number; thoughtsTokenCount?: number; cachedContentTokenCount?: number } | undefined;
   for await (const chunk of stream) {
+    usage = chunk.usageMetadata ?? usage;
     const t = chunk.text;
     if (t) {
       text += t;
@@ -205,5 +216,13 @@ async function writeWithGemini(job: ReportJob, onText: (t: string) => void): Pro
     }
     finish = chunk.candidates?.[0]?.finishReason ?? finish;
   }
+  if (usage)
+    onUsage?.({
+      model: REPORT_MODEL,
+      input: (usage.promptTokenCount ?? 0) - (usage.cachedContentTokenCount ?? 0),
+      output: (usage.candidatesTokenCount ?? 0) + (usage.thoughtsTokenCount ?? 0),
+      cacheRead: usage.cachedContentTokenCount ?? 0,
+      cacheWrite: 0,
+    });
   return finish === "STOP" && text ? text : null;
 }

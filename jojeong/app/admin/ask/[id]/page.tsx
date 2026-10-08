@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isAdmin } from "@/lib/admin";
+import { costKrw, type Usage } from "@/lib/aiCost";
 import { iljuOf, loadRoom, otherOfRoom, personOfRoom } from "@/lib/ask";
 import { deleteRoomAction, detachOtherAction, saveMemoAction } from "../actions";
 import { AskForm, AttachOtherForm, ChooseForm } from "../AskForms";
@@ -11,6 +12,12 @@ export const metadata: Metadata = { title: "상담방 · 관리자", robots: { i
 export const maxDuration = 300;
 
 const when = (t: number) => new Date(t + 9 * 3600000).toISOString().slice(5, 16).replace("T", " ");
+const n = (v: number) => v.toLocaleString("ko-KR");
+// "입력 8,120 · 출력 940 토큰 · 약 95원": what one answer cost to write.
+function costLine(u: Usage) {
+  const won = costKrw(u);
+  return `입력 ${n(u.input + u.cacheRead + u.cacheWrite)} · 출력 ${n(u.output)} 토큰${won === null ? "" : ` · 약 ${n(Math.round(won))}원`} · ${u.model}`;
+}
 
 export default async function AskRoomPage({ params }: PageProps<"/admin/ask/[id]">) {
   if (!(await isAdmin()))
@@ -29,6 +36,9 @@ export default async function AskRoomPage({ params }: PageProps<"/admin/ask/[id]
   const other = otherOfRoom(room);
   const last = room.messages.at(-1);
   const lastGuest = [...room.messages].reverse().find((m) => m.role === "guest");
+  // The cost of the answers so far, for pricing a question.
+  const costs = room.messages.flatMap((m) => (m.usage ? [costKrw(m.usage)] : [])).filter((c): c is number => c !== null);
+  const avg = costs.length ? Math.round(costs.reduce((a, c) => a + c, 0) / costs.length) : null;
 
   return (
     <>
@@ -46,6 +56,11 @@ export default async function AskRoomPage({ params }: PageProps<"/admin/ask/[id]
         <p className="mt-1 text-xs text-ink-soft">
           답한 질문 {room.used}개{other ? ` · 함께 보는 사람: ${room.otherLabel}(${other.name}, ${iljuOf(other)})` : ""}
         </p>
+        {avg !== null && (
+          <p className="mt-1 text-xs font-bold text-seal">
+            답변 원가 평균 약 {n(avg)}원 · {costs.length}개 기준 · 합계 약 {n(Math.round(costs.reduce((a, c) => a + c, 0)))}원
+          </p>
+        )}
       </section>
 
       <section className="mt-3 flex flex-col gap-2.5">
@@ -68,6 +83,7 @@ export default async function AskRoomPage({ params }: PageProps<"/admin/ask/[id]
               {m.choices && m === last && lastGuest && (
                 <ChooseForm room={room.id} question={lastGuest.text} topic={lastGuest.topic ?? "기타"} choices={m.choices} />
               )}
+              {m.usage && <span className="mt-1 block text-[10px] text-ink-soft">{costLine(m.usage)}</span>}
               <span className="mt-1 block text-right text-[10px] text-ink-soft">{when(m.at)}</span>
             </div>
           ),

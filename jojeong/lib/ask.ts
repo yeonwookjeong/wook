@@ -2,6 +2,7 @@ import "server-only";
 import { chartBrief, pairBrief } from "./brief";
 import { coupleBrief } from "./couple";
 import { decodePerson, profileOf, type Person } from "./pairToken";
+import type { Usage } from "./aiCost";
 import { writeReport } from "./reportWriter";
 import { STEMS_KO, BRANCHES_KO } from "./saju";
 import { askRoomIds, getAskRoomRaw, newAskRoomId, setAskRoomRaw } from "./store";
@@ -23,6 +24,8 @@ export type AskMessage = {
   topic?: Topic;
   // When a question held several topics: the ones he offers to take first, nothing spent yet.
   choices?: string[];
+  // What writing this answer used (owner only, lib/aiCost.ts): the price of a question.
+  usage?: Usage;
 };
 
 export type AskRoom = {
@@ -169,12 +172,19 @@ export async function ask(room: AskRoom, question: string, topic: Topic, chosen?
   ].join("\n\n");
 
   // ASK_MOCK=1 (local only, no key): a canned answer that still exercises the topic split and the memo.
+  let usage: Usage | undefined;
   const text =
     process.env.ASK_MOCK === "1"
       ? !chosen && /그리고|또/.test(q)
         ? "[[여러 주제]]\n- 연애: 그 사람과의 앞날\n- 일: 이직할 때"
         : `그대의 물음에 한 줄로 아뢰자면, 서두르지 않는 쪽이 맞사옵니다.\n\n(시험용 답변 · 질문: ${q})\n\n[[메모]]\n- ${kstDate()} ${topic} 질문: ${q}\n${room.memo}`
-      : await writeReport({ key: `ask:${room.id}`, system: SYSTEM, prompt, title: "정 훈도에게 묻기", modern: false }, () => {});
+      : await writeReport(
+          { key: `ask:${room.id}`, system: SYSTEM, prompt, title: "정 훈도에게 묻기", modern: false },
+          () => {},
+          (u) => {
+            usage = u;
+          },
+        );
   if (!text) return { ok: false, error: "답을 쓰다 끊겼사옵니다. 잠시 뒤 다시 여쭈시옵소서." };
 
   const now = Date.now();
@@ -192,10 +202,11 @@ export async function ask(room: AskRoom, question: string, topic: Topic, chosen?
       text: `여러 가지를 함께 여쭈셨사옵니다. 하나씩 깊이 보아야 제대로 아뢸 수 있사오니, 무엇부터 보시겠사옵니까?\n나머지는 질문 하나씩으로 이어서 여쭈시면 되옵니다.`,
       at: now,
       choices,
+      usage,
     });
   } else {
     const [answer, memo] = text.split("[[메모]]");
-    room.messages.push({ role: "hundo", text: answer.trim(), at: now, topic });
+    room.messages.push({ role: "hundo", text: answer.trim(), at: now, topic, usage });
     if (memo?.trim()) room.memo = memo.trim().slice(0, 1500);
     room.used += 1;
   }
