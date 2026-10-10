@@ -6,6 +6,7 @@ import { pickDays } from "@/lib/taekil";
 import { figureById, figureChart } from "@/lib/figures";
 import { daysOf, distinctOnSlide, ILJU_IMAGE, monthPillarOf, rankDays, rankMonth, SIXTY, type IljuMonth } from "@/lib/iljuRank";
 import { ANIMALS, BRANCHES, BRANCHES_KO, STEMS, STEMS_KO } from "@/lib/saju";
+import { LIST_REELS } from "./listReels";
 
 // Social cards, 1080×1440 (Instagram 3:4, the profile grid's own shape, so nothing is cropped there), drawn in the site's own look. Owner only. Each slide is one URL
 // (?c=…), so a screenshot of the page is the image.
@@ -538,10 +539,87 @@ const Body = ({ children, style }: { children: React.ReactNode; style?: React.CS
 
 export type CardQuery = Record<string, string | string[] | undefined>;
 
+// A title with [gold] words: the bracketed parts in gold, \n for a line break.
+function GoldTitle({ text }: { text: string }) {
+  return (
+    <>
+      {text.split("\n").map((line, i) => (
+        <Fragment key={i}>
+          {i > 0 && <br />}
+          {line.split(/(\[[^\]]+\])/).map((part, j) =>
+            part.startsWith("[") ? (
+              <span key={j} style={{ color: "#f1cf7a" }}>
+                {part.slice(1, -1)}
+              </span>
+            ) : (
+              <Fragment key={j}>{part}</Fragment>
+            ),
+          )}
+        </Fragment>
+      ))}
+    </>
+  );
+}
+
+// A list reel (listReels.ts): the title up top, a paper table filling the middle, two lines below, all inside the
+// part of the picture Instagram's player leaves clear.
+function ListReelCard({ k }: { k: string }) {
+  const r = LIST_REELS[k];
+  if (!r) return null;
+  const fs = r.fs ?? 34;
+  return (
+    <ReelFrame>
+      <div style={{ position: "absolute", top: REEL.top, left: REEL.side, right: REEL.side, bottom: 1920 - REEL.bottom, display: "flex", flexDirection: "column", gap: 34 }}>
+        <div style={{ textAlign: "center" }}>
+          <p style={{ fontSize: 34, fontWeight: 800, letterSpacing: "0.06em", color: GOLD }}>{r.kicker}</p>
+          <p style={{ marginTop: 14, fontSize: r.titleSize ?? 80, fontWeight: 800, lineHeight: 1.18, letterSpacing: "-0.01em" }}>
+            <GoldTitle text={r.title} />
+          </p>
+          {r.sub && <p style={{ marginTop: 14, fontSize: 28, lineHeight: 1.45, color: "rgba(244,236,219,.85)", fontFamily: sans }}>{r.sub}</p>}
+        </div>
+        <div className="doc-paper" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", justifyContent: "space-evenly", padding: "18px 40px", color: INK }}>
+          {r.rows.map(([label, text, note], i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 20, flex: 1, borderTop: i ? "1.5px solid rgba(179,38,30,.15)" : "none", fontFamily: sans }}>
+              {r.check ? (
+                <span style={{ width: 44, height: 44, flexShrink: 0, border: `4px solid ${SEAL}`, borderRadius: 8 }} />
+              ) : (
+                <span
+                  style={{
+                    width: r.labelWidth ?? 150,
+                    flexShrink: 0,
+                    textAlign: r.brushLabels ? "center" : "left",
+                    whiteSpace: "nowrap",
+                    color: SEAL,
+                    fontWeight: 800,
+                    fontSize: r.brushLabels ? fs * 1.6 : fs * 0.95,
+                    lineHeight: 1,
+                    fontFamily: r.brushLabels ? brush : serif,
+                  }}
+                >
+                  {label}
+                </span>
+              )}
+              <span style={{ minWidth: 0 }}>
+                <b style={{ display: "block", fontSize: fs, lineHeight: 1.3, letterSpacing: "-0.02em" }}>{text}</b>
+                {note && <span style={{ display: "block", marginTop: 2, fontSize: fs * 0.72, color: SOFT, fontWeight: 600 }}>{note}</span>}
+              </span>
+            </div>
+          ))}
+        </div>
+        <div style={{ textAlign: "center" }}>
+          <p style={{ fontSize: 34, lineHeight: 1.4, fontWeight: 800, color: "#f1cf7a" }}>{r.end}</p>
+          <p style={{ marginTop: 8, fontSize: 27, lineHeight: 1.45, color: "rgba(244,236,219,.8)", fontFamily: sans }}>{r.foot}</p>
+        </div>
+      </div>
+    </ReelFrame>
+  );
+}
+
 // One slide, from the same query the page takes (?c=…). The SNS page draws a whole day's set with it.
 export async function Card({ q }: { q: CardQuery }) {
   const c = typeof q.c === "string" ? q.c : "cta";
   const s = Math.min(9, Math.max(0, Number(q.s ?? 2) || 0));
+  if (c.startsWith("lr-")) return <ListReelCard k={c.slice(3)} />;
 
   // ① 10일간 도감: cover
   if (c === "ilgan-cover")
