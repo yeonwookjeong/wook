@@ -98,6 +98,9 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
         <Link href="/admin/threads" className="mt-3 ml-2 inline-block rounded-full border-2 border-seal px-5 py-1.5 text-sm font-bold text-seal">
           스레드 성적표 →
         </Link>
+        <Link href="/admin/columns" className="mt-3 ml-2 inline-block rounded-full border-2 border-seal px-5 py-1.5 text-sm font-bold text-seal">
+          칼럼 미리보기 →
+        </Link>
       </section>
 
       {writeError && (
