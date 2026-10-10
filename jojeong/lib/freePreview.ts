@@ -134,3 +134,40 @@ export function yearPreviewOf(p: Pillars, profile: Profile | null, y: number): Y
     months: monthMarks(p, r, y).map((m) => ({ from: m.from, gz: m.gz, rating: m.rating })),
   };
 }
+
+// 겹쳐 보기: the coming year stacked on the chart the way it is read, one layer at a time: the chart, the decade
+// it falls in (with its characters against the chart), the year (against the chart and against the decade), then
+// its months (drawn from yearPreviewOf). Tags only.
+export type Layers = {
+  natal: { pos: Slot["pos"]; gz: string }[];
+  daeun: { gz: string; from: number; to: number; tags: string[] } | null;
+  year: { gz: string; natal: string[]; daeun: string[] };
+};
+
+export function layersOf(p: Pillars, profile: Profile | null, y: number): Layers | null {
+  if (!isFull(p)) return null;
+  const { stem, branch } = yearPillar(y);
+  const d = profile?.daeun?.find((x) => x.from <= y && y <= x.to) ?? null;
+  const natal: string[] = [];
+  for (const s of chartOf(p)) {
+    if (s.branch !== null)
+      for (const m of meetings(branch, s.branch)) {
+        const tag = `${s.pos}지 ${BRANCHES[branch]}${BRANCHES[s.branch]} ${m}`;
+        if (!natal.includes(tag)) natal.push(tag);
+      }
+    if (s.stem !== null && stemCombine(stem, s.stem)) natal.push(`${s.pos}간 ${STEMS[stem]}${STEMS[s.stem]} 합`);
+    if (s.stem !== null && stemClash(stem, s.stem)) natal.push(`${s.pos}간 ${STEMS[stem]}${STEMS[s.stem]} 충`);
+  }
+  const withDaeun = d
+    ? [
+        ...meetings(branch, d.branch).map((m) => `${BRANCHES[branch]}${BRANCHES[d.branch]} ${m}`),
+        ...(stemCombine(stem, d.stem) ? [`${STEMS[stem]}${STEMS[d.stem]} 합`] : []),
+        ...(stemClash(stem, d.stem) ? [`${STEMS[stem]}${STEMS[d.stem]} 충`] : []),
+      ]
+    : [];
+  return {
+    natal: chartOf(p).map((s) => ({ pos: s.pos, gz: `${s.stem === null ? "?" : STEMS[s.stem]}${s.branch === null ? "?" : BRANCHES[s.branch]}` })),
+    daeun: d ? { gz: `${STEMS[d.stem]}${BRANCHES[d.branch]}`, from: d.from, to: d.to, tags: decadeTags(p, d) } : null,
+    year: { gz: `${STEMS[stem]}${BRANCHES[branch]}`, natal, daeun: withDaeun },
+  };
+}
