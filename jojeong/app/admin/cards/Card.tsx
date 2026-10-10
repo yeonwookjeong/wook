@@ -581,6 +581,7 @@ function ListReelCard({ k, anim = false }: { k: string; anim?: boolean }) {
           @keyframes lrIn { from { opacity: 0; transform: translateX(-30px) } to { opacity: 1; transform: none } }
           @keyframes lrTick { 0% { opacity: 0; transform: scale(2.2) rotate(-12deg) } 60% { opacity: 1; transform: scale(.9) rotate(4deg) } 100% { opacity: 1; transform: none } }
           @keyframes lrPop { 0% { opacity: 0; transform: scale(.8) } 70% { transform: scale(1.06) } 100% { opacity: 1; transform: none } }
+          @keyframes lrBrush { from { opacity: 0; transform: scale(1.7); filter: blur(8px) } to { opacity: 1; transform: none; filter: none } }
           @keyframes lrTwinkle { 0%,100% { opacity: .25 } 50% { opacity: 1 } }
           [data-card] svg circle:nth-child(3n) { animation: lrTwinkle 2.4s ease-in-out infinite }
           [data-card] svg circle:nth-child(3n+1) { animation: lrTwinkle 3.1s ease-in-out .8s infinite }
@@ -615,6 +616,7 @@ function ListReelCard({ k, anim = false }: { k: string; anim?: boolean }) {
                     fontSize: r.brushLabels ? fs * 1.6 : fs * 0.95,
                     lineHeight: 1,
                     fontFamily: r.brushLabels ? brush : serif,
+                    ...(r.brushLabels ? a("lrBrush", rowAt(i) + 0.15, 0.55) : {}),
                   }}
                 >
                   {label}
