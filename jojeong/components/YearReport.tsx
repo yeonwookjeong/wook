@@ -1,3 +1,4 @@
+import type { Classic } from "@/lib/classics";
 import { priceNow, productById, type ProductId } from "@/lib/products";
 import { ELEMENT_HANJA, ELEMENT_KO } from "@/lib/myeongri";
 import type { YearReading } from "@/lib/yearly";
@@ -45,6 +46,7 @@ export default function YearReport({
   intro,
   after,
   ending,
+  cite,
 }: {
   reading: YearReading;
   heading: string;
@@ -57,6 +59,8 @@ export default function YearReport({
   // year), and its own close in place of "여기까지가 무료 풀이예요".
   after?: React.ReactNode;
   ending?: React.ReactNode;
+  // The classic each section rests on (lib/classics.ts), by section id; only the preview passes it so far.
+  cite?: Record<string, Classic>;
 }) {
   const { verdict, headline, keywords, sections, months, best, worst, lucky, advice, missing } = reading;
   // The engine's own sections.
@@ -87,12 +91,13 @@ export default function YearReport({
                     {t}
                   </p>
                 ))}
-                {s.basis.length > 0 && (
+                {(s.basis.length > 0 || cite?.[s.id]) && (
                   <div className="mt-3 bg-ink/5 px-3 py-2 text-[11px] leading-relaxed text-ink-soft">
                     <p className="font-bold">정 훈도가 이렇게 본 까닭</p>
                     {s.basis.map((b) => (
                       <p key={b}>· {b}</p>
                     ))}
+                    {cite?.[s.id] && <ClassicLine c={cite[s.id]} />}
                   </div>
                 )}
               </div>
@@ -277,5 +282,15 @@ export default function YearReport({
         <p className="mt-4 text-center text-[11px] text-ink-soft/80">사주로 풀어 본 한 해의 흐름이에요. 큰 결정은 본인의 판단으로 내리세요.</p>
       </section>}
     </>
+  );
+}
+
+// One line of the classics: the book and chapter, the text, and what it says in plain words.
+export function ClassicLine({ c }: { c: Classic }) {
+  return (
+    <p className="mt-1.5 border-t border-ink/10 pt-1.5">
+      <b className="text-seal">원전</b> {c.book} 「{c.chapter}」 <span className="font-myeongjo text-ink">{c.text}</span>
+      <span className="block">— {c.ko}</span>
+    </p>
   );
 }
