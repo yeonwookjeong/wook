@@ -563,25 +563,47 @@ function GoldTitle({ text }: { text: string }) {
 
 // A list reel (listReels.ts): the title up top, a paper table filling the middle, two lines below, all inside the
 // part of the picture Instagram's player leaves clear.
-function ListReelCard({ k }: { k: string }) {
+function ListReelCard({ k, anim = false }: { k: string; anim?: boolean }) {
   const r = LIST_REELS[k];
   if (!r) return null;
   const fs = r.fs ?? 34;
+  // ?anim=1: the same picture in motion, for a video reel. The title rises in, the rows follow one by one, then the
+  // boxes are ticked, and the last frame is the still picture. Frames are captured by setting each animation's time.
+  const rowAt = (i: number) => 1.1 + i * 0.32;
+  const tickAt = (i: number) => rowAt(r.rows.length) + 0.5 + i * 0.45;
+  const endAt = r.check ? tickAt(r.rows.length) + 0.2 : rowAt(r.rows.length) + 0.4;
+  const a = (name: string, at: number, dur = 0.6) => (anim ? { animation: `${name} ${dur}s cubic-bezier(.2,.7,.2,1) ${at}s both` } : {});
   return (
     <ReelFrame>
+      {anim && (
+        <style>{`
+          @keyframes lrUp { from { opacity: 0; transform: translateY(40px) } to { opacity: 1; transform: none } }
+          @keyframes lrIn { from { opacity: 0; transform: translateX(-30px) } to { opacity: 1; transform: none } }
+          @keyframes lrTick { 0% { opacity: 0; transform: scale(2.2) rotate(-12deg) } 60% { opacity: 1; transform: scale(.9) rotate(4deg) } 100% { opacity: 1; transform: none } }
+          @keyframes lrPop { 0% { opacity: 0; transform: scale(.8) } 70% { transform: scale(1.06) } 100% { opacity: 1; transform: none } }
+          @keyframes lrBrush { from { opacity: 0; transform: scale(1.7); filter: blur(8px) } to { opacity: 1; transform: none; filter: none } }
+          @keyframes lrTwinkle { 0%,100% { opacity: .25 } 50% { opacity: 1 } }
+          [data-card] svg circle:nth-child(3n) { animation: lrTwinkle 2.4s ease-in-out infinite }
+          [data-card] svg circle:nth-child(3n+1) { animation: lrTwinkle 3.1s ease-in-out .8s infinite }
+        `}</style>
+      )}
       <div style={{ position: "absolute", top: REEL.top, left: REEL.side, right: REEL.side, bottom: 1920 - REEL.bottom, display: "flex", flexDirection: "column", gap: 34 }}>
-        <div style={{ textAlign: "center" }}>
+        <div style={{ textAlign: "center", ...a("lrUp", 0.2, 0.8) }}>
           <p style={{ fontSize: 34, fontWeight: 800, letterSpacing: "0.06em", color: GOLD }}>{r.kicker}</p>
           <p style={{ marginTop: 14, fontSize: r.titleSize ?? 80, fontWeight: 800, lineHeight: 1.18, letterSpacing: "-0.01em" }}>
             <GoldTitle text={r.title} />
           </p>
           {r.sub && <p style={{ marginTop: 14, fontSize: 28, lineHeight: 1.45, color: "rgba(244,236,219,.85)", fontFamily: sans }}>{r.sub}</p>}
         </div>
-        <div className="doc-paper" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", justifyContent: "space-evenly", padding: "18px 40px", color: INK }}>
+        <div className="doc-paper" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", justifyContent: "space-evenly", padding: "18px 40px", color: INK, ...a("lrUp", 0.7, 0.6) }}>
           {r.rows.map(([label, text, note], i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: 20, flex: 1, borderTop: i ? "1.5px solid rgba(179,38,30,.15)" : "none", fontFamily: sans }}>
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 20, flex: 1, borderTop: i ? "1.5px solid rgba(179,38,30,.15)" : "none", fontFamily: sans, ...a("lrIn", rowAt(i), 0.5) }}>
               {r.check ? (
-                <span style={{ width: 44, height: 44, flexShrink: 0, border: `4px solid ${SEAL}`, borderRadius: 8 }} />
+                <span style={{ position: "relative", width: 44, height: 44, flexShrink: 0, border: `4px solid ${SEAL}`, borderRadius: 8 }}>
+                  {anim && (
+                    <span style={{ position: "absolute", left: -4, top: -22, fontSize: 60, lineHeight: 1, fontWeight: 900, color: SEAL, ...a("lrTick", tickAt(i), 0.35) }}>✓</span>
+                  )}
+                </span>
               ) : (
                 <span
                   style={{
@@ -594,6 +616,7 @@ function ListReelCard({ k }: { k: string }) {
                     fontSize: r.brushLabels ? fs * 1.6 : fs * 0.95,
                     lineHeight: 1,
                     fontFamily: r.brushLabels ? brush : serif,
+                    ...(r.brushLabels ? a("lrBrush", rowAt(i) + 0.15, 0.55) : {}),
                   }}
                 >
                   {label}
@@ -606,7 +629,7 @@ function ListReelCard({ k }: { k: string }) {
             </div>
           ))}
         </div>
-        <div style={{ textAlign: "center" }}>
+        <div style={{ textAlign: "center", ...a("lrPop", endAt, 0.6) }}>
           <p style={{ fontSize: 34, lineHeight: 1.4, fontWeight: 800, color: "#f1cf7a" }}>{r.end}</p>
           <p style={{ marginTop: 8, fontSize: 27, lineHeight: 1.45, color: "rgba(244,236,219,.8)", fontFamily: sans }}>{r.foot}</p>
         </div>
@@ -619,7 +642,7 @@ function ListReelCard({ k }: { k: string }) {
 export async function Card({ q }: { q: CardQuery }) {
   const c = typeof q.c === "string" ? q.c : "cta";
   const s = Math.min(9, Math.max(0, Number(q.s ?? 2) || 0));
-  if (c.startsWith("lr-")) return <ListReelCard k={c.slice(3)} />;
+  if (c.startsWith("lr-")) return <ListReelCard k={c.slice(3)} anim={q.anim === "1"} />;
 
   // ① 10일간 도감: cover
   if (c === "ilgan-cover")
