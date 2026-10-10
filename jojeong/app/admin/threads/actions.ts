@@ -10,7 +10,8 @@ export async function syncThreadsAction(): Promise<string> {
   try {
     const r = await syncThreads();
     refresh();
-    return `글 ${r.posts}개를 확인했어요 (새 글 ${r.fresh}개).`;
+    const failed = r.failed ? ` 숫자를 못 가져온 글 ${r.failed}개: ${r.reason}` : "";
+    return `글 ${r.posts}개를 확인했어요 (새 글 ${r.fresh}개).${failed}`;
   } catch (e) {
     return `가져오지 못했어요: ${(e as Error).message}`;
   }
