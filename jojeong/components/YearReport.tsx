@@ -43,6 +43,8 @@ export default function YearReport({
   deepen,
   query,
   intro,
+  after,
+  ending,
 }: {
   reading: YearReading;
   heading: string;
@@ -51,6 +53,10 @@ export default function YearReport({
   // Shown above the engine's sections (the free chart analysis). The 2026 reading is free, so it is computed
   // only: no written report.
   intro?: React.ReactNode;
+  // Only the free screen tried on /admin/free-preview passes these: more blocks after the sections (the coming
+  // year), and its own close in place of "여기까지가 무료 풀이예요".
+  after?: React.ReactNode;
+  ending?: React.ReactNode;
 }) {
   const { verdict, headline, keywords, sections, months, best, worst, lucky, advice, missing } = reading;
   // The engine's own sections.
@@ -231,6 +237,7 @@ export default function YearReport({
 
       {intro}
       {ruleBody}
+      {after}
 
       {deepen && (missing.daeun || missing.palaces) && (
         <section className="doc-paper mt-6 px-6 pt-7 pb-6">
@@ -245,7 +252,7 @@ export default function YearReport({
       )}
 
       {/* The free reading ends here; what comes next is chosen, not pushed. */}
-      <section className="doc-paper mt-6 px-5 pt-6 pb-5">
+      {ending ?? <section className="doc-paper mt-6 px-5 pt-6 pb-5">
         <p className="text-center font-myeongjo text-xs font-extrabold tracking-[0.4em] text-seal">更 深</p>
         <h2 className="mt-1 text-center font-myeongjo text-lg font-extrabold">여기까지가 무료 풀이예요</h2>
         <p className="mt-1 text-center text-[13px] text-ink-soft">더 알고 싶은 것이 있다면, 한 편에 {priceNow().toLocaleString("ko-KR")}원으로 깊이 풀어 드려요</p>
@@ -268,7 +275,7 @@ export default function YearReport({
           ))}
         </ul>
         <p className="mt-4 text-center text-[11px] text-ink-soft/80">사주로 풀어 본 한 해의 흐름이에요. 큰 결정은 본인의 판단으로 내리세요.</p>
-      </section>
+      </section>}
     </>
   );
 }
