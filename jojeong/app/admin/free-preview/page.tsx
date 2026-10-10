@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import ChartIntro from "@/components/ChartIntro";
 import FreeReading from "@/components/FreeReading";
+import YearReport from "@/components/YearReport";
 import { isAdmin } from "@/lib/admin";
 import { freeReadingOf } from "@/lib/freeReading";
 import { decadeTags, manseOf, salSeats, yearPreviewOf, type AreaGrade, type YearPreview } from "@/lib/freePreview";
@@ -10,7 +11,8 @@ import { parseBirth } from "@/lib/personForm";
 import { computeProfile } from "@/lib/profile";
 import { distinctOf } from "@/lib/rarity";
 import { BirthInputError, isFull } from "@/lib/saju";
-import { yearNickname } from "@/lib/yeonun";
+import { yearReading } from "@/lib/yearly";
+import { yearDetail, yearNickname, type YearDetail } from "@/lib/yeonun";
 
 export const metadata: Metadata = { title: "무료 화면 시안 · 관리자", robots: { index: false } };
 
@@ -18,7 +20,7 @@ export const metadata: Metadata = { title: "무료 화면 시안 · 관리자", 
 const YEAR = 2027;
 
 // The owner's look at the leaner free screen (docs/product-plan-2027.md "무료 화면 원칙") before it replaces the
-// public one: the same components as /reports/[id] with their `lean` option, and the 2027 block. The chart comes
+// public one: the same components as /reports/[id], everything they say kept, with the 만세력 rows, 신살 seats, decade tags and the 2027 block added. The chart comes
 // from the query (?birth=19960522&time=1430&g=f&name=수빈) and is never stored. Links here go nowhere yet.
 export default async function FreePreviewPage({ searchParams }: PageProps<"/admin/free-preview">) {
   if (!(await isAdmin()))
@@ -57,6 +59,9 @@ export default async function FreePreviewPage({ searchParams }: PageProps<"/admi
   const distinct = pillars ? distinctOf(pillars, parsed!.gender) : null;
   const free = pillars ? freeReadingOf(pillars, profile) : null;
   const year = pillars ? yearPreviewOf(pillars, profile, YEAR) : null;
+  const detail = pillars ? yearDetail(pillars, profile, YEAR, 2026) : null;
+  // The 2026 reading the free screen shows today, all of it.
+  const reading = pillars ? yearReading(pillars, profile) : null;
   const ask = (topic: string) => <Ask key={topic} />;
 
   return (
@@ -69,7 +74,7 @@ export default async function FreePreviewPage({ searchParams }: PageProps<"/admi
       <section className="doc-paper mt-3 px-5 py-4">
         <h1 className="font-myeongjo text-lg font-extrabold">무료 화면 시안 · 관리자 전용</h1>
         <p className="mt-1 text-[12px] leading-relaxed text-ink-soft">
-          지금 무료 화면과 같은 부품에 해석 문장을 빼고 숫자·이름표를 더한 모습이에요. 공개 화면은 그대로예요. 생년월일은 저장하지 않아요.
+          지금 무료 화면의 글은 모두 그대로 두고, 만세력·별 위치·대운 글자 관계·2027 정미년을 더한 모습이에요. 공개 화면은 그대로예요. 생년월일은 저장하지 않아요.
         </p>
         <form className="mt-3 grid grid-cols-[1fr_4.5rem] gap-1.5 text-[13px]">
           <input name="birth" defaultValue={birth} inputMode="numeric" placeholder="생년월일 8자리" className="rounded-lg border border-seal/30 bg-white/60 px-2 py-1.5" />
@@ -85,23 +90,34 @@ export default async function FreePreviewPage({ searchParams }: PageProps<"/admi
         {error && <p className="mt-2 text-sm font-bold text-seal">{error}</p>}
       </section>
 
-      {pillars && isFull(pillars) && distinct && (
-        <ChartIntro name={name} d={distinct} slots={chartOf(pillars)} chips={false} lean manse={manseOf(pillars)} ask={ask} />
-      )}
-      {pillars && free && (
-        <FreeReading
-          name={name}
-          r={free}
+      {pillars && reading && (
+        <YearReport
+          reading={reading}
+          heading={`${name}님의 2026년 운세`}
+          deepen={null}
           query=""
-          addGender="/admin/free-preview"
-          lean
-          seats={salSeats(pillars)}
-          tags={Object.fromEntries((profile?.daeun ?? []).map((d) => [d.from, decadeTags(pillars, d)]))}
-          ask={ask}
+          intro={
+            <>
+              {isFull(pillars) && distinct && (
+                <ChartIntro name={name} d={distinct} slots={chartOf(pillars)} chips={false} manse={manseOf(pillars)} ask={ask} />
+              )}
+              {free && (
+                <FreeReading
+                  name={name}
+                  r={free}
+                  query=""
+                  addGender="/admin/free-preview"
+                  seats={salSeats(pillars)}
+                  tags={Object.fromEntries((profile?.daeun ?? []).map((d) => [d.from, decadeTags(pillars, d)]))}
+                  ask={ask}
+                />
+              )}
+            </>
+          }
+          after={year && detail && <YearBlock name={name} y={year} d={detail} />}
+          ending={<Ending />}
         />
       )}
-      {year && <YearBlock name={name} y={year} />}
-      {pillars && <Ending />}
     </>
   );
 }
@@ -125,7 +141,8 @@ const MONTH = [
 ] as const;
 
 // ⑨ The coming year: its verdict, five areas as chips, and its twelve months as bars (grades only).
-function YearBlock({ name, y }: { name: string; y: YearPreview }) {
+function YearBlock({ name, y, d }: { name: string; y: YearPreview; d: YearDetail }) {
+  const at = (i: number) => d.months[i]?.from;
   return (
     <section className="doc-paper mt-4 px-5 pt-5 pb-5">
       <p className="text-center font-myeongjo text-xs font-extrabold tracking-[0.4em] text-seal">{y.hanja.split("").join(" ")}</p>
@@ -135,6 +152,11 @@ function YearBlock({ name, y }: { name: string; y: YearPreview }) {
       <p className="mt-1 text-center text-[12px] text-ink-soft">
         {yearNickname(y.year)} · 천간 {y.gods[0]} · 지지 {y.gods[1]} · 한 해 <b className="text-ink">{y.verdict}</b>
       </p>
+      <div className="mt-4 rounded-2xl border-l-[3px] border-seal bg-seal/5 px-4 py-3">
+        <p className="font-myeongjo text-[16px] font-extrabold">{d.theme}</p>
+        <p className="mt-1 text-[14px] leading-relaxed">{d.themeLine}</p>
+        <p className="mt-1.5 text-[13px] font-bold text-seal">{d.line}</p>
+      </div>
       <ul className="mt-4 grid grid-cols-5 gap-1.5 text-center">
         {y.areas.map((a) => (
           <li key={a.area} className="flex flex-col gap-1">
@@ -162,6 +184,18 @@ function YearBlock({ name, y }: { name: string; y: YearPreview }) {
           </span>
         ))}
       </div>
+      <p className="mt-3 text-[13px]">
+        <b className="text-seal">힘이 붙는 달</b> {d.best.map(at).join(" · ")}부터 <span className="mx-1 text-ink-soft">|</span>
+        <b>조심할 달</b> {d.worst.map(at).join(" · ")}부터
+      </p>
+      <h3 className="mt-5 text-sm font-extrabold">{y.year}년이 {name}님 사주와 만나는 자리</h3>
+      <ul className="mt-2 flex flex-col gap-2 text-[14px] leading-relaxed">
+        {d.points.map((p) => (
+          <li key={p} className="border-b border-seal/10 pb-2 last:border-b-0">
+            {p}
+          </li>
+        ))}
+      </ul>
       <p className="mt-2 text-[11px] text-ink-soft">달은 절기로 바뀌어요(날짜는 그 달이 시작하는 날). ◎ ○ △ ✕ 네 단계.</p>
       <Ask />
     </section>
@@ -171,7 +205,7 @@ function YearBlock({ name, y }: { name: string; y: YearPreview }) {
 // ⑩ The three ways on, at the very end. Not wired in the preview.
 function Ending() {
   return (
-    <section className="mt-5 flex flex-col gap-2">
+    <section className="mt-6 flex flex-col gap-2">
       <span className="block rounded-2xl bg-seal px-4 py-3 text-center font-bold text-hanji">
         💬 정 훈도에게 내 고민 물어보기
         <span className="block text-[12px] font-normal opacity-90">카카오로 가입하면 첫 질문 1개 무료</span>
