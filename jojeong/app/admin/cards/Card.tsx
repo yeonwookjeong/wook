@@ -569,19 +569,22 @@ function ListReelCard({ k, anim = false }: { k: string; anim?: boolean }) {
   const fs = r.fs ?? 34;
   // ?anim=1: the same picture in motion, for a video reel. The title rises in, the rows follow one by one, then the
   // boxes are ticked, and the last frame is the still picture. Frames are captured by setting each animation's time.
-  const rowAt = (i: number) => 1.1 + i * 0.32;
-  const tickAt = (i: number) => rowAt(r.rows.length) + 0.5 + i * 0.45;
-  const endAt = r.check ? tickAt(r.rows.length) + 0.2 : rowAt(r.rows.length) + 0.4;
+  // Everything is on screen from the first frame (the first frame is the hook and the cover); the motion only
+  // guides the eye: a gold bar sweeps down the rows (or the boxes get ticked) quickly, then the closing line pulses.
+  const rowAt = (i: number) => 0.4 + i * 0.22;
+  const tickAt = (i: number) => 0.4 + i * 0.28;
+  const endAt = (r.check ? tickAt(r.rows.length) : rowAt(r.rows.length)) + 0.1;
   const a = (name: string, at: number, dur = 0.6) => (anim ? { animation: `${name} ${dur}s cubic-bezier(.2,.7,.2,1) ${at}s both` } : {});
   return (
     <ReelFrame>
       {anim && (
         <style>{`
-          @keyframes lrUp { from { opacity: 0; transform: translateY(40px) } to { opacity: 1; transform: none } }
-          @keyframes lrIn { from { opacity: 0; transform: translateX(-30px) } to { opacity: 1; transform: none } }
+          @keyframes lrUp { from { transform: scale(1) } to { transform: scale(1) } }
+          @keyframes lrIn { 0% { background: transparent } 30% { background: rgba(212,175,95,.32) } 100% { background: transparent } }
+          @keyframes lrZoom { from { transform: scale(1) } to { transform: scale(1.035) } }
           @keyframes lrTick { 0% { opacity: 0; transform: scale(2.2) rotate(-12deg) } 60% { opacity: 1; transform: scale(.9) rotate(4deg) } 100% { opacity: 1; transform: none } }
-          @keyframes lrPop { 0% { opacity: 0; transform: scale(.8) } 70% { transform: scale(1.06) } 100% { opacity: 1; transform: none } }
-          @keyframes lrBrush { from { opacity: 0; transform: scale(1.7); filter: blur(8px) } to { opacity: 1; transform: none; filter: none } }
+          @keyframes lrPop { 0% { transform: none } 40% { transform: scale(1.08) } 100% { transform: none } }
+          @keyframes lrBrush { 0% { transform: none } 40% { transform: scale(1.25) } 100% { transform: none } }
           @keyframes lrTwinkle { 0%,100% { opacity: .25 } 50% { opacity: 1 } }
           [data-card] svg circle:nth-child(3n) { animation: lrTwinkle 2.4s ease-in-out infinite }
           [data-card] svg circle:nth-child(3n+1) { animation: lrTwinkle 3.1s ease-in-out .8s infinite }
@@ -595,13 +598,13 @@ function ListReelCard({ k, anim = false }: { k: string; anim?: boolean }) {
           </p>
           {r.sub && <p style={{ marginTop: 14, fontSize: 28, lineHeight: 1.45, color: "rgba(244,236,219,.85)", fontFamily: sans }}>{r.sub}</p>}
         </div>
-        <div className="doc-paper" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", justifyContent: "space-evenly", padding: "18px 40px", color: INK, ...a("lrUp", 0.7, 0.6) }}>
+        <div className="doc-paper" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", justifyContent: "space-evenly", padding: "18px 40px", color: INK, ...(anim ? { animation: "lrZoom 7s linear 0s both" } : {}) }}>
           {r.rows.map(([label, text, note], i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: 20, flex: 1, borderTop: i ? "1.5px solid rgba(179,38,30,.15)" : "none", fontFamily: sans, ...a("lrIn", rowAt(i), 0.5) }}>
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 20, flex: 1, borderTop: i ? "1.5px solid rgba(179,38,30,.15)" : "none", fontFamily: sans, ...a("lrIn", rowAt(i), 0.45) }}>
               {r.check ? (
                 <span style={{ position: "relative", width: 44, height: 44, flexShrink: 0, border: `4px solid ${SEAL}`, borderRadius: 8 }}>
                   {anim && (
-                    <span style={{ position: "absolute", left: -4, top: -22, fontSize: 60, lineHeight: 1, fontWeight: 900, color: SEAL, ...a("lrTick", tickAt(i), 0.35) }}>✓</span>
+                    <span style={{ position: "absolute", left: -4, top: -22, fontSize: 60, lineHeight: 1, fontWeight: 900, color: SEAL, ...a("lrTick", tickAt(i), 0.25) }}>✓</span>
                   )}
                 </span>
               ) : (
@@ -616,7 +619,7 @@ function ListReelCard({ k, anim = false }: { k: string; anim?: boolean }) {
                     fontSize: r.brushLabels ? fs * 1.6 : fs * 0.95,
                     lineHeight: 1,
                     fontFamily: r.brushLabels ? brush : serif,
-                    ...(r.brushLabels ? a("lrBrush", rowAt(i) + 0.15, 0.55) : {}),
+                    ...(r.brushLabels ? a("lrBrush", rowAt(i), 0.4) : {}),
                   }}
                 >
                   {label}
@@ -629,7 +632,7 @@ function ListReelCard({ k, anim = false }: { k: string; anim?: boolean }) {
             </div>
           ))}
         </div>
-        <div style={{ textAlign: "center", ...a("lrPop", endAt, 0.6) }}>
+        <div style={{ textAlign: "center", ...a("lrPop", endAt, 0.7) }}>
           <p style={{ fontSize: 34, lineHeight: 1.4, fontWeight: 800, color: "#f1cf7a" }}>{r.end}</p>
           <p style={{ marginTop: 8, fontSize: 27, lineHeight: 1.45, color: "rgba(244,236,219,.8)", fontFamily: sans }}>{r.foot}</p>
         </div>
