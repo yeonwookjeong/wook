@@ -19,8 +19,16 @@ const REFRESH_AFTER = 20 * 86400000;
 
 async function call<T>(path: string, params: Record<string, string>): Promise<T> {
   const res = await fetch(`${API}${path}?${new URLSearchParams(params)}`, { cache: "no-store" });
-  const body = (await res.json().catch(() => ({}))) as T & { error?: { message?: string } };
-  if (!res.ok || body.error) throw new Error(`Threads ${path}: ${body.error?.message ?? res.status}`);
+  const body = (await res.json().catch(() => ({}))) as T & {
+    error?: { message?: string; type?: string; code?: number; error_subcode?: number; fbtrace_id?: string };
+  };
+  if (!res.ok || body.error) {
+    // The code, subcode and trace id are what tell one Meta block from another (an expired token, a test-user
+    // invite, a restricted app), so they go into the message the admin page shows.
+    const e = body.error;
+    const detail = e ? [e.type, e.code && `code ${e.code}`, e.error_subcode && `sub ${e.error_subcode}`, e.fbtrace_id && `trace ${e.fbtrace_id}`].filter(Boolean).join(", ") : "";
+    throw new Error(`Threads ${path}: ${e?.message ?? "HTTP"} (HTTP ${res.status}${detail ? `, ${detail}` : ""})`);
+  }
   return body;
 }
 
