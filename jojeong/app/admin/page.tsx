@@ -101,6 +101,9 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
         <Link href="/admin/columns" className="mt-3 ml-2 inline-block rounded-full border-2 border-seal px-5 py-1.5 text-sm font-bold text-seal">
           칼럼 미리보기 →
         </Link>
+        <Link href="/admin/free-preview" className="mt-3 ml-2 inline-block rounded-full border-2 border-seal px-5 py-1.5 text-sm font-bold text-seal">
+          무료 화면 시안 →
+        </Link>
       </section>
 
       {writeError && (

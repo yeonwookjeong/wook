@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Domain } from "@/lib/domains";
 import { MOODS, type FreeReading as Reading } from "@/lib/freeReading";
+import { salHanja } from "@/lib/freePreview";
 import { perHundred } from "@/lib/rarity";
 
 const TOPIC: Record<Domain, string> = { jaemul: "돈", yeonae: "사랑", jikup: "일" };
@@ -72,18 +73,30 @@ function Card({ hanja, title, children }: { hanja: string; title: string; childr
 // money, love and work, and the ten-year flow of life. Each ends where a paid report goes further.
 // `onLifeReport`: this card sits on the 평생 사주 page itself, so the link to that report goes down to its payment
 // (a link to the page one is on goes nowhere); it is the Paywall when locked, the written report once bought.
+// `lean` (the leaner free screen tried on /admin/free-preview; off everywhere else): the same blocks with the
+// sentences taken out: 신살 by their hanja names and where they sit (`seats`), verdicts by their titles, each decade
+// by its grade, title and the tags of its characters against the chart (`tags`, by the decade's first year), and
+// `ask` closing each block.
 export default function FreeReading({
   name,
   r,
   query,
   addGender,
   onLifeReport = false,
+  lean = false,
+  seats,
+  tags,
+  ask,
 }: {
   name: string;
   r: Reading;
   query: string;
   addGender: string;
   onLifeReport?: boolean;
+  lean?: boolean;
+  seats?: Record<string, string>;
+  tags?: Record<number, string[]>;
+  ask?: (topic: string) => React.ReactNode;
 }) {
   const q = query ? `?${query}` : "";
   return (
@@ -106,7 +119,7 @@ export default function FreeReading({
               </li>
             ))}
         </ul>
-        <div className="mt-4 grid gap-2 text-[14px] leading-relaxed">
+        {!lean && <div className="mt-4 grid gap-2 text-[14px] leading-relaxed">
           <p className="rounded-xl bg-seal/5 px-3 py-2">
             <b className="text-seal">가장 강한 힘 · {r.strong.name}</b>
             <br />
@@ -117,8 +130,9 @@ export default function FreeReading({
             <br />
             {r.weak.line}
           </p>
-        </div>
+        </div>}
         <p className="mt-2 text-[11px] text-ink-soft">상위·하위는 1950~2008년에 태어날 수 있는 모든 날·시의 사주와 비교했어요.</p>
+        {lean && ask?.("성향 지도")}
       </Card>
 
       <Card hanja="神 殺" title={`${name}님 사주 속 별`}>
@@ -126,22 +140,39 @@ export default function FreeReading({
           <ul className="mt-3 flex flex-col divide-y divide-seal/10">
             {r.sals.map((s) => (
               <li key={s.name} className="py-2.5">
-                <p className="flex items-baseline gap-2">
-                  <b className="font-myeongjo">{s.plain}</b>
-                  <span className="text-[11px] text-ink-soft">{s.name}</span>
-                  {s.rate !== null && (
-                    <span className="ml-auto shrink-0 rounded-full bg-seal/10 px-2 py-0.5 text-[11px] font-bold text-seal">{perHundred(s.rate)}</span>
-                  )}
-                </p>
-                <p className="mt-0.5 text-[13px] leading-relaxed text-ink/85">{s.line}</p>
+                {lean ? (
+                  <p className="flex items-baseline gap-2">
+                    <b className="font-myeongjo text-[17px]">{salHanja(s.name)}</b>
+                    <span className="text-[11px] text-ink-soft">{s.name}</span>
+                    {s.rate !== null && (
+                      <span className="ml-auto shrink-0 rounded-full bg-seal/10 px-2 py-0.5 text-[11px] font-bold text-seal">{perHundred(s.rate)}</span>
+                    )}
+                  </p>
+                ) : (
+                  <p className="flex items-baseline gap-2">
+                    <b className="font-myeongjo">{s.plain}</b>
+                    <span className="text-[11px] text-ink-soft">{s.name}</span>
+                    {s.rate !== null && (
+                      <span className="ml-auto shrink-0 rounded-full bg-seal/10 px-2 py-0.5 text-[11px] font-bold text-seal">{perHundred(s.rate)}</span>
+                    )}
+                  </p>
+                )}
+                {lean ? (
+                  seats?.[s.name] && <p className="mt-0.5 text-[12px] font-bold text-ink-soft">사주표 · {seats[s.name]}</p>
+                ) : (
+                  <p className="mt-0.5 text-[13px] leading-relaxed text-ink/85">{s.line}</p>
+                )}
               </li>
             ))}
           </ul>
+        ) : lean ? (
+          <p className="mt-3 text-center text-[14px]">두드러진 별 없음</p>
         ) : (
           <p className="mt-3 text-center text-[14px] leading-relaxed">
             특별한 별이 드러나지 않는 담백한 사주예요. 그만큼 흔들림이 적고, 스스로 만든 것이 오래가요.
           </p>
         )}
+        {lean && ask?.("사주 속 별")}
       </Card>
 
       {r.domains.length > 0 && (
@@ -153,23 +184,33 @@ export default function FreeReading({
                   <span className="w-10 shrink-0 font-myeongjo text-lg font-extrabold whitespace-nowrap text-seal">{TOPIC[domain]}</span>
                   <span className="min-w-0 flex-1">
                     <b className="block font-myeongjo">{card.type}</b>
-                    <span className="block text-[12px] leading-snug text-ink-soft">{card.line}</span>
-                    <span className="mt-1 block text-right text-[12px] font-bold text-seal">왜 그런지, 언제인지 →</span>
+                    {!lean && (
+                      <>
+                        <span className="block text-[12px] leading-snug text-ink-soft">{card.line}</span>
+                        <span className="mt-1 block text-right text-[12px] font-bold text-seal">왜 그런지, 언제인지 →</span>
+                      </>
+                    )}
                   </span>
                 </Link>
               </li>
             ))}
           </ul>
+          {lean && ask?.("돈·사랑·일")}
         </Card>
       )}
 
       <Card hanja="運 路" title={`${name}님의 인생 흐름`}>
         {r.flow ? (
           <>
-            <p className="mt-1 text-center text-[12px] text-ink-soft">10년마다 바뀌는 큰 흐름(대운)이에요. 막대가 길수록 힘이 붙는 시기, 누르면 이유가 펼쳐져요</p>
+            <p className="mt-1 text-center text-[12px] text-ink-soft">
+              {lean ? "10년마다 바뀌는 큰 흐름(대운)이에요. 막대가 길수록 힘이 붙는 시기" : "10년마다 바뀌는 큰 흐름(대운)이에요. 막대가 길수록 힘이 붙는 시기, 누르면 이유가 펼쳐져요"}
+            </p>
             <ol className="mt-4 flex flex-col gap-1.5">
               {r.flow.map((f) => (
                 <li key={f.from} className={`rounded-xl ${f.now ? "border-2 border-seal bg-seal/5" : "border border-transparent"} ${f.past ? "opacity-75" : ""}`}>
+                  {lean ? (
+                    <LeanDecade f={f} tags={tags?.[f.from] ?? []} />
+                  ) : (
                   <details className="group">
                     <summary className="flex cursor-pointer list-none items-start gap-3 px-3 py-2 [&::-webkit-details-marker]:hidden">
                       <span className="w-[4.6rem] shrink-0 text-[12px] leading-tight">
@@ -198,9 +239,14 @@ export default function FreeReading({
                     </summary>
                     <p className="px-3 pt-0 pb-3 pl-[5.9rem] text-[12px] leading-relaxed text-ink-soft">{f.why}</p>
                   </details>
+                  )}
                 </li>
               ))}
             </ol>
+            {lean ? (
+              ask?.("인생 흐름")
+            ) : (
+            <>
             <dl className="mt-3 grid gap-1 text-[11px] leading-relaxed text-ink-soft">
               {(Object.keys(MOODS) as (keyof typeof MOODS)[]).map((m) => (
                 <div key={m} className="flex gap-2">
@@ -221,6 +267,8 @@ export default function FreeReading({
                 시기마다 무슨 일이 생기는지 · 평생 사주 →
               </Link>
             )}
+            </>
+            )}
           </>
         ) : (
           <p className="mt-3 text-center text-[14px] leading-relaxed">
@@ -232,5 +280,42 @@ export default function FreeReading({
         )}
       </Card>
     </>
+  );
+}
+
+// One decade on the lean screen: its age, grade and bar, its title, and the tags of its characters against the chart.
+function LeanDecade({ f, tags }: { f: NonNullable<Reading["flow"]>[number]; tags: string[] }) {
+  return (
+    <div className="flex items-start gap-3 px-3 py-2">
+      <span className="w-[4.6rem] shrink-0 text-[12px] leading-tight">
+        <b className="block">{f.age || `${f.from}년~`}</b>
+        <span className="text-[10px] text-ink-soft">
+          {f.from}~{f.to}
+        </span>
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="flex items-center gap-2">
+          {f.young ? (
+            <span className="w-[4.5rem] shrink-0 rounded-md bg-ink/5 py-0.5 text-center text-[11px] font-bold text-ink-soft">성장기</span>
+          ) : (
+            <span className={`w-[4.5rem] shrink-0 rounded-md py-0.5 text-center text-[11px] font-bold ${MOOD[f.mood].cls}`}>{MOOD[f.mood].mark}</span>
+          )}
+          <span className="h-2 flex-1 overflow-hidden rounded-full bg-ink/5" aria-hidden="true">
+            <span className="block h-full rounded-full" style={{ width: f.young ? "0%" : `${MOOD[f.mood].w}%`, background: MOOD[f.mood].bar }} />
+          </span>
+          {f.now && <span className="shrink-0 text-[11px] font-extrabold text-seal">지금</span>}
+        </span>
+        <span className="mt-1 block text-[13px] leading-snug font-bold">{f.theme}</span>
+        {tags.length > 0 && (
+          <span className="mt-1 flex flex-wrap gap-1">
+            {tags.map((t) => (
+              <span key={t} className="rounded-full border border-seal/25 px-1.5 py-px font-myeongjo text-[10.5px] text-ink-soft">
+                {t}
+              </span>
+            ))}
+          </span>
+        )}
+      </span>
+    </div>
   );
 }
