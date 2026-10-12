@@ -64,7 +64,7 @@ export default async function MemberRoomPage({ params }: PageProps<"/ask/[id]">)
           ) : (
             <div key={i} id={i === lastAnswer ? "last-answer" : undefined} className="scroll-mt-4">
               <AnswerLetter id={`letter-${i}`} name={me.name} text={m.text} at={m.at} />
-              <SaveLetter target={`letter-${i}`} file={`정훈도-답서-${i + 1}`} />
+              <SaveLetter target={`letter-${i}`} file={`정훈도-답서-${i + 1}`} question={room.messages.slice(0, i).findLast((g) => g.role === "guest")?.text} />
             </div>
           ),
         )}

@@ -250,7 +250,7 @@ export const PRICE = 990;
 
 // 질문권 for 정 훈도에게 묻기 (app/ask): questions bought by a signed-in member (lib/members.ts), one used per answer.
 // Not a report on the shelf: its orders carry \`credits\` and the product id "jilmun".
-export const CREDIT_PACKS = { 1: 990, 5: 2900, 10: 4900 } as const;
+export const CREDIT_PACKS = { 1: 990, 3: 2900, 5: 3900 } as const;
 export type CreditPack = keyof typeof CREDIT_PACKS;
 export const creditPackOf = (v: unknown): CreditPack | null => (Number(v) in CREDIT_PACKS ? (Number(v) as CreditPack) : null);
 
