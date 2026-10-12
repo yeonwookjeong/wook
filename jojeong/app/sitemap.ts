@@ -18,6 +18,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     page("/ranking", 0.7),
     page("/column", 0.7),
     page("/news", 0.4),
+    page("/ask", 0.7),
     // Each column with its day, so a crawler knows which ones are new.
     ...publishedColumns().map((c) => ({ ...page(`/column/${c.slug}`, 0.6), lastModified: new Date(`${c.date}T00:00:00+09:00`) })),
     page("/about", 0.5),
