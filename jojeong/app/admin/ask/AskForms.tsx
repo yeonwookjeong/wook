@@ -6,7 +6,7 @@ import { keepValues } from "@/lib/keepForm";
 import { askAction, attachOtherAction, openRoomAction, type FormState } from "./actions";
 
 const TOPICS = ["연애", "일", "돈", "사람", "기타"] as const;
-const MAX = 200;
+const MAX = 300;
 
 function ErrorLine({ error }: { error: string | null }) {
   return error ? (

@@ -9,7 +9,16 @@ import { askAction, attachOtherAction, openRoomAction, type FormState } from "./
 // member's own actions, which spend a question per answer.
 
 const TOPICS = ["연애", "일", "돈", "사람", "기타"] as const;
-const MAX = 200;
+
+// Starters for an empty box: a situation half written, so the guest tells what is going on, which is where a
+// question beats a report.
+const STARTERS: { topic: (typeof TOPICS)[number]; label: string; text: string }[] = [
+  { topic: "일", label: "이직·제안", text: "요즘 이직(또는 새 제안)을 고민 중인데, " },
+  { topic: "연애", label: "그 사람", text: "요즘 마음 가는 사람이 있는데, " },
+  { topic: "돈", label: "돈 결정", text: "돈이 들어가는 결정을 앞두고 있는데, " },
+  { topic: "사람", label: "관계 고민", text: "가까운 사람과 사이가 어긋나서, " },
+];
+const MAX = 300;
 
 function ErrorLine({ error }: { error: string | null }) {
   return error ? (
@@ -65,6 +74,8 @@ function Writing({ question, topic }: { question: string; topic: string }) {
 export function AskForm({ room, other }: { room: string; other?: boolean }) {
   const [state, action, pending] = useActionState<FormState, FormData>(askAction, { error: null });
   const [text, setText] = useState("");
+  const [topic, setTopic] = useState("");
+  const box = useRef<HTMLTextAreaElement>(null);
   const [sent, setSent] = useState({ question: "", topic: "" });
   const was = useRef(false);
   // The answer has come: bring the new letter into view.
@@ -81,6 +92,7 @@ export function AskForm({ room, other }: { room: string; other?: boolean }) {
           setSent({ question: text.trim(), topic: String(f.get("topic") ?? "") });
           keepValues(action)(e);
           setText("");
+          setTopic("");
         }}
         className="sticky bottom-0 z-10 -mx-4 mt-2 border-t border-ink/10 bg-hanji/95 px-3 pt-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur"
       >
@@ -89,7 +101,7 @@ export function AskForm({ room, other }: { room: string; other?: boolean }) {
           <legend className="sr-only">무엇에 대한 질문이옵니까?</legend>
           {TOPICS.map((t) => (
             <label key={t} className="shrink-0 cursor-pointer">
-              <input type="radio" name="topic" value={t} className="peer sr-only" />
+              <input type="radio" name="topic" value={t} checked={topic === t} onChange={() => setTopic(t)} className="peer sr-only" />
               <span className="block rounded-full border border-ink/15 bg-white/60 px-3 py-1 text-[12.5px] peer-checked:border-ink peer-checked:bg-ink peer-checked:text-hanji">{t}</span>
             </label>
           ))}
@@ -99,16 +111,35 @@ export function AskForm({ room, other }: { room: string; other?: boolean }) {
             </a>
           )}
         </fieldset>
+        {!text && (
+          <div className="mt-2 flex gap-1.5 overflow-x-auto [scrollbar-width:none]">
+            {STARTERS.map((st) => (
+              <button
+                key={st.label}
+                type="button"
+                onClick={() => {
+                  setText(st.text);
+                  setTopic(st.topic);
+                  requestAnimationFrame(() => box.current?.focus());
+                }}
+                className="shrink-0 rounded-lg bg-seal/8 px-2.5 py-1 text-[12px] text-seal"
+              >
+                {st.label} …
+              </button>
+            ))}
+          </div>
+        )}
         <div className="mt-2 flex items-end gap-2">
           <textarea
+            ref={box}
             name="question"
             value={text}
             onChange={(e) => setText(e.target.value.slice(0, MAX))}
-            rows={text.length > 40 ? 3 : 1}
+            rows={text ? 3 : 1}
             maxLength={MAX}
             disabled={pending}
             aria-label="여쭐 말씀"
-            placeholder="여쭐 말씀을 적어 주시옵소서"
+            placeholder="지금 상황도 한두 줄 적어 주시옵소서"
             className="min-h-11 flex-1 resize-none rounded-2xl border border-ink/15 bg-white px-3.5 py-2.5 text-[15px] leading-snug disabled:opacity-60"
           />
           <button type="submit" disabled={pending || !text.trim()} className="h-11 shrink-0 rounded-2xl bg-seal px-4 text-sm font-extrabold text-hanji disabled:opacity-50">
@@ -117,7 +148,7 @@ export function AskForm({ room, other }: { room: string; other?: boolean }) {
         </div>
         {text && (
           <p className="mt-1 text-right text-[11px] text-ink-soft">
-            {[...text].length}/{MAX} · 주제를 안 고르시면 &lsquo;기타&rsquo;로 여쭤요
+            {[...text].length}/{MAX} · 무슨 일이 있는지, 언제까지 정해야 하는지 적어 주실수록 깊어져요
           </p>
         )}
         <ErrorLine error={state.error} />
