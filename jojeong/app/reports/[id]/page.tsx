@@ -49,7 +49,7 @@ import { courtOfReader, subjectFor } from "@/lib/subject";
 import { getProfile } from "@/lib/store";
 import { covers, getOrder, ownedOrderFor, ownedOrders, type Order } from "@/lib/pay";
 import { isAdmin, isPreview } from "@/lib/admin";
-import YearAhead from "@/components/YearAhead";
+import { YearTeaser } from "@/components/YearAhead";
 import { decadeTags, layersOf, manseOf, salSeats, yearPreviewOf } from "@/lib/freePreview";
 import TrackView from "@/components/TrackView";
 import { saleKey } from "@/lib/sales";
@@ -476,13 +476,7 @@ async function OpenReport({
         />
       )}
       {ahead?.y && ahead.d && ahead.layers && (
-        <YearAhead
-          name={name}
-          y={ahead.y}
-          d={ahead.d}
-          layers={ahead.layers}
-          mood={free?.flow?.find((f) => ahead.layers?.daeun?.from === f.from)?.mood ?? null}
-        />
+        <YearTeaser name={name} y={ahead.y} d={ahead.d} href={`/reports/yeonun?${new URLSearchParams({ ...(query && Object.fromEntries(new URLSearchParams(query))), y: String(ahead.y.year) })}`} />
       )}
     </>
   );

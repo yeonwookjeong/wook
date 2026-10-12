@@ -250,3 +250,42 @@ function Stack({
     </>
   );
 }
+
+// The free screen's look at the coming year, kept short: its theme, the twelve months as bars, the months that lift
+// and the ones to go easy in, and the way on to the year's own report (the rest of YearAhead is that report's).
+export function YearTeaser({ name, y, d, href }: { name: string; y: YearPreview; d: YearDetail; href: string }) {
+  const at = (i: number) => d.months[i]?.from;
+  return (
+    <section className="doc-paper mt-4 px-5 pt-5 pb-5">
+      <p className="text-center font-myeongjo text-xs font-extrabold tracking-[0.4em] text-seal">{y.hanja.split("").join(" ")}</p>
+      <h2 className="mt-1 text-center font-myeongjo text-lg font-extrabold">
+        {name}님의 {y.year}년, 한눈에
+      </h2>
+      <div className="mt-3 rounded-2xl border-l-[3px] border-seal bg-seal/5 px-4 py-3">
+        <p className="font-myeongjo text-[16px] font-extrabold">{d.theme}</p>
+        <p className="mt-1 text-[14px] leading-relaxed">{d.themeLine}</p>
+      </div>
+      <div className="mt-4 flex h-20 items-end gap-1" role="img" aria-label={y.months.map((m) => `${m.from} ${MONTH[m.rating].mark}`).join(", ")}>
+        {y.months.map((m) => (
+          <div key={m.from} className="flex h-full flex-1 flex-col justify-end">
+            <span className="block rounded-t-sm" style={{ height: `${MONTH[m.rating].h}%`, background: MONTH[m.rating].bar }} />
+          </div>
+        ))}
+      </div>
+      <div className="mt-1 flex gap-1 text-center text-[9.5px] text-ink-soft">
+        {y.months.map((m) => (
+          <span key={m.from} className="flex-1">
+            {m.from}
+          </span>
+        ))}
+      </div>
+      <p className="mt-3 text-[13px]">
+        <b className="text-seal">힘이 붙는 달</b> {d.best.map(at).join(" · ")}부터 <span className="mx-1 text-ink-soft">|</span>
+        <b>쉬어 갈 달</b> {d.worst.map(at).join(" · ")}부터
+      </p>
+      <a href={href} className="mt-4 block rounded-full border-2 border-seal py-2.5 text-center text-[14px] font-bold text-seal">
+        {y.year}년 달마다 할 일까지 전체 풀이 보기 →
+      </a>
+    </section>
+  );
+}
