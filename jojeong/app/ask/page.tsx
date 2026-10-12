@@ -75,7 +75,7 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
             <ol className="mt-3 flex flex-col gap-3 text-[14px] leading-relaxed">
               {[
                 ["카카오로 시작", `첫 질문 ${JOIN_GIFT}개를 선물로 드려요.`],
-                ["내 사주로 상담방 열기", "생년월일은 사주 글자로만 바꿔 두고 저장하지 않아요."],
+                ["내 사주로 사랑방 열기", "생년월일은 사주 글자로만 바꿔 두고 저장하지 않아요."],
                 ["고민 하나 여쭙기", "지금 상황을 한두 줄 같이 적으면 더 깊어져요. 답서는 30초~1분이면 와요."],
               ].map(([t, d], i) => (
                 <li key={t} className="flex gap-3">
@@ -137,7 +137,7 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
 
           {rooms.length > 0 && (
             <section className="doc-paper mt-4 px-5 py-4">
-              <h2 className="font-myeongjo font-extrabold">내 상담방</h2>
+              <h2 className="font-myeongjo font-extrabold">내 사랑방</h2>
               <ul className="mt-2 flex flex-col divide-y divide-seal/10">
                 {rooms.map((r) => {
                   const p = personOfRoom(r!);
@@ -158,13 +158,13 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
 
           {rooms.length ? (
             <details className="doc-paper mt-4 px-5 py-4">
-              <summary className="cursor-pointer font-myeongjo font-extrabold">＋ 새 상담방 열기 (다른 사람 사주로)</summary>
+              <summary className="cursor-pointer font-myeongjo font-extrabold">＋ 새 사랑방 열기 (다른 사람 사주로)</summary>
               <p className="mt-1 text-[12px] text-ink-soft">생년월일은 사주 글자로만 바꿔 두고 저장하지 않아요.</p>
               <OpenRoomForm />
             </details>
           ) : (
             <section className="doc-paper mt-4 px-5 py-5">
-              <h2 className="font-myeongjo font-extrabold">내 사주로 상담방 열기</h2>
+              <h2 className="font-myeongjo font-extrabold">내 사주로 사랑방 열기</h2>
               <p className="mt-1 text-[12px] text-ink-soft">생년월일은 사주 글자로만 바꿔 두고 저장하지 않아요.</p>
               <OpenRoomForm />
             </section>

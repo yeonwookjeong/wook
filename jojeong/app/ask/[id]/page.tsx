@@ -9,7 +9,7 @@ import { AskForm, AttachOtherForm, ChooseForm } from "../AskForms";
 import { AnswerLetter, HundoFace, Question, RoomHead } from "../Letter";
 import SaveLetter from "../SaveLetter";
 
-export const metadata: Metadata = { title: "상담방 · 정 훈도에게 묻기", robots: { index: false } };
+export const metadata: Metadata = { title: "사랑방 · 정 훈도에게 묻기", robots: { index: false } };
 // An answer is written by the model inside the action: give it the same room as a report.
 export const maxDuration = 300;
 
@@ -34,7 +34,7 @@ export default async function MemberRoomPage({ params }: PageProps<"/ask/[id]">)
     <>
       <p className="mt-4 text-sm">
         <Link href="/ask" className="text-ink-soft underline">
-          ← 내 상담방
+          ← 내 사랑방
         </Link>
       </p>
       <RoomHead person={me} ilju={iljuOf(me)} credits={member.credits} extra={other ? `함께: ${room.otherLabel}` : undefined} />
