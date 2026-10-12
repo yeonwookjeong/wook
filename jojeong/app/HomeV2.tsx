@@ -81,7 +81,7 @@ function HeroStage({ ask }: { ask: boolean }) {
         <p className="mt-2 w-[205px] text-center text-[11px] text-[#f3ead0]/70">생년월일만 넣으면 바로</p>
         {ask && (
           <AskLink from="home" className="mt-4 block w-fit text-[13px] font-bold text-[#e2bc68]">
-            정 훈도에게 묻기 · 가입하면 첫 질문 선물 →
+            정 훈도에게 묻기 · 카카오로 시작하면 첫 질문 선물 →
           </AskLink>
         )}
       </div>
@@ -131,7 +131,7 @@ function HeroMe({ name, stem, branch, today, ask, credits }: { name: string; ste
       {ask && (
         <AskLink from="home" className="relative mt-2.5 flex items-center gap-2 rounded-2xl border border-[#e2bc68]/60 px-4 py-3 text-[13.5px]">
           <b className="font-myeongjo">정 훈도에게 묻기</b>
-          <span className="opacity-80">{credits !== null ? `남은 질문 ${credits}개` : `가입하면 첫 질문 ${JOIN_GIFT}개 선물`}</span>
+          <span className="opacity-80">{credits !== null ? `남은 질문 ${credits}개` : `카카오로 시작하면 첫 질문 ${JOIN_GIFT}개 선물`}</span>
           <span className="ml-auto font-extrabold text-[#e2bc68]">→</span>
         </AskLink>
       )}
@@ -220,7 +220,7 @@ function Sangdam({ credits }: { credits: number | null }) {
         >
           {credits !== null ? `정 훈도에게 여쭈러 가기 · 남은 질문 ${credits}개` : "카카오로 가입하고 첫 질문 받기"}
         </AskLink>
-        {credits === null && <p className="relative mt-2 text-center text-[11.5px] text-hanji/60">가입하면 첫 질문 {JOIN_GIFT}개를 선물로 드려요</p>}
+        {credits === null && <p className="relative mt-2 text-center text-[11.5px] text-hanji/60">카카오로 시작하면 첫 질문 {JOIN_GIFT}개를 선물로 드려요</p>}
       </div>
     </section>
   );

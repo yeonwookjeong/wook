@@ -17,7 +17,7 @@ export async function POST(request: Request) {
   const pack = creditPackOf(body.credits);
   if (pack) {
     const member = await currentMember();
-    if (!member) return Response.json({ error: "카카오로 로그인한 뒤에 살 수 있어요." }, { status: 401 });
+    if (!member) return Response.json({ error: "로그인한 뒤에 살 수 있어요." }, { status: 401 });
     const order = await createOrder("jilmun", { product: "jilmun" }, member.nick, CREDIT_PACKS[pack], undefined, { credits: pack, member: member.id });
     await track("co:jilmun");
     return Response.json({ orderId: order.id, amount: order.amount, orderName: `정 훈도에게 묻기 질문 ${pack}개`, clientKey: payClientKey(), mock: payMock() });

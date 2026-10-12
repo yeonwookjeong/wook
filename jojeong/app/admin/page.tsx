@@ -8,7 +8,7 @@ import { SALE_KEYS, saleKey, saleLabel } from "@/lib/sales";
 import { productById, SETS } from "@/lib/products";
 import { lastReportError, listInquiries, readingCount } from "@/lib/store";
 import { memberFixAction } from "./actions";
-import { allMembers } from "@/lib/members";
+import { allMembers, memberNo, VIA_LABEL, viaOf } from "@/lib/members";
 import { adminSignOut, giftRevokeAction, inquiryDeleteAction, inquiryDoneAction, testOrderAction } from "./actions";
 import Dashboard, { rangeOf } from "./Dashboard";
 import { threadsPosts } from "@/lib/threads";
@@ -255,7 +255,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
         )}
       </section>
 
-      <MembersSection />
+      <MembersSection find={typeof q.mq === "string" ? q.mq : ""} />
 
       <section className="doc-paper mt-4 px-4 py-4">
         <h2 className="font-myeongjo font-extrabold">최근 결제</h2>
@@ -522,36 +522,85 @@ function SalesTable({ period, stats, paid, refunds }: { period: Period; stats: R
   );
 }
 
-// Members (Kakao): how many, the questions they hold, and a fix for one (an order onto their account, questions).
-async function MembersSection() {
+// Members: how many, the questions they hold, a search (회원 번호, 별명, 이메일) with the one found in full, and a
+// fix for one (an order onto their account, questions).
+async function MembersSection({ find }: { find: string }) {
   const members = await allMembers().catch(() => []);
   const held = members.reduce((a, m) => a + m.credits, 0);
+  const byVia = (["kakao", "naver", "google"] as const).map((v) => `${VIA_LABEL[v]} ${members.filter((m) => viaOf(m.id) === v).length}`).join(" · ");
+  // "K-123456" as the member reads it out, or any part of the id, nickname or email.
+  const needle = find.trim().toLowerCase().replace(/^([kng])-/, "$1");
+  const found = needle
+    ? members.filter((m) => {
+        const no = memberNo(m.id).toLowerCase().replace("-", "");
+        return no === needle || m.id.toLowerCase().includes(needle) || m.nick.toLowerCase().includes(needle) || (m.email ?? "").toLowerCase().includes(needle);
+      })
+    : [...members].reverse();
+  const one = needle && found.length === 1 ? found[0] : null;
+  const day = (t: number) => new Date(t + 9 * 3600000).toISOString().slice(0, 16).replace("T", " ");
   return (
     <section className="doc-paper mt-4 px-4 py-4">
       <h2 className="flex items-baseline justify-between font-myeongjo font-extrabold">
-        회원 (카카오)
+        회원
         <span className="text-sm text-ink-soft">
           {members.length}명 · 남은 질문 합 {held}개
         </span>
       </h2>
-      {members.length > 0 && (
-        <ul className="mt-2 flex max-h-60 flex-col divide-y divide-seal/10 overflow-y-auto text-[12px]">
-          {[...members].reverse().slice(0, 100).map((m) => (
-            <li key={m.id} className="flex items-center gap-2 py-1.5">
-              <span className="w-16 shrink-0 text-ink-soft">{new Date(m.createdAt + 9 * 3600000).toISOString().slice(5, 10)}</span>
-              <b className="min-w-0 flex-1 truncate">{m.nick}</b>
-              <span className="shrink-0 text-ink-soft">
-                보고서 {m.orders.length} · 질문 {m.credits} · 방 {m.rooms.length}
-              </span>
-              <span className="shrink-0 font-mono text-[10px] text-ink-soft">{m.id}</span>
-            </li>
-          ))}
-        </ul>
+      <p className="mt-0.5 text-[11px] text-ink-soft">{byVia}</p>
+      <form className="mt-2 flex gap-1.5 text-[12px]">
+        <input name="mq" defaultValue={find} placeholder="회원 번호(K-123456) · 별명 · 이메일" className="min-w-0 flex-1 rounded-lg border border-ink/15 bg-white/60 px-2 py-1.5" />
+        <button className="shrink-0 rounded-full bg-ink px-3 font-bold text-hanji">찾기</button>
+        {find && (
+          <a href="/admin" className="shrink-0 self-center text-ink-soft underline">
+            전체
+          </a>
+        )}
+      </form>
+      {needle && <p className="mt-1 text-[11px] text-ink-soft">{found.length}명 찾음</p>}
+      {one ? (
+        <div className="mt-2 rounded-xl border border-seal/20 bg-white/50 px-3 py-2.5 text-[12px] leading-relaxed">
+          <p>
+            <b className="text-[14px]">{one.nick}</b> · {VIA_LABEL[viaOf(one.id)]} · {memberNo(one.id)} · 가입 {day(one.createdAt)}
+          </p>
+          <p className="text-ink-soft">
+            {one.email ?? "이메일 없음"} · <span className="font-mono text-[10.5px]">{one.id}</span>
+          </p>
+          <p className="mt-1">
+            남은 질문 <b>{one.credits}</b> · 사랑방 {one.rooms.length} · 가입 선물 {one.gift ? "받음" : "없음"}
+          </p>
+          <p className="mt-1 font-bold">질문권 내역</p>
+          <ul className="text-[11.5px]">
+            {[...one.log].reverse().slice(0, 20).map((l, i) => (
+              <li key={i}>
+                {day(l.at)} · {l.d > 0 ? `+${l.d}` : l.d} · {l.why}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-1 font-bold">주문 ({one.orders.length})</p>
+          <p className="font-mono text-[10.5px] break-all text-ink-soft">{one.orders.join(" · ") || "없음"}</p>
+        </div>
+      ) : (
+        found.length > 0 && (
+          <ul className="mt-2 flex max-h-60 flex-col divide-y divide-seal/10 overflow-y-auto text-[12px]">
+            {found.slice(0, 100).map((m) => (
+              <li key={m.id}>
+                <a href={`/admin?mq=${encodeURIComponent(m.id)}`} className="flex items-center gap-2 py-1.5">
+                  <span className="w-12 shrink-0 text-ink-soft">{day(m.createdAt).slice(5, 10)}</span>
+                  <b className="min-w-0 flex-1 truncate">{m.nick}</b>
+                  <span className="shrink-0 text-ink-soft">
+                    보고서 {m.orders.length} · 질문 {m.credits} · 방 {m.rooms.length}
+                  </span>
+                  <span className="shrink-0 font-mono text-[10px] text-ink-soft">{memberNo(m.id)}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        )
       )}
       <details className="mt-3">
         <summary className="cursor-pointer text-[12px] font-bold">문의 처리: 주문을 회원에게 붙이기 · 질문 넣고 빼기</summary>
         <form action={memberFixAction} className="mt-2 grid grid-cols-2 gap-1.5 text-[12px]">
-          <input name="member" placeholder="회원 번호 (k로 시작)" className="col-span-2 rounded-lg border border-ink/15 bg-white/60 px-2 py-1.5" />
+          <input name="member" defaultValue={one?.id ?? ""} placeholder="회원 id (위 찾기 결과의 k·n·g로 시작하는 값)" className="col-span-2 rounded-lg border border-ink/15 bg-white/60 px-2 py-1.5" />
           <input name="order" placeholder="주문번호 (선택)" className="rounded-lg border border-ink/15 bg-white/60 px-2 py-1.5" />
           <input name="credits" type="number" placeholder="질문 +/- (선택)" className="rounded-lg border border-ink/15 bg-white/60 px-2 py-1.5" />
           <button className="col-span-2 rounded-full bg-ink py-1.5 font-bold text-hanji">적용</button>

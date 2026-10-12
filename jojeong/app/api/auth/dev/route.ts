@@ -1,17 +1,14 @@
-import { NextResponse, type NextRequest } from "next/server";
-import { MEMBER_COOKIE, memberCookieValue, membersEnabled, signInMember } from "@/lib/members";
-import { browserOrderIds, payMock } from "@/lib/pay";
+import type { NextRequest } from "next/server";
+import { finishLogin } from "@/lib/login";
+import { membersEnabled, type Via } from "@/lib/members";
+import { payMock } from "@/lib/pay";
 
-// Local trials only (PAY_MOCK=1 on a machine, never on Vercel): sign in as a made-up Kakao id, as the Kakao
-// return would.
+// Local trials only (PAY_MOCK=1 on a machine, never on Vercel): sign in as a made-up account (?id=, ?via=kakao|
+// naver|google), as the return from that login would.
 export async function GET(request: NextRequest) {
   if (process.env.VERCEL || !payMock() || !membersEnabled()) return new Response("not here", { status: 404 });
-  const id = (request.nextUrl.searchParams.get("id") ?? "1").replace(/\D/g, "").slice(0, 12) || "1";
-  const { member, joined, added } = await signInMember(id, "시험손님", await browserOrderIds());
-  const to = new URL("/ask", request.url);
-  if (joined) to.searchParams.set("joined", "1");
-  if (added) to.searchParams.set("moved", String(added));
-  const res = NextResponse.redirect(to, 303);
-  res.cookies.set(MEMBER_COOKIE, memberCookieValue(member.id), { httpOnly: true, sameSite: "lax", path: "/", maxAge: 3600 });
-  return res;
+  const q = request.nextUrl.searchParams;
+  const id = (q.get("id") ?? "1").replace(/\D/g, "").slice(0, 12) || "1";
+  const via = (["kakao", "naver", "google"].includes(q.get("via") ?? "") ? q.get("via") : "kakao") as Via;
+  return finishLogin(request, via, id, "시험손님", via === "kakao" ? null : `test${id}@example.com`, "/ask");
 }
