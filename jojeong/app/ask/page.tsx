@@ -9,6 +9,8 @@ import { OpenRoomForm } from "./AskForms";
 export const metadata: Metadata = {
   title: "정 훈도에게 묻기",
   description: "내 사주를 펼쳐 놓고 정 훈도에게 고민 하나를 여쭈어 보세요. 카카오로 시작하면 첫 질문 하나는 선물이에요.",
+  // Out of search until the owner's trial passes and it is linked from the site.
+  robots: { index: false },
 };
 
 const won = (n: number) => `${n.toLocaleString("ko-KR")}원`;
