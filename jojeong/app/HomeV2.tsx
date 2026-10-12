@@ -81,7 +81,7 @@ function HeroStage({ count, ask }: { count: number | null; ask: boolean }) {
         <p className="mt-2 w-[205px] text-center text-[11px] text-[#f3ead0]/70">생년월일만 넣으면 바로</p>
         {ask && (
           <AskLink from="home" className="mt-4 block w-fit text-[13px] font-bold text-[#e2bc68]">
-            정 훈도에게 고민 묻기 · 첫 질문 선물 →
+            정 훈도에게 묻기 · 가입하면 첫 질문 선물 →
           </AskLink>
         )}
       </div>
@@ -136,7 +136,7 @@ function HeroMe({ name, stem, branch, today, ask, credits }: { name: string; ste
       {ask && (
         <AskLink from="home" className="relative mt-2.5 flex items-center gap-2 rounded-2xl border border-[#e2bc68]/60 px-4 py-3 text-[13.5px]">
           <b className="font-myeongjo">정 훈도에게 묻기</b>
-          <span className="opacity-80">{credits !== null ? `남은 질문 ${credits}개` : `첫 질문 ${JOIN_GIFT}개 선물`}</span>
+          <span className="opacity-80">{credits !== null ? `남은 질문 ${credits}개` : `가입하면 첫 질문 ${JOIN_GIFT}개 선물`}</span>
           <span className="ml-auto font-extrabold text-[#e2bc68]">→</span>
         </AskLink>
       )}
@@ -146,6 +146,63 @@ function HeroMe({ name, stem, branch, today, ask, credits }: { name: string; ste
 }
 
 
+
+
+// 정 훈도에게 묻기 as the new thing on the home, in a 기와집: a tiled roof over the 쪽빛 room where he sits.
+function Roof() {
+  return (
+    <div aria-hidden className="relative -mx-1.5 h-[34px]">
+      {/* 용마루 and the eaves turned up at both ends */}
+      <div className="absolute inset-x-0 top-0 h-[14px] bg-[#1a232f] [clip-path:polygon(0_100%,3%_10%,8%_0,92%_0,97%_10%,100%_100%)]" />
+      <div className="absolute inset-x-[10%] top-[3px] h-[3px] rounded-full bg-[#d4af5f]/55" />
+      {/* 기와 rows */}
+      <div className="absolute inset-x-[2%] top-[14px] h-[12px] bg-[repeating-linear-gradient(90deg,#2c3848_0_9px,#1f2a38_9px_18px)]" />
+      {/* 막새: the round tile ends, gold-rimmed */}
+      <div className="absolute inset-x-[2%] top-[22px] h-[12px] bg-[radial-gradient(circle_at_9px_6px,#d4af5f_0_2px,#2c3848_2.5px_5px,#131a23_5.5px_6px,transparent_6.5px)] bg-[length:18px_12px] bg-repeat-x" />
+    </div>
+  );
+}
+
+function Sangdam({ credits, name }: { credits: number | null; name: string | null }) {
+  return (
+    <section className="mt-7">
+      <Roof />
+      <div className="relative overflow-hidden rounded-b-2xl bg-gradient-to-b from-[#222d3b] to-[#1a232f] px-5 pt-5 pb-5 text-hanji shadow-[0_8px_22px_rgb(33_27_23/0.18),inset_0_0_0_1px_rgb(212_175_95/0.35)]">
+        {/* lantern light from the corner */}
+        <span aria-hidden className="absolute -top-10 -right-10 size-40 rounded-full bg-[radial-gradient(circle,rgb(226_188_104/0.28),transparent_65%)]" />
+        <div className="relative flex items-center gap-3">
+          <HundoFace size={54} />
+          <div className="min-w-0">
+            <p className="text-[11.5px] font-bold tracking-wide text-[#e2bc68]">새로 연 상담소 · 問訓導</p>
+            <h2 className="font-myeongjo text-[20px] leading-snug font-extrabold">그 고민, 정 훈도에게 직접 물어보세요</h2>
+          </div>
+        </div>
+        <p className="relative mt-3 text-[13.5px] leading-relaxed text-hanji/80">
+          {name ? `${name}님의` : "그대의"} 여덟 글자를 펼쳐 놓고, 고민 하나에 답서 한 장을 써 드려요.
+        </p>
+        <ol className="relative mt-3 flex flex-col gap-1.5 text-[13.5px]">
+          {["내 사주와 올해·이달 흐름으로 답해요", "지난 상담을 기억하고 이어서 답해요", "받은 답서는 이미지로 간직할 수 있어요"].map((t, i) => (
+            <li key={t} className="flex items-center gap-2.5">
+              <span className="w-5 shrink-0 text-center font-myeongjo text-[#e2bc68]">{hanjaNum(i + 1)}</span>
+              {t}
+            </li>
+          ))}
+        </ol>
+        <p className="relative mt-4 rounded-xl border border-[#e2bc68]/30 bg-[#f7efd9]/[0.06] px-3.5 py-2.5 font-myeongjo text-[13.5px] leading-relaxed text-hanji/90">
+          &ldquo;가셔도 좋은 길이나, 답은 입동 지나 하시는 편이 이롭사옵니다.&rdquo;
+          <span className="mt-0.5 block font-sans text-[11px] text-hanji/50">답서 예시 · 이직 제안을 물은 손님에게</span>
+        </p>
+        <AskLink
+          from="home"
+          className="relative mt-4 block rounded-2xl bg-[#e2bc68] py-3.5 text-center font-myeongjo text-[16px] font-extrabold text-[#17304a] shadow-[0_5px_0_#9c7a2e]"
+        >
+          {credits !== null ? `상담방 들어가기 · 남은 질문 ${credits}개` : "카카오로 가입하고 첫 질문 받기"}
+        </AskLink>
+        {credits === null && <p className="relative mt-2 text-center text-[11.5px] text-hanji/60">가입하면 첫 질문 {JOIN_GIFT}개를 선물로 드려요</p>}
+      </div>
+    </section>
+  );
+}
 
 const SectionTitle = ({ children, sub }: { children: React.ReactNode; sub?: React.ReactNode }) => (
   <div className="mt-9 mb-3 px-1">
@@ -260,7 +317,10 @@ export default async function HomeV2() {
               <span className="flex size-12 shrink-0 items-center justify-center rounded-lg border-2 border-gold/70 font-myeongjo text-sm font-extrabold text-gold">
                 {nyProduct.hanja}
               </span>
-              <h2 className="font-myeongjo text-[22px] leading-tight font-extrabold">{nyProduct.title}</h2>
+              <h2 className="font-myeongjo leading-tight font-extrabold">
+                <span className="block text-[12px] font-bold tracking-wide text-gold">{ny} 신년운세</span>
+                <span className="text-[21px]">{me ? `${me.person.name}님의 ${ny}년, 무슨 일이 올까?` : `${ny}년, 나한테 무슨 일이 올까?`}</span>
+              </h2>
             </div>
             <p className="mt-2 text-[13.5px] leading-relaxed text-ink-soft">
               <Keep clauses>{nyProduct.tagline}</Keep>
@@ -305,6 +365,8 @@ export default async function HomeV2() {
         </section>
       )}
 
+      {ask && <Sangdam credits={member ? member.credits : null} name={me?.person.name ?? null} />}
+
       <SectionTitle sub="무료로 먼저 보고, 더 깊은 풀이는 주제마다 보고서로">무엇이 궁금하세요?</SectionTitle>
       <ul className="grid grid-cols-2 gap-2">
         {TOPICS.map((t) => {
@@ -335,7 +397,7 @@ export default async function HomeV2() {
               <span className="mt-1.5 font-myeongjo text-[18px] leading-tight font-extrabold">정 훈도에게 묻기</span>
               <span className="mt-1 flex-1 text-[12px] leading-snug text-hanji/75">내 고민 하나, 내 사주로 답서 받기</span>
               <span className="mt-2.5 flex items-center justify-between border-t border-gold/30 pt-2 text-[12px] font-bold">
-                <span className="text-hanji/60">첫 질문 {JOIN_GIFT}개 선물</span>
+                <span className="text-hanji/60">가입 선물 {JOIN_GIFT}개</span>
                 <span className="text-gold">묻기 →</span>
               </span>
             </AskLink>
