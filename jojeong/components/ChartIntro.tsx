@@ -45,17 +45,39 @@ export default function ChartIntro({
       <h2 className="mt-1 text-center font-myeongjo text-lg font-extrabold">{name}님의 사주를 이렇게 읽었어요</h2>
 
       <h3 className="mt-5 text-sm font-extrabold">{name}님의 사주팔자</h3>
-      <div className={`mt-2 grid ${manse ? MANSE_COLS : "grid-cols-4"} gap-1.5 text-center`}>
+      {/* Laid out row by row, so a label that wraps (뿌리·어린 시절) moves its whole row down, never one column. */}
+      <div className={`mt-2 grid ${manse ? MANSE_COLS : "grid-cols-4"} items-end gap-x-1.5 gap-y-1 text-center`}>
         {manse && <span aria-hidden="true" />}
         {slots.map((s) => (
-          <div key={s.pos} className="flex flex-col gap-1">
-            <span className="text-[11px] font-bold">{s.pos}주</span>
-            <span className="text-[10px] leading-tight text-ink-soft">{POS_ROLE[s.pos]}</span>
-            <Cell value={s.stem === null ? null : STEMS[s.stem]} el={s.stem === null ? null : stemEl(s.stem)} />
-            <span className="text-[10px] font-bold text-ink-soft">{s.pos === "일" && s.stem !== null ? "나" : "\u00a0"}</span>
-            <Cell value={s.branch === null ? null : BRANCHES[s.branch]} el={s.branch === null ? null : BRANCH_EL[s.branch]} />
-            <span className="text-[10px] font-bold text-ink-soft">{s.branch === null ? "모름" : "\u00a0"}</span>
-          </div>
+          <span key={`p${s.pos}`} className="text-[11px] font-bold">
+            {s.pos}주
+          </span>
+        ))}
+        {manse && <span aria-hidden="true" />}
+        {slots.map((s) => (
+          <span key={`r${s.pos}`} className="self-start text-[10px] leading-tight text-ink-soft">
+            {POS_ROLE[s.pos]}
+          </span>
+        ))}
+        {manse && <span className="self-center text-left text-[10.5px] font-bold text-ink-soft">천간</span>}
+        {slots.map((s) => (
+          <Cell key={`s${s.pos}`} value={s.stem === null ? null : STEMS[s.stem]} el={s.stem === null ? null : stemEl(s.stem)} />
+        ))}
+        {manse && <span aria-hidden="true" />}
+        {slots.map((s) => (
+          <span key={`m${s.pos}`} className="text-[10px] font-bold text-ink-soft">
+            {s.pos === "일" && s.stem !== null ? "나" : "\u00a0"}
+          </span>
+        ))}
+        {manse && <span className="self-center text-left text-[10.5px] font-bold text-ink-soft">지지</span>}
+        {slots.map((s) => (
+          <Cell key={`b${s.pos}`} value={s.branch === null ? null : BRANCHES[s.branch]} el={s.branch === null ? null : BRANCH_EL[s.branch]} />
+        ))}
+        {manse && <span aria-hidden="true" />}
+        {slots.map((s) => (
+          <span key={`u${s.pos}`} className="text-[10px] font-bold text-ink-soft">
+            {s.branch === null ? "모름" : "\u00a0"}
+          </span>
         ))}
       </div>
       {manse && <ManseRows cols={manse} />}
