@@ -246,6 +246,10 @@ export const isOpen = (p: Product) => Boolean(p.free);
 
 export const PRICE = 990;
 
+// The free reading keeps its reasons and timing for the life report (components/LockedLine.tsx). Off until the
+// card company's review is done; the owner's 시안 모드 (lib/admin.ts isPreview) shows it on already.
+export const FREE_LOCK = false;
+
 // Special-day sales, in KST dates, both ends inclusive. Outside them every report is PRICE.
 // e.g. { name: "설날 행사", from: "2027-02-05", to: "2027-02-09", price: 590 }
 type Sale = { name: string; from: string; to: string; price: number };

@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { refresh } from "next/cache";
-import { isAdmin, signIn, signOut } from "@/lib/admin";
+import { isAdmin, setPreview, signIn, signOut } from "@/lib/admin";
 import { isGiftable, originNow } from "@/lib/gift";
 import { createGiftOrder, markTestOrder, revokeGiftOrder } from "@/lib/pay";
 import { encodePerson } from "@/lib/pairToken";
@@ -73,6 +73,13 @@ export async function giftIssueAction(_prev: GiftState, formData: FormData): Pro
 export async function giftRevokeAction(formData: FormData) {
   if (!(await isAdmin())) return;
   await revokeGiftOrder(String(formData.get("id") ?? ""));
+  refresh();
+}
+
+// 시안 모드 on or off for this browser (app/admin/free-preview). Owner only.
+export async function previewModeAction(formData: FormData) {
+  if (!(await isAdmin())) return;
+  await setPreview(formData.get("on") === "1");
   refresh();
 }
 
