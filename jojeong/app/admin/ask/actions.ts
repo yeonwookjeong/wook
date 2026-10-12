@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { refresh } from "next/cache";
 import { isAdmin } from "@/lib/admin";
-import { ask, createRoom, loadRoom, MAX_QUESTION, saveRoom, TOPICS, type Topic } from "@/lib/ask";
+import { addPerson, ask, createRoom, loadRoom, MAX_PEOPLE, MAX_QUESTION, removePerson, saveRoom, TOPICS, type Topic } from "@/lib/ask";
 import { encodePerson } from "@/lib/pairToken";
 import { personOf } from "@/lib/personForm";
 import { BirthInputError } from "@/lib/saju";
@@ -37,7 +37,8 @@ export async function askAction(_prev: FormState, formData: FormData): Promise<F
   const question = String(formData.get("question") ?? "");
   if ([...question.trim()].length > MAX_QUESTION) return { error: `질문은 ${MAX_QUESTION}자 안으로 적어 주시옵소서.` };
   const chosen = String(formData.get("chosen") ?? "") || undefined;
-  const result = await ask(room, question, topicOf(formData.get("topic")), chosen);
+  // The trial rooms ask about the first person on the list, if any.
+  const result = await ask(room, question, topicOf(formData.get("topic")), chosen, false, String(formData.get("with") ?? "") || room.people?.[0]?.id);
   if (!result.ok) return { error: result.error };
   refresh();
   return { error: null };
@@ -50,8 +51,8 @@ export async function attachOtherAction(_prev: FormState, formData: FormData): P
   try {
     const other = await personOf(formData, "b_", "상대");
     if (!other.gender) return { error: "상대의 성별을 골라 주세요." };
-    room.other = encodePerson(other);
-    room.otherLabel = String(formData.get("label") ?? "").trim().slice(0, 12) || "그 사람";
+    if ((room.people?.length ?? 0) >= MAX_PEOPLE) return { error: `${MAX_PEOPLE}명까지예요.` };
+    addPerson(room, encodePerson(other), String(formData.get("label") ?? "").trim().slice(0, 12) || "그 사람");
   } catch (e) {
     if (e instanceof BirthInputError) return { error: e.message };
     throw e;
@@ -65,8 +66,7 @@ export async function detachOtherAction(formData: FormData) {
   if (!(await isAdmin())) return;
   const room = await loadRoom(String(formData.get("room") ?? ""));
   if (!room) return;
-  delete room.other;
-  delete room.otherLabel;
+  removePerson(room, String(formData.get("person") ?? room.people?.[0]?.id ?? ""));
   await saveRoom(room);
   refresh();
 }

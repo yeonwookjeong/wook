@@ -3,7 +3,7 @@
 import { useActionState, useEffect, useRef, useState } from "react";
 import PersonFields from "@/components/PersonFields";
 import { keepValues } from "@/lib/keepForm";
-import { askAction, attachOtherAction, openRoomAction, type FormState } from "./actions";
+import { askAction, attachOtherAction, openRoomAction, removePersonAction, type FormState } from "./actions";
 
 // The guest's side of 정 훈도에게 묻기 (app/ask): the same forms as the owner's trial room (app/admin/ask), on the
 // member's own actions, which spend a question per answer.
@@ -75,7 +75,23 @@ export const draftKey = (room: string) => `jj_ask_draft:${room}`;
 // The question box, fixed to the bottom of the room: a topic (one question = one topic), then up to 300 characters.
 // It is there even with no questions left: the guest writes first, and sending then opens `children` (the packs to
 // buy). What was written is kept in this browser (draftKey) until it is sent, so it waits through the payment.
-export function AskForm({ room, other, credits, children }: { room: string; other?: boolean; credits: number; children?: React.ReactNode }) {
+// `people`: those on the room's list; the guest picks who the question is about (or no one).
+export function AskForm({
+  room,
+  people = [],
+  defaultWith,
+  canAdd = true,
+  credits,
+  children,
+}: {
+  room: string;
+  people?: { id: string; label: string }[];
+  defaultWith?: string;
+  canAdd?: boolean;
+  credits: number;
+  children?: React.ReactNode;
+}) {
+  const [withId, setWithId] = useState(defaultWith ?? "");
   const [state, action, pending] = useActionState<FormState, FormData>(askAction, { error: null });
   const [text, setText] = useState("");
   const [topic, setTopic] = useState("");
@@ -131,6 +147,28 @@ export function AskForm({ room, other, credits, children }: { room: string; othe
         className="sticky bottom-0 z-10 -mx-4 mt-2 border-t border-ink/10 bg-hanji/95 px-3 pt-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur"
       >
         <input type="hidden" name="room" value={room} />
+        <input type="hidden" name="with" value={withId} />
+        {(people.length > 0 || canAdd) && (
+          <div className="mb-2 flex items-center gap-1.5 overflow-x-auto [scrollbar-width:none]">
+            <span className="shrink-0 text-[11.5px] font-bold text-ink-soft">누구 이야기?</span>
+            {[{ id: "", label: "나" }, ...people].map((x) => (
+              <button
+                key={x.id || "me"}
+                type="button"
+                onClick={() => setWithId(x.id)}
+                aria-pressed={withId === x.id}
+                className={`shrink-0 rounded-full border px-3 py-1 text-[12.5px] ${withId === x.id ? "border-seal bg-seal text-hanji" : "border-seal/25 bg-white/60 text-seal"}`}
+              >
+                {x.label}
+              </button>
+            ))}
+            {canAdd && (
+              <a href="#people" className="shrink-0 rounded-full border border-dashed border-ink/25 px-3 py-1 text-[12.5px] text-ink-soft">
+                ＋ 사람
+              </a>
+            )}
+          </div>
+        )}
         <fieldset className="flex gap-1.5 overflow-x-auto [scrollbar-width:none]">
           <legend className="sr-only">무엇에 대한 질문이옵니까?</legend>
           {TOPICS.map((t) => (
@@ -149,11 +187,6 @@ export function AskForm({ room, other, credits, children }: { room: string; othe
               <span className="block rounded-full border border-ink/15 bg-white/60 px-3 py-1 text-[12.5px] peer-checked:border-ink peer-checked:bg-ink peer-checked:text-hanji">{t}</span>
             </label>
           ))}
-          {!other && (
-            <a href="#other" className="shrink-0 rounded-full border border-dashed border-ink/25 px-3 py-1 text-[12.5px] text-ink-soft">
-              ＋ 그 사람 사주
-            </a>
-          )}
         </fieldset>
         {!text && (
           <div className="mt-2 flex gap-1.5 overflow-x-auto [scrollbar-width:none]">
@@ -227,19 +260,38 @@ export function ChooseForm({ room, question, topic, choices }: { room: string; q
   );
 }
 
-export function AttachOtherForm({ room }: { room: string }) {
+// A new person for the room's list, or (`person`) the birth of one on it entered again.
+export function AttachOtherForm({ room, person }: { room: string; person?: string }) {
   const [state, action, pending] = useActionState<FormState, FormData>(attachOtherAction, { error: null });
   return (
     <form onSubmit={keepValues(action)} className="mt-3 flex flex-col gap-3">
       <input type="hidden" name="room" value={room} />
-      <label className="flex flex-col gap-1 text-sm">
+      {person && <input type="hidden" name="person" value={person} />}
+      <label className={`flex flex-col gap-1 text-sm ${person ? "hidden" : ""}`}>
         <span className="font-semibold text-ink-soft">그 사람을 뭐라고 부를까요</span>
         <input name="label" placeholder="그 사람, 남자친구, 팀장님 …" maxLength={12} className="rounded-lg border border-ink/15 bg-white/70 px-3 py-2" />
       </label>
       <PersonFields prefix="b_" nameLabel="상대 이름" unknownHour="모름" modern binaryGender genderLabel="상대 성별" />
       <ErrorLine error={state.error} />
       <button type="submit" disabled={pending} className="rounded-xl border-2 border-ink py-2.5 text-sm font-extrabold disabled:opacity-60">
-        {pending ? "붙이는 중…" : "상대 사주 붙이기"}
+        {pending ? "넣는 중…" : person ? "이 사람 사주 고치기" : "함께 보는 사람 더하기"}
+      </button>
+    </form>
+  );
+}
+
+export function RemovePersonButton({ room, person, label }: { room: string; person: string; label: string }) {
+  return (
+    <form
+      action={removePersonAction}
+      onSubmit={(e) => {
+        if (!confirm(`${label}을(를) 목록에서 지울까요? 나눈 이야기는 정 훈도가 기억해요.`)) e.preventDefault();
+      }}
+    >
+      <input type="hidden" name="room" value={room} />
+      <input type="hidden" name="person" value={person} />
+      <button type="submit" className="shrink-0 rounded-lg border border-ink/20 px-2.5 py-1 text-[11.5px] text-ink-soft">
+        지우기
       </button>
     </form>
   );

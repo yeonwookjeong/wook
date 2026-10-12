@@ -28,15 +28,27 @@ export type AskMessage = {
   choices?: string[];
   // What writing this answer used (owner only, lib/aiCost.ts): the price of a question.
   usage?: Usage;
+  // Who the question was about (a RoomPerson id) and what the guest called them then, kept for the record
+  // when that person is later renamed or taken off the list.
+  with?: string;
+  withLabel?: string;
 };
+
+// The people seen together with the guest: up to five, one chosen for each question. Taken off the list, a
+// person moves to `past` with their chart, so the counsel still knows who was talked about.
+export const MAX_PEOPLE = 5;
+export type RoomPerson = { id: string; token: string; label: string; aka?: string[] };
+export type PastPerson = { id: string; token: string; label: string; aka?: string[]; until: number };
 
 export type AskRoom = {
   id: string;
   createdAt: number;
   updatedAt: number;
   me: string; // person token
-  other?: string; // the other person's token, once attached
-  otherLabel?: string; // how the guest calls them (그 사람, 남자친구 …)
+  people?: RoomPerson[];
+  past?: PastPerson[];
+  other?: string; // before the list: the one other person's token (moved into `people` on load)
+  otherLabel?: string;
   memo: string;
   messages: AskMessage[];
   used: number; // questions answered (each one a ticket once sales open)
@@ -54,7 +66,14 @@ export async function loadRoom(id: string): Promise<AskRoom | null> {
   const raw = await getAskRoomRaw(id);
   if (!raw) return null;
   try {
-    return JSON.parse(raw) as AskRoom;
+    const room = JSON.parse(raw) as AskRoom;
+    // Rooms from before the list: the one person attached becomes its first entry.
+    if (!room.people) {
+      room.people = room.other ? [{ id: "p1", token: room.other, label: room.otherLabel || "그 사람" }] : [];
+      delete room.other;
+      delete room.otherLabel;
+    }
+    return room;
   } catch {
     return null;
   }
@@ -72,7 +91,34 @@ export async function listRooms(): Promise<AskRoom[]> {
 }
 
 export const personOfRoom = (room: AskRoom) => decodePerson(room.me);
-export const otherOfRoom = (room: AskRoom) => (room.other ? decodePerson(room.other) : null);
+// Anyone ever seen in this room, on the list or taken off it, by id.
+export const roomPerson = (room: AskRoom, id: string | undefined) => (id ? (room.people ?? []).find((x) => x.id === id) ?? (room.past ?? []).find((x) => x.id === id) : undefined);
+
+export function addPerson(room: AskRoom, token: string, label: string): string | null {
+  const people = (room.people ??= []);
+  if (people.length >= MAX_PEOPLE) return null;
+  const used = new Set([...people, ...(room.past ?? [])].map((x) => x.id));
+  let n = 1;
+  while (used.has(`p${n}`)) n++;
+  people.push({ id: `p${n}`, token, label: label || "그 사람" });
+  return `p${n}`;
+}
+export function renamePerson(room: AskRoom, id: string, label: string) {
+  const x = room.people?.find((p) => p.id === id);
+  if (!x || !label || label === x.label) return;
+  x.aka = [...new Set([...(x.aka ?? []), x.label])].slice(-4);
+  x.label = label;
+}
+export function reChartPerson(room: AskRoom, id: string, token: string) {
+  const x = room.people?.find((p) => p.id === id);
+  if (x) x.token = token;
+}
+export function removePerson(room: AskRoom, id: string) {
+  const x = room.people?.find((p) => p.id === id);
+  if (!x) return;
+  room.people = room.people!.filter((p) => p !== x);
+  room.past = [...(room.past ?? []), { ...x, until: Date.now() }].slice(-10);
+}
 export const iljuOf = (p: Person) => `${STEMS_KO[p.pillars.dayStem]}${BRANCHES_KO[p.pillars.dayBranch]}일주`;
 
 const SYSTEM = `너는 '정 훈도'다. 조선 관상감 명과학의 막내 관원(훈도)이고, 사주 보는 눈만큼은 조선 제일이다. 지금은 현대를 사는 한 사람과 사랑방에서 마주 앉아, 그 사람이 묻는 고민 하나에 그 사람의 사주로 답한다. 이 방은 계속 이어지는 상담이라, 지난 대화를 기억하고 이어서 말한다.
@@ -112,6 +158,7 @@ const SYSTEM = `너는 '정 훈도'다. 조선 관상감 명과학의 막내 관
 - '상담 메모'와 '최근 대화'를 반드시 읽고 이어서 말한다. 전에 나온 사람·사건·조언을 알아보고 필요하면 짚는다("지난번 말씀하신 그분은…").
 - 전에 한 말과 어긋나지 않는다. 상황이나 달이 바뀌어 말이 달라지면 왜 달라졌는지 한 줄로 밝힌다.
 - 메모에 없는 일을 있었던 것처럼 말하지 않는다.
+- 손님이 사람 목록에서 누군가를 지우거나 부르는 이름을 바꿔도 그 사람에 대한 기억은 지우지 않는다. 메모에는 지금 부르는 이름으로 이어 쓰고(예: "남자친구(전에 '그 사람')"), 지운 사람은 손님이 다시 꺼내면 알아본다. 먼저 꺼내지는 않는다.
 - 손님이 말하지 않은 고민·사건·관계(가족과의 갈등, 이별, 빚 등)를 "마음에 남아 계실" 것처럼 넘겨짚지 않는다. 사주에 그런 기운이 보여도 "~하기 쉬운 자리"라는 경향으로만 말한다.
 
 [하지 않는 것]
@@ -131,7 +178,7 @@ const SYSTEM = `너는 '정 훈도'다. 조선 관상감 명과학의 막내 관
 
 [출력 형식]
 - 답을 다 쓴 뒤 줄을 바꿔 정확히 [[메모]] 한 줄을 쓰고, 그 아래에 고쳐 쓴 상담 메모 전체를 쓴다.
-- 메모는 다음 상담 때 네가 읽을 기록이다. 손님 상황, 대화에 나온 사람(호칭·관계), 손님이 털어놓은 사건과 날짜, 네가 드린 핵심 조언, 아직 안 풀린 고민을 '- '로 시작하는 줄로, 900자 안. 지난 메모에서 여전히 맞는 것은 남기고, 틀리거나 지난 것은 고친다.`;
+- 메모는 다음 상담 때 네가 읽을 기록이다. 손님 상황, 대화에 나온 사람(호칭·관계, 일주), 손님이 털어놓은 사건과 날짜, 네가 드린 핵심 조언, 아직 안 풀린 고민을 '- '로 시작하는 줄로, 900자 안. 지난 메모에서 여전히 맞는 것은 남기고, 틀리거나 지난 것은 고친다.`;
 
 // 시안 모드 only for now: he marks the two or three pictures his answer needs, from what this chart can draw.
 const FIGURE_RULES = `
@@ -146,10 +193,9 @@ const FIGURE_RULES = `
 
 const kstDate = (t = Date.now()) => new Date(t + 9 * 3600000).toISOString().slice(0, 10);
 
-function context(room: AskRoom): string | null {
+function context(room: AskRoom, withId?: string): string | null {
   const me = personOfRoom(room);
   if (!me) return null;
-  const other = otherOfRoom(room);
   const y = thisYear();
   const parts = [
     `[오늘] ${kstDate()}`,
@@ -157,14 +203,30 @@ function context(room: AskRoom): string | null {
     chartBrief(me.name, me.pillars, profileOf(me)),
     yeonunBrief(me.pillars, profileOf(me), y, y),
   ];
-  if (other) {
+  const chosen = room.people?.find((x) => x.id === withId);
+  const other = chosen ? decodePerson(chosen.token) : null;
+  if (chosen && other) {
     parts.push(
-      `[함께 붙인 사람: ${room.otherLabel || other.name} (이름 ${other.name})]`,
+      `[이번 질문에 함께 보는 사람: ${chosen.label} (이름 ${other.name})${chosen.aka?.length ? ` — 전에는 '${chosen.aka.join("', '")}'(이)라고 불렀다` : ""}]`,
       chartBrief(other.name, other.pillars, profileOf(other)),
       pairBrief(me.name, me.pillars, other.name, other.pillars),
       coupleBrief(me, other),
     );
   }
+  // Everyone else the guest has talked about: on the list, or taken off it. The memo and the recent talk may
+  // name them; this says who they are.
+  const known = [
+    ...(room.people ?? []).filter((x) => x !== chosen).map((x) => ({ ...x, gone: 0 })),
+    ...(room.past ?? []).map((x) => ({ ...x, gone: x.until })),
+  ]
+    .map((x) => {
+      const p = decodePerson(x.token);
+      return p
+        ? `- ${x.label}${x.aka?.length ? `(전에는 ${x.aka.join(", ")})` : ""}: ${p.name}, ${iljuOf(p)}${x.gone ? ` — ${kstDate(x.gone)}에 손님이 목록에서 지움. 지난 이야기는 그대로 기억한다` : ""}`
+        : "";
+    })
+    .filter(Boolean);
+  if (known.length) parts.push(`[손님이 사랑방에 적어 둔 다른 사람들 — 이번 질문에서는 사주를 보지 않는다]\n${known.join("\n")}`);
   return parts.filter(Boolean).join("\n\n");
 }
 
@@ -174,27 +236,29 @@ export type AskResult = { ok: true } | { ok: false; error: string };
 
 // One question. `chosen`: after he offered choices, the one the guest picked (the original question rides along).
 // `figures` (시안 모드): he marks pictures for his answer (lib/askFigures.ts).
-export async function ask(room: AskRoom, question: string, topic: Topic, chosen?: string, figures = false): Promise<AskResult> {
+// `withId`: the person on the list this question is about (none: the guest alone).
+export async function ask(room: AskRoom, question: string, topic: Topic, chosen?: string, figures = false, withId?: string): Promise<AskResult> {
   const q = question.trim().slice(0, MAX_QUESTION);
   if (!q) return { ok: false, error: "여쭐 말씀을 적어 주시옵소서." };
-  const ctx = context(room);
+  const withPerson = room.people?.find((x) => x.id === withId);
+  const ctx = context(room, withPerson?.id);
   if (!ctx) return { ok: false, error: "이 방의 사주를 읽지 못했사옵니다." };
   const recent = room.messages
     .filter((m) => !m.choices)
     .slice(-RECENT)
     .map((m) => {
       const used = [...m.text.matchAll(/\[\[圖\|([^\]\n]{1,6})\]\]/g)].map((f) => f[1]);
-      return `${m.role === "guest" ? `손님${m.topic ? `(${m.topic})` : ""}` : "정 훈도"} [${kstDate(m.at)}]: ${plainAnswer(m.text)}${used.length ? ` (그림: ${used.join(", ")})` : ""}`;
+      return `${m.role === "guest" ? `손님${m.topic ? `(${m.topic}${m.withLabel ? `, ${m.withLabel} 이야기` : ""})` : ""}` : "정 훈도"} [${kstDate(m.at)}]: ${plainAnswer(m.text)}${used.length ? ` (그림: ${used.join(", ")})` : ""}`;
     })
     .join("\n");
   const name = personOfRoom(room)!.name;
-  const kit = figures ? figureKit(personOfRoom(room)!, otherOfRoom(room), room.otherLabel ?? "", chosen ?? topic, `${chosen ?? ""} ${q}`, Date.now()) : null;
+  const kit = figures ? figureKit(personOfRoom(room)!, withPerson ? decodePerson(withPerson.token) : null, withPerson?.label ?? "", chosen ?? topic, `${chosen ?? ""} ${q}`, Date.now()) : null;
   const prompt = [
     ctx,
     ...(kit ? [`[그림 재료 — 답서에 넣을 수 있는 그림과 그 안의 값]\n${figureMenu(kit)}`] : []),
     `[상담 메모]\n${room.memo || "(아직 없음 — 첫 상담)"}`,
     `[최근 대화]\n${recent || "(없음)"}`,
-    `[이번 질문] 손님 ${name}님, 고른 주제: ${topic}${room.used > 0 ? ` — 이어지는 상담(앞서 ${room.used}번 답함)` : " — 첫 상담"}${chosen ? `\n여러 주제 중 손님이 먼저 고른 것: ${chosen} — 이것 하나만 답한다.` : ""}\n${q}`,
+    `[이번 질문] 손님 ${name}님, 고른 주제: ${topic}${withPerson ? `, ${withPerson.label}에 대한 질문` : ", 손님 자신에 대한 질문(함께 보는 사람 없음)"}${room.used > 0 ? ` — 이어지는 상담(앞서 ${room.used}번 답함)` : " — 첫 상담"}${chosen ? `\n여러 주제 중 손님이 먼저 고른 것: ${chosen} — 이것 하나만 답한다.` : ""}\n${q}`,
   ].join("\n\n");
 
   const MOCK_FIGS: Record<string, string[]> = { 연애: ["宮位", "稀貴", "月運"], 일: ["合沖", "五行", "大運"], 돈: ["命盤", "五行", "年比"], 사람: ["兩人", "神殺", "月運"] };
@@ -216,7 +280,13 @@ export async function ask(room: AskRoom, question: string, topic: Topic, chosen?
 
   const now = Date.now();
   // A pick among offered topics shows as the pick, not the whole question again.
-  room.messages.push({ role: "guest", text: chosen ? `먼저 여쭙기: ${chosen}` : q, at: now, topic });
+  room.messages.push({
+    role: "guest",
+    text: chosen ? `먼저 여쭙기: ${chosen}` : q,
+    at: now,
+    topic,
+    ...(withPerson && { with: withPerson.id, withLabel: withPerson.label }),
+  });
   if (!chosen && text.includes("[[여러 주제]]")) {
     // Only the bullet lines under the marker: the model sometimes adds a memo or a profile line after them.
     const choices = text

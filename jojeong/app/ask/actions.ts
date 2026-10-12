@@ -3,7 +3,7 @@
 import { isPreview } from "@/lib/admin";
 import { redirect } from "next/navigation";
 import { refresh } from "next/cache";
-import { ask, createRoom, loadRoom, MAX_QUESTION, saveRoom, TOPICS, type AskRoom, type Topic } from "@/lib/ask";
+import { addPerson, ask, createRoom, loadRoom, MAX_PEOPLE, MAX_QUESTION, reChartPerson, removePerson, renamePerson, saveRoom, TOPICS, type AskRoom, type Topic } from "@/lib/ask";
 import { addRoomToMember, changeCredits, currentMember, type Member } from "@/lib/members";
 import { encodePerson } from "@/lib/pairToken";
 import { personOf } from "@/lib/personForm";
@@ -67,7 +67,7 @@ export async function askAction(_prev: FormState, formData: FormData): Promise<F
   if ([...question.trim()].length > MAX_QUESTION) return { error: `질문은 ${MAX_QUESTION}자 안으로 적어 주시옵소서.` };
   const before = room.used;
   const chosen = String(formData.get("chosen") ?? "") || undefined;
-  const result = await ask(room, question, topicOf(formData.get("topic")), chosen, await isPreview());
+  const result = await ask(room, question, topicOf(formData.get("topic")), chosen, await isPreview(), String(formData.get("with") ?? "") || undefined);
   if (!result.ok) return { error: result.error };
   // An answer given uses one question; choices offered (nothing answered yet) use none.
   if (room.used > before) await changeCredits(member.id, -1, `질문 ${room.id}`);
@@ -75,15 +75,23 @@ export async function askAction(_prev: FormState, formData: FormData): Promise<F
   return { error: null };
 }
 
+const labelOf = (formData: FormData) => String(formData.get("label") ?? "").trim().slice(0, 12);
+
+// Someone to see together: added to the room's list (up to five), or, with `person`, the birth of one already on
+// it entered again (a correction; the past talk about them stays).
 export async function attachOtherAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const own = await ownRoom(formData);
   if ("error" in own) return own;
   const { room } = own;
+  const pid = String(formData.get("person") ?? "");
+  if (!pid && (room.people?.length ?? 0) >= MAX_PEOPLE) return { error: `함께 보는 사람은 ${MAX_PEOPLE}명까지예요. 한 명을 지우거나 고쳐 주세요.` };
   try {
     const other = await personOf(formData, "b_", "상대");
     if (!other.gender) return { error: "상대의 성별을 골라 주세요." };
-    room.other = encodePerson(other);
-    room.otherLabel = String(formData.get("label") ?? "").trim().slice(0, 12) || "그 사람";
+    if (pid) {
+      reChartPerson(room, pid, encodePerson(other));
+      if (labelOf(formData)) renamePerson(room, pid, labelOf(formData));
+    } else addPerson(room, encodePerson(other), labelOf(formData) || "그 사람");
   } catch (e) {
     if (e instanceof BirthInputError) return { error: e.message };
     throw e;
@@ -91,4 +99,23 @@ export async function attachOtherAction(_prev: FormState, formData: FormData): P
   await saveRoom(room);
   refresh();
   return { error: null };
+}
+
+export async function renamePersonAction(formData: FormData) {
+  const own = await ownRoom(formData);
+  if ("error" in own) return;
+  const label = labelOf(formData);
+  if (!label) return;
+  renamePerson(own.room, String(formData.get("person") ?? ""), label);
+  await saveRoom(own.room);
+  refresh();
+}
+
+// Off the list; still remembered (lib/ask.ts past).
+export async function removePersonAction(formData: FormData) {
+  const own = await ownRoom(formData);
+  if ("error" in own) return;
+  removePerson(own.room, String(formData.get("person") ?? ""));
+  await saveRoom(own.room);
+  refresh();
 }

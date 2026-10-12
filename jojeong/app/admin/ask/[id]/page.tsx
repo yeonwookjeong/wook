@@ -3,7 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isAdmin } from "@/lib/admin";
 import { costKrw, type Usage } from "@/lib/aiCost";
-import { iljuOf, loadRoom, otherOfRoom, personOfRoom } from "@/lib/ask";
+import { iljuOf, loadRoom, personOfRoom } from "@/lib/ask";
+import { decodePerson } from "@/lib/pairToken";
 import { deleteRoomAction, detachOtherAction, saveMemoAction } from "../actions";
 import { AskForm, AttachOtherForm, ChooseForm } from "../AskForms";
 import { AnswerLetter } from "@/app/ask/Letter";
@@ -34,7 +35,7 @@ export default async function AskRoomPage({ params }: PageProps<"/admin/ask/[id]
   const room = await loadRoom(id);
   if (!room) notFound();
   const me = personOfRoom(room);
-  const other = otherOfRoom(room);
+  const people = (room.people ?? []).map((x) => ({ ...x, p: decodePerson(x.token) }));
   const last = room.messages.at(-1);
   const lastGuest = [...room.messages].reverse().find((m) => m.role === "guest");
   // The cost of the answers so far, for pricing a question.
@@ -55,7 +56,7 @@ export default async function AskRoomPage({ params }: PageProps<"/admin/ask/[id]
           {me?.name ?? "?"}님의 상담방 <span className="text-base font-normal text-ink-soft">{me ? iljuOf(me) : ""}</span>
         </h1>
         <p className="mt-1 text-xs text-ink-soft">
-          답한 질문 {room.used}개{other ? ` · 함께 보는 사람: ${room.otherLabel}(${other.name}, ${iljuOf(other)})` : ""}
+          답한 질문 {room.used}개{people.length ? ` · 함께 보는 사람: ${people.map((x) => `${x.label}(${x.p ? `${x.p.name}, ${iljuOf(x.p)}` : "?"})`).join(", ")} (질문은 첫 사람 기준)` : ""}
         </p>
         {avg !== null && (
           <p className="mt-1 text-xs font-bold text-seal">
@@ -113,20 +114,20 @@ export default async function AskRoomPage({ params }: PageProps<"/admin/ask/[id]
       </details>
 
       <details className="doc-paper mt-3 px-5 py-4">
-        <summary className="cursor-pointer text-sm font-bold">{other ? `함께 보는 사람: ${room.otherLabel}` : "상대 사주 붙이기"}</summary>
-        {other ? (
-          <form action={detachOtherAction} className="mt-2">
+        <summary className="cursor-pointer text-sm font-bold">함께 보는 사람 ({people.length})</summary>
+        {people.map((x) => (
+          <form key={x.id} action={detachOtherAction} className="mt-2 flex items-center justify-between text-sm">
             <input type="hidden" name="room" value={room.id} />
-            <p className="text-sm">
-              {other.name} · {iljuOf(other)}
-            </p>
-            <button type="submit" className="mt-2 rounded-lg border border-ink/20 px-4 py-1.5 text-xs font-bold">
+            <input type="hidden" name="person" value={x.id} />
+            <span>
+              {x.label} · {x.p ? `${x.p.name} · ${iljuOf(x.p)}` : "?"}
+            </span>
+            <button type="submit" className="rounded-lg border border-ink/20 px-3 py-1 text-xs font-bold">
               떼어 내기
             </button>
           </form>
-        ) : (
-          <AttachOtherForm room={room.id} />
-        )}
+        ))}
+        <AttachOtherForm room={room.id} />
       </details>
 
       <form action={deleteRoomAction} className="mt-4 mb-10 text-center">
