@@ -1,9 +1,18 @@
-// 정 훈도's answers carry one key sentence wrapped in ==…== (lib/ask.ts asks for it). The letter underlines it;
-// everywhere else (the prompt's recent talk, the owner's trial room) reads the plain text.
+// 정 훈도's answers carry one key sentence wrapped in ==…== and a mark heading each paragraph ([[直答]] …), both
+// asked for in lib/ask.ts. The letter underlines the one and sets the other as a small heading; the prompt's
+// recent talk reads the plain text.
 
 export type Segment = { text: string; key: boolean };
 
-export const plainAnswer = (text: string) => text.replace(/==([^=\n]+)==/g, "$1").replace(/==/g, "");
+// The five paragraph marks and the Korean read beside each.
+export const PART_LABELS: Record<string, string> = { 直答: "바로 아룀", 時勢: "왜 지금인가", 性情: "그대라는 사람", 時運: "다가올 때", 一事: "오늘 한 가지" };
+const PART = /^\s*\[\[(直答|時勢|性情|時運|一事)\]\]\s*/;
+
+export const plainAnswer = (text: string) =>
+  text
+    .replace(/==([^=\n]+)==/g, "$1")
+    .replace(/==/g, "")
+    .replace(/\[\[(直答|時勢|性情|時運|一事)\]\]\s*/g, "");
 
 // A paragraph split into plain and key runs; a stray marker left open is dropped, not shown.
 export function segments(paragraph: string): Segment[] {
@@ -18,11 +27,25 @@ export function segments(paragraph: string): Segment[] {
   return out.map((s) => ({ ...s, text: s.text.replace(/==/g, "") })).filter((s) => s.text);
 }
 
-export const paragraphs = (text: string) =>
-  text
-    .split(/\n\s*\n|\n/)
-    .map((p) => p.trim())
-    .filter(Boolean);
+export type Paragraph = { part?: string; text: string };
+
+// Paragraphs, each with its mark when it has one. A mark alone on its line heads the paragraph after it.
+export function paragraphs(text: string): Paragraph[] {
+  const out: Paragraph[] = [];
+  let pending: string | undefined;
+  for (const line of text.split("\n")) {
+    const m = line.match(PART);
+    const part = m?.[1] ?? pending;
+    const body = (m ? line.slice(m[0].length) : line).trim();
+    if (!body) {
+      if (m) pending = m[1];
+      continue;
+    }
+    out.push({ ...(part && { part }), text: body });
+    pending = undefined;
+  }
+  return out;
+}
 
 const NUM = ["", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
 const hanjaNum = (n: number) => (n >= 20 ? NUM[Math.floor(n / 10)] : "") + (n >= 10 ? "十" : "") + NUM[n % 10];

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { hanjaDate, paragraphs, segments } from "@/lib/askText";
+import { hanjaDate, PART_LABELS, paragraphs, segments } from "@/lib/askText";
 import type { Person } from "@/lib/pairToken";
 import { BRANCHES, hourStemOf, STEMS } from "@/lib/saju";
 
@@ -101,7 +101,7 @@ export function AnswerLetter({ id, name, text, at }: { id?: string; name: string
       </header>
       <div className="font-myeongjo text-[16px] leading-[1.95] tracking-[-0.01em] break-keep">
         {paras.map((p, i) => {
-          const body = segments(p).map((s, j) =>
+          const body = segments(p.text).map((s, j) =>
             s.key ? (
               <mark key={j} className="bg-transparent bg-[linear-gradient(transparent_58%,rgb(212_175_95/0.45)_58%)] font-semibold text-inherit [box-decoration-break:clone]">
                 {s.text}
@@ -110,17 +110,28 @@ export function AnswerLetter({ id, name, text, at }: { id?: string; name: string
               <span key={j}>{s.text}</span>
             ),
           );
-          return i === paras.length - 1 && paras.length > 2 ? (
+          const head = p.part && (
+            <span className="mb-1 block font-sans text-[11px] font-bold tracking-[0.18em] text-seal">
+              <span className="font-myeongjo text-[13px] tracking-[0.12em]">{p.part}</span> · {PART_LABELS[p.part]}
+            </span>
+          );
+          // The closing step sits apart: the one marked 一事, or (answers before the marks) the last of three or more.
+          const last = p.part ? p.part === "一事" : i === paras.length - 1 && paras.length > 2;
+          return last ? (
             <div key={i}>
               <p aria-hidden className="mt-4 text-center text-[18px] text-gold">
                 ❦
               </p>
-              <p className="mt-3 rounded-r-lg border-l-[3px] border-seal bg-seal/5 px-3.5 py-3">{body}</p>
+              <div className="mt-3 rounded-r-lg border-l-[3px] border-seal bg-seal/5 px-3.5 py-3">
+                {head}
+                <p>{body}</p>
+              </div>
             </div>
           ) : (
-            <p key={i} className="mt-4">
-              {body}
-            </p>
+            <div key={i} className={p.part ? "mt-5" : "mt-4"}>
+              {head}
+              <p>{body}</p>
+            </div>
           );
         })}
       </div>
