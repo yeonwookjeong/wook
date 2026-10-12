@@ -87,7 +87,22 @@ export function Question({ text, topic, at }: { text: string; topic?: string; at
 // His answer as a letter. The last paragraph (today's one step and a warm word) sits apart in a red-ruled box.
 // `figure`: draws a picture an answer marks ([[圖|合沖]]) under its paragraph (시안 모드: app/ask/Figures.tsx);
 // without it the marks are simply left out.
-export function AnswerLetter({ id, name, text, at, figure }: { id?: string; name: string; text: string; at: number; figure?: (key: string) => React.ReactNode }) {
+// `top`: the verdict card under the heading (시안 모드).
+export function AnswerLetter({
+  id,
+  name,
+  text,
+  at,
+  figure,
+  top,
+}: {
+  id?: string;
+  name: string;
+  text: string;
+  at: number;
+  figure?: (key: string) => React.ReactNode;
+  top?: React.ReactNode;
+}) {
   const paras = paragraphs(text);
   const figs = (keys: string[]) => (figure ? keys.map((k) => <div key={k}>{figure(k)}</div>) : null);
   return (
@@ -102,6 +117,7 @@ export function AnswerLetter({ id, name, text, at, figure }: { id?: string; name
           <p className="text-[11.5px] text-ink-soft">{name}님의 여덟 글자를 펼쳐 놓고</p>
         </div>
       </header>
+      {top}
       <div className="font-myeongjo text-[16px] leading-[1.95] tracking-[-0.01em] break-keep">
         {paras.map((p, i) => {
           const body = segments(p.text).map((s, j) =>

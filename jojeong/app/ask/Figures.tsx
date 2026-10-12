@@ -1,5 +1,6 @@
 import { Cell } from "@/components/SajuChart";
 import { type FigureKit, type Figures } from "@/lib/askFigures";
+import { GRADE_MARK, REL_LABEL, type Bond } from "@/lib/bond";
 import { BRANCH_EL, ELEMENT_HANJA, ELEMENT_KO, stemEl } from "@/lib/myeongri";
 import { BRANCHES, STEMS } from "@/lib/saju";
 
@@ -413,43 +414,109 @@ export function SalsFigure({ s }: { s: NonNullable<FigureKit["sals"]> }) {
   );
 }
 
-// ⑩ 兩人: the two side by side.
-export function PairFigure({ p }: { p: NonNullable<FigureKit["pair"]> }) {
-  const side = (x: typeof p.a, role: string) => (
-    <div className="flex flex-col items-center gap-1">
-      <span className="text-[12px] font-bold">{x.name}</span>
+// ⑩ 兩人: the two side by side, read for what they are to each other (lib/bond.ts).
+export function BondFigure({ b, name }: { b: Bond; name: string }) {
+  const side = (who: string, x: Bond["me"], role: string) => (
+    <div className="flex min-w-0 flex-1 flex-col items-center gap-1 text-center">
+      <span className="text-[12px] font-bold">{who}</span>
       <span
         className={`grid size-14 place-items-center rounded-xl font-myeongjo text-[18px] font-bold ${EL_BAR[x.el]} ${x.el === 3 ? "text-ink" : "text-white"}`}
       >
         {x.ilju}
       </span>
-      <span className="text-[10.5px] text-ink-soft">{x.ilju}일주</span>
-      <span className="rounded-full bg-seal/10 px-2 py-0.5 text-[10.5px] font-bold text-seal">상대에게 {role}</span>
+      <span className="rounded-full bg-ink/8 px-2 py-0.5 text-[10.5px] font-bold">{x.brings}</span>
+      <span className="text-[10.5px] leading-tight text-ink-soft">{role}</span>
     </div>
   );
   return (
-    <Frame title="두 사람" sub={`${p.a.name}님과 ${p.b.name}`}>
-      <div className="flex items-center justify-center gap-4">
-        {side(p.a, p.roles[1])}
-        <span className="text-[20px] text-[#b8902f]">⟷</span>
-        {side(p.b, p.roles[0])}
+    <Frame title="두 사람" sub={`${name}님과 ${b.label} · ${REL_LABEL[b.rel]}`}>
+      <div className="flex items-start gap-2">
+        {side(`${name}님`, b.me, `${b.label}에게 ${b.roles[1]}`)}
+        <span className="mt-6 shrink-0 text-[18px] text-[#b8902f]">⟷</span>
+        {side(b.label, b.them, `나에게 ${b.roles[0]}`)}
       </div>
-      <ul className="mt-3 flex flex-col gap-1 text-[12px] leading-snug">
-        {p.seat.map((x) => (
-          <li key={x}>· {x}</li>
+      <ul className="mt-3 flex flex-col gap-1 border-t border-seal/10 pt-2 text-[12px] leading-snug">
+        <li>· {b.seat.line ?? `${b.seat.name}끼리는 조용히 지나가요`}</li>
+        {b.lends.map((l) => (
+          <li key={l}>· {l}</li>
         ))}
-        {p.lends.map((l) => (
-          <li key={l.to + l.el}>
-            · {l.to}에게 모자란 {l.el}을 {l.from}이 {l.pct}% 채워 줘요
-          </li>
-        ))}
-        {p.years.slice(0, 3).map((y) => (
+        {b.years.slice(0, 3).map((y) => (
           <li key={y.year}>
             · <b>{y.year}</b> <span className="font-myeongjo">{y.gz}</span> {y.mark} <span className="text-ink-soft">({y.why})</span>
           </li>
         ))}
       </ul>
     </Frame>
+  );
+}
+
+// ④' The months ahead for two: each one's mark, and what the month is for both.
+const BOTH_STYLE: Record<string, string> = {
+  "함께 좋음": "bg-seal/85 text-hanji",
+  무난: "bg-seal/35 text-ink",
+  "한쪽 흔들림": "bg-[#d4af5f]/40 text-ink",
+  "함께 조심": "bg-ink/20 text-ink",
+};
+export function BondMonthsFigure({ b, name }: { b: Bond; name: string }) {
+  return (
+    <Frame
+      title="두 사람의 여섯 달"
+      sub={`${name}님과 ${b.label}에게 함께 오는 달`}
+      note="칸 색: 진한 빨강 함께 좋음 · 옅은 빨강 무난 · 금색 한쪽 흔들림 · 회색 함께 조심"
+    >
+      <div className="grid grid-cols-[2.6rem_repeat(6,minmax(0,1fr))] gap-1 text-center text-[11px]">
+        <span />
+        {b.months.map((m) => (
+          <span key={m.label} className={`leading-tight font-bold ${m.now ? "text-seal" : ""}`}>
+            {m.label.replace("내년 ", "")}
+            <span className="block text-[9px] font-normal text-ink-soft">{m.from}~</span>
+          </span>
+        ))}
+        <span className="self-center text-left text-[10px] font-bold text-ink-soft">나</span>
+        {b.months.map((m) => (
+          <span key={m.label} className="font-bold">
+            {MARK[m.me]}
+          </span>
+        ))}
+        <span className="self-center truncate text-left text-[10px] font-bold text-ink-soft">{b.label}</span>
+        {b.months.map((m) => (
+          <span key={m.label} className="font-bold">
+            {MARK[m.them]}
+          </span>
+        ))}
+        <span className="self-center text-left text-[10px] font-bold text-ink-soft">함께</span>
+        {b.months.map((m) => (
+          <span
+            key={m.label}
+            className={`flex min-h-10 flex-col items-center justify-center rounded-md px-0.5 text-[9.5px] leading-tight font-bold ${BOTH_STYLE[m.both]}`}
+          >
+            {m.both.replace("함께 ", "")}
+            {m.meet && <span className="block font-normal">{m.meet}</span>}
+          </span>
+        ))}
+      </div>
+    </Frame>
+  );
+}
+
+// 판정: the card at the top of a letter (lib/askFigures.ts verdictOf).
+export function VerdictCard({ v }: { v: FigureKit["verdict"] }) {
+  if (!v.rows.length) return null;
+  return (
+    <section className="mt-4 rounded-xl border border-[#d4af5f]/60 bg-[#fbf6ea] px-4 pt-3 pb-3.5 font-sans">
+      <p className="text-[11px] font-extrabold tracking-[0.14em] text-[#9a7424]">判 定 · 한눈에</p>
+      <p className="mt-0.5 text-[13px] font-bold text-ink">{v.title}</p>
+      <ul className="mt-2 flex flex-col gap-1.5">
+        {v.rows.map((r) => (
+          <li key={r.label} className="grid grid-cols-[5.2rem_1.4rem_1fr] items-start gap-1.5 text-[12.5px] leading-snug">
+            <b>{r.label}</b>
+            <span className={`text-center font-bold ${r.grade === 2 ? "text-seal" : r.grade === 0 ? "text-ink-soft" : ""}`}>{GRADE_MARK[r.grade]}</span>
+            <span>{r.line}</span>
+          </li>
+        ))}
+      </ul>
+      {v.line && <p className="mt-2.5 border-t border-[#d4af5f]/40 pt-2 font-myeongjo text-[14.5px] font-extrabold">→ {v.line}</p>}
+    </section>
   );
 }
 
@@ -461,7 +528,7 @@ export function FigureOf({ kit, k, name }: { kit: FigureKit; k: string; name: st
     case "五行":
       return <ElementsFigure f={kit.base} />;
     case "月運":
-      return <MonthsFigure f={kit.base} />;
+      return kit.bond ? <BondMonthsFigure b={kit.bond} name={name} /> : <MonthsFigure f={kit.base} />;
     case "稀貴":
       return <RareFigure f={kit.base} name={name} />;
     case "合沖":
@@ -475,7 +542,7 @@ export function FigureOf({ kit, k, name }: { kit: FigureKit; k: string; name: st
     case "神殺":
       return kit.sals ? <SalsFigure s={kit.sals} /> : null;
     case "兩人":
-      return kit.pair ? <PairFigure p={kit.pair} /> : null;
+      return kit.bond ? <BondFigure b={kit.bond} name={name} /> : null;
     default:
       return null;
   }

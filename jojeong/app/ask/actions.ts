@@ -3,7 +3,8 @@
 import { isPreview } from "@/lib/admin";
 import { redirect } from "next/navigation";
 import { refresh } from "next/cache";
-import { addPerson, ask, createRoom, loadRoom, MAX_PEOPLE, MAX_QUESTION, reChartPerson, removePerson, renamePerson, saveRoom, TOPICS, type AskRoom, type Topic } from "@/lib/ask";
+import { addPerson, ask, createRoom, loadRoom, MAX_PEOPLE, MAX_QUESTION, reChartPerson, removePerson, renamePerson, saveRoom, setRel, TOPICS, type AskRoom, type Topic } from "@/lib/ask";
+import { RELS } from "@/lib/bond";
 import { addRoomToMember, changeCredits, currentMember, type Member } from "@/lib/members";
 import { encodePerson } from "@/lib/pairToken";
 import { personOf } from "@/lib/personForm";
@@ -76,6 +77,7 @@ export async function askAction(_prev: FormState, formData: FormData): Promise<F
 }
 
 const labelOf = (formData: FormData) => String(formData.get("label") ?? "").trim().slice(0, 12);
+const relIn = (formData: FormData) => ((RELS as readonly string[]).includes(String(formData.get("rel"))) ? String(formData.get("rel")) : undefined);
 
 // Someone to see together: added to the room's list (up to five), or, with `person`, the birth of one already on
 // it entered again (a correction; the past talk about them stays).
@@ -91,7 +93,7 @@ export async function attachOtherAction(_prev: FormState, formData: FormData): P
     if (pid) {
       reChartPerson(room, pid, encodePerson(other));
       if (labelOf(formData)) renamePerson(room, pid, labelOf(formData));
-    } else addPerson(room, encodePerson(other), labelOf(formData) || "그 사람");
+    } else addPerson(room, encodePerson(other), labelOf(formData) || "그 사람", relIn(formData));
   } catch (e) {
     if (e instanceof BirthInputError) return { error: e.message };
     throw e;
@@ -104,9 +106,11 @@ export async function attachOtherAction(_prev: FormState, formData: FormData): P
 export async function renamePersonAction(formData: FormData) {
   const own = await ownRoom(formData);
   if ("error" in own) return;
+  const pid = String(formData.get("person") ?? "");
   const label = labelOf(formData);
-  if (!label) return;
-  renamePerson(own.room, String(formData.get("person") ?? ""), label);
+  if (label) renamePerson(own.room, pid, label);
+  const rel = relIn(formData);
+  if (rel) setRel(own.room, pid, rel);
   await saveRoom(own.room);
   refresh();
 }

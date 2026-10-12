@@ -1,4 +1,5 @@
-import { coupleOf } from "./couple";
+import { josa } from "./josa";
+import { bondOf, GRADE_MARK, REL_LABEL, type Bond, type Grade } from "./bond";
 import { meetings, stageOf, stemClash, stemCombine, type Meeting } from "./deep";
 import { manseOf, salHanja, yearPreviewOf, type ManseCol } from "./freePreview";
 import { BRANCH_EL, chartOf, ELEMENT_HANJA, ELEMENT_KO, GROUP_OF, HIDDEN, luckFit, readChart, stemEl, tenGod, type GodGroup, type Slot } from "./myeongri";
@@ -291,7 +292,7 @@ function yearsOf(person: Person, at: number): YearsFig | null {
   return {
     years: [a, b].map((x) => ({
       year: x.year,
-      name: `${x.ko}년(${yearName(x.year).hanja})`,
+      name: `${x.ko}(${yearName(x.year).hanja})`,
       verdict: x.verdict,
       areas: x.areas.map((ar) => ({ area: ar.area, grade: ar.grade, score: ar.score })),
     })),
@@ -312,29 +313,6 @@ function salsOf(manse: ManseCol[]): SalFig | null {
   return out.length ? out : null;
 }
 
-// 兩人: the two charts side by side and what passes between them (lib/couple.ts).
-export type PairFig = {
-  a: { name: string; ilju: string; el: number };
-  b: { name: string; ilju: string; el: number };
-  roles: [string, string];
-  seat: string[];
-  lends: { to: string; from: string; el: string; pct: number }[];
-  years: { year: number; gz: string; mark: string; why: string }[];
-};
-function pairOf(a: Person, b: Person, label: string): PairFig | null {
-  const c = coupleOf(a, b);
-  if (!c) return null;
-  const side = (x: Person, name: string) => ({ name, ilju: gz(x.pillars.dayStem, x.pillars.dayBranch), el: stemEl(x.pillars.dayStem) });
-  return {
-    a: side(a, a.name),
-    b: side(b, label || b.name),
-    roles: c.roles,
-    seat: c.seat,
-    lends: c.lends.map((l) => ({ ...l, el: el(l.el) })),
-    years: c.years,
-  };
-}
-
 export type FigureKit = {
   base: Figures;
   clash: ClashFig | null;
@@ -342,21 +320,85 @@ export type FigureKit = {
   decades: DecadeFig | null;
   years: YearsFig | null;
   sals: SalFig | null;
-  pair: PairFig | null;
+  bond: Bond | null; // with someone from the room's list (lib/bond.ts)
+  verdict: Verdict;
 };
 
-export function figureKit(person: Person, other: Person | null, otherLabel: string, topic: string, question: string, at: number): FigureKit | null {
+// 판정: the card at the top of the letter. With someone, the bond's rows; alone, the question's area this year
+// and next, its star in the chart, and the nearest good month.
+export type Verdict = { title: string; rows: { label: string; grade: Grade; line: string }[]; line: string };
+const AREA: Record<string, string> = { 연애: "사랑", 일: "일", 돈: "돈", 사람: "사람" };
+const GRADE_OF: Record<string, Grade> = { 좋음: 2, 보통: 1, 조심: 0 };
+function verdictOf(base: Figures, years: YearsFig | null, bond: Bond | null, name: string): Verdict {
+  if (bond)
+    return {
+      title: `${josa(bond.label, "과/와")} ${name}님 · ${REL_LABEL[bond.rel].split(" ")[0]}`,
+      rows: bond.rows,
+      line: bond.verdict,
+    };
+  const area = AREA[base.lens.topic];
+  const rows: Verdict["rows"] = [];
+  if (years) {
+    for (const y of years.years) {
+      const ar = area ? y.areas.find((x) => x.area === area) : null;
+      rows.push(
+        ar
+          ? { label: `${y.year} ${area}`, grade: GRADE_OF[ar.grade], line: `${y.name} · 한 해 ${y.verdict}` }
+          : { label: `${y.year} 한 해`, grade: y.verdict === "대길" || y.verdict === "길" ? 2 : y.verdict === "평" ? 1 : 0, line: y.name },
+      );
+    }
+  }
+  if (base.lens.group)
+    rows.push({
+      label: base.lens.star,
+      grade: base.lit >= 2 ? 2 : base.lit === 1 || base.hiddenLit ? 1 : 0,
+      line: base.lit
+        ? `사주에 ${base.lit}개 · ${base.gods}`
+        : base.hiddenLit
+          ? `속 글자에만 ${base.hiddenLit}곳 · 때가 오면 드러나요`
+          : "사주에 없어 들어오는 해와 달에 움직여요",
+    });
+  const best = base.months.find((m) => m.rating === 3) ?? base.months.find((m) => m.rating === 2);
+  rows.push({
+    label: "가까운 때",
+    grade: best?.rating === 3 ? 2 : best ? 1 : 0,
+    line: best ? `${best.label}(${best.from}~)${best.tags.length ? ` · ${best.tags.join("·")}` : ""}` : "여섯 달 안에는 숨 고르기",
+  });
+  const now = rows[0];
+  const line = now
+    ? `${now.grade === 2 ? "올해 힘이 붙는 쪽이에요" : now.grade === 1 ? "올해는 고르게 가는 해예요" : "올해는 다지고 버티는 해예요"}${best ? `. ${best.label}에 움직이면 좋아요` : ""}`
+    : "";
+  return { title: `${name}님의 ${area ?? "물음"} 판정`, rows, line };
+}
+
+export function verdictText(kit: FigureKit): string {
+  const v = kit.verdict;
+  return [`${v.title}`, `한 줄 판정: ${v.line}`, ...v.rows.map((r) => `${r.label} ${GRADE_MARK[r.grade]}: ${r.line}`)].join("\n");
+}
+
+export function figureKit(
+  person: Person,
+  other: Person | null,
+  otherLabel: string,
+  rel: string | undefined,
+  topic: string,
+  question: string,
+  at: number,
+): FigureKit | null {
   const base = figuresOf(person, topic, question, at);
   const manse = manseOf(person.pillars);
   if (!base || !manse) return null;
+  const bond = other ? bondOf(person, other, otherLabel || "그 사람", rel, at) : null;
+  const years = yearsOf(person, at);
   return {
     base,
     clash: clashOf(person.pillars, at),
     seat: seatOf(person.pillars, base.lens.seat?.pos ?? "일", manse, at),
     decades: decadesOf(person, at),
-    years: yearsOf(person, at),
+    years,
     sals: salsOf(manse),
-    pair: other ? pairOf(person, other, otherLabel) : null,
+    bond,
+    verdict: verdictOf(base, years, bond, person.name),
   };
 }
 
@@ -371,7 +413,7 @@ export const hasFigure = (kit: FigureKit, key: FigureKey) =>
     大運: Boolean(kit.decades && kit.decades.nowIndex >= 0),
     年比: Boolean(kit.years),
     神殺: Boolean(kit.sals),
-    兩人: Boolean(kit.pair),
+    兩人: Boolean(kit.bond),
   })[key];
 
 // What each picture shows, for the model to choose from and write beside (lib/ask.ts).
@@ -381,7 +423,9 @@ export function figureMenu(kit: FigureKit): string {
   const lines: Partial<Record<FigureKey, string>> = {
     命盤: `여덟 글자 표(십성·지장간·12운성·신살)${b.lens.group ? `. 질문의 별 '${b.lens.star}'(${b.gods}) 겉 ${b.lit}개${b.hiddenLit ? `, 지장간 속 ${b.hiddenLit}곳` : ""}${b.lens.seat ? `, ${b.lens.seat.label} 표시` : ""}` : ""}`,
     五行: `오행 비율 ${b.share.map((v, e) => `${ELEMENT_KO[e]} ${v}%`).join(" ")} · ${b.strength} · 용신 ${el(b.yong)}`,
-    月運: `여섯 달 ${b.months.map((m) => `${m.label}${MARK[m.rating]}${m.tags.length ? `(${m.tags.join("·")})` : ""}${m.star ? "★" : ""}`).join(" ")}`,
+    月運: kit.bond
+      ? `두 사람의 여섯 달 ${kit.bond.months.map((m) => `${m.label} ${m.both}${m.meet ? `(${m.meet})` : ""}`).join(", ")}`
+      : `여섯 달 ${b.months.map((m) => `${m.label}${MARK[m.rating]}${m.tags.length ? `(${m.tags.join("·")})` : ""}${m.star ? "★" : ""}`).join(" ")}`,
     稀貴: b.rare.map((x) => `${x.plain}(${x.term}, ${x.rate})`).join(" / "),
     合沖: kit.clash
       ? `올해 ${kit.clash.incoming[0].gz}·이달 ${kit.clash.incoming[1].gz}가 만나는 자리: ${
@@ -403,8 +447,8 @@ export function figureMenu(kit: FigureKit): string {
         : "",
     年比: kit.years ? kit.years.years.map((y) => `${y.year} ${y.verdict}: ${y.areas.map((a) => `${a.area} ${a.grade}`).join(" ")}`).join(" / ") : "",
     神殺: kit.sals ? kit.sals.map((s) => `${s.name}(${s.seats.join("·")})`).join(", ") : "",
-    兩人: kit.pair
-      ? `${kit.pair.a.name} ${kit.pair.a.ilju} · ${kit.pair.b.name} ${kit.pair.b.ilju} · 서로에게 ${kit.pair.roles.join("/")}${kit.pair.seat.length ? ` · ${kit.pair.seat.join(", ")}` : ""}`
+    兩人: kit.bond
+      ? `나 ${kit.bond.me.ilju}(${kit.bond.me.brings}) · ${kit.bond.label} ${kit.bond.them.ilju}(${kit.bond.them.brings}) · ${josa(kit.bond.label, "은/는")} 나에게 ${kit.bond.roles[0]}${kit.bond.seat.line ? ` · ${kit.bond.seat.line}` : ""}`
       : "",
   };
   return FIGURE_KEYS.filter((k) => hasFigure(kit, k) && lines[k])
@@ -415,15 +459,14 @@ export function figureMenu(kit: FigureKit): string {
 // The default pair when an answer marks none (answers written before the marks): by topic.
 export function defaultFigures(kit: FigureKit): FigureKey[] {
   const t = kit.base.lens.topic;
-  const want: FigureKey[] =
-    kit.pair && t === "연애"
-      ? ["兩人", "月運"]
-      : t === "연애"
-        ? ["宮位", "月運"]
-        : t === "일"
-          ? ["大運", "年比"]
-          : t === "돈"
-            ? ["年比", "月運"]
-            : ["合沖", "五行"];
+  const want: FigureKey[] = kit.bond
+    ? ["兩人", "月運"]
+    : t === "연애"
+      ? ["宮位", "月運"]
+      : t === "일"
+        ? ["大運", "年比"]
+        : t === "돈"
+          ? ["年比", "月運"]
+          : ["合沖", "五行"];
   return want.filter((k) => hasFigure(kit, k));
 }

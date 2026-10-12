@@ -1,6 +1,6 @@
 import "server-only";
 import { chartBrief, pairBrief } from "./brief";
-import { coupleBrief } from "./couple";
+import { bondBrief, bondOf, REL_LABEL, relOf } from "./bond";
 import { decodePerson, profileOf, type Person } from "./pairToken";
 import type { Usage } from "./aiCost";
 import { writeReport } from "./reportWriter";
@@ -8,7 +8,7 @@ import { STEMS_KO, BRANCHES_KO } from "./saju";
 import { plainAnswer } from "./askText";
 import { askRoomIds, getAskRoomRaw, newAskRoomId, setAskRoomRaw } from "./store";
 import { thisYear, yeonunBrief } from "./yeonun";
-import { figureKit, figureMenu } from "./askFigures";
+import { figureKit, figureMenu, verdictText } from "./askFigures";
 
 // 정 훈도에게 묻기: a room per chart where 정 훈도 answers one question at a time and remembers the talk.
 // He remembers in three layers: the chart and this year's flow (computed when the room opens, recomputed each
@@ -37,8 +37,8 @@ export type AskMessage = {
 // The people seen together with the guest: up to five, one chosen for each question. Taken off the list, a
 // person moves to `past` with their chart, so the counsel still knows who was talked about.
 export const MAX_PEOPLE = 5;
-export type RoomPerson = { id: string; token: string; label: string; aka?: string[] };
-export type PastPerson = { id: string; token: string; label: string; aka?: string[]; until: number };
+export type RoomPerson = { id: string; token: string; label: string; aka?: string[]; rel?: string }; // rel: lib/bond.ts RELS
+export type PastPerson = { id: string; token: string; label: string; aka?: string[]; rel?: string; until: number };
 
 export type AskRoom = {
   id: string;
@@ -94,13 +94,13 @@ export const personOfRoom = (room: AskRoom) => decodePerson(room.me);
 // Anyone ever seen in this room, on the list or taken off it, by id.
 export const roomPerson = (room: AskRoom, id: string | undefined) => (id ? (room.people ?? []).find((x) => x.id === id) ?? (room.past ?? []).find((x) => x.id === id) : undefined);
 
-export function addPerson(room: AskRoom, token: string, label: string): string | null {
+export function addPerson(room: AskRoom, token: string, label: string, rel?: string): string | null {
   const people = (room.people ??= []);
   if (people.length >= MAX_PEOPLE) return null;
   const used = new Set([...people, ...(room.past ?? [])].map((x) => x.id));
   let n = 1;
   while (used.has(`p${n}`)) n++;
-  people.push({ id: `p${n}`, token, label: label || "그 사람" });
+  people.push({ id: `p${n}`, token, label: label || "그 사람", ...(rel && { rel }) });
   return `p${n}`;
 }
 export function renamePerson(room: AskRoom, id: string, label: string) {
@@ -108,6 +108,10 @@ export function renamePerson(room: AskRoom, id: string, label: string) {
   if (!x || !label || label === x.label) return;
   x.aka = [...new Set([...(x.aka ?? []), x.label])].slice(-4);
   x.label = label;
+}
+export function setRel(room: AskRoom, id: string, rel: string) {
+  const x = room.people?.find((p) => p.id === id);
+  if (x && rel) x.rel = rel;
 }
 export function reChartPerson(room: AskRoom, id: string, token: string) {
   const x = room.people?.find((p) => p.id === id);
@@ -189,7 +193,12 @@ const FIGURE_RULES = `
   "왜 하필 지금, 요즘 왜" → 合沖 / "언제" → 月運 / 몇 해 앞, 진로, 큰 결정 → 大運·年比 / 연애·결혼·배우자 → 宮位(그 사람 사주가 붙어 있으면 兩人) / 성향, 버릇 → 五行·稀貴 / 신살을 말할 때 → 神殺 / 사주 생김새 전체를 짚을 때 → 命盤.
 - 그림을 붙인 단락에서는 그림 속 값 하나를 손가락으로 짚듯 말한다("그림에서 금빛으로 둘린 배우자 자리의 범(寅)이"). 그림 재료에 없는 숫자나 판정을 지어내지 않는다.
 - 한 답에 같은 그림은 한 번. 이어지는 상담이면 최근 대화에서 이미 쓴 그림 말고 다른 것을 먼저 고른다.
-- [[一事]] 단락에는 붙이지 않는다. 단락 가운데에 넣지 않는다.`;
+- [[一事]] 단락에는 붙이지 않는다. 단락 가운데에 넣지 않는다.
+
+[판정 카드와 그림에 맞추기]
+- 답서 맨 위에는 '판정 카드'가 그대로 보인다. [[直答]]의 결론과 다섯 단락의 표제는 판정 카드의 한 줄 판정과 같은 방향이어야 한다. 카드가 ◎라 한 것을 나쁘다고, △라 한 것을 좋다고 말하지 않는다.
+- 달을 말할 때는 그림 재료의 판정을 따른다. 두 사람 질문이면 '두 사람의 여섯 달'에서 '함께 좋음'인 달을 좋은 때로, '부딪힘'·'한쪽 흔들림'인 달을 조심할 때로 말한다. 혼자 질문이면 月運의 ◎·○·△를 따른다.
+- 함께 보는 사람과의 관계(연인·가족·일·친구)에 맞는 말을 쓴다. 일로 엮인 사람에게 배우자 자리, 연애 이야기를 하지 않는다.`;
 
 const kstDate = (t = Date.now()) => new Date(t + 9 * 3600000).toISOString().slice(0, 10);
 
@@ -206,11 +215,12 @@ function context(room: AskRoom, withId?: string): string | null {
   const chosen = room.people?.find((x) => x.id === withId);
   const other = chosen ? decodePerson(chosen.token) : null;
   if (chosen && other) {
+    const bond = bondOf(me, other, chosen.label, chosen.rel, Date.now());
     parts.push(
-      `[이번 질문에 함께 보는 사람: ${chosen.label} (이름 ${other.name})${chosen.aka?.length ? ` — 전에는 '${chosen.aka.join("', '")}'(이)라고 불렀다` : ""}]`,
-      chartBrief(other.name, other.pillars, profileOf(other)),
-      pairBrief(me.name, me.pillars, other.name, other.pillars),
-      coupleBrief(me, other),
+      `[이번 질문에 함께 보는 사람: ${chosen.label} (관계: ${REL_LABEL[relOf(chosen.rel, chosen.label)]})${chosen.aka?.length ? ` — 전에는 '${chosen.aka.join("', '")}'(이)라고 불렀다` : ""}. 이 사람은 늘 '${chosen.label}'(이)라고 부르고 실명은 쓰지 않는다]`,
+      chartBrief(chosen.label, other.pillars, profileOf(other)),
+      pairBrief(me.name, me.pillars, chosen.label, other.pillars),
+      ...(bond ? [bondBrief(bond)] : []),
     );
   }
   // Everyone else the guest has talked about: on the list, or taken off it. The memo and the recent talk may
@@ -222,7 +232,7 @@ function context(room: AskRoom, withId?: string): string | null {
     .map((x) => {
       const p = decodePerson(x.token);
       return p
-        ? `- ${x.label}${x.aka?.length ? `(전에는 ${x.aka.join(", ")})` : ""}: ${p.name}, ${iljuOf(p)}${x.gone ? ` — ${kstDate(x.gone)}에 손님이 목록에서 지움. 지난 이야기는 그대로 기억한다` : ""}`
+        ? `- ${x.label}${x.aka?.length ? `(전에는 ${x.aka.join(", ")})` : ""} (${REL_LABEL[relOf(x.rel, x.label)]}): ${iljuOf(p)}${x.gone ? ` — ${kstDate(x.gone)}에 손님이 목록에서 지움. 지난 이야기는 그대로 기억한다` : ""}`
         : "";
     })
     .filter(Boolean);
@@ -252,10 +262,10 @@ export async function ask(room: AskRoom, question: string, topic: Topic, chosen?
     })
     .join("\n");
   const name = personOfRoom(room)!.name;
-  const kit = figures ? figureKit(personOfRoom(room)!, withPerson ? decodePerson(withPerson.token) : null, withPerson?.label ?? "", chosen ?? topic, `${chosen ?? ""} ${q}`, Date.now()) : null;
+  const kit = figures ? figureKit(personOfRoom(room)!, withPerson ? decodePerson(withPerson.token) : null, withPerson?.label ?? "", withPerson?.rel, chosen ?? topic, `${chosen ?? ""} ${q}`, Date.now()) : null;
   const prompt = [
     ctx,
-    ...(kit ? [`[그림 재료 — 답서에 넣을 수 있는 그림과 그 안의 값]\n${figureMenu(kit)}`] : []),
+    ...(kit ? [`[판정 카드 — 답서 맨 위에 이대로 보인다]\n${verdictText(kit)}`, `[그림 재료 — 답서에 넣을 수 있는 그림과 그 안의 값]\n${figureMenu(kit)}`] : []),
     `[상담 메모]\n${room.memo || "(아직 없음 — 첫 상담)"}`,
     `[최근 대화]\n${recent || "(없음)"}`,
     `[이번 질문] 손님 ${name}님, 고른 주제: ${topic}${withPerson ? `, ${withPerson.label}에 대한 질문` : ", 손님 자신에 대한 질문(함께 보는 사람 없음)"}${room.used > 0 ? ` — 이어지는 상담(앞서 ${room.used}번 답함)` : " — 첫 상담"}${chosen ? `\n여러 주제 중 손님이 먼저 고른 것: ${chosen} — 이것 하나만 답한다.` : ""}\n${q}`,

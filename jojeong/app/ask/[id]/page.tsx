@@ -4,13 +4,14 @@ import { notFound, redirect } from "next/navigation";
 import PayButton from "@/components/PayButton";
 import { iljuOf, loadRoom, MAX_PEOPLE, personOfRoom, roomPerson } from "@/lib/ask";
 import { decodePerson } from "@/lib/pairToken";
+import { RELS, REL_LABEL, relOf } from "@/lib/bond";
 import { currentMember } from "@/lib/members";
 import { CREDIT_PACKS, type CreditPack } from "@/lib/products";
 import { AskForm, AttachOtherForm, ChooseForm, RemovePersonButton } from "../AskForms";
 import { renamePersonAction } from "../actions";
 import { AnswerLetter, HundoFace, Question, RoomHead } from "../Letter";
 import SaveLetter from "../SaveLetter";
-import { FigureOf } from "../Figures";
+import { FigureOf, VerdictCard } from "../Figures";
 import { isPreview } from "@/lib/admin";
 import { defaultFigures, figureKit } from "@/lib/askFigures";
 import { withFigures } from "@/lib/askText";
@@ -45,9 +46,13 @@ export default async function MemberRoomPage({ params }: PageProps<"/ask/[id]">)
     if (!pictures) return { text };
     const q = room.messages.slice(0, i).findLast((g) => g.role === "guest");
     const w = roomPerson(room, q?.with);
-    const kit = figureKit(me, w ? decodePerson(w.token) : null, q?.withLabel ?? w?.label ?? "", q?.topic ?? "기타", q?.text ?? "", room.messages[i].at);
+    const kit = figureKit(me, w ? decodePerson(w.token) : null, w?.label ?? q?.withLabel ?? "", w?.rel, q?.topic ?? "기타", q?.text ?? "", room.messages[i].at);
     if (!kit) return { text };
-    return { text: withFigures(text, defaultFigures(kit)), figure: (k: string) => <FigureOf kit={kit} k={k} name={me.name} /> };
+    return {
+      text: withFigures(text, defaultFigures(kit)),
+      figure: (k: string) => <FigureOf kit={kit} k={k} name={me.name} />,
+      top: <VerdictCard v={kit.verdict} />,
+    };
   };
 
   return (
@@ -120,7 +125,7 @@ export default async function MemberRoomPage({ params }: PageProps<"/ask/[id]">)
               <li key={x.id} className="py-2.5">
                 <div className="flex items-center justify-between gap-2">
                   <p className="min-w-0 text-sm">
-                    <b>{x.label}</b> <span className="text-ink-soft">· {x.p ? `${x.p.name} · ${iljuOf(x.p)}` : "?"}</span>
+                    <b>{x.label}</b> <span className="text-ink-soft">· {REL_LABEL[relOf(x.rel, x.label)].split(" ")[0]} · {x.p ? `${x.p.name} · ${iljuOf(x.p)}` : "?"}</span>
                   </p>
                   <RemovePersonButton room={room.id} person={x.id} label={x.label} />
                 </div>
@@ -130,8 +135,15 @@ export default async function MemberRoomPage({ params }: PageProps<"/ask/[id]">)
                     <input type="hidden" name="room" value={room.id} />
                     <input type="hidden" name="person" value={x.id} />
                     <input name="label" defaultValue={x.label} maxLength={12} aria-label="부르는 이름" className="min-w-0 flex-1 rounded-lg border border-ink/15 bg-white/70 px-3 py-1.5 text-sm" />
+                    <select name="rel" defaultValue={relOf(x.rel, x.label)} aria-label="사이" className="shrink-0 rounded-lg border border-ink/15 bg-white/70 px-1.5 text-sm">
+                      {RELS.map((r) => (
+                        <option key={r} value={r}>
+                          {REL_LABEL[r].split(" ")[0]}
+                        </option>
+                      ))}
+                    </select>
                     <button type="submit" className="shrink-0 rounded-lg border border-ink/25 px-3 text-xs font-bold">
-                      이름 바꾸기
+                      바꾸기
                     </button>
                   </form>
                   <p className="mt-3 text-[12px] font-bold">생년월일을 다시 넣기</p>

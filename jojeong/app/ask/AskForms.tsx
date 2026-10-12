@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useRef, useState } from "react";
 import PersonFields from "@/components/PersonFields";
 import { keepValues } from "@/lib/keepForm";
+import { RELS, REL_LABEL } from "@/lib/rels";
 import { askAction, attachOtherAction, openRoomAction, removePersonAction, type FormState } from "./actions";
 
 // The guest's side of 정 훈도에게 묻기 (app/ask): the same forms as the owner's trial room (app/admin/ask), on the
@@ -299,6 +300,21 @@ export function AttachOtherForm({ room, person }: { room: string; person?: strin
     <form onSubmit={keepValues(action)} className="mt-3 flex flex-col gap-3">
       <input type="hidden" name="room" value={room} />
       {person && <input type="hidden" name="person" value={person} />}
+      {!person && (
+        <fieldset className="flex flex-col gap-1.5 text-sm">
+          <legend className="mb-1 font-semibold text-ink-soft">어떤 사이인가요</legend>
+          <div className="flex flex-wrap gap-1.5">
+            {RELS.map((r) => (
+              <label key={r} className="cursor-pointer">
+                <input type="radio" name="rel" value={r} required className="peer sr-only" />
+                <span className="block rounded-full border border-ink/15 bg-white/70 px-3 py-1 text-[13px] peer-checked:border-ink peer-checked:bg-ink peer-checked:text-hanji">
+                  {REL_LABEL[r]}
+                </span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      )}
       <label className={`flex flex-col gap-1 text-sm ${person ? "hidden" : ""}`}>
         <span className="font-semibold text-ink-soft">그 사람을 뭐라고 부를까요</span>
         <input name="label" placeholder="그 사람, 남자친구, 팀장님 …" maxLength={12} className="rounded-lg border border-ink/15 bg-white/70 px-3 py-2" />
