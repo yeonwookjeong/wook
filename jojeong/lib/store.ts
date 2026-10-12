@@ -368,3 +368,9 @@ export async function noteMember(id: string) {
 export async function memberIds(): Promise<string[]> {
   return backend().list("members");
 }
+// Leaving (lib/members.ts deleteMember): the record emptied and the id off the owner's list.
+export async function deleteMemberRaw(id: string) {
+  if (!/^k\d{1,20}$/.test(id)) return;
+  await backend().set(`member:${id}`, "");
+  await backend().remove("members", id);
+}

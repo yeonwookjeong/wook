@@ -1,7 +1,7 @@
 import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
-import { getMemberRaw, memberIds, noteMember, setMemberRaw } from "./store";
+import { deleteAskRoom, deleteMemberRaw, getMemberRaw, memberIds, noteMember, setMemberRaw } from "./store";
 
 // Members, by Kakao login (app/login, app/api/auth/kakao): what a browser cannot keep alone — the reports bought
 // (so they open on any device) and the questions bought for 정 훈도에게 묻기. Only the Kakao id and nickname are
@@ -102,3 +102,25 @@ export async function allMembers(): Promise<Member[]> {
   const ms = await Promise.all(ids.map(getMember));
   return ms.filter((m): m is Member => Boolean(m));
 }
+
+// Leaving: the member record and their consultation rooms go at once (lib/privacy: 회원 탈퇴 시 지체 없이 삭제).
+// Payment records stay with the orders, as the law keeps them. With the app's admin key the Kakao link is cut
+// too, so the next Kakao login starts fresh.
+export async function deleteMember(id: string, unlinkKakao = true) {
+  const m = await getMember(id);
+  if (m) await Promise.all(m.rooms.map((r) => deleteAskRoom(r)));
+  await deleteMemberRaw(id);
+  const admin = process.env.KAKAO_ADMIN_KEY?.trim();
+  if (unlinkKakao && admin)
+    await fetch("https://kapi.kakao.com/v1/user/unlink", {
+      method: "POST",
+      headers: { Authorization: `KakaoAK ${admin}`, "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ target_id_type: "user_id", target_id: id.slice(1) }),
+    }).catch(() => null);
+}
+
+// Kakao's call when someone cuts the link from their Kakao settings: it carries the app's admin key.
+export const isKakaoCall = (authorization: string | null) => {
+  const admin = process.env.KAKAO_ADMIN_KEY?.trim();
+  return Boolean(admin && authorization === `KakaoAK ${admin}`);
+};

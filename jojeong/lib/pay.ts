@@ -3,7 +3,7 @@ import { randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { ORDERS_COOKIE } from "./cookies";
 import { isSource, SRC_COOKIE, type Source } from "./source";
-import type { ProductId, SetId } from "./products";
+import { CREDIT_PACKS, type ProductId, type SetId } from "./products";
 import type { JobRequest } from "./reportWriter";
 import { isAdmin } from "./admin";
 import { changeCredits, currentMember } from "./members";
@@ -174,14 +174,18 @@ export async function syncPayment(paymentKey: string): Promise<Order | null> {
     cache: "no-store",
   }).catch(() => null);
   if (!res?.ok) return null;
-  const payment = (await res.json()) as { orderId?: string; paymentKey?: string; status?: string };
+  const payment = (await res.json()) as { orderId?: string; paymentKey?: string; status?: string; balanceAmount?: number };
   const order = await getOrder(payment.orderId);
   if (!order || order.paymentKey !== payment.paymentKey) return null;
   if (order.status === "paid" && (payment.status === "CANCELED" || payment.status === "PARTIAL_CANCELED")) {
     const canceled: Order = { ...order, status: "canceled" };
     await setOrderRaw(order.id, JSON.stringify(canceled));
-    // A refunded 질문권 takes back its questions (those not yet used; never below zero).
-    if (order.credits && order.member && order.credited) await changeCredits(order.member, -order.credits, `환불 ${order.id}`);
+    // A refunded 질문권 takes back the questions refunded. What Toss still holds pays for those kept, at the single
+    // price (the refund rule, app/refund): a whole refund takes them all, a part one leaves the ones used.
+    if (order.credits && order.member && order.credited) {
+      const kept = Math.min(order.credits, Math.round((payment.status === "CANCELED" ? 0 : (payment.balanceAmount ?? 0)) / CREDIT_PACKS[1]));
+      if (order.credits - kept > 0) await changeCredits(order.member, -(order.credits - kept), `환불 ${order.id}`);
+    }
     return canceled;
   }
   return order;
