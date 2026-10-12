@@ -1,7 +1,7 @@
 // 정 훈도의 비밀 보고서. One free report (조선 신분 감정) opens the shelf; the paid ones all cost the same fixed
 // price, lowered only on the special days listed in SALES.
 
-export type ProductId = "sinbun" | "pyeongsaeng" | "gunghap" | "sokgunghap" | "jaehoe" | "taekil" | "gukjeong" | "yeonun" | "yeonae" | "jaemul" | "jikup" | "dwitjosa" | "gwangye" | "insa";
+export type ProductId = "sinbun" | "pyeongsaeng" | "gunghap" | "sokgunghap" | "jaehoe" | "taekil" | "gukjeong" | "yeonun" | "yeonae" | "jaemul" | "jikup" | "dwitjosa" | "gwangye" | "insa" | "jilmun";
 
 export type Product = {
   id: ProductId;
@@ -247,6 +247,12 @@ export const isAdult = (birthYear: number | null) => birthYear !== null && new D
 export const isOpen = (p: Product) => Boolean(p.free);
 
 export const PRICE = 990;
+
+// 질문권 for 정 훈도에게 묻기 (app/ask): questions bought by a signed-in member (lib/members.ts), one used per answer.
+// Not a report on the shelf: its orders carry \`credits\` and the product id "jilmun".
+export const CREDIT_PACKS = { 1: 990, 5: 2900, 10: 4900 } as const;
+export type CreditPack = keyof typeof CREDIT_PACKS;
+export const creditPackOf = (v: unknown): CreditPack | null => (Number(v) in CREDIT_PACKS ? (Number(v) as CreditPack) : null);
 
 // The free reading keeps its reasons and timing for the life report (components/LockedLine.tsx). Off until the
 // card company's review was done (2026-10-12); on since the renewal (lib/launch.ts).

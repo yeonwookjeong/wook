@@ -38,11 +38,12 @@ export type AskRoom = {
   memo: string;
   messages: AskMessage[];
   used: number; // questions answered (each one a ticket once sales open)
+  member?: string; // a member's own room (app/ask); the owner's trial rooms have none
 };
 
-export async function createRoom(token: string): Promise<AskRoom> {
+export async function createRoom(token: string, member?: string): Promise<AskRoom> {
   const now = Date.now();
-  const room: AskRoom = { id: await newAskRoomId(), createdAt: now, updatedAt: now, me: token, memo: "", messages: [], used: 0 };
+  const room: AskRoom = { id: await newAskRoomId(), createdAt: now, updatedAt: now, me: token, memo: "", messages: [], used: 0, ...(member && { member }) };
   await saveRoom(room);
   return room;
 }
@@ -64,7 +65,8 @@ export async function saveRoom(room: AskRoom) {
 export async function listRooms(): Promise<AskRoom[]> {
   const ids = (await askRoomIds()).slice(-100).reverse();
   const rooms = await Promise.all(ids.map(loadRoom));
-  return rooms.filter((r): r is AskRoom => Boolean(r));
+  // The owner's trial rooms only: a member's consultation is theirs.
+  return rooms.filter((r): r is AskRoom => Boolean(r) && !r!.member);
 }
 
 export const personOfRoom = (room: AskRoom) => decodePerson(room.me);

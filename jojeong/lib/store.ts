@@ -353,3 +353,18 @@ export async function getThreadsRawMany(keys: string[]): Promise<(string | null)
 export async function setThreadsRaw(key: string, raw: string) {
   await backend().set(`th:${key}`, raw);
 }
+
+// Members (lib/members.ts): one record each, by their Kakao id. `members` lists them for the owner.
+export async function getMemberRaw(id: string): Promise<string | null> {
+  if (!/^k\d{1,20}$/.test(id)) return null;
+  return backend().get(`member:${id}`);
+}
+export async function setMemberRaw(id: string, raw: string) {
+  await backend().set(`member:${id}`, raw);
+}
+export async function noteMember(id: string) {
+  await backend().push("members", id);
+}
+export async function memberIds(): Promise<string[]> {
+  return backend().list("members");
+}

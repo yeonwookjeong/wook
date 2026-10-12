@@ -1,6 +1,7 @@
 import { decodePerson, relationOf } from "@/lib/pairToken";
 import { createOrder, payClientKey, payEnabled, payMock } from "@/lib/pay";
-import { FIXED_RELATION, isOpen, isPair, priceNow, productById, SETS, setOf } from "@/lib/products";
+import { CREDIT_PACKS, creditPackOf, FIXED_RELATION, isOpen, isPair, priceNow, productById, SETS, setOf } from "@/lib/products";
+import { currentMember } from "@/lib/members";
 import { jobFor, type JobRequest } from "@/lib/reportWriter";
 import { KINDS, parseSearch, searchDay } from "@/lib/taekil";
 import { newYearOf } from "@/lib/yeonun";
@@ -10,7 +11,17 @@ import { track } from "@/lib/stats";
 // POST { product, p } or, for a two-person report, { product, a, b, rel } → a new order for that exact report, priced here.
 export async function POST(request: Request) {
   if (!payEnabled()) return Response.json({ error: "결제 준비 중이에요." }, { status: 503 });
-  const body = (await request.json().catch(() => ({}))) as JobRequest & { set?: string; from?: string };
+  const body = (await request.json().catch(() => ({}))) as JobRequest & { set?: string; from?: string; credits?: string };
+
+  // 질문권: for the member signed in here; the questions are added once the payment is confirmed (/pay/success).
+  const pack = creditPackOf(body.credits);
+  if (pack) {
+    const member = await currentMember();
+    if (!member) return Response.json({ error: "카카오로 로그인한 뒤에 살 수 있어요." }, { status: 401 });
+    const order = await createOrder("jilmun", { product: "jilmun" }, member.nick, CREDIT_PACKS[pack], undefined, { credits: pack, member: member.id });
+    await track("co:jilmun");
+    return Response.json({ orderId: order.id, amount: order.amount, orderName: `정 훈도에게 묻기 질문 ${pack}개`, clientKey: payClientKey(), mock: payMock() });
+  }
 
   // A set: its reports for one saved chart, at the set's price.
   const set = setOf(body.set);

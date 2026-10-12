@@ -8,6 +8,7 @@ const kstYear = (t: number) => new Date(t + 9 * 3600000).getUTCFullYear();
 
 export function saleKey(product: string, set: SetId | string | undefined, y: string | number | undefined, at = Date.now()): SaleKey {
   if (set) return `set_${set}`;
+  if (product === "jilmun") return "jilmun";
   if (product === "yeonun" && y) {
     const d = Number(y) - kstYear(at);
     return d > 0 ? "yeonun_next" : d < 0 ? "yeonun_past" : "yeonun_now";
@@ -16,6 +17,7 @@ export function saleKey(product: string, set: SetId | string | undefined, y: str
 }
 
 export function saleLabel(key: SaleKey): string | null {
+  if (key === "jilmun") return "질문권 (정 훈도에게 묻기)";
   if (key.startsWith("set_")) return SETS[key.slice(4) as SetId]?.title ?? null;
   if (key === "yeonun_next") return "신년운세 · 다음 해 연운";
   if (key === "yeonun_now") return "연운 · 올해";
@@ -31,4 +33,5 @@ export const SALE_KEYS: SaleKey[] = [
   "yeonun_now",
   "yeonun_past",
   ...Object.keys(SETS).map((id) => `set_${id}`),
+  "jilmun",
 ];
