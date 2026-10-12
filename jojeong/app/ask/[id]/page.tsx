@@ -8,7 +8,7 @@ import { CREDIT_PACKS, type CreditPack } from "@/lib/products";
 import { AskForm, AttachOtherForm, ChooseForm } from "../AskForms";
 import { AnswerLetter, HundoFace, Question, RoomHead } from "../Letter";
 import SaveLetter from "../SaveLetter";
-import { ChartFigure, ElementsFigure, MonthsFigure } from "../Figures";
+import { ChartFigure, ElementsFigure, MonthsFigure, RareFigure } from "../Figures";
 import { isPreview } from "@/lib/admin";
 import { figuresOf } from "@/lib/askFigures";
 
@@ -36,8 +36,11 @@ export default async function MemberRoomPage({ params }: PageProps<"/ask/[id]">)
   const pictures = await isPreview();
   const figuresAt = (i: number) => {
     if (!pictures) return undefined;
-    const f = figuresOf(me, room.messages.slice(0, i).findLast((g) => g.role === "guest")?.topic ?? "기타", room.messages[i].at);
-    return f ? { 時勢: <ChartFigure f={f} />, 性情: <ElementsFigure f={f} />, 時運: <MonthsFigure f={f} /> } : undefined;
+    const q = room.messages.slice(0, i).findLast((g) => g.role === "guest");
+    const f = figuresOf(me, q?.topic ?? "기타", q?.text ?? "", room.messages[i].at);
+    return f
+      ? { 直答: <RareFigure f={f} name={me.name} />, 時勢: <ChartFigure f={f} />, 性情: <ElementsFigure f={f} />, 時運: <MonthsFigure f={f} /> }
+      : undefined;
   };
 
   return (
