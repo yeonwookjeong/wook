@@ -17,7 +17,6 @@ import DecadeTable from "@/components/DecadeTable";
 import DomainCard from "@/components/DomainCard";
 import FreeReading from "@/components/FreeReading";
 import ShareResult from "@/components/ShareResult";
-import AskCard from "@/components/AskCard";
 import { ReadingCard, SinbunCard } from "@/components/ResultCards";
 import { iljuFacts } from "@/lib/cards";
 import { sinbunStory } from "@/lib/sinbun";
@@ -523,7 +522,6 @@ async function OpenReport({
           <b className="mt-1 block font-myeongjo text-lg">잠긴 이유와 시기, 이 사주로 13장에 걸쳐 풀어 드려요</b>
           <span className="mt-1 block text-[13px] text-ink-soft">나는 어떤 사람인지부터 앞으로 10년, 꼭 잡아야 할 기회까지 →</span>
         </Link>
-        {self && <AskCard from="free" lead="풀이를 보고 생긴 고민, 정 훈도에게 묻기" />}
         {shareEnd}
         {meDeepen}
         {other}
@@ -772,7 +770,6 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
             y: typeof search.y === "string" ? search.y : undefined,
           }}
         />
-        {paid && <AskCard from="report" lead="다 읽고 궁금한 것, 정 훈도에게 묻기" />}
       </>
     );
 

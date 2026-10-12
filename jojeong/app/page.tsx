@@ -9,7 +9,6 @@ import { hanjaNum } from "@/lib/hanjaNum";
 import StoreHero from "@/components/StoreHero";
 import TodayCard from "@/components/TodayCard";
 import TrackLink from "@/components/TrackLink";
-import AskCard from "@/components/AskCard";
 import { readMe } from "@/lib/me";
 import { ownedByProduct, ownedOrders } from "@/lib/pay";
 import { PRICE, priceNow, productById, SETS, type ProductId } from "@/lib/products";
@@ -96,8 +95,6 @@ export default async function Home() {
       />
 
       <TodayCard today={todayFor(me?.person ?? null)} name={me?.person.name ?? null} />
-
-      <AskCard from="home" />
 
       <TrackLink event="to_saju" from="today" href="/ranking" className="doc-paper mt-3 flex items-center gap-3 px-5 py-4">
         <span className="flex size-12 shrink-0 items-center justify-center rounded-full border-[3px] border-[#8a6214] bg-[radial-gradient(circle_at_35%_30%,#fff3c4,#e2bd62_45%,#a87a22)] font-myeongjo text-lg font-extrabold text-[#8a6214]">

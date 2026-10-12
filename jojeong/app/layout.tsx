@@ -5,8 +5,7 @@ import { adsAccount } from "@/lib/ads";
 import { SITE_NAME, SITE_SUMMARY, SITE_TAGLINE, SNS_URLS, siteUrl } from "@/lib/brand";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import VisitBeacon from "@/components/VisitBeacon";
-import OpenNote from "@/components/OpenNote";
-import { currentMember, JOIN_GIFT, membersEnabled } from "@/lib/members";
+import RenewalNote from "@/components/RenewalNote";
 import "./globals.css";
 
 // Headings: Hahmlet, a modern Korean serif (variable weight), for 정 훈도's Joseon-meets-now voice.
@@ -56,7 +55,7 @@ export const viewport: Viewport = {
   themeColor: "#f4ecdb",
 };
 
-export default async function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ko" className={`${myeongjo.variable} h-full antialiased`}>
       <head>
@@ -71,11 +70,11 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full">
         <main className="mx-auto flex min-h-dvh w-full max-w-[440px] flex-col px-4 pb-8">
           <SiteHeader />
+          {/* Before the visit beacon below, so it reads the last visit before today's is written. */}
+          <RenewalNote />
           {children}
           <SiteFooter />
         </main>
-        {/* The opening of 정 훈도에게 묻기, once per browser, for those not signed in yet. */}
-        {membersEnabled() && <OpenNote member={Boolean(await currentMember().catch(() => null))} gift={JOIN_GIFT} />}
         {/* Page views and visitors, cookieless (Vercel Web Analytics; enable it in the Vercel project). */}
         <Analytics />
         {/* The same, counted for the owner's dashboard (/admin). */}
