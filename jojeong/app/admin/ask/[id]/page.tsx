@@ -6,6 +6,7 @@ import { costKrw, type Usage } from "@/lib/aiCost";
 import { iljuOf, loadRoom, otherOfRoom, personOfRoom } from "@/lib/ask";
 import { deleteRoomAction, detachOtherAction, saveMemoAction } from "../actions";
 import { AskForm, AttachOtherForm, ChooseForm } from "../AskForms";
+import { AnswerLetter } from "@/app/ask/Letter";
 
 export const metadata: Metadata = { title: "상담방 · 관리자", robots: { index: false } };
 // An answer is written by the model inside the action: give it the same room as a report.
@@ -77,9 +78,15 @@ export default async function AskRoomPage({ params }: PageProps<"/admin/ask/[id]
               <span className="mt-1 block text-right text-[10px] opacity-60">{when(m.at)}</span>
             </div>
           ) : (
-            <div key={i} className="doc-paper mr-4 rounded-2xl rounded-bl-sm px-4 py-3 text-[15px] leading-relaxed">
-              <span className="mb-1 block text-[11px] font-bold text-seal">정 훈도</span>
-              <p className="whitespace-pre-wrap">{m.text}</p>
+            <div key={i} className={m.choices ? "doc-paper mr-4 rounded-2xl rounded-bl-sm px-4 py-3 text-[15px] leading-relaxed" : ""}>
+              {m.choices ? (
+                <>
+                  <span className="mb-1 block text-[11px] font-bold text-seal">정 훈도</span>
+                  <p className="whitespace-pre-wrap">{m.text}</p>
+                </>
+              ) : (
+                <AnswerLetter name={me?.name ?? "?"} text={m.text} at={m.at} />
+              )}
               {m.choices && m === last && lastGuest && (
                 <ChooseForm room={room.id} question={lastGuest.text} topic={lastGuest.topic ?? "기타"} choices={m.choices} />
               )}
