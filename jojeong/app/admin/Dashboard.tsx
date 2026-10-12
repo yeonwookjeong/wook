@@ -36,7 +36,18 @@ const pctText = (a: number, b: number, digits = 0) => (b > 0 ? `${pct(a, b).toFi
 type Road = Source | "none";
 const ROAD_LABEL = (s: Road) => (s === "none" ? "기록 전" : SOURCE_LABEL[s]);
 
-export default async function Dashboard({ range, orders, threads }: { range: RangeKey; orders: Order[]; threads: ThreadsPost[] }) {
+export default async function Dashboard({
+  range,
+  orders,
+  threads,
+  synced,
+}: {
+  range: RangeKey;
+  orders: Order[];
+  threads: ThreadsPost[];
+  // When the Threads numbers were last fetched (lib/threads.ts): they are not live.
+  synced: number | null;
+}) {
   const today = todayKst();
   const span = RANGES.find((r) => r.key === range)!;
   // Nothing before the opening day: a span reaching past it starts there.
@@ -45,7 +56,8 @@ export default async function Dashboard({ range, orders, threads }: { range: Ran
   const days = daysBetween(from, today);
   // The same number of days just before, to compare with: only a whole span after the opening (none for 전체).
   const prevFrom = shift(from, -days.length);
-  const prevDays = span.days && start >= LAUNCH && prevFrom >= LAUNCH ? daysBetween(prevFrom, shift(from, -1)) : [];
+  // 오늘 is a day still running: against a whole yesterday it would always look like a fall, so it has none.
+  const prevDays = span.days > 1 && start >= LAUNCH && prevFrom >= LAUNCH ? daysBetween(prevFrom, shift(from, -1)) : [];
 
   const events = ["uv", "pv", "reading", ...SOURCES.map((s) => `src:${s}`), ...SALE_KEYS.flatMap((k) => [`view:${k}`, `co:${k}`])];
   const [cur, prev, ever] = await Promise.all([
@@ -122,7 +134,7 @@ export default async function Dashboard({ range, orders, threads }: { range: Ran
   const worst = steps.sort((x, y) => pct(x.a, x.b) - pct(y.a, y.b))[0];
   if (worst) notes.push(`가장 많이 새는 곳: ${worst.label} (${pctText(worst.a, worst.b)}만 넘어감)`);
   const th = roads.find((r) => r.s === "threads");
-  if (threadViews > 0 && th) notes.push(`스레드 조회 ${man(threadViews)} → 사이트 ${n(th.visitors)}명 (${pctText(th.visitors, threadViews, 2)})`);
+  if (range !== "today" && threadViews > 0 && th) notes.push(`스레드 조회 ${man(threadViews)} → 사이트 ${n(th.visitors)}명 (${pctText(th.visitors, threadViews, 2)})`);
   const rated = roads.filter((r) => r.s !== "none" && r.visitors >= 20);
   if (rated.length > 1) {
     const best = [...rated].sort((a, b) => b.n / b.visitors - a.n / a.visitors)[0];
@@ -232,7 +244,7 @@ export default async function Dashboard({ range, orders, threads }: { range: Ran
               <tr key={r.s} className="border-t border-seal/10">
                 <td className="py-1.5 text-left">
                   <b>{ROAD_LABEL(r.s)}</b>
-                  {r.s === "threads" && threadViews > 0 && (
+                  {r.s === "threads" && range !== "today" && threadViews > 0 && (
                     <span className="block text-[10.5px] text-ink-soft">
                       조회 {man(threadViews)} → {pctText(r.visitors, threadViews, 2)}
                     </span>
@@ -250,7 +262,9 @@ export default async function Dashboard({ range, orders, threads }: { range: Ran
           </tbody>
         </table>
         <p className="mt-2 text-[10.5px] leading-relaxed text-ink-soft">
-          새 방문은 그 길로 처음 온 브라우저(10/1부터), 결제는 처음 온 길 기준이에요. 스레드 조회는 이 기간에 올린 글의 지금 조회수예요.
+          새 방문은 그 길로 처음 온 브라우저(10/1부터), 결제는 처음 온 길 기준이에요. 스레드 조회는 이 기간에 올린 글의 조회수로, 실시간이 아니라{" "}
+          {synced ? `${new Date(synced + 9 * 3600000).toISOString().slice(5, 16).replace("T", " ").replace("-", "/")} 기준` : "마지막으로 가져온 때 기준"}
+          이에요(스레드 성적표에서 &lsquo;지금 가져오기&rsquo;로 새로 받아요). 지난 글도 계속 방문을 데려와서, 오늘처럼 짧은 기간에는 비율을 보여 주지 않아요.
         </p>
       </div>
 

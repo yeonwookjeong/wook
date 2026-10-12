@@ -105,7 +105,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
         </Link>
       </section>
 
-      <Dashboard range={rangeOf(q.r)} orders={orders} threads={(await threadsPosts().catch(() => ({ posts: [] }))).posts} />
+      <Dashboard range={rangeOf(q.r)} orders={orders} {...await threadsPosts().then((t) => ({ threads: t.posts, synced: t.synced })).catch(() => ({ threads: [], synced: null }))} />
 
       {writeError && (
         <section className="mt-4 rounded-xl border-2 border-seal bg-seal/10 px-4 py-3">
