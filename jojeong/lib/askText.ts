@@ -9,8 +9,12 @@ export type Segment = { text: string; key: boolean };
 export const PART_LABELS: Record<string, string> = { 直答: "결론부터", 時勢: "왜 지금인가", 性情: "그대라는 사람", 時運: "다가올 때", 一事: "오늘 한 가지" };
 const PART = /^\s*\[\[(直答|時勢|性情|時運|一事)(?:\|([^\]\n]{1,24}))?\]\]\s*/;
 
+// A picture the answer asks for at the end of a paragraph ([[圖|合沖]], lib/askFigures.ts), drawn from the chart.
+const FIG = /\[\[圖\|([^\]\n]{1,6})\]\]/g;
+
 export const plainAnswer = (text: string) =>
   text
+    .replace(FIG, "")
     .replace(/==([^=\n]+)==/g, "$1")
     .replace(/==/g, "")
     .replace(/\[\[(直答|時勢|性情|時運|一事)(?:\|[^\]\n]*)?\]\]\s*/g, "");
@@ -28,24 +32,40 @@ export function segments(paragraph: string): Segment[] {
   return out.map((s) => ({ ...s, text: s.text.replace(/==/g, "") })).filter((s) => s.text);
 }
 
-export type Paragraph = { part?: string; head?: string; text: string };
+export type Paragraph = { part?: string; head?: string; text: string; figs: string[] };
 
 // Paragraphs, each with its mark when it has one. A mark alone on its line heads the paragraph after it.
 export function paragraphs(text: string): Paragraph[] {
   const out: Paragraph[] = [];
   let pending: { part: string; head?: string } | undefined;
   for (const line of text.split("\n")) {
-    const m = line.match(PART);
+    const figs = [...line.matchAll(FIG)].map((f) => f[1].trim());
+    const m = line.replace(FIG, "").match(PART);
     const mark = m ? { part: m[1], head: m[2]?.trim() || undefined } : pending;
-    const body = (m ? line.slice(m[0].length) : line).trim();
+    const body = (m ? line.replace(FIG, "").slice(m[0].length) : line.replace(FIG, "")).trim();
     if (!body) {
+      // A picture mark on a line of its own belongs to the paragraph above it.
+      if (figs.length && out.length) out.at(-1)!.figs.push(...figs);
       if (m) pending = mark;
       continue;
     }
-    out.push({ ...mark, text: body });
+    out.push({ ...mark, text: body, figs });
     pending = undefined;
   }
   return out;
+}
+
+// Answers written before the marks: the given pictures set after 時勢 and 時運 (or the last paragraphs).
+export function withFigures(text: string, keys: string[]): string {
+  if (!keys.length || text.includes("[[圖|")) return text;
+  const lines = text.split("\n");
+  const at = (part: string) => lines.findIndex((l) => l.includes(`[[${part}`));
+  const spots = [at("時勢"), at("時運")].filter((i) => i >= 0);
+  keys.forEach((k, i) => {
+    const idx = spots[i] ?? spots.at(-1);
+    if (idx !== undefined) lines[idx] += ` [[圖|${k}]]`;
+  });
+  return lines.join("\n");
 }
 
 const NUM = ["", "一", "二", "三", "四", "五", "六", "七", "八", "九"];

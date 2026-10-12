@@ -1,5 +1,5 @@
 import { Cell } from "@/components/SajuChart";
-import type { Figures } from "@/lib/askFigures";
+import { type FigureKit, type Figures } from "@/lib/askFigures";
 import { BRANCH_EL, ELEMENT_HANJA, ELEMENT_KO, stemEl } from "@/lib/myeongri";
 import { BRANCHES, STEMS } from "@/lib/saju";
 
@@ -217,4 +217,266 @@ export function MonthsFigure({ f }: { f: Figures }) {
       </ol>
     </Frame>
   );
+}
+
+const TOUCH_GOOD = "border-[#b8902f] bg-[#d4af5f]/15 text-[#8a6a1f]";
+const TOUCH_BAD = "border-seal/50 bg-seal/8 text-seal";
+
+// ⑤ 合沖: this year's and this month's characters, and the seats of the chart they meet.
+export function ClashFigure({ c }: { c: NonNullable<FigureKit["clash"]> }) {
+  return (
+    <Frame
+      title="지금 들어온 글자가 만나는 자리"
+      sub="올해와 이달의 기운이 그대 사주 어디를 건드리는지"
+      note="금색은 합(끌어당겨 묶임), 붉은색은 충·형(부딪혀 움직임)이에요. 충은 나쁜 일이 아니라 바뀌는 자리예요."
+    >
+      <div className="flex justify-center gap-3">
+        {c.incoming.map((x) => (
+          <div key={x.label} className="flex flex-col items-center gap-1">
+            <span className="text-[10.5px] font-bold text-ink-soft">
+              {x.label} · {x.god}
+            </span>
+            <div className="grid w-28 grid-cols-2 gap-1">
+              <Cell value={STEMS[x.stem]} el={stemEl(x.stem)} />
+              <Cell value={BRANCHES[x.branch]} el={BRANCH_EL[x.branch]} />
+            </div>
+          </div>
+        ))}
+      </div>
+      <p aria-hidden className="my-1.5 text-center text-[14px] leading-none text-ink-soft">
+        ↓ ↓ ↓
+      </p>
+      <div className="grid grid-cols-4 gap-1.5 text-center">
+        {c.cols.map((col) => {
+          const hit = col.touches.length > 0;
+          return (
+            <div key={col.pos} className={`flex flex-col gap-1 rounded-xl p-1 ${hit ? "bg-hanji ring-1 ring-seal/25" : "opacity-55"}`}>
+              <span className="text-[10.5px] font-bold">{col.pos}주</span>
+              <Cell value={col.stem === null ? null : STEMS[col.stem]} el={col.stem === null ? null : stemEl(col.stem)} />
+              <Cell value={col.branch === null ? null : BRANCHES[col.branch]} el={col.branch === null ? null : BRANCH_EL[col.branch]} />
+              <span className="flex min-h-5 flex-col gap-0.5">
+                {col.touches.map((t, i) => (
+                  <span key={i} className={`rounded-md border px-0.5 py-0.5 text-[9.5px] leading-tight font-bold ${t.good ? TOUCH_GOOD : TOUCH_BAD}`}>
+                    {t.from} {t.kind.split(" · ")[0]}
+                    <span className="block font-normal">{t.kind.split(" · ")[1]}</span>
+                  </span>
+                ))}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </Frame>
+  );
+}
+
+// ⑥ 宮位: one seat close up.
+export function SeatFigure({ s }: { s: NonNullable<FigureKit["seat"]> }) {
+  return (
+    <Frame title="한 자리 들여다보기" sub={`${s.name} · ${s.pos}주`} note={s.meaning}>
+      <div className="flex items-start gap-3">
+        <div className="flex w-[4.5rem] shrink-0 flex-col gap-1 text-center">
+          <span className="text-[10px] font-bold text-seal">{s.stemGod}</span>
+          <Cell value={s.stem === null ? null : STEMS[s.stem]} el={s.stem === null ? null : stemEl(s.stem)} />
+          <div className="relative rounded-lg ring-[2.5px] ring-[#d4af5f] ring-offset-1 ring-offset-hanji">
+            <Cell value={BRANCHES[s.branch]} el={BRANCH_EL[s.branch]} />
+          </div>
+        </div>
+        <dl className="grid min-w-0 flex-1 grid-cols-[3.4rem_1fr] gap-x-2 gap-y-1.5 text-[12px] leading-snug">
+          <dt className="font-bold text-ink-soft">속 글자</dt>
+          <dd className="flex flex-wrap gap-1">
+            {s.hidden.map((h) => (
+              <span key={h.stem} className={`rounded-md px-1.5 py-0.5 ${h.main ? "bg-ink text-hanji" : "bg-ink/8"}`}>
+                <span className="font-myeongjo">{STEMS[h.stem]}</span> {h.god}
+              </span>
+            ))}
+          </dd>
+          <dt className="font-bold text-ink-soft">기운 단계</dt>
+          <dd>{s.stage}</dd>
+          {s.sals.length > 0 && (
+            <>
+              <dt className="font-bold text-ink-soft">신살</dt>
+              <dd>{s.sals.join(" · ")}</dd>
+            </>
+          )}
+          <dt className="font-bold text-ink-soft">올해</dt>
+          <dd>
+            <span className="font-myeongjo">{s.year.gz}</span>
+            {s.year.kinds.length ? (
+              s.year.kinds.map((k) => (
+                <span key={k} className={`ml-1 rounded-md border px-1 text-[11px] font-bold ${/합/.test(k) ? TOUCH_GOOD : TOUCH_BAD}`}>
+                  {k}
+                </span>
+              ))
+            ) : (
+              <span className="text-ink-soft"> 와 조용히 지나가요</span>
+            )}
+          </dd>
+        </dl>
+      </div>
+      <p className="mt-2 text-[11px] text-ink-soft">검은 칸이 그 자리의 주인 글자(본기)예요.</p>
+    </Frame>
+  );
+}
+
+// ⑦ 大運: the ten-year spans along a line, now marked.
+export function DecadesFigure({ d }: { d: NonNullable<FigureKit["decades"]> }) {
+  const from = Math.max(0, Math.min(d.nowIndex - 1, d.spans.length - 5));
+  const shown = d.spans.slice(from, from + 5);
+  return (
+    <Frame
+      title="10년 흐름"
+      sub="지금 그대가 서 있는 10년과 그다음"
+      note="◎ 크게 돕는 10년 · ○ 순한 10년 · △ 애쓰는 10년 · ✕ 버티는 10년 · 위의 말은 그 10년에 들어오는 별(십성)이에요"
+    >
+      <ol className="relative grid grid-cols-5 gap-1 text-center">
+        <span aria-hidden className="absolute top-[3.15rem] right-2 left-2 h-0.5 bg-seal/20" />
+        {shown.map((s) => (
+          <li key={s.from} className="relative flex flex-col items-center gap-1">
+            <span className={`text-[10px] font-bold ${s.now ? "text-seal" : "text-ink-soft"}`}>{s.god}</span>
+            <span
+              className={`grid size-10 place-items-center rounded-full font-myeongjo text-[13px] font-bold ${s.now ? "bg-seal text-hanji ring-2 ring-[#d4af5f] ring-offset-1 ring-offset-hanji" : "border border-seal/30 bg-hanji"}`}
+            >
+              {s.gz}
+            </span>
+            <span className={`text-[14px] font-bold ${s.fit >= 2 ? "text-seal" : "text-ink-soft"}`}>{MARK[s.fit]}</span>
+            <span className={`text-[10.5px] leading-tight ${s.now ? "font-extrabold text-seal" : ""}`}>
+              {s.from}~{String(s.to).slice(2)}
+              {s.now && <span className="block">지금</span>}
+            </span>
+            {s.age && <span className="text-[9.5px] text-ink-soft">{s.age}</span>}
+          </li>
+        ))}
+      </ol>
+    </Frame>
+  );
+}
+
+// ⑧ 年比: this year and next, area by area.
+const GRADE_W = { 좋음: 100, 보통: 60, 조심: 25 } as Record<string, number>;
+export function YearsFigure({ y }: { y: NonNullable<FigureKit["years"]> }) {
+  const [a, b] = y.years;
+  return (
+    <Frame
+      title="올해와 내년"
+      sub={`${a.year} ${a.verdict} → ${b.year} ${b.verdict}`}
+      note="영역마다 좋음 · 보통 · 조심으로 견줬어요. 보고서의 한 해 판정과 같은 계산이에요."
+    >
+      <div className="mb-1.5 flex justify-end gap-3 text-[10.5px] text-ink-soft">
+        <span className="flex items-center gap-1">
+          <span className="size-2.5 rounded-sm bg-ink/35" /> {a.name}
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="size-2.5 rounded-sm bg-seal/85" /> {b.name}
+        </span>
+      </div>
+      <ul className="flex flex-col gap-2">
+        {a.areas.map((ar, i) => {
+          const br = b.areas[i];
+          const up = br.score - ar.score;
+          return (
+            <li key={ar.area} className="grid grid-cols-[2.2rem_1fr_3.2rem] items-center gap-2 text-[12px]">
+              <b>{ar.area}</b>
+              <span className="flex flex-col gap-0.5">
+                <span className="h-2.5 rounded-full bg-ink/35" style={{ width: `${GRADE_W[ar.grade]}%` }} />
+                <span className="h-2.5 rounded-full bg-seal/85" style={{ width: `${GRADE_W[br.grade]}%` }} />
+              </span>
+              <span className={`text-right text-[11px] font-bold ${up > 0.3 ? "text-seal" : up < -0.3 ? "text-ink-soft" : ""}`}>
+                {up > 0.3 ? "▲ 오름" : up < -0.3 ? "▼ 숨 고름" : "― 비슷"}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </Frame>
+  );
+}
+
+// ⑨ 神殺: the 신살 in the chart.
+export function SalsFigure({ s }: { s: NonNullable<FigureKit["sals"]> }) {
+  return (
+    <Frame title="사주 속 신살" sub="태어날 때 받은 특별한 별">
+      <ul className="grid grid-cols-1 gap-1.5">
+        {s.map((x) => (
+          <li key={x.name} className="flex items-start gap-2.5 rounded-lg bg-hanji/70 px-2.5 py-2">
+            <span className="grid size-11 shrink-0 place-items-center rounded-full border border-seal/40 font-myeongjo text-[12px] leading-tight font-bold text-seal">
+              {x.hanja.length > 2 ? x.hanja.slice(0, 2) : x.hanja}
+            </span>
+            <span className="min-w-0">
+              <b className="text-[13px]">{x.name}</b> <span className="text-[11px] text-ink-soft">{x.seats.join(" · ")}</span>
+              {x.line && <span className="mt-0.5 block text-[12px] leading-snug">{x.line}</span>}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </Frame>
+  );
+}
+
+// ⑩ 兩人: the two side by side.
+export function PairFigure({ p }: { p: NonNullable<FigureKit["pair"]> }) {
+  const side = (x: typeof p.a, role: string) => (
+    <div className="flex flex-col items-center gap-1">
+      <span className="text-[12px] font-bold">{x.name}</span>
+      <span
+        className={`grid size-14 place-items-center rounded-xl font-myeongjo text-[18px] font-bold ${EL_BAR[x.el]} ${x.el === 3 ? "text-ink" : "text-white"}`}
+      >
+        {x.ilju}
+      </span>
+      <span className="text-[10.5px] text-ink-soft">{x.ilju}일주</span>
+      <span className="rounded-full bg-seal/10 px-2 py-0.5 text-[10.5px] font-bold text-seal">상대에게 {role}</span>
+    </div>
+  );
+  return (
+    <Frame title="두 사람" sub={`${p.a.name}님과 ${p.b.name}`}>
+      <div className="flex items-center justify-center gap-4">
+        {side(p.a, p.roles[1])}
+        <span className="text-[20px] text-[#b8902f]">⟷</span>
+        {side(p.b, p.roles[0])}
+      </div>
+      <ul className="mt-3 flex flex-col gap-1 text-[12px] leading-snug">
+        {p.seat.map((x) => (
+          <li key={x}>· {x}</li>
+        ))}
+        {p.lends.map((l) => (
+          <li key={l.to + l.el}>
+            · {l.to}에게 모자란 {l.el}을 {l.from}이 {l.pct}% 채워 줘요
+          </li>
+        ))}
+        {p.years.slice(0, 3).map((y) => (
+          <li key={y.year}>
+            · <b>{y.year}</b> <span className="font-myeongjo">{y.gz}</span> {y.mark} <span className="text-ink-soft">({y.why})</span>
+          </li>
+        ))}
+      </ul>
+    </Frame>
+  );
+}
+
+// One picture by its mark; nothing for a mark this room cannot draw.
+export function FigureOf({ kit, k, name }: { kit: FigureKit; k: string; name: string }) {
+  switch (k) {
+    case "命盤":
+      return <ChartFigure f={kit.base} />;
+    case "五行":
+      return <ElementsFigure f={kit.base} />;
+    case "月運":
+      return <MonthsFigure f={kit.base} />;
+    case "稀貴":
+      return <RareFigure f={kit.base} name={name} />;
+    case "合沖":
+      return kit.clash ? <ClashFigure c={kit.clash} /> : null;
+    case "宮位":
+      return kit.seat ? <SeatFigure s={kit.seat} /> : null;
+    case "大運":
+      return kit.decades && kit.decades.nowIndex >= 0 ? <DecadesFigure d={kit.decades} /> : null;
+    case "年比":
+      return kit.years ? <YearsFigure y={kit.years} /> : null;
+    case "神殺":
+      return kit.sals ? <SalsFigure s={kit.sals} /> : null;
+    case "兩人":
+      return kit.pair ? <PairFigure p={kit.pair} /> : null;
+    default:
+      return null;
+  }
 }
