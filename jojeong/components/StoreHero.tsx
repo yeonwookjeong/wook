@@ -23,6 +23,37 @@ const DIPPER = [
   [108, 128],
 ] as const;
 
+// The star chart behind the hero: also behind the new home's first screen (app/HomeV2.tsx).
+export function StarChart({ className = "absolute inset-0 size-full", opacity = 1 }: { className?: string; opacity?: number }) {
+  const cx = 300;
+  const cy = 118;
+  return (
+      <svg viewBox="0 0 390 380" className={className} style={{ opacity }} aria-hidden="true" preserveAspectRatio="xMidYMid slice">
+      {STARS.map((s, i) => (
+        <circle key={i} cx={s.cx} cy={s.cy} r={s.r} fill="#f3ead0" opacity={s.o} />
+      ))}
+      {/* 원형 천문도: rings and the 28 mansions */}
+      <g stroke="#d9ad52" fill="none" opacity="0.32">
+        {[48, 92, 136, 180].map((r) => (
+          <circle key={r} cx={cx} cy={cy} r={r} strokeWidth={r === 136 ? 1.2 : 0.7} />
+        ))}
+        <ellipse cx={cx - 14} cy={cy + 10} rx={150} ry={118} strokeWidth="0.8" strokeDasharray="3 4" transform={`rotate(-18 ${cx} ${cy})`} />
+        {Array.from({ length: 28 }, (_, i) => {
+          const a = (i / 28) * Math.PI * 2;
+          return <line key={i} x1={cx + Math.cos(a) * 48} y1={cy + Math.sin(a) * 48} x2={cx + Math.cos(a) * 180} y2={cy + Math.sin(a) * 180} strokeWidth="0.5" />;
+        })}
+      </g>
+      {/* 북두칠성 */}
+      <g opacity="0.85">
+        <polyline points={[...DIPPER, DIPPER[3]].map((p) => p.join(",")).join(" ")} fill="none" stroke="#e2bc68" strokeWidth="0.9" strokeOpacity="0.55" />
+        {DIPPER.map(([x, y], i) => (
+          <circle key={i} cx={x} cy={y} r={i === 0 ? 2.4 : 2} fill="#f7e2a8" />
+        ))}
+      </g>
+    </svg>
+  );
+}
+
 // `cta`: the first thing to do here — the free reading of one's own chart.
 // `second`: a second way in beside the first (the new home: 정 훈도에게 묻기). `slim`: the new home's hero, the
 // explaining line folded into his speech so the top reads in one glance.
@@ -37,33 +68,9 @@ export default function StoreHero({
   second?: { href: string; label: string };
   slim?: boolean;
 }) {
-  const cx = 300;
-  const cy = 118;
   return (
     <header className="animate-rise relative mt-4 overflow-hidden rounded-3xl bg-gradient-to-b from-[#0f2236] via-[#17304a] to-[#1f3d5c] shadow-[0_10px_30px_rgb(33_27_23/0.25)]">
-      <svg viewBox="0 0 390 380" className="absolute inset-0 size-full" aria-hidden="true" preserveAspectRatio="xMidYMid slice">
-        {STARS.map((s, i) => (
-          <circle key={i} cx={s.cx} cy={s.cy} r={s.r} fill="#f3ead0" opacity={s.o} />
-        ))}
-        {/* 원형 천문도: rings and the 28 mansions */}
-        <g stroke="#d9ad52" fill="none" opacity="0.32">
-          {[48, 92, 136, 180].map((r) => (
-            <circle key={r} cx={cx} cy={cy} r={r} strokeWidth={r === 136 ? 1.2 : 0.7} />
-          ))}
-          <ellipse cx={cx - 14} cy={cy + 10} rx={150} ry={118} strokeWidth="0.8" strokeDasharray="3 4" transform={`rotate(-18 ${cx} ${cy})`} />
-          {Array.from({ length: 28 }, (_, i) => {
-            const a = (i / 28) * Math.PI * 2;
-            return <line key={i} x1={cx + Math.cos(a) * 48} y1={cy + Math.sin(a) * 48} x2={cx + Math.cos(a) * 180} y2={cy + Math.sin(a) * 180} strokeWidth="0.5" />;
-          })}
-        </g>
-        {/* 북두칠성 */}
-        <g opacity="0.85">
-          <polyline points={[...DIPPER, DIPPER[3]].map((p) => p.join(",")).join(" ")} fill="none" stroke="#e2bc68" strokeWidth="0.9" strokeOpacity="0.55" />
-          {DIPPER.map(([x, y], i) => (
-            <circle key={i} cx={x} cy={y} r={i === 0 ? 2.4 : 2} fill="#f7e2a8" />
-          ))}
-        </g>
-      </svg>
+      <StarChart />
 
       <div className="relative flex flex-col items-center px-6 pt-10 pb-6 text-center">
         {/* Few visitors know what a 훈도 was: say it first, then the name built on it. */}
