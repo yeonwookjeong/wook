@@ -1,10 +1,12 @@
 import { HundoFace } from "@/app/ask/Letter";
-import { JOIN_GIFT } from "@/lib/members";
+import { askShown, JOIN_GIFT } from "@/lib/members";
 import type { AskFrom } from "@/lib/stats";
 import AskLink from "./AskLink";
 
 // The way into 정 훈도에게 묻기 from a page: the home, the end of the free reading, the end of a bought report.
-export default function AskCard({ from, lead }: { from: AskFrom; lead?: string }) {
+// Shown once 정 훈도에게 묻기 is open (lib/members.ts ASK_OPEN), or in the owner's 시안 모드.
+export default async function AskCard({ from, lead }: { from: AskFrom; lead?: string }) {
+  if (!(await askShown())) return null;
   return (
     <AskLink from={from} className="jjok-box mt-4 flex items-center gap-3 px-4 py-4">
       <HundoFace size={46} />

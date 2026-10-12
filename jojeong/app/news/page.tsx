@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { askShown } from "@/lib/members";
 
 export const metadata: Metadata = {
   title: "새 소식",
@@ -7,8 +8,9 @@ export const metadata: Metadata = {
 };
 
 // What changed on the site, newest first.
-const NEWS: { date: string; title: string; items: string[] }[] = [
+const NEWS: { date: string; title: string; items: string[]; ask?: boolean }[] = [
   {
+    ask: true,
     date: "2026년 10월 12일",
     title: "정 훈도에게 묻기, 정식으로 열었어요",
     items: [
@@ -30,7 +32,8 @@ const NEWS: { date: string; title: string; items: string[] }[] = [
   },
 ];
 
-export default function NewsPage() {
+export default async function NewsPage() {
+  const ask = await askShown();
   return (
     <>
       <section className="mt-6 text-center">
@@ -38,7 +41,7 @@ export default function NewsPage() {
         <h1 className="mt-1 font-myeongjo text-2xl font-extrabold">새 소식</h1>
         <p className="mt-1 text-sm text-ink-soft">훈도사주에 새로 생긴 것과 바뀐 것</p>
       </section>
-      {NEWS.map((n) => (
+      {NEWS.filter((n) => !n.ask || ask).map((n) => (
         <article key={n.date} className="doc-paper mt-4 px-5 py-5">
           <p className="text-[12px] font-bold text-seal">{n.date}</p>
           <h2 className="mt-1 font-myeongjo text-lg font-extrabold">{n.title}</h2>
@@ -52,9 +55,11 @@ export default function NewsPage() {
           </ul>
         </article>
       ))}
-      <Link href="/ask" className="mt-5 block rounded-full bg-[#FEE500] py-3 text-center font-bold text-[#191919]">
-        정 훈도에게 첫 질문 받기
-      </Link>
+      {ask && (
+        <Link href="/ask" className="mt-5 block rounded-full bg-[#FEE500] py-3 text-center font-bold text-[#191919]">
+          정 훈도에게 첫 질문 받기
+        </Link>
+      )}
       <Link href="/reports/gukjeong?new=1" className="mt-2 block rounded-full bg-seal py-3 text-center font-bold text-hanji">
         새로워진 내 사주 무료로 보기
       </Link>

@@ -6,7 +6,7 @@ import { SITE_NAME, SITE_SUMMARY, SITE_TAGLINE, SNS_URLS, siteUrl } from "@/lib/
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import VisitBeacon from "@/components/VisitBeacon";
 import OpenNote from "@/components/OpenNote";
-import { currentMember, JOIN_GIFT, membersEnabled } from "@/lib/members";
+import { askShown, currentMember, JOIN_GIFT, membersEnabled } from "@/lib/members";
 import "./globals.css";
 
 // Headings: Hahmlet, a modern Korean serif (variable weight), for 정 훈도's Joseon-meets-now voice.
@@ -75,7 +75,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           <SiteFooter />
         </main>
         {/* The opening of 정 훈도에게 묻기, once per browser, for those not signed in yet. */}
-        {membersEnabled() && <OpenNote member={Boolean(await currentMember().catch(() => null))} gift={JOIN_GIFT} />}
+        {membersEnabled() && (await askShown()) && <OpenNote member={Boolean(await currentMember().catch(() => null))} gift={JOIN_GIFT} />}
         {/* Page views and visitors, cookieless (Vercel Web Analytics; enable it in the Vercel project). */}
         <Analytics />
         {/* The same, counted for the owner's dashboard (/admin). */}

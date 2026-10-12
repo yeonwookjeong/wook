@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import AskLink from "./AskLink";
 import { trackEvent } from "./VisitBeacon";
 
-// The opening of 정 훈도에게 묻기 (2026-10-12): a sheet from the bottom, once per browser, a few seconds in.
+// The opening of 정 훈도에게 묻기 (lib/members.ts ASK_OPEN): a sheet from the bottom, once per browser, a few seconds in.
 // Not for members (they are in already), and never over paying, reading a bought report, the room itself or the
 // owner's pages. A sheet, not a full-screen cover: it leaves the page readable behind it.
 const QUIET = ["/ask", "/pay", "/admin", "/login", "/r/", "/my"];
@@ -17,13 +17,13 @@ export default function OpenNote({ member, gift }: { member: boolean; gift: numb
   useEffect(() => {
     if (member || QUIET.some((q) => path.startsWith(q)) || location.search.includes("order=")) return;
     try {
-      if (localStorage.getItem("ao")) return;
+      if (localStorage.getItem("ao2")) return;
     } catch {
       return;
     }
     const t = setTimeout(() => {
       try {
-        localStorage.setItem("ao", "1");
+        localStorage.setItem("ao2", "1");
         // The note on the renewal said the same "come and see": one is enough.
         localStorage.setItem("rn", "1");
       } catch {}

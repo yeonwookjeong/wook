@@ -2,13 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import PayButton from "@/components/PayButton";
 import { iljuOf, loadRoom, personOfRoom } from "@/lib/ask";
-import { currentMember, JOIN_GIFT, membersEnabled } from "@/lib/members";
+import { ASK_OPEN, currentMember, JOIN_GIFT, membersEnabled } from "@/lib/members";
 import { CREDIT_PACKS, type CreditPack } from "@/lib/products";
 import { OpenRoomForm } from "./AskForms";
 import { AnswerLetter, HundoFace, Question } from "./Letter";
 
 export const metadata: Metadata = {
   title: "정 훈도에게 묻기",
+  // Out of search until it opens (lib/members.ts ASK_OPEN).
+  ...(!ASK_OPEN && { robots: { index: false } }),
   description: "내 사주를 펼쳐 놓고 정 훈도에게 고민 하나를 여쭈어 보세요. 카카오로 시작하면 첫 질문 하나는 선물이에요.",
 };
 
@@ -101,7 +103,7 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
             <p className="mt-4 rounded-xl border border-seal/30 bg-seal/10 px-4 py-3 text-[13px] leading-relaxed">
               {q.joined && (
                 <>
-                  어서 오시옵소서, {member.nick}님. 첫 질문 {JOIN_GIFT}개를 드렸사옵니다.{" "}
+                  어서 오시옵소서, {member.nick}님.{member.gift && member.log.some((l) => l.why === "가입 선물") ? ` 첫 질문 ${JOIN_GIFT}개를 드렸사옵니다.` : ""}{" "}
                 </>
               )}
               {q.moved && <>이 브라우저의 보고서 {String(q.moved)}편을 계정에 담았어요. </>}
@@ -172,6 +174,10 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
             <a href="/logout" className="text-ink-soft underline">
               로그아웃
             </a>
+            <span className="mx-2 text-ink-soft/40">·</span>
+            <Link href="/leave" className="text-ink-soft/70 underline">
+              회원 탈퇴
+            </Link>
           </p>
         </>
       )}

@@ -368,6 +368,13 @@ export async function noteMember(id: string) {
 export async function memberIds(): Promise<string[]> {
   return backend().list("members");
 }
+// Who has had the joining gift, by a keyed hash of the Kakao id (lib/members.ts), kept a year past leaving.
+export async function giftGiven(hash: string): Promise<boolean> {
+  return Boolean(await backend().get(`gifted:${hash}`));
+}
+export async function noteGiftGiven(hash: string) {
+  await backend().set(`gifted:${hash}`, "1", 60 * 60 * 24 * 366);
+}
 // Leaving (lib/members.ts deleteMember): the record emptied and the id off the owner's list.
 export async function deleteMemberRaw(id: string) {
   if (!/^k\d{1,20}$/.test(id)) return;

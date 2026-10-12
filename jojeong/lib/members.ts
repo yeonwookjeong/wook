@@ -1,7 +1,8 @@
 import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
-import { deleteAskRoom, deleteMemberRaw, getMemberRaw, memberIds, noteMember, setMemberRaw } from "./store";
+import { isPreview } from "./admin";
+import { deleteAskRoom, deleteMemberRaw, getMemberRaw, giftGiven, memberIds, noteGiftGiven, noteMember, setMemberRaw } from "./store";
 
 // Members, by Kakao login (app/login, app/api/auth/kakao): what a browser cannot keep alone — the reports bought
 // (so they open on any device) and the questions bought for 정 훈도에게 묻기. Only the Kakao id and nickname are
@@ -23,6 +24,10 @@ export const MEMBER_COOKIE = "jj_member";
 // The Redirect URI registered for the Kakao app (only the live site; previews cannot sign in).
 export const KAKAO_REDIRECT = "https://www.hundosaju.com/api/auth/kakao";
 export const JOIN_GIFT = 1;
+// The opening of 정 훈도에게 묻기 to everyone: the sheet, the header button, the home tile, the cards at the end of
+// a reading, /ask in search and the sitemap, the news. Off, only the owner's 시안 모드 shows them.
+export const ASK_OPEN = false;
+export const askShown = async () => ASK_OPEN || (await isPreview());
 
 // The cookie is the id with an HMAC, so it cannot be made for someone else without the secret.
 const secret = () => process.env.KAKAO_CLIENT_SECRET?.trim() ?? "";
@@ -64,7 +69,20 @@ export async function signInMember(kakaoId: string, nick: string, browserOrders:
   let member = await getMember(id);
   const joined = !member;
   if (!member) {
-    member = { id, nick: nick.slice(0, 20) || "손님", createdAt: Date.now(), orders: [], credits: JOIN_GIFT, gift: true, rooms: [], log: [{ at: Date.now(), d: JOIN_GIFT, why: "가입 선물" }] };
+    // The gift once per Kakao account: leaving and joining again does not bring it back.
+    const mark = createHmac("sha256", secret()).update(`gift:${id}`).digest("base64url");
+    const gift = !(await giftGiven(mark));
+    member = {
+      id,
+      nick: nick.slice(0, 20) || "손님",
+      createdAt: Date.now(),
+      orders: [],
+      credits: gift ? JOIN_GIFT : 0,
+      gift,
+      rooms: [],
+      log: gift ? [{ at: Date.now(), d: JOIN_GIFT, why: "가입 선물" }] : [],
+    };
+    if (gift) await noteGiftGiven(mark);
     await noteMember(id);
   }
   const before = member.orders.length;
@@ -109,6 +127,8 @@ export async function allMembers(): Promise<Member[]> {
 export async function deleteMember(id: string, unlinkKakao = true) {
   const m = await getMember(id);
   if (m) await Promise.all(m.rooms.map((r) => deleteAskRoom(r)));
+  // Members from before the mark was kept: noted now, so joining again brings no second gift.
+  if (m?.gift) await noteGiftGiven(createHmac("sha256", secret()).update(`gift:${id}`).digest("base64url"));
   await deleteMemberRaw(id);
   const admin = process.env.KAKAO_ADMIN_KEY?.trim();
   if (unlinkKakao && admin)

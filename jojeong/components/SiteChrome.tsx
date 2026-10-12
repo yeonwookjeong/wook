@@ -3,7 +3,7 @@ import SnsLinks from "./SnsLinks";
 import FooterAd from "./FooterAd";
 import { BUSINESS, ftcLookupUrl, hasBusinessInfo } from "@/lib/business";
 import { ownedOrderIds } from "@/lib/pay";
-import { currentMember, membersEnabled } from "@/lib/members";
+import { askShown, currentMember, membersEnabled } from "@/lib/members";
 import AskLink from "./AskLink";
 
 // The brand mark: a red 訓導 seal beside the character's name. Used at the top and bottom of every page.
@@ -25,6 +25,7 @@ function Seal({ size = 30 }: { size?: number }) {
 export async function SiteHeader() {
   const bought = (await ownedOrderIds().catch(() => [])).length;
   const member = membersEnabled() ? await currentMember().catch(() => null) : null;
+  const ask = membersEnabled() && (await askShown());
   return (
     <header className="flex items-center justify-between pt-4">
       <Link href="/" className="flex items-center gap-2">
@@ -35,10 +36,12 @@ export async function SiteHeader() {
         </span>
       </Link>
       <nav className="flex items-center gap-1.5">
-        <AskLink from="header" className="flex items-center gap-1 bg-jjok px-2.5 py-1 font-myeongjo text-xs font-extrabold text-hanji">
-          묻기
-          {member && member.credits > 0 && <span className="rounded-full bg-[#d4af5f] px-1.5 text-[10px] leading-4 text-jjok">{member.credits}</span>}
-        </AskLink>
+        {ask && (
+          <AskLink from="header" className="flex items-center gap-1 bg-jjok px-2.5 py-1 font-myeongjo text-xs font-extrabold text-hanji">
+            묻기
+            {member && member.credits > 0 && <span className="rounded-full bg-[#d4af5f] px-1.5 text-[10px] leading-4 text-jjok">{member.credits}</span>}
+          </AskLink>
+        )}
         <Link
           href="/my"
           className={`flex items-center gap-1 px-2.5 py-1 font-myeongjo text-xs font-extrabold ${bought ? "bg-seal text-hanji" : "border border-ink/20 text-ink-soft"}`}
