@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { refresh } from "next/cache";
 import { isAdmin, setPreview, signIn, signOut } from "@/lib/admin";
 import { isGiftable, originNow } from "@/lib/gift";
-import { createGiftOrder, revokeGiftOrder } from "@/lib/pay";
+import { createGiftOrder, markTestOrder, revokeGiftOrder } from "@/lib/pay";
 import { encodePerson } from "@/lib/pairToken";
 import { personOf } from "@/lib/personForm";
 import { productById } from "@/lib/products";
@@ -80,5 +80,12 @@ export async function giftRevokeAction(formData: FormData) {
 export async function previewModeAction(formData: FormData) {
   if (!(await isAdmin())) return;
   await setPreview(formData.get("on") === "1");
+  refresh();
+}
+
+// A paid order marked as a test payment, or back as a real one (the dashboard leaves tests out). Owner only.
+export async function testOrderAction(formData: FormData) {
+  if (!(await isAdmin())) return;
+  await markTestOrder(String(formData.get("id") ?? ""), formData.get("test") === "1");
   refresh();
 }

@@ -7,7 +7,9 @@ import { GIFTABLE, originNow } from "@/lib/gift";
 import { SALE_KEYS, saleKey, saleLabel } from "@/lib/sales";
 import { productById, SETS } from "@/lib/products";
 import { lastReportError, listInquiries, readingCount } from "@/lib/store";
-import { adminSignOut, giftRevokeAction, inquiryDeleteAction, inquiryDoneAction } from "./actions";
+import { adminSignOut, giftRevokeAction, inquiryDeleteAction, inquiryDoneAction, testOrderAction } from "./actions";
+import Dashboard, { rangeOf } from "./Dashboard";
+import { threadsPosts } from "@/lib/threads";
 import GiftForm from "./GiftForm";
 import SignInForm from "./SignInForm";
 import { isPreview, newYearOf, thisYear } from "@/lib/yeonun";
@@ -53,9 +55,6 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   const dt = isDay(q.dt) ? q.dt : todayKst();
   const df = isDay(q.df) && q.df <= dt ? q.df : day(Date.parse(`${dt}T12:00:00+09:00`) - 6 * 86400000);
   const period: Period = PERIODS.some((p) => p.key === sp) ? (sp as Period) : "all";
-  const today = todayKst();
-  const sum = (list: Order[]) => list.reduce((a, o) => a + o.amount, 0);
-  const todays = paid.filter((o) => day(o.paidAt ?? o.createdAt) === today);
   const won = (n: number) => `${n.toLocaleString("ko-KR")}원`;
   const ny = newYearOf();
   const inquiries = await listInquiries().catch(() => []);
@@ -106,6 +105,8 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
         </Link>
       </section>
 
+      <Dashboard range={rangeOf(q.r)} orders={orders} threads={(await threadsPosts().catch(() => ({ posts: [] }))).posts} />
+
       {writeError && (
         <section className="mt-4 rounded-xl border-2 border-seal bg-seal/10 px-4 py-3">
           <p className="text-sm font-extrabold text-seal">보고서 쓰기 실패 · {when(writeError.at)}</p>
@@ -114,34 +115,25 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
         </section>
       )}
 
-      <section className="mt-5 grid grid-cols-2 gap-2 text-center">
-        {[
-          ["오늘 결제", `${todays.length}건 · ${won(sum(todays))}`],
-          ["전체 결제", `${paid.length}건 · ${won(sum(paid))}`],
-        ].map(([k, v]) => (
-          <div key={k} className="doc-paper px-3 py-4">
-            <p className="text-xs text-ink-soft">{k}</p>
-            <p className="mt-1 font-myeongjo text-lg font-extrabold">{v}</p>
-          </div>
-        ))}
-      </section>
-      <p className="mt-2 text-center text-[11px] text-ink-soft">
-        테스트 결제도 포함돼요 · 정확한 정산은 토스 상점관리자에서 확인하세요
-      </p>
       <p className="mt-3 text-center text-[13px]">
         지금까지 풀어 드린 사주 <b className="font-myeongjo text-seal">{(await readingCount()).toLocaleString("ko-KR")}</b>건
         <span className="block text-[11px] text-ink-soft">무료 분석 + 즉위 · 100건부터 홈에 표시돼요</span>
       </p>
 
-      <StatsTable stats={stats} paidBy={paidBy} />
-      <SourceTable stats={stats} paid={paid} />
-      <DailyTable from={df} to={dt} paid={paid} />
+      <details className="mt-4">
+        <summary className="doc-paper cursor-pointer px-4 py-3 font-myeongjo font-extrabold">
+          자세한 표 (왕이 될 사주 · 페이지별 다음 걸음 · 기간별 표)
+        </summary>
+        <StatsTable stats={stats} paidBy={paidBy} />
+        <SourceTable stats={stats} paid={paid} />
+        <DailyTable from={df} to={dt} paid={paid} />
       <SalesTable
         period={period}
         stats={stats}
         paid={paid.filter((o) => inPeriods(o.paidAt ?? o.createdAt).includes(period))}
         refunds={orders.filter((o) => o.status === "canceled" && inPeriods(o.paidAt ?? o.createdAt).includes(period)).length}
       />
+      </details>
 
       <section className="doc-paper mt-4 px-4 py-4">
         <h2 className="flex items-baseline justify-between font-myeongjo font-extrabold">
@@ -262,6 +254,9 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
 
       <section className="doc-paper mt-4 px-4 py-4">
         <h2 className="font-myeongjo font-extrabold">최근 결제</h2>
+        <p className="mt-0.5 text-[11px] text-ink-soft">
+          내가 해 본 결제는 &lsquo;테스트?&rsquo;를 눌러 표시해 두면 위 통계에서 빠져요. 관리자로 로그인한 채 한 결제는 저절로 테스트로 남아요.
+        </p>
         {orders.length === 0 ? (
           <p className="mt-2 text-sm text-ink-soft">아직 결제가 없어요.</p>
         ) : (
@@ -273,7 +268,14 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
                   <b className="block truncate">{o.set ? SETS[o.set].title : productById(o.product)?.title}</b>
                   <span className="block truncate text-[11px] text-ink-soft">{o.who}</span>
                 </span>
-                <span className={`shrink-0 font-bold ${o.status === "paid" ? "" : "text-ink-soft line-through"}`}>{won(o.amount)}</span>
+                <span className={`shrink-0 font-bold ${o.status === "paid" && !o.test ? "" : "text-ink-soft line-through"}`}>{won(o.amount)}</span>
+                <form action={testOrderAction} className="shrink-0">
+                  <input type="hidden" name="id" value={o.id} />
+                  <input type="hidden" name="test" value={o.test ? "0" : "1"} />
+                  <button className={`rounded-full px-2 py-0.5 text-[10.5px] font-bold ${o.test ? "bg-ink/70 text-hanji" : "border border-ink/20 text-ink-soft"}`}>
+                    {o.test ? "테스트" : "테스트?"}
+                  </button>
+                </form>
                 <Link href={`/r/${o.id}`} className="shrink-0 text-seal">
                   →
                 </Link>

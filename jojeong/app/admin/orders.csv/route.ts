@@ -12,7 +12,7 @@ export async function GET() {
     const s = String(v ?? "");
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
-  const head = ["결제일시(KST)", "요일", "시", "주문번호", "분류", "상품", "세트", "연운 연도", "금액", "결제수단", "상태"];
+  const head = ["결제일시(KST)", "요일", "시", "주문번호", "분류", "상품", "세트", "연운 연도", "금액", "결제수단", "상태", "들어온 길", "테스트"];
   const rows = (await paidOrders()).map((o) => {
     const t = o.paidAt ?? o.createdAt;
     const d = new Date(t + 9 * 3600000);
@@ -28,6 +28,8 @@ export async function GET() {
       o.amount,
       o.method ?? "",
       o.status === "paid" ? "결제" : o.status === "canceled" ? "환불" : o.status,
+      o.src ?? "",
+      o.test ? "테스트" : "",
     ];
   });
   // A BOM so Excel reads the Korean as UTF-8.
