@@ -24,7 +24,19 @@ const DIPPER = [
 ] as const;
 
 // `cta`: the first thing to do here — the free reading of one's own chart.
-export default function StoreHero({ cta, count }: { cta?: { href: string; label: string; sub: string }; count?: number | null }) {
+// `second`: a second way in beside the first (the new home: 정 훈도에게 묻기). `slim`: the new home's hero, the
+// explaining line folded into his speech so the top reads in one glance.
+export default function StoreHero({
+  cta,
+  count,
+  second,
+  slim = false,
+}: {
+  cta?: { href: string; label: string; sub: string };
+  count?: number | null;
+  second?: { href: string; label: string };
+  slim?: boolean;
+}) {
   const cx = 300;
   const cy = 118;
   return (
@@ -56,11 +68,13 @@ export default function StoreHero({ cta, count }: { cta?: { href: string; label:
       <div className="relative flex flex-col items-center px-6 pt-10 pb-6 text-center">
         {/* Few visitors know what a 훈도 was: say it first, then the name built on it. */}
         <p className="font-myeongjo text-sm font-extrabold tracking-[0.4em] text-[#e2bc68]">命課學 訓導</p>
-        <p className="mt-2 max-w-[17rem] text-[12px] leading-relaxed text-[#f3ead0]/85">
-          <b className="text-[#f7efd9]">명과학 훈도</b>는 조선 관상감에서
-          <br />
-          사주와 길일을 가르치던 관원이에요
-        </p>
+        {!slim && (
+          <p className="mt-2 max-w-[17rem] text-[12px] leading-relaxed text-[#f3ead0]/85">
+            <b className="text-[#f7efd9]">명과학 훈도</b>는 조선 관상감에서
+            <br />
+            사주와 길일을 가르치던 관원이에요
+          </p>
+        )}
         <h1 className="mt-4 font-myeongjo text-[38px] leading-tight font-extrabold text-[#f7efd9] drop-shadow-[0_2px_6px_rgb(0_0_0/0.4)]">
           훈도사주
         </h1>
@@ -78,6 +92,14 @@ export default function StoreHero({ cta, count }: { cta?: { href: string; label:
               {cta.label}
             </Link>
             <p className="mt-2 text-[11px] text-[#f3ead0]/75">{cta.sub}</p>
+            {second && (
+              <Link
+                href={second.href}
+                className="mt-3 block w-full max-w-[18rem] rounded-2xl border border-[#e2bc68]/70 py-3 font-myeongjo text-[15px] font-extrabold text-[#f7efd9]"
+              >
+                {second.label}
+              </Link>
+            )}
             {count && (
               <p className="mt-3 rounded-full bg-[#f7efd9]/10 px-3 py-1 text-[12px] text-[#f3ead0]">
                 지금까지 <b className="font-myeongjo text-[#e2bc68]">{count.toLocaleString("ko-KR")}</b>건의 사주를 풀어 드렸어요
@@ -86,14 +108,16 @@ export default function StoreHero({ cta, count }: { cta?: { href: string; label:
           </>
         )}
 
-        <div className="mt-8 flex w-full items-end gap-3 text-left">
+        <div className={`${slim ? "mt-6" : "mt-8"} flex w-full items-end gap-3 text-left`}>
           <div className="size-20 shrink-0 overflow-hidden rounded-full border-[3px] border-[#d9ad52] bg-[#f7efd9] shadow-lg">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={CHARACTER.bust} alt={`별자리 두루마리를 든 ${CHARACTER_NAME}`} width={80} height={80} className="size-full object-cover" />
           </div>
           <p className="relative mb-2 flex-1 rounded-2xl rounded-bl-sm bg-[#f7efd9]/95 px-4 py-3 text-[13px] leading-relaxed text-ink">
             <span className="block text-[11px] font-extrabold text-seal">관상감 명과학 훈도 · 정가</span>
-            소신이 그 훈도, 정가이옵니다. 왕실의 사주와 궁합을 보던 눈으로, 이제 그대의 여덟 글자를 보겠사옵니다.
+            {slim
+              ? "조선 관상감에서 사주와 길일을 가르치던 훈도, 정가이옵니다. 이제 그대의 여덟 글자를 보겠사옵니다."
+              : "소신이 그 훈도, 정가이옵니다. 왕실의 사주와 궁합을 보던 눈으로, 이제 그대의 여덟 글자를 보겠사옵니다."}
           </p>
         </div>
       </div>
