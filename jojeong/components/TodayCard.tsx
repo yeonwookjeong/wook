@@ -29,7 +29,7 @@ const subscribe = (onChange: () => void) => {
 };
 
 // `frame`: the box around it (the new home draws it as a plain card with the month's ranking joined below).
-export default function TodayCard({ today, name, frame = "doc-paper mt-5", children }: { today: Today; name: string | null; frame?: string; children?: React.ReactNode }) {
+export default function TodayCard({ today, name, frame = "doc-paper mt-5", revealed = false, children }: { today: Today; name: string | null; frame?: string; revealed?: boolean; children?: React.ReactNode }) {
   const key = `jj_today_${today.date}`;
   const [clicked, setClicked] = useState(false);
   // Opened earlier today, or just back from entering a chart for this card (/#today): open from the start.
@@ -43,7 +43,8 @@ export default function TodayCard({ today, name, frame = "doc-paper mt-5", child
     },
     () => false,
   );
-  const open = clicked || seen;
+  // `revealed`: the score is already on show above (the new home's own-chart hero), so no tap to open it again.
+  const open = clicked || seen || revealed;
 
   function reveal() {
     setClicked(true);

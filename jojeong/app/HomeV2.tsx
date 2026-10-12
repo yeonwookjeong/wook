@@ -1,16 +1,18 @@
+import Image from "next/image";
 import Link from "next/link";
 import { forgetMeAction } from "@/app/actions";
 import { HundoFace } from "@/app/ask/Letter";
 import AskLink from "@/components/AskLink";
 import ColumnTitle from "@/components/ColumnTitle";
 import Keep from "@/components/Keep";
-import StoreHero from "@/components/StoreHero";
 import TodayCard from "@/components/TodayCard";
 import { publishedColumns } from "@/lib/columns";
 import { hanjaNum } from "@/lib/hanjaNum";
 import { monthPillarNow, rankMonth } from "@/lib/iljuRank";
 import { readMe } from "@/lib/me";
-import { askShown, JOIN_GIFT } from "@/lib/members";
+import { askShown, currentMember, JOIN_GIFT } from "@/lib/members";
+import { STEMS, BRANCHES, STEMS_KO, BRANCHES_KO } from "@/lib/saju";
+import type { Today } from "@/lib/today";
 import { profileOf } from "@/lib/pairToken";
 import { ownedByProduct, ownedOrders } from "@/lib/pay";
 import { PRICE, priceNow, productById, SETS, type ProductId } from "@/lib/products";
@@ -44,6 +46,99 @@ const CHIPS: { href: string; hanja: string; label: string }[] = [
 
 const SHOW_COUNT_FROM = 100;
 
+// First visit (A): 정 훈도 standing on the night stage, one button, 묻기 as a gold line under it.
+function HeroStage({ count, ask }: { count: number | null; ask: boolean }) {
+  return (
+    <header className="animate-rise relative mt-3 h-[452px] overflow-hidden rounded-3xl bg-gradient-to-b from-[#12263b] via-[#1d3a58] to-[#25496b] text-[#f7efd9] shadow-[0_10px_30px_rgb(33_27_23/0.22)]">
+      <span aria-hidden className="absolute inset-0 bg-[radial-gradient(#f3ead0_1px,transparent_1.3px)] [background-size:46px_52px] opacity-25" />
+      <Image
+        src="/cards/hundo-scroll.webp"
+        alt="별자리 두루마리를 든 정 훈도"
+        width={561}
+        height={701}
+        priority
+        className="absolute -right-9 -bottom-7 w-[232px] drop-shadow-[0_8px_18px_rgb(0_0_0/0.35)]"
+      />
+      <div className="relative px-6 pt-9">
+        <p className="font-myeongjo text-[12px] font-extrabold tracking-[0.35em] text-[#e2bc68]">命課學 訓導</p>
+        <h1 className="mt-2.5 font-myeongjo text-[40px] leading-[1.1] font-extrabold drop-shadow-[0_2px_6px_rgb(0_0_0/0.35)]">훈도사주</h1>
+        <p className="mt-3 text-[15px] leading-relaxed text-[#f3ead0]/85">
+          누구에게나 맞는 말 말고,
+          <br />
+          <b className="text-[#f7efd9]">나한테만 맞는 말</b>
+        </p>
+        <Link
+          href="/reports/gukjeong?new=1"
+          className="mt-6 block w-[205px] rounded-2xl bg-[#e2bc68] py-3.5 text-center font-myeongjo text-[16px] font-extrabold text-[#17304a] shadow-[0_5px_0_#9c7a2e]"
+        >
+          내 사주 무료로 보기
+        </Link>
+        <p className="mt-2 w-[205px] text-center text-[11px] text-[#f3ead0]/70">생년월일만 넣으면 바로</p>
+        {ask && (
+          <AskLink from="home" className="mt-4 block w-fit text-[13px] font-bold text-[#e2bc68]">
+            정 훈도에게 고민 묻기 · 첫 질문 선물 →
+          </AskLink>
+        )}
+      </div>
+      {count && (
+        <p className="absolute bottom-5 left-6 max-w-[150px] text-[11.5px] leading-snug text-[#f3ead0]/70">
+          지금까지 <b className="font-myeongjo text-[#e2bc68]">{count.toLocaleString("ko-KR")}</b>건의 사주를 풀어 드렸어요
+        </p>
+      )}
+    </header>
+  );
+}
+
+// Back with a chart (C): the visitor's own day, then where they left off.
+function HeroMe({ name, stem, branch, today, ask, credits }: { name: string; stem: number; branch: number; today: Today; ask: boolean; credits: number | null }) {
+  return (
+    <header className="animate-rise relative mt-3 overflow-hidden rounded-3xl bg-gradient-to-b from-[#12263b] via-[#1d3a58] to-[#25496b] px-5 pt-5 pb-4 text-[#f7efd9] shadow-[0_10px_30px_rgb(33_27_23/0.22)]">
+      <span aria-hidden className="absolute inset-0 bg-[radial-gradient(#f3ead0_1px,transparent_1.3px)] [background-size:46px_52px] opacity-20" />
+      <div className="relative flex items-center gap-3">
+        <HundoFace size={52} />
+        <p className="font-myeongjo text-[19px] leading-snug font-extrabold">
+          <span className="block font-sans text-[12px] font-bold tracking-wide text-[#e2bc68]">
+            {STEMS[stem]}
+            {BRANCHES[branch]} · {STEMS_KO[stem]}
+            {BRANCHES_KO[branch]}일주
+          </span>
+          {name}님, 다시 오셨사옵니까
+        </p>
+      </div>
+      {today.score !== null && (
+        <Link href="#today" className="relative mt-4 flex items-center gap-3.5 rounded-2xl border border-[#e2bc68]/35 bg-[#f7efd9]/[0.07] px-4 py-3">
+          <span className="font-myeongjo text-[40px] leading-none font-extrabold text-[#e2bc68]">{today.score}</span>
+          <span className="min-w-0 text-[13px] leading-snug">
+            <span className="block text-[11px] opacity-70">오늘의 점수 · {today.date}</span>
+            {today.best && (
+              <>
+                오늘 가장 좋은 것 <b>{today.best.label}</b>
+              </>
+            )}
+            {today.hour && <span className="block opacity-80">좋은 시간 {today.hour.label}</span>}
+          </span>
+          <span className="ml-auto shrink-0 text-[12px] font-bold text-[#e2bc68]">자세히</span>
+        </Link>
+      )}
+      <Link
+        href="/reports/gukjeong"
+        className="relative mt-3 block rounded-2xl bg-[#e2bc68] py-3.5 text-center font-myeongjo text-[16px] font-extrabold text-[#17304a] shadow-[0_5px_0_#9c7a2e]"
+      >
+        내 사주 · 2027 이어 보기
+      </Link>
+      {ask && (
+        <AskLink from="home" className="relative mt-2.5 flex items-center gap-2 rounded-2xl border border-[#e2bc68]/60 px-4 py-3 text-[13.5px]">
+          <b className="font-myeongjo">정 훈도에게 묻기</b>
+          <span className="opacity-80">{credits !== null ? `남은 질문 ${credits}개` : `첫 질문 ${JOIN_GIFT}개 선물`}</span>
+          <span className="ml-auto font-extrabold text-[#e2bc68]">→</span>
+        </AskLink>
+      )}
+      <p className="relative mt-3 text-center text-[11px] opacity-55">命課學 訓導 · 훈도사주 · 나한테만 맞는 말</p>
+    </header>
+  );
+}
+
+
 function Price() {
   const price = priceNow();
   return price < PRICE ? (
@@ -63,7 +158,8 @@ const SectionTitle = ({ children, sub }: { children: React.ReactNode; sub?: Reac
 );
 
 export default async function HomeV2() {
-  const [me, count, orders, ask] = await Promise.all([readMe(), readingCount(), ownedOrders().catch(() => []), askShown()]);
+  const [me, count, orders, ask, member] = await Promise.all([readMe(), readingCount(), ownedOrders().catch(() => []), askShown(), currentMember().catch(() => null)]);
+  const today = todayFor(me?.person ?? null);
   const owned = ownedByProduct(orders);
   const ny = newYearOf();
   const nyProduct = ny ? newYearProduct(productById("yeonun")!, ny) : null;
@@ -75,20 +171,22 @@ export default async function HomeV2() {
 
   return (
     <>
-      <StoreHero
-        slim
-        count={count >= SHOW_COUNT_FROM ? count : null}
-        cta={
-          me
-            ? { href: "/reports/gukjeong", label: `${me.person.name}님 무료 운세 보기`, sub: "사주 분석과 2027년 운세까지 · 무료" }
-            : { href: "/reports/gukjeong?new=1", label: "내 사주 무료로 보기", sub: "생년월일만 넣으면 사주 분석과 2027년 운세를 바로 보여 드려요" }
-        }
-        second={ask ? { href: "/ask", label: `정 훈도에게 고민 묻기 · 첫 질문 선물` } : undefined}
-      />
+      {me ? (
+        <HeroMe
+          name={me.person.name}
+          stem={me.person.pillars.dayStem}
+          branch={me.person.pillars.dayBranch}
+          today={today}
+          ask={ask}
+          credits={member ? member.credits : null}
+        />
+      ) : (
+        <HeroStage count={count >= SHOW_COUNT_FROM ? count : null} ask={ask} />
+      )}
 
       {/* The free extras, one row to swipe. */}
       <nav aria-label="무료로 보기" className="-mx-4 mt-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
-        {CHIPS.map((c) => (
+        {CHIPS.filter((c) => !me || (c.href !== "/reports/gukjeong" && c.href !== "/#today")).map((c) => (
           <Link key={c.href} href={c.href} className="card flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-bold">
             <span className="font-myeongjo text-[13px] text-seal">{c.hanja}</span>
             {c.label}
@@ -97,7 +195,7 @@ export default async function HomeV2() {
       </nav>
 
       {/* Today and this month, one card: the day's reading, then the month's ranking joined below. */}
-      <TodayCard today={todayFor(me?.person ?? null)} name={me?.person.name ?? null} frame="card mt-4">
+      <TodayCard today={today} name={me?.person.name ?? null} frame="card mt-4" revealed={Boolean(me)}>
         <Link href="/ranking" className="mt-4 flex items-center gap-3 border-t border-ink/10 pt-3.5">
           <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[radial-gradient(circle_at_35%_30%,#fff3c4,#e2bc68_50%,#a87a22)] font-myeongjo text-sm font-extrabold text-[#6b4a0e]">
             1
