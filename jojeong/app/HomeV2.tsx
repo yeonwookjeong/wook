@@ -16,7 +16,7 @@ import { STEMS, BRANCHES, STEMS_KO, BRANCHES_KO } from "@/lib/saju";
 import type { Today } from "@/lib/today";
 import { profileOf } from "@/lib/pairToken";
 import { ownedByProduct, ownedOrders } from "@/lib/pay";
-import { PRICE, priceNow, productById, SETS, type ProductId } from "@/lib/products";
+import { productById, SETS, type ProductId } from "@/lib/products";
 import { readingCount } from "@/lib/store";
 import { todayFor } from "@/lib/today";
 import { isPreview, newYearOf, newYearProduct, thisYear, yearDetail, yearName, yearNickname } from "@/lib/yeonun";
@@ -24,7 +24,8 @@ import { isPreview, newYearOf, newYearProduct, thisYear, yearDetail, yearName, y
 // The new home (시안: the owner's 시안 모드 only, until it replaces app/page.tsx). The same things as now, set in
 // one plain card style (globals .card) and in the order a visitor uses them: the free reading and 정 훈도에게
 // 묻기 at the top; the free extras as one row of chips; today and the month together; next year's 신년운세 with
-// its contents folded; the reports on sale, with 묻기 in the eighth place; the stories as a short list.
+// its contents folded; the reports on sale, with 묻기 in the eighth place; the stories as a short list. No price
+// here: each report's page says its own (they differ), so one number on the home would mislead.
 
 const TOPICS: { id: ProductId; name: string; ask: string }[] = [
   { id: "pyeongsaeng", name: "평생 사주", ask: "나는 어떤 사람이고 어떻게 살아갈까?" },
@@ -145,16 +146,6 @@ function HeroMe({ name, stem, branch, today, ask, credits }: { name: string; ste
 }
 
 
-function Price() {
-  const price = priceNow();
-  return price < PRICE ? (
-    <>
-      <b className="text-seal">{price.toLocaleString("ko-KR")}원</b> <s>{PRICE.toLocaleString("ko-KR")}원</s>
-    </>
-  ) : (
-    <b className="text-seal">{PRICE.toLocaleString("ko-KR")}원</b>
-  );
-}
 
 const SectionTitle = ({ children, sub }: { children: React.ReactNode; sub?: React.ReactNode }) => (
   <div className="mt-9 mb-3 px-1">
@@ -302,7 +293,7 @@ export default async function HomeV2() {
               </ol>
             </details>
             <p className="mt-2 text-[12px] text-ink-soft">
-              {ny}년 판정과 달마다 흐름은 무료로 먼저 · 한 해 전체 풀이 <Price />
+              {ny}년 판정과 달마다 흐름은 무료로 먼저 보고, 한 해 전체 풀이는 이어서 볼 수 있어요
             </p>
             <Link
               href={nyOwned ? `/reports/yeonun?order=${nyOwned.id}` : `/reports/yeonun?y=${ny}`}
@@ -314,7 +305,7 @@ export default async function HomeV2() {
         </section>
       )}
 
-      <SectionTitle sub={<>사주 분석은 무료로 먼저 보고, 풀이 보고서는 한 편에 <Price /></>}>무엇이 궁금하세요?</SectionTitle>
+      <SectionTitle sub="무료로 먼저 보고, 더 깊은 풀이는 주제마다 보고서로">무엇이 궁금하세요?</SectionTitle>
       <ul className="grid grid-cols-2 gap-2">
         {TOPICS.map((t) => {
           const mine = owned[t.id];
