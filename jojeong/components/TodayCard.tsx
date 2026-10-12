@@ -28,7 +28,8 @@ const subscribe = (onChange: () => void) => {
   return () => window.removeEventListener("storage", onChange);
 };
 
-export default function TodayCard({ today, name }: { today: Today; name: string | null }) {
+// `frame`: the box around it (the new home draws it as a plain card with the month's ranking joined below).
+export default function TodayCard({ today, name, frame = "doc-paper mt-5", children }: { today: Today; name: string | null; frame?: string; children?: React.ReactNode }) {
   const key = `jj_today_${today.date}`;
   const [clicked, setClicked] = useState(false);
   // Opened earlier today, or just back from entering a chart for this card (/#today): open from the start.
@@ -54,7 +55,7 @@ export default function TodayCard({ today, name }: { today: Today; name: string 
   const rating = today.rating === null ? null : RATING[today.rating];
 
   return (
-    <section id="today" className="doc-paper mt-5 scroll-mt-4 px-5 py-5">
+    <section id="today" className={`${frame} scroll-mt-4 px-5 py-5`}>
       <p className="flex items-center justify-between text-xs">
         <span className="flex items-center gap-1.5">
           <span className="font-extrabold text-seal">오늘의 운세</span>
@@ -229,6 +230,7 @@ export default function TodayCard({ today, name }: { today: Today; name: string 
           </p>
         </div>
       )}
+      {children}
     </section>
   );
 }

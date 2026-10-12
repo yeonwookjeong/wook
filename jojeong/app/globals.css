@@ -87,6 +87,16 @@ p, li, dd, blockquote {
     0 6px 16px rgb(33 27 23 / 0.12);
 }
 
+/* The plain card of the new home (시안): warm paper, one hairline and a soft shadow, no frame. The red double
+   frame stays for documents (a reading, a letter); a card on the way to one is lighter. */
+.card {
+  border-radius: 1rem;
+  background: #fbf6ea;
+  box-shadow:
+    0 0 0 1px rgb(33 27 23 / 0.08),
+    0 4px 14px rgb(33 27 23 / 0.06);
+}
+
 /* A report on sale: a 쪽빛 box with a thin gold rim, heavier than the paper of what is free. */
 .jjok-box {
   border-radius: 1rem;
