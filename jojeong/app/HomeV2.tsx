@@ -193,7 +193,7 @@ export default async function HomeV2() {
       </nav>
 
       {/* Today and this month, one card: the day's reading, then the month's ranking joined below. */}
-      <TodayCard today={today} name={me?.person.name ?? null} frame="card mt-4" revealed={Boolean(me)}>
+      <TodayCard today={today} name={me?.person.name ?? null} frame="card mt-4" revealed={Boolean(me)} quiet>
         <Link href="/ranking" className="mt-4 flex items-center gap-3 border-t border-ink/10 pt-3.5">
           <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[radial-gradient(circle_at_35%_30%,#fff3c4,#e2bc68_50%,#a87a22)] font-myeongjo text-sm font-extrabold text-[#6b4a0e]">
             1

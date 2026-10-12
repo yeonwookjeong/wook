@@ -29,7 +29,7 @@ const subscribe = (onChange: () => void) => {
 };
 
 // `frame`: the box around it (the new home draws it as a plain card with the month's ranking joined below).
-export default function TodayCard({ today, name, frame = "doc-paper mt-5", revealed = false, children }: { today: Today; name: string | null; frame?: string; revealed?: boolean; children?: React.ReactNode }) {
+export default function TodayCard({ today, name, frame = "doc-paper mt-5", revealed = false, quiet = false, children }: { today: Today; name: string | null; frame?: string; revealed?: boolean; quiet?: boolean; children?: React.ReactNode }) {
   const key = `jj_today_${today.date}`;
   const [clicked, setClicked] = useState(false);
   // Opened earlier today, or just back from entering a chart for this card (/#today): open from the start.
@@ -43,6 +43,7 @@ export default function TodayCard({ today, name, frame = "doc-paper mt-5", revea
     },
     () => false,
   );
+  // `quiet` (the new home): no "무료" tags on the card; the page says once that it is free.
   // `revealed`: the score is already on show above (the new home's own-chart hero), so no tap to open it again.
   const open = clicked || seen || revealed;
 
@@ -60,7 +61,7 @@ export default function TodayCard({ today, name, frame = "doc-paper mt-5", revea
       <p className="flex items-center justify-between text-xs">
         <span className="flex items-center gap-1.5">
           <span className="font-extrabold text-seal">오늘의 운세</span>
-          <span className="rounded-full bg-seal/10 px-2 py-0.5 text-[10px] font-extrabold text-seal">무료</span>
+          {!quiet && <span className="rounded-full bg-seal/10 px-2 py-0.5 text-[10px] font-extrabold text-seal">무료</span>}
         </span>
         <span className="text-ink-soft">
           {today.date} · <b className="font-myeongjo text-ink">{today.gz}</b>
@@ -99,7 +100,7 @@ export default function TodayCard({ today, name, frame = "doc-paper mt-5", revea
           ) : (
             <details className="group mt-4">
               <summary className="block w-full cursor-pointer list-none rounded-2xl bg-seal py-3.5 text-center font-myeongjo font-extrabold text-hanji shadow-[0_5px_0_var(--seal-shadow,#7d1a14)] group-open:hidden [&::-webkit-details-marker]:hidden">
-                내 일주는 오늘 몇 위? 무료로 보기
+                {quiet ? "내 일주는 오늘 몇 위?" : "내 일주는 오늘 몇 위? 무료로 보기"}
               </summary>
               <p className="mb-4 text-center text-sm text-ink-soft">한 번만 넣어 두면 매일 바로 볼 수 있어요</p>
               <MeForm next="/#today" submit="오늘 내 운 보기" />
