@@ -92,13 +92,13 @@ export default function TodayCard({ today, name, frame = "doc-paper mt-5", revea
             <button
               type="button"
               onClick={reveal}
-              className="mt-4 w-full rounded-2xl bg-seal py-3.5 font-myeongjo font-extrabold text-hanji shadow-[0_5px_0_#7d1a14]"
+              className="mt-4 w-full rounded-2xl bg-seal py-3.5 font-myeongjo font-extrabold text-hanji shadow-[0_5px_0_var(--seal-shadow,#7d1a14)]"
             >
               오늘 내 운세 열기
             </button>
           ) : (
             <details className="group mt-4">
-              <summary className="block w-full cursor-pointer list-none rounded-2xl bg-seal py-3.5 text-center font-myeongjo font-extrabold text-hanji shadow-[0_5px_0_#7d1a14] group-open:hidden [&::-webkit-details-marker]:hidden">
+              <summary className="block w-full cursor-pointer list-none rounded-2xl bg-seal py-3.5 text-center font-myeongjo font-extrabold text-hanji shadow-[0_5px_0_var(--seal-shadow,#7d1a14)] group-open:hidden [&::-webkit-details-marker]:hidden">
                 내 일주는 오늘 몇 위? 무료로 보기
               </summary>
               <p className="mb-4 text-center text-sm text-ink-soft">한 번만 넣어 두면 매일 바로 볼 수 있어요</p>

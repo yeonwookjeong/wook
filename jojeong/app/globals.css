@@ -14,7 +14,8 @@
   font-display: swap;
 }
 
-@theme inline {
+/* Colours as variables (not inlined), so a part of a page can retune them (.tone-night). */
+@theme {
   --color-hanji: #f4ecdb;
   --color-hanji-deep: #e9dcc0;
   --color-ink: #211b17;
@@ -24,6 +25,9 @@
   --color-jade: #3d6656;
   /* 쪽빛: indigo with ink in it, for the reports on sale (less cold than the hero's night blue). */
   --color-jjok: #222d3b;
+}
+
+@theme inline {
   --font-myeongjo: var(--font-heading), "HanjaBrush", serif;
   --font-sans: "Pretendard Variable", "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
 }
@@ -94,6 +98,18 @@ p, li, dd, blockquote {
   background: #fbf6ea;
   box-shadow:
     0 0 0 1px rgb(33 27 23 / 0.08),
+    0 4px 14px rgb(33 27 23 / 0.06);
+}
+
+/* The new home's tone (시안): 쪽빛 and a quiet gold carry it, red only as a point. Inside it the seal colour turns
+   to deep 쪽빛 (buttons, labels), and the cards take a faint gold hairline. */
+.tone-night {
+  --color-seal: #24395a;
+  --seal-shadow: #131a23;
+}
+.tone-night .card {
+  box-shadow:
+    0 0 0 1px rgb(168 122 34 / 0.22),
     0 4px 14px rgb(33 27 23 / 0.06);
 }
 

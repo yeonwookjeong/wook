@@ -6,6 +6,7 @@ import AskLink from "@/components/AskLink";
 import ColumnTitle from "@/components/ColumnTitle";
 import Keep from "@/components/Keep";
 import TodayCard from "@/components/TodayCard";
+import { StarChart } from "@/components/StoreHero";
 import { publishedColumns } from "@/lib/columns";
 import { hanjaNum } from "@/lib/hanjaNum";
 import { monthPillarNow, rankMonth } from "@/lib/iljuRank";
@@ -49,8 +50,11 @@ const SHOW_COUNT_FROM = 100;
 // First visit (A): 정 훈도 standing on the night stage, one button, 묻기 as a gold line under it.
 function HeroStage({ count, ask }: { count: number | null; ask: boolean }) {
   return (
-    <header className="animate-rise relative mt-3 h-[452px] overflow-hidden rounded-3xl bg-gradient-to-b from-[#12263b] via-[#1d3a58] to-[#25496b] text-[#f7efd9] shadow-[0_10px_30px_rgb(33_27_23/0.22)]">
-      <span aria-hidden className="absolute inset-0 bg-[radial-gradient(#f3ead0_1px,transparent_1.3px)] [background-size:46px_52px] opacity-25" />
+    <header className="animate-rise relative mt-3 h-[480px] overflow-hidden rounded-3xl bg-[#0f2236] text-[#f7efd9] shadow-[0_10px_30px_rgb(33_27_23/0.22),inset_0_0_0_1px_rgb(212_175_95/0.35)]">
+      {/* 관상감 under the night sky, the star chart drawn over it, and 정 훈도 in front. */}
+      <Image src="/cards/gwansanggam.webp" alt="" fill priority sizes="440px" className="object-cover object-bottom opacity-80" />
+      <span aria-hidden className="absolute inset-0 bg-gradient-to-b from-[#0f2236] via-[#0f2236]/70 to-[#0f2236]/10" />
+      <StarChart opacity={0.75} />
       <Image
         src="/cards/hundo-scroll.webp"
         alt="별자리 두루마리를 든 정 훈도"
@@ -92,8 +96,10 @@ function HeroStage({ count, ask }: { count: number | null; ask: boolean }) {
 // Back with a chart (C): the visitor's own day, then where they left off.
 function HeroMe({ name, stem, branch, today, ask, credits }: { name: string; stem: number; branch: number; today: Today; ask: boolean; credits: number | null }) {
   return (
-    <header className="animate-rise relative mt-3 overflow-hidden rounded-3xl bg-gradient-to-b from-[#12263b] via-[#1d3a58] to-[#25496b] px-5 pt-5 pb-4 text-[#f7efd9] shadow-[0_10px_30px_rgb(33_27_23/0.22)]">
-      <span aria-hidden className="absolute inset-0 bg-[radial-gradient(#f3ead0_1px,transparent_1.3px)] [background-size:46px_52px] opacity-20" />
+    <header className="animate-rise relative mt-3 overflow-hidden rounded-3xl bg-[#0f2236] px-5 pt-5 pb-4 text-[#f7efd9] shadow-[0_10px_30px_rgb(33_27_23/0.22),inset_0_0_0_1px_rgb(212_175_95/0.35)]">
+      <Image src="/cards/gwansanggam.webp" alt="" fill sizes="440px" className="object-cover object-bottom opacity-45" />
+      <span aria-hidden className="absolute inset-0 bg-gradient-to-b from-[#0f2236]/95 via-[#0f2236]/80 to-[#0f2236]/55" />
+      <StarChart opacity={0.6} />
       <div className="relative flex items-center gap-3">
         <HundoFace size={52} />
         <p className="font-myeongjo text-[19px] leading-snug font-extrabold">
@@ -170,7 +176,7 @@ export default async function HomeV2() {
   const myRank = me ? ranks.find((r) => r.stem === me.person.pillars.dayStem && r.branch === me.person.pillars.dayBranch) : undefined;
 
   return (
-    <>
+    <div className="tone-night flex flex-col">
       {me ? (
         <HeroMe
           name={me.person.name}
@@ -188,7 +194,7 @@ export default async function HomeV2() {
       <nav aria-label="무료로 보기" className="-mx-4 mt-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
         {CHIPS.filter((c) => !me || (c.href !== "/reports/gukjeong" && c.href !== "/#today")).map((c) => (
           <Link key={c.href} href={c.href} className="card flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-bold">
-            <span className="font-myeongjo text-[13px] text-seal">{c.hanja}</span>
+            <span className="font-myeongjo text-[13px] text-gold">{c.hanja}</span>
             {c.label}
           </Link>
         ))}
@@ -254,12 +260,12 @@ export default async function HomeV2() {
       {/* In season: next year's 신년운세, the contents folded after three lines. */}
       {ny && nyProduct && (
         <section className="card mt-6 overflow-hidden">
-          <div className="bg-seal px-5 py-2 text-center text-[12px] font-extrabold tracking-wide text-hanji">
-            {ny} {yearName(ny).ko.replace("년", "")}년({yearName(ny).hanja}年) · {yearNickname(ny)}
+          <div className="bg-jjok px-5 py-2 text-center text-[12px] font-extrabold tracking-wide text-[#e2bc68]">
+            {ny} {yearName(ny).ko.replace("년", "")}년({yearName(ny).hanja}年) · <span className="text-[#f0a39a]">{yearNickname(ny)}</span>
           </div>
           <div className="px-5 pt-4 pb-5">
             <div className="flex items-center gap-3">
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-lg border-2 border-seal font-myeongjo text-sm font-extrabold text-seal">
+              <span className="flex size-12 shrink-0 items-center justify-center rounded-lg border-2 border-gold/70 font-myeongjo text-sm font-extrabold text-gold">
                 {nyProduct.hanja}
               </span>
               <h2 className="font-myeongjo text-[22px] leading-tight font-extrabold">{nyProduct.title}</h2>
@@ -275,7 +281,7 @@ export default async function HomeV2() {
             <ol className="mt-3 flex flex-col divide-y divide-ink/10 text-[14px]">
               {nyProduct.toc.slice(0, 3).map((item, i) => (
                 <li key={item} className="flex gap-2 py-1.5">
-                  <span className="w-7 shrink-0 font-myeongjo font-extrabold text-seal">{hanjaNum(i + 1)}</span>
+                  <span className="w-7 shrink-0 font-myeongjo font-extrabold text-gold">{hanjaNum(i + 1)}</span>
                   {item}
                 </li>
               ))}
@@ -288,7 +294,7 @@ export default async function HomeV2() {
               <ol className="flex flex-col divide-y divide-ink/10 text-[14px]">
                 {nyProduct.toc.slice(3).map((item, i) => (
                   <li key={item} className="flex gap-2 py-1.5">
-                    <span className="w-7 shrink-0 font-myeongjo font-extrabold text-seal">{hanjaNum(i + 4)}</span>
+                    <span className="w-7 shrink-0 font-myeongjo font-extrabold text-gold">{hanjaNum(i + 4)}</span>
                     {item}
                   </li>
                 ))}
@@ -299,7 +305,7 @@ export default async function HomeV2() {
             </p>
             <Link
               href={nyOwned ? `/reports/yeonun?order=${nyOwned.id}` : `/reports/yeonun?y=${ny}`}
-              className="mt-3 block rounded-2xl bg-seal py-3.5 text-center font-myeongjo text-[17px] font-extrabold text-hanji shadow-[0_4px_0_#7d1a14]"
+              className="mt-3 block rounded-2xl bg-jjok py-3.5 text-center font-myeongjo text-[17px] font-extrabold text-[#e2bc68] shadow-[0_4px_0_#131a23,inset_0_0_0_1px_rgb(212_175_95/0.45)]"
             >
               {nyOwned ? "결제한 신년운세 바로 보기" : me ? `${me.person.name}님의 ${ny}년 ${isPreview(ny) ? "미리 보기" : "보기"}` : `내 ${ny}년 운세 ${isPreview(ny) ? "미리 보기" : "보기"}`}
             </Link>
@@ -372,6 +378,6 @@ export default async function HomeV2() {
       <Link href="/column" className="mt-2 block text-center text-[13px] font-bold text-seal">
         이야기 전체 보기 →
       </Link>
-    </>
+    </div>
   );
 }
