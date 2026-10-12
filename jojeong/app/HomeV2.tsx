@@ -149,7 +149,8 @@ function HeroMe({ name, stem, branch, today, ask, credits }: { name: string; ste
 
 
 // 정 훈도에게 묻기 as the new thing on the home: his 사랑방, the room in the 기와집 where guests talk, with a
-// 현판 over the door and the lattice of a paper window behind. What a question brings is said as promises.
+// 현판 over the door and the lattice of a paper window behind. What a question brings is said as promises, and how
+// to ask so the letter goes deep.
 const PROMISES: [string, React.ReactNode][] = [
   ["直答", <><b>돌려 말하지 않아요.</b> 된다, 안 된다부터</>],
   ["時勢", <><b>왜 하필 지금</b>, 그 고민이 생겼는지</>],
@@ -158,13 +159,24 @@ const PROMISES: [string, React.ReactNode][] = [
   ["一事", <><b>오늘 바로</b> 해 볼 한 가지</>],
   ["記憶", <>다음에 오면 <b>지난 이야기부터</b> 기억해요</>],
 ];
-const ASKED = ["그 사람, 다시 연락 올까?", "이직 제안, 받아도 될까?", "올해 안에 돈이 모일까?"];
 
+// A 현판 as it hangs under real eaves: a wide dark board with the name carved in gold, held in a 단청 frame
+// (red, green, gold), two iron hooks above. 聽心堂: the hall where the heart is heard.
 function Plaque() {
   return (
-    <div className="relative z-10 mx-auto -mb-5 w-fit rounded-md bg-gradient-to-b from-[#4a3420] to-[#2e2013] px-6 pt-2.5 pb-2 text-center shadow-[0_6px_14px_rgb(0_0_0/0.35),inset_0_0_0_2px_#2e2013,inset_0_0_0_3.5px_rgb(212_175_95/0.75),inset_0_0_0_5px_#2e2013]">
-      <p className="font-myeongjo text-[22px] leading-none tracking-[0.3em] text-[#e2bc68]">問訓導</p>
-      <p className="mt-1 text-[10.5px] font-bold tracking-[0.15em] text-[#e2bc68]/75">정 훈도의 사랑방</p>
+    <div className="relative z-10 mx-auto -mb-6 w-fit">
+      <span aria-hidden className="absolute -top-2 left-[22%] h-3 w-1 rounded-full bg-[#2b2622]" />
+      <span aria-hidden className="absolute -top-2 right-[22%] h-3 w-1 rounded-full bg-[#2b2622]" />
+      <div className="rounded-[3px] bg-[#7a2a1f] p-[3px] shadow-[0_8px_16px_rgb(0_0_0/0.35)]">
+        <div className="rounded-[2px] bg-[#2f6b5a] p-[2px]">
+          <div className="rounded-[1px] bg-[#d4af5f] p-px">
+            <div className="bg-[linear-gradient(180deg,#2a2016,#1d160f)] [background-image:repeating-linear-gradient(90deg,rgb(255_255_255/0.025)_0_2px,transparent_2px_7px),linear-gradient(180deg,#2a2016,#1d160f)] px-7 pt-2 pb-1.5 text-center">
+              <p className="font-myeongjo text-[26px] leading-none tracking-[0.35em] text-[#e2bc68] drop-shadow-[0_1px_0_rgb(0_0_0/0.6)] [padding-left:0.35em]">聽心堂</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p className="relative mt-1.5 text-center text-[10.5px] font-bold tracking-[0.12em] text-[#e2bc68]/75">청심당 · 마음을 듣는 정 훈도의 사랑방</p>
     </div>
   );
 }
@@ -173,7 +185,7 @@ function Sangdam({ credits }: { credits: number | null }) {
   return (
     <section className="mt-8">
       <Plaque />
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-b from-[#222d3b] to-[#1a232f] px-5 pt-9 pb-5 text-hanji shadow-[0_8px_22px_rgb(33_27_23/0.18),inset_0_0_0_1px_rgb(212_175_95/0.35)]">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-b from-[#222d3b] to-[#1a232f] px-5 pt-10 pb-5 text-hanji shadow-[0_8px_22px_rgb(33_27_23/0.18),inset_0_0_0_1px_rgb(212_175_95/0.35)]">
         {/* 문살: the lattice of a paper window, faint */}
         <span
           aria-hidden
@@ -196,13 +208,16 @@ function Sangdam({ credits }: { credits: number | null }) {
             </li>
           ))}
         </ul>
-        <p className="relative mt-4 text-[11.5px] font-bold text-hanji/55">이런 것도 여쭤요</p>
-        <div className="relative mt-1.5 flex flex-wrap gap-1.5">
-          {ASKED.map((q) => (
-            <AskLink key={q} from="home" className="rounded-full border border-[#e2bc68]/35 bg-[#f7efd9]/[0.06] px-3 py-1.5 text-[12.5px] text-hanji/90">
-              「{q}」
-            </AskLink>
-          ))}
+        {/* How to ask well: the more of the situation, the deeper the letter. */}
+        <div className="relative mt-4 rounded-xl border border-[#e2bc68]/30 bg-[#f7efd9]/[0.06] px-3.5 py-3">
+          <p className="font-myeongjo text-[14px] font-extrabold text-[#e2bc68]">자세히 들려주실수록 답이 깊어져요</p>
+          <p className="mt-2 flex gap-2 text-[12.5px] text-hanji/45 line-through decoration-hanji/30">
+            <span className="no-underline">✕</span>이직해도 될까요?
+          </p>
+          <p className="mt-1 flex gap-2 text-[12.5px] leading-relaxed text-hanji/90">
+            <span className="text-[#e2bc68]">◯</span>3년 다닌 회사에서 연봉이 오르는 제안을 받았어요. 이번 달 안에 답해야 하는데, 가도 될까요?
+          </p>
+          <p className="mt-2 text-[11.5px] text-hanji/55">무슨 일인지 · 누구와 얽혀 있는지 · 언제까지 정해야 하는지</p>
         </div>
         <AskLink
           from="home"
