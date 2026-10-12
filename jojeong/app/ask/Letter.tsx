@@ -12,7 +12,7 @@ export function HundoFace({ size, ring = "gold" }: { size: number; ring?: "gold"
       className={`block shrink-0 overflow-hidden rounded-full bg-[#f9f1de] ${ring === "gold" ? "shadow-[0_0_0_2px_#d4af5f,0_0_0_4px_#222d3b,0_0_0_5px_rgb(212_175_95/0.4)]" : "shadow-[0_0_0_1.5px_#b3261e]"}`}
       style={{ width: size, height: size }}
     >
-      <Image src="/hundo-face.png" alt="" width={size * 2} height={size * 2} className="h-full w-full object-cover" />
+      <Image src="/hundo-face.png" alt="" width={size * 2} height={size * 2} sizes={`${size}px`} className="h-full w-full object-cover" />
     </span>
   );
 }
