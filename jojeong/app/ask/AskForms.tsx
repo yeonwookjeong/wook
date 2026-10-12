@@ -70,11 +70,31 @@ function Writing({ question, topic }: { question: string; topic: string }) {
   );
 }
 
-// The question box, fixed to the bottom of the room: a topic (one question = one topic), then up to 200 characters.
-export function AskForm({ room, other }: { room: string; other?: boolean }) {
+export const draftKey = (room: string) => `jj_ask_draft:${room}`;
+
+// The question box, fixed to the bottom of the room: a topic (one question = one topic), then up to 300 characters.
+// It is there even with no questions left: the guest writes first, and sending then opens `children` (the packs to
+// buy). What was written is kept in this browser (draftKey) until it is sent, so it waits through the payment.
+export function AskForm({ room, other, credits, children }: { room: string; other?: boolean; credits: number; children?: React.ReactNode }) {
   const [state, action, pending] = useActionState<FormState, FormData>(askAction, { error: null });
   const [text, setText] = useState("");
   const [topic, setTopic] = useState("");
+  const [needCredits, setNeedCredits] = useState(false);
+  // A question written before (here, or before buying more): back in the box.
+  useEffect(() => {
+    try {
+      const d = JSON.parse(localStorage.getItem(draftKey(room)) ?? "null") as { text?: string; topic?: string } | null;
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- read once from this browser's storage
+      if (d?.text) setText(d.text);
+      if (d?.topic) setTopic(d.topic);
+    } catch {}
+  }, [room]);
+  const keep = (t: string, tp: string) => {
+    try {
+      if (t.trim()) localStorage.setItem(draftKey(room), JSON.stringify({ text: t, topic: tp }));
+      else localStorage.removeItem(draftKey(room));
+    } catch {}
+  };
   const box = useRef<HTMLTextAreaElement>(null);
   const [sent, setSent] = useState({ question: "", topic: "" });
   const was = useRef(false);
@@ -86,11 +106,25 @@ export function AskForm({ room, other }: { room: string; other?: boolean }) {
   return (
     <>
       {pending && <Writing question={sent.question} topic={sent.topic} />}
+      {needCredits && (
+        <section className="jjok-box mt-3 px-4 py-4">
+          <p className="text-center font-myeongjo text-[15px] font-extrabold">질문을 채우시면 바로 보내 드려요</p>
+          <p className="mt-1 text-center text-[12px] opacity-75">써 두신 질문은 그대로 남아 있어요</p>
+          {children}
+        </section>
+      )}
       <form
         onSubmit={(e) => {
+          if (credits < 1) {
+            e.preventDefault();
+            keep(text, topic);
+            setNeedCredits(true);
+            return;
+          }
           const f = new FormData(e.currentTarget);
           setSent({ question: text.trim(), topic: String(f.get("topic") ?? "") });
           keepValues(action)(e);
+          keep("", "");
           setText("");
           setTopic("");
         }}
@@ -101,7 +135,17 @@ export function AskForm({ room, other }: { room: string; other?: boolean }) {
           <legend className="sr-only">무엇에 대한 질문이옵니까?</legend>
           {TOPICS.map((t) => (
             <label key={t} className="shrink-0 cursor-pointer">
-              <input type="radio" name="topic" value={t} checked={topic === t} onChange={() => setTopic(t)} className="peer sr-only" />
+              <input
+                type="radio"
+                name="topic"
+                value={t}
+                checked={topic === t}
+                onChange={() => {
+                  setTopic(t);
+                  keep(text, t);
+                }}
+                className="peer sr-only"
+              />
               <span className="block rounded-full border border-ink/15 bg-white/60 px-3 py-1 text-[12.5px] peer-checked:border-ink peer-checked:bg-ink peer-checked:text-hanji">{t}</span>
             </label>
           ))}
@@ -120,6 +164,7 @@ export function AskForm({ room, other }: { room: string; other?: boolean }) {
                 onClick={() => {
                   setText(st.text);
                   setTopic(st.topic);
+                  keep(st.text, st.topic);
                   requestAnimationFrame(() => box.current?.focus());
                 }}
                 className="shrink-0 rounded-lg bg-seal/8 px-2.5 py-1 text-[12px] text-seal"
@@ -134,7 +179,10 @@ export function AskForm({ room, other }: { room: string; other?: boolean }) {
             ref={box}
             name="question"
             value={text}
-            onChange={(e) => setText(e.target.value.slice(0, MAX))}
+            onChange={(e) => {
+              setText(e.target.value.slice(0, MAX));
+              keep(e.target.value.slice(0, MAX), topic);
+            }}
             rows={text ? 3 : 1}
             maxLength={MAX}
             disabled={pending}

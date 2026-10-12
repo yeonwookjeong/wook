@@ -5,6 +5,9 @@ import { iljuOf, loadRoom, personOfRoom } from "@/lib/ask";
 import { ASK_OPEN, currentMember, JOIN_GIFT, membersEnabled } from "@/lib/members";
 import { CREDIT_PACKS, type CreditPack } from "@/lib/products";
 import { OpenRoomForm } from "./AskForms";
+import DraftReturn from "./DraftReturn";
+import { openMyRoomAction } from "./actions";
+import { readMe } from "@/lib/me";
 import { AnswerLetter, HundoFace, Question } from "./Letter";
 
 export const metadata: Metadata = {
@@ -28,7 +31,9 @@ const SAMPLE = `[[直答|가되, 서두르지 말 것]] 좋은 자리를 앞에 
 export default async function AskPage({ searchParams }: PageProps<"/ask">) {
   const q = await searchParams;
   const member = membersEnabled() ? await currentMember() : null;
+  const me = member ? await readMe() : null;
   const rooms = member ? (await Promise.all(member.rooms.map(loadRoom))).filter((r) => r && r.member === member.id) : [];
+  const quick = Boolean(me?.person.gender) && !rooms.some((r) => r!.me === me!.token);
 
   return (
     <>
@@ -36,7 +41,7 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
         <div className="flex justify-center">
           <HundoFace size={68} />
         </div>
-        <p className="mt-3 font-myeongjo text-[11px] font-bold tracking-[0.3em] text-[#d4af5f]">問 訓 導 · 맞춤 상담</p>
+        <p className="mt-3 font-myeongjo text-[11px] font-bold tracking-[0.3em] text-[#d4af5f]">聽心堂 · 정 훈도의 사랑방</p>
         <h1 className="mt-1 font-myeongjo text-2xl font-extrabold">정 훈도에게 묻기</h1>
         <p className="mt-2 text-[14px] leading-relaxed opacity-85">
           그대의 여덟 글자를 펼쳐 두고, 고민 하나에 답서를 써 드리옵니다.
@@ -110,6 +115,22 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
               {q.bought && <>질문 {String(q.bought)}개를 채웠어요. </>}
             </p>
           )}
+          {/* The chart from the free reading, one tap to a room (unless one is open on it already). */}
+          {quick && (
+            <form action={openMyRoomAction} className="mt-4">
+              <button type="submit" className="jjok-box flex w-full items-center gap-3 px-4 py-4 text-left">
+                <span className="min-w-0 flex-1">
+                  <span className="block text-[11.5px] font-bold text-[#d4af5f]">무료 사주에서 넣으신 사주 그대로</span>
+                  <b className="block font-myeongjo text-[17px]">
+                    {me!.person.name}님 사주({iljuOf(me!.person)})로 바로 열기
+                  </b>
+                </span>
+                <span className="shrink-0 font-bold text-[#d4af5f]">→</span>
+              </button>
+            </form>
+          )}
+          <DraftReturn rooms={rooms.map((r) => r!.id)} />
+
           <section className="doc-paper mt-4 px-5 py-5">
             <p className="flex items-baseline justify-between">
               <b className="font-myeongjo text-lg">{member.nick}님</b>
@@ -156,9 +177,9 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
             </section>
           )}
 
-          {rooms.length ? (
+          {rooms.length || quick ? (
             <details className="doc-paper mt-4 px-5 py-4">
-              <summary className="cursor-pointer font-myeongjo font-extrabold">＋ 새 사랑방 열기 (다른 사람 사주로)</summary>
+              <summary className="cursor-pointer font-myeongjo font-extrabold">{rooms.length ? "＋ 새 사랑방 열기 (다른 사람 사주로)" : "＋ 다른 생년월일로 열기"}</summary>
               <p className="mt-1 text-[12px] text-ink-soft">생년월일은 사주 글자로만 바꿔 두고 저장하지 않아요.</p>
               <OpenRoomForm />
             </details>
