@@ -85,8 +85,11 @@ export function Question({ text, topic, at }: { text: string; topic?: string; at
 }
 
 // His answer as a letter. The last paragraph (today's one step and a warm word) sits apart in a red-ruled box.
-export function AnswerLetter({ id, name, text, at }: { id?: string; name: string; text: string; at: number }) {
+// `after`: pictures to set below a paragraph, by its mark (시안 모드: app/ask/Figures.tsx).
+export function AnswerLetter({ id, name, text, at, after }: { id?: string; name: string; text: string; at: number; after?: Partial<Record<string, React.ReactNode>> }) {
   const paras = paragraphs(text);
+  // Pictures whose paragraph is not in this letter go just before the closing step.
+  const missing = Object.keys(after ?? {}).filter((k) => !paras.some((p) => p.part === k));
   return (
     <article id={id} className="doc-paper relative rounded-[4px] px-6 pt-6 pb-5">
       <span aria-hidden className="absolute top-5 right-5 font-myeongjo text-[24px] tracking-[0.1em] text-seal/85 [writing-mode:vertical-rl]">
@@ -119,6 +122,9 @@ export function AnswerLetter({ id, name, text, at }: { id?: string; name: string
           const last = p.part ? p.part === "一事" : i === paras.length - 1 && paras.length > 2;
           return last ? (
             <div key={i}>
+              {missing.map((k) => (
+                <div key={k}>{after?.[k]}</div>
+              ))}
               <p aria-hidden className="mt-4 text-center text-[18px] text-gold">
                 ❦
               </p>
@@ -131,6 +137,7 @@ export function AnswerLetter({ id, name, text, at }: { id?: string; name: string
             <div key={i} className={p.part ? "mt-5" : "mt-4"}>
               {head}
               <p>{body}</p>
+              {p.part && after?.[p.part]}
             </div>
           );
         })}
