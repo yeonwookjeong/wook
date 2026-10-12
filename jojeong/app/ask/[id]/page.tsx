@@ -8,9 +8,10 @@ import { CREDIT_PACKS, type CreditPack } from "@/lib/products";
 import { AskForm, AttachOtherForm, ChooseForm } from "../AskForms";
 import { AnswerLetter, HundoFace, Question, RoomHead } from "../Letter";
 import SaveLetter from "../SaveLetter";
-import { ChartFigure, ElementsFigure, MonthsFigure, RareFigure } from "../Figures";
+import { FigureOf } from "../Figures";
 import { isPreview } from "@/lib/admin";
-import { figuresOf } from "@/lib/askFigures";
+import { defaultFigures, figureKit } from "@/lib/askFigures";
+import { withFigures } from "@/lib/askText";
 
 export const metadata: Metadata = { title: "사랑방 · 정 훈도에게 묻기", robots: { index: false } };
 // An answer is written by the model inside the action: give it the same room as a report.
@@ -32,15 +33,16 @@ export default async function MemberRoomPage({ params }: PageProps<"/ask/[id]">)
   const last = room.messages.at(-1);
   const lastGuest = [...room.messages].reverse().find((m) => m.role === "guest");
   const lastAnswer = room.messages.findLastIndex((m) => m.role === "hundo" && !m.choices);
-  // 시안 모드: pictures in the letters (the chart, the five elements, the months ahead), by the question's topic.
+  // 시안 모드: the pictures each letter marks ([[圖|…]]), drawn from the chart; letters from before the marks get
+  // two by their topic.
   const pictures = await isPreview();
-  const figuresAt = (i: number) => {
-    if (!pictures) return undefined;
+  const letterOf = (i: number) => {
+    const text = room.messages[i].text;
+    if (!pictures) return { text };
     const q = room.messages.slice(0, i).findLast((g) => g.role === "guest");
-    const f = figuresOf(me, q?.topic ?? "기타", q?.text ?? "", room.messages[i].at);
-    return f
-      ? { 直答: <RareFigure f={f} name={me.name} />, 時勢: <ChartFigure f={f} />, 性情: <ElementsFigure f={f} />, 時運: <MonthsFigure f={f} /> }
-      : undefined;
+    const kit = figureKit(me, other, room.otherLabel ?? "", q?.topic ?? "기타", q?.text ?? "", room.messages[i].at);
+    if (!kit) return { text };
+    return { text: withFigures(text, defaultFigures(kit)), figure: (k: string) => <FigureOf kit={kit} k={k} name={me.name} /> };
   };
 
   return (
@@ -76,7 +78,7 @@ export default async function MemberRoomPage({ params }: PageProps<"/ask/[id]">)
             </div>
           ) : (
             <div key={i} id={i === lastAnswer ? "last-answer" : undefined} className="scroll-mt-4">
-              <AnswerLetter id={`letter-${i}`} name={me.name} text={m.text} at={m.at} after={figuresAt(i)} />
+              <AnswerLetter id={`letter-${i}`} name={me.name} at={m.at} {...letterOf(i)} />
               <SaveLetter target={`letter-${i}`} file={`정훈도-답서-${i + 1}`} question={room.messages.slice(0, i).findLast((g) => g.role === "guest")?.text} />
             </div>
           ),

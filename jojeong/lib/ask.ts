@@ -8,6 +8,7 @@ import { STEMS_KO, BRANCHES_KO } from "./saju";
 import { plainAnswer } from "./askText";
 import { askRoomIds, getAskRoomRaw, newAskRoomId, setAskRoomRaw } from "./store";
 import { thisYear, yeonunBrief } from "./yeonun";
+import { figureKit, figureMenu } from "./askFigures";
 
 // 정 훈도에게 묻기: a room per chart where 정 훈도 answers one question at a time and remembers the talk.
 // He remembers in three layers: the chart and this year's flow (computed when the room opens, recomputed each
@@ -132,6 +133,17 @@ const SYSTEM = `너는 '정 훈도'다. 조선 관상감 명과학의 막내 관
 - 답을 다 쓴 뒤 줄을 바꿔 정확히 [[메모]] 한 줄을 쓰고, 그 아래에 고쳐 쓴 상담 메모 전체를 쓴다.
 - 메모는 다음 상담 때 네가 읽을 기록이다. 손님 상황, 대화에 나온 사람(호칭·관계), 손님이 털어놓은 사건과 날짜, 네가 드린 핵심 조언, 아직 안 풀린 고민을 '- '로 시작하는 줄로, 900자 안. 지난 메모에서 여전히 맞는 것은 남기고, 틀리거나 지난 것은 고친다.`;
 
+// 시안 모드 only for now: he marks the two or three pictures his answer needs, from what this chart can draw.
+const FIGURE_RULES = `
+
+[그림 — 답서에 함께 넣는 그림]
+- '그림 재료'에 있는 그림 가운데 이 답에 꼭 필요한 것을 2~3개만 고른다. 고른 그림은 그 그림을 풀어 말하는 단락의 맨 끝에 [[圖|열쇠]]로 붙인다(예: "…부딪히는 까닭이옵니다. [[圖|合沖]]"). 열쇠는 그림 재료에 적힌 한자 두 글자 그대로.
+- 질문과 답에 맞게 고른다. 매번 같은 그림을 고르지 않는다:
+  "왜 하필 지금, 요즘 왜" → 合沖 / "언제" → 月運 / 몇 해 앞, 진로, 큰 결정 → 大運·年比 / 연애·결혼·배우자 → 宮位(그 사람 사주가 붙어 있으면 兩人) / 성향, 버릇 → 五行·稀貴 / 신살을 말할 때 → 神殺 / 사주 생김새 전체를 짚을 때 → 命盤.
+- 그림을 붙인 단락에서는 그림 속 값 하나를 손가락으로 짚듯 말한다("그림에서 금빛으로 둘린 배우자 자리의 범(寅)이"). 그림 재료에 없는 숫자나 판정을 지어내지 않는다.
+- 한 답에 같은 그림은 한 번. 이어지는 상담이면 최근 대화에서 이미 쓴 그림 말고 다른 것을 먼저 고른다.
+- [[一事]] 단락에는 붙이지 않는다. 단락 가운데에 넣지 않는다.`;
+
 const kstDate = (t = Date.now()) => new Date(t + 9 * 3600000).toISOString().slice(0, 10);
 
 function context(room: AskRoom): string | null {
@@ -161,7 +173,8 @@ const RECENT = 8;
 export type AskResult = { ok: true } | { ok: false; error: string };
 
 // One question. `chosen`: after he offered choices, the one the guest picked (the original question rides along).
-export async function ask(room: AskRoom, question: string, topic: Topic, chosen?: string): Promise<AskResult> {
+// `figures` (시안 모드): he marks pictures for his answer (lib/askFigures.ts).
+export async function ask(room: AskRoom, question: string, topic: Topic, chosen?: string, figures = false): Promise<AskResult> {
   const q = question.trim().slice(0, MAX_QUESTION);
   if (!q) return { ok: false, error: "여쭐 말씀을 적어 주시옵소서." };
   const ctx = context(room);
@@ -169,25 +182,31 @@ export async function ask(room: AskRoom, question: string, topic: Topic, chosen?
   const recent = room.messages
     .filter((m) => !m.choices)
     .slice(-RECENT)
-    .map((m) => `${m.role === "guest" ? `손님${m.topic ? `(${m.topic})` : ""}` : "정 훈도"} [${kstDate(m.at)}]: ${plainAnswer(m.text)}`)
+    .map((m) => {
+      const used = [...m.text.matchAll(/\[\[圖\|([^\]\n]{1,6})\]\]/g)].map((f) => f[1]);
+      return `${m.role === "guest" ? `손님${m.topic ? `(${m.topic})` : ""}` : "정 훈도"} [${kstDate(m.at)}]: ${plainAnswer(m.text)}${used.length ? ` (그림: ${used.join(", ")})` : ""}`;
+    })
     .join("\n");
   const name = personOfRoom(room)!.name;
+  const kit = figures ? figureKit(personOfRoom(room)!, otherOfRoom(room), room.otherLabel ?? "", chosen ?? topic, `${chosen ?? ""} ${q}`, Date.now()) : null;
   const prompt = [
     ctx,
+    ...(kit ? [`[그림 재료 — 답서에 넣을 수 있는 그림과 그 안의 값]\n${figureMenu(kit)}`] : []),
     `[상담 메모]\n${room.memo || "(아직 없음 — 첫 상담)"}`,
     `[최근 대화]\n${recent || "(없음)"}`,
     `[이번 질문] 손님 ${name}님, 고른 주제: ${topic}${room.used > 0 ? ` — 이어지는 상담(앞서 ${room.used}번 답함)` : " — 첫 상담"}${chosen ? `\n여러 주제 중 손님이 먼저 고른 것: ${chosen} — 이것 하나만 답한다.` : ""}\n${q}`,
   ].join("\n\n");
 
+  const MOCK_FIGS: Record<string, string[]> = { 연애: ["宮位", "稀貴", "月運"], 일: ["合沖", "五行", "大運"], 돈: ["命盤", "五行", "年比"], 사람: ["兩人", "神殺", "月運"] };
   // ASK_MOCK=1 (local only, no key): a canned answer that still exercises the topic split and the memo.
   let usage: Usage | undefined;
   const text =
     process.env.ASK_MOCK === "1"
       ? !chosen && /그리고|또/.test(q)
         ? "[[여러 주제]]\n- 연애: 그 사람과의 앞날\n- 일: 이직할 때"
-        : `[[直答|서두르지 않는 쪽]] 그대의 물음에 한 줄로 아뢰자면, ==서두르지 않는 쪽이 맞사옵니다.==\n\n[[時勢|시험용 까닭]] (시험용 답변 · 질문: ${q})\n\n[[性情|시험용 사람]] 그대는 한번 정하면 끝까지 가는 분이옵니다.\n\n[[時運|시험용 때]] 입동 지나 마음이 정해지기 쉬운 때이옵니다.\n\n[[一事]] 오늘은 하나만 정해 보시옵소서.\n\n[[메모]]\n- ${kstDate()} ${topic} 질문: ${q}\n${room.memo}`
+        : `[[直答|서두르지 않는 쪽]] 그대의 물음에 한 줄로 아뢰자면, ==서두르지 않는 쪽이 맞사옵니다.==\n\n[[時勢|시험용 까닭]] (시험용 답변 · 질문: ${q})${kit ? ` [[圖|${MOCK_FIGS[kit.base.lens.topic]?.[0] ?? "合沖"}]]` : ""}\n\n[[性情|시험용 사람]] 그대는 한번 정하면 끝까지 가는 분이옵니다.${kit ? ` [[圖|${MOCK_FIGS[kit.base.lens.topic]?.[1] ?? "神殺"}]]` : ""}\n\n[[時運|시험용 때]] 입동 지나 마음이 정해지기 쉬운 때이옵니다.${kit ? ` [[圖|${MOCK_FIGS[kit.base.lens.topic]?.[2] ?? "年比"}]]` : ""}\n\n[[一事]] 오늘은 하나만 정해 보시옵소서.\n\n[[메모]]\n- ${kstDate()} ${topic} 질문: ${q}\n${room.memo}`
       : await writeReport(
-          { key: `ask:${room.id}`, system: SYSTEM, prompt, title: "정 훈도에게 묻기", modern: false },
+          { key: `ask:${room.id}`, system: kit ? SYSTEM + FIGURE_RULES : SYSTEM, prompt, title: "정 훈도에게 묻기", modern: false },
           () => {},
           (u) => {
             usage = u;
