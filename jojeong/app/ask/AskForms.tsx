@@ -70,6 +70,28 @@ function Writing({ question, topic }: { question: string; topic: string }) {
   );
 }
 
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="w-7 shrink-0 text-[11px] font-bold text-ink-soft">{label}</span>
+      <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto [scrollbar-width:none]">{children}</div>
+    </div>
+  );
+}
+
+function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={on}
+      className={`shrink-0 rounded-full border px-3 py-1 text-[12.5px] ${on ? "border-ink bg-ink text-hanji" : "border-ink/15 bg-white/70 text-ink"}`}
+    >
+      {children}
+    </button>
+  );
+}
+
 export const draftKey = (room: string) => `jj_ask_draft:${room}`;
 
 // The question box, fixed to the bottom of the room: a topic (one question = one topic), then up to 300 characters.
@@ -92,6 +114,9 @@ export function AskForm({
   children?: React.ReactNode;
 }) {
   const [withId, setWithId] = useState(defaultWith ?? "");
+  // Folded to one line while reading; the choices open with the box.
+  const [open, setOpen] = useState(false);
+  const whoLabel = people.find((x) => x.id === withId)?.label ?? "나";
   const [state, action, pending] = useActionState<FormState, FormData>(askAction, { error: null });
   const [text, setText] = useState("");
   const [topic, setTopic] = useState("");
@@ -143,80 +168,87 @@ export function AskForm({
           keep("", "");
           setText("");
           setTopic("");
+          setOpen(false);
         }}
         className="sticky bottom-0 z-10 -mx-4 mt-2 border-t border-ink/10 bg-hanji/95 px-3 pt-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur"
       >
         <input type="hidden" name="room" value={room} />
         <input type="hidden" name="with" value={withId} />
-        {(people.length > 0 || canAdd) && (
-          <div className="mb-2 flex items-center gap-1.5 overflow-x-auto [scrollbar-width:none]">
-            <span className="shrink-0 text-[11.5px] font-bold text-ink-soft">누구 이야기?</span>
-            {[{ id: "", label: "나" }, ...people].map((x) => (
-              <button
-                key={x.id || "me"}
-                type="button"
-                onClick={() => setWithId(x.id)}
-                aria-pressed={withId === x.id}
-                className={`shrink-0 rounded-full border px-3 py-1 text-[12.5px] ${withId === x.id ? "border-seal bg-seal text-hanji" : "border-seal/25 bg-white/60 text-seal"}`}
-              >
-                {x.label}
+        <input type="hidden" name="topic" value={topic} />
+        {open ? (
+          <div className="mb-2 flex flex-col gap-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11.5px] font-bold text-ink-soft">여쭐 말씀</span>
+              <button type="button" onClick={() => setOpen(false)} className="text-[11.5px] text-ink-soft">
+                접기 ▾
               </button>
-            ))}
-            {canAdd && (
-              <a href="#people" className="shrink-0 rounded-full border border-dashed border-ink/25 px-3 py-1 text-[12.5px] text-ink-soft">
-                ＋ 사람
-              </a>
+            </div>
+            <Row label="누구">
+              {[{ id: "", label: "나" }, ...people].map((x) => (
+                <Chip key={x.id || "me"} on={withId === x.id} onClick={() => setWithId(x.id)}>
+                  {x.label}
+                </Chip>
+              ))}
+              {canAdd && (
+                <a href="#people" onClick={() => setOpen(false)} className="shrink-0 px-1.5 py-1 text-[12.5px] text-ink-soft underline">
+                  ＋ 사람
+                </a>
+              )}
+            </Row>
+            <Row label="무엇">
+              {TOPICS.map((t) => (
+                <Chip
+                  key={t}
+                  on={topic === t}
+                  onClick={() => {
+                    setTopic(t);
+                    keep(text, t);
+                  }}
+                >
+                  {t}
+                </Chip>
+              ))}
+            </Row>
+            {!text && (
+              <p className="flex gap-x-2.5 overflow-x-auto text-[12px] whitespace-nowrap text-seal [scrollbar-width:none]">
+                <span className="shrink-0 text-ink-soft">이렇게 시작해 보세요</span>
+                {STARTERS.map((st) => (
+                  <button
+                    key={st.label}
+                    type="button"
+                    onClick={() => {
+                      setText(st.text);
+                      setTopic(st.topic);
+                      keep(st.text, st.topic);
+                      requestAnimationFrame(() => box.current?.focus());
+                    }}
+                    className="shrink-0 underline decoration-seal/30 underline-offset-2"
+                  >
+                    {st.label}
+                  </button>
+                ))}
+              </p>
             )}
           </div>
+        ) : (
+          <button type="button" onClick={() => setOpen(true)} className="mb-1.5 flex max-w-full items-center gap-1 text-[12px] text-ink-soft">
+            <span className="truncate">
+              <b className="text-ink">{whoLabel} 이야기</b> · {topic || "주제 고르기"}
+            </span>
+            <span aria-hidden>▴</span>
+          </button>
         )}
-        <fieldset className="flex gap-1.5 overflow-x-auto [scrollbar-width:none]">
-          <legend className="sr-only">무엇에 대한 질문이옵니까?</legend>
-          {TOPICS.map((t) => (
-            <label key={t} className="shrink-0 cursor-pointer">
-              <input
-                type="radio"
-                name="topic"
-                value={t}
-                checked={topic === t}
-                onChange={() => {
-                  setTopic(t);
-                  keep(text, t);
-                }}
-                className="peer sr-only"
-              />
-              <span className="block rounded-full border border-ink/15 bg-white/60 px-3 py-1 text-[12.5px] peer-checked:border-ink peer-checked:bg-ink peer-checked:text-hanji">{t}</span>
-            </label>
-          ))}
-        </fieldset>
-        {!text && (
-          <div className="mt-2 flex gap-1.5 overflow-x-auto [scrollbar-width:none]">
-            {STARTERS.map((st) => (
-              <button
-                key={st.label}
-                type="button"
-                onClick={() => {
-                  setText(st.text);
-                  setTopic(st.topic);
-                  keep(st.text, st.topic);
-                  requestAnimationFrame(() => box.current?.focus());
-                }}
-                className="shrink-0 rounded-lg bg-seal/8 px-2.5 py-1 text-[12px] text-seal"
-              >
-                {st.label} …
-              </button>
-            ))}
-          </div>
-        )}
-        <div className="mt-2 flex items-end gap-2">
+        <div className="flex items-end gap-2">
           <textarea
             ref={box}
             name="question"
             value={text}
+            onFocus={() => setOpen(true)}
             onChange={(e) => {
               setText(e.target.value.slice(0, MAX));
               keep(e.target.value.slice(0, MAX), topic);
             }}
-            rows={text ? 3 : 1}
+            rows={open && text ? 3 : 1}
             maxLength={MAX}
             disabled={pending}
             aria-label="여쭐 말씀"
@@ -227,7 +259,7 @@ export function AskForm({
             {pending ? "쓰는 중" : "여쭙기"}
           </button>
         </div>
-        {text && (
+        {open && text && (
           <p className="mt-1 text-right text-[11px] text-ink-soft">
             {[...text].length}/{MAX} · 무슨 일이 있는지, 언제까지 정해야 하는지 적어 주실수록 깊어져요
           </p>
