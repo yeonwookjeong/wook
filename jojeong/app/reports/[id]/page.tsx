@@ -36,7 +36,7 @@ import { newYearOf, newYearProduct, thisYear, yearDetail, yearOf, yearRange, yea
 import { josa } from "@/lib/josa";
 import { hanjaKo } from "@/lib/saju";
 import { ownedCourts } from "@/lib/load";
-import { ADULT_ONLY, FIXED_RELATION, isAdult, isOpen, isPair, PRICE, productById, saleLabel, saleNow, YEONUN_PAST_TOC, type Product, type ProductId } from "@/lib/products";
+import { ADULT_ONLY, FIXED_RELATION, FREE_LOCK, isAdult, isOpen, isPair, PRICE, productById, saleLabel, saleNow, YEONUN_PAST_TOC, type Product, type ProductId } from "@/lib/products";
 import { REPORT_SPECS } from "@/lib/reportPrompts";
 import { coupleOf } from "@/lib/couple";
 import { intimacyOf } from "@/lib/intimacy";
@@ -48,7 +48,9 @@ import { distinctOf } from "@/lib/rarity";
 import { courtOfReader, subjectFor } from "@/lib/subject";
 import { getProfile } from "@/lib/store";
 import { covers, getOrder, ownedOrderFor, ownedOrders, type Order } from "@/lib/pay";
-import { isAdmin } from "@/lib/admin";
+import { isAdmin, isPreview } from "@/lib/admin";
+import YearAhead from "@/components/YearAhead";
+import { decadeTags, layersOf, manseOf, salSeats, yearPreviewOf } from "@/lib/freePreview";
 import TrackView from "@/components/TrackView";
 import { saleKey } from "@/lib/sales";
 import { KINDS, OFFERED, parseSearch, pickDays, searchDay, startMonths } from "@/lib/taekil";
@@ -114,6 +116,7 @@ async function OpenReport({
   paid,
   search = {},
   fresh = false,
+  preview = false,
 }: {
   product: Product;
   courtId?: string;
@@ -124,6 +127,8 @@ async function OpenReport({
   paid?: Order;
   search?: Search;
   fresh?: boolean;
+  // 시안 모드 (lib/admin.ts isPreview): the free screen being readied, on the life report, for the owner only.
+  preview?: boolean;
 }) {
   const query = new URLSearchParams({ ...(courtId && { court: courtId }), ...(ministerId && { m: ministerId }) }).toString();
 
@@ -401,7 +406,9 @@ async function OpenReport({
   // flow of life). Shown on the free year reading and on the life report before purchase.
   // Until the life report is owned, the free reading tells what each thing is and keeps why and when for it
   // (components/LockedLine.tsx); bought (or given), everything opens.
+  // The lock waits for the card company's review (FREE_LOCK, lib/products.ts); 시안 모드 shows it already.
   const lifeOwned =
+    !(FREE_LOCK || preview) ||
     (product.id === "pyeongsaeng" && Boolean(paid)) ||
     (self && me ? Boolean(await ownedOrderFor("pyeongsaeng", { product: "pyeongsaeng", p: me.token })) : false);
   const lifeHref = product.id === "pyeongsaeng" ? "#report-start" : `/reports/pyeongsaeng${query ? `?${query}` : ""}`;
@@ -440,11 +447,41 @@ async function OpenReport({
         />
       </>
     ) : null;
+  // 시안: the 만세력 rows, where each 신살 sits, the decades' characters, and 2027 after the flow of life.
+  const draft = preview && product.id === "pyeongsaeng";
+  const ahead = draft
+    ? { y: yearPreviewOf(pillars, profile, 2027), d: yearDetail(pillars, profile, 2027, 2026), layers: layersOf(pillars, profile, 2027) }
+    : null;
   const fullIntro = intro && (
     <>
-      <ChartIntro name={name} d={distinct} slots={reading.chart.slots} chips={!free} lockHref={lifeOwned ? null : lifeHref} />
+      <ChartIntro
+        name={name}
+        d={distinct}
+        slots={reading.chart.slots}
+        chips={!free}
+        lockHref={lifeOwned ? null : lifeHref}
+        manse={draft ? manseOf(pillars) : null}
+      />
       {free && (
-        <FreeReading name={name} r={free} query={query} addGender={`${next}?new=1`} onLifeReport={product.id === "pyeongsaeng"} locked={!lifeOwned} />
+        <FreeReading
+          name={name}
+          r={free}
+          query={query}
+          addGender={`${next}?new=1`}
+          onLifeReport={product.id === "pyeongsaeng"}
+          locked={!lifeOwned}
+          seats={draft ? salSeats(pillars) : undefined}
+          tags={draft ? Object.fromEntries((profile?.daeun ?? []).map((d) => [d.from, decadeTags(pillars, d)])) : undefined}
+        />
+      )}
+      {ahead?.y && ahead.d && ahead.layers && (
+        <YearAhead
+          name={name}
+          y={ahead.y}
+          d={ahead.d}
+          layers={ahead.layers}
+          mood={free?.flow?.find((f) => ahead.layers?.daeun?.from === f.from)?.mood ?? null}
+        />
       )}
     </>
   );
@@ -677,12 +714,18 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
   const order = orderId ? await getOrder(orderId) : null;
   const paid = order && covers(order, product.id) ? order : undefined;
   const y = typeof search.y === "string" ? search.y : undefined;
+  const preview = await isPreview();
   // A shopper on a paid report's page (연운 counts once a year is chosen), for the owner's sales table.
   const shopping = product.modern && !isOpen(product) && !paid && (product.id !== "yeonun" || y);
   if (isOpen(product) || product.modern || paid)
     return (
       <>
         {shopping && <TrackView sale={saleKey(product.id, undefined, y)} />}
+        {preview && (
+          <Link href="/admin/free-preview" className="fixed bottom-3 left-3 z-50 rounded-full bg-ink px-3 py-1 text-[11px] font-bold text-hanji opacity-80">
+            시안 모드
+          </Link>
+        )}
         <nav className="pt-4 text-sm">
           <Link href="/reports" className="font-bold text-ink-soft">
             ← 전체 보고서
@@ -698,7 +741,8 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
             b: typeof search.b === "string" ? search.b : undefined,
             rel: typeof search.rel === "string" ? search.rel : undefined,
           }}
-          locked={!isOpen(product) && !paid && !(await isAdmin())}
+          locked={!isOpen(product) && !paid && (preview || !(await isAdmin()))}
+          preview={preview}
           paid={paid}
           fresh={search.new === "1"}
           search={{
