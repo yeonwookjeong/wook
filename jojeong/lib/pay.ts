@@ -6,6 +6,7 @@ import { isSource, SRC_COOKIE, type Source } from "./source";
 import type { ProductId, SetId } from "./products";
 import type { JobRequest } from "./reportWriter";
 import { isAdmin } from "./admin";
+import { changeCredits, currentMember } from "./members";
 import { getOrderRaw, getOrdersRaw, giftOrderIds, noteGiftOrder, notePaidOrder, paidOrderIds, setOrderRaw } from "./store";
 
 // Paying for a report with 토스페이먼츠 (결제창, API 개별 연동 키).
@@ -32,6 +33,10 @@ export type Order = {
   status: "ready" | "paid" | "canceled";
   // Given away from /admin: paid at 0 won with no payment behind it, and never among the paid orders.
   gift?: boolean;
+  // 질문권: how many questions this order buys, for which member, and whether they were added already.
+  credits?: number;
+  member?: string;
+  credited?: boolean;
   // A payment made to try the site (the owner's own, or marked so on /admin): kept, but out of the dashboard.
   test?: boolean;
   createdAt: number;
@@ -75,6 +80,7 @@ export async function createOrder(
   who: string,
   amount: number,
   set?: { set: SetId; bundle: ProductId[]; from?: ProductId },
+  credits?: { credits: number; member: string },
 ): Promise<Order> {
   // Toss wants 6–64 characters of [A-Za-z0-9_-=]; unguessable, since the id is also the link to the report.
   const src = (await cookies()).get(SRC_COOKIE)?.value;
@@ -85,6 +91,7 @@ export async function createOrder(
     who,
     amount,
     ...set,
+    ...credits,
     status: "ready",
     createdAt: Date.now(),
     ...(isSource(src) && { src }),
@@ -111,6 +118,11 @@ export async function giftOrders(limit = 100): Promise<Order[]> {
   const ids = [...new Set((await giftOrderIds().catch(() => [])).slice(-limit))].reverse();
   const raws = await getOrdersRaw(ids).catch(() => []);
   return raws.flatMap((raw) => (raw ? [JSON.parse(raw) as Order] : []));
+}
+
+// An order written back as it is (the 질문권 'credited' mark), for the payment pages.
+export async function setOrderRawPublic(order: Order) {
+  await setOrderRaw(order.id, JSON.stringify(order));
 }
 
 // Marks a paid order as a test payment (or a real one again), for the owner's dashboard.
@@ -168,6 +180,8 @@ export async function syncPayment(paymentKey: string): Promise<Order | null> {
   if (order.status === "paid" && (payment.status === "CANCELED" || payment.status === "PARTIAL_CANCELED")) {
     const canceled: Order = { ...order, status: "canceled" };
     await setOrderRaw(order.id, JSON.stringify(canceled));
+    // A refunded 질문권 takes back its questions (those not yet used; never below zero).
+    if (order.credits && order.member && order.credited) await changeCredits(order.member, -order.credits, `환불 ${order.id}`);
     return canceled;
   }
   return order;
@@ -176,10 +190,15 @@ export async function syncPayment(paymentKey: string): Promise<Order | null> {
 // Whether a paid order opens this report (its own product, or one of its set).
 export const covers = (o: Order, product: ProductId) => o.status === "paid" && (o.product === product || Boolean(o.bundle?.includes(product)));
 
-// Orders this browser bought, newest first.
-export async function ownedOrderIds(): Promise<string[]> {
+// Orders this browser bought, newest first, and those of the member signed in here (lib/members.ts).
+export async function browserOrderIds(): Promise<string[]> {
   const raw = (await cookies()).get(ORDERS_COOKIE)?.value ?? "";
   return raw.split(".").filter((id) => /^[\w-]{6,64}$/.test(id)).slice(0, 30);
+}
+export async function ownedOrderIds(): Promise<string[]> {
+  const mine = await browserOrderIds();
+  const member = await currentMember().catch(() => null);
+  return member ? [...new Set([...mine, ...member.orders])].slice(0, 200) : mine;
 }
 export const withOrder = (ids: string[], id: string) => [id, ...ids.filter((x) => x !== id)].slice(0, 30).join(".");
 

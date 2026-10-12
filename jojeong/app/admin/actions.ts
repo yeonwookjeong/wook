@@ -4,7 +4,8 @@ import { redirect } from "next/navigation";
 import { refresh } from "next/cache";
 import { isAdmin, setPreview, signIn, signOut } from "@/lib/admin";
 import { isGiftable, originNow } from "@/lib/gift";
-import { createGiftOrder, markTestOrder, revokeGiftOrder } from "@/lib/pay";
+import { createGiftOrder, getOrder, markTestOrder, revokeGiftOrder } from "@/lib/pay";
+import { addOrderToMember, changeCredits, getMember } from "@/lib/members";
 import { encodePerson } from "@/lib/pairToken";
 import { personOf } from "@/lib/personForm";
 import { productById } from "@/lib/products";
@@ -87,5 +88,18 @@ export async function previewModeAction(formData: FormData) {
 export async function testOrderAction(formData: FormData) {
   if (!(await isAdmin())) return;
   await markTestOrder(String(formData.get("id") ?? ""), formData.get("test") === "1");
+  refresh();
+}
+
+// Members (lib/members.ts), for questions by email: put a paid order on someone's account (a report bought on a
+// lost phone), or add or take questions (a goodwill question, a refund done by hand). Owner only.
+export async function memberFixAction(formData: FormData) {
+  if (!(await isAdmin())) return;
+  const id = String(formData.get("member") ?? "").trim();
+  if (!(await getMember(id))) return;
+  const orderId = String(formData.get("order") ?? "").trim();
+  if (orderId && (await getOrder(orderId))?.status === "paid") await addOrderToMember(id, orderId);
+  const d = Math.trunc(Number(formData.get("credits") ?? 0));
+  if (d && Math.abs(d) <= 50) await changeCredits(id, d, "관리자 조정");
   refresh();
 }

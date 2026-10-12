@@ -7,6 +7,8 @@ import { GIFTABLE, originNow } from "@/lib/gift";
 import { SALE_KEYS, saleKey, saleLabel } from "@/lib/sales";
 import { productById, SETS } from "@/lib/products";
 import { lastReportError, listInquiries, readingCount } from "@/lib/store";
+import { memberFixAction } from "./actions";
+import { allMembers } from "@/lib/members";
 import { adminSignOut, giftRevokeAction, inquiryDeleteAction, inquiryDoneAction, testOrderAction } from "./actions";
 import Dashboard, { rangeOf } from "./Dashboard";
 import { threadsPosts } from "@/lib/threads";
@@ -251,6 +253,8 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
           </>
         )}
       </section>
+
+      <MembersSection />
 
       <section className="doc-paper mt-4 px-4 py-4">
         <h2 className="font-myeongjo font-extrabold">최근 결제</h2>
@@ -510,6 +514,45 @@ function SalesTable({ period, stats, paid, refunds }: { period: Period; stats: R
         조회는 결제 전 보고서 화면을 본 수, 결제창은 결제 버튼을 누른 수예요(오늘부터 집계). 결제와 매출은 첫 결제부터 모두 반영돼요. 전환 = 결제 ÷ 조회. 연운은
         지난해·올해·내년으로 나눴고, 내년 연운이 신년운세예요. CSV에는 이름 없이 날짜·상품·금액·결제 수단만 담겨요.
       </p>
+    </section>
+  );
+}
+
+// Members (Kakao): how many, the questions they hold, and a fix for one (an order onto their account, questions).
+async function MembersSection() {
+  const members = await allMembers().catch(() => []);
+  const held = members.reduce((a, m) => a + m.credits, 0);
+  return (
+    <section className="doc-paper mt-4 px-4 py-4">
+      <h2 className="flex items-baseline justify-between font-myeongjo font-extrabold">
+        회원 (카카오)
+        <span className="text-sm text-ink-soft">
+          {members.length}명 · 남은 질문 합 {held}개
+        </span>
+      </h2>
+      {members.length > 0 && (
+        <ul className="mt-2 flex max-h-60 flex-col divide-y divide-seal/10 overflow-y-auto text-[12px]">
+          {[...members].reverse().slice(0, 100).map((m) => (
+            <li key={m.id} className="flex items-center gap-2 py-1.5">
+              <span className="w-16 shrink-0 text-ink-soft">{new Date(m.createdAt + 9 * 3600000).toISOString().slice(5, 10)}</span>
+              <b className="min-w-0 flex-1 truncate">{m.nick}</b>
+              <span className="shrink-0 text-ink-soft">
+                보고서 {m.orders.length} · 질문 {m.credits} · 방 {m.rooms.length}
+              </span>
+              <span className="shrink-0 font-mono text-[10px] text-ink-soft">{m.id}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <details className="mt-3">
+        <summary className="cursor-pointer text-[12px] font-bold">문의 처리: 주문을 회원에게 붙이기 · 질문 넣고 빼기</summary>
+        <form action={memberFixAction} className="mt-2 grid grid-cols-2 gap-1.5 text-[12px]">
+          <input name="member" placeholder="회원 번호 (k로 시작)" className="col-span-2 rounded-lg border border-ink/15 bg-white/60 px-2 py-1.5" />
+          <input name="order" placeholder="주문번호 (선택)" className="rounded-lg border border-ink/15 bg-white/60 px-2 py-1.5" />
+          <input name="credits" type="number" placeholder="질문 +/- (선택)" className="rounded-lg border border-ink/15 bg-white/60 px-2 py-1.5" />
+          <button className="col-span-2 rounded-full bg-ink py-1.5 font-bold text-hanji">적용</button>
+        </form>
+      </details>
     </section>
   );
 }
