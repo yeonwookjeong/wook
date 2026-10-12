@@ -39,10 +39,13 @@ const ROAD_LABEL = (s: Road) => (s === "none" ? "기록 전" : SOURCE_LABEL[s]);
 export default async function Dashboard({ range, orders, threads }: { range: RangeKey; orders: Order[]; threads: ThreadsPost[] }) {
   const today = todayKst();
   const span = RANGES.find((r) => r.key === range)!;
-  const from = span.days ? shift(today, -(span.days - 1)) : LAUNCH;
+  // Nothing before the opening day: a span reaching past it starts there.
+  const start = span.days ? shift(today, -(span.days - 1)) : LAUNCH;
+  const from = start < LAUNCH ? LAUNCH : start;
   const days = daysBetween(from, today);
-  // The same number of days just before, to compare with (none for 전체).
-  const prevDays = span.days ? daysBetween(shift(from, -span.days), shift(from, -1)) : [];
+  // The same number of days just before, to compare with: only a whole span after the opening (none for 전체).
+  const prevFrom = shift(from, -days.length);
+  const prevDays = span.days && start >= LAUNCH && prevFrom >= LAUNCH ? daysBetween(prevFrom, shift(from, -1)) : [];
 
   const events = ["uv", "pv", "reading", ...SOURCES.map((s) => `src:${s}`), ...SALE_KEYS.flatMap((k) => [`view:${k}`, `co:${k}`])];
   const [cur, prev, ever] = await Promise.all([
@@ -62,8 +65,10 @@ export default async function Dashboard({ range, orders, threads }: { range: Ran
   const revenue = paid.reduce((a, o) => a + o.amount, 0);
   const prevRevenue = prevPaid.reduce((a, o) => a + o.amount, 0);
 
-  // Distinct visitors for 전체; for a span of days, each day's visitors added up (one who came twice counts twice).
-  const visitors = ever ? ever.uv.all : sum("uv");
+  // Visitors the same way for every span, so the buttons compare: each day's visitors added up (one who came on two
+  // days counts twice). 전체 also shows the distinct browsers.
+  const visitors = sum("uv");
+  const distinct = ever?.uv.all ?? null;
   const readings = sum("reading");
   const windows = SALE_KEYS.reduce((a, k) => a + sum(`co:${k}`), 0);
 
@@ -129,7 +134,7 @@ export default async function Dashboard({ range, orders, threads }: { range: Ran
     notes.push(`앞선 ${span.days}일보다 결제 ${delta(paid.length, prevPaid.length)}, 매출 ${delta(revenue, prevRevenue)}`);
 
   const kpis = [
-    { k: "방문자", v: n(visitors), d: prevDays.length ? delta(visitors, sum("uv", prev)) : null },
+    { k: "방문자 (날마다 합)", v: n(visitors), d: prevDays.length ? delta(visitors, sum("uv", prev)) : distinct !== null ? `중복 없이 ${n(distinct)}명` : null },
     { k: "무료 분석", v: n(readings), d: prevDays.length ? delta(readings, sum("reading", prev)) : null },
     { k: "결제", v: `${n(paid.length)}건`, d: prevDays.length ? delta(paid.length, prevPaid.length) : null },
     { k: "매출", v: won(revenue), d: prevDays.length ? delta(revenue, prevRevenue) : null },
