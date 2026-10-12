@@ -6,9 +6,18 @@ export const metadata: Metadata = {
   description: "훈도사주에 새로 생긴 것과 바뀐 것을 날짜별로 알려 드려요.",
 };
 
-// What changed on the site, newest first. The one-line note for returning visitors (components/RenewalNote.tsx)
-// leads here.
+// What changed on the site, newest first.
 const NEWS: { date: string; title: string; items: string[] }[] = [
+  {
+    date: "2026년 10월 12일",
+    title: "정 훈도에게 묻기, 정식으로 열었어요",
+    items: [
+      "그대 사주를 펼쳐 놓고 고민 하나를 여쭈면, 정 훈도가 그 사주로 답서를 써 드려요. 지난 상담은 기억해 두었다가 이어 가요.",
+      "답서는 결론부터, 왜 지금인지, 그대라는 사람, 다가올 때, 오늘 한 가지 순서로 써 드려요. 이미지로 저장할 수도 있어요.",
+      "카카오로 시작하면 첫 질문 1개를 드려요. 질문은 1개 990원, 3개 2,900원, 5개 3,900원이에요.",
+      "카카오로 시작하면 이 브라우저에서 산 보고서도 계정에 담겨, 다른 기기에서도 열려요. 카카오에서 받는 것은 회원 번호와 닉네임뿐이에요.",
+    ],
+  },
   {
     date: "2026년 10월 13일",
     title: "무료 사주가 새로워졌어요",
@@ -43,7 +52,10 @@ export default function NewsPage() {
           </ul>
         </article>
       ))}
-      <Link href="/reports/gukjeong?new=1" className="mt-5 block rounded-full bg-seal py-3 text-center font-bold text-hanji">
+      <Link href="/ask" className="mt-5 block rounded-full bg-[#FEE500] py-3 text-center font-bold text-[#191919]">
+        정 훈도에게 첫 질문 받기
+      </Link>
+      <Link href="/reports/gukjeong?new=1" className="mt-2 block rounded-full bg-seal py-3 text-center font-bold text-hanji">
         새로워진 내 사주 무료로 보기
       </Link>
     </>
