@@ -101,12 +101,14 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: "gukjeong",
-    title: "2026 신년 운세",
-    hanja: "國運",
+    // The free reading of the whole chart (it was the 2026 year reading until the renewal of 2026-10-13; the id stays,
+    // since links and counts use it).
+    title: "내 사주 무료 풀이",
+    hanja: "命盤",
     for: "anyone",
-    tagline: "2026년 나한테 어떤 일이 생길까? 돈·일·사랑·건강부터 달마다 할 일까지",
-    toc: ["나는 어떤 사람일까", "2026년, 어떤 해가 될까", "돈은 들어올까, 새어 나갈까", "일: 버틸까, 옮길까", "올해 인연은 들어올까", "누구를 곁에 두고, 누구를 조심할까", "몸과 마음, 어디부터 챙길까", "언제 움직이고 언제 쉴까 (상반기)", "언제 움직이고 언제 쉴까 (하반기)", "올해를 내 편으로 만드는 법"],
-    teaser: "사주로 2026년 한 해를 처음부터 끝까지 풀어 드려요.",
+    tagline: "나는 어떤 사람일까? 여덟 글자로 보는 성격·재능·돈·사랑·일, 그리고 10년마다 바뀌는 흐름까지",
+    toc: ["사주팔자와 만세력", "100명 중 몇 명꼴인 특징", "성향 지도: 다섯 가지 힘", "사주 속 별", "돈·사랑·일, 한 줄 판정", "인생 흐름: 10년마다", "2027년 한눈에"],
+    teaser: "생년월일만 넣으면 내 사주 전체를 무료로 풀어 드려요.",
     free: true,
     modern: true,
   },
@@ -247,8 +249,8 @@ export const isOpen = (p: Product) => Boolean(p.free);
 export const PRICE = 990;
 
 // The free reading keeps its reasons and timing for the life report (components/LockedLine.tsx). Off until the
-// card company's review is done; the owner's 시안 모드 (lib/admin.ts isPreview) shows it on already.
-export const FREE_LOCK = false;
+// card company's review was done (2026-10-12); on since the renewal (lib/launch.ts).
+export const FREE_LOCK = true;
 
 // Special-day sales, in KST dates, both ends inclusive. Outside them every report is PRICE.
 // e.g. { name: "설날 행사", from: "2027-02-05", to: "2027-02-09", price: 590 }

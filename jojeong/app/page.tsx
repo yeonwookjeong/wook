@@ -37,7 +37,7 @@ const TOPICS: { id: ProductId; name: string; ask: string }[] = [
 
 // Free, computed, no payment: night-blue tiles under the choices (components/FreeTiles.tsx).
 const FREE: FreeTile[] = [
-  { href: "/reports/gukjeong", hanja: "國運", title: "2026 운세", line: "남은 올해, 언제 움직이고 언제 쉴까", tag: "내 사주" },
+  { href: "/reports/gukjeong", hanja: "國運", title: "내 사주 · 2027", line: "여덟 글자와 2027년 열두 달, 무료로", tag: "내 사주" },
   { href: "/samjae", hanja: "三災", title: "2026 삼재 띠", line: "토끼·양·돼지띠 눌삼재", tag: "띠별" },
   { href: "/king", hanja: "王", title: "왕이 될 사주", line: "친구를 불러 내 조정을 꾸리는 놀이", tag: "친구와" },
   { href: "/reports/sinbun", hanja: "身分", title: "조선 신분 감정", line: "조선에 태어났다면 어떤 신분이었을까", tag: "혼자" },
@@ -84,13 +84,13 @@ export default async function Home() {
       <StoreHero
         count={count >= SHOW_COUNT_FROM ? count : null}
         cta={
-          // The first stop is the free 2026 reading (a whole year, computed, no AI), not a report on sale:
+          // The first stop is the free reading (the chart and 2027, computed, no AI), not a report on sale:
           // people read something complete before being asked to pay.
           me
-            ? { href: "/reports/gukjeong", label: `${me.person.name}님 무료 운세 보기`, sub: "2026년 운세와 사주 분석까지 · 무료" }
+            ? { href: "/reports/gukjeong", label: `${me.person.name}님 무료 운세 보기`, sub: "사주 분석과 2027년 운세까지 · 무료" }
             : // ?new=1 asks for a chart: without it the report falls back to a court this browser enthroned
               // (lib/subject.ts), which right after "다른 사람 보기" brings back the chart just let go.
-              { href: "/reports/gukjeong?new=1", label: "내 사주 무료로 보기", sub: "생년월일만 넣으면 2026년 운세와 사주 분석을 바로 보여 드려요" }
+              { href: "/reports/gukjeong?new=1", label: "내 사주 무료로 보기", sub: "생년월일만 넣으면 사주 분석과 2027년 운세를 바로 보여 드려요" }
         }
       />
 

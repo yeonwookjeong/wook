@@ -11,19 +11,19 @@ export const LIFE_CHAPTER = {
 } as const;
 export type LifeChapter = keyof typeof LIFE_CHAPTER;
 
-// A line held back for the paid report: a blurred stand-in (never the real sentence, so nothing is in the page to
-// unblur) and, over it, which chapter of the life report tells it. `href` goes to the payment or the report page.
+// Where the paid report goes on: which chapter of the life report tells what the free screen leaves out.
+// No blurred stand-in text: one clean line that says where the rest is. `href` goes to the payment or the report.
 export default function LockedLine({ href, chapter, className = "" }: { href: string; chapter: LifeChapter; className?: string }) {
   const [n, title] = LIFE_CHAPTER[chapter];
   return (
-    <Link href={href} className={`relative mt-1 block overflow-hidden rounded-lg ${className}`}>
-      <span aria-hidden="true" className="block text-[13px] leading-snug blur-[4px] select-none">
-        이 시기에 어떤 일이 생기고 무엇을 준비하면 좋은지 자세히 풀어 드려요
+    <Link href={href} className={`mt-2 flex items-center gap-2 rounded-xl border border-seal/25 bg-seal/5 px-3 py-2 text-[12.5px] ${className}`}>
+      <span aria-hidden="true">🔒</span>
+      <span className="min-w-0 flex-1">
+        <b className="text-seal">평생 사주 {n}장</b> · {title}
+        <span className="block text-[11px] text-ink-soft">이유와 시기는 여기서 이어서 풀어 드려요</span>
       </span>
-      <span className="absolute inset-0 flex items-center justify-center">
-        <span className="rounded-full border border-seal/30 bg-hanji/95 px-2.5 py-0.5 text-[11px] font-bold whitespace-nowrap text-seal">
-          🔒 평생 사주 {n}장 · {title}
-        </span>
+      <span aria-hidden="true" className="shrink-0 font-bold text-seal">
+        →
       </span>
     </Link>
   );

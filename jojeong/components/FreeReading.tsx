@@ -141,7 +141,6 @@ export default function FreeReading({
             {first(r.weak.line)}
           </p>
         </div>
-        {locked && <LockedLine href={lifeHref} chapter="edge" />}
         <p className="mt-2 text-[11px] text-ink-soft">상위·하위는 1950~2008년에 태어날 수 있는 모든 날·시의 사주와 비교했어요.</p>
         {ask?.("성향 지도")}
       </Card>
@@ -149,7 +148,7 @@ export default function FreeReading({
       <Card hanja="神 殺" title={`${name}님 사주 속 별`}>
         {r.sals.length ? (
           <ul className="mt-3 flex flex-col divide-y divide-seal/10">
-            {r.sals.map((s, i) => (
+            {r.sals.map((s) => (
               <li key={s.name} className="py-2.5">
                 <p className="flex items-baseline gap-2">
                   <b className="font-myeongjo">{s.plain}</b>
@@ -161,11 +160,7 @@ export default function FreeReading({
                     <span className="ml-auto shrink-0 rounded-full bg-seal/10 px-2 py-0.5 text-[11px] font-bold text-seal">{perHundred(s.rate)}</span>
                   )}
                 </p>
-                {locked && i > 0 ? (
-                  <LockedLine href={lifeHref} chapter="people" />
-                ) : (
-                  <p className="mt-0.5 text-[13px] leading-relaxed text-ink/85">{s.line}</p>
-                )}
+                <p className="mt-0.5 text-[13px] leading-relaxed text-ink/85">{s.line}</p>
                 {seats?.[s.name] && <p className="mt-0.5 text-[11px] font-bold text-ink-soft">사주표 · {seats[s.name]}</p>}
               </li>
             ))}
@@ -175,6 +170,7 @@ export default function FreeReading({
             특별한 별이 드러나지 않는 담백한 사주예요. 그만큼 흔들림이 적고, 스스로 만든 것이 오래가요.
           </p>
         )}
+        {locked && r.sals.length > 1 && <LockedLine href={lifeHref} chapter="people" className="mt-2" />}
         {ask?.("사주 속 별")}
       </Card>
 
@@ -227,13 +223,8 @@ export default function FreeReading({
                           </span>
                           {f.now && <span className="shrink-0 text-[11px] font-extrabold text-seal">지금</span>}
                         </span>
-                        {locked && !f.now ? (
-                          <span aria-hidden="true" className="mt-1 block text-[13px] leading-snug blur-[4px] select-none">
-                            이 10년에 무엇이 오고 무엇을 준비할지 풀어 드려요
-                          </span>
-                        ) : (
-                          <span className="mt-1 block text-[13px] leading-snug">{f.line}</span>
-                        )}
+                        {/* Locked: the bar and the grade tell each decade; the words are only for the present one. */}
+                        {(!locked || f.now) && <span className="mt-1 block text-[13px] leading-snug">{f.line}</span>}
                         {(tags?.[f.from]?.length ?? 0) > 0 && (
                           <span className="mt-1 flex flex-wrap gap-1">
                             {tags![f.from].map((t) => (
