@@ -16,7 +16,7 @@ export const maxDuration = 300;
 const won = (n: number) => `${n.toLocaleString("ko-KR")}원`;
 
 // A member's own room: the eight characters on top, the talk so far as questions and letters, the question bar
-// fixed to the bottom while questions are left (buying more right here once they run out), and the other person.
+// fixed to the bottom (with none left, sending opens the packs right here and keeps what was written), and the other person.
 export default async function MemberRoomPage({ params }: PageProps<"/ask/[id]">) {
   const member = await currentMember();
   if (!member) redirect("/ask");
@@ -70,22 +70,18 @@ export default async function MemberRoomPage({ params }: PageProps<"/ask/[id]">)
         )}
       </section>
 
-      {member.credits > 0 ? (
-        <AskForm room={room.id} other={Boolean(other)} />
-      ) : (
-        <section className="jjok-box mt-4 px-4 py-4">
-          <p className="text-center font-myeongjo text-[15px] font-extrabold">이어서 여쭈시려면 질문을 채워 주세요</p>
-          <div className="mt-3 grid grid-cols-3 gap-2 text-center text-ink">
-            {(Object.keys(CREDIT_PACKS).map(Number) as CreditPack[]).map((n) => (
-              <div key={n} className="rounded-xl bg-hanji px-1 pt-2 pb-1">
-                <b className="block font-myeongjo">질문 {n}개</b>
-                <span className="block text-[12px] text-ink-soft">{won(CREDIT_PACKS[n])}</span>
-                <PayButton request={{ credits: String(n) }} label="채우기" secondary />
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+      {/* The box is there either way; with no questions left, sending opens the packs and keeps what was written. */}
+      <AskForm room={room.id} other={Boolean(other)} credits={member.credits}>
+        <div className="mt-3 grid grid-cols-3 gap-2 text-center text-ink">
+          {(Object.keys(CREDIT_PACKS).map(Number) as CreditPack[]).map((n) => (
+            <div key={n} className="rounded-xl bg-hanji px-1 pt-2 pb-1">
+              <b className="block font-myeongjo">질문 {n}개</b>
+              <span className="block text-[12px] text-ink-soft">{won(CREDIT_PACKS[n])}</span>
+              <PayButton request={{ credits: String(n) }} label="채우기" secondary />
+            </div>
+          ))}
+        </div>
+      </AskForm>
 
       <details id="other" className="doc-paper mt-4 mb-10 scroll-mt-4 px-5 py-4">
         <summary className="cursor-pointer text-sm font-bold">{other ? `함께 보는 사람: ${room.otherLabel}` : "그 사람의 사주도 함께 보기 (연애·궁합 질문에)"}</summary>

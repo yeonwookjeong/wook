@@ -6,6 +6,7 @@ import { ask, createRoom, loadRoom, MAX_QUESTION, saveRoom, TOPICS, type AskRoom
 import { addRoomToMember, changeCredits, currentMember, type Member } from "@/lib/members";
 import { encodePerson } from "@/lib/pairToken";
 import { personOf } from "@/lib/personForm";
+import { readMe } from "@/lib/me";
 import { BirthInputError } from "@/lib/saju";
 
 // 정 훈도에게 묻기 for members: open a room on their own chart, ask (one question used for each answer; offering
@@ -39,6 +40,21 @@ export async function openRoomAction(_prev: FormState, formData: FormData): Prom
     throw e;
   }
   redirect(`/ask/${roomId}`);
+}
+
+// The chart this browser already keeps (the free reading): a room on it in one tap, or back to the one opened before.
+export async function openMyRoomAction(): Promise<void> {
+  const member = await currentMember();
+  if (!member) redirect("/ask");
+  const me = await readMe();
+  if (!me?.person.gender) redirect("/ask");
+  const rooms = await Promise.all(member.rooms.map(loadRoom));
+  const mine = rooms.find((r) => r && r.member === member.id && r.me === me.token);
+  if (mine) redirect(`/ask/${mine.id}`);
+  if (member.rooms.length >= 20) redirect("/ask");
+  const room = await createRoom(me.token, member.id);
+  await addRoomToMember(member.id, room.id);
+  redirect(`/ask/${room.id}`);
 }
 
 export async function askAction(_prev: FormState, formData: FormData): Promise<FormState> {
