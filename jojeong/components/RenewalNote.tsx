@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { RENEWAL_AT, RENEWED_ON } from "@/lib/launch";
+import { RENEWED_ON } from "@/lib/launch";
 
 // For someone who came before the renewal (lib/launch.ts) and comes back: one line on what is new, once.
 // The visit beacon keeps the last day seen in localStorage ("hv"); this runs before it writes today's.
-export default function RenewalNote({ preview = false }: { preview?: boolean }) {
+export default function RenewalNote() {
   const [show, setShow] = useState(false);
   useEffect(() => {
-    if (!preview && Date.now() < RENEWAL_AT) return;
     try {
       if (localStorage.getItem("rn")) return;
       const last = (JSON.parse(localStorage.getItem("hv") ?? "null") as { d?: string } | null)?.d;
@@ -20,7 +19,7 @@ export default function RenewalNote({ preview = false }: { preview?: boolean }) 
         setShow(true);
       }
     } catch {}
-  }, [preview]);
+  }, []);
   if (!show) return null;
   const close = () => {
     try {

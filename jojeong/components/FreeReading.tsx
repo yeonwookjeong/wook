@@ -148,7 +148,7 @@ export default function FreeReading({
       <Card hanja="神 殺" title={`${name}님 사주 속 별`}>
         {r.sals.length ? (
           <ul className="mt-3 flex flex-col divide-y divide-seal/10">
-            {r.sals.map((s, i) => (
+            {r.sals.map((s) => (
               <li key={s.name} className="py-2.5">
                 <p className="flex items-baseline gap-2">
                   <b className="font-myeongjo">{s.plain}</b>
@@ -160,14 +160,7 @@ export default function FreeReading({
                     <span className="ml-auto shrink-0 rounded-full bg-seal/10 px-2 py-0.5 text-[11px] font-bold text-seal">{perHundred(s.rate)}</span>
                   )}
                 </p>
-                {locked && i > 0 ? (
-                  // Held back without a lock of its own: one lock for all of them, under the list.
-                  <p aria-hidden="true" className="mt-0.5 text-[13px] leading-relaxed blur-[4px] select-none">
-                    이 별이 그대 삶에서 언제, 누구와 함께 빛나는지 풀어 드려요
-                  </p>
-                ) : (
-                  <p className="mt-0.5 text-[13px] leading-relaxed text-ink/85">{s.line}</p>
-                )}
+                <p className="mt-0.5 text-[13px] leading-relaxed text-ink/85">{s.line}</p>
                 {seats?.[s.name] && <p className="mt-0.5 text-[11px] font-bold text-ink-soft">사주표 · {seats[s.name]}</p>}
               </li>
             ))}
@@ -230,13 +223,8 @@ export default function FreeReading({
                           </span>
                           {f.now && <span className="shrink-0 text-[11px] font-extrabold text-seal">지금</span>}
                         </span>
-                        {locked && !f.now ? (
-                          <span aria-hidden="true" className="mt-1 block text-[13px] leading-snug blur-[4px] select-none">
-                            이 10년에 무엇이 오고 무엇을 준비할지 풀어 드려요
-                          </span>
-                        ) : (
-                          <span className="mt-1 block text-[13px] leading-snug">{f.line}</span>
-                        )}
+                        {/* Locked: the bar and the grade tell each decade; the words are only for the present one. */}
+                        {(!locked || f.now) && <span className="mt-1 block text-[13px] leading-snug">{f.line}</span>}
                         {(tags?.[f.from]?.length ?? 0) > 0 && (
                           <span className="mt-1 flex flex-wrap gap-1">
                             {tags![f.from].map((t) => (

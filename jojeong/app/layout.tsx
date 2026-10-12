@@ -71,7 +71,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <main className="mx-auto flex min-h-dvh w-full max-w-[440px] flex-col px-4 pb-8">
           <SiteHeader />
           {/* Before the visit beacon below, so it reads the last visit before today's is written. */}
-          <RenewalNote preview={process.env.VERCEL_ENV === "preview"} />
+          <RenewalNote />
           {children}
           <SiteFooter />
         </main>

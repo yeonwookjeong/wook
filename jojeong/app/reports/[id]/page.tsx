@@ -49,7 +49,6 @@ import { courtOfReader, subjectFor } from "@/lib/subject";
 import { getProfile } from "@/lib/store";
 import { covers, getOrder, ownedOrderFor, ownedOrders, type Order } from "@/lib/pay";
 import { isAdmin, isPreview } from "@/lib/admin";
-import { renewed } from "@/lib/launch";
 import YearAhead from "@/components/YearAhead";
 import { decadeTags, layersOf, manseOf, salSeats, yearPreviewOf } from "@/lib/freePreview";
 import TrackView from "@/components/TrackView";
@@ -449,7 +448,8 @@ async function OpenReport({
       </>
     ) : null;
   // 시안: the 만세력 rows, where each 신살 sits, the decades' characters, and 2027 after the flow of life.
-  const draft = preview && (product.id === "pyeongsaeng" || product.id === "gukjeong");
+  // The renewed free screen (2026-10-13): the 만세력 rows, where each 신살 sits, the decades' characters, and 2027.
+  const draft = product.id === "pyeongsaeng" || product.id === "gukjeong";
   const ahead = draft
     ? { y: yearPreviewOf(pillars, profile, 2027), d: yearDetail(pillars, profile, 2027, 2026), layers: layersOf(pillars, profile, 2027) }
     : null;
@@ -736,9 +736,9 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
   const order = orderId ? await getOrder(orderId) : null;
   const paid = order && covers(order, product.id) ? order : undefined;
   const y = typeof search.y === "string" ? search.y : undefined;
-  // 시안 모드 for the owner; the renewed free screen for everyone from the renewal (lib/launch.ts).
+  // 시안 모드: the owner sees the shop as a customer does (no free opening of paid reports).
   const owner = await isPreview();
-  const preview = owner || renewed();
+  const preview = owner;
   // A shopper on a paid report's page (연운 counts once a year is chosen), for the owner's sales table.
   const shopping = product.modern && !isOpen(product) && !paid && (product.id !== "yeonun" || y);
   if (isOpen(product) || product.modern || paid)
