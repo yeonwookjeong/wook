@@ -190,12 +190,13 @@ export default async function HomeV2() {
         <HeroStage count={count >= SHOW_COUNT_FROM ? count : null} ask={ask} />
       )}
 
-      {/* The free extras, one row to swipe. */}
-      <nav aria-label="무료로 보기" className="-mx-4 mt-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
+      {/* The free extras, two to a row (a swiped row hid the last one half off the edge). */}
+      <nav aria-label="무료로 보기" className="mt-4 grid grid-cols-2 gap-2">
         {CHIPS.filter((c) => !me || (c.href !== "/reports/gukjeong" && c.href !== "/#today")).map((c) => (
-          <Link key={c.href} href={c.href} className="card flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-bold">
+          <Link key={c.href} href={c.href} className="card flex items-center gap-1.5 rounded-xl px-3.5 py-2.5 text-[13px] font-bold">
             <span className="font-myeongjo text-[13px] text-gold">{c.hanja}</span>
-            {c.label}
+            <span className="min-w-0 flex-1 truncate">{c.label}</span>
+            <span className="text-[11px] text-ink-soft">›</span>
           </Link>
         ))}
       </nav>
