@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import PayButton from "@/components/PayButton";
-import { iljuOf, loadRoom, otherOfRoom, personOfRoom } from "@/lib/ask";
+import { iljuOf, loadRoom, MAX_PEOPLE, personOfRoom, roomPerson } from "@/lib/ask";
+import { decodePerson } from "@/lib/pairToken";
 import { currentMember } from "@/lib/members";
 import { CREDIT_PACKS, type CreditPack } from "@/lib/products";
-import { AskForm, AttachOtherForm, ChooseForm } from "../AskForms";
+import { AskForm, AttachOtherForm, ChooseForm, RemovePersonButton } from "../AskForms";
+import { renamePersonAction } from "../actions";
 import { AnswerLetter, HundoFace, Question, RoomHead } from "../Letter";
 import SaveLetter from "../SaveLetter";
 import { FigureOf } from "../Figures";
@@ -29,7 +31,9 @@ export default async function MemberRoomPage({ params }: PageProps<"/ask/[id]">)
   if (!room || room.member !== member.id) notFound();
   const me = personOfRoom(room);
   if (!me) notFound();
-  const other = otherOfRoom(room);
+  const people = (room.people ?? []).map((x) => ({ ...x, p: decodePerson(x.token) }));
+  // The question box starts on whoever the last question was about, while they are still on the list.
+  const lastWith = room.messages.findLast((m) => m.role === "guest")?.with;
   const last = room.messages.at(-1);
   const lastGuest = [...room.messages].reverse().find((m) => m.role === "guest");
   const lastAnswer = room.messages.findLastIndex((m) => m.role === "hundo" && !m.choices);
@@ -40,7 +44,8 @@ export default async function MemberRoomPage({ params }: PageProps<"/ask/[id]">)
     const text = room.messages[i].text;
     if (!pictures) return { text };
     const q = room.messages.slice(0, i).findLast((g) => g.role === "guest");
-    const kit = figureKit(me, other, room.otherLabel ?? "", q?.topic ?? "기타", q?.text ?? "", room.messages[i].at);
+    const w = roomPerson(room, q?.with);
+    const kit = figureKit(me, w ? decodePerson(w.token) : null, q?.withLabel ?? w?.label ?? "", q?.topic ?? "기타", q?.text ?? "", room.messages[i].at);
     if (!kit) return { text };
     return { text: withFigures(text, defaultFigures(kit)), figure: (k: string) => <FigureOf kit={kit} k={k} name={me.name} /> };
   };
@@ -52,7 +57,7 @@ export default async function MemberRoomPage({ params }: PageProps<"/ask/[id]">)
           ← 내 사랑방
         </Link>
       </p>
-      <RoomHead person={me} ilju={iljuOf(me)} credits={member.credits} extra={other ? `함께: ${room.otherLabel}` : undefined} />
+      <RoomHead person={me} ilju={iljuOf(me)} credits={member.credits} extra={people.length ? `함께: ${people.map((x) => x.label).join(", ")}` : undefined} />
 
       <section className="mt-4 flex flex-col gap-3">
         {room.messages.length === 0 && (
@@ -65,7 +70,7 @@ export default async function MemberRoomPage({ params }: PageProps<"/ask/[id]">)
         )}
         {room.messages.map((m, i) =>
           m.role === "guest" ? (
-            <Question key={i} text={m.text} topic={m.topic} at={m.at} />
+            <Question key={i} text={m.text} topic={[m.topic, m.withLabel && `${m.withLabel} 이야기`].filter(Boolean).join(" · ")} at={m.at} />
           ) : m.choices ? (
             <div key={i} className="doc-paper rounded-[4px] px-5 py-4 text-[15px] leading-relaxed">
               <div className="flex items-start gap-3">
@@ -86,7 +91,13 @@ export default async function MemberRoomPage({ params }: PageProps<"/ask/[id]">)
       </section>
 
       {/* The box is there either way; with no questions left, sending opens the packs and keeps what was written. */}
-      <AskForm room={room.id} other={Boolean(other)} credits={member.credits}>
+      <AskForm
+        room={room.id}
+        people={people.map((x) => ({ id: x.id, label: x.label }))}
+        defaultWith={people.some((x) => x.id === lastWith) ? lastWith : undefined}
+        canAdd={people.length < MAX_PEOPLE}
+        credits={member.credits}
+      >
         <div className="mt-3 grid grid-cols-3 gap-2 text-center text-ink">
           {(Object.keys(CREDIT_PACKS).map(Number) as CreditPack[]).map((n) => (
             <div key={n} className="rounded-xl bg-hanji px-1 pt-2 pb-1">
@@ -98,14 +109,48 @@ export default async function MemberRoomPage({ params }: PageProps<"/ask/[id]">)
         </div>
       </AskForm>
 
-      <details id="other" className="doc-paper mt-4 mb-10 scroll-mt-4 px-5 py-4">
-        <summary className="cursor-pointer text-sm font-bold">{other ? `함께 보는 사람: ${room.otherLabel}` : "그 사람의 사주도 함께 보기 (연애·궁합 질문에)"}</summary>
-        {other ? (
-          <p className="mt-2 text-sm">
-            {other.name} · {iljuOf(other)}
-          </p>
+      {/* The people seen together: up to five, each renamed, entered again or taken off (still remembered). */}
+      <details id="people" open={people.length === 0 ? undefined : true} className="doc-paper mt-4 mb-10 scroll-mt-4 px-5 py-4">
+        <summary className="cursor-pointer text-sm font-bold">
+          {people.length ? `함께 보는 사람 (${people.length}/${MAX_PEOPLE})` : "그 사람의 사주도 함께 보기 (연애·궁합·관계 질문에)"}
+        </summary>
+        {people.length > 0 && (
+          <ul className="mt-3 flex flex-col divide-y divide-seal/10">
+            {people.map((x) => (
+              <li key={x.id} className="py-2.5">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="min-w-0 text-sm">
+                    <b>{x.label}</b> <span className="text-ink-soft">· {x.p ? `${x.p.name} · ${iljuOf(x.p)}` : "?"}</span>
+                  </p>
+                  <RemovePersonButton room={room.id} person={x.id} label={x.label} />
+                </div>
+                <details className="mt-1">
+                  <summary className="cursor-pointer text-[12px] text-ink-soft underline">고치기</summary>
+                  <form action={renamePersonAction} className="mt-2 flex gap-1.5">
+                    <input type="hidden" name="room" value={room.id} />
+                    <input type="hidden" name="person" value={x.id} />
+                    <input name="label" defaultValue={x.label} maxLength={12} aria-label="부르는 이름" className="min-w-0 flex-1 rounded-lg border border-ink/15 bg-white/70 px-3 py-1.5 text-sm" />
+                    <button type="submit" className="shrink-0 rounded-lg border border-ink/25 px-3 text-xs font-bold">
+                      이름 바꾸기
+                    </button>
+                  </form>
+                  <p className="mt-3 text-[12px] font-bold">생년월일을 다시 넣기</p>
+                  <AttachOtherForm room={room.id} person={x.id} />
+                </details>
+              </li>
+            ))}
+          </ul>
+        )}
+        <p className="mt-2 text-[11.5px] leading-relaxed text-ink-soft">
+          지우거나 이름을 바꿔도 정 훈도는 그 사람과 나눈 이야기를 기억해요. 생년월일은 사주 글자로만 바꿔 두고 저장하지 않아요.
+        </p>
+        {people.length < MAX_PEOPLE ? (
+          <details className="mt-3" open={people.length === 0 ? true : undefined}>
+            <summary className="cursor-pointer text-sm font-bold text-seal">＋ 사람 더하기</summary>
+            <AttachOtherForm room={room.id} />
+          </details>
         ) : (
-          <AttachOtherForm room={room.id} />
+          <p className="mt-3 text-[12px] text-ink-soft">{MAX_PEOPLE}명까지 함께 볼 수 있어요. 한 명을 지우거나 고쳐서 바꿔 주세요.</p>
         )}
       </details>
     </>
