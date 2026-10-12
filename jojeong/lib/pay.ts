@@ -5,6 +5,7 @@ import { ORDERS_COOKIE } from "./cookies";
 import { isSource, SRC_COOKIE, type Source } from "./source";
 import type { ProductId, SetId } from "./products";
 import type { JobRequest } from "./reportWriter";
+import { isAdmin } from "./admin";
 import { getOrderRaw, getOrdersRaw, giftOrderIds, noteGiftOrder, notePaidOrder, paidOrderIds, setOrderRaw } from "./store";
 
 // Paying for a report with 토스페이먼츠 (결제창, API 개별 연동 키).
@@ -31,6 +32,8 @@ export type Order = {
   status: "ready" | "paid" | "canceled";
   // Given away from /admin: paid at 0 won with no payment behind it, and never among the paid orders.
   gift?: boolean;
+  // A payment made to try the site (the owner's own, or marked so on /admin): kept, but out of the dashboard.
+  test?: boolean;
   createdAt: number;
   paidAt?: number;
   paymentKey?: string;
@@ -85,6 +88,8 @@ export async function createOrder(
     status: "ready",
     createdAt: Date.now(),
     ...(isSource(src) && { src }),
+    // The owner trying a payment from a signed-in browser.
+    ...((await isAdmin()) && { test: true }),
   };
   await setOrderRaw(order.id, JSON.stringify(order));
   return order;
@@ -106,6 +111,13 @@ export async function giftOrders(limit = 100): Promise<Order[]> {
   const ids = [...new Set((await giftOrderIds().catch(() => [])).slice(-limit))].reverse();
   const raws = await getOrdersRaw(ids).catch(() => []);
   return raws.flatMap((raw) => (raw ? [JSON.parse(raw) as Order] : []));
+}
+
+// Marks a paid order as a test payment (or a real one again), for the owner's dashboard.
+export async function markTestOrder(orderId: string, test: boolean): Promise<void> {
+  const order = await getOrder(orderId);
+  if (!order || order.gift) return;
+  await setOrderRaw(order.id, JSON.stringify({ ...order, test } satisfies Order));
 }
 
 // Closes a gift again (its link then leads to the shopper's own list). Only gifts, never a bought order.
