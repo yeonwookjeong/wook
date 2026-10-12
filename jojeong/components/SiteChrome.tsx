@@ -5,6 +5,7 @@ import { BUSINESS, ftcLookupUrl, hasBusinessInfo } from "@/lib/business";
 import { ownedOrderIds } from "@/lib/pay";
 import { askShown, currentMember, membersEnabled } from "@/lib/members";
 import AskLink from "./AskLink";
+import { isPreview } from "@/lib/admin";
 
 // The brand mark: a red 訓導 seal beside the character's name. Used at the top and bottom of every page.
 function Seal({ size = 30 }: { size?: number }) {
@@ -26,6 +27,44 @@ export async function SiteHeader() {
   const bought = (await ownedOrderIds().catch(() => [])).length;
   const member = membersEnabled() ? await currentMember().catch(() => null) : null;
   const ask = membersEnabled() && (await askShown());
+  // The new header (시안 모드 only, with the new home): the name alone, 묻기 as one pill, the rest in a menu.
+  if (await isPreview())
+    return (
+      <header className="flex items-center justify-between pt-4">
+        <Link href="/" className="flex items-center gap-2">
+          <Seal />
+          <span className="font-myeongjo text-[16px] font-extrabold">훈도사주</span>
+        </Link>
+        <nav className="flex items-center gap-2">
+          {ask && (
+            <AskLink from="header" className="flex items-center gap-1.5 rounded-full bg-jjok px-3 py-1.5 font-myeongjo text-[12.5px] font-extrabold text-hanji">
+              묻기
+              {member && member.credits > 0 && <span className="rounded-full bg-[#d4af5f] px-1.5 text-[10.5px] leading-4 text-jjok">{member.credits}</span>}
+            </AskLink>
+          )}
+          <details className="group relative">
+            <summary aria-label="메뉴" className="flex size-9 cursor-pointer list-none items-center justify-center rounded-xl border border-ink/15 text-[17px]">
+              <span className="group-open:hidden">≡</span>
+              <span className="hidden group-open:inline">✕</span>
+              {bought > 0 && <span className="absolute -top-1 -right-1 size-2.5 rounded-full bg-seal" />}
+            </summary>
+            <div className="card absolute top-11 right-0 z-30 flex w-48 flex-col py-1.5 text-[14px] font-bold">
+              {[
+                ["/my", `내 보고서${bought ? ` · ${bought}` : ""}`],
+                ["/reports", "전체 보고서"],
+                ...(ask ? [["/ask", member ? `정 훈도에게 묻기 · 남은 ${member.credits}` : "정 훈도에게 묻기"]] : []),
+                ["/news", "새 소식"],
+                ["/contact", "문의하기"],
+              ].map(([href, label]) => (
+                <Link key={href} href={href} className="px-4 py-2.5 hover:bg-ink/5">
+                  {label}
+                </Link>
+              ))}
+            </div>
+          </details>
+        </nav>
+      </header>
+    );
   return (
     <header className="flex items-center justify-between pt-4">
       <Link href="/" className="flex items-center gap-2">
