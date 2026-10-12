@@ -46,7 +46,7 @@ export function RoomHead({ person, ilju, credits, extra }: { person: Person; ilj
         <HundoFace size={50} />
         <div className="min-w-0 flex-1">
           <p className="font-myeongjo text-[11px] font-bold tracking-[0.25em] text-[#d4af5f]">觀象監 · 問訓導</p>
-          <h1 className="font-myeongjo text-[19px] font-extrabold">정 훈도의 상담방</h1>
+          <h1 className="font-myeongjo text-[19px] font-extrabold">정 훈도의 사랑방</h1>
           <p className="truncate text-[12.5px] opacity-75">
             {person.name}님 · {ilju}
             {extra ? ` · ${extra}` : ""}

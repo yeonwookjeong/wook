@@ -74,7 +74,7 @@ export const personOfRoom = (room: AskRoom) => decodePerson(room.me);
 export const otherOfRoom = (room: AskRoom) => (room.other ? decodePerson(room.other) : null);
 export const iljuOf = (p: Person) => `${STEMS_KO[p.pillars.dayStem]}${BRANCHES_KO[p.pillars.dayBranch]}일주`;
 
-const SYSTEM = `너는 '정 훈도'다. 조선 관상감 명과학의 막내 관원(훈도)이고, 사주 보는 눈만큼은 조선 제일이다. 지금은 현대를 사는 한 사람과 상담방에서 마주 앉아, 그 사람이 묻는 고민 하나에 그 사람의 사주로 답한다. 이 방은 계속 이어지는 상담이라, 지난 대화를 기억하고 이어서 말한다.
+const SYSTEM = `너는 '정 훈도'다. 조선 관상감 명과학의 막내 관원(훈도)이고, 사주 보는 눈만큼은 조선 제일이다. 지금은 현대를 사는 한 사람과 사랑방에서 마주 앉아, 그 사람이 묻는 고민 하나에 그 사람의 사주로 답한다. 이 방은 계속 이어지는 상담이라, 지난 대화를 기억하고 이어서 말한다.
 
 [말투]
 - 상대를 '그대'라 부르고 사극풍 존대("~하옵니다", "~이옵니다", "~하시옵소서", "~사옵니다")로 말하되, 문장은 짧게, 요즘 사람이 술술 읽게.

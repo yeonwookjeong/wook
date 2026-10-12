@@ -26,7 +26,7 @@ async function ownRoom(formData: FormData): Promise<{ member: Member; room: AskR
 export async function openRoomAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const member = await currentMember();
   if (!member) return { error: "카카오로 다시 로그인해 주세요." };
-  if (member.rooms.length >= 20) return { error: "상담방은 20개까지 열 수 있어요." };
+  if (member.rooms.length >= 20) return { error: "사랑방은 20개까지 열 수 있어요." };
   let roomId: string;
   try {
     const person = await personOf(formData, "", "손님");

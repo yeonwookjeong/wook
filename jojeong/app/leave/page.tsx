@@ -16,7 +16,7 @@ export default async function LeavePage() {
       <p className="mt-2 text-[14px] leading-relaxed">{member.nick}님, 탈퇴하면 아래 정보가 바로 지워져요. 되돌릴 수 없어요.</p>
       <ul className="mt-3 flex flex-col gap-1.5 text-[14px]">
         <li>· 회원 번호와 닉네임</li>
-        <li>· 상담방 {member.rooms.length}개와 그 안의 상담 기록</li>
+        <li>· 사랑방(상담방) {member.rooms.length}개와 그 안의 상담 기록</li>
         <li>
           · 남은 질문 <b className="text-seal">{member.credits}개</b>
         </li>
