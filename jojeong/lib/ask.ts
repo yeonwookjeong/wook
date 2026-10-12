@@ -185,7 +185,7 @@ export async function ask(room: AskRoom, question: string, topic: Topic, chosen?
     process.env.ASK_MOCK === "1"
       ? !chosen && /그리고|또/.test(q)
         ? "[[여러 주제]]\n- 연애: 그 사람과의 앞날\n- 일: 이직할 때"
-        : `[[直答|서두르지 않는 쪽]] 그대의 물음에 한 줄로 아뢰자면, ==서두르지 않는 쪽이 맞사옵니다.==\n\n[[時勢|시험용 까닭]] (시험용 답변 · 질문: ${q})\n\n[[一事]] 오늘은 하나만 정해 보시옵소서.\n\n[[메모]]\n- ${kstDate()} ${topic} 질문: ${q}\n${room.memo}`
+        : `[[直答|서두르지 않는 쪽]] 그대의 물음에 한 줄로 아뢰자면, ==서두르지 않는 쪽이 맞사옵니다.==\n\n[[時勢|시험용 까닭]] (시험용 답변 · 질문: ${q})\n\n[[性情|시험용 사람]] 그대는 한번 정하면 끝까지 가는 분이옵니다.\n\n[[時運|시험용 때]] 입동 지나 마음이 정해지기 쉬운 때이옵니다.\n\n[[一事]] 오늘은 하나만 정해 보시옵소서.\n\n[[메모]]\n- ${kstDate()} ${topic} 질문: ${q}\n${room.memo}`
       : await writeReport(
           { key: `ask:${room.id}`, system: SYSTEM, prompt, title: "정 훈도에게 묻기", modern: false },
           () => {},
