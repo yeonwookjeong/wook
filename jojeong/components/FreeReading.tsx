@@ -141,7 +141,6 @@ export default function FreeReading({
             {first(r.weak.line)}
           </p>
         </div>
-        {locked && <LockedLine href={lifeHref} chapter="edge" />}
         <p className="mt-2 text-[11px] text-ink-soft">상위·하위는 1950~2008년에 태어날 수 있는 모든 날·시의 사주와 비교했어요.</p>
         {ask?.("성향 지도")}
       </Card>
@@ -162,7 +161,10 @@ export default function FreeReading({
                   )}
                 </p>
                 {locked && i > 0 ? (
-                  <LockedLine href={lifeHref} chapter="people" />
+                  // Held back without a lock of its own: one lock for all of them, under the list.
+                  <p aria-hidden="true" className="mt-0.5 text-[13px] leading-relaxed blur-[4px] select-none">
+                    이 별이 그대 삶에서 언제, 누구와 함께 빛나는지 풀어 드려요
+                  </p>
                 ) : (
                   <p className="mt-0.5 text-[13px] leading-relaxed text-ink/85">{s.line}</p>
                 )}
@@ -175,6 +177,7 @@ export default function FreeReading({
             특별한 별이 드러나지 않는 담백한 사주예요. 그만큼 흔들림이 적고, 스스로 만든 것이 오래가요.
           </p>
         )}
+        {locked && r.sals.length > 1 && <LockedLine href={lifeHref} chapter="people" className="mt-2" />}
         {ask?.("사주 속 별")}
       </Card>
 

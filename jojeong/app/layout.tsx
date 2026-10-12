@@ -5,6 +5,7 @@ import { adsAccount } from "@/lib/ads";
 import { SITE_NAME, SITE_SUMMARY, SITE_TAGLINE, SNS_URLS, siteUrl } from "@/lib/brand";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import VisitBeacon from "@/components/VisitBeacon";
+import RenewalNote from "@/components/RenewalNote";
 import "./globals.css";
 
 // Headings: Hahmlet, a modern Korean serif (variable weight), for 정 훈도's Joseon-meets-now voice.
@@ -69,6 +70,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full">
         <main className="mx-auto flex min-h-dvh w-full max-w-[440px] flex-col px-4 pb-8">
           <SiteHeader />
+          {/* Before the visit beacon below, so it reads the last visit before today's is written. */}
+          <RenewalNote preview={process.env.VERCEL_ENV === "preview"} />
           {children}
           <SiteFooter />
         </main>

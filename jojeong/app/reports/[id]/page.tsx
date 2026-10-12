@@ -49,6 +49,7 @@ import { courtOfReader, subjectFor } from "@/lib/subject";
 import { getProfile } from "@/lib/store";
 import { covers, getOrder, ownedOrderFor, ownedOrders, type Order } from "@/lib/pay";
 import { isAdmin, isPreview } from "@/lib/admin";
+import { renewed } from "@/lib/launch";
 import YearAhead from "@/components/YearAhead";
 import { decadeTags, layersOf, manseOf, salSeats, yearPreviewOf } from "@/lib/freePreview";
 import TrackView from "@/components/TrackView";
@@ -448,7 +449,7 @@ async function OpenReport({
       </>
     ) : null;
   // 시안: the 만세력 rows, where each 신살 sits, the decades' characters, and 2027 after the flow of life.
-  const draft = preview && product.id === "pyeongsaeng";
+  const draft = preview && (product.id === "pyeongsaeng" || product.id === "gukjeong");
   const ahead = draft
     ? { y: yearPreviewOf(pillars, profile, 2027), d: yearDetail(pillars, profile, 2027, 2026), layers: layersOf(pillars, profile, 2027) }
     : null;
@@ -512,6 +513,27 @@ async function OpenReport({
       <MeForm next={next} submit="넣고 다시 보기" defaultName={me.person.name} />
     </details>
   );
+  // Renewed: the free screen is the chart, its locks and 2027 (the 2026 year reading goes), closed by the life report.
+  if (product.id === "gukjeong" && draft && self && fullIntro)
+    return (
+      <>
+        <RoyalDoc className="mt-3" paperClassName="px-5">
+          <p className="text-center font-myeongjo text-sm font-extrabold tracking-[0.4em] text-seal">命 盤</p>
+          <h1 className="mt-2 text-center font-myeongjo text-2xl font-extrabold">{name}님의 사주</h1>
+          <p className="mt-2 text-center text-sm leading-snug text-ink-soft">여덟 글자와 만세력, 100명 중 몇 명인지, 그리고 2027년까지 · 무료</p>
+        </RoyalDoc>
+        {fullIntro}
+        <Link href={`/reports/pyeongsaeng${query ? `?${query}` : ""}`} className="doc-paper mt-4 block px-5 py-4">
+          <span className="block text-[12px] font-bold text-seal">命 書 · 평생 사주</span>
+          <b className="mt-1 block font-myeongjo text-lg">잠긴 이유와 시기, 이 사주로 13장에 걸쳐 풀어 드려요</b>
+          <span className="mt-1 block text-[13px] text-ink-soft">나는 어떤 사람인지부터 앞으로 10년, 꼭 잡아야 할 기회까지 →</span>
+        </Link>
+        {shareEnd}
+        {meDeepen}
+        {other}
+        <AdSlot />
+      </>
+    );
   if (product.id === "gukjeong")
     return (
       <>
@@ -714,14 +736,16 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
   const order = orderId ? await getOrder(orderId) : null;
   const paid = order && covers(order, product.id) ? order : undefined;
   const y = typeof search.y === "string" ? search.y : undefined;
-  const preview = await isPreview();
+  // 시안 모드 for the owner; the renewed free screen for everyone from the renewal (lib/launch.ts).
+  const owner = await isPreview();
+  const preview = owner || renewed();
   // A shopper on a paid report's page (연운 counts once a year is chosen), for the owner's sales table.
   const shopping = product.modern && !isOpen(product) && !paid && (product.id !== "yeonun" || y);
   if (isOpen(product) || product.modern || paid)
     return (
       <>
         {shopping && <TrackView sale={saleKey(product.id, undefined, y)} />}
-        {preview && (
+        {owner && (
           <Link href="/admin/free-preview" className="fixed bottom-3 left-3 z-50 rounded-full bg-ink px-3 py-1 text-[11px] font-bold text-hanji opacity-80">
             시안 모드
           </Link>
@@ -741,7 +765,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
             b: typeof search.b === "string" ? search.b : undefined,
             rel: typeof search.rel === "string" ? search.rel : undefined,
           }}
-          locked={!isOpen(product) && !paid && (preview || !(await isAdmin()))}
+          locked={!isOpen(product) && !paid && (owner || !(await isAdmin()))}
           preview={preview}
           paid={paid}
           fresh={search.new === "1"}

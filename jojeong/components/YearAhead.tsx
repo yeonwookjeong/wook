@@ -8,7 +8,8 @@ import { yearNickname, type YearDetail } from "@/lib/yeonun";
 const GRADE: Record<AreaGrade, { mark: string; cls: string }> = {
   좋음: { mark: "◎ 좋음", cls: "bg-seal text-hanji" },
   보통: { mark: "○ 보통", cls: "bg-gold/25 text-ink" },
-  조심: { mark: "△ 조심", cls: "bg-ink/15 text-ink" },
+  // "다지기", not "조심": a year to build in, which is what the reading says, without the fright.
+  조심: { mark: "△ 다지기", cls: "bg-ink/15 text-ink" },
 };
 // A month's grade (lib/yeonun.ts monthMarks: ◎ 3 · ○ 2 · △ 1 · ✕ 0) as a bar.
 const MONTH = [
