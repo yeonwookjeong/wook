@@ -4,15 +4,16 @@
 
 export type Segment = { text: string; key: boolean };
 
-// The five paragraph marks and the Korean read beside each.
-export const PART_LABELS: Record<string, string> = { 直答: "바로 아룀", 時勢: "왜 지금인가", 性情: "그대라는 사람", 時運: "다가올 때", 一事: "오늘 한 가지" };
-const PART = /^\s*\[\[(直答|時勢|性情|時運|一事)\]\]\s*/;
+// The five paragraph marks. He writes a short Korean heading of his own beside each ([[時運|11월, 풀리는 달]]);
+// these stand in when he leaves it out.
+export const PART_LABELS: Record<string, string> = { 直答: "결론부터", 時勢: "왜 지금인가", 性情: "그대라는 사람", 時運: "다가올 때", 一事: "오늘 한 가지" };
+const PART = /^\s*\[\[(直答|時勢|性情|時運|一事)(?:\|([^\]\n]{1,24}))?\]\]\s*/;
 
 export const plainAnswer = (text: string) =>
   text
     .replace(/==([^=\n]+)==/g, "$1")
     .replace(/==/g, "")
-    .replace(/\[\[(直答|時勢|性情|時運|一事)\]\]\s*/g, "");
+    .replace(/\[\[(直答|時勢|性情|時運|一事)(?:\|[^\]\n]*)?\]\]\s*/g, "");
 
 // A paragraph split into plain and key runs; a stray marker left open is dropped, not shown.
 export function segments(paragraph: string): Segment[] {
@@ -27,21 +28,21 @@ export function segments(paragraph: string): Segment[] {
   return out.map((s) => ({ ...s, text: s.text.replace(/==/g, "") })).filter((s) => s.text);
 }
 
-export type Paragraph = { part?: string; text: string };
+export type Paragraph = { part?: string; head?: string; text: string };
 
 // Paragraphs, each with its mark when it has one. A mark alone on its line heads the paragraph after it.
 export function paragraphs(text: string): Paragraph[] {
   const out: Paragraph[] = [];
-  let pending: string | undefined;
+  let pending: { part: string; head?: string } | undefined;
   for (const line of text.split("\n")) {
     const m = line.match(PART);
-    const part = m?.[1] ?? pending;
+    const mark = m ? { part: m[1], head: m[2]?.trim() || undefined } : pending;
     const body = (m ? line.slice(m[0].length) : line).trim();
     if (!body) {
-      if (m) pending = m[1];
+      if (m) pending = mark;
       continue;
     }
-    out.push({ ...(part && { part }), text: body });
+    out.push({ ...mark, text: body });
     pending = undefined;
   }
   return out;

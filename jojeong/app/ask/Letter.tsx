@@ -112,7 +112,7 @@ export function AnswerLetter({ id, name, text, at }: { id?: string; name: string
           );
           const head = p.part && (
             <span className="mb-1 block font-sans text-[11px] font-bold tracking-[0.18em] text-seal">
-              <span className="font-myeongjo text-[13px] tracking-[0.12em]">{p.part}</span> · {PART_LABELS[p.part]}
+              <span className="font-myeongjo text-[13px] tracking-[0.12em]">{p.part}</span> · {p.head ?? PART_LABELS[p.part]}
             </span>
           );
           // The closing step sits apart: the one marked 一事, or (answers before the marks) the last of three or more.
