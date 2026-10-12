@@ -13,10 +13,10 @@ export default function RenewalNote({ preview = false }: { preview?: boolean }) 
     try {
       if (localStorage.getItem("rn")) return;
       const last = (JSON.parse(localStorage.getItem("hv") ?? "null") as { d?: string } | null)?.d;
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- read once from this browser's storage
       if (last && last < RENEWED_ON) {
         // Once: shown on this page, not on the next one.
         localStorage.setItem("rn", "1");
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- read once from this browser's storage
         setShow(true);
       }
     } catch {}
