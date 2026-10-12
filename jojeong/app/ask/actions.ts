@@ -18,7 +18,7 @@ const topicOf = (v: FormDataEntryValue | null): Topic => ((TOPICS as readonly st
 
 async function ownRoom(formData: FormData): Promise<{ member: Member; room: AskRoom } | { error: string }> {
   const member = await currentMember();
-  if (!member) return { error: "카카오로 다시 로그인해 주세요." };
+  if (!member) return { error: "다시 로그인해 주세요." };
   const room = await loadRoom(String(formData.get("room") ?? ""));
   if (!room || room.member !== member.id) return { error: "방을 찾지 못했어요." };
   return { member, room };
@@ -26,7 +26,7 @@ async function ownRoom(formData: FormData): Promise<{ member: Member; room: AskR
 
 export async function openRoomAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const member = await currentMember();
-  if (!member) return { error: "카카오로 다시 로그인해 주세요." };
+  if (!member) return { error: "다시 로그인해 주세요." };
   if (member.rooms.length >= 20) return { error: "사랑방은 20개까지 열 수 있어요." };
   let roomId: string;
   try {

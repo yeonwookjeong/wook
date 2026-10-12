@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import PayButton from "@/components/PayButton";
 import { iljuOf, loadRoom, personOfRoom } from "@/lib/ask";
-import { ASK_OPEN, currentMember, JOIN_GIFT, membersEnabled } from "@/lib/members";
+import { ASK_OPEN, currentMember, JOIN_GIFT, memberNo, membersEnabled, viaEnabled } from "@/lib/members";
 import { CREDIT_PACKS, type CreditPack } from "@/lib/products";
 import { OpenRoomForm } from "./AskForms";
 import DraftReturn from "./DraftReturn";
@@ -34,6 +34,10 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
   const me = member ? await readMe() : null;
   const rooms = member ? (await Promise.all(member.rooms.map(loadRoom))).filter((r) => r && r.member === member.id) : [];
   const quick = Boolean(me?.person.gender) && !rooms.some((r) => r!.me === me!.token);
+  // With Naver or Google on, the button goes to the choice of ways (app/login); Kakao alone, it says so.
+  const others = viaEnabled("naver") || viaEnabled("google");
+  const start = others ? "카카오·네이버·구글로 시작하기" : "카카오로 시작하기";
+  const startClass = others ? "bg-ink text-hanji" : "bg-[#FEE500] text-[#191919]";
 
   return (
     <>
@@ -55,17 +59,14 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
       ) : !member ? (
         <>
           <section className="doc-paper mt-4 px-5 py-5 text-center">
-            {q.login === "fail" && (
-              <p className="mb-3 rounded-xl bg-seal/10 px-3 py-2 text-sm text-seal">카카오 로그인이 끝나지 않았어요. 다시 시도해 주세요.</p>
-            )}
             <p className="text-[14px] leading-relaxed">
               카카오로 시작하면 <b className="text-seal">첫 질문 {JOIN_GIFT}개를 선물</b>로 드려요.
               <br />이 브라우저에서 산 보고서도 계정에 함께 담겨, 다른 기기에서도 열려요.
             </p>
-            <a href="/login?next=/ask" className="mt-4 block rounded-2xl bg-[#FEE500] py-3.5 font-bold text-[#191919]">
-              카카오로 시작하기
-            </a>
-            <p className="mt-2 text-[11px] text-ink-soft">카카오에서 받는 것은 회원 번호와 닉네임뿐이에요. 생년월일은 저장하지 않아요.</p>
+            <Link href="/login?next=/ask" className={`mt-4 block rounded-2xl py-3.5 font-bold ${startClass}`}>
+              {start}
+            </Link>
+            <p className="mt-2 text-[11px] text-ink-soft">받는 것은 회원 번호, 별명, 이메일뿐이에요. 생년월일은 저장하지 않아요.</p>
           </section>
 
           <h2 className="mt-7 text-center font-myeongjo text-lg font-extrabold">이런 답서를 받아요</h2>
@@ -79,7 +80,7 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
             <h2 className="text-center font-myeongjo text-lg font-extrabold">이렇게 여쭤요</h2>
             <ol className="mt-3 flex flex-col gap-3 text-[14px] leading-relaxed">
               {[
-                ["카카오로 시작", `첫 질문 ${JOIN_GIFT}개를 선물로 드려요.`],
+                ["시작하기", `카카오로 처음 시작하면 첫 질문 ${JOIN_GIFT}개를 선물로 드려요.`],
                 ["내 사주로 사랑방 열기", "생년월일은 사주 글자로만 바꿔 두고 저장하지 않아요."],
                 ["고민 하나 여쭙기", "지금 상황을 한두 줄 같이 적으면 더 깊어져요. 답서는 30초~1분이면 와요."],
               ].map(([t, d], i) => (
@@ -97,9 +98,9 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
             <p className="mt-4 border-t border-seal/15 pt-3 text-center text-[13px]">
               질문 1개 {won(CREDIT_PACKS[1])} · 3개 {won(CREDIT_PACKS[3])} · 5개 {won(CREDIT_PACKS[5])}
             </p>
-            <a href="/login?next=/ask" className="mt-3 block rounded-2xl bg-[#FEE500] py-3.5 text-center font-bold text-[#191919]">
-              카카오로 시작하고 첫 질문 받기
-            </a>
+            <Link href="/login?next=/ask" className={`mt-3 block rounded-2xl py-3.5 text-center font-bold ${startClass}`}>
+              {start}
+            </Link>
           </section>
         </>
       ) : (
@@ -192,6 +193,8 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
           )}
 
           <p className="mt-5 text-center text-[12px]">
+            <span className="text-ink-soft">회원 번호 {memberNo(member.id)}</span>
+            <span className="mx-2 text-ink-soft/40">·</span>
             <a href="/logout" className="text-ink-soft underline">
               로그아웃
             </a>

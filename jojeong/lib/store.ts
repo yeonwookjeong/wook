@@ -354,9 +354,11 @@ export async function setThreadsRaw(key: string, raw: string) {
   await backend().set(`th:${key}`, raw);
 }
 
-// Members (lib/members.ts): one record each, by their Kakao id. `members` lists them for the owner.
+// Members (lib/members.ts): one record each, by their account id ("k"/"n"/"g" + the Kakao, Naver or Google id).
+// `members` lists them for the owner.
+const MEMBER_ID = /^(k\d{1,20}|[ng][\w-]{1,64})$/;
 export async function getMemberRaw(id: string): Promise<string | null> {
-  if (!/^k\d{1,20}$/.test(id)) return null;
+  if (!MEMBER_ID.test(id)) return null;
   return backend().get(`member:${id}`);
 }
 export async function setMemberRaw(id: string, raw: string) {
@@ -375,9 +377,14 @@ export async function giftGiven(hash: string): Promise<boolean> {
 export async function noteGiftGiven(hash: string) {
   await backend().set(`gifted:${hash}`, "1", 60 * 60 * 24 * 366);
 }
+// Joining gifts given today (KST), counting this one: the daily cap in lib/members.ts.
+export async function countGiftToday(): Promise<number> {
+  const day = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
+  return backend().incr(`gifts:${day}`);
+}
 // Leaving (lib/members.ts deleteMember): the record emptied and the id off the owner's list.
 export async function deleteMemberRaw(id: string) {
-  if (!/^k\d{1,20}$/.test(id)) return;
+  if (!MEMBER_ID.test(id)) return;
   await backend().set(`member:${id}`, "");
   await backend().remove("members", id);
 }
