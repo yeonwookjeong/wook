@@ -49,7 +49,7 @@ const CHIPS: { href: string; hanja: string; label: string }[] = [
 const SHOW_COUNT_FROM = 100;
 
 // First visit (A): 정 훈도 standing on the night stage, one button, 묻기 as a gold line under it.
-function HeroStage({ count, ask }: { count: number | null; ask: boolean }) {
+function HeroStage({ ask }: { ask: boolean }) {
   return (
     <header className="animate-rise relative mt-3 h-[480px] overflow-hidden rounded-3xl bg-[#0f2236] text-[#f7efd9] shadow-[0_10px_30px_rgb(33_27_23/0.22),inset_0_0_0_1px_rgb(212_175_95/0.35)]">
       {/* 관상감 under the night sky, the star chart drawn over it, and 정 훈도 in front. */}
@@ -85,11 +85,6 @@ function HeroStage({ count, ask }: { count: number | null; ask: boolean }) {
           </AskLink>
         )}
       </div>
-      {count && (
-        <p className="absolute bottom-5 left-6 max-w-[150px] text-[11.5px] leading-snug text-[#f3ead0]/70">
-          지금까지 <b className="font-myeongjo text-[#e2bc68]">{count.toLocaleString("ko-KR")}</b>건의 사주를 풀어 드렸어요
-        </p>
-      )}
     </header>
   );
 }
@@ -262,7 +257,16 @@ export default async function HomeV2() {
           credits={member ? member.credits : null}
         />
       ) : (
-        <HeroStage count={count >= SHOW_COUNT_FROM ? count : null} ask={ask} />
+        <HeroStage ask={ask} />
+      )}
+
+      {/* How many charts he has read, under the first screen where it can be seen (it was lost on the picture). */}
+      {count >= SHOW_COUNT_FROM && (
+        <p className="mt-3 flex items-center justify-center gap-2 text-[13px] text-ink-soft">
+          <span aria-hidden className="h-px w-6 bg-gold/40" />
+          지금까지 <b className="font-myeongjo text-[17px] text-gold">{count.toLocaleString("ko-KR")}</b>건의 사주를 풀어 드렸어요
+          <span aria-hidden className="h-px w-6 bg-gold/40" />
+        </p>
       )}
 
       {/* The free extras, two to a row (a swiped row hid the last one half off the edge). */}
