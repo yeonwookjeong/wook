@@ -13,10 +13,10 @@ import { trackEvent } from "./VisitBeacon";
 const QUIET = ["/ask", "/pay", "/admin", "/login", "/r/", "/my", "/leave", "/logout"];
 const SEEN = "open1";
 
-// `list`: the set's reports, with its object particle ("…·직업·적성을").
-export type OpenSet = { title: string; price: number; qs: number; list: string };
+// `count`: the charts read during the soft opening (lib/store.ts readingCount), thanked when it means something.
+const COUNT_FROM = 100;
 
-export default function OpenNote({ member, gift, set }: { member: boolean; gift: number; set: OpenSet | null }) {
+export default function OpenNote({ member, gift, count }: { member: boolean; gift: number; count: number }) {
   const path = usePathname();
   const [show, setShow] = useState(false);
   useEffect(() => {
@@ -56,19 +56,11 @@ export default function OpenNote({ member, gift, set }: { member: boolean; gift:
         "내 사주를 펼쳐 놓고, 고민 하나에 답서를 써 드려요."
       ) : (
         <>
-          내 사주를 펼쳐 놓고, 고민 하나에 답서를 써 드려요. <b className="text-[#e2bc68]">카카오로 로그인하면 첫 질문 {gift}개</b>를 드려요.
+          내 사주를 펼쳐 놓고, 고민 하나에 답서를 써 드려요. <b className="text-[#e2bc68]">카카오로 로그인하면 첫 질문 {gift}개</b>는 선물이에요.
         </>
       ),
     },
-    ...(set
-      ? [
-          {
-            mark: "全書",
-            title: `${set.title} ${set.price.toLocaleString("ko-KR")}원`,
-            text: `${set.list} 한 번에${set.qs ? `, 정 훈도 질문 ${set.qs}개까지` : ""}.`,
-          },
-        ]
-      : []),
+    { mark: "新裝", title: "보고서 새 단장", text: "장마다 그림과 10년 달력, 다 읽고 간직하는 한눈에 카드. 궁합은 두 사람의 10년까지 봐요." },
     { mark: "保管", title: "산 보고서는 계정에", text: "로그인하면 어느 기기에서든 그대로 열려요." },
   ];
   return (
@@ -95,11 +87,24 @@ export default function OpenNote({ member, gift, set }: { member: boolean; gift:
             ✕
           </button>
         </div>
-        <div className="relative -mt-8 px-5 pb-5">
+        <div className="relative -mt-3 px-5 pb-5">
           <p className="text-center font-myeongjo text-[11px] font-bold tracking-[0.3em] text-[#e2bc68]">正式 開門</p>
-          <h2 className="mt-1 text-center font-myeongjo text-[22px] leading-snug font-extrabold">훈도사주 정식 오픈</h2>
-          <p className="mt-1 text-center text-[12.5px] text-hanji/70">새 단장을 마치고 문을 활짝 열었사옵니다</p>
-          <ul className="mt-4 flex flex-col divide-y divide-[#e2bc68]/15 border-y border-[#e2bc68]/20">
+          <h2 className="mt-1 text-center font-myeongjo text-[21px] leading-snug font-extrabold">훈도사주가 정식으로 문을 열었습니다</h2>
+          <p className="mt-2.5 text-center text-[13px] leading-relaxed text-hanji/85">
+            {count >= COUNT_FROM ? (
+              <>
+                가오픈 동안 사주를 <b className="font-myeongjo text-[15px] text-[#e2bc68]">{count.toLocaleString("ko-KR")}번</b>이나 보러 와 주셨어요.
+                <br />
+                진심으로 고맙습니다.
+              </>
+            ) : (
+              "가오픈 동안 찾아 주신 모든 분께 진심으로 고맙습니다."
+            )}
+            <br />
+            그 마음에 보답하려 새 단장을 마쳤어요.
+          </p>
+          <p className="mt-4 text-[11px] font-bold tracking-[0.2em] text-[#e2bc68]/80">새로 생긴 것</p>
+          <ul className="mt-1.5 flex flex-col divide-y divide-[#e2bc68]/15 border-y border-[#e2bc68]/20">
             {items.map((it) => (
               <li key={it.mark} className="flex gap-3 py-2.5">
                 <span className="w-11 shrink-0 pt-0.5 text-center font-myeongjo text-[12px] font-extrabold text-[#e2bc68]">{it.mark}</span>
@@ -115,11 +120,11 @@ export default function OpenNote({ member, gift, set }: { member: boolean; gift:
             onClick={close}
             className="mt-4 block rounded-2xl bg-[#e2bc68] py-3.5 text-center font-myeongjo text-[16px] font-extrabold text-[#17304a] shadow-[0_5px_0_#9c7a2e]"
           >
-            {member ? "청심당 둘러보기" : `청심당 가서 첫 질문 받기`}
+            {member ? "청심당 둘러보기" : "청심당 가서 첫 질문 받기"}
           </AskLink>
           <div className="mt-3 flex items-center justify-center gap-4 text-[12.5px] text-hanji/60">
             <Link href="/reports" onClick={close} className="underline underline-offset-2">
-              새 보고서 보기
+              새로워진 보고서 보기
             </Link>
             <span aria-hidden>·</span>
             <button type="button" onClick={close}>
