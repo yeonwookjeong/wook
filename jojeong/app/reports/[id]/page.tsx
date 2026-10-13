@@ -609,6 +609,7 @@ async function OpenReport({
     );
   }
   const unlock = paid ?? (locked ? await ownedOrderFor(product.id, { product: product.id, p: me?.token }) : null);
+  const freeYear = newYearOf() ?? thisYear();
   const domain = isDomain(product.id) ? product.id : null;
   const gender = me ? me.person.gender : (profile?.gender ?? null);
   const card = domain && domainCard(domain, pillars, gender);
@@ -648,9 +649,11 @@ async function OpenReport({
     ) : (
       fullIntro
     );
-  // A bought (or gifted) report reads like the page before paying, with the written report where the payment was:
-  // the free analysis on top, then the report. One who was given it never saw that analysis, so it is not folded.
-  if (unlock)
+  // A bought (or gifted) report reads like the page before paying, with the written report where the payment was.
+  // What was paid for is one tap from the top; the life report's long free analysis (already read before paying)
+  // is folded. One who was given it never saw that analysis, so it stays open for them.
+  if (unlock) {
+    const chapters = chaptersOf(product.id).length;
     return (
       <>
         <Header product={product} subjectName={`${name}님`} />
@@ -661,7 +664,36 @@ async function OpenReport({
             .filter((id) => id !== product.id)
             .map((id) => ({ href: `/reports/${id}?order=${unlock.id}`, title: productById(id)!.title }))}
         />
-        {analysis(true)}
+        <a
+          href="#report-start"
+          className="mt-4 flex items-center justify-between rounded-2xl bg-seal px-5 py-4 font-myeongjo text-hanji shadow-[0_5px_0_#7d1a14]"
+        >
+          <span>
+            <b className="block text-[17px]">{unlock.gift ? "받은" : "결제한"} 보고서 바로 읽기</b>
+            <span className="text-[12px] font-normal opacity-80">
+              {product.title} · {chapters}장
+            </span>
+          </span>
+          <span className="text-xl" aria-hidden>
+            ↓
+          </span>
+        </a>
+        {domain && card ? (
+          analysis(true)
+        ) : (
+          <details className="group mt-4" open={unlock.gift || undefined}>
+            <summary className="doc-paper flex cursor-pointer list-none items-center justify-between px-5 py-4 [&::-webkit-details-marker]:hidden">
+              <span>
+                <b className="block font-myeongjo">내 사주 분석 다시 보기</b>
+                <span className="text-[12px] text-ink-soft">사주팔자 · 성향 지도 · 사주 속 별 · 인생 흐름 · 결제 전에 본 무료 분석</span>
+              </span>
+              <span className="text-ink-soft transition group-open:rotate-180" aria-hidden="true">
+                ▾
+              </span>
+            </summary>
+            {analysis(true)}
+          </details>
+        )}
         {!intro && chartFold}
         <div id="report-start" className="scroll-mt-4">
           <AiReport request={{ product: product.id, order: unlock.id }} chapters={chaptersOf(product.id)} modern />
@@ -678,6 +710,7 @@ async function OpenReport({
         )}
       </>
     );
+  }
   return (
     <>
       <Header product={product} subjectName={`${name}님`} />
@@ -690,12 +723,17 @@ async function OpenReport({
         <>
           {meDeepen}
           <Paywall product={product} request={request} chapters={product.toc} />
-          {/* Not ready to pay: the free year reading is one tap away, not a dead end. */}
-          <TrackLink event="to_saju" from="reading" href={`/reports/gukjeong${query ? `?${query}` : ""}`} className="doc-paper mt-4 flex items-center gap-3 px-5 py-4">
+          {/* Not ready to pay: the coming year's verdict and months are free, one tap away, not a dead end. */}
+          <TrackLink
+            event="to_saju"
+            from="reading"
+            href={`/reports/yeonun?y=${freeYear}${query ? `&${query}` : ""}`}
+            className="doc-paper mt-4 flex items-center gap-3 px-5 py-4"
+          >
             <span className="min-w-0 flex-1">
-              <b className="block font-myeongjo">결제 전에, 무료 2026년 운세부터</b>
+              <b className="block font-myeongjo">결제 전에, {newYearOf() ? `${freeYear} 신년운세` : `${freeYear}년 운세`} 판정부터</b>
               <span className="block text-[12px] text-ink-soft">
-                {name}님의 올해 흐름과 달마다 좋은 때를 무료로 먼저 보세요
+                {name}님의 {freeYear}년 판정과 달마다 흐름을 무료로 먼저 보세요
               </span>
             </span>
             <span className="shrink-0 text-sm font-bold text-seal">무료 →</span>

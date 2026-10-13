@@ -1,12 +1,13 @@
 import { decodePerson, relationOf } from "@/lib/pairToken";
 import { createOrder, payClientKey, payEnabled, payMock } from "@/lib/pay";
-import { bonusFor, CREDIT_PACKS, creditPackOf, FIXED_RELATION, isOpen, isPair, priceFor, productById, SETS, SETS_OFFERED, setOf, setPrice } from "@/lib/products";
+import { bonusFor, CREDIT_PACKS, creditPackOf, FIXED_RELATION, isOpen, isPair, priceFor, productById, SETS, SETS_OFFERED, setOf } from "@/lib/products";
 import { pricingNow } from "@/lib/pricing";
 import { currentMember } from "@/lib/members";
 import { jobFor, type JobRequest } from "@/lib/reportWriter";
 import { KINDS, parseSearch, searchDay } from "@/lib/taekil";
 import { newYearOf } from "@/lib/yeonun";
 import { saleKey } from "@/lib/sales";
+import { setOffer } from "@/lib/upgrade";
 import { track } from "@/lib/stats";
 
 // POST { product, p } or, for a two-person report, { product, a, b, rel } → a new order for that exact report, priced here.
@@ -43,9 +44,13 @@ export async function POST(request: Request) {
     if ("error" in job) return Response.json({ error: job.error }, { status: job.status });
     // The report page the set was bought on, for the owner's table (only one of the set's own reports counts).
     const from = SETS[set].products.find((p) => p === body.from);
-    const order = await createOrder(lead, req, `${decodePerson(req.p)?.name}님`, setPrice(set, pr), { set, bundle: [lead, ...rest], ...(from && { from }) }, undefined, withBonus(bonusFor(pr, null, set)));
+    // Reports of the set already bought for this chart come off its price (lib/upgrade.ts).
+    const offer = await setOffer(set, req.p, pr, ny);
+    if (!offer) return Response.json({ error: "이 사주로는 세트에 든 보고서를 이미 거의 다 갖고 계세요." }, { status: 400 });
+    const order = await createOrder(lead, req, `${decodePerson(req.p)?.name}님`, offer.price, { set, bundle: [lead, ...rest], ...(from && { from }) }, undefined, withBonus(offer.bonus));
     await track(`co:${saleKey(lead, set, undefined)}`);
-    return Response.json({ orderId: order.id, amount: order.amount, orderName: withYear ? `${SETS[set].title} (${ny} 신년운세 포함)` : SETS[set].title, clientKey: payClientKey(), mock: payMock() });
+    const name = withYear ? `${SETS[set].title} (${ny} 신년운세 포함)` : SETS[set].title;
+    return Response.json({ orderId: order.id, amount: order.amount, orderName: offer.owned.length ? `${name} · 차액` : name, clientKey: payClientKey(), mock: payMock() });
   }
 
   const product = productById(body.product);
