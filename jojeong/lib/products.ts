@@ -228,10 +228,12 @@ export const SETS = {
   // In season (September to February): the whole life, the coming year's 신년운세 (연운 for that year, set on the
   // order) and money. Offered only while there is a coming year to sell (lib/yeonun.ts newYearOf).
   ny: { title: "새해 준비 세트", products: ["pyeongsaeng", "yeonun", "jaemul"] as ProductId[], price: 2490 },
+  // A안: everything about one's own chart in one book, the coming year included.
+  jeonseo: { title: "사주 전서", products: ["pyeongsaeng", "yeonun", "yeonae", "jaemul", "jikup"] as ProductId[], price: 4900 },
 };
 export type SetId = keyof typeof SETS;
 export const setOf = (v: unknown): SetId | null => (typeof v === "string" && v in SETS ? (v as SetId) : null);
-export const setsWith = (id: ProductId) => (Object.keys(SETS) as SetId[]).filter((s) => SETS[s].products.includes(id));
+export const setsWith = (id: ProductId, pr: Pricing = "old") => SETS_OFFERED[pr].filter((s) => SETS[s].products.includes(id));
 
 // Reports about two people typed in together (lib/pairToken.ts), and the relation some of them fix.
 export const PAIR_PRODUCTS: ProductId[] = ["gunghap", "sokgunghap", "jaehoe"];
@@ -247,6 +249,35 @@ export const isAdult = (birthYear: number | null) => birthYear !== null && new D
 export const isOpen = (p: Product) => Boolean(p.free);
 
 export const PRICE = 990;
+
+// ── A안 (docs/product-plan-2027.md, 2026-10-10): a report is priced by what it holds, the sets are the new two, and
+// the dearer ones come with questions for 정 훈도. Off for customers until it is switched on with 청심당's opening
+// (PRICING_A_LIVE); the owner's 시안 모드 sees and pays it already (lib/pricing.ts).
+export const PRICING_A_LIVE = false;
+export type Pricing = "old" | "a";
+const A_PRICE: Partial<Record<ProductId, number>> = { pyeongsaeng: 2900, gunghap: 1900 };
+// `ny`: the coming year (lib/yeonun.ts newYearOf), whose 연운 is the 신년운세.
+export function basePrice(id: ProductId, pr: Pricing, y?: string | number, ny?: number | null): number {
+  if (pr === "old") return PRICE;
+  if (id === "yeonun" && ny != null && Number(y) === ny) return 1900;
+  return A_PRICE[id] ?? PRICE;
+}
+// What is charged: a sale lowers only the 990-won reports.
+export function priceFor(id: ProductId, pr: Pricing, y?: string | number, ny?: number | null, now = new Date()): number {
+  const base = basePrice(id, pr, y, ny);
+  return base === PRICE ? priceNow(now) : base;
+}
+export const SETS_OFFERED: Record<Pricing, SetId[]> = { old: ["life", "all", "ny"], a: ["ny", "jeonseo"] };
+export const setPrice = (s: SetId, pr: Pricing) => (pr === "a" && s === "ny" ? 3900 : SETS[s].price);
+// The singles a set replaces, at today's prices (its 연운 being the coming year's).
+export const setRegular = (s: SetId, pr: Pricing, ny: number | null) => SETS[s].products.reduce((sum, id) => sum + basePrice(id, pr, ny ?? undefined, ny), 0);
+// Questions for 정 훈도 that come with a report (A안 only): one with a 1,900 or 2,900 won report, two with the
+// 새해 준비 세트, three with the 사주 전서.
+export function bonusFor(pr: Pricing, id: ProductId | null, set: SetId | null, y?: string | number, ny?: number | null): number {
+  if (pr === "old") return 0;
+  if (set) return set === "ny" ? 2 : set === "jeonseo" ? 3 : 0;
+  return id && basePrice(id, pr, y, ny) >= 1900 ? 1 : 0;
+}
 
 // 질문권 for 정 훈도에게 묻기 (app/ask): questions bought by a signed-in member (lib/members.ts), one used per answer.
 // Not a report on the shelf: its orders carry \`credits\` and the product id "jilmun".

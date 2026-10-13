@@ -1,6 +1,7 @@
 import { decodePerson, relationOf } from "@/lib/pairToken";
 import { createOrder, payClientKey, payEnabled, payMock } from "@/lib/pay";
-import { CREDIT_PACKS, creditPackOf, FIXED_RELATION, isOpen, isPair, priceNow, productById, SETS, setOf } from "@/lib/products";
+import { bonusFor, CREDIT_PACKS, creditPackOf, FIXED_RELATION, isOpen, isPair, priceFor, productById, SETS, SETS_OFFERED, setOf, setPrice } from "@/lib/products";
+import { pricingNow } from "@/lib/pricing";
 import { currentMember } from "@/lib/members";
 import { jobFor, type JobRequest } from "@/lib/reportWriter";
 import { KINDS, parseSearch, searchDay } from "@/lib/taekil";
@@ -12,11 +13,15 @@ import { track } from "@/lib/stats";
 export async function POST(request: Request) {
   if (!payEnabled()) return Response.json({ error: "결제 준비 중이에요." }, { status: 503 });
   const body = (await request.json().catch(() => ({}))) as JobRequest & { set?: string; from?: string; credits?: string };
+  const pr = await pricingNow();
+  const ny = newYearOf();
+  // Questions that come with the report (A안): to the member signed in now, or at their first sign-in after.
+  const member = await currentMember().catch(() => null);
+  const withBonus = (n: number) => (n > 0 ? { bonus: n, ...(member && { bonusMember: member.id }) } : {});
 
   // 질문권: for the member signed in here; the questions are added once the payment is confirmed (/pay/success).
   const pack = creditPackOf(body.credits);
   if (pack) {
-    const member = await currentMember();
     if (!member) return Response.json({ error: "로그인한 뒤에 살 수 있어요." }, { status: 401 });
     const order = await createOrder("jilmun", { product: "jilmun" }, member.nick, CREDIT_PACKS[pack], undefined, { credits: pack, member: member.id });
     await track("co:jilmun");
@@ -25,21 +30,22 @@ export async function POST(request: Request) {
 
   // A set: its reports for one saved chart, at the set's price.
   const set = setOf(body.set);
+  if (set && !SETS_OFFERED[pr].includes(set)) return Response.json({ error: "지금은 팔지 않는 세트예요." }, { status: 400 });
   if (set) {
     const [lead, ...rest] = SETS[set].products;
     const leadProduct = productById(lead)!;
     if (isOpen(leadProduct)) return Response.json({ error: "지금은 무료로 볼 수 있어요." }, { status: 400 });
-    // 새해 준비 세트 carries its year, so its 연운 opens on the coming year.
-    const ny = set === "ny" ? newYearOf() : null;
-    if (set === "ny" && ny === null) return Response.json({ error: "새해 준비 세트는 지금 팔지 않아요." }, { status: 400 });
-    const req: JobRequest = { product: lead, p: body.p, ...(ny !== null && { y: String(ny) }) };
+    // A set with a 연운 carries the coming year, so it opens on that year.
+    const withYear = SETS[set].products.includes("yeonun");
+    if (withYear && ny === null) return Response.json({ error: `${SETS[set].title}는 지금 팔지 않아요.` }, { status: 400 });
+    const req: JobRequest = { product: lead, p: body.p, ...(withYear && { y: String(ny) }) };
     const job = await jobFor(req);
     if ("error" in job) return Response.json({ error: job.error }, { status: job.status });
     // The report page the set was bought on, for the owner's table (only one of the set's own reports counts).
     const from = SETS[set].products.find((p) => p === body.from);
-    const order = await createOrder(lead, req, `${decodePerson(req.p)?.name}님`, SETS[set].price, { set, bundle: [lead, ...rest], ...(from && { from }) });
+    const order = await createOrder(lead, req, `${decodePerson(req.p)?.name}님`, setPrice(set, pr), { set, bundle: [lead, ...rest], ...(from && { from }) }, undefined, withBonus(bonusFor(pr, null, set)));
     await track(`co:${saleKey(lead, set, undefined)}`);
-    return Response.json({ orderId: order.id, amount: order.amount, orderName: ny ? `${SETS[set].title} (${ny} 신년운세 포함)` : SETS[set].title, clientKey: payClientKey(), mock: payMock() });
+    return Response.json({ orderId: order.id, amount: order.amount, orderName: withYear ? `${SETS[set].title} (${ny} 신년운세 포함)` : SETS[set].title, clientKey: payClientKey(), mock: payMock() });
   }
 
   const product = productById(body.product);
@@ -53,7 +59,7 @@ export async function POST(request: Request) {
     if (!search || !a || (KINDS[search.kind].people === 2 && !b)) return Response.json({ error: "날짜 조건을 다시 골라 주세요." }, { status: 400 });
     // The search date is set here, not by the browser: the days (and the written note) stay as they were bought.
     const req: JobRequest = { product: product.id, kind: search.kind, from: body.from, n: String(search.n), a: body.a, ...(b && { b: body.b }), d: searchDay(undefined) };
-    const order = await createOrder(product.id, req, `${b ? `${a.name}님과 ${b.name}님` : `${a.name}님`} · ${KINDS[search.kind].title}`, priceNow());
+    const order = await createOrder(product.id, req, `${b ? `${a.name}님과 ${b.name}님` : `${a.name}님`} · ${KINDS[search.kind].title}`, priceFor(product.id, pr));
     await track(`co:${saleKey(product.id, undefined, undefined)}`);
     return Response.json({ orderId: order.id, amount: order.amount, orderName: KINDS[search.kind].title, clientKey: payClientKey(), mock: payMock() });
   }
@@ -67,7 +73,15 @@ export async function POST(request: Request) {
 
   const who =
     isPair(product) ? `${decodePerson(req.a)?.name}님과 ${decodePerson(req.b)?.name}님` : `${decodePerson(req.p)?.name}님`;
-  const order = await createOrder(product.id, req, product.id === "yeonun" ? `${who} · ${req.y}년 운세` : who, priceNow());
+  const order = await createOrder(
+    product.id,
+    req,
+    product.id === "yeonun" ? `${who} · ${req.y}년 운세` : who,
+    priceFor(product.id, pr, req.y, ny),
+    undefined,
+    undefined,
+    withBonus(bonusFor(pr, product.id, null, req.y, ny)),
+  );
   await track(`co:${saleKey(product.id, undefined, req.y)}`);
   const orderName = product.id === "yeonun" ? `${req.y}년 운세 (연운)` : product.title;
   return Response.json({ orderId: order.id, amount: order.amount, orderName, clientKey: payClientKey(), mock: payMock() });

@@ -1,5 +1,5 @@
 import type { Classic } from "@/lib/classics";
-import { priceNow, productById, type ProductId } from "@/lib/products";
+import { productById, type ProductId } from "@/lib/products";
 import { ELEMENT_HANJA, ELEMENT_KO } from "@/lib/myeongri";
 import type { YearReading } from "@/lib/yearly";
 import { MONTHS } from "@/lib/yearly";
@@ -260,7 +260,7 @@ export default function YearReport({
       {ending ?? <section className="doc-paper mt-6 px-5 pt-6 pb-5">
         <p className="text-center font-myeongjo text-xs font-extrabold tracking-[0.4em] text-seal">更 深</p>
         <h2 className="mt-1 text-center font-myeongjo text-lg font-extrabold">여기까지가 무료 풀이예요</h2>
-        <p className="mt-1 text-center text-[13px] text-ink-soft">더 알고 싶은 것이 있다면, 한 편에 {priceNow().toLocaleString("ko-KR")}원으로 깊이 풀어 드려요</p>
+        <p className="mt-1 text-center text-[13px] text-ink-soft">더 알고 싶은 것이 있다면, 그 분야만 따로 깊이 풀어 드려요</p>
         <ul className="mt-4 flex flex-col gap-2">
           {NEXT.map(({ id, ask }, i) => (
             <li key={id}>
