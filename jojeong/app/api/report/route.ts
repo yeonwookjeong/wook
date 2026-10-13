@@ -1,6 +1,6 @@
 import { isAdmin } from "@/lib/admin";
-import { covers, getOrder } from "@/lib/pay";
-import { productById } from "@/lib/products";
+import { covers, getOrder, pinReportText } from "@/lib/pay";
+import { productById, type ProductId } from "@/lib/products";
 import { aiEnabled, jobFor, writeReport, type JobRequest } from "@/lib/reportWriter";
 import { after } from "next/server";
 import { countReportToday, getReportText, getReportWriting, noteReportError, setReportText, setReportWriting } from "@/lib/store";
@@ -37,21 +37,32 @@ export async function POST(request: Request) {
       return Response.json({ error: product.modern ? "결제한 뒤에 열 수 있어요." : "복채를 주신 뒤에 열리옵니다." }, { status: 402 });
     req = { ...order.req, product: product.id };
   }
-  const job = await jobFor(req);
+  // When it was bought: the 연운 is asked as of that year (lib/reportWriter.ts jobFor), so it opens the same after the new year.
+  const at = order ? (order.paidAt ?? order.createdAt) : undefined;
+  const job = await jobFor(req, undefined, false, at);
   if ("error" in job) return Response.json({ error: job.error }, { status: job.status });
+
+  // The text this order first opened with, kept on the order: it opens that, whatever changed since.
+  const pinnedKey = order?.texts?.[product.id as ProductId];
+  const pinned = pinnedKey ? await getReportText(pinnedKey) : null;
+  if (pinned) return new Response(pinned, { headers: { "content-type": "text/plain; charset=utf-8", "x-report": "cached" } });
 
   // A report bought before the v6 prompt opens exactly as it was first written (its v5 text), never rewritten.
   const boughtBefore = order && (order.paidAt ?? order.createdAt) < V6_SINCE;
-  const legacy = boughtBefore ? await jobFor(req, "v5") : null;
+  const legacy = boughtBefore ? await jobFor(req, "v5", false, at) : null;
   // Paid before the five grades: what was first written then (v6 with the three-grade brief), else v5's.
-  const oldGrades = order && (order.paidAt ?? order.createdAt) < GRADES5_SINCE ? await jobFor(req, "v6", true) : null;
-  const beforeV7 = order && (order.paidAt ?? order.createdAt) < V7_SINCE ? await jobFor(req, "v6") : null;
-  const cached =
-    (legacy && !("error" in legacy) ? await getReportText(legacy.key) : null) ??
-    (oldGrades && !("error" in oldGrades) ? await getReportText(oldGrades.key) : null) ??
-    (beforeV7 && !("error" in beforeV7) ? await getReportText(beforeV7.key) : null) ??
-    (await getReportText(job.key));
-  if (cached) return new Response(cached, { headers: { "content-type": "text/plain; charset=utf-8", "x-report": "cached" } });
+  const oldGrades = order && (order.paidAt ?? order.createdAt) < GRADES5_SINCE ? await jobFor(req, "v6", true, at) : null;
+  const beforeV7 = order && (order.paidAt ?? order.createdAt) < V7_SINCE ? await jobFor(req, "v6", false, at) : null;
+  // A 연운 bought before its year was fixed to the purchase (2026-10): asked as of this year, as it was then.
+  const asNow = order && product.id === "yeonun" ? await jobFor(req) : null;
+  // The first of these already written opens (oldest way first), and is kept on the order from then on.
+  const found = [legacy, oldGrades, beforeV7, job, asNow].filter((j): j is NonNullable<typeof j> & { key: string } => Boolean(j && !("error" in j)));
+  for (const j of found) {
+    const text = await getReportText(j.key);
+    if (!text) continue;
+    if (order) await pinReportText(order.id, product.id as ProductId, j.key).catch(() => {});
+    return new Response(text, { headers: { "content-type": "text/plain; charset=utf-8", "x-report": "cached" } });
+  }
 
   if (!aiEnabled())
     return Response.json(
@@ -93,6 +104,7 @@ export async function POST(request: Request) {
       const text = await writeReport(job, push);
       if (text) {
         await setReportText(job.key, text);
+        if (order) await pinReportText(order.id, product.id as ProductId, job.key).catch(() => {});
         ok = true;
       } else await noteReportError(`${job.title}: 끝까지 쓰지 못함 (stop_reason)`).catch(() => {});
     } catch (e) {
