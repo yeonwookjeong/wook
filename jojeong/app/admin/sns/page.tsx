@@ -3,9 +3,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { isAdmin } from "@/lib/admin";
 import CopyButton from "@/components/CopyButton";
-import { SNS } from "@/lib/snsCalendar";
+import { SNS, type SnsDay } from "@/lib/snsCalendar";
 import { morningPost } from "@/lib/snsMorning";
 import { nightPost } from "@/lib/snsNight";
+import { readingCount } from "@/lib/store";
 import { Card } from "../cards/Card";
 import CardSaver from "./CardSaver";
 
@@ -61,6 +62,22 @@ function Block({ title, time, text, children }: { title: string; time?: string; 
   );
 }
 
+// {count} in a day's texts: the real number of charts read, read when the page opens.
+function withCount(day: SnsDay | undefined, n: number): SnsDay | undefined {
+  if (!day) return day;
+  const f = (t: string) => t.replaceAll("{count}", n.toLocaleString("ko-KR"));
+  return {
+    ...day,
+    caption: day.caption && f(day.caption),
+    threads: day.threads?.map(f),
+    night: day.night && f(day.night),
+    eveningThreads: day.eveningThreads?.map(f),
+    nightThreads: day.nightThreads?.map(f),
+    blog: day.blog && f(day.blog),
+    kakao: day.kakao && f(day.kakao),
+  };
+}
+
 // The owner's posting desk: for one day, everything to put up on Instagram and Threads, ready to copy or
 // save from a phone. Nothing is posted from here.
 export default async function SnsPage({ searchParams }: PageProps<"/admin/sns">) {
@@ -68,7 +85,7 @@ export default async function SnsPage({ searchParams }: PageProps<"/admin/sns">)
   const today = todayKst();
   const q = String((await searchParams).d ?? "");
   const date = /^\d{4}-\d{2}-\d{2}$/.test(q) && !Number.isNaN(Date.parse(q)) ? q : today;
-  const day = SNS[date];
+  const day = withCount(SNS[date], await readingCount());
   const morning = morningPost(date);
   // Written for the day in the calendar if there is one, otherwise the fact the calendar gives for tonight.
   const night = day?.night ?? nightPost(date).text;
@@ -190,6 +207,12 @@ export default async function SnsPage({ searchParams }: PageProps<"/admin/sns">)
           {!day?.night && <p className="mt-2 text-[11px] text-ink-soft">날짜에서 자동으로 골라요: 절기 · 손 없는 날 · 보름 · 초하루 · 그날의 동물 · 자시.</p>}
         </Block>
       )}
+
+      {day?.blog && (
+        <Block title="⑦ 블로그" time="첫 줄이 제목 · [사진] 자리에 카드나 화면 캡처" text={day.blog} />
+      )}
+
+      {day?.kakao && <Block title="⑧ 카카오 채널 소식" time="채널 관리자 → 소식 쓰기" text={day.kakao} />}
 
       <section className="doc-paper mt-4 px-4 py-4">
         <h2 className="font-myeongjo font-extrabold">{Number(month.slice(5))}월 달력</h2>
