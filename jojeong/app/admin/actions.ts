@@ -5,6 +5,7 @@ import { refresh } from "next/cache";
 import { isAdmin, setPreview, signIn, signOut } from "@/lib/admin";
 import { isGiftable, originNow } from "@/lib/gift";
 import { createGiftOrder, getOrder, markTestOrder, revokeGiftOrder } from "@/lib/pay";
+import { pricingNow } from "@/lib/pricing";
 import { addOrderToMember, changeCredits, getMember } from "@/lib/members";
 import { encodePerson } from "@/lib/pairToken";
 import { personOf } from "@/lib/personForm";
@@ -58,7 +59,8 @@ export async function giftIssueAction(_prev: GiftState, formData: FormData): Pro
     const links: { title: string; url: string }[] = [];
     for (const req of reqs) {
       const product = productById(req.product)!;
-      const order = await createGiftOrder(product.id, req, req.y ? `${person.name}님 · ${req.y}년 운세` : `${person.name}님`);
+      // A gift made in the opened shop (or 시안 모드) is the new version, like what is bought there.
+      const order = await createGiftOrder(product.id, req, req.y ? `${person.name}님 · ${req.y}년 운세` : `${person.name}님`, (await pricingNow()) === "a" ? "a" : undefined);
       links.push({ title: req.y ? `${product.title} ${req.y}년` : product.title, url: `${origin}/r/${order.id}` });
     }
     refresh();
