@@ -388,3 +388,25 @@ export async function deleteMemberRaw(id: string) {
   await backend().set(`member:${id}`, "");
   await backend().remove("members", id);
 }
+
+// 질문권 events (lib/creditEvents.ts): one record each by its code, `cevents` lists them for the owner, and a
+// counter of how many have taken it.
+export async function getCreditEventRaw(code: string): Promise<string | null> {
+  return /^[A-Z0-9]{4,12}$/.test(code) ? backend().get(`cevent:${code}`) : null;
+}
+export async function setCreditEventRaw(code: string, raw: string) {
+  await backend().set(`cevent:${code}`, raw);
+}
+export async function noteCreditEvent(code: string) {
+  await backend().push("cevents", code);
+}
+export async function creditEventCodes(): Promise<string[]> {
+  return backend().list("cevents");
+}
+export async function countCreditEventClaim(code: string): Promise<number> {
+  return backend().incr(`cevent-n:${code}`);
+}
+export async function creditEventClaims(codes: string[]): Promise<number[]> {
+  if (!codes.length) return [];
+  return (await backend().mget(codes.map((c) => `cevent-n:${c}`))).map((v) => Number(v ?? 0));
+}

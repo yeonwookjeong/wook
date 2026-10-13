@@ -13,6 +13,7 @@ import { productById } from "@/lib/products";
 import { jobFor, type JobRequest } from "@/lib/reportWriter";
 import { BirthInputError } from "@/lib/saju";
 import { deleteInquiry, setInquiryDone } from "@/lib/store";
+import { createCreditEvent, setCreditEventOn } from "@/lib/creditEvents";
 
 export async function adminSignIn(_prev: { error: string | null }, formData: FormData): Promise<{ error: string | null }> {
   if (!(await signIn(String(formData.get("password") ?? "")))) return { error: "비밀번호가 맞지 않아요." };
@@ -103,5 +104,17 @@ export async function memberFixAction(formData: FormData) {
   if (orderId && (await getOrder(orderId))?.status === "paid") await addOrderToMember(id, orderId);
   const d = Math.trunc(Number(formData.get("credits") ?? 0));
   if (d && Math.abs(d) <= 50) await changeCredits(id, d, "관리자 조정");
+  refresh();
+}
+
+// 질문권 events (lib/creditEvents.ts): a new one with its link, or one turned off and on again. Owner only.
+export async function creditEventCreateAction(formData: FormData) {
+  if (!(await isAdmin())) return;
+  await createCreditEvent(String(formData.get("name") ?? ""), Number(formData.get("credits")), Number(formData.get("max")), Number(formData.get("days")));
+  refresh();
+}
+export async function creditEventToggleAction(formData: FormData) {
+  if (!(await isAdmin())) return;
+  await setCreditEventOn(String(formData.get("code") ?? ""), formData.get("on") === "1");
   refresh();
 }
