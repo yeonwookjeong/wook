@@ -24,6 +24,7 @@ export type Member = {
   gift: boolean; // the free question for joining was given
   channel?: boolean; // the question for adding the Kakao channel was given (lib/kakaoChannel.ts)
   rooms: string[]; // their 정 훈도에게 묻기 rooms, newest first
+  events?: string[]; // the 질문권 events they took (lib/creditEvents.ts), by code
   // Every change to the credits, newest last (kept short): why, how many, when.
   log: { at: number; d: number; why: string }[];
 };

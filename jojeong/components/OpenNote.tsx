@@ -10,7 +10,7 @@ import { trackEvent } from "./VisitBeacon";
 // The grand opening (lib/members.ts ASK_OPEN, with the new prices and home): one notice, once per browser, a moment
 // after arriving. Never over paying, a bought report, the room, the owner's pages, or a reading already on screen:
 // on a report's page only while its birth form is still empty-handed (before the result).
-const QUIET = ["/ask", "/pay", "/admin", "/login", "/r/", "/my", "/leave", "/logout"];
+const QUIET = ["/ask", "/pay", "/admin", "/login", "/r/", "/my", "/leave", "/logout", "/e/"];
 const SEEN = "open1";
 
 // `count`: the charts read during the soft opening (lib/store.ts readingCount), thanked when it means something.

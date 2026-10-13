@@ -9,7 +9,7 @@ import { productById, SETS } from "@/lib/products";
 import { lastReportError, listInquiries, readingCount } from "@/lib/store";
 import { memberFixAction } from "./actions";
 import { allMembers, memberNo, VIA_LABEL, viaOf } from "@/lib/members";
-import { adminSignOut, giftRevokeAction, inquiryDeleteAction, inquiryDoneAction, testOrderAction } from "./actions";
+import { adminSignOut, creditEventCreateAction, creditEventToggleAction, giftRevokeAction, inquiryDeleteAction, inquiryDoneAction, testOrderAction } from "./actions";
 import Dashboard, { rangeOf } from "./Dashboard";
 import { threadsPosts } from "@/lib/threads";
 import GiftForm from "./GiftForm";
@@ -20,6 +20,8 @@ import { SHARE_FROM, STEP_FROM, STEP_LABEL } from "@/lib/nextStep";
 import { COLUMNS, publishedColumns, titleLines } from "@/lib/columns";
 import { SOURCES } from "@/lib/source";
 import { DailyTable, SourceTable } from "./Insights";
+import { CREDIT_KINDS, ledgerOf, waitingBonus } from "@/lib/creditLedger";
+import { closedWhy, listCreditEvents } from "@/lib/creditEvents";
 
 export const metadata: Metadata = { title: "관리자", robots: { index: false } };
 
@@ -255,6 +257,8 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
         )}
       </section>
 
+      <CreditsSection period={period} orders={orders} origin={origin} />
+
       <MembersSection find={typeof q.mq === "string" ? q.mq : ""} />
 
       <section className="doc-paper mt-4 px-4 py-4">
@@ -271,7 +275,11 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
                 <span className="w-20 shrink-0 text-[11px] text-ink-soft">{day(o.paidAt ?? o.createdAt).slice(5)}</span>
                 <span className="min-w-0 flex-1">
                   <b className="block truncate">{o.set ? SETS[o.set].title : productById(o.product)?.title}</b>
-                  <span className="block truncate text-[11px] text-ink-soft">{o.who}</span>
+                  <span className="block truncate text-[11px] text-ink-soft">
+                    {o.who}
+                    {(o.bonus ?? 0) > 0 && ` · 질문 ${o.bonus} ${o.bonusGiven ? "지급됨" : "로그인 대기"}`}
+                    {(o.credits ?? 0) > 0 && ` · 질문권 ${o.credits}${o.credited === false ? " 미지급" : ""}`}
+                  </span>
                 </span>
                 <span className={`shrink-0 font-bold ${o.status === "paid" && !o.test ? "" : "text-ink-soft line-through"}`}>{won(o.amount)}</span>
                 <form action={testOrderAction} className="shrink-0">
@@ -606,6 +614,131 @@ async function MembersSection({ find }: { find: string }) {
           <button className="col-span-2 rounded-full bg-ink py-1.5 font-bold text-hanji">적용</button>
         </form>
       </details>
+    </section>
+  );
+}
+
+// 질문권: what was given and used in a period, by where it came from (lib/creditLedger.ts), the questions still
+// waiting for a buyer to sign in, and the events that give questions away by a link (lib/creditEvents.ts).
+const CLOSED_LABEL = { none: "없음", off: "멈춤", ended: "기간 끝", full: "마감" } as const;
+async function CreditsSection({ period, orders, origin }: { period: Period; orders: Order[]; origin: string }) {
+  const [members, events] = await Promise.all([allMembers().catch(() => []), listCreditEvents().catch(() => [])]);
+  const ledger = ledgerOf(members, period);
+  const given = CREDIT_KINDS.filter((k) => k.give).reduce((a, k) => a + Math.max(0, ledger[k.key].credits), 0);
+  const used = -ledger.use.credits;
+  const held = members.reduce((a, m) => a + m.credits, 0);
+  const sold = orders.filter((o) => o.status === "paid" && !o.test && o.product === "jilmun" && inPeriods(o.paidAt ?? o.createdAt).includes(period));
+  const waiting = waitingBonus(orders);
+  const when = (t: number) => new Date(t + 9 * 3600000).toISOString().slice(5, 16).replace("T", " ");
+  return (
+    <section id="credits" className="doc-paper mt-4 px-4 py-4">
+      <h2 className="flex items-baseline justify-between font-myeongjo font-extrabold">
+        질문권
+        <span className="text-sm text-ink-soft">회원이 가진 질문 {held}개</span>
+      </h2>
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {PERIODS.map((p) => (
+          <a
+            key={p.key}
+            href={`/admin?sp=${p.key}#credits`}
+            className={`rounded-full border px-3 py-1 text-xs font-bold ${p.key === period ? "border-ink bg-ink text-hanji" : "border-ink/20 text-ink-soft"}`}
+          >
+            {p.label}
+          </a>
+        ))}
+      </div>
+      <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+        {[
+          ["나간 질문", given],
+          ["쓴 질문", used],
+          ["질문권 매출", `${sold.reduce((a, o) => a + o.amount, 0).toLocaleString("ko-KR")}원`],
+        ].map(([k, v]) => (
+          <div key={k} className="rounded-lg bg-white/50 px-2 py-2">
+            <p className="text-[11px] text-ink-soft">{k}</p>
+            <b className="font-myeongjo text-[17px]">{v}</b>
+          </div>
+        ))}
+      </div>
+      <table className="mt-3 w-full text-[12.5px]">
+        <thead className="text-[11px] text-ink-soft">
+          <tr>
+            <th className="text-left font-normal">어디서</th>
+            <th className="text-right font-normal">건</th>
+            <th className="text-right font-normal">질문</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-seal/10">
+          {CREDIT_KINDS.map((k) => (
+            <tr key={k.key} className={k.give ? "" : "text-ink-soft"}>
+              <td className="py-1">{k.label}</td>
+              <td className="py-1 text-right tabular-nums">{ledger[k.key].times}</td>
+              <td className="py-1 text-right tabular-nums">{ledger[k.key].credits > 0 ? `+${ledger[k.key].credits}` : ledger[k.key].credits}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {waiting.length > 0 && (
+        <div className="mt-3 rounded-lg border border-seal/40 bg-seal/5 px-3 py-2 text-[12px]">
+          <b className="text-seal">로그인 대기 {waiting.length}건 · 질문 {waiting.reduce((a, o) => a + (o.bonus ?? 0), 0)}개</b>
+          <p className="text-[11px] text-ink-soft">로그인 없이 산 손님이에요. 같은 브라우저에서 로그인하면 들어가요. 다른 기기로 문의하면 아래 회원 칸에서 주문을 붙이고 질문을 넣어 주세요.</p>
+          <ul className="mt-1">
+            {waiting.slice(0, 20).map((o) => (
+              <li key={o.id} className="font-mono text-[11px]">
+                {when(o.paidAt ?? o.createdAt)} · 질문 {o.bonus} · {o.id}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <h3 className="mt-5 font-myeongjo font-extrabold">이벤트로 질문 주기</h3>
+      <p className="mt-0.5 text-[11px] text-ink-soft">링크를 연 카카오 회원에게 한 번씩 질문을 넣어 드려요. 인원이 차거나 기간이 끝나면 저절로 닫혀요.</p>
+      <form action={creditEventCreateAction} className="mt-2 grid grid-cols-3 gap-1.5 text-[12px]">
+        <input name="name" required placeholder="이벤트 이름 (예: 스레드 댓글 이벤트)" className="col-span-3 rounded-lg border border-ink/15 bg-white/60 px-2 py-1.5" />
+        <label className="flex flex-col text-[10.5px] text-ink-soft">
+          질문 수
+          <input name="credits" type="number" min={1} max={5} defaultValue={1} className="rounded-lg border border-ink/15 bg-white/60 px-2 py-1.5 text-[12px] text-ink" />
+        </label>
+        <label className="flex flex-col text-[10.5px] text-ink-soft">
+          선착순 인원
+          <input name="max" type="number" min={1} max={10000} defaultValue={30} className="rounded-lg border border-ink/15 bg-white/60 px-2 py-1.5 text-[12px] text-ink" />
+        </label>
+        <label className="flex flex-col text-[10.5px] text-ink-soft">
+          기간(일)
+          <input name="days" type="number" min={1} max={365} defaultValue={7} className="rounded-lg border border-ink/15 bg-white/60 px-2 py-1.5 text-[12px] text-ink" />
+        </label>
+        <button className="col-span-3 rounded-full bg-ink py-1.5 font-bold text-hanji">이벤트 링크 만들기</button>
+      </form>
+      {events.length > 0 && (
+        <ul className="mt-3 flex flex-col divide-y divide-seal/10 text-[12px]">
+          {events.map((e) => {
+            const closed = closedWhy(e, e.taken);
+            const link = `${origin}/e/${e.code}`;
+            return (
+              <li key={e.code} className="py-2">
+                <div className="flex items-center gap-2">
+                  <b className="min-w-0 flex-1 truncate">{e.name}</b>
+                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10.5px] font-bold ${closed ? "bg-ink/10 text-ink-soft" : "bg-seal text-white"}`}>
+                    {closed ? CLOSED_LABEL[closed] : "진행 중"}
+                  </span>
+                  <form action={creditEventToggleAction} className="shrink-0">
+                    <input type="hidden" name="code" value={e.code} />
+                    <input type="hidden" name="on" value={e.on ? "0" : "1"} />
+                    <button className="rounded-full border border-ink/20 px-2 py-0.5 text-[10.5px] text-ink-soft">{e.on ? "멈추기" : "다시 열기"}</button>
+                  </form>
+                </div>
+                <p className="text-[11px] text-ink-soft">
+                  질문 {e.credits}개 · {e.taken}/{e.max}명 받음 · {when(e.until)}까지
+                </p>
+                <div className="mt-1 flex items-center gap-2">
+                  <span className="min-w-0 flex-1 truncate font-mono text-[11px]">{link}</span>
+                  <CopyButton text={link} />
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </section>
   );
 }
