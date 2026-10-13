@@ -21,3 +21,17 @@ export const MOCK_REPORT = `## [그대는 이런 사람이옵니다] 준비는 �
 [재능] 남의 말을 듣고 문서로 깔끔하게 옮기는 손
 [가장 소름 돋는 포인트] 70점짜리를 먼저 내놓은 해에 일이 가장 잘 풀린다
 `;
+
+// The same canned voice, one section per chapter the prompt asks for (and the 한눈에 card when it is asked for), so
+// a page's per-chapter extras can be tried locally.
+export function mockFor(prompt: string): string | null {
+  const list = /\[장 순서[^\]]*\]\n((?:\d+\. .+\n?)+)/.exec(prompt)?.[1];
+  if (!list) return null;
+  const chapters = list.trim().split("\n").map((l) => l.replace(/^\d+\.\s*/, ""));
+  const body = MOCK_REPORT.split(/^## .*$/m)[1]?.trim() ?? "";
+  const sections = chapters.map((c, i) => `## [${c}] 시험용 헤드라인 ${i + 1}: 이 장의 한 줄 대답이 여기에 와요\n${body}\n`);
+  const summary = /\[한눈에\]/.test(prompt)
+    ? `## [한눈에] 시험용 한 줄 헤드라인\n${[...prompt.matchAll(/^\[([^\]]+)\] /gm)].map((m) => `[${m[1]}] 시험용 요약 문장이에요`).filter((l) => !/^\[(대상|한눈에)/.test(l)).slice(0, 6).join("\n")}\n`
+    : "";
+  return sections.join("\n") + summary;
+}

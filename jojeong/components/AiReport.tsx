@@ -1,6 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { keepPng, makePng } from "@/lib/cardExport";
+import { trackEvent } from "./VisitBeacon";
 
 type Section = { label: string; headline: string; paras: string[] };
 
@@ -60,17 +63,40 @@ function parse(text: string): { sections: Section[]; failed: boolean } {
 
 // A report written by 정 훈도 (lib/reportWriter.ts): while it is written, a waiting card that stamps each chapter
 // as it is finished; then the whole report at once.
+// For a report bought from v8 on (lib/reportPrompts.ts V8_SINCE), the page may add: `figures`, a picture worked out
+// from the chart at the top of a chapter (by its index); `ask`, the report's name, for "이 장, 정 훈도에게 더 묻기"
+// under each chapter (app/ask/DraftCarry.tsx); `save`, a file name to keep the 한눈에 card as an image.
 export default function AiReport({
   request,
   chapters,
   fallback,
   modern = false,
+  figures,
+  ask,
+  save,
 }: {
   request: Record<string, string>;
   chapters: string[];
   fallback?: React.ReactNode;
   modern?: boolean;
+  figures?: Record<number, React.ReactNode>;
+  ask?: string;
+  save?: string;
 }) {
+  const card = useRef<HTMLElement>(null);
+  const [saving, setSaving] = useState<"idle" | "making" | "error">("idle");
+  async function keepCard() {
+    if (!card.current || !save) return;
+    trackEvent("save_image", "report");
+    setSaving("making");
+    try {
+      const png = await makePng(card.current, save);
+      setSaving("idle");
+      await keepPng(png);
+    } catch {
+      setSaving("error");
+    }
+  }
   const w = WORDS[modern ? "modern" : "joseon"];
   const [text, setText] = useState("");
   // "waiting": written for an earlier visit (or this one lost its connection), so the page asks again until saved.
@@ -203,17 +229,29 @@ export default function AiReport({
             </span>
           </summary>
           <div className="mt-3 border-t border-seal/15 pt-3">
+            {figures?.[i] && <div className="mb-4">{figures[i]}</div>}
             {s.paras.map((p, j) => (
               <p key={j} className="mt-4 text-[16px] leading-[1.85] tracking-[-0.005em] first:mt-0">
                 {p}
               </p>
             ))}
+            {ask && (
+              <Link
+                href={`/ask?draft=${encodeURIComponent(`${ask} ${i + 1}장 '${s.headline}'에서 더 여쭙고 싶어요. `)}`}
+                onClick={() => trackEvent("to_ask", "chapter")}
+                className="mt-4 flex items-center gap-2 rounded-xl border border-[#d4af5f]/60 bg-[#fbf6ea] px-3.5 py-2.5 text-[13px]"
+              >
+                <b className="font-myeongjo">이 장, 정 훈도에게 더 묻기</b>
+                <span className="text-[11.5px] text-ink-soft">내 상황을 적어 보내면 답서로</span>
+                <span className="ml-auto font-bold text-seal">→</span>
+              </Link>
+            )}
           </div>
         </details>
       ))}
 
       {summary && summaryRows.length > 0 && (
-        <section className="doc-paper mt-2 px-5 py-5">
+        <section ref={card} className="doc-paper mt-2 px-5 py-5">
           <p className="text-center font-myeongjo text-xs font-extrabold tracking-[0.4em] text-seal">한 눈 에</p>
           {summary.headline && <h3 className="mt-1 text-center font-myeongjo text-[17px] leading-snug font-extrabold">{summary.headline}</h3>}
           <dl className="mt-4 flex flex-col divide-y divide-seal/10">
@@ -227,8 +265,20 @@ export default function AiReport({
               );
             })}
           </dl>
+          {save && <p className="mt-3 text-right font-myeongjo text-[11px] text-ink-soft">훈도사주 · 정 훈도</p>}
         </section>
       )}
+      {save && summary && summaryRows.length > 0 && (
+        <button
+          type="button"
+          onClick={keepCard}
+          disabled={saving === "making"}
+          className="rounded-2xl border-2 border-seal bg-white/70 py-3 font-myeongjo text-[15px] font-extrabold text-seal disabled:opacity-60"
+        >
+          {saving === "making" ? "만드는 중…" : "한눈에 카드 저장"}
+        </button>
+      )}
+      {saving === "error" && <p className="text-center text-xs text-seal">카드를 만들지 못했어요. 화면을 캡처해 주세요.</p>}
 
       {(failed || state === "error") && sections.length > 0 && (
         <p className="rounded-xl bg-seal/10 px-4 py-3 text-center text-sm text-seal">{w.stoppedMidway}</p>

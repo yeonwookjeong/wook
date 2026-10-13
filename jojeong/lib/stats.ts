@@ -8,9 +8,9 @@ import { bumpCounters, readCounters } from "./store";
 export const CLIENT_EVENTS = ["share_court", "share_result", "save_image", "own_court", "to_saju", "ask_pop", "to_ask"] as const;
 // Where a step into 정 훈도에게 묻기 was taken: the opening note, the header, the home tile, the end of the free
 // reading, the end of a bought report.
-export const ASK_FROM = ["pop", "header", "home", "free", "report"] as const;
+export const ASK_FROM = ["pop", "header", "home", "free", "report", "chapter"] as const;
 export type AskFrom = (typeof ASK_FROM)[number];
-export const ASK_FROM_LABEL: Record<AskFrom, string> = { pop: "오픈 안내 팝업", header: "상단 묻기 버튼", home: "홈 타일", free: "무료 사주 끝", report: "보고서 끝" };
+export const ASK_FROM_LABEL: Record<AskFrom, string> = { pop: "오픈 안내 팝업", header: "상단 묻기 버튼", home: "홈 타일", free: "무료 사주 끝", report: "보고서 끝", chapter: "보고서 장마다" };
 export type ClientEvent = (typeof CLIENT_EVENTS)[number];
 export type StatEvent = ClientEvent | "pv" | "king" | "join" | "appoint" | "reading";
 
