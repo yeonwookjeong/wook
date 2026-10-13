@@ -51,31 +51,39 @@ export default async function Paywall({
   const lead = (pr === "a" ? FRONT_SET_A : FRONT_SET)[product.id];
   const front = lead && sets.includes(lead) ? [lead] : sets;
   const folded = sets.filter((s) => !front.includes(s));
+  // A set as shops show a bundle: its name and what is in it on the left, the price on the right with the discount
+  // and the regular price struck through small, not spelled out in brackets.
   const setButton = (s: SetId) => {
     const o = offers.get(s)!;
     const won = (n: number) => `${n.toLocaleString("ko-KR")}원`;
-    const qs = o.bonus ? ` · 정 훈도 질문 ${o.bonus}개 포함` : "";
-    // Already has some of the set: the difference, and what is still missing.
-    if (o.owned.length) {
-      const missing = SETS[s].products.filter((id) => !o.owned.includes(id));
-      return (
-        <div key={s}>
-          <PayButton secondary request={{ set: s, p: request.p, from: product.id }} label={`${SETS[s].title}로 올리기 +${won(o.price)}`} />
-          <p className="mt-1 text-[11px] text-ink-soft">
-            {josa(o.owned.map(titleIn).join(" · "), "은/는")} 이미 있어서 {won(o.credit)} 빼 드려요 · {josa(missing.map(titleIn).join(" · "), "을/를")} 따로 사면{" "}
-            {won(o.regular)}
-            {qs}
-          </p>
-        </div>
-      );
-    }
+    const off = Math.round((1 - o.price / o.regular) * 100);
+    const missing = SETS[s].products.filter((id) => !o.owned.includes(id));
+    const label = (
+      <span className="flex items-center gap-3 px-4 text-left">
+        <span className="min-w-0 flex-1">
+          <span className="block font-myeongjo text-[16px] leading-snug">{o.owned.length ? `${SETS[s].title}로 올리기` : SETS[s].title}</span>
+          <span className="mt-0.5 block font-sans text-[11.5px] leading-snug font-medium text-ink-soft">
+            {o.owned.length ? `${missing.map(titleIn).join(" · ")} 더하기` : SETS[s].products.map(titleIn).join(" · ")}
+            {o.bonus ? ` · 질문 ${o.bonus}개` : ""}
+          </span>
+        </span>
+        <span className="shrink-0 text-right">
+          <span className="flex items-baseline justify-end gap-1.5">
+            {off > 0 && <span className="font-sans text-[13px] font-extrabold text-[#e0452b]">{off}%</span>}
+            <span className="font-myeongjo text-[18px]">{o.owned.length ? `+${won(o.price)}` : won(o.price)}</span>
+          </span>
+          <s className="block font-sans text-[11.5px] font-medium text-ink-soft/80">{won(o.regular)}</s>
+        </span>
+      </span>
+    );
     return (
       <div key={s}>
-        <PayButton secondary request={{ set: s, p: request.p, from: product.id }} label={`${SETS[s].title} ${won(o.price)} (따로 사면 ${won(o.regular)})`} />
-        <p className="mt-1 text-[11px] text-ink-soft">
-          {josa(SETS[s].products.map(titleIn).join(" · "), "을/를")} 이 사주로 한 번에
-          {qs}
-        </p>
+        <PayButton secondary request={{ set: s, p: request.p, from: product.id }} label={label} />
+        {o.owned.length > 0 && (
+          <p className="mt-1 text-[11px] text-ink-soft">
+            {josa(o.owned.map(titleIn).join(" · "), "은/는")} 이미 있어서 {won(o.credit)} 빼 드려요
+          </p>
+        )}
       </div>
     );
   };

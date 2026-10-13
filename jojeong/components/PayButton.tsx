@@ -6,7 +6,7 @@ import { ANONYMOUS, loadTossPayments } from "@tosspayments/tosspayments-sdk";
 // Makes the order on our side, then opens the Toss payment window (카드·간편결제). Toss returns the buyer to
 // /pay/success or /pay/fail. With PAY_MOCK the window is skipped and the success page is opened directly.
 // `className`: a look of the page's own (청심당's gold), in place of the two below.
-export default function PayButton({ request, label, secondary = false, className }: { request: Record<string, string>; label: string; secondary?: boolean; className?: string }) {
+export default function PayButton({ request, label, secondary = false, className }: { request: Record<string, string>; label: React.ReactNode; secondary?: boolean; className?: string }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

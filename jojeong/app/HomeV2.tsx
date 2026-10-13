@@ -92,7 +92,24 @@ function HeroStage({ ask }: { ask: boolean }) {
 }
 
 // Back with a chart (C): the visitor's own day, then where they left off.
-function HeroMe({ name, stem, branch, today, ask, credits }: { name: string; stem: number; branch: number; today: Today; ask: boolean; credits: number | null }) {
+// `ny`: the coming year while it is sold as 신년운세 (lib/yeonun.ts newYearOf), the main way on from here then.
+function HeroMe({
+  name,
+  stem,
+  branch,
+  today,
+  ask,
+  credits,
+  ny,
+}: {
+  name: string;
+  stem: number;
+  branch: number;
+  today: Today;
+  ask: boolean;
+  credits: number | null;
+  ny: number | null;
+}) {
   return (
     <header className="animate-rise relative mt-3 overflow-hidden rounded-3xl bg-[#0f2236] px-5 pt-5 pb-4 text-[#f7efd9] shadow-[0_10px_30px_rgb(33_27_23/0.22),inset_0_0_0_1px_rgb(212_175_95/0.35)]">
       <Image src="/cards/gwansanggam.webp" alt="" fill sizes="440px" className="object-cover object-bottom opacity-45" />
@@ -111,7 +128,7 @@ function HeroMe({ name, stem, branch, today, ask, credits }: { name: string; ste
       </div>
       {today.score !== null && (
         <Link href="#today" className="relative mt-4 flex items-center gap-3.5 rounded-2xl border border-[#e2bc68]/35 bg-[#f7efd9]/[0.07] px-4 py-3">
-          <span className="font-myeongjo text-[40px] leading-none font-extrabold text-[#e2bc68]">{today.score}</span>
+          <span className="shrink-0 font-myeongjo text-[40px] leading-none font-extrabold whitespace-nowrap text-[#e2bc68]">{today.score}</span>
           <span className="min-w-0 text-[13px] leading-snug">
             <span className="block text-[11px] opacity-70">오늘의 점수 · {today.date}</span>
             {today.best && (
@@ -125,15 +142,20 @@ function HeroMe({ name, stem, branch, today, ask, credits }: { name: string; ste
         </Link>
       )}
       <Link
-        href="/reports/gukjeong"
+        href={ny ? `/reports/yeonun?y=${ny}` : "/reports/gukjeong"}
         className="relative mt-3 block rounded-2xl bg-[#e2bc68] py-3.5 text-center font-myeongjo text-[16px] font-extrabold text-[#17304a] shadow-[0_5px_0_#9c7a2e]"
       >
-        내 사주 · 2027 이어 보기
+        {ny ? `내 ${ny}년 신년운세 미리 보기` : "내 사주 풀이 다시 보기"}
       </Link>
+      {ny && (
+        <Link href="/reports/gukjeong" className="relative mt-2 block text-center text-[12.5px] text-[#f3ead0]/75 underline underline-offset-4">
+          내 사주 풀이 다시 보기 (성향·인생 흐름)
+        </Link>
+      )}
       {ask && (
         <AskLink from="home" className="relative mt-2.5 flex items-center gap-2 rounded-2xl border border-[#e2bc68]/60 px-4 py-3 text-[13.5px]">
-          <b className="font-myeongjo">정 훈도에게 묻기</b>
-          <span className="opacity-80">{credits !== null ? `남은 질문 ${credits}개` : `카카오로 로그인하면 첫 질문 ${JOIN_GIFT}개`}</span>
+          <b className="shrink-0 font-myeongjo whitespace-nowrap">정 훈도에게 묻기</b>
+          <span className="min-w-0 text-[12.5px] leading-snug opacity-80">{credits !== null ? `남은 질문 ${credits}개` : `카카오로 로그인하면 첫 질문 ${JOIN_GIFT}개`}</span>
           <span className="ml-auto font-extrabold text-[#e2bc68]">→</span>
         </AskLink>
       )}
@@ -236,6 +258,7 @@ export default async function HomeV2() {
           today={today}
           ask={ask}
           credits={member ? member.credits : null}
+          ny={ny}
         />
       ) : (
         <HeroStage ask={ask} />

@@ -179,6 +179,7 @@ async function ShelfA({ owned }: { owned: ReturnType<typeof ownedByProduct> }) {
               <span className="flex items-baseline justify-between gap-2">
                 <b className="font-myeongjo text-[18px]">{SETS[s].title}</b>
                 <span className="flex items-baseline gap-2">
+                  <span className="text-[13px] font-extrabold text-[#ff7a5c]">{Math.round((1 - setPrice(s, "a") / setRegular(s, "a", ny)) * 100)}%</span>
                   <s className="text-[12px] text-hanji/50">{setRegular(s, "a", ny).toLocaleString("ko-KR")}원</s>
                   <b className="font-myeongjo text-xl text-gold">{setPrice(s, "a").toLocaleString("ko-KR")}원</b>
                 </span>

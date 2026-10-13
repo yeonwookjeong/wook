@@ -34,6 +34,7 @@ import SajuChart from "@/components/SajuChart";
 import SinbunReport from "@/components/SinbunReport";
 import YearReport from "@/components/YearReport";
 import { YearList, YearTop } from "@/components/Yeonun";
+import YearGlance from "@/components/YearGlance";
 import { newYearOf, newYearProduct, thisYear, yearDetail, yearOf, yearRange, yearRows } from "@/lib/yeonun";
 import { josa } from "@/lib/josa";
 import { hanjaKo } from "@/lib/saju";
@@ -643,6 +644,20 @@ async function OpenReport({
         <Header product={y === newYear ? newYearProduct(product, y) : product} subjectName={`${name}님`} />
         {unlock && <OrderLink id={unlock.id} />}
         <YearTop d={d} name={name} prev={!paid && y > from ? link(y - 1) : null} next={!paid && y < to ? link(y + 1) : null} list={link()} />
+        {/* The year at a glance, free (bought before the opening: the page as it was then). */}
+        {(!unlock || isV8(unlock)) &&
+          (() => {
+            const flow = freeReadingOf(pillars, profile)?.flow?.find((f) => f.from <= y && y <= f.to);
+            return (
+              <YearGlance
+                name={name}
+                y={y}
+                rows={yearRows(pillars, profile, Math.max(from, y - 1), Math.min(to, y + 1), now) ?? []}
+                preview={yearPreviewOf(pillars, profile, y)}
+                decade={flow ? { from: flow.from, to: flow.to, mood: flow.young ? "성장기" : flow.mood, theme: flow.theme } : null}
+              />
+            );
+          })()}
         {unlock ? (
           <>
             <AiReport request={{ product: product.id, order: unlock.id }} modern {...(await extrasOf(unlock, product))} />
