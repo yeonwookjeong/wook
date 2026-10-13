@@ -6,6 +6,7 @@ import { pickDays } from "@/lib/taekil";
 import { figureById, figureChart } from "@/lib/figures";
 import { daysOf, distinctOnSlide, ILJU_IMAGE, monthPillarOf, rankDays, rankMonth, SIXTY, type IljuMonth } from "@/lib/iljuRank";
 import { ANIMALS, BRANCHES, BRANCHES_KO, STEMS, STEMS_KO } from "@/lib/saju";
+import { readingCount } from "@/lib/store";
 import { LIST_REELS } from "./listReels";
 
 // Social cards, 1080×1440 (Instagram 3:4, the profile grid's own shape, so nothing is cropped there), drawn in the site's own look. Owner only. Each slide is one URL
@@ -3494,6 +3495,76 @@ export async function Card({ q }: { q: CardQuery }) {
             ))}
           </div>
           <p style={{ marginTop: 40, textAlign: "center", fontSize: 30, color: SOFT }}>새로 익히는 대로, 하나씩 더 올리겠사옵니다</p>
+        </div>
+        <Brand />
+      </Frame>
+    );
+  }
+
+  // The grand opening (10/14): the room where 정 훈도 receives, the thanks for the soft opening with its real count
+  // (lib/store.ts readingCount, as the site's opening notice shows it), and what is new. No prices.
+  if (c === "open-cover")
+    return (
+      <Frame dark>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/cards/sarangbang.webp" alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 30%" }} />
+        <CornerBrand />
+        <p style={{ position: "absolute", top: 150, left: 0, right: 0, textAlign: "center", fontSize: 40, letterSpacing: "0.5em", color: "#f1cf7a", fontWeight: 800, textShadow: "0 4px 16px rgba(0,0,0,.6)" }}>
+          正式 開門
+        </p>
+        <ThumbTitle top="훈도사주 정식 오픈" main={<>문을 활짝<br />열었사옵니다</>} />
+      </Frame>
+    );
+  if (c === "open-thanks") {
+    const n = await readingCount();
+    return (
+      <Frame>
+        <div style={{ position: "absolute", top: 210, left: 100, right: 100, textAlign: "center" }}>
+          <Label>가오픈 동안</Label>
+          {n >= 100 ? (
+            <>
+              <p style={{ marginTop: 40, fontSize: 64, fontWeight: 800, lineHeight: 1.3 }}>사주를</p>
+              <p style={{ marginTop: 10, fontSize: 170, fontWeight: 800, lineHeight: 1, color: SEAL }}>{n.toLocaleString("ko-KR")}번</p>
+              <p style={{ marginTop: 26, fontSize: 64, fontWeight: 800, lineHeight: 1.3 }}>보러 와 주셨사옵니다</p>
+            </>
+          ) : (
+            <p style={{ marginTop: 40, fontSize: 70, fontWeight: 800, lineHeight: 1.35 }}>찾아 주신 모든 분께</p>
+          )}
+          <div style={{ margin: "60px auto 0", width: 120, height: 3, background: "rgba(179,38,30,.35)" }} />
+          <Body style={{ marginTop: 50, fontSize: 40 }}>
+            진심으로 고맙사옵니다.
+            <br />그 마음에 보답하려
+            <br />새 단장을 마쳤사옵니다.
+          </Body>
+        </div>
+        <Hundo src="/hundo-bow.png" size={210} bottom={190} />
+      </Frame>
+    );
+  }
+  if (c === "open-new") {
+    const items = [
+      { h: "聽心堂", t: "정 훈도에게 묻기", d: "내 사주를 펼쳐 놓고, 고민 하나에 답서를 써 드리옵니다. 카카오로 들어오시면 첫 질문은 선물이옵니다." },
+      { h: "新裝", t: "보고서 새 단장", d: "장마다 그림과 10년 달력, 다 읽고 간직하는 한눈에 카드. 궁합은 두 사람의 10년까지 보옵니다." },
+      { h: "保管", t: "산 보고서는 계정에", d: "로그인하면 어느 기기에서든 그대로 열리옵니다." },
+    ];
+    return (
+      <Frame>
+        <div style={{ position: "absolute", top: 150, left: 96, right: 96 }}>
+          <div style={{ textAlign: "center" }}>
+            <Label>새로 생긴 것</Label>
+            <p style={{ marginTop: 14, fontSize: 66, fontWeight: 800 }}>무엇이 달라졌사옵니까</p>
+          </div>
+          <div style={{ marginTop: 56, display: "flex", flexDirection: "column", gap: 26 }}>
+            {items.map((x, i) => (
+              <div key={x.h} style={{ display: "flex", gap: 30, padding: "34px 34px", borderRadius: 26, background: i === 0 ? "rgba(179,38,30,.08)" : "rgba(33,27,23,.05)", border: i === 0 ? `3px solid ${SEAL}` : "3px solid transparent" }}>
+                <p style={{ width: 120, flexShrink: 0, fontSize: 40, fontWeight: 800, color: SEAL, lineHeight: 1.2, textAlign: "center" }}>{x.h}</p>
+                <div>
+                  <p style={{ fontSize: 46, fontWeight: 800, lineHeight: 1.2 }}>{x.t}</p>
+                  <p style={{ marginTop: 12, fontSize: 31, lineHeight: 1.55, color: SOFT, fontFamily: sans }}>{x.d}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
         <Brand />
       </Frame>
