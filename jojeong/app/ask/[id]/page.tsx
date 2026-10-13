@@ -10,7 +10,7 @@ import { renamePersonAction } from "../actions";
 import { AnswerLetter, HundoFace, Question, RoomHead } from "../Letter";
 import SaveLetter from "../SaveLetter";
 import CreditSlips from "../CreditSlips";
-import { Plaque, Room } from "../Hall";
+import { Room, RoomArt } from "../Hall";
 import { FigureOf, VerdictCard } from "../Figures";
 import { isPreview } from "@/lib/admin";
 import { defaultFigures, figureKit } from "@/lib/askFigures";
@@ -61,7 +61,9 @@ export default async function MemberRoomPage({ params }: PageProps<"/ask/[id]">)
             ← 청심당
           </Link>
         </p>
-        <Plaque caption={`${me.name}님의 사랑방`} />
+        <div className="mt-2">
+          <RoomArt short />
+        </div>
         <RoomHead
           bare
           person={me}

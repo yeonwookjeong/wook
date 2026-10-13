@@ -7,8 +7,8 @@ import { OpenRoomForm } from "./AskForms";
 import DraftReturn from "./DraftReturn";
 import { openMyRoomAction } from "./actions";
 import { readMe } from "@/lib/me";
-import { AnswerLetter, HundoFace, Question } from "./Letter";
-import { Floor, Gate, GOLD_BUTTON, Plaque } from "./Hall";
+import { AnswerLetter, Question } from "./Letter";
+import { Floor, GOLD_BUTTON, RoomArt } from "./Hall";
 
 export const metadata: Metadata = {
   title: "정 훈도에게 묻기",
@@ -60,19 +60,14 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
   if (!member)
     return (
       <>
-        <Gate>
-          <Plaque caption="청심당 · 마음을 듣는 방" />
-          <div className="mt-6 flex flex-col items-center text-center">
-            <div className="relative">
-              <HundoFace size={88} />
-              <span aria-hidden className="absolute -bottom-3 left-1/2 h-4 w-28 -translate-x-1/2 rounded-[50%] bg-[#7a2a1f]/80 blur-[1px]" />
-            </div>
-            <h1 className="mt-6 font-myeongjo text-[22px] leading-snug font-extrabold">
+        <RoomArt caption="청심당 · 마음을 듣는 방">
+          <div className="text-center">
+            <h1 className="font-myeongjo text-[23px] leading-snug font-extrabold drop-shadow-[0_2px_6px_rgb(0_0_0/0.6)]">
               정 훈도가 그대의
               <br />
               <span className="text-[#e2bc68]">고민을 듣사옵니다</span>
             </h1>
-            <p className="mt-2 text-[13.5px] leading-relaxed text-hanji/75">
+            <p className="mt-2 text-[13.5px] leading-relaxed text-hanji/80">
               그대의 여덟 글자를 펼쳐 두고,
               <br />
               고민 하나에 답서 한 통을 써 드리옵니다.
@@ -87,7 +82,7 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
             {login}
           </Link>
           <p className="mt-2.5 text-center text-[11.5px] leading-relaxed text-hanji/60">질문과 상담 기록을 계정에 보관해, 다음에 와도 이어서 이야기해요</p>
-        </Gate>
+        </RoomArt>
 
         <Floor>
           <Eyebrow hanja="答書">이런 답서를 받아요</Eyebrow>
@@ -141,18 +136,13 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
 
   return (
     <>
-      <Gate>
-        <Plaque caption="청심당 · 마음을 듣는 방" />
-        <div className="mt-6 flex flex-col items-center text-center">
-          <div className="relative">
-            <HundoFace size={76} />
-            <span aria-hidden className="absolute -bottom-3 left-1/2 h-4 w-24 -translate-x-1/2 rounded-[50%] bg-[#7a2a1f]/80 blur-[1px]" />
-          </div>
-          <h1 className="mt-5 font-myeongjo text-[21px] leading-snug font-extrabold">
+      <RoomArt caption="청심당 · 마음을 듣는 방">
+        <div className="text-center">
+          <h1 className="font-myeongjo text-[22px] leading-snug font-extrabold drop-shadow-[0_2px_6px_rgb(0_0_0/0.6)]">
             {member.nick}님, <span className="text-[#e2bc68]">어서 드시옵소서</span>
           </h1>
-          <p className="mt-1 text-[13px] text-hanji/70">오늘은 무엇이 마음에 걸리시옵니까</p>
-          <p className="mt-3 rounded-full border border-[#e2bc68]/40 bg-[#e2bc68]/10 px-4 py-1 text-[13px]">
+          <p className="mt-1 text-[13px] text-hanji/75">오늘은 무엇이 마음에 걸리시옵니까</p>
+          <p className="mt-3 inline-block rounded-full border border-[#e2bc68]/40 bg-[#e2bc68]/10 px-4 py-1 text-[13px]">
             남은 질문 <b className="font-myeongjo text-[18px] text-[#e2bc68]">{member.credits}</b>개
           </p>
         </div>
@@ -176,7 +166,7 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
           </form>
         ) : null}
         <DraftReturn rooms={rooms.map((r) => r!.id)} />
-      </Gate>
+      </RoomArt>
 
       <Floor>
         <Eyebrow hanja="房">내 사랑방</Eyebrow>
