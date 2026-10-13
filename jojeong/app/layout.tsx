@@ -5,11 +5,8 @@ import { adsAccount } from "@/lib/ads";
 import { SITE_NAME, SITE_SUMMARY, SITE_TAGLINE, SNS_URLS, siteUrl } from "@/lib/brand";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import VisitBeacon from "@/components/VisitBeacon";
-import OpenNote, { type OpenSet } from "@/components/OpenNote";
-import { josa } from "@/lib/josa";
-import { pricingNow } from "@/lib/pricing";
-import { bonusFor, productById, SETS, SETS_OFFERED, setPrice } from "@/lib/products";
-import { newYearOf } from "@/lib/yeonun";
+import OpenNote from "@/components/OpenNote";
+import { readingCount } from "@/lib/store";
 import { askShown, currentMember, JOIN_GIFT, membersEnabled } from "@/lib/members";
 import "./globals.css";
 
@@ -34,16 +31,6 @@ export const metadata: Metadata = {
 };
 
 // Who the site is, for search engines (schema.org): the name to show, what it does, and its own accounts.
-// The fullest set on sale now, for the opening notice (사주 전서 under the new prices).
-async function openSet(): Promise<OpenSet | null> {
-  const pr = await pricingNow();
-  const s = SETS_OFFERED[pr].includes("jeonseo") ? "jeonseo" : null;
-  if (!s) return null;
-  const ny = newYearOf();
-  const titles = SETS[s].products.map((id) => (id === "yeonun" && ny ? `${ny} 신년운세` : productById(id)!.title.split(" · ")[0]));
-  return { title: SETS[s].title, price: setPrice(s, pr), qs: bonusFor(pr, null, s), list: josa(titles.join("·"), "을/를") };
-}
-
 const JSON_LD = {
   "@context": "https://schema.org",
   "@graph": [
@@ -90,7 +77,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         </main>
         {/* The grand opening, once per browser. */}
         {membersEnabled() && (await askShown()) && (
-          <OpenNote member={Boolean(await currentMember().catch(() => null))} gift={JOIN_GIFT} set={await openSet()} />
+          <OpenNote member={Boolean(await currentMember().catch(() => null))} gift={JOIN_GIFT} count={await readingCount()} />
         )}
         {/* Page views and visitors, cookieless (Vercel Web Analytics; enable it in the Vercel project). */}
         <Analytics />
