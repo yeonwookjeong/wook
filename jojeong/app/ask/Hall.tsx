@@ -48,7 +48,7 @@ export const GOLD_BUTTON =
 // warm wooden floor the letters are laid on. Full width of the column; the question bar sits at its foot.
 export function Room({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative -mx-4 min-h-[70vh] overflow-clip bg-[linear-gradient(180deg,#1b2430_0,#222c38_260px,#2c2219_460px,#231b14_100%)] px-4 pt-0 pb-0 text-hanji">
+    <div className="relative mt-3 min-h-[70vh] overflow-clip rounded-3xl bg-[linear-gradient(180deg,#1b2430_0,#222c38_260px,#2c2219_460px,#231b14_100%)] px-4 pt-0 pb-0 text-hanji">
       {/* 창호: the lattice of the paper window behind the plaque, lit from outside */}
       <span
         aria-hidden
@@ -102,11 +102,17 @@ export function Gate({ children }: { children: React.ReactNode }) {
   );
 }
 
+// The frame of the 청심당 front page: the picture and the floors under it as one dark card, set in from the edges
+// with the same gap under the header as the home cards.
+export function Hallway({ children }: { children: React.ReactNode }) {
+  return <div className="mt-3 overflow-clip rounded-3xl shadow-[0_10px_30px_rgb(33_27_23/0.22),inset_0_0_0_1px_rgb(212_175_95/0.35)]">{children}</div>;
+}
+
 // A section of the hall's floor, below the gate: dark wood with board lines.
 export function Floor({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
     <div
-      className={`relative -mx-4 bg-[#241c15] px-4 py-7 text-hanji [background-image:repeating-linear-gradient(90deg,rgb(0_0_0/0.22)_0_1px,transparent_1px_72px),repeating-linear-gradient(180deg,rgb(255_255_255/0.025)_0_1px,transparent_1px_9px)] ${className}`}
+      className={`relative bg-[#241c15] px-4 py-7 text-hanji [background-image:repeating-linear-gradient(90deg,rgb(0_0_0/0.22)_0_1px,transparent_1px_72px),repeating-linear-gradient(180deg,rgb(255_255_255/0.025)_0_1px,transparent_1px_9px)] ${className}`}
     >
       {children}
     </div>
@@ -117,9 +123,19 @@ export function Floor({ children, className = "" }: { children: React.ReactNode;
 // the picture with the plaque over its ceiling beams, fading into the night blue where `children` sit.
 // `short`: a wide crop of him at the desk, with no plaque, as the head of a room (app/ask/[id]).
 // `corner`: laid over the picture's top left (the way back, in a room).
-export function RoomArt({ children, short = false, caption, corner }: { children?: React.ReactNode; short?: boolean; caption?: string; corner?: React.ReactNode }) {
+export function RoomArt({
+  children,
+  short = false,
+  caption,
+  corner,
+}: {
+  children?: React.ReactNode;
+  short?: boolean;
+  caption?: string;
+  corner?: React.ReactNode;
+}) {
   return (
-    <div className="relative -mx-4 overflow-clip bg-[#1b2430] text-hanji">
+    <div className={`relative overflow-clip bg-[#1b2430] text-hanji ${short ? "-mx-4" : ""}`}>
       <div className={`relative ${short ? "aspect-[5/4]" : "aspect-[1122/1402]"}`}>
         <Image
           src="/cards/sarangbang.webp"
@@ -129,7 +145,10 @@ export function RoomArt({ children, short = false, caption, corner }: { children
           sizes="440px"
           className={`object-cover ${short ? "object-[50%_52%]" : ""}`}
         />
-        <span aria-hidden className={`absolute inset-x-0 top-0 bg-gradient-to-b to-transparent ${short ? "h-14 from-[#141a22]/45" : "h-28 from-[#141a22]/85"}`} />
+        <span
+          aria-hidden
+          className={`absolute inset-x-0 top-0 bg-gradient-to-b to-transparent ${short ? "h-14 from-[#141a22]/45" : "h-28 from-[#141a22]/85"}`}
+        />
         <span aria-hidden className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-[#1b2430]" />
         {corner && <div className="absolute top-3 left-4 z-10">{corner}</div>}
         {!short && (
