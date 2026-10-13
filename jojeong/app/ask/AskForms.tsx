@@ -53,11 +53,11 @@ function Writing({ question, topic }: { question: string; topic: string }) {
   }, []);
   return (
     <div className="mt-3 flex flex-col gap-3">
-      <div className="ml-12 rounded-[18px] rounded-br-[4px] bg-ink px-4 py-2.5 text-[15px] leading-relaxed text-hanji">
-        {topic && <span className="block text-[11px] font-bold opacity-65">{topic}</span>}
+      <div className="ml-12 rounded-[6px] rounded-br-[2px] bg-[#f3e7c7] px-4 py-2.5 text-[15px] leading-relaxed text-ink shadow-[0_3px_10px_rgb(0_0_0/0.35)]">
+        {topic && <span className="block text-[11px] font-bold text-seal">{topic}</span>}
         <p className="whitespace-pre-wrap">{question}</p>
       </div>
-      <div className="doc-paper rounded-[4px] px-6 py-6 text-center" role="status">
+      <div className="doc-paper rounded-[4px] px-6 py-6 text-center text-ink" role="status">
         <p className="font-myeongjo text-[15px] font-extrabold">정 훈도가 답서를 쓰고 있사옵니다</p>
         <p className="mt-1.5 text-[13px] text-ink-soft">{STEPS[step]}</p>
         <div className="mx-auto mt-4 flex w-40 flex-col gap-2" aria-hidden>
@@ -74,7 +74,7 @@ function Writing({ question, topic }: { question: string; topic: string }) {
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-1.5">
-      <span className="w-7 shrink-0 text-[11px] font-bold text-ink-soft">{label}</span>
+      <span className="w-7 shrink-0 text-[11px] font-bold text-[#e2bc68]/80">{label}</span>
       <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto [scrollbar-width:none]">{children}</div>
     </div>
   );
@@ -86,7 +86,7 @@ function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; chi
       type="button"
       onClick={onClick}
       aria-pressed={on}
-      className={`shrink-0 rounded-full border px-3 py-1 text-[12.5px] ${on ? "border-ink bg-ink text-hanji" : "border-ink/15 bg-white/70 text-ink"}`}
+      className={`shrink-0 rounded-full border px-3 py-1 text-[12.5px] ${on ? "border-[#e2bc68] bg-[#e2bc68] text-[#17304a]" : "border-[#e2bc68]/30 bg-white/[0.05] text-hanji"}`}
     >
       {children}
     </button>
@@ -149,8 +149,8 @@ export function AskForm({
     <>
       {pending && <Writing question={sent.question} topic={sent.topic} />}
       {needCredits && (
-        <section className="jjok-box mt-3 px-4 py-4">
-          <p className="text-center font-myeongjo text-[15px] font-extrabold">질문을 채우시면 바로 보내 드려요</p>
+        <section className="mt-4 rounded-2xl bg-white/[0.04] px-4 py-4 ring-1 ring-[#e2bc68]/30">
+          <p className="text-center font-myeongjo text-[15px] font-extrabold text-[#e2bc68]">질문을 채우시면 바로 보내 드려요</p>
           <p className="mt-1 text-center text-[12px] opacity-75">써 두신 질문은 그대로 남아 있어요</p>
           {children}
         </section>
@@ -171,7 +171,7 @@ export function AskForm({
           setTopic("");
           setOpen(false);
         }}
-        className="sticky bottom-0 z-10 -mx-4 mt-2 border-t border-ink/10 bg-hanji/95 px-3 pt-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur"
+        className="sticky bottom-0 z-10 -mx-4 mt-4 border-t border-[#e2bc68]/25 bg-[#1e1813]/95 px-3 pt-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-hanji backdrop-blur"
       >
         <input type="hidden" name="room" value={room} />
         <input type="hidden" name="with" value={withId} />
@@ -179,8 +179,8 @@ export function AskForm({
         {open ? (
           <div className="mb-2 flex flex-col gap-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11.5px] font-bold text-ink-soft">여쭐 말씀</span>
-              <button type="button" onClick={() => setOpen(false)} className="text-[11.5px] text-ink-soft">
+              <span className="text-[11.5px] font-bold text-[#e2bc68]/80">여쭐 말씀</span>
+              <button type="button" onClick={() => setOpen(false)} className="text-[11.5px] text-hanji/60">
                 접기 ▾
               </button>
             </div>
@@ -191,7 +191,7 @@ export function AskForm({
                 </Chip>
               ))}
               {canAdd && (
-                <a href="#people" onClick={() => setOpen(false)} className="shrink-0 px-1.5 py-1 text-[12.5px] text-ink-soft underline">
+                <a href="#people" onClick={() => setOpen(false)} className="shrink-0 px-1.5 py-1 text-[12.5px] text-hanji/60 underline">
                   ＋ 사람
                 </a>
               )}
@@ -211,8 +211,8 @@ export function AskForm({
               ))}
             </Row>
             {!text && (
-              <p className="flex gap-x-2.5 overflow-x-auto text-[12px] whitespace-nowrap text-seal [scrollbar-width:none]">
-                <span className="shrink-0 text-ink-soft">이렇게 시작해 보세요</span>
+              <p className="flex gap-x-2.5 overflow-x-auto text-[12px] whitespace-nowrap text-[#e2bc68] [scrollbar-width:none]">
+                <span className="shrink-0 text-hanji/55">이렇게 시작해 보세요</span>
                 {STARTERS.map((st) => (
                   <button
                     key={st.label}
@@ -223,7 +223,7 @@ export function AskForm({
                       keep(st.text, st.topic);
                       requestAnimationFrame(() => box.current?.focus());
                     }}
-                    className="shrink-0 underline decoration-seal/30 underline-offset-2"
+                    className="shrink-0 underline decoration-[#e2bc68]/40 underline-offset-2"
                   >
                     {st.label}
                   </button>
@@ -232,9 +232,9 @@ export function AskForm({
             )}
           </div>
         ) : (
-          <button type="button" onClick={() => setOpen(true)} className="mb-1.5 flex max-w-full items-center gap-1 text-[12px] text-ink-soft">
+          <button type="button" onClick={() => setOpen(true)} className="mb-1.5 flex max-w-full items-center gap-1 text-[12px] text-hanji/60">
             <span className="truncate">
-              <b className="text-ink">{whoLabel} 이야기</b> · {topic || "주제 고르기"}
+              <b className="text-[#e2bc68]">{whoLabel} 이야기</b> · {topic || "주제 고르기"}
             </span>
             <span aria-hidden>▴</span>
           </button>
@@ -254,14 +254,14 @@ export function AskForm({
             disabled={pending}
             aria-label="여쭐 말씀"
             placeholder="지금 상황도 한두 줄 적어 주시옵소서"
-            className="min-h-11 flex-1 resize-none rounded-2xl border border-ink/15 bg-white px-3.5 py-2.5 text-[15px] leading-snug disabled:opacity-60"
+            className="min-h-11 flex-1 resize-none rounded-2xl border border-[#e2bc68]/30 bg-[#fbf6ea] px-3.5 py-2.5 text-[15px] leading-snug text-ink disabled:opacity-60"
           />
-          <button type="submit" disabled={pending || !text.trim()} className="h-11 shrink-0 rounded-2xl bg-seal px-4 text-sm font-extrabold text-hanji disabled:opacity-50">
+          <button type="submit" disabled={pending || !text.trim()} className="h-11 shrink-0 rounded-2xl bg-[#e2bc68] px-4 font-myeongjo text-sm font-extrabold text-[#17304a] disabled:opacity-50">
             {pending ? "쓰는 중" : "여쭙기"}
           </button>
         </div>
         {open && text && (
-          <p className="mt-1 text-right text-[11px] text-ink-soft">
+          <p className="mt-1 text-right text-[11px] text-hanji/55">
             {[...text].length}/{MAX} · 무슨 일이 있는지, 언제까지 정해야 하는지 적어 주실수록 깊어져요
           </p>
         )}

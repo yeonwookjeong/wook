@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import PayButton from "@/components/PayButton";
 import { iljuOf, loadRoom, MAX_PEOPLE, personOfRoom, roomPerson } from "@/lib/ask";
 import { decodePerson } from "@/lib/pairToken";
 import { RELS, REL_LABEL, relOf } from "@/lib/bond";
 import { currentMember } from "@/lib/members";
-import { CREDIT_PACKS, type CreditPack } from "@/lib/products";
 import { AskForm, AttachOtherForm, ChooseForm, RemovePersonButton } from "../AskForms";
 import { renamePersonAction } from "../actions";
 import { AnswerLetter, HundoFace, Question, RoomHead } from "../Letter";
 import SaveLetter from "../SaveLetter";
+import CreditSlips from "../CreditSlips";
+import { Plaque, Room } from "../Hall";
 import { FigureOf, VerdictCard } from "../Figures";
 import { isPreview } from "@/lib/admin";
 import { defaultFigures, figureKit } from "@/lib/askFigures";
@@ -19,8 +19,6 @@ import { withFigures } from "@/lib/askText";
 export const metadata: Metadata = { title: "사랑방 · 정 훈도에게 묻기", robots: { index: false } };
 // An answer is written by the model inside the action: give it the same room as a report.
 export const maxDuration = 300;
-
-const won = (n: number) => `${n.toLocaleString("ko-KR")}원`;
 
 // A member's own room: the eight characters on top, the talk so far as questions and letters, the question bar
 // fixed to the bottom (with none left, sending opens the packs right here and keeps what was written), and the other person.
@@ -57,65 +55,72 @@ export default async function MemberRoomPage({ params }: PageProps<"/ask/[id]">)
 
   return (
     <>
-      <p className="mt-4 text-sm">
-        <Link href="/ask" className="text-ink-soft underline">
-          ← 내 사랑방
-        </Link>
-      </p>
-      <RoomHead person={me} ilju={iljuOf(me)} credits={member.credits} extra={people.length ? `함께: ${people.map((x) => x.label).join(", ")}` : undefined} />
+      <Room>
+        <p className="text-sm">
+          <Link href="/ask" className="text-hanji/65 underline">
+            ← 청심당
+          </Link>
+        </p>
+        <Plaque caption={`${me.name}님의 사랑방`} />
+        <RoomHead
+          bare
+          person={me}
+          ilju={iljuOf(me)}
+          credits={member.credits}
+          extra={people.length ? `함께: ${people.map((x) => x.label).join(", ")}` : undefined}
+        />
 
-      <section className="mt-4 flex flex-col gap-3">
-        {room.messages.length === 0 && (
-          <div className="doc-paper flex items-start gap-3 rounded-[4px] px-5 py-4">
-            <HundoFace size={34} ring="seal" />
-            <p className="font-myeongjo text-[15px] leading-relaxed">
-              어서 오시옵소서. 소신이 {me.name}님의 여덟 글자를 펼쳐 두었사옵니다. 무엇이 궁금하시옵니까? 한 번에 하나를 여쭈실수록 깊이 답해 드리옵니다.
-            </p>
-          </div>
-        )}
-        {room.messages.map((m, i) =>
-          m.role === "guest" ? (
-            <Question key={i} text={m.text} topic={[m.topic, m.withLabel && `${m.withLabel} 이야기`].filter(Boolean).join(" · ")} at={m.at} />
-          ) : m.choices ? (
-            <div key={i} className="doc-paper rounded-[4px] px-5 py-4 text-[15px] leading-relaxed">
-              <div className="flex items-start gap-3">
-                <HundoFace size={34} ring="seal" />
-                <p className="font-myeongjo whitespace-pre-wrap">{m.text}</p>
+        <section className="mt-5 flex flex-col gap-3 text-ink">
+          {room.messages.length === 0 && (
+            <div className="doc-paper flex items-start gap-3 rounded-[4px] px-5 py-4">
+              <HundoFace size={34} ring="seal" />
+              <p className="font-myeongjo text-[15px] leading-relaxed">
+                어서 오시옵소서. 소신이 {me.name}님의 여덟 글자를 펼쳐 두었사옵니다. 무엇이 궁금하시옵니까? 한 번에 하나를 여쭈실수록 깊이 답해 드리옵니다.
+              </p>
+            </div>
+          )}
+          {room.messages.map((m, i) =>
+            m.role === "guest" ? (
+              <Question key={i} slip text={m.text} topic={[m.topic, m.withLabel && `${m.withLabel} 이야기`].filter(Boolean).join(" · ")} at={m.at} />
+            ) : m.choices ? (
+              <div key={i} className="doc-paper rounded-[4px] px-5 py-4 text-[15px] leading-relaxed">
+                <div className="flex items-start gap-3">
+                  <HundoFace size={34} ring="seal" />
+                  <p className="font-myeongjo whitespace-pre-wrap">{m.text}</p>
+                </div>
+                {m === last && lastGuest && member.credits > 0 && (
+                  <ChooseForm room={room.id} question={lastGuest.text} topic={lastGuest.topic ?? "기타"} choices={m.choices} />
+                )}
               </div>
-              {m === last && lastGuest && member.credits > 0 && (
-                <ChooseForm room={room.id} question={lastGuest.text} topic={lastGuest.topic ?? "기타"} choices={m.choices} />
-              )}
-            </div>
-          ) : (
-            <div key={i} id={i === lastAnswer ? "last-answer" : undefined} className="scroll-mt-4">
-              <AnswerLetter id={`letter-${i}`} name={me.name} at={m.at} {...letterOf(i)} />
-              <SaveLetter target={`letter-${i}`} file={`정훈도-답서-${i + 1}`} question={room.messages.slice(0, i).findLast((g) => g.role === "guest")?.text} />
-            </div>
-          ),
-        )}
-      </section>
+            ) : (
+              <div key={i} id={i === lastAnswer ? "last-answer" : undefined} className="scroll-mt-4">
+                <AnswerLetter id={`letter-${i}`} name={me.name} at={m.at} {...letterOf(i)} />
+                <SaveLetter
+                  target={`letter-${i}`}
+                  file={`정훈도-답서-${i + 1}`}
+                  question={room.messages.slice(0, i).findLast((g) => g.role === "guest")?.text}
+                />
+              </div>
+            ),
+          )}
+        </section>
 
-      {/* The box is there either way; with no questions left, sending opens the packs and keeps what was written. */}
-      <AskForm
-        room={room.id}
-        people={people.map((x) => ({ id: x.id, label: x.label }))}
-        defaultWith={people.some((x) => x.id === lastWith) ? lastWith : undefined}
-        canAdd={people.length < MAX_PEOPLE}
-        credits={member.credits}
-      >
-        <div className="mt-3 grid grid-cols-3 gap-2 text-center text-ink">
-          {(Object.keys(CREDIT_PACKS).map(Number) as CreditPack[]).map((n) => (
-            <div key={n} className="rounded-xl bg-hanji px-1 pt-2 pb-1">
-              <b className="block font-myeongjo">질문 {n}개</b>
-              <span className="block text-[12px] text-ink-soft">{won(CREDIT_PACKS[n])}</span>
-              <PayButton request={{ credits: String(n) }} label="채우기" secondary />
-            </div>
-          ))}
-        </div>
-      </AskForm>
+        {/* The box is there either way; with no questions left, sending opens the packs and keeps what was written. */}
+        <AskForm
+          room={room.id}
+          people={people.map((x) => ({ id: x.id, label: x.label }))}
+          defaultWith={people.some((x) => x.id === lastWith) ? lastWith : undefined}
+          canAdd={people.length < MAX_PEOPLE}
+          credits={member.credits}
+        >
+          <div className="mt-4">
+            <CreditSlips />
+          </div>
+        </AskForm>
+      </Room>
 
       {/* The people seen together: up to five, each renamed, entered again or taken off (still remembered). */}
-      <details id="people" open={people.length === 0 ? undefined : true} className="doc-paper mt-4 mb-10 scroll-mt-4 px-5 py-4">
+      <details id="people" open={people.length === 0 ? undefined : true} className="doc-paper mt-5 mb-10 scroll-mt-4 px-5 py-4">
         <summary className="cursor-pointer text-sm font-bold">
           {people.length ? `함께 보는 사람 (${people.length}/${MAX_PEOPLE})` : "그 사람의 사주도 함께 보기 (연애·궁합·관계 질문에)"}
         </summary>
@@ -125,7 +130,10 @@ export default async function MemberRoomPage({ params }: PageProps<"/ask/[id]">)
               <li key={x.id} className="py-2.5">
                 <div className="flex items-center justify-between gap-2">
                   <p className="min-w-0 text-sm">
-                    <b>{x.label}</b> <span className="text-ink-soft">· {REL_LABEL[relOf(x.rel, x.label)].split(" ")[0]} · {x.p ? `${x.p.name} · ${iljuOf(x.p)}` : "?"}</span>
+                    <b>{x.label}</b>{" "}
+                    <span className="text-ink-soft">
+                      · {REL_LABEL[relOf(x.rel, x.label)].split(" ")[0]} · {x.p ? `${x.p.name} · ${iljuOf(x.p)}` : "?"}
+                    </span>
                   </p>
                   <RemovePersonButton room={room.id} person={x.id} label={x.label} />
                 </div>
@@ -134,8 +142,19 @@ export default async function MemberRoomPage({ params }: PageProps<"/ask/[id]">)
                   <form action={renamePersonAction} className="mt-2 flex gap-1.5">
                     <input type="hidden" name="room" value={room.id} />
                     <input type="hidden" name="person" value={x.id} />
-                    <input name="label" defaultValue={x.label} maxLength={12} aria-label="부르는 이름" className="min-w-0 flex-1 rounded-lg border border-ink/15 bg-white/70 px-3 py-1.5 text-sm" />
-                    <select name="rel" defaultValue={relOf(x.rel, x.label)} aria-label="사이" className="shrink-0 rounded-lg border border-ink/15 bg-white/70 px-1.5 text-sm">
+                    <input
+                      name="label"
+                      defaultValue={x.label}
+                      maxLength={12}
+                      aria-label="부르는 이름"
+                      className="min-w-0 flex-1 rounded-lg border border-ink/15 bg-white/70 px-3 py-1.5 text-sm"
+                    />
+                    <select
+                      name="rel"
+                      defaultValue={relOf(x.rel, x.label)}
+                      aria-label="사이"
+                      className="shrink-0 rounded-lg border border-ink/15 bg-white/70 px-1.5 text-sm"
+                    >
                       {RELS.map((r) => (
                         <option key={r} value={r}>
                           {REL_LABEL[r].split(" ")[0]}
