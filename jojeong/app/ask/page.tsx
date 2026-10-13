@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import CreditSlips from "./CreditSlips";
 import { iljuOf, loadRoom, personOfRoom } from "@/lib/ask";
-import { ASK_OPEN, currentMember, JOIN_GIFT, memberNo, membersEnabled, viaEnabled } from "@/lib/members";
+import { ASK_OPEN, CHANNEL_GIFT, CHANNEL_GIFT_ON, currentMember, JOIN_GIFT, KAKAO_CHANNEL, memberNo, membersEnabled, viaEnabled } from "@/lib/members";
 import { OpenRoomForm } from "./AskForms";
 import DraftReturn from "./DraftReturn";
 import DraftCarry from "./DraftCarry";
@@ -148,12 +148,34 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
               남은 질문 <b className="font-myeongjo text-[18px] text-[#e2bc68]">{member.credits}</b>개
             </p>
           </div>
-          {(q.joined || q.moved || q.bought || q.bonus) && (
+          {/* Kakao members who have not had the channel question: add the channel, then come back through Kakao to check. */}
+          {CHANNEL_GIFT_ON && member.id.startsWith("k") && !member.channel && (
+            <div className="mt-4 rounded-xl border border-[#FEE500]/40 bg-[#FEE500]/10 px-3.5 py-3 text-center text-[13px] leading-relaxed">
+              <b className="block font-myeongjo text-[14.5px]">카카오톡 채널을 추가하면 질문 {CHANNEL_GIFT}개 더</b>
+              <span className="text-hanji/75">새 소식과 좋은 날 알림도 채널로 받아요</span>
+              {q.ch && !q.channel && <span className="mt-1 block text-[12px] text-[#e2bc68]">아직 채널 추가가 확인되지 않았어요. 추가한 뒤 다시 눌러 주세요.</span>}
+              <div className="mt-2.5 grid grid-cols-2 gap-2">
+                <a
+                  href={`https://pf.kakao.com/${KAKAO_CHANNEL}/friend`}
+                  target="_blank"
+                  rel="noopener"
+                  className="rounded-lg bg-[#FEE500] py-2.5 text-[13px] font-extrabold text-[#191919]"
+                >
+                  ① 채널 추가하기
+                </a>
+                <a href={`/login/${"kakao"}?ch=1&next=${encodeURIComponent("/ask?ch=1")}`} className="rounded-lg border border-[#FEE500]/60 py-2.5 text-[13px] font-bold">
+                  ② 추가했어요, 받기
+                </a>
+              </div>
+            </div>
+          )}
+          {(q.joined || q.moved || q.bought || q.bonus || q.channel) && (
             <p className="mt-4 rounded-xl border border-[#e2bc68]/30 bg-[#e2bc68]/10 px-3.5 py-2.5 text-center text-[13px] leading-relaxed">
               {q.joined && (member.gift && member.log.some((l) => l.why === "가입 선물") ? `질문 ${JOIN_GIFT}개를 드렸사옵니다. ` : "다시 오셨사옵니다. ")}
               {q.moved && <>이 브라우저의 보고서 {String(q.moved)}편을 계정에 담았어요. </>}
               {q.bought && <>질문 {String(q.bought)}개를 채웠어요. </>}
               {q.bonus && <>보고서와 함께 온 질문 {String(q.bonus)}개도 넣어 드렸어요. </>}
+              {q.channel && <>채널 추가 선물로 질문 {CHANNEL_GIFT}개를 넣어 드렸어요. </>}
             </p>
           )}
           {latest ? (

@@ -22,6 +22,7 @@ export type Member = {
   orders: string[]; // paid order ids, newest first
   credits: number; // questions left
   gift: boolean; // the free question for joining was given
+  channel?: boolean; // the question for adding the Kakao channel was given (lib/kakaoChannel.ts)
   rooms: string[]; // their 정 훈도에게 묻기 rooms, newest first
   // Every change to the credits, newest last (kept short): why, how many, when.
   log: { at: number; d: number; why: string }[];
@@ -32,6 +33,12 @@ export const JOIN_GIFT = 1;
 // The joining gift is for Kakao accounts only (one per phone number, unlike a Google account), once per browser,
 // and at most this many a day across the site, so making accounts cannot farm questions.
 export const GIFT_DAILY_CAP = 200;
+// 훈도사주's KakaoTalk channel (public id) and the question given once for adding it, to a Kakao member.
+export const KAKAO_CHANNEL = "_xjxfkFX";
+export const CHANNEL_GIFT = 1;
+// On once the Kakao app asks "카카오톡 채널 추가 상태 및 내역" (developers.kakao.com → 동의항목); before that, asking
+// for it at login would end on Kakao's error page.
+export const CHANNEL_GIFT_ON = false;
 export const GIFT_COOKIE = "jj_gifted";
 // The way this browser last signed in, for the "최근에 이 방식으로" note on the login page.
 export const VIA_COOKIE = "jj_via";
@@ -82,6 +89,24 @@ export async function currentMember(): Promise<Member | null> {
 }
 
 const giftMark = (id: string) => createHmac("sha256", secret()).update(`gift:${id}`).digest("base64url");
+
+// The channel question, once per Kakao account: kept as a mark like the joining gift, so leaving and joining
+// again (or blocking and adding the channel again) does not bring it back.
+const channelMark = (id: string) => createHmac("sha256", secret()).update(`channel:${id}`).digest("base64url");
+export async function giveChannelGift(id: string): Promise<number> {
+  const m = await getMember(id);
+  if (!CHANNEL_GIFT_ON || !m || m.channel || !id.startsWith("k")) return 0;
+  m.channel = true;
+  const given = await giftGiven(channelMark(id));
+  if (!given) {
+    m.credits += CHANNEL_GIFT;
+    m.log.push({ at: Date.now(), d: CHANNEL_GIFT, why: "채널 추가 선물" });
+  }
+  await saveMember(m);
+  if (given) return 0;
+  await noteGiftGiven(channelMark(id));
+  return CHANNEL_GIFT;
+}
 
 // First sign-in makes the record (with the gift question, on the terms above); later ones find it. Orders this
 // browser already holds join it either way, and a newly given email is kept.

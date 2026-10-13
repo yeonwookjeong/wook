@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { backTo, finishLogin, REDIRECT, returnedTo } from "@/lib/login";
 import { membersEnabled } from "@/lib/members";
+import { channelAdded } from "@/lib/kakaoChannel";
 
 // Kakao comes back here (the Redirect URI registered for the app) with ?code&state. The code is traded for a token,
 // the token for the user's id, nickname and (once the app may ask for it) email; nothing else is asked for or kept.
@@ -39,5 +40,7 @@ export async function GET(request: NextRequest) {
   if (!me?.id) return backTo(request, "/login?login=fail");
   const account = me.kakao_account;
   const email = account?.email && account.is_email_valid && account.is_email_verified ? account.email : null;
-  return finishLogin(request, "kakao", String(me.id), account?.profile?.nickname ?? me.properties?.nickname ?? "", email, next);
+  // Added 훈도사주's channel: one more question, once (lib/members.ts giveChannelGift).
+  const channel = (await channelAdded(token.access_token)) === true;
+  return finishLogin(request, "kakao", String(me.id), account?.profile?.nickname ?? me.properties?.nickname ?? "", email, next, { channel });
 }
