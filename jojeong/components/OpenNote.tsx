@@ -72,11 +72,11 @@ export default function OpenNote({ member, gift, count }: { member: boolean; gif
       onClick={close}
     >
       <div
-        className="relative w-full max-w-[400px] animate-rise overflow-hidden rounded-3xl bg-[#141a22] text-hanji shadow-[0_20px_50px_rgb(0_0_0/0.45),inset_0_0_0_1px_rgb(212_175_95/0.4)]"
+        className="relative max-h-[calc(100dvh-1.5rem)] w-full max-w-[400px] animate-rise overflow-x-hidden overflow-y-auto overscroll-contain rounded-3xl bg-[#141a22] text-hanji shadow-[0_20px_50px_rgb(0_0_0/0.45),inset_0_0_0_1px_rgb(212_175_95/0.4)]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="relative aspect-[16/9]">
-          <Image src="/cards/sarangbang.webp" alt="정 훈도가 사랑방에서 손님을 맞는 모습" fill sizes="400px" className="object-cover object-[50%_38%]" />
+        <div className="relative h-[clamp(92px,17dvh,210px)]">
+          <Image src="/cards/sarangbang.webp" alt="정 훈도가 사랑방에서 손님을 맞는 모습" fill sizes="400px" className="object-cover object-[50%_32%]" />
           <span aria-hidden className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-b from-transparent to-[#141a22]" />
           <button
             type="button"
@@ -87,10 +87,10 @@ export default function OpenNote({ member, gift, count }: { member: boolean; gif
             ✕
           </button>
         </div>
-        <div className="relative -mt-3 px-5 pb-5">
+        <div className="relative -mt-3 px-5 pb-4">
           <p className="text-center font-myeongjo text-[11px] font-bold tracking-[0.3em] text-[#e2bc68]">正式 開門</p>
-          <h2 className="mt-1 text-center font-myeongjo text-[21px] leading-snug font-extrabold">훈도사주가 정식으로 문을 열었습니다</h2>
-          <p className="mt-2.5 text-center text-[13px] leading-relaxed text-hanji/85">
+          <h2 className="mt-1 text-center font-myeongjo text-[20px] leading-snug font-extrabold">훈도사주가 정식으로 문을 열었습니다</h2>
+          <p className="mt-2 text-center text-[13px] leading-relaxed text-hanji/85">
             {count >= COUNT_FROM ? (
               <>
                 가오픈 동안 사주를 <b className="font-myeongjo text-[15px] text-[#e2bc68]">{count.toLocaleString("ko-KR")}번</b>이나 보러 와 주셨어요.
@@ -103,10 +103,10 @@ export default function OpenNote({ member, gift, count }: { member: boolean; gif
             <br />
             그 마음에 보답하려 새 단장을 마쳤어요.
           </p>
-          <p className="mt-4 text-[11px] font-bold tracking-[0.2em] text-[#e2bc68]/80">새로 생긴 것</p>
+          <p className="mt-3 text-[11px] font-bold tracking-[0.2em] text-[#e2bc68]/80">새로 생긴 것</p>
           <ul className="mt-1.5 flex flex-col divide-y divide-[#e2bc68]/15 border-y border-[#e2bc68]/20">
             {items.map((it) => (
-              <li key={it.mark} className="flex gap-3 py-2.5">
+              <li key={it.mark} className="flex gap-3 py-2">
                 <span className="w-11 shrink-0 pt-0.5 text-center font-myeongjo text-[12px] font-extrabold text-[#e2bc68]">{it.mark}</span>
                 <span className="min-w-0 text-[13px] leading-relaxed">
                   <b className="block font-myeongjo text-[14.5px]">{it.title}</b>
@@ -118,7 +118,7 @@ export default function OpenNote({ member, gift, count }: { member: boolean; gif
           <AskLink
             from="pop"
             onClick={close}
-            className="mt-4 block rounded-2xl bg-[#e2bc68] py-3.5 text-center font-myeongjo text-[16px] font-extrabold text-[#17304a] shadow-[0_5px_0_#9c7a2e]"
+            className="mt-3.5 block rounded-2xl bg-[#e2bc68] py-3 text-center font-myeongjo text-[16px] font-extrabold text-[#17304a] shadow-[0_5px_0_#9c7a2e]"
           >
             {member ? "청심당 둘러보기" : "청심당 가서 첫 질문 받기"}
           </AskLink>
