@@ -92,7 +92,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
           이 브라우저에서는 모든 보고서를 결제 없이 볼 수 있어요 · 무료 보고서는 AI 없이 계산만 보여 줘요
         </p>
         <Link href="/admin/sns" className="mt-3 inline-block rounded-full bg-seal px-5 py-2 text-sm font-bold text-white">
-          오늘 SNS 올릴 것 보기 →
+          SNS 카드 · 콘텐츠 데스크 →
         </Link>
         <Link href="/admin/ask" className="mt-3 ml-2 inline-block rounded-full border-2 border-seal px-5 py-1.5 text-sm font-bold text-seal">
           정 훈도에게 묻기 시험방 →
