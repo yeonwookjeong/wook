@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "시작하기", robots: { index: fals
 const WAYS: { via: Via; label: string; className: string; mark: React.ReactNode }[] = [
   {
     via: "kakao",
-    label: "카카오로 시작하기",
+    label: "카카오로 로그인",
     className: "bg-[#FEE500] text-[#191919]",
     mark: (
       <svg viewBox="0 0 24 24" className="size-5" aria-hidden>
@@ -24,7 +24,7 @@ const WAYS: { via: Via; label: string; className: string; mark: React.ReactNode 
   },
   {
     via: "naver",
-    label: "네이버로 시작하기",
+    label: "네이버로 로그인",
     className: "bg-[#03C75A] text-white",
     mark: (
       <svg viewBox="0 0 24 24" className="size-4" aria-hidden>
@@ -34,7 +34,7 @@ const WAYS: { via: Via; label: string; className: string; mark: React.ReactNode 
   },
   {
     via: "google",
-    label: "구글로 시작하기",
+    label: "구글로 로그인",
     className: "border border-ink/15 bg-white text-[#1f1f1f]",
     mark: (
       <svg viewBox="0 0 24 24" className="size-5" aria-hidden>
@@ -89,7 +89,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
             >
               <span className="flex size-6 shrink-0 items-center justify-center">{w.mark}</span>
               <span className="flex-1">{w.label}</span>
-              {w.via === "kakao" && <span className="shrink-0 rounded-full bg-[#191919]/10 px-2 py-0.5 text-[11px]">첫 질문 {JOIN_GIFT}개 선물</span>}
+              {w.via === "kakao" && <span className="shrink-0 rounded-full bg-[#191919]/10 px-2 py-0.5 text-[11px]">처음이면 질문 {JOIN_GIFT}개</span>}
             </a>
           </li>
         ))}
@@ -97,8 +97,8 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
 
       <div className="mt-5 flex flex-col gap-1 text-[11.5px] leading-relaxed text-ink-soft">
         {ways.length > 1 && <p>처음 가입한 방식으로 들어오셔야 질문과 보고서가 그대로 있어요.</p>}
-        <p>받는 것은 회원 번호, 별명, 이메일뿐이에요. 생년월일은 저장하지 않아요.</p>
-        {ways.length > 1 && <p>가입 선물은 카카오로 처음 가입하실 때 한 번 드려요.</p>}
+        <p>{ways.length > 1 ? "받는 정보는 회원 번호, 별명, 이메일뿐이에요." : "받는 정보는 회원 번호와 별명뿐이에요."} 생년월일은 저장하지 않아요.</p>
+        {ways.length > 1 && <p>질문 선물은 카카오로 처음 로그인하실 때 한 번 드려요.</p>}
       </div>
     </section>
   );
