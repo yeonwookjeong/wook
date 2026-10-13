@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useActionState, useEffect, useRef, useState } from "react";
 import PersonFields from "@/components/PersonFields";
 import { keepValues } from "@/lib/keepForm";
@@ -57,15 +58,17 @@ function Writing({ question, topic }: { question: string; topic: string }) {
         {topic && <span className="block text-[11px] font-bold text-seal">{topic}</span>}
         <p className="whitespace-pre-wrap">{question}</p>
       </div>
-      <div className="doc-paper rounded-[4px] px-6 py-6 text-center text-ink" role="status">
-        <p className="font-myeongjo text-[15px] font-extrabold">정 훈도가 답서를 쓰고 있사옵니다</p>
-        <p className="mt-1.5 text-[13px] text-ink-soft">{STEPS[step]}</p>
-        <div className="mx-auto mt-4 flex w-40 flex-col gap-2" aria-hidden>
-          {[100, 85, 92, 60].map((w, i) => (
-            <span key={i} className="h-1.5 animate-pulse rounded-full bg-ink/10" style={{ width: `${w}%`, animationDelay: `${i * 150}ms` }} />
-          ))}
+      {/* 정 훈도 at his desk, brush in hand (public/cards/sarangbang-writing.webp) */}
+      <div className="relative overflow-hidden rounded-xl shadow-[0_6px_18px_rgb(0_0_0/0.4)] ring-1 ring-[#e2bc68]/30" role="status">
+        <div className="relative aspect-[4/3]">
+          <Image src="/cards/sarangbang-writing.webp" alt="정 훈도가 붓을 들어 답서를 쓰는 모습" fill sizes="420px" className="object-cover object-[50%_58%]" />
+          <span aria-hidden className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-b from-transparent to-[#141a22]/95" />
         </div>
-        <p className="mt-4 text-[11px] text-ink-soft">30초~1분쯤 걸려요. 이 화면을 닫지 말아 주세요.</p>
+        <div className="absolute inset-x-0 bottom-0 px-5 pb-4 text-center text-hanji">
+          <p className="font-myeongjo text-[16px] font-extrabold drop-shadow">정 훈도가 답서를 쓰고 있사옵니다</p>
+          <p className="mt-1 animate-pulse text-[13px] text-[#e2bc68]">{STEPS[step]}</p>
+          <p className="mt-1.5 text-[11px] text-hanji/60">30초~1분쯤 걸려요. 이 화면을 닫지 말아 주세요.</p>
+        </div>
       </div>
     </div>
   );

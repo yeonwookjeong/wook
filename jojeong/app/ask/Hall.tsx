@@ -115,7 +115,7 @@ export function Floor({ children, className = "" }: { children: React.ReactNode;
 
 // 청심당 inside, as drawn (public/cards/sarangbang.webp: 정 훈도 at his desk, the star screen, the moonlit doors):
 // the picture with the plaque over its ceiling beams, fading into the night blue where `children` sit.
-// `short`: a wide crop of it with no plaque (his hat sits high), as the head of a room (app/ask/[id]).
+// `short`: a wide crop of him at the desk, with no plaque, as the head of a room (app/ask/[id]).
 // `corner`: laid over the picture's top left (the way back, in a room).
 export function RoomArt({ children, short = false, caption, corner }: { children?: React.ReactNode; short?: boolean; caption?: string; corner?: React.ReactNode }) {
   return (
@@ -127,7 +127,7 @@ export function RoomArt({ children, short = false, caption, corner }: { children
           fill
           priority
           sizes="440px"
-          className={`object-cover ${short ? "object-[50%_32%]" : ""}`}
+          className={`object-cover ${short ? "object-[50%_52%]" : ""}`}
         />
         <span aria-hidden className={`absolute inset-x-0 top-0 bg-gradient-to-b to-transparent ${short ? "h-14 from-[#141a22]/45" : "h-28 from-[#141a22]/85"}`} />
         <span aria-hidden className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-[#1b2430]" />
