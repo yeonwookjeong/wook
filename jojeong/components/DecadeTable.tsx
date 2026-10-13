@@ -13,7 +13,8 @@ const PEEK: Domain[] = ["jaemul", "jikup"];
 // The ten-year calendar of a deep report, computed year by year (lib/domains.ts). Before purchase only the
 // first year shows (and, for money and work, the next ◎ and ✕ by name); the rest are placeholders, so nothing
 // paid is in the page source.
-export default function DecadeTable({ name, domain, years, locked }: { name: string; domain: Domain; years: DecadeYear[]; locked: boolean }) {
+// `inline`: inside a chapter of a bought report (a picture under its headline), so without a page of its own.
+export default function DecadeTable({ name, domain, years, locked, inline = false }: { name: string; domain: Domain; years: DecadeYear[]; locked: boolean; inline?: boolean }) {
   if (!years.length) return null;
   const later = years.slice(FREE_YEARS);
   const peek = locked && PEEK.includes(domain) ? [later.find((y) => y.grade === 2), later.find((y) => y.grade === -1)].filter((y) => y !== undefined) : [];
@@ -21,7 +22,7 @@ export default function DecadeTable({ name, domain, years, locked }: { name: str
   const shown = locked ? [...years.slice(0, FREE_YEARS), ...peek] : years;
   const peeked = new Set(peek.map((y) => y.year));
   return (
-    <section className="doc-paper mt-4 px-5 pt-6 pb-5">
+    <section className={inline ? "rounded-xl bg-white/50 px-3.5 pt-4 pb-2 ring-1 ring-seal/15" : "doc-paper mt-4 px-5 pt-6 pb-5"}>
       <h2 className="text-center font-myeongjo text-lg font-extrabold">
         {name}님의 {TITLE[domain]} 10년 달력
       </h2>

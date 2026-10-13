@@ -5,6 +5,7 @@ import { iljuOf, loadRoom, personOfRoom } from "@/lib/ask";
 import { ASK_OPEN, currentMember, JOIN_GIFT, memberNo, membersEnabled, viaEnabled } from "@/lib/members";
 import { OpenRoomForm } from "./AskForms";
 import DraftReturn from "./DraftReturn";
+import DraftCarry from "./DraftCarry";
 import { openMyRoomAction } from "./actions";
 import { readMe } from "@/lib/me";
 import { AnswerLetter, Question } from "./Letter";
@@ -81,6 +82,7 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
             {login}
           </Link>
           <p className="mt-2.5 text-center text-[11.5px] leading-relaxed text-hanji/60">질문과 상담 기록을 계정에 보관해, 다음에 와도 이어서 이야기해요</p>
+          <DraftCarry />
         </RoomArt>
 
         <Floor>
@@ -166,6 +168,7 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
             </form>
           ) : null}
           <DraftReturn rooms={rooms.map((r) => r!.id)} />
+          <DraftCarry />
         </RoomArt>
 
         <Floor>

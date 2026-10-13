@@ -97,6 +97,7 @@ function Chip({ on, onClick, children }: { on: boolean; onClick: () => void; chi
 }
 
 export const draftKey = (room: string) => `jj_ask_draft:${room}`;
+export const CARRY_KEY = "jj_ask_carry";
 
 // The question box, fixed to the bottom of the room: a topic (one question = one topic), then up to 300 characters.
 // It is there even with no questions left: the guest writes first, and sending then opens `children` (the packs to
@@ -132,6 +133,14 @@ export function AskForm({
       // eslint-disable-next-line react-hooks/set-state-in-effect -- read once from this browser's storage
       if (d?.text) setText(d.text);
       if (d?.topic) setTopic(d.topic);
+      // Brought from a chapter of a bought report (app/ask/DraftCarry.tsx): into the first room entered, opened.
+      const carried = !d?.text && localStorage.getItem(CARRY_KEY);
+      if (carried) {
+        setText(carried.slice(0, 300));
+        setOpen(true);
+        localStorage.removeItem(CARRY_KEY);
+        localStorage.setItem(draftKey(room), JSON.stringify({ text: carried.slice(0, 300), topic: "" }));
+      }
     } catch {}
   }, [room]);
   const keep = (t: string, tp: string) => {

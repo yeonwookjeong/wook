@@ -124,20 +124,76 @@ const FOCUS_V7: Partial<Record<ProductId, string>> = {
   jikup: `${FOCUS_V6.jikup!.replace(JOB_NAMES, JOB_ROLES)}\n${SUMMARY_BLOCK}`,
 };
 
-export type PromptVersion = "v5" | "v6" | "v7";
-export const PROMPT_NOW: PromptVersion = "v7";
+// v8 (with the grand opening): 궁합 in nine chapters with the two people's ten years, and a closing "한눈에" card on
+// the life, love, couple and year reports too, each with its own rows.
+const summaryOf = (rows: string) => `- 마지막 장을 다 쓴 뒤, 아래 요약을 덧붙인다. 이것만은 장 밖에 쓰고, 이 형식을 그대로 따른다(줄마다 한 문장, 40자 안팎, 사주 용어 없이):
+## [한눈에] 이 보고서를 한 줄로 담은 헤드라인
+${rows}
+- 요약은 앞 장에서 한 말과 어긋나지 않게, 새 내용 없이 앞 장을 압축한다.`;
+const SUMMARY_LIFE = summaryOf(`[한 줄 요약] 이 사람을 한 문장으로
+[돈] 평생 돈이 들어오는 방식
+[일] 가장 빛나는 일의 모양
+[사랑] 맞는 짝과 사랑의 방식
+[조심할 것] 평생 붙들고 고쳐야 할 버릇 하나
+[가장 소름 돋는 포인트] 브리프의 '이 사람만의 특징'에서 나온, 같은 일주라도 다른 사람에게는 해당하지 않는 한 가지`);
+const SUMMARY_LOVE = summaryOf(`[한 줄 요약] 이 사람의 사랑을 한 문장으로
+[끌리는 사람] 자꾸 끌리는 사람
+[맞는 사람] 오래 맞는 사람
+[인연이 오는 때] 가장 가까운 좋은 해나 달
+[고칠 버릇] 연애를 꼬이게 하는 버릇 하나
+[가장 소름 돋는 포인트] 브리프의 '이 사람만의 특징'에서 나온, 같은 일주라도 다른 사람에게는 해당하지 않는 한 가지`);
+const SUMMARY_PAIR = summaryOf(`[한 줄 판정] 두 사람을 한 문장으로
+[서로에게] 서로가 서로에게 어떤 사람인지
+[부딪히는 곳] 가장 자주 부딪히는 지점
+[오래 가는 법] 꼭 지킬 것 하나
+[좋은 때] 두 사람에게 가장 가까운 좋은 해나 달
+[가장 소름 돋는 포인트] 이 두 사람에게만 있는 조합 한 가지`);
+const SUMMARY_YEAR = summaryOf(`[한 줄 요약] 이 해를 한 문장으로
+[돈] 돈에서 할 일
+[일] 일과 자리에서 할 일
+[사랑] 사랑과 사람에서 할 일
+[가장 좋은 달] 가장 좋은 달과 할 일
+[조심할 달] 가장 조심할 달과 피할 일`);
+const GUNGHAP_V8 = `${FOCUS.gunghap}
+- 장마다 할 일이 다르다. 2장 '서로의 사주에 이 사람의 자리가 있을까'는 '★ 두 사람 사이'의 서로에게 어떤 존재인지(일간끼리), 배우자 자리(관계 자리)끼리의 합·충, 용신을 채워 주는지로, 이 사람이 내 사주에서 어떤 자리에 앉는지를 쓴다.
+- 6장 '우리 관계에서 꼭 정해 둘 것'은 관계 유형에 맞춘다: 연인·배우자면 결혼과 함께 사는 생활(돈 관리, 집안일, 양가), 썸·호감이면 다가가는 속도와 고백할 때, 동료·동업이면 역할과 몫·돈을 문서로 나누는 법, 친구면 돈거래와 서운함을 푸는 법, 부모·자녀면 기대와 간섭의 선. 두세 가지를 구체적인 약속 문장으로 준다.
+- 8장 '우리 둘의 10년'은 '★ 두 사람의 10년'의 해마다 표시를 근거로, 함께 좋은 해·한쪽이 흔들리는 해·관계가 흔들리기 쉬운 해를 짚고, 그해에 두 사람이 할 일을 쓴다. 표시와 어긋나는 말을 하지 않는다(이 표는 화면에 그대로 보인다).
+- 9장 '가까운 때'는 '★ 두 사람의 여섯 달'로 가까운 달을 짚는다(이 달력도 화면에 보인다).
+${SUMMARY_PAIR}`;
+const FOCUS_V8: Partial<Record<ProductId, string>> = {
+  ...FOCUS_V7,
+  pyeongsaeng: `${FOCUS_V7.pyeongsaeng}\n${SUMMARY_LIFE}`,
+  yeonae: `${FOCUS_V7.yeonae}\n${SUMMARY_LOVE}`,
+  yeonun: `${FOCUS_V7.yeonun}\n${SUMMARY_YEAR}`,
+  gunghap: GUNGHAP_V8,
+};
 
-const specsOf = (focus: Partial<Record<ProductId, string>>): Partial<Record<ProductId, ReportSpec>> =>
+export type PromptVersion = "v5" | "v6" | "v7" | "v8";
+// From when v8 writes (orders paid before it keep the v7 report they were first written with; app/api/report).
+// The bought page's extras (pictures in the chapters, asking about a chapter, the calendar) follow the same line.
+export const V8_SINCE = Date.parse("2026-10-13T07:05:00Z");
+export const isV8 = (paidAt: number) => paidAt >= V8_SINCE;
+export const PROMPT_NOW: PromptVersion = "v8";
+
+// The chapters a report had before v8 changed them (궁합 had six): the older prompts keep asking for these, so the
+// reports bought then are found and opened as written.
+export const TOC_BEFORE_V8: Partial<Record<ProductId, string[]>> = {
+  gunghap: ["우리 둘, 첫인상과 끌림의 정체", "서로에게 채워 주는 것, 부딪히는 것", "싸울 때 우리는 어떻게 될까", "돈과 생활, 잘 맞을까", "오래 가려면 꼭 지킬 것", "우리에게 좋은 때와 조심할 때"],
+};
+const specsOf = (focus: Partial<Record<ProductId, string>>, before = false): Partial<Record<ProductId, ReportSpec>> =>
   Object.fromEntries(
     Object.entries(focus)
       .filter(([id]) => !PRODUCTS.find((p) => p.id === id)!.free)
-      .map(([id, f]) => [id, { chapters: PRODUCTS.find((p) => p.id === id)!.toc, focus: f }]),
+      .map(([id, f]) => [id, { chapters: (before && TOC_BEFORE_V8[id as ProductId]) || PRODUCTS.find((p) => p.id === id)!.toc, focus: f }]),
   );
 export const SPECS: Record<PromptVersion, Partial<Record<ProductId, ReportSpec>>> = {
-  v5: specsOf(FOCUS),
-  v6: specsOf(FOCUS_V6),
-  v7: specsOf(FOCUS_V7),
+  v5: specsOf(FOCUS, true),
+  v6: specsOf(FOCUS_V6, true),
+  v7: specsOf(FOCUS_V7, true),
+  v8: specsOf(FOCUS_V8),
 };
+// The chapters shown for a bought report: as they were when it was bought.
+export const chaptersFor = (id: ProductId, paidAt?: number) => (paidAt !== undefined && !isV8(paidAt) ? SPECS.v7[id]?.chapters : SPECS.v8[id]?.chapters) ?? [];
 
 export const REPORT_SPECS: Partial<Record<ProductId, ReportSpec>> = Object.fromEntries(
   // Only what is sold is written: a free report stays computed, with no writer and no cost.

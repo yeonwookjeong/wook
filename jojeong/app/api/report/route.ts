@@ -2,6 +2,7 @@ import { isAdmin } from "@/lib/admin";
 import { covers, getOrder, pinReportText } from "@/lib/pay";
 import { productById, type ProductId } from "@/lib/products";
 import { aiEnabled, jobFor, writeReport, type JobRequest } from "@/lib/reportWriter";
+import { V8_SINCE } from "@/lib/reportPrompts";
 import { after } from "next/server";
 import { countReportToday, getReportText, getReportWriting, noteReportError, setReportText, setReportWriting } from "@/lib/store";
 
@@ -53,10 +54,13 @@ export async function POST(request: Request) {
   // Paid before the five grades: what was first written then (v6 with the three-grade brief), else v5's.
   const oldGrades = order && (order.paidAt ?? order.createdAt) < GRADES5_SINCE ? await jobFor(req, "v6", true, at) : null;
   const beforeV7 = order && (order.paidAt ?? order.createdAt) < V7_SINCE ? await jobFor(req, "v6", false, at) : null;
+  // Paid before v8 (궁합 in nine chapters, the 한눈에 cards): the v7 report, and written with v7 if never opened.
+  const preV8 = Boolean(order && (order.paidAt ?? order.createdAt) < V8_SINCE);
+  const beforeV8 = preV8 ? await jobFor(req, "v7", false, at) : null;
   // A 연운 bought before its year was fixed to the purchase (2026-10): asked as of this year, as it was then.
-  const asNow = order && product.id === "yeonun" ? await jobFor(req) : null;
+  const asNow = order && product.id === "yeonun" ? await jobFor(req, preV8 ? "v7" : undefined) : null;
   // The first of these already written opens (oldest way first), and is kept on the order from then on.
-  const found = [legacy, oldGrades, beforeV7, job, asNow].filter((j): j is NonNullable<typeof j> & { key: string } => Boolean(j && !("error" in j)));
+  const found = [legacy, oldGrades, beforeV7, beforeV8, job, asNow].filter((j): j is NonNullable<typeof j> & { key: string } => Boolean(j && !("error" in j)));
   for (const j of found) {
     const text = await getReportText(j.key);
     if (!text) continue;
@@ -75,9 +79,12 @@ export async function POST(request: Request) {
       { status: 429 },
     );
 
+  // What is written now: what was bought (a pre-v8 order gets the v7 report it paid for).
+  const writeJob = beforeV8 && !("error" in beforeV8) ? beforeV8 : job;
+
   // Already being written for an earlier visit: this one waits for it (the page asks again every few seconds).
-  if (Date.now() - (await getReportWriting(job.key)) < WRITING_FOR) return Response.json({ writing: true }, { status: 202 });
-  await setReportWriting(job.key, Date.now());
+  if (Date.now() - (await getReportWriting(writeJob.key)) < WRITING_FOR) return Response.json({ writing: true }, { status: 202 });
+  await setReportWriting(writeJob.key, Date.now());
 
   // The writing runs on its own, not tied to this response: a reader who closes the tab or loses the connection
   // midway still finds the whole report saved when they come back. The stream only lets the page follow along.
@@ -101,18 +108,18 @@ export async function POST(request: Request) {
   const work = (async () => {
     let ok = false;
     try {
-      const text = await writeReport(job, push);
+      const text = await writeReport(writeJob, push);
       if (text) {
-        await setReportText(job.key, text);
-        if (order) await pinReportText(order.id, product.id as ProductId, job.key).catch(() => {});
+        await setReportText(writeJob.key, text);
+        if (order) await pinReportText(order.id, product.id as ProductId, writeJob.key).catch(() => {});
         ok = true;
-      } else await noteReportError(`${job.title}: 끝까지 쓰지 못함 (stop_reason)`).catch(() => {});
+      } else await noteReportError(`${writeJob.title}: 끝까지 쓰지 못함 (stop_reason)`).catch(() => {});
     } catch (e) {
       console.error(e);
-      await noteReportError(`${job.title}: ${e instanceof Error ? e.message : String(e)}`).catch(() => {});
+      await noteReportError(`${writeJob.title}: ${e instanceof Error ? e.message : String(e)}`).catch(() => {});
     }
     if (!ok) {
-      await setReportWriting(job.key, 0).catch(() => {});
+      await setReportWriting(writeJob.key, 0).catch(() => {});
       push(MARK_ERROR);
     }
     try {

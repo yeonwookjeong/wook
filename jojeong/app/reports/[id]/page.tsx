@@ -39,12 +39,19 @@ import { josa } from "@/lib/josa";
 import { hanjaKo } from "@/lib/saju";
 import { ownedCourts } from "@/lib/load";
 import { ADULT_ONLY, FIXED_RELATION, FREE_LOCK, isAdult, isOpen, isPair, PRICE, productById, saleLabel, saleNow, YEONUN_PAST_TOC, type Product, type ProductId } from "@/lib/products";
-import { REPORT_SPECS } from "@/lib/reportPrompts";
+import { chaptersFor, isV8, REPORT_SPECS } from "@/lib/reportPrompts";
+import CalendarButton from "@/components/CalendarButton";
+import { PairYearsFigure, YearsAheadFigure } from "@/components/PaidFigures";
+import { BondFigure, BondMonthsFigure } from "@/app/ask/Figures";
+import { bondOf } from "@/lib/bond";
+import { pairYears, REL_OF } from "@/lib/pairYears";
+import { askShown } from "@/lib/members";
 import { coupleOf } from "@/lib/couple";
 import { intimacyOf } from "@/lib/intimacy";
 import { reunionOf } from "@/lib/reunion";
 import { readMe } from "@/lib/me";
-import { decodePerson, profileOf, relationOf } from "@/lib/pairToken";
+import { decodePerson, profileOf, relationOf, type Person } from "@/lib/pairToken";
+import type { Relation } from "@/lib/relations";
 import { decadeOf, domainCard, isDomain } from "@/lib/domains";
 import { distinctOf } from "@/lib/rarity";
 import { courtOfReader, subjectFor } from "@/lib/subject";
@@ -55,7 +62,7 @@ import { YearTeaser } from "@/components/YearAhead";
 import { decadeTags, layersOf, manseOf, salSeats, yearPreviewOf } from "@/lib/freePreview";
 import TrackView from "@/components/TrackView";
 import { saleKey } from "@/lib/sales";
-import { KINDS, OFFERED, parseSearch, pickDays, searchDay, startMonths } from "@/lib/taekil";
+import { bestDays, KINDS, OFFERED, parseSearch, pickDays, searchDay, startMonths } from "@/lib/taekil";
 import { yearReading } from "@/lib/yearly";
 
 // From when a bought report opens with "바로 읽기" on top and the life report's free analysis folded. Orders paid
@@ -98,6 +105,32 @@ function Notice({ children, href, cta }: { children: React.ReactNode; href?: str
 }
 
 const chaptersOf = (id: ProductId) => REPORT_SPECS[id]?.chapters ?? [];
+// A bought two-person report; 궁합 from v8 on with its pictures (the two people, their ten years, their six months).
+async function PairReport({ order, product, a, b, rel }: { order: Order; product: Product; a: Person; b: Person; rel: Relation }) {
+  const at = paidAtOf(order);
+  let figures: Record<number, React.ReactNode> | undefined;
+  if (product.id === "gunghap" && isV8(at)) {
+    const years = pairYears(a, b, rel, thisYear(new Date(at)));
+    const bond = bondOf(a, b, b.name, REL_OF[rel], at);
+    figures = {
+      ...(bond && { 1: <BondFigure b={bond} name={a.name} />, 8: <BondMonthsFigure b={bond} name={a.name} /> }),
+      ...(years && { 7: <PairYearsFigure x={years} a={a.name} b={b.name} /> }),
+    };
+  }
+  return <AiReport request={{ product: product.id, order: order.id }} modern {...(await extrasOf(order, product))} figures={figures} />;
+}
+
+// What a bought report adds from v8 on (lib/reportPrompts.ts V8_SINCE): its chapters as bought, and, for orders
+// from then, the 한눈에 card to keep and "이 장, 정 훈도에게 더 묻기". Older orders open as they did.
+const paidAtOf = (o: Order) => o.paidAt ?? o.createdAt;
+async function extrasOf(o: Order, product: Product) {
+  const v8 = isV8(paidAtOf(o));
+  return {
+    chapters: chaptersFor(product.id, paidAtOf(o)),
+    ask: v8 && (await askShown()) ? product.title : undefined,
+    save: v8 ? `hundo-${product.id}` : undefined,
+  };
+}
 
 // What a two-person report shows free, before the written part.
 const PAIR_FREE: Partial<Record<ProductId, string>> = {
@@ -166,11 +199,26 @@ async function OpenReport({
         <Header product={product} subjectName={b ? `${a.name}님과 ${b.name}님` : `${a.name}님`} />
         {unlock && <OrderLink id={unlock.id} />}
         <TaekilResult kind={found.kind} days={days} label={found.label} names={b ? `${a.name}님과 ${b.name}님` : `${a.name}님`} full={full} />
+        {unlock && isV8(paidAtOf(unlock)) && (
+          <CalendarButton
+            name={`정 훈도 택일 · ${KINDS[found.kind].title}`}
+            file={`hundo-taekil-${found.kind}`}
+            events={bestDays(days, found.kind).map((d, i) => ({
+              date: d.date,
+              title: `${i === 0 ? "◎ " : ""}${KINDS[found.kind].title} 좋은 날 (정 훈도 택일 ${i + 1}순위)`,
+              note: [d.hours.length ? `좋은 시간 ${d.hours.join(", ")}` : "", d.ceremony ? `예식 시간 ${d.ceremony}` : "", `${d.lunar} ${d.gz}`].filter(Boolean).join("\n"),
+            }))}
+          />
+        )}
         {full ? (
           <>
             <h2 className="mt-8 text-center font-myeongjo text-lg font-extrabold">정 훈도의 택일 소견서</h2>
             <p className="mt-1 text-center text-xs text-ink-soft">위의 날짜를 두고, 왜 이 날인지와 그날 할 일을 직접 풀어 드려요</p>
-            <AiReport request={unlock ? { product: product.id, order: unlock.id } : req} chapters={chaptersOf(product.id)} modern />
+            {unlock ? (
+              <AiReport request={{ product: product.id, order: unlock.id }} modern {...(await extrasOf(unlock, product))} />
+            ) : (
+              <AiReport request={req} chapters={chaptersOf(product.id)} modern />
+            )}
           </>
         ) : (
           <Paywall
@@ -236,7 +284,11 @@ async function OpenReport({
         ) : (
           <>
             {unlock && <OrderLink id={unlock.id} />}
-            <AiReport request={unlock ? { product: product.id, order: unlock.id } : req} chapters={chaptersOf(product.id)} modern />
+            {unlock ? (
+              <PairReport order={unlock} product={product} a={a} b={b} rel={req.rel} />
+            ) : (
+              <AiReport request={req} chapters={chaptersOf(product.id)} modern />
+            )}
           </>
         )}
         <Link href={`/reports/${product.id}`} className="mt-6 block border border-seal/40 py-3 text-center text-sm font-bold text-seal">
@@ -593,7 +645,28 @@ async function OpenReport({
         {unlock && <OrderLink id={unlock.id} />}
         <YearTop d={d} name={name} prev={!paid && y > from ? link(y - 1) : null} next={!paid && y < to ? link(y + 1) : null} list={link()} />
         {unlock ? (
-          <AiReport request={{ product: product.id, order: unlock.id }} chapters={chaptersOf(product.id)} modern />
+          <>
+            <AiReport request={{ product: product.id, order: unlock.id }} modern {...(await extrasOf(unlock, product))} />
+            {isV8(paidAtOf(unlock)) && d.when !== "past" && (
+              <CalendarButton
+                name={`정 훈도 ${y}년 운세`}
+                file={`hundo-${y}`}
+                label={`${y}년 좋은 달·조심할 달 달력에 넣기`}
+                events={[...d.best.map((i) => ({ i, good: true })), ...d.worst.map((i) => ({ i, good: false }))]
+                  .sort((p, q) => p.i - q.i)
+                  .map(({ i, good }) => {
+                    const m = d.months[i];
+                    const [mm, dd] = m.from.split("/").map(Number);
+                    const year = mm === 1 && i > 0 ? y + 1 : y;
+                    return {
+                      date: `${year}-${String(mm).padStart(2, "0")}-${String(dd).padStart(2, "0")}`,
+                      title: good ? `◎ ${mm}월, 좋은 달 시작 (정 훈도)` : `△ ${mm}월, 조심할 달 시작 (정 훈도)`,
+                      note: `${y}년 운세 보고서의 ${mm}월 풀이를 다시 읽어 보세요. 절기로 이날부터 한 달이에요.`,
+                    };
+                  })}
+              />
+            )}
+          </>
         ) : locked ? (
           <>
             {meDeepen}
@@ -658,6 +731,18 @@ async function OpenReport({
   // is folded. One who was given it never saw that analysis, so it stays open for them.
   if (unlock) {
     const chapters = chaptersOf(product.id).length;
+    // v8 on, the life report's chapters carry their pictures: money, work and love over ten years, and the years ahead.
+    const lifeFigures = (o: Order): Record<number, React.ReactNode> | undefined => {
+      if (product.id !== "pyeongsaeng" || !isV8(paidAtOf(o))) return undefined;
+      const from = thisYear(new Date(paidAtOf(o)));
+      const ahead = yearRows(pillars, profile, from, from + 9, from);
+      return {
+        3: <DecadeTable inline name={name} domain="jaemul" years={decadeOf("jaemul", pillars, gender)} locked={false} />,
+        4: <DecadeTable inline name={name} domain="jikup" years={decadeOf("jikup", pillars, gender)} locked={false} />,
+        5: <DecadeTable inline name={name} domain="yeonae" years={decadeOf("yeonae", pillars, gender)} locked={false} />,
+        ...(ahead && { 11: <YearsAheadFigure rows={ahead} name={name} /> }),
+      };
+    };
     // Bought before the read-first page: it opens as it did when it was bought (analysis open, report below).
     if ((unlock.paidAt ?? unlock.createdAt) < READ_FIRST_SINCE)
       return (
@@ -728,7 +813,7 @@ async function OpenReport({
         )}
         {!intro && chartFold}
         <div id="report-start" className="scroll-mt-4">
-          <AiReport request={{ product: product.id, order: unlock.id }} chapters={chaptersOf(product.id)} modern />
+          <AiReport request={{ product: product.id, order: unlock.id }} modern {...(await extrasOf(unlock, product))} figures={lifeFigures(unlock)} />
         </div>
         {/* Who reads about love usually has someone in mind: the two-person reading is the next question. */}
         {product.id === "yeonae" && (

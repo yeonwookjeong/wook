@@ -8,6 +8,10 @@ import { decodePerson, profileOf, RELATIONS, relationOf } from "./pairToken";
 import { ADULT_ONLY, FIXED_RELATION, isAdult, isPair, productById, YEONUN_PAST_TOC, type ProductId } from "./products";
 import { intimacyBrief } from "./intimacy";
 import { reunionBrief } from "./reunion";
+import { bondOf } from "./bond";
+import { pairYears, pairYearsBrief, REL_OF } from "./pairYears";
+import type { Relation } from "./relations";
+import type { Person } from "./pairToken";
 import { freeBrief } from "./freeReading";
 import { decadeBrief, decadeOf, domainBrief, isDomain } from "./domains";
 import { thisYear, yearOf, yearName, yeonunBrief } from "./yeonun";
@@ -76,6 +80,8 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
       chartBrief(b.name, b.pillars, profileOf(b)),
       pairBrief(a.name, a.pillars, b.name, b.pillars),
       coupleBrief(a, b),
+      // v8 궁합: the two people's ten years and six months, as the report's pictures show them.
+      ...(product.id === "gunghap" && v === "v8" ? pairBriefs(a, b, rel, nowYear, at ?? Date.now()) : []),
       ...(product.id === "sokgunghap" ? [intimacyBrief(a, b)] : []),
       ...(product.id === "jaehoe" ? [reunionBrief(a, b)] : []),
     ].join("\n\n");
@@ -140,6 +146,17 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
   return { key, system, prompt, title: product.title, modern: Boolean(product.modern) };
 }
 
+function pairBriefs(a: Person, b: Person, rel: Relation, year: number, at: number): string[] {
+  const years = pairYears(a, b, rel, year);
+  const bond = bondOf(a, b, b.name, REL_OF[rel], at);
+  return [
+    ...(years ? [pairYearsBrief(a, b, years)] : []),
+    ...(bond
+      ? [`■ ★ 두 사람의 여섯 달 (화면에 달력으로 보인다)\n${bond.months.map((m) => `- ${m.label}(${m.from}~): ${a.name} ${"✕△○◎"[m.me]} / ${b.name} ${"✕△○◎"[m.them]} → ${m.both}${m.meet ? ` (${m.meet})` : ""}`).join("\n")}`]
+      : []),
+  ];
+}
+
 // The deep reports (재물·연애·직업) get their own evidence and ten-year calendar (lib/domains.ts).
 function deep(id: string, pillars: Pillars, gender: Gender | null): string[] {
   if (!isDomain(id)) return [];
@@ -157,12 +174,13 @@ export function anthropic() {
 export async function writeReport(job: ReportJob, onText: (t: string) => void, onUsage?: (u: Usage) => void): Promise<string | null> {
   // Local UI testing without an API key: stream a canned report.
   if (process.env.REPORT_MOCK === "1" && !(isGemini ? process.env.GEMINI_API_KEY : process.env.ANTHROPIC_API_KEY)) {
-    const { MOCK_REPORT } = await import("./reportMock");
-    for (const piece of MOCK_REPORT.match(/[\s\S]{1,40}/g) ?? []) {
+    const { MOCK_REPORT, mockFor } = await import("./reportMock");
+    const text = mockFor(job.prompt) ?? MOCK_REPORT;
+    for (const piece of text.match(/[\s\S]{1,40}/g) ?? []) {
       onText(piece);
       await new Promise((r) => setTimeout(r, Number(process.env.REPORT_MOCK_MS ?? 15)));
     }
-    return MOCK_REPORT;
+    return text;
   }
   if (isGemini) return writeWithGemini(job, onText, onUsage);
   const stream = anthropic().beta.messages.stream({
