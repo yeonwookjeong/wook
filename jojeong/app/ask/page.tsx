@@ -37,11 +37,65 @@ const Eyebrow = ({ hanja, children }: { hanja: string; children: React.ReactNode
   </div>
 );
 
-const GIVES: [string, string, string][] = [
-  ["直答", "결론부터", "된다, 안 된다를 돌려 말하지 않아요"],
-  ["判定", "한눈 판정", "답서 맨 위에 판정 카드를 붙여요"],
-  ["圖表", "사주 그림", "내 사주표와 다가올 달을 그림으로"],
-  ["記憶", "이어지는 상담", "다음에 오면 지난 이야기부터"],
+// What a letter gives, each with a small look at the thing itself (the sample letter's own words below).
+const STAMP = "grid size-9 shrink-0 -rotate-[5deg] place-items-center rounded-[5px] bg-seal font-myeongjo text-[11.5px] leading-[1.05] font-bold text-[#f9f1de] shadow-[inset_0_0_0_1.5px_#b3261e,inset_0_0_0_3px_rgb(249_241_222/0.7)]";
+const GIVES: { h: string; t: string; d: string; look: React.ReactNode }[] = [
+  {
+    h: "直答",
+    t: "결론부터",
+    d: "된다, 안 된다를 돌려 말하지 않아요",
+    look: (
+      <p className="font-myeongjo text-[12.5px] leading-snug">
+        <span className="bg-[linear-gradient(transparent_55%,rgb(212_175_95/0.55)_55%)] font-bold">가셔도 좋은 길</span>
+        <span className="text-ink-soft">이나, 답은 입동 뒤에</span>
+      </p>
+    ),
+  },
+  {
+    h: "判定",
+    t: "한눈 판정",
+    d: "답서 맨 위에 판정 카드를 붙여요",
+    look: (
+      <div className="flex items-center gap-2 rounded-md border border-seal/30 bg-white/60 px-2 py-1.5">
+        <span className="grid size-7 place-items-center rounded-full bg-seal font-myeongjo text-[14px] font-extrabold text-[#f9f1de]">吉</span>
+        <span className="text-[11px] leading-tight">
+          <b className="block text-seal">가도 좋음</b>
+          <span className="text-ink-soft">서명은 11월</span>
+        </span>
+      </div>
+    ),
+  },
+  {
+    h: "圖表",
+    t: "사주 그림",
+    d: "내 사주표와 다가올 달을 그림으로",
+    look: (
+      <div className="flex items-end gap-2">
+        <div aria-hidden className="grid grid-cols-4 gap-[2px] font-myeongjo text-[11px] leading-none">
+          {["甲", "丁", "丙", "壬", "子", "未", "午", "申"].map((c, i) => (
+            <span key={i} className={`grid size-[17px] place-items-center rounded-[3px] ${i === 2 ? "bg-seal text-[#f9f1de]" : "bg-ink/8"}`}>
+              {c}
+            </span>
+          ))}
+        </div>
+        <div aria-hidden className="flex h-[36px] items-end gap-[3px]">
+          {[40, 65, 30, 90, 55].map((h, i) => (
+            <span key={i} className={`w-[5px] rounded-t-sm ${i === 3 ? "bg-seal" : "bg-seal/35"}`} style={{ height: `${h}%` }} />
+          ))}
+        </div>
+      </div>
+    ),
+  },
+  {
+    h: "記憶",
+    t: "이어지는 상담",
+    d: "다음에 오면 지난 이야기부터",
+    look: (
+      <p className="relative rounded-lg rounded-bl-none bg-white/70 px-2 py-1.5 font-myeongjo text-[11.5px] leading-snug shadow-[0_1px_0_rgb(33_27_23/0.08)]">
+        지난번 이직 이야기, 이어서 보옵니다
+      </p>
+    ),
+  },
 ];
 
 export default async function AskPage({ searchParams }: PageProps<"/ask">) {
@@ -88,11 +142,17 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
         <Floor>
           <Eyebrow hanja="答書">이런 답서를 받아요</Eyebrow>
           <ul className="mt-5 grid grid-cols-2 gap-2.5">
-            {GIVES.map(([h, t, d]) => (
-              <li key={h} className="rounded-xl bg-[#f3e7c7] px-3 py-3 text-ink shadow-[0_3px_10px_rgb(0_0_0/0.3)]">
-                <span className="grid size-9 place-items-center rounded-full border border-seal/60 font-myeongjo text-[12px] font-bold text-seal">{h}</span>
-                <b className="mt-2 block text-[14px]">{t}</b>
-                <span className="text-[12px] leading-snug text-ink-soft">{d}</span>
+            {GIVES.map((g) => (
+              <li
+                key={g.h}
+                className="flex flex-col rounded-[6px] bg-[#f9f1de] bg-[radial-gradient(circle_at_18%_10%,rgb(255_255_255/0.75),transparent_45%),radial-gradient(circle_at_90%_95%,rgb(168_122_34/0.12),transparent_50%)] px-3 pt-3 pb-3 text-ink shadow-[inset_0_0_0_3px_#f9f1de,inset_0_0_0_4px_rgb(179_38_30/0.4),0_4px_12px_rgb(0_0_0/0.35)]"
+              >
+                <div className="flex items-center gap-2">
+                  <span className={STAMP}>{g.h}</span>
+                  <b className="font-myeongjo text-[15px] leading-tight">{g.t}</b>
+                </div>
+                <div className="mt-2.5 flex min-h-[44px] items-center border-y border-dashed border-seal/20 py-2">{g.look}</div>
+                <span className="mt-2 text-[12px] leading-snug text-ink-soft">{g.d}</span>
               </li>
             ))}
           </ul>
