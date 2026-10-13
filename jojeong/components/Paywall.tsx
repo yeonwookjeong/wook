@@ -3,14 +3,16 @@ import PayButton from "./PayButton";
 import { hanjaNum } from "@/lib/hanjaNum";
 import { josa } from "@/lib/josa";
 import { payEnabled } from "@/lib/pay";
-import { PRICE, productById, saleLabel, saleNow, SETS, setsWith, type Product, type ProductId, type SetId } from "@/lib/products";
+import { bonusFor, PRICE, priceFor, productById, saleLabel, saleNow, SETS, setPrice, setRegular, setsWith, type Product, type ProductId, type SetId } from "@/lib/products";
+import { pricingNow } from "@/lib/pricing";
 import { newYearOf } from "@/lib/yeonun";
 
 // Where the written report would begin, before it is bought: its chapters, the price, and the payment.
 // Everything above it (the chart and how it was read) stays free.
 const FRONT_SET: Partial<Record<ProductId, SetId>> = { jaemul: "all", jikup: "all" };
+const FRONT_SET_A: Partial<Record<ProductId, SetId>> = { jaemul: "jeonseo", jikup: "jeonseo", yeonae: "jeonseo" };
 
-export default function Paywall({
+export default async function Paywall({
   product,
   request,
   chapters,
@@ -25,28 +27,36 @@ export default function Paywall({
   sub?: string;
   note?: string;
 }) {
-  const sale = saleNow();
-  const price = sale?.price ?? PRICE;
-  // Sets are offered for a one-person report bought for a saved chart.
-  // 새해 준비 세트 only while there is a coming year, and on a 연운 page only for that year.
+  const pr = await pricingNow();
   const ny = newYearOf();
-  const sets = request.p ? setsWith(product.id).filter((s) => s !== "ny" || (ny !== null && (request.y === undefined || request.y === String(ny)))) : [];
+  const price = priceFor(product.id, pr, request.y, ny);
+  // A sale shows only on the 990-won reports (lib/products.ts priceFor).
+  const sale = price < PRICE ? saleNow() : null;
+  const bonus = bonusFor(pr, product.id, null, request.y, ny);
+  // Sets are offered for a one-person report bought for a saved chart. A set holding a 연운 only while there is
+  // a coming year, and on a 연운 page only for that year.
+  const sets = request.p
+    ? setsWith(product.id, pr).filter((s) => !SETS[s].products.includes("yeonun") || (ny !== null && (request.y === undefined || request.y === String(ny))))
+    : [];
   const titleIn = (id: ProductId) => (id === "yeonun" && ny !== null ? `${ny} 신년운세` : productById(id)!.title);
   // Money and work showed three sets under the single report and sold least: one set in front, the rest folded.
-  const lead = FRONT_SET[product.id];
+  const lead = (pr === "a" ? FRONT_SET_A : FRONT_SET)[product.id];
   const front = lead && sets.includes(lead) ? [lead] : sets;
   const folded = sets.filter((s) => !front.includes(s));
   const setButton = (s: SetId) => {
     const list = SETS[s].products;
-    const regular = list.length * PRICE;
+    const regular = setRegular(s, pr, ny);
+    const qs = bonusFor(pr, null, s);
     return (
       <div key={s}>
         <PayButton
           secondary
           request={{ set: s, p: request.p, from: product.id }}
-          label={`${SETS[s].title} ${SETS[s].price.toLocaleString("ko-KR")}원 (정가 ${regular.toLocaleString("ko-KR")}원)`}
+          label={`${SETS[s].title} ${setPrice(s, pr).toLocaleString("ko-KR")}원 (따로 사면 ${regular.toLocaleString("ko-KR")}원)`}
         />
-        <p className="mt-1 text-[11px] text-ink-soft">{josa(list.map(titleIn).join(" · "), "을/를")} 이 사주로 한 번에</p>
+        <p className="mt-1 text-[11px] text-ink-soft">
+          {josa(list.map(titleIn).join(" · "), "을/를")} 이 사주로 한 번에{qs ? ` · 정 훈도 질문 ${qs}개 포함` : ""}
+        </p>
       </div>
     );
   };
@@ -72,6 +82,7 @@ export default function Paywall({
           {sale && <s className="text-base text-ink-soft">{PRICE.toLocaleString("ko-KR")}원</s>}
           <span className="font-myeongjo text-3xl font-extrabold text-seal">{price.toLocaleString("ko-KR")}원</span>
         </p>
+        {bonus > 0 && <p className="mt-1 text-[12.5px] font-bold text-[#9a7424]">정 훈도 질문 {bonus}개 포함</p>}
         {note && <p className="mt-3 rounded-xl bg-gold/10 px-3 py-2 text-left text-[12px] leading-relaxed">{note}</p>}
         {payEnabled() ? (
           <>

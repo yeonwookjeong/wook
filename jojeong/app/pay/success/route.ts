@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { ORDERS_COOKIE } from "@/lib/cookies";
-import { browserOrderIds, confirmOrder, covers, getOrder, setOrderRawPublic, withOrder } from "@/lib/pay";
+import { browserOrderIds, confirmOrder, covers, getOrder, giveBonus, setOrderRawPublic, withOrder } from "@/lib/pay";
 import { addOrderToMember, changeCredits, currentMember } from "@/lib/members";
 import { productById } from "@/lib/products";
 
@@ -32,7 +32,11 @@ export async function GET(request: NextRequest) {
   }
   // A signed-in member keeps the report on their account too, so it opens on any device.
   const member = await currentMember().catch(() => null);
-  if (member) await addOrderToMember(member.id, paid.id);
+  if (member) {
+    await addOrderToMember(member.id, paid.id);
+    // Questions that came with it (A안) go in now; without a sign-in they wait for the first one (lib/login.ts).
+    await giveBonus(paid, member.id);
+  }
   const back = productById(q.get("back") ?? "");
   const to = back && covers(paid, back.id) ? `/reports/${back.id}?order=${order.id}` : `/r/${order.id}`;
   const res = NextResponse.redirect(new URL(to, request.url), 303);

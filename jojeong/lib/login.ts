@@ -2,7 +2,7 @@ import "server-only";
 import { randomBytes } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { GIFT_COOKIE, MEMBER_COOKIE, memberCookieValue, signInMember, VIA_COOKIE, type Via } from "./members";
-import { browserOrderIds } from "./pay";
+import { browserOrderIds, getOrder, giveBonus } from "./pay";
 
 // The way in and back for every login (app/login/[via], app/api/auth/*): a one-time state in a cookie, the page to
 // return to (only paths on this site), and on return the member cookie, the gift-once-per-browser mark and the way
@@ -33,13 +33,21 @@ export function returnedTo(request: NextRequest): string | null {
 export const backTo = (request: NextRequest, path: string) => NextResponse.redirect(new URL(path, request.url), 303);
 
 export async function finishLogin(request: NextRequest, via: Via, accountId: string, nick: string, email: string | null, next: string) {
+  const browserOrders = await browserOrderIds();
   const { member, joined, added, gifted } = await signInMember(via, accountId, nick, email, {
-    orders: await browserOrderIds(),
+    orders: browserOrders,
     gifted: Boolean(request.cookies.get(GIFT_COOKIE)?.value),
   });
+  // Questions that came with reports bought here before signing in (A안), added once.
+  let bonus = 0;
+  for (const id of browserOrders) {
+    const o = await getOrder(id);
+    if (o) bonus += await giveBonus(o, member.id);
+  }
   const to = new URL(next, request.url);
   if (joined) to.searchParams.set("joined", "1");
   if (added) to.searchParams.set("moved", String(added));
+  if (bonus) to.searchParams.set("bonus", String(bonus));
   const res = NextResponse.redirect(to, 303);
   const year = 60 * 60 * 24 * 365;
   const secure = request.nextUrl.protocol === "https:";

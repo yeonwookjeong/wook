@@ -2,12 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ownedOrders } from "@/lib/pay";
 import { productById, SETS } from "@/lib/products";
+import { askShown, currentMember, membersEnabled } from "@/lib/members";
 
 export const metadata: Metadata = { title: "내 보고서", robots: { index: false } };
 
 // Reports bought in this browser. Each keeps its own permanent link (/r/…) for other devices.
 export default async function MyReportsPage() {
   const orders = await ownedOrders();
+  // Not signed in (with 청심당 open, or in 시안 모드): these live in this browser only until a sign-in keeps them.
+  const nudge = orders.length > 0 && membersEnabled() && (await askShown()) && !(await currentMember().catch(() => null));
   return (
     <>
       <section className="mt-6 text-center">
@@ -15,6 +18,17 @@ export default async function MyReportsPage() {
         <h1 className="mt-2 font-myeongjo text-3xl font-extrabold">내 보고서</h1>
         <p className="mt-2 text-sm text-ink-soft">이 브라우저에서 결제한 보고서예요</p>
       </section>
+      {nudge && (
+        <section className="mt-5 rounded-2xl border border-[#d4af5f]/50 bg-[#fbf6ea] px-4 py-4 text-center">
+          <p className="font-myeongjo text-[16px] font-extrabold">이 브라우저에만 저장된 보고서예요</p>
+          <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
+            브라우저 기록을 지우거나 기기를 바꾸면 못 열 수 있어요. 카카오로 로그인해 두면 계정에 보관돼요.
+          </p>
+          <Link href="/login?next=/my" className="mt-3 block rounded-2xl bg-[#FEE500] py-3 font-bold text-[#191919]">
+            카카오로 로그인
+          </Link>
+        </section>
+      )}
       {orders.length === 0 ? (
         <div className="doc-paper mt-6 px-5 py-8 text-center text-sm leading-relaxed">
           <p>아직 결제한 보고서가 없어요.</p>

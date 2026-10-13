@@ -37,6 +37,10 @@ export type Order = {
   credits?: number;
   member?: string;
   credited?: boolean;
+  // Questions that came with a report (A안): how many, to which member, and whether they were added already.
+  bonus?: number;
+  bonusMember?: string;
+  bonusGiven?: boolean;
   // A payment made to try the site (the owner's own, or marked so on /admin): kept, but out of the dashboard.
   test?: boolean;
   createdAt: number;
@@ -81,6 +85,7 @@ export async function createOrder(
   amount: number,
   set?: { set: SetId; bundle: ProductId[]; from?: ProductId },
   credits?: { credits: number; member: string },
+  bonus?: { bonus?: number; bonusMember?: string },
 ): Promise<Order> {
   // Toss wants 6–64 characters of [A-Za-z0-9_-=]; unguessable, since the id is also the link to the report.
   const src = (await cookies()).get(SRC_COOKIE)?.value;
@@ -92,6 +97,7 @@ export async function createOrder(
     amount,
     ...set,
     ...credits,
+    ...bonus,
     status: "ready",
     createdAt: Date.now(),
     ...(isSource(src) && { src }),
@@ -180,6 +186,8 @@ export async function syncPayment(paymentKey: string): Promise<Order | null> {
   if (order.status === "paid" && (payment.status === "CANCELED" || payment.status === "PARTIAL_CANCELED")) {
     const canceled: Order = { ...order, status: "canceled" };
     await setOrderRaw(order.id, JSON.stringify(canceled));
+    // A refunded report takes back the questions it brought, as far as they are left.
+    if (payment.status === "CANCELED" && order.bonus && order.bonusMember && order.bonusGiven) await changeCredits(order.bonusMember, -order.bonus, `환불 ${order.id}`);
     // A refunded 질문권 takes back the questions refunded. What Toss still holds pays for those kept, at the single
     // price (the refund rule, app/refund): a whole refund takes them all, a part one leaves the ones used.
     if (order.credits && order.member && order.credited) {
@@ -224,4 +232,12 @@ export async function ownedOrderFor(product: ProductId, req: JobRequest): Promis
   // The year matters only to 연운: a set that also bought a year still opens its other reports for this chart.
   const same = (o: Order) => covers(o, product) && fields.every((f) => (f === "y" && product !== "yeonun") || (o.req[f] ?? "") === (req[f] ?? ""));
   return (await ownedOrders()).find(same) ?? null;
+}
+
+// The questions a paid report brought, added once to the member (at payment if signed in, else at sign-in).
+export async function giveBonus(order: Order, memberId: string): Promise<number> {
+  if (order.status !== "paid" || !order.bonus || order.bonusGiven) return 0;
+  await setOrderRaw(order.id, JSON.stringify({ ...order, bonusGiven: true, bonusMember: memberId }));
+  await changeCredits(memberId, order.bonus, `동봉 ${order.id}`);
+  return order.bonus;
 }
