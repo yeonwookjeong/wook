@@ -3,6 +3,8 @@ import { covers, getOrder, pinReportText } from "@/lib/pay";
 import { productById, type ProductId } from "@/lib/products";
 import { aiEnabled, jobFor, writeReport, type JobRequest } from "@/lib/reportWriter";
 import { isV8 } from "@/lib/reportPrompts";
+import { renewNow } from "@/lib/launch";
+import { hasPoints, mergePoints, pointsJob } from "@/lib/reportPoints";
 import { after } from "next/server";
 import { countReportToday, getReportText, getReportWriting, noteReportError, setReportText, setReportWriting } from "@/lib/store";
 
@@ -40,13 +42,32 @@ export async function POST(request: Request) {
   }
   // When it was bought: the 연운 is asked as of that year (lib/reportWriter.ts jobFor), so it opens the same after the new year.
   const at = order ? (order.paidAt ?? order.createdAt) : undefined;
-  const job = await jobFor(req, undefined, false, at);
+  // The second pass (lib/open.ts RENEW2; 시안 모드 before it is on): bought in the opened shop, written with v9's
+  // point box. A report bought before the opening never is.
+  const v9 = Boolean(order && isV8(order) && (await renewNow()));
+  const job = await jobFor(req, v9 ? "v9" : undefined, false, at);
   if ("error" in job) return Response.json({ error: job.error }, { status: job.status });
+  // A v8 text of such an order (read before the second pass) keeps its words and gets the point box beside them.
+  const withPoints = async (key: string, text: string) => {
+    if (!v9 || hasPoints(text)) return text;
+    const pts = await getReportText(`${key}:pts`);
+    if (pts) return mergePoints(text, pts);
+    const pj = pointsJob(text, key, job.modern);
+    if (aiEnabled() && Date.now() - (await getReportWriting(pj.key)) >= WRITING_FOR) {
+      await setReportWriting(pj.key, Date.now());
+      after(async () => {
+        const out = await writeReport(pj, () => {}).catch(() => null);
+        if (out) await setReportText(pj.key, out);
+        else await setReportWriting(pj.key, 0).catch(() => {});
+      });
+    }
+    return text;
+  };
 
   // The text this order first opened with, kept on the order: it opens that, whatever changed since.
   const pinnedKey = order?.texts?.[product.id as ProductId];
   const pinned = pinnedKey ? await getReportText(pinnedKey) : null;
-  if (pinned) return new Response(pinned, { headers: { "content-type": "text/plain; charset=utf-8", "x-report": "cached" } });
+  if (pinned) return new Response(await withPoints(pinnedKey!, pinned), { headers: { "content-type": "text/plain; charset=utf-8", "x-report": "cached" } });
 
   // A report bought before the v6 prompt opens exactly as it was first written (its v5 text), never rewritten.
   const boughtBefore = order && (order.paidAt ?? order.createdAt) < V6_SINCE;
@@ -60,12 +81,14 @@ export async function POST(request: Request) {
   // A 연운 bought before its year was fixed to the purchase (2026-10): asked as of this year, as it was then.
   const asNow = order && product.id === "yeonun" ? await jobFor(req, preV8 ? "v7" : undefined) : null;
   // The first of these already written opens (oldest way first), and is kept on the order from then on.
-  const found = [legacy, oldGrades, beforeV7, beforeV8, job, asNow].filter((j): j is NonNullable<typeof j> & { key: string } => Boolean(j && !("error" in j)));
+  // An opened-shop order written with v8 before the second pass (and never pinned) opens that, with its points.
+  const asV8 = v9 ? await jobFor(req, "v8", false, at) : null;
+  const found = [legacy, oldGrades, beforeV7, beforeV8, asV8, job, asNow].filter((j): j is NonNullable<typeof j> & { key: string } => Boolean(j && !("error" in j)));
   for (const j of found) {
     const text = await getReportText(j.key);
     if (!text) continue;
     if (order) await pinReportText(order.id, product.id as ProductId, j.key).catch(() => {});
-    return new Response(text, { headers: { "content-type": "text/plain; charset=utf-8", "x-report": "cached" } });
+    return new Response(await withPoints(j.key, text), { headers: { "content-type": "text/plain; charset=utf-8", "x-report": "cached" } });
   }
 
   if (!aiEnabled())

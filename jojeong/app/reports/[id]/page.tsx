@@ -8,7 +8,7 @@ import ChartIntro from "@/components/ChartIntro";
 import GunghapForm from "@/components/GunghapForm";
 import MeForm from "@/components/MeForm";
 import IntimacyIntro from "@/components/IntimacyIntro";
-import PairIntro from "@/components/PairIntro";
+import PairIntro, { MiniChart } from "@/components/PairIntro";
 import ReunionIntro from "@/components/ReunionIntro";
 import TaekilForm from "@/components/TaekilForm";
 import TaekilResult from "@/components/TaekilResult";
@@ -40,7 +40,7 @@ import { josa } from "@/lib/josa";
 import { hanjaKo } from "@/lib/saju";
 import { ownedCourts } from "@/lib/load";
 import { ADULT_ONLY, FIXED_RELATION, FREE_LOCK, isAdult, isOpen, isPair, PRICE, productById, saleLabel, saleNow, YEONUN_PAST_TOC, type Product, type ProductId } from "@/lib/products";
-import { chaptersFor, isV8, REPORT_SPECS } from "@/lib/reportPrompts";
+import { chaptersFor, isV8, REPORT_SPECS, yearChaptersFor } from "@/lib/reportPrompts";
 import { pricingNow } from "@/lib/pricing";
 import CalendarButton from "@/components/CalendarButton";
 import { PairYearsFigure, YearsAheadFigure } from "@/components/PaidFigures";
@@ -48,7 +48,7 @@ import { BondFigure, BondMonthsFigure } from "@/app/ask/Figures";
 import { bondOf } from "@/lib/bond";
 import { pairYears, REL_OF } from "@/lib/pairYears";
 import { askShown } from "@/lib/members";
-import { coupleOf } from "@/lib/couple";
+import { coupleOf, type Couple } from "@/lib/couple";
 import { intimacyOf } from "@/lib/intimacy";
 import { reunionOf } from "@/lib/reunion";
 import { readMe } from "@/lib/me";
@@ -60,6 +60,8 @@ import { courtOfReader, subjectFor } from "@/lib/subject";
 import { getProfile } from "@/lib/store";
 import { covers, getOrder, ownedOrderFor, ownedOrders, type Order } from "@/lib/pay";
 import { isAdmin, isPreview } from "@/lib/admin";
+import { renewNow } from "@/lib/launch";
+import { AreaFigure, ChartTop, DaysFigure, ElementsFigure, FlowFigure, LendsFigure, MonthsStrip, PairCharts, PowersFigure, RareFigure, SeatLinesFigure, SeatsFigure, YearPlaceFigure } from "@/components/ReportFigures";
 import { YearTeaser } from "@/components/YearAhead";
 import { decadeTags, layersOf, manseOf, salSeats, yearPreviewOf } from "@/lib/freePreview";
 import TrackView from "@/components/TrackView";
@@ -106,7 +108,7 @@ function Notice({ children, href, cta }: { children: React.ReactNode; href?: str
 
 const chaptersOf = (id: ProductId) => REPORT_SPECS[id]?.chapters ?? [];
 // A bought two-person report; 궁합 from v8 on with its pictures (the two people, their ten years, their six months).
-async function PairReport({ order, product, a, b, rel }: { order: Order; product: Product; a: Person; b: Person; rel: Relation }) {
+async function PairReport({ order, product, a, b, rel, couple }: { order: Order; product: Product; a: Person; b: Person; rel: Relation; couple?: Couple | null }) {
   const at = paidAtOf(order);
   let figures: Record<number, React.ReactNode> | undefined;
   if (product.id === "gunghap" && isV8(order)) {
@@ -115,6 +117,12 @@ async function PairReport({ order, product, a, b, rel }: { order: Order; product
     figures = {
       ...(bond && { 1: <BondFigure b={bond} name={a.name} />, 8: <BondMonthsFigure b={bond} name={a.name} /> }),
       ...(years && { 7: <PairYearsFigure x={years} a={a.name} b={b.name} /> }),
+      // The second pass (lib/open.ts RENEW2): what each lends the other, and where the seats meet.
+      ...(couple &&
+        figuresFor(chaptersFor(product.id, true), [
+          ["채워 주는 것", <LendsFigure key="l" c={couple} a={a.name} b={b.name} />],
+          ["싸울 때", <SeatLinesFigure key="s" lines={couple.seat} />],
+        ])),
     };
   }
   return <AiReport request={{ product: product.id, order: order.id }} modern {...(await extrasOf(order, product))} figures={figures} />;
@@ -123,6 +131,34 @@ async function PairReport({ order, product, a, b, rel }: { order: Order; product
 // What a report bought in the opened shop adds (lib/reportPrompts.ts isV8): its chapters as bought, the 한눈에 card
 // to keep and "이 장, 정 훈도에게 더 묻기". Orders from before the opening open as they did.
 const paidAtOf = (o: Order) => o.paidAt ?? o.createdAt;
+
+// "결제한 보고서 바로 읽기": what was paid for, one tap from the top (to #report-start).
+function Jump({ gift, title, chapters }: { gift?: boolean; title: string; chapters: number }) {
+  return (
+    <a href="#report-start" className="mt-4 flex items-center justify-between rounded-2xl bg-seal px-5 py-4 font-myeongjo text-hanji shadow-[0_5px_0_#7d1a14]">
+      <span>
+        <b className="block text-[17px]">{gift ? "받은" : "결제한"} 보고서 바로 읽기</b>
+        <span className="text-[12px] font-normal opacity-80">
+          {title} · {chapters}장
+        </span>
+      </span>
+      <span className="text-xl" aria-hidden>
+        ↓
+      </span>
+    </a>
+  );
+}
+
+// The pictures of the second pass (lib/open.ts RENEW2), put on the chapter whose question holds `kw`.
+function figuresFor(chapters: string[], items: [string, React.ReactNode][]): Record<number, React.ReactNode> {
+  const out: Record<number, React.ReactNode> = {};
+  for (const [kw, node] of items) {
+    const i = chapters.findIndex((c) => c.includes(kw));
+    if (i >= 0 && node) out[i] = node;
+  }
+  return out;
+}
+const AREA_WHAT: Record<string, string> = { 돈: "돈과 재물", 일: "일과 자리", 사랑: "사랑과 인연", 사람: "사람과 귀인", 몸: "몸과 마음" };
 async function extrasOf(o: Order, product: Product) {
   const v8 = isV8(o);
   return {
@@ -170,6 +206,10 @@ async function OpenReport({
   preview?: boolean;
 }) {
   const query = new URLSearchParams({ ...(courtId && { court: courtId }), ...(ministerId && { m: ministerId }) }).toString();
+  // The second pass on bought reports (lib/open.ts RENEW2; 시안 모드 before it is on): only for what was bought
+  // in the opened shop, never for a report bought before the opening.
+  const renew = await renewNow();
+  const r2 = (o: Order | null | undefined) => Boolean(renew && o && isV8(o));
 
   // 택일: the search and chart(s) in the link (or the order); how many good days there are is free, the days themselves when bought.
   if (product.id === "taekil") {
@@ -198,7 +238,13 @@ async function OpenReport({
       <>
         <Header product={product} subjectName={b ? `${a.name}님과 ${b.name}님` : `${a.name}님`} />
         {unlock && <OrderLink id={unlock.id} />}
-        <TaekilResult kind={found.kind} days={days} label={found.label} names={b ? `${a.name}님과 ${b.name}님` : `${a.name}님`} full={full} />
+        {r2(unlock) && (
+          <>
+            <Jump gift={unlock!.gift} title={`택일 · ${KINDS[found.kind].title}`} chapters={chaptersFor(product.id, true).length} />
+            <PairCharts a={<MiniChart person={a} blank="모름" />} b={b ? <MiniChart person={b} blank="모름" /> : null} />
+          </>
+        )}
+        <TaekilResult kind={found.kind} days={days} label={found.label} names={b ? `${a.name}님과 ${b.name}님` : `${a.name}님`} full={full} once={r2(unlock)} />
         {unlock && isV8(unlock) && (
           <CalendarButton
             name={`정 훈도 택일 · ${KINDS[found.kind].title}`}
@@ -212,10 +258,22 @@ async function OpenReport({
         )}
         {full ? (
           <>
-            <h2 className="mt-8 text-center font-myeongjo text-lg font-extrabold">정 훈도의 택일 소견서</h2>
+            <h2 id="report-start" className="mt-8 scroll-mt-4 text-center font-myeongjo text-lg font-extrabold">정 훈도의 택일 소견서</h2>
             <p className="mt-1 text-center text-xs text-ink-soft">위의 날짜를 두고, 왜 이 날인지와 그날 할 일을 직접 풀어 드려요</p>
             {unlock ? (
-              <AiReport request={{ product: product.id, order: unlock.id }} modern {...(await extrasOf(unlock, product))} />
+              <AiReport
+                request={{ product: product.id, order: unlock.id }}
+                modern
+                {...(await extrasOf(unlock, product))}
+                figures={
+                  r2(unlock)
+                    ? figuresFor(chaptersFor(product.id, true), [
+                        ["고른 날", <DaysFigure key="d" days={bestDays(days, found.kind)} title="정 훈도가 고른 날" />],
+                        ["몇 시", <DaysFigure key="h" days={bestDays(days, found.kind)} title="그날의 좋은 시간" />],
+                      ])
+                    : undefined
+                }
+              />
             ) : (
               <AiReport request={req} chapters={chaptersOf(product.id)} modern />
             )}
@@ -271,7 +329,7 @@ async function OpenReport({
     return (
       <>
         <Header product={product} subjectName={`${a.name}님과 ${b.name}님`} />
-        {couple && <PairIntro a={a} b={b} c={couple} />}
+        {couple && <PairIntro a={a} b={b} c={couple} blank={renew ? "모름" : undefined} />}
         {closeness && <IntimacyIntro a={a} b={b} x={closeness} />}
         {reunion && <ReunionIntro a={a} b={b} r={reunion} />}
         {locked && !unlock ? (
@@ -284,8 +342,11 @@ async function OpenReport({
         ) : (
           <>
             {unlock && <OrderLink id={unlock.id} />}
+            {r2(unlock) && <Jump gift={unlock!.gift} title={product.title} chapters={chaptersFor(product.id, true).length} />}
             {unlock ? (
-              <PairReport order={unlock} product={product} a={a} b={b} rel={req.rel} />
+              <div id="report-start" className="scroll-mt-4">
+                <PairReport order={unlock} product={product} a={a} b={b} rel={req.rel} couple={r2(unlock) ? couple : null} />
+              </div>
             ) : (
               <AiReport request={req} chapters={chaptersOf(product.id)} modern />
             )}
@@ -530,6 +591,7 @@ async function OpenReport({
           onLifeReport={product.id === "pyeongsaeng"}
           locked={!lifeOwned}
           seats={draft ? salSeats(pillars) : undefined}
+          near={renew}
           tags={draft ? Object.fromEntries((profile?.daeun ?? []).map((d) => [d.from, decadeTags(pillars, d)])) : undefined}
         />
       )}
@@ -629,7 +691,7 @@ async function OpenReport({
               성별을 넣으면 해마다의 판정에 10년 대운까지 반영해 드려요.
             </p>
           )}
-          {rows && <YearList name={name} rows={rows} decades={freeReadingOf(pillars, profile)?.flow ?? null} hrefOf={(year) => link(year)} owned={owned} />}
+          {rows && <YearList name={name} rows={rows} decades={freeReadingOf(pillars, profile)?.flow ?? null} hrefOf={(year) => link(year)} owned={owned} near={renew} />}
           {meDeepen}
         </>
       );
@@ -639,28 +701,81 @@ async function OpenReport({
     const { from, to } = yearRange(profile, now);
     const yreq = { product: product.id, p: token ?? "", y: String(y) };
     const unlock = paid ?? (locked && token ? await ownedOrderFor(product.id, yreq) : null);
+    const preview = yearPreviewOf(pillars, profile, y);
+    const flowNow = freeReadingOf(pillars, profile)?.flow?.find((f) => f.from <= y && y <= f.to);
+    const decadeNow = flowNow ? { from: flowNow.from, to: flowNow.to, mood: flowNow.young ? "성장기" : flowNow.mood, theme: flowNow.theme } : null;
+    const nearRows = yearRows(pillars, profile, Math.max(from, y - 1), Math.min(to, y + 1), now) ?? [];
+    // The area the glance marks 조심, said under "이 해를 움직이는 것" too, so the two never read against each other.
+    const careArea = renew ? preview?.areas.filter((a) => a.grade === "조심").sort((p, q) => p.score - q.score)[0] : undefined;
+    const care = careArea ? `다만 ${AREA_WHAT[careArea.area]} 쪽은 이 해에 아껴 써야 하는 곳이에요. 아래 한눈에 칸에서 함께 보세요.` : null;
+    const yearTop = (
+      <YearTop d={d} name={name} prev={!paid && y > from ? link(y - 1) : null} next={!paid && y < to ? link(y + 1) : null} list={link()} care={care} listLabel={renew ? "다른 해 고르기" : undefined} />
+    );
+    const glance = <YearGlance name={name} y={y} rows={nearRows} preview={preview} decade={decadeNow} />;
+    // The second pass: the coming year's report has one more chapter (lib/reportPrompts.ts NEW_YEAR_CHAPTER).
+    const yearChapters = unlock && r2(unlock) ? yearChaptersFor(y === newYear) : chaptersFor(product.id, true);
+    const half = (a: number, b: number) => d.months.map((_, i) => i).filter((i) => i >= a && i < b);
+    const yearFigures =
+      unlock && r2(unlock)
+        ? figuresFor(yearChapters, [
+            ["한 줄로", glance],
+            ["10년 대운", <YearPlaceFigure key="p" y={y} rows={nearRows} decade={decadeNow} />],
+            ...(preview
+              ? (["돈", "일과 자리", "사랑", "사람", "몸"] as const).map((kw, i): [string, React.ReactNode] => [
+                  kw === "돈" ? "돈:" : kw,
+                  <AreaFigure key={kw} area={["돈", "일", "사랑", "사람", "몸"][i]} preview={preview} months={d.months} best={d.best} worst={d.worst} y={y} />,
+                ])
+              : []),
+            ["가족", <SeatsFigure key="f" slots={reading.chart.slots} />],
+            ["움직일 일", <MonthsStrip key="m" title={`${y}년 달마다`} sub="이사·계약·시작은 ◎ 달에, 큰 결정은 ✕ 달을 피해서" months={d.months} y={y} />],
+            ["상반기", <MonthsStrip key="h1" title="상반기 여섯 달" months={d.months} y={y} pick={half(0, 6)} />],
+            ["하반기", <MonthsStrip key="h2" title="하반기 여섯 달" months={d.months} y={y} pick={half(6, 12)} />],
+            ["세 번의 때", <MonthsStrip key="b" title="힘 받는 달" sub="이 해에 가장 좋은 달들이에요" months={d.months} y={y} pick={d.best} />],
+            ["첫 석 달", <MonthsStrip key="f3" title="새해 첫 석 달" sub="입춘부터 석 달, 한 해의 첫 단추" months={d.months} y={y} pick={[0, 1, 2]} />],
+          ])
+        : undefined;
     return (
       <>
         <Header product={y === newYear ? newYearProduct(product, y) : product} subjectName={`${name}님`} />
         {unlock && <OrderLink id={unlock.id} />}
-        <YearTop d={d} name={name} prev={!paid && y > from ? link(y - 1) : null} next={!paid && y < to ? link(y + 1) : null} list={link()} />
-        {/* The year at a glance, free (bought before the opening: the page as it was then). */}
-        {(!unlock || isV8(unlock)) &&
-          (() => {
-            const flow = freeReadingOf(pillars, profile)?.flow?.find((f) => f.from <= y && y <= f.to);
-            return (
-              <YearGlance
-                name={name}
-                y={y}
-                rows={yearRows(pillars, profile, Math.max(from, y - 1), Math.min(to, y + 1), now) ?? []}
-                preview={yearPreviewOf(pillars, profile, y)}
-                decade={flow ? { from: flow.from, to: flow.to, mood: flow.young ? "성장기" : flow.mood, theme: flow.theme } : null}
-              />
-            );
-          })()}
+        {r2(unlock) && (
+          <>
+            <Jump gift={unlock!.gift} title={y === newYear ? `${y} 신년운세` : `${y}년 운세`} chapters={yearChapters.length} />
+            <ChartTop name={name} chart={reading.chart} year={{ y, hanja: d.hanja, gods: d.gods }} />
+          </>
+        )}
+        {r2(unlock) ? (
+          // Bought: what was read before paying, folded, so the written report comes first.
+          <details className="group mt-4">
+            <summary className="doc-paper flex cursor-pointer list-none items-center justify-between px-5 py-4 [&::-webkit-details-marker]:hidden">
+              <span>
+                <b className="block font-myeongjo">결제 전에 본 {y}년 무료 화면</b>
+                <span className="text-[12px] text-ink-soft">판정 · 이 해를 움직이는 것 · 달마다 흐름 · 한눈에</span>
+              </span>
+              <span className="text-ink-soft transition group-open:rotate-180" aria-hidden="true">
+                ▾
+              </span>
+            </summary>
+            {yearTop}
+            {glance}
+          </details>
+        ) : (
+          <>
+            {yearTop}
+            {/* The year at a glance, free (bought before the opening: the page as it was then). */}
+            {(!unlock || isV8(unlock)) && glance}
+          </>
+        )}
         {unlock ? (
           <>
-            <AiReport request={{ product: product.id, order: unlock.id }} modern {...(await extrasOf(unlock, product))} />
+            <div id="report-start" className="scroll-mt-4">
+              <AiReport
+                request={{ product: product.id, order: unlock.id }}
+                modern
+                {...(await extrasOf(unlock, product))}
+                {...(r2(unlock) && { chapters: yearChapters, figures: yearFigures })}
+              />
+            </div>
             {isV8(unlock) && d.when !== "past" && (
               <CalendarButton
                 name={`정 훈도 ${y}년 운세`}
@@ -687,9 +802,13 @@ async function OpenReport({
             <Paywall
               product={product}
               request={yreq}
-              chapters={d.when === "past" ? YEONUN_PAST_TOC : product.toc}
-              heading={`${y}년 운세 보고서`}
-              sub={`${d.when === "past" ? "그해 있었을 일과 그 이유" : "이 해에 벌어질 일과 할 일"}를 돈·일·사랑·몸, 달마다 흐름까지 ${product.toc.length}장에 풀어 드려요`}
+              chapters={d.when === "past" ? YEONUN_PAST_TOC : renew && y === newYear ? yearChaptersFor(true) : product.toc}
+              heading={renew && y === newYear ? `${y} 신년운세 보고서` : `${y}년 운세 보고서`}
+              sub={
+                renew && y === newYear
+                  ? `한 해 흐름에 신년운세만의 '새해 첫 석 달'까지 ${yearChaptersFor(true).length}장 · 정 훈도에게 묻는 질문 1개가 함께 와요`
+                  : `${d.when === "past" ? "그해 있었을 일과 그 이유" : "이 해에 벌어질 일과 할 일"}를 돈·일·사랑·몸, 달마다 흐름까지 ${product.toc.length}장에 풀어 드려요`
+              }
             />
           </>
         ) : (
@@ -757,6 +876,46 @@ async function OpenReport({
         ...(ahead && { 11: <YearsAheadFigure rows={ahead} name={name} /> }),
       };
     };
+    // The second pass (lib/open.ts RENEW2): a picture for the chapters that were words only, from what the free
+    // screen already computed (the rare traits, the five powers, the seats, the elements, the decades, the year).
+    const moreFigures = (o: Order): Record<number, React.ReactNode> => {
+      const y0 = thisYear(new Date(paidAtOf(o)));
+      const chs = chaptersFor(product.id, true);
+      const rare = distinct && <RareFigure name={name} d={distinct} />;
+      const powers = free && <PowersFigure name={name} powers={free.powers} strong={free.strong} weak={free.weak} />;
+      const flowNow = free?.flow?.find((f) => f.from <= y0 && y0 <= f.to);
+      if (product.id === "pyeongsaeng")
+        return figuresFor(chs, [
+          ["어떤 사람", rare],
+          ["무기와 약점", powers],
+          ["부모님", <SeatsFigure key="s" slots={reading.chart.slots} />],
+          ["몸", <ElementsFigure key="e" name={name} elements={reading.chart.elements} />],
+          ["사계절", free?.flow && <FlowFigure key="f" flow={free.flow} />],
+          [
+            "어디쯤",
+            <YearPlaceFigure
+              key="y"
+              y={y0}
+              rows={yearRows(pillars, profile, y0 - 1, y0 + 1, y0) ?? []}
+              decade={flowNow ? { from: flowNow.from, to: flowNow.to, mood: flowNow.young ? "성장기" : flowNow.mood, theme: flowNow.theme } : null}
+            />,
+          ],
+        ]);
+      if (!domain) return {};
+      const decade = <DecadeTable key="d" inline name={name} domain={domain} years={decadeOf(domain, pillars, gender)} locked={false} />;
+      const yd = yearDetail(pillars, profile, y0, y0);
+      return figuresFor(chs, [
+        ["어떤 사람", rare],
+        ["어떻게 버는", rare],
+        ["빛날까", rare],
+        ["월급", powers],
+        ["회사형", powers],
+        ["결혼은 언제", decade],
+        ["트이는 때", decade],
+        ["언제가", decade],
+        ["인연이 오는 달", yd && <MonthsStrip key="m" title={`${y0}년 달마다`} sub="인연과 만남에 힘이 붙는 달은 ◎" months={yd.months} y={y0} />],
+      ]);
+    };
     // Bought before the opening: it opens as it did when it was bought (analysis open, report below).
     if (!isV8(unlock))
       return (
@@ -795,28 +954,19 @@ async function OpenReport({
             .filter((id) => id !== product.id)
             .map((id) => ({ href: `/reports/${id}?order=${unlock.id}`, title: productById(id)!.title }))}
         />
-        <a
-          href="#report-start"
-          className="mt-4 flex items-center justify-between rounded-2xl bg-seal px-5 py-4 font-myeongjo text-hanji shadow-[0_5px_0_#7d1a14]"
-        >
-          <span>
-            <b className="block text-[17px]">{unlock.gift ? "받은" : "결제한"} 보고서 바로 읽기</b>
-            <span className="text-[12px] font-normal opacity-80">
-              {product.title} · {chapters}장
-            </span>
-          </span>
-          <span className="text-xl" aria-hidden>
-            ↓
-          </span>
-        </a>
+        <Jump gift={unlock.gift} title={product.title} chapters={chapters} />
+        {/* The second pass: the eight characters on top, open, the first thing the reader paid to have read. */}
+        {r2(unlock) && <ChartTop name={name} chart={reading.chart} />}
         {domain && card ? (
           analysis(true)
         ) : (
           <details className="group mt-4" open={unlock.gift || undefined}>
             <summary className="doc-paper flex cursor-pointer list-none items-center justify-between px-5 py-4 [&::-webkit-details-marker]:hidden">
               <span>
-                <b className="block font-myeongjo">내 사주 분석 다시 보기</b>
-                <span className="text-[12px] text-ink-soft">사주팔자 · 성향 지도 · 사주 속 별 · 인생 흐름 · 결제 전에 본 무료 분석</span>
+                <b className="block font-myeongjo">{r2(unlock) ? "결제 전에 본 무료 분석" : "내 사주 분석 다시 보기"}</b>
+                <span className="text-[12px] text-ink-soft">
+                  {r2(unlock) ? "성향 지도 · 사주 속 별 · 인생 흐름 · 2027년 미리 보기" : "사주팔자 · 성향 지도 · 사주 속 별 · 인생 흐름 · 결제 전에 본 무료 분석"}
+                </span>
               </span>
               <span className="text-ink-soft transition group-open:rotate-180" aria-hidden="true">
                 ▾
@@ -825,9 +975,14 @@ async function OpenReport({
             {analysis(true)}
           </details>
         )}
-        {!intro && chartFold}
+        {!r2(unlock) && !intro && chartFold}
         <div id="report-start" className="scroll-mt-4">
-          <AiReport request={{ product: product.id, order: unlock.id }} modern {...(await extrasOf(unlock, product))} figures={lifeFigures(unlock)} />
+          <AiReport
+            request={{ product: product.id, order: unlock.id }}
+            modern
+            {...(await extrasOf(unlock, product))}
+            figures={{ ...lifeFigures(unlock), ...(r2(unlock) ? moreFigures(unlock) : {}) }}
+          />
         </div>
         {/* Who reads about love usually has someone in mind: the two-person reading is the next question. */}
         {product.id === "yeonae" && (

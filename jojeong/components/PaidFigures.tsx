@@ -4,7 +4,7 @@ import type { YearRow } from "@/lib/yeonun";
 // Pictures inside the chapters of a bought report (v8 on, app/reports/[id]): worked out from the charts, the
 // same numbers the writer was told, so the text and the picture agree.
 
-function Frame({ title, sub, note, children }: { title: string; sub?: string; note?: string; children: React.ReactNode }) {
+export function Frame({ title, sub, note, children }: { title: string; sub?: string; note?: string; children: React.ReactNode }) {
   return (
     <section className="rounded-xl bg-white/50 px-3.5 pt-4 pb-3 ring-1 ring-seal/15">
       <h3 className="text-center font-myeongjo text-[16px] font-extrabold">{title}</h3>

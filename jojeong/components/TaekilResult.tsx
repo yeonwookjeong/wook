@@ -68,9 +68,9 @@ function DayCard({ d, kind, rank }: { d: DayPick; kind: Kind; rank?: number }) {
 }
 
 // The same card folded, for the long lists.
-function FoldCard({ d, kind }: { d: DayPick; kind: Kind }) {
+function FoldCard({ d, kind, id }: { d: DayPick; kind: Kind; id?: string }) {
   return (
-    <li className="rounded-2xl border border-seal/20 bg-white/60 px-4 py-3">
+    <li id={id} className="scroll-mt-4 rounded-2xl border border-seal/20 bg-white/60 px-4 py-3">
       <details>
         <summary className="cursor-pointer list-none">
           <Head d={d} />
@@ -196,7 +196,9 @@ function Preview({ kind, days, label, names }: { kind: Kind; days: DayPick[]; la
   );
 }
 
-export default function TaekilResult({ kind, days, label, names, full }: { kind: Kind; days: DayPick[]; label: string; names: string; full: boolean }) {
+// `once` (the second pass, lib/open.ts RENEW2): each good day is folded once, in the whole list; the weekend
+// days above are rows that jump down to it.
+export default function TaekilResult({ kind, days, label, names, full, once = false }: { kind: Kind; days: DayPick[]; label: string; names: string; full: boolean; once?: boolean }) {
   if (!full) return <Preview kind={kind} days={days} label={label} names={names} />;
   const best = bestDays(days, kind);
   const picks = picksOf(days, kind);
@@ -270,9 +272,18 @@ export default function TaekilResult({ kind, days, label, names, full }: { kind:
           <h2 className="text-center font-myeongjo text-lg font-extrabold">주말에 잡을 수 있는 좋은 날</h2>
           <p className="mt-1 text-center text-[11px] text-ink-soft">평일이 어렵다면 이 가운데서 고르세요</p>
           <ul className="mt-4 flex flex-col gap-2">
-            {weekend.map((d) => (
-              <FoldCard key={d.date} d={d} kind={kind} />
-            ))}
+            {weekend.map((d) =>
+              once ? (
+                <li key={d.date}>
+                  <a href={`#day-${d.date}`} className="block rounded-2xl border border-seal/20 bg-white/60 px-4 py-3">
+                    <Head d={d} />
+                    <span className="mt-1 block text-[11px] text-seal">아래 달력에서 이유 보기 ↓</span>
+                  </a>
+                </li>
+              ) : (
+                <FoldCard key={d.date} d={d} kind={kind} />
+              ),
+            )}
           </ul>
         </section>
       )}
@@ -287,7 +298,7 @@ export default function TaekilResult({ kind, days, label, names, full }: { kind:
         <p className="text-[11px] text-ink-soft">날짜를 누르면 그날이 좋은 이유가 펼쳐져요</p>
         <ul className="mt-2 flex flex-col gap-2">
           {good.map((d) => (
-            <FoldCard key={d.date} d={d} kind={kind} />
+            <FoldCard key={d.date} d={d} kind={kind} id={once ? `day-${d.date}` : undefined} />
           ))}
         </ul>
       </section>

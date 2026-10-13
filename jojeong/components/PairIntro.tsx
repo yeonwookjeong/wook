@@ -4,7 +4,7 @@ import type { Person } from "@/lib/pairToken";
 import { BRANCHES, isFull, STEMS } from "@/lib/saju";
 import { Cell } from "./SajuChart";
 
-export function MiniChart({ person }: { person: Person }) {
+export function MiniChart({ person, blank }: { person: Person; blank?: string }) {
   if (!isFull(person.pillars)) return null;
   const slots = chartOf(person.pillars);
   return (
@@ -14,8 +14,8 @@ export function MiniChart({ person }: { person: Person }) {
         {slots.map((s) => (
           <div key={s.pos} className="flex flex-col gap-1">
             <span className="text-[10px] text-ink-soft">{s.pos}</span>
-            <Cell value={s.stem === null ? null : STEMS[s.stem]} el={s.stem === null ? null : stemEl(s.stem)} />
-            <Cell value={s.branch === null ? null : BRANCHES[s.branch]} el={s.branch === null ? null : BRANCH_EL[s.branch]} />
+            <Cell value={s.stem === null ? null : STEMS[s.stem]} el={s.stem === null ? null : stemEl(s.stem)} blank={blank} />
+            <Cell value={s.branch === null ? null : BRANCHES[s.branch]} el={s.branch === null ? null : BRANCH_EL[s.branch]} blank={blank} />
           </div>
         ))}
       </div>
@@ -24,7 +24,7 @@ export function MiniChart({ person }: { person: Person }) {
 }
 
 // Before the written 궁합: both charts side by side and what the engine found between them (lib/couple.ts).
-export default function PairIntro({ a, b, c }: { a: Person; b: Person; c: Couple }) {
+export default function PairIntro({ a, b, c, blank }: { a: Person; b: Person; c: Couple; blank?: string }) {
   const EL = (e: number) => `${ELEMENT_KO[e]}(${ELEMENT_HANJA[e]})`;
   return (
     <section className="doc-paper mt-4 px-4 py-5">
@@ -32,8 +32,8 @@ export default function PairIntro({ a, b, c }: { a: Person; b: Person; c: Couple
       <h2 className="mt-1 text-center font-myeongjo text-lg font-extrabold">두 사람의 사주를 나란히 놓고 봤어요</h2>
 
       <div className="mt-4 flex gap-3">
-        <MiniChart person={a} />
-        <MiniChart person={b} />
+        <MiniChart person={a} blank={blank} />
+        <MiniChart person={b} blank={blank} />
       </div>
 
       <div className="mt-5 flex flex-col items-center">
