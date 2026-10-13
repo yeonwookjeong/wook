@@ -169,10 +169,10 @@ const FOCUS_V8: Partial<Record<ProductId, string>> = {
 };
 
 export type PromptVersion = "v5" | "v6" | "v7" | "v8";
-// From when v8 writes (orders paid before it keep the v7 report they were first written with; app/api/report).
-// The bought page's extras (pictures in the chapters, asking about a chapter, the calendar) follow the same line.
-export const V8_SINCE = Date.parse("2026-10-13T07:05:00Z");
-export const isV8 = (paidAt: number) => paidAt >= V8_SINCE;
+// v8 is for what is bought in the opened shop (lib/pay.ts Order.shop, set from the grand opening on, and in the
+// owner's 시안 모드). Everything bought before the opening keeps the v7 report and the page it was bought with
+// (app/api/report, app/reports/[id]): those who bought before and those who buy after get different versions.
+export const isV8 = (o: { shop?: string }) => o.shop === "a";
 export const PROMPT_NOW: PromptVersion = "v8";
 
 // The chapters a report had before v8 changed them (궁합 had six): the older prompts keep asking for these, so the
@@ -193,7 +193,7 @@ export const SPECS: Record<PromptVersion, Partial<Record<ProductId, ReportSpec>>
   v8: specsOf(FOCUS_V8),
 };
 // The chapters shown for a bought report: as they were when it was bought.
-export const chaptersFor = (id: ProductId, paidAt?: number) => (paidAt !== undefined && !isV8(paidAt) ? SPECS.v7[id]?.chapters : SPECS.v8[id]?.chapters) ?? [];
+export const chaptersFor = (id: ProductId, v8: boolean) => (v8 ? SPECS.v8[id]?.chapters : SPECS.v7[id]?.chapters) ?? [];
 
 export const REPORT_SPECS: Partial<Record<ProductId, ReportSpec>> = Object.fromEntries(
   // Only what is sold is written: a free report stays computed, with no writer and no cost.

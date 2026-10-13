@@ -18,7 +18,9 @@ export async function POST(request: Request) {
   const ny = newYearOf();
   // Questions that come with the report (A안): to the member signed in now, or at their first sign-in after.
   const member = await currentMember().catch(() => null);
-  const withBonus = (n: number) => (n > 0 ? { bonus: n, ...(member && { bonusMember: member.id }) } : {});
+  // Bought in the opened shop (new prices): the new version of the report (lib/reportPrompts.ts isV8).
+  const shop = pr === "a" ? ({ shop: "a" } as const) : {};
+  const withBonus = (n: number) => ({ ...shop, ...(n > 0 ? { bonus: n, ...(member && { bonusMember: member.id }) } : {}) });
 
   // 질문권: for the member signed in here; the questions are added once the payment is confirmed (/pay/success).
   const pack = creditPackOf(body.credits);
@@ -64,7 +66,7 @@ export async function POST(request: Request) {
     if (!search || !a || (KINDS[search.kind].people === 2 && !b)) return Response.json({ error: "날짜 조건을 다시 골라 주세요." }, { status: 400 });
     // The search date is set here, not by the browser: the days (and the written note) stay as they were bought.
     const req: JobRequest = { product: product.id, kind: search.kind, from: body.from, n: String(search.n), a: body.a, ...(b && { b: body.b }), d: searchDay(undefined) };
-    const order = await createOrder(product.id, req, `${b ? `${a.name}님과 ${b.name}님` : `${a.name}님`} · ${KINDS[search.kind].title}`, priceFor(product.id, pr));
+    const order = await createOrder(product.id, req, `${b ? `${a.name}님과 ${b.name}님` : `${a.name}님`} · ${KINDS[search.kind].title}`, priceFor(product.id, pr), undefined, undefined, shop);
     await track(`co:${saleKey(product.id, undefined, undefined)}`);
     return Response.json({ orderId: order.id, amount: order.amount, orderName: KINDS[search.kind].title, clientKey: payClientKey(), mock: payMock() });
   }

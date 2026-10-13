@@ -41,6 +41,9 @@ export type Order = {
   bonus?: number;
   bonusMember?: string;
   bonusGiven?: boolean;
+  // "a": bought in the opened shop (the new prices, lib/pricing.ts; the owner's 시안 모드 too). Its report is the
+  // new one (lib/reportPrompts.ts isV8); orders without it were bought before the opening and keep the old.
+  shop?: "a";
   // The written report each product of this order opened with (its text's key, lib/store.ts getReportText), kept
   // the first time it is read: it opens that same text ever after, whatever later changes to how reports are asked.
   texts?: Partial<Record<ProductId, string>>;
@@ -88,7 +91,7 @@ export async function createOrder(
   amount: number,
   set?: { set: SetId; bundle: ProductId[]; from?: ProductId },
   credits?: { credits: number; member: string },
-  bonus?: { bonus?: number; bonusMember?: string },
+  extra?: { bonus?: number; bonusMember?: string; shop?: "a" },
 ): Promise<Order> {
   // Toss wants 6–64 characters of [A-Za-z0-9_-=]; unguessable, since the id is also the link to the report.
   const src = (await cookies()).get(SRC_COOKIE)?.value;
@@ -100,7 +103,7 @@ export async function createOrder(
     amount,
     ...set,
     ...credits,
-    ...bonus,
+    ...extra,
     status: "ready",
     createdAt: Date.now(),
     ...(isSource(src) && { src }),
@@ -114,9 +117,21 @@ export async function createOrder(
 // A report the owner gives to someone (a friend, a tester): an order that is already paid, at 0 won, that opens
 // at /r/… like a bought one. It is kept out of the paid-order list (orders:paid), so it never enters the sales
 // table, the revenue or the CSV; its own list (orders:gift) is the owner's record, and it can be closed again.
-export async function createGiftOrder(product: ProductId, req: JobRequest, who: string): Promise<Order> {
+export async function createGiftOrder(product: ProductId, req: JobRequest, who: string, shop?: "a"): Promise<Order> {
   const now = Date.now();
-  const order: Order = { id: `hd${randomBytes(15).toString("base64url")}`, product, req, who, amount: 0, status: "paid", gift: true, createdAt: now, paidAt: now, method: "관리자 발급" };
+  const order: Order = {
+    id: `hd${randomBytes(15).toString("base64url")}`,
+    product,
+    req,
+    who,
+    amount: 0,
+    status: "paid",
+    gift: true,
+    createdAt: now,
+    paidAt: now,
+    method: "관리자 발급",
+    ...(shop && { shop }),
+  };
   await setOrderRaw(order.id, JSON.stringify(order));
   await noteGiftOrder(order.id);
   return order;

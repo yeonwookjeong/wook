@@ -2,7 +2,7 @@ import { isAdmin } from "@/lib/admin";
 import { covers, getOrder, pinReportText } from "@/lib/pay";
 import { productById, type ProductId } from "@/lib/products";
 import { aiEnabled, jobFor, writeReport, type JobRequest } from "@/lib/reportWriter";
-import { V8_SINCE } from "@/lib/reportPrompts";
+import { isV8 } from "@/lib/reportPrompts";
 import { after } from "next/server";
 import { countReportToday, getReportText, getReportWriting, noteReportError, setReportText, setReportWriting } from "@/lib/store";
 
@@ -54,8 +54,8 @@ export async function POST(request: Request) {
   // Paid before the five grades: what was first written then (v6 with the three-grade brief), else v5's.
   const oldGrades = order && (order.paidAt ?? order.createdAt) < GRADES5_SINCE ? await jobFor(req, "v6", true, at) : null;
   const beforeV7 = order && (order.paidAt ?? order.createdAt) < V7_SINCE ? await jobFor(req, "v6", false, at) : null;
-  // Paid before v8 (궁합 in nine chapters, the 한눈에 cards): the v7 report, and written with v7 if never opened.
-  const preV8 = Boolean(order && (order.paidAt ?? order.createdAt) < V8_SINCE);
+  // Bought before the opening (not in the new shop): the v7 report, and written with v7 if never opened.
+  const preV8 = Boolean(order && !isV8(order));
   const beforeV8 = preV8 ? await jobFor(req, "v7", false, at) : null;
   // A 연운 bought before its year was fixed to the purchase (2026-10): asked as of this year, as it was then.
   const asNow = order && product.id === "yeonun" ? await jobFor(req, preV8 ? "v7" : undefined) : null;

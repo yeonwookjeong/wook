@@ -40,6 +40,7 @@ import { hanjaKo } from "@/lib/saju";
 import { ownedCourts } from "@/lib/load";
 import { ADULT_ONLY, FIXED_RELATION, FREE_LOCK, isAdult, isOpen, isPair, PRICE, productById, saleLabel, saleNow, YEONUN_PAST_TOC, type Product, type ProductId } from "@/lib/products";
 import { chaptersFor, isV8, REPORT_SPECS } from "@/lib/reportPrompts";
+import { pricingNow } from "@/lib/pricing";
 import CalendarButton from "@/components/CalendarButton";
 import { PairYearsFigure, YearsAheadFigure } from "@/components/PaidFigures";
 import { BondFigure, BondMonthsFigure } from "@/app/ask/Figures";
@@ -65,9 +66,7 @@ import { saleKey } from "@/lib/sales";
 import { bestDays, KINDS, OFFERED, parseSearch, pickDays, searchDay, startMonths } from "@/lib/taekil";
 import { yearReading } from "@/lib/yearly";
 
-// From when a bought report opens with "바로 읽기" on top and the life report's free analysis folded. Orders paid
-// before it keep the page as it was when they were bought.
-const READ_FIRST_SINCE = Date.parse("2026-10-13T07:00:00Z");
+
 
 export async function generateMetadata({ params }: PageProps<"/reports/[id]">): Promise<Metadata> {
   const product = productById((await params).id);
@@ -109,7 +108,7 @@ const chaptersOf = (id: ProductId) => REPORT_SPECS[id]?.chapters ?? [];
 async function PairReport({ order, product, a, b, rel }: { order: Order; product: Product; a: Person; b: Person; rel: Relation }) {
   const at = paidAtOf(order);
   let figures: Record<number, React.ReactNode> | undefined;
-  if (product.id === "gunghap" && isV8(at)) {
+  if (product.id === "gunghap" && isV8(order)) {
     const years = pairYears(a, b, rel, thisYear(new Date(at)));
     const bond = bondOf(a, b, b.name, REL_OF[rel], at);
     figures = {
@@ -120,13 +119,13 @@ async function PairReport({ order, product, a, b, rel }: { order: Order; product
   return <AiReport request={{ product: product.id, order: order.id }} modern {...(await extrasOf(order, product))} figures={figures} />;
 }
 
-// What a bought report adds from v8 on (lib/reportPrompts.ts V8_SINCE): its chapters as bought, and, for orders
-// from then, the 한눈에 card to keep and "이 장, 정 훈도에게 더 묻기". Older orders open as they did.
+// What a report bought in the opened shop adds (lib/reportPrompts.ts isV8): its chapters as bought, the 한눈에 card
+// to keep and "이 장, 정 훈도에게 더 묻기". Orders from before the opening open as they did.
 const paidAtOf = (o: Order) => o.paidAt ?? o.createdAt;
 async function extrasOf(o: Order, product: Product) {
-  const v8 = isV8(paidAtOf(o));
+  const v8 = isV8(o);
   return {
-    chapters: chaptersFor(product.id, paidAtOf(o)),
+    chapters: chaptersFor(product.id, v8),
     ask: v8 && (await askShown()) ? product.title : undefined,
     save: v8 ? `hundo-${product.id}` : undefined,
   };
@@ -199,7 +198,7 @@ async function OpenReport({
         <Header product={product} subjectName={b ? `${a.name}님과 ${b.name}님` : `${a.name}님`} />
         {unlock && <OrderLink id={unlock.id} />}
         <TaekilResult kind={found.kind} days={days} label={found.label} names={b ? `${a.name}님과 ${b.name}님` : `${a.name}님`} full={full} />
-        {unlock && isV8(paidAtOf(unlock)) && (
+        {unlock && isV8(unlock) && (
           <CalendarButton
             name={`정 훈도 택일 · ${KINDS[found.kind].title}`}
             file={`hundo-taekil-${found.kind}`}
@@ -278,7 +277,7 @@ async function OpenReport({
           <Paywall
             product={product}
             request={req}
-            chapters={product.toc}
+            chapters={chaptersFor(product.id, (await pricingNow()) === "a")}
             note="두 사람의 태어난 시각을 알면 먼저 넣어 주세요. 결제한 뒤 입력을 바꾸면 다른 보고서로 봐요."
           />
         ) : (
@@ -647,7 +646,7 @@ async function OpenReport({
         {unlock ? (
           <>
             <AiReport request={{ product: product.id, order: unlock.id }} modern {...(await extrasOf(unlock, product))} />
-            {isV8(paidAtOf(unlock)) && d.when !== "past" && (
+            {isV8(unlock) && d.when !== "past" && (
               <CalendarButton
                 name={`정 훈도 ${y}년 운세`}
                 file={`hundo-${y}`}
@@ -733,7 +732,7 @@ async function OpenReport({
     const chapters = chaptersOf(product.id).length;
     // v8 on, the life report's chapters carry their pictures: money, work and love over ten years, and the years ahead.
     const lifeFigures = (o: Order): Record<number, React.ReactNode> | undefined => {
-      if (product.id !== "pyeongsaeng" || !isV8(paidAtOf(o))) return undefined;
+      if (product.id !== "pyeongsaeng" || !isV8(o)) return undefined;
       const from = thisYear(new Date(paidAtOf(o)));
       const ahead = yearRows(pillars, profile, from, from + 9, from);
       return {
@@ -743,8 +742,8 @@ async function OpenReport({
         ...(ahead && { 11: <YearsAheadFigure rows={ahead} name={name} /> }),
       };
     };
-    // Bought before the read-first page: it opens as it did when it was bought (analysis open, report below).
-    if ((unlock.paidAt ?? unlock.createdAt) < READ_FIRST_SINCE)
+    // Bought before the opening: it opens as it did when it was bought (analysis open, report below).
+    if (!isV8(unlock))
       return (
         <>
           <Header product={product} subjectName={`${name}님`} />
