@@ -56,14 +56,14 @@ export default async function MemberRoomPage({ params }: PageProps<"/ask/[id]">)
   return (
     <>
       <Room>
-        <p className="text-sm">
-          <Link href="/ask" className="text-hanji/65 underline">
-            ← 청심당
-          </Link>
-        </p>
-        <div className="mt-2">
-          <RoomArt short />
-        </div>
+        <RoomArt
+          short
+          corner={
+            <Link href="/ask" className="rounded-full bg-[#141a22]/60 px-3 py-1 text-[12.5px] text-hanji/90 backdrop-blur-sm">
+              ← 청심당
+            </Link>
+          }
+        />
         <RoomHead
           bare
           person={me}
