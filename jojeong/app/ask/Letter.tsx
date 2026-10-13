@@ -37,15 +37,16 @@ function Pillar({ label, stem, branch, me }: { label: string; stem: number | und
   );
 }
 
-export function RoomHead({ person, ilju, credits, extra }: { person: Person; ilju: string; credits?: number; extra?: string }) {
+// `bare`: inside the room (app/ask/Hall.tsx Room), with no box of its own.
+export function RoomHead({ person, ilju, credits, extra, bare = false }: { person: Person; ilju: string; credits?: number; extra?: string; bare?: boolean }) {
   const p = person.pillars;
   const hourStem = p.hourBranch === null ? undefined : (p.hourStem ?? hourStemOf(p.dayStem, p.hourBranch));
   return (
-    <section className="jjok-box mt-3 px-4 pt-4 pb-3">
+    <section className={bare ? "mt-4 px-1" : "jjok-box mt-3 px-4 pt-4 pb-3"}>
       <div className="flex items-center gap-3">
         <HundoFace size={50} />
         <div className="min-w-0 flex-1">
-          <p className="font-myeongjo text-[11px] font-bold tracking-[0.25em] text-[#d4af5f]">觀象監 · 問訓導</p>
+          {!bare && <p className="font-myeongjo text-[11px] font-bold tracking-[0.25em] text-[#d4af5f]">觀象監 · 問訓導</p>}
           <h1 className="font-myeongjo text-[19px] font-extrabold">정 훈도의 사랑방</h1>
           <p className="truncate text-[12.5px] opacity-75">
             {person.name}님 · {ilju}
@@ -74,7 +75,16 @@ const when = (t: number) => {
   return `${d.getUTCMonth() + 1}월 ${d.getUTCDate()}일 ${d.toISOString().slice(11, 16)}`;
 };
 
-export function Question({ text, topic, at }: { text: string; topic?: string; at: number }) {
+// `slip`: in the room, the question as a folded paper slip handed across the floor.
+export function Question({ text, topic, at, slip = false }: { text: string; topic?: string; at: number; slip?: boolean }) {
+  if (slip)
+    return (
+      <div className="ml-12 rounded-[6px] rounded-br-[2px] bg-[#f3e7c7] px-4 py-2.5 text-[15px] leading-relaxed text-ink shadow-[0_3px_10px_rgb(0_0_0/0.35)] [background-image:repeating-linear-gradient(90deg,rgb(120_90_40/0.05)_0_1px,transparent_1px_14px)]">
+        {topic && <span className="block text-[11px] font-bold text-seal">{topic}</span>}
+        <p className="whitespace-pre-wrap">{text}</p>
+        <span className="mt-0.5 block text-right text-[10.5px] text-ink-soft">{when(at)}</span>
+      </div>
+    );
   return (
     <div className="ml-12 rounded-[18px] rounded-br-[4px] bg-ink px-4 py-2.5 text-[15px] leading-relaxed text-hanji">
       {topic && <span className="block text-[11px] font-bold opacity-65">{topic}</span>}
