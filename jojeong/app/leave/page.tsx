@@ -31,7 +31,7 @@ export default async function LeavePage() {
         </p>
       )}
       <p className="mt-3 text-[12px] leading-relaxed text-ink-soft">
-        결제 기록은 전자상거래법에 따라 5년간 보관해요. 이 브라우저에서 산 보고서는 탈퇴해도 이 브라우저에서 계속 열려요. 카카오 연결도 함께 끊어요. 네이버·구글로 가입하셨다면 탈퇴 뒤 그 계정 설정의 연결된 서비스에서 훈도사주를 지워 주세요.
+        결제 기록은 전자상거래법에 따라 5년간 보관해요. 이 브라우저에서 산 보고서는 탈퇴해도 이 브라우저에서 계속 열려요. 카카오 연결도 함께 끊어요.
       </p>
       <form action={leaveAction} className="mt-5 flex flex-col gap-2">
         <button type="submit" className="rounded-xl border-2 border-seal py-3 text-sm font-extrabold text-seal">
