@@ -21,9 +21,9 @@ const MISSING_LINE = [
   "물(水)이 없어 지혜로운 신하가 귀한 나라",
 ];
 
-export function Cell({ value, el }: { value: string | null; el: number | null }) {
+export function Cell({ value, el, blank = "?" }: { value: string | null; el: number | null; blank?: string }) {
   if (value === null || el === null) {
-    return <div className="flex aspect-square items-center justify-center rounded-lg border border-dashed border-ink/20 text-ink-soft">?</div>;
+    return <div className={`flex aspect-square items-center justify-center rounded-lg border border-dashed border-ink/20 text-ink-soft ${blank.length > 1 ? "text-[11px]" : ""}`}>{blank}</div>;
   }
   return (
     <div className={`flex aspect-square flex-col items-center justify-center rounded-lg ${EL_STYLE[el]}`}>

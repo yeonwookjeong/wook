@@ -69,10 +69,10 @@ const MOOD_WORD = { 활짝: "크게 좋은 10년", 기회: "좋은 10년", 무�
 
 // "When is my 대운?": every ten-year stretch of the life at a glance, with the good ones named in one sentence.
 // In everyday speech 대운 means the big lucky stretch, so the ◎ decades are called that plainly.
-function DecadeStrip({ name, decades }: { name: string; decades: Decade[] }) {
+function DecadeStrip({ name, decades, near = false }: { name: string; decades: Decade[]; near?: boolean }) {
   const good = decades.filter((d) => isGood(d.mood) && !d.young);
   const now = decades.find((d) => d.now);
-  const nextGood = good.find((d) => now && d.from > now.to);
+  const nextGood = good.find((d) => now && d.from > now.to && (!near || d.from <= now.to + 30));
   return (
     <div className="mt-4 rounded-2xl border border-seal/25 bg-white/60 px-4 py-4">
       <h3 className="font-myeongjo text-[16px] font-extrabold">{name}님의 대운은 언제일까</h3>
@@ -145,7 +145,9 @@ export function YearList({
   decades,
   hrefOf,
   owned,
+  near = false,
 }: {
+  near?: boolean;
   name: string;
   rows: YearRow[];
   decades: Decade[] | null;
@@ -162,7 +164,7 @@ export function YearList({
       <p className="mt-1 text-center text-[12px] leading-relaxed text-ink-soft">
         해마다의 판정과 그 이유는 무료예요. 궁금한 해를 누르면 달마다의 흐름까지 보여 드려요.
       </p>
-      {decades && <DecadeStrip name={name} decades={decades} />}
+      {decades && <DecadeStrip name={name} decades={decades} near={near} />}
       <h3 className="mt-5 text-[12px] font-bold text-seal">올해와 앞으로</h3>
       <Rows rows={ahead} decades={decades} hrefOf={hrefOf} owned={owned} />
       {past.length > 0 && (
@@ -186,7 +188,7 @@ export function YearList({
   );
 }
 
-export function YearTop({ d, name, prev, next, list }: { d: YearDetail; name: string; prev: string | null; next: string | null; list: string }) {
+export function YearTop({ d, name, prev, next, list, care, listLabel = "연도 목록" }: { d: YearDetail; name: string; prev: string | null; next: string | null; list: string; care?: string | null; listLabel?: string }) {
   const monthName = (i: number) => `${d.months[i].from.split("/")[0]}월`;
   return (
     <>
@@ -199,7 +201,7 @@ export function YearTop({ d, name, prev, next, list }: { d: YearDetail; name: st
           <span />
         )}
         <Link href={list} className="text-seal">
-          연도 목록
+          {listLabel}
         </Link>
         {next ? (
           <Link href={next} className="text-ink-soft">
@@ -237,6 +239,13 @@ export function YearTop({ d, name, prev, next, list }: { d: YearDetail; name: st
               <span>{x}</span>
             </li>
           ))}
+          {/* The area the year's glance marks 조심, said here too, so the two never read against each other. */}
+          {care && (
+            <li className="flex gap-2">
+              <span className="text-seal">·</span>
+              <span>{care}</span>
+            </li>
+          )}
         </ul>
       </section>
 

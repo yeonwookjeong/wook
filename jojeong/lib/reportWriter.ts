@@ -14,8 +14,8 @@ import type { Relation } from "./relations";
 import type { Person } from "./pairToken";
 import { freeBrief } from "./freeReading";
 import { decadeBrief, decadeOf, domainBrief, isDomain } from "./domains";
-import { thisYear, yearOf, yearName, yeonunBrief } from "./yeonun";
-import { PROMPT_NOW, SPECS, systemPromptFor, userPrompt, type PromptVersion } from "./reportPrompts";
+import { newYearOf, thisYear, yearOf, yearName, yeonunBrief } from "./yeonun";
+import { NEW_YEAR_CHAPTER, PROMPT_NOW, SPECS, systemPromptFor, userPrompt, yearChaptersFor, type PromptVersion } from "./reportPrompts";
 import { dayStart, KINDS, parseSearch, pickDays, searchDay, taekilBrief } from "./taekil";
 import type { Gender } from "./profile";
 import type { Pillars } from "./saju";
@@ -81,7 +81,7 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
       pairBrief(a.name, a.pillars, b.name, b.pillars),
       coupleBrief(a, b),
       // v8 궁합: the two people's ten years and six months, as the report's pictures show them.
-      ...(product.id === "gunghap" && v === "v8" ? pairBriefs(a, b, rel, nowYear, at ?? Date.now()) : []),
+      ...(product.id === "gunghap" && (v === "v8" || v === "v9") ? pairBriefs(a, b, rel, nowYear, at ?? Date.now()) : []),
       ...(product.id === "sokgunghap" ? [intimacyBrief(a, b)] : []),
       ...(product.id === "jaehoe" ? [reunionBrief(a, b)] : []),
     ].join("\n\n");
@@ -141,7 +141,14 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
   const system = systemPromptFor(product, v);
   // 연운 for a year already gone asks its twelve questions in the past tense.
   const past = product.id === "yeonun" && req.y !== undefined && Number(req.y) < nowYear;
-  const prompt = userPrompt(past ? { ...spec, chapters: YEONUN_PAST_TOC } : spec, subjectLine, briefs);
+  // v9's 신년운세 (the coming year, lib/yeonun.ts newYearOf, as of when it was bought) asks one chapter more.
+  const newYear = product.id === "yeonun" && v === "v9" && !past && Number(req.y) === newYearOf(at === undefined ? undefined : new Date(at));
+  const asked = past
+    ? { ...spec, chapters: YEONUN_PAST_TOC }
+    : newYear
+      ? { chapters: yearChaptersFor(true), focus: `${spec.focus}\n- 마지막 장 '${NEW_YEAR_CHAPTER}'은 입춘부터 석 달(2~4월)의 월운 판정을 근거로, 달마다 할 일 하나씩 구체적으로 쓴다(이 석 달은 화면에 달력으로 보인다).` }
+      : spec;
+  const prompt = userPrompt(asked, subjectLine, briefs);
   const key = createHash("sha256").update([v, REPORT_MODEL, product.id, system, prompt].join("\n")).digest("base64url");
   return { key, system, prompt, title: product.title, modern: Boolean(product.modern) };
 }
@@ -175,7 +182,7 @@ export async function writeReport(job: ReportJob, onText: (t: string) => void, o
   // Local UI testing without an API key: stream a canned report.
   if (process.env.REPORT_MOCK === "1" && !(isGemini ? process.env.GEMINI_API_KEY : process.env.ANTHROPIC_API_KEY)) {
     const { MOCK_REPORT, mockFor } = await import("./reportMock");
-    const text = mockFor(job.prompt) ?? MOCK_REPORT;
+    const text = mockFor(job.prompt, job.system) ?? MOCK_REPORT;
     for (const piece of text.match(/[\s\S]{1,40}/g) ?? []) {
       onText(piece);
       await new Promise((r) => setTimeout(r, Number(process.env.REPORT_MOCK_MS ?? 15)));

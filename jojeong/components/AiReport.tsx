@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { keepPng, makePng } from "@/lib/cardExport";
 import { trackEvent } from "./VisitBeacon";
 
-type Section = { label: string; headline: string; paras: string[] };
+type Section = { label: string; headline: string; paras: string[]; why?: string; todo?: string };
 
 import { hanjaNum } from "@/lib/hanjaNum";
 const MARK_ERROR = "[[error]]";
@@ -48,10 +48,15 @@ function parse(text: string): { sections: Section[]; failed: boolean } {
   for (const chunk of body.split(/^##\s+/m).slice(1)) {
     const [head, ...rest] = chunk.split("\n");
     const m = /^\[([^\]]+)\]\s*(.*)$/.exec(head.trim());
+    // v9's point lines (lib/reportPrompts.ts POINT_LINES), right under the headline: "이유: …" and "할 일: …".
+    const point = (k: string) => rest.map((l) => new RegExp(`^${k}\\s*[:：]\\s*(.+)$`).exec(l.trim())?.[1]).find(Boolean);
+    const body = rest.filter((l) => !/^(이유|할 일)\s*[:：]/.test(l.trim()));
     sections.push({
       label: m ? m[1] : "",
       headline: (m ? m[2] : head).trim(),
-      paras: rest
+      why: point("이유"),
+      todo: point("할 일"),
+      paras: body
         .join("\n")
         .split(/\n\s*\n/)
         .map((p) => p.replace(/\*\*/g, "").trim())
@@ -229,6 +234,25 @@ export default function AiReport({
             </span>
           </summary>
           <div className="mt-3 border-t border-seal/15 pt-3">
+            {/* The three-line point box (v9): the answer, why, and what to do, before the picture and the text. */}
+            {(s.why || s.todo) && (
+              <dl className="mb-4 grid grid-cols-[3.2rem_1fr] gap-x-2 gap-y-1.5 rounded-xl bg-seal/5 px-3.5 py-3 text-[14px] leading-snug ring-1 ring-seal/15">
+                <dt className="text-[11.5px] font-extrabold text-seal">답</dt>
+                <dd className="font-bold">{s.headline}</dd>
+                {s.why && (
+                  <>
+                    <dt className="text-[11.5px] font-extrabold text-seal">이유</dt>
+                    <dd>{s.why}</dd>
+                  </>
+                )}
+                {s.todo && (
+                  <>
+                    <dt className="text-[11.5px] font-extrabold text-seal">할 일</dt>
+                    <dd className="font-bold">{s.todo}</dd>
+                  </>
+                )}
+              </dl>
+            )}
             {figures?.[i] && <div className="mb-4">{figures[i]}</div>}
             {s.paras.map((p, j) => (
               <p key={j} className="mt-4 text-[16px] leading-[1.85] tracking-[-0.005em] first:mt-0">

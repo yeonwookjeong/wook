@@ -168,7 +168,7 @@ const FOCUS_V8: Partial<Record<ProductId, string>> = {
   gunghap: GUNGHAP_V8,
 };
 
-export type PromptVersion = "v5" | "v6" | "v7" | "v8";
+export type PromptVersion = "v5" | "v6" | "v7" | "v8" | "v9";
 // v8 is for what is bought in the opened shop (lib/pay.ts Order.shop, set from the grand opening on, and in the
 // owner's 시안 모드). Everything bought before the opening keeps the v7 report and the page it was bought with
 // (app/api/report, app/reports/[id]): those who bought before and those who buy after get different versions.
@@ -191,7 +191,19 @@ export const SPECS: Record<PromptVersion, Partial<Record<ProductId, ReportSpec>>
   v6: specsOf(FOCUS_V6, true),
   v7: specsOf(FOCUS_V7, true),
   v8: specsOf(FOCUS_V8),
+  // v9 (the second pass, lib/open.ts RENEW2): the same chapters, each opening on its three-line point box.
+  v9: specsOf(FOCUS_V8),
 };
+// v9's 신년운세 (the coming year's 연운) has one more chapter than another year's.
+export const NEW_YEAR_CHAPTER = "새해 첫 석 달, 이것부터";
+export const yearChaptersFor = (newYear: boolean) => [...(SPECS.v9.yeonun?.chapters ?? []), ...(newYear ? [NEW_YEAR_CHAPTER] : [])];
+// The point box of v9: two lines right under each chapter's headline (the headline being the answer), read by
+// components/AiReport.tsx.
+export const POINT_LINES = ["이유", "할 일"] as const;
+const POINTS_RULE = `- 헤드라인 바로 다음 줄에 요점 두 줄을 이 형식 그대로 쓴다(장마다 빠짐없이, 각 30자 안팎, 사주 용어 없이):
+이유: 왜 그런지 한 문장
+할 일: 이 장을 읽고 바로 해 볼 것 한 문장
+- 그 아래 본문 3~5문단, 문단 사이는 빈 줄.`;
 // The chapters shown for a bought report: as they were when it was bought.
 export const chaptersFor = (id: ProductId, v8: boolean) => (v8 ? SPECS.v8[id]?.chapters : SPECS.v7[id]?.chapters) ?? [];
 
@@ -313,8 +325,17 @@ ${RHYTHM_RULES}
 const MODERN_PROMPT_V6 = MODERN_PROMPT.replace(DISTINCT_RULES, DISTINCT_RULES_V6);
 const JOSEON_PROMPT_V6 = JOSEON_PROMPT.replace(DISTINCT_RULES, DISTINCT_RULES_V6);
 
+const withPoints = (p: string) => p.replace("- 그 아래 본문 3~5문단, 문단 사이는 빈 줄.", POINTS_RULE);
 export const systemPromptFor = (product: Product, v: PromptVersion = PROMPT_NOW) =>
-  v === "v5" ? (product.modern ? MODERN_PROMPT : JOSEON_PROMPT) : product.modern ? MODERN_PROMPT_V6 : JOSEON_PROMPT_V6;
+  v === "v5"
+    ? product.modern
+      ? MODERN_PROMPT
+      : JOSEON_PROMPT
+    : v === "v9"
+      ? withPoints(product.modern ? MODERN_PROMPT_V6 : JOSEON_PROMPT_V6)
+      : product.modern
+        ? MODERN_PROMPT_V6
+        : JOSEON_PROMPT_V6;
 
 export function userPrompt(spec: ReportSpec, subjectLine: string, briefs: string): string {
   return `${subjectLine}

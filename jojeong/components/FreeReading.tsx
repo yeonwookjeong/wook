@@ -89,7 +89,9 @@ export default function FreeReading({
   tags,
   ask,
   locked = false,
+  near = false,
 }: {
+  near?: boolean;
   name: string;
   r: Reading;
   query: string;
@@ -107,7 +109,8 @@ export default function FreeReading({
   // What the bars already show, said with the reader's own years: the next decade that lifts, the next to go easy in.
   const ahead = locked && r.flow ? r.flow.filter((f) => !f.past && !f.now && !f.young) : [];
   // The nearest ones, and the hard one only within thirty years (no one needs to hear about their eighties now).
-  const lift = ahead.find((f) => f.level >= 4);
+  // `near` (lib/open.ts RENEW2): only a decade within thirty years is named, so no one is told of 2084.
+  const lift = ahead.find((f) => f.level >= 4 && (!near || f.from <= new Date().getFullYear() + 30));
   const ease = ahead.find((f) => f.level <= 2 && f.from <= new Date().getFullYear() + 30);
   return (
     <>
