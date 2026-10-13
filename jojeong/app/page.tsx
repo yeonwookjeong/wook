@@ -11,7 +11,7 @@ import TodayCard from "@/components/TodayCard";
 import TrackLink from "@/components/TrackLink";
 import AskCard from "@/components/AskCard";
 import HomeV2 from "./HomeV2";
-import { isPreview as isOwnerPreview } from "@/lib/admin";
+import { openNow } from "@/lib/launch";
 import { readMe } from "@/lib/me";
 import { ownedByProduct, ownedOrders } from "@/lib/pay";
 import { PRICE, priceNow, productById, SETS, type ProductId } from "@/lib/products";
@@ -70,8 +70,8 @@ function Seal({ hanja }: { hanja: string }) {
 const SHOW_COUNT_FROM = 100;
 
 export default async function Home() {
-  // 시안 모드: the owner sees the new home first (app/HomeV2.tsx).
-  if (await isOwnerPreview()) return <HomeV2 />;
+  // The new home (app/HomeV2.tsx) from the opening on, and in the owner's 시안 모드 before it.
+  if (await openNow()) return <HomeV2 />;
   const [me, count, orders] = await Promise.all([readMe(), readingCount(), ownedOrders().catch(() => [])]);
   const owned = ownedByProduct(orders);
   // The season's flagship: next year's 신년운세 (the 연운 report for that year), from September to February.

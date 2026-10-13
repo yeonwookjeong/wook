@@ -1,6 +1,6 @@
 "use server";
 
-import { isPreview } from "@/lib/admin";
+import { openNow } from "@/lib/launch";
 import { redirect } from "next/navigation";
 import { refresh } from "next/cache";
 import { addPerson, ask, createRoom, loadRoom, MAX_PEOPLE, MAX_QUESTION, reChartPerson, removePerson, renamePerson, saveRoom, setRel, TOPICS, type AskRoom, type Topic } from "@/lib/ask";
@@ -68,7 +68,7 @@ export async function askAction(_prev: FormState, formData: FormData): Promise<F
   if ([...question.trim()].length > MAX_QUESTION) return { error: `질문은 ${MAX_QUESTION}자 안으로 적어 주시옵소서.` };
   const before = room.used;
   const chosen = String(formData.get("chosen") ?? "") || undefined;
-  const result = await ask(room, question, topicOf(formData.get("topic")), chosen, await isPreview(), String(formData.get("with") ?? "") || undefined);
+  const result = await ask(room, question, topicOf(formData.get("topic")), chosen, await openNow(), String(formData.get("with") ?? "") || undefined);
   if (!result.ok) return { error: result.error };
   // An answer given uses one question; choices offered (nothing answered yet) use none.
   if (room.used > before) await changeCredits(member.id, -1, `질문 ${room.id}`);

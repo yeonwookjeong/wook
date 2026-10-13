@@ -1,3 +1,4 @@
+import { openNow } from "@/lib/launch";
 import Link from "next/link";
 import SnsLinks from "./SnsLinks";
 import FooterAd from "./FooterAd";
@@ -5,7 +6,6 @@ import { BUSINESS, ftcLookupUrl, hasBusinessInfo } from "@/lib/business";
 import { ownedOrderIds } from "@/lib/pay";
 import { askShown, currentMember, membersEnabled } from "@/lib/members";
 import AskLink from "./AskLink";
-import { isPreview } from "@/lib/admin";
 
 // The brand mark: a red 訓導 seal beside the character's name. Used at the top and bottom of every page.
 function Seal({ size = 30 }: { size?: number }) {
@@ -27,8 +27,8 @@ export async function SiteHeader() {
   const bought = (await ownedOrderIds().catch(() => [])).length;
   const member = membersEnabled() ? await currentMember().catch(() => null) : null;
   const ask = membersEnabled() && (await askShown());
-  // The new header (시안 모드 only, with the new home): the name alone, 묻기 as one pill, the rest in a menu.
-  if (await isPreview())
+  // The new header (from the opening, with the new home): the name alone, 묻기 as one pill, the rest in a menu.
+  if (await openNow())
     return (
       <header className="flex items-center justify-between pt-4">
         <Link href="/" className="flex items-center gap-2">

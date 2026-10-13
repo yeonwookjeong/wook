@@ -14,7 +14,7 @@ import { Floor, GOLD_BUTTON, Hallway, RoomArt } from "./Hall";
 export const metadata: Metadata = {
   title: "정 훈도에게 묻기",
   // Out of search until it opens (lib/members.ts ASK_OPEN).
-  ...(!ASK_OPEN && { robots: { index: false } }),
+  ...(ASK_OPEN ? {} : { robots: { index: false } }),
   description: "내 사주를 펼쳐 놓고 정 훈도에게 고민 하나를 여쭈어 보세요. 카카오로 로그인하면 처음 한 번 질문 1개를 드려요.",
 };
 

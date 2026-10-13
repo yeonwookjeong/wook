@@ -1,4 +1,5 @@
 import "server-only";
+import { OPEN } from "./open";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { isPreview } from "./admin";
@@ -38,7 +39,7 @@ export const VIA_COOKIE = "jj_via";
 export const memberNo = (id: string) => `${id[0].toUpperCase()}-${id.slice(1).slice(-6)}`;
 // The opening of 정 훈도에게 묻기 to everyone: the sheet, the header button, the home tile, the cards at the end of
 // a reading, /ask in search and the sitemap, the news. Off, only the owner's 시안 모드 shows them.
-export const ASK_OPEN = false;
+export const ASK_OPEN = OPEN;
 export const askShown = async () => ASK_OPEN || (await isPreview());
 
 // The cookie is the id with an HMAC, so it cannot be made for someone else without the secret.
