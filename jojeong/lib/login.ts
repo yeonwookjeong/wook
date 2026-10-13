@@ -1,7 +1,7 @@
 import "server-only";
 import { randomBytes } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
-import { GIFT_COOKIE, MEMBER_COOKIE, memberCookieValue, signInMember, VIA_COOKIE, type Via } from "./members";
+import { GIFT_COOKIE, giveChannelGift, MEMBER_COOKIE, memberCookieValue, signInMember, VIA_COOKIE, type Via } from "./members";
 import { browserOrderIds, getOrder, giveBonus } from "./pay";
 
 // The way in and back for every login (app/login/[via], app/api/auth/*): a one-time state in a cookie, the page to
@@ -32,7 +32,15 @@ export function returnedTo(request: NextRequest): string | null {
 
 export const backTo = (request: NextRequest, path: string) => NextResponse.redirect(new URL(path, request.url), 303);
 
-export async function finishLogin(request: NextRequest, via: Via, accountId: string, nick: string, email: string | null, next: string) {
+export async function finishLogin(
+  request: NextRequest,
+  via: Via,
+  accountId: string,
+  nick: string,
+  email: string | null,
+  next: string,
+  extra: { channel?: boolean } = {},
+) {
   const browserOrders = await browserOrderIds();
   const { member, joined, added, gifted } = await signInMember(via, accountId, nick, email, {
     orders: browserOrders,
@@ -48,6 +56,7 @@ export async function finishLogin(request: NextRequest, via: Via, accountId: str
   if (joined) to.searchParams.set("joined", "1");
   if (added) to.searchParams.set("moved", String(added));
   if (bonus) to.searchParams.set("bonus", String(bonus));
+  if (extra.channel && (await giveChannelGift(member.id))) to.searchParams.set("channel", "1");
   const res = NextResponse.redirect(to, 303);
   const year = 60 * 60 * 24 * 365;
   const secure = request.nextUrl.protocol === "https:";

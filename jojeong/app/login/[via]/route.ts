@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { backTo, REDIRECT, startLogin } from "@/lib/login";
-import { viaEnabled, type Via } from "@/lib/members";
+import { CHANNEL_GIFT_ON, viaEnabled, type Via } from "@/lib/members";
 
 // "카카오로 / 네이버로 / 구글로 시작하기" (app/login): off to that account's login page.
 export async function GET(request: NextRequest, { params }: RouteContext<"/login/[via]">) {
@@ -18,6 +18,8 @@ export async function GET(request: NextRequest, { params }: RouteContext<"/login
     url.searchParams.set("client_id", id!.trim());
     url.searchParams.set("redirect_uri", REDIRECT[via]);
     url.searchParams.set("state", state);
+    // Kakao, back from "채널 추가했어요" (?ch=1): ask the channel consent again, for those who skipped it at joining.
+    if (via === "kakao" && CHANNEL_GIFT_ON && request.nextUrl.searchParams.get("ch") === "1") url.searchParams.set("scope", "plusfriends");
     // Google: only the account id and the email (no name), and a choice of account every time.
     if (via === "google") {
       url.searchParams.set("scope", "openid email");
