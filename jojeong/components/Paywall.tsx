@@ -52,7 +52,8 @@ export default async function Paywall({
   const front = lead && sets.includes(lead) ? [lead] : sets;
   const folded = sets.filter((s) => !front.includes(s));
   // A set as shops show a bundle: its name and what is in it on the left, the price on the right with the discount
-  // and the regular price struck through small, not spelled out in brackets.
+  // and the regular price struck through small, not spelled out in brackets. An upgrade shows no percentage (it is
+  // the difference, not a sale), only what the missing reports would cost one by one.
   const setButton = (s: SetId) => {
     const o = offers.get(s)!;
     const won = (n: number) => `${n.toLocaleString("ko-KR")}원`;
@@ -69,7 +70,7 @@ export default async function Paywall({
         </span>
         <span className="shrink-0 text-right">
           <span className="flex items-baseline justify-end gap-1.5">
-            {off > 0 && <span className="font-sans text-[13px] font-extrabold text-[#e0452b]">{off}%</span>}
+            {off > 0 && !o.owned.length && <span className="font-sans text-[13px] font-extrabold text-[#e0452b]">{off}%</span>}
             <span className="font-myeongjo text-[18px]">{o.owned.length ? `+${won(o.price)}` : won(o.price)}</span>
           </span>
           <s className="block font-sans text-[11.5px] font-medium text-ink-soft/80">{won(o.regular)}</s>
