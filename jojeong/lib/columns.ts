@@ -5,6 +5,18 @@
 // so a reader can find things in their own chart. It never shows what the paid readings do: how one person's
 // combination is read, timing (대운·세운), 용신 and what to do about it, roles and talents, or how the engine works.
 
+// The shelves of the list, in the order they are shown.
+export const COLUMN_CATS = [
+  { key: "read", label: "사주표 읽기" },
+  { key: "time", label: "생일과 절기" },
+  { key: "pair", label: "합충과 궁합" },
+  { key: "sal", label: "살 이야기" },
+  { key: "flow", label: "운의 흐름" },
+  { key: "use", label: "사주 활용" },
+] as const;
+export type ColumnCat = (typeof COLUMN_CATS)[number]["key"];
+export const catLabel = (k: ColumnCat) => COLUMN_CATS.find((c) => c.key === k)?.label ?? "";
+
 export type ColumnBlock =
   | { t: "p"; text: string }
   | { t: "h2"; text: string }
@@ -15,7 +27,8 @@ export type ColumnBlock =
 
 export type Column = {
   slug: string;
-  level: "입문" | "심화";
+  // The shelf it sits on in the list (COLUMN_CATS).
+  cat: ColumnCat;
   // Written as "주제, 부제" or "질문? 부제": the whole line is the search title, and on screen the part after the
   // comma or question mark goes to its own line (titleLines).
   title: string;
@@ -31,7 +44,7 @@ export type Column = {
 export const COLUMNS: Column[] = [
   {
     slug: "eight-cells",
-    level: "입문",
+    cat: "read",
     title: "사주팔자 보는 법, 처음 보는 사람을 위한 사주표 여덟 칸 읽기",
     summary: "사주표의 네 기둥과 여덟 글자가 각각 무엇을 뜻하는지, 위 칸과 아래 칸, 색깔, 읽는 순서까지 처음부터 차근차근 설명해요.",
     date: "2026-10-07",
@@ -169,7 +182,7 @@ export const COLUMNS: Column[] = [
   },
   {
     slug: "unknown-hour",
-    level: "입문",
+    cat: "time",
     date: "2026-10-12",
     title: "태어난 시간을 모르면 사주를 못 볼까? 시를 모를 때 보는 법",
     summary:
@@ -289,7 +302,7 @@ export const COLUMNS: Column[] = [
   },
   {
     slug: "ipchun-tti",
-    level: "입문",
+    cat: "time",
     date: "2026-10-09",
     title: "띠는 1월 1일이 아니라 입춘에 바뀐다, 1월·2월생 띠 확인법",
     summary:
@@ -387,7 +400,7 @@ export const COLUMNS: Column[] = [
   },
   {
     slug: "jeolgi-month",
-    level: "입문",
+    cat: "time",
     date: "2026-10-08",
     title: "사주 월주는 절기로 바뀐다, 달 초에 태어났다면 확인할 것",
     summary:
@@ -481,7 +494,7 @@ export const COLUMNS: Column[] = [
   },
   {
     slug: "same-birthday",
-    level: "입문",
+    cat: "time",
     date: "2026-10-13",
     title: "생일이 같으면 사주도 같을까? 같은 날 태어난 사람과 쌍둥이의 사주",
     summary:
@@ -575,7 +588,7 @@ export const COLUMNS: Column[] = [
   },
   {
     slug: "inseong",
-    level: "입문",
+    cat: "read",
     date: "2026-10-10",
     title: "인성이란? 사주에 인성 많은 사람의 특징과 내 사주에서 찾는 법",
     summary:
@@ -682,7 +695,7 @@ export const COLUMNS: Column[] = [
   },
   {
     slug: "chung",
-    level: "입문",
+    cat: "pair",
     date: "2026-10-11",
     title: "사주 충이란? 상극 띠 6쌍과 '부딪힘'의 진짜 뜻",
     summary:
@@ -767,7 +780,7 @@ export const COLUMNS: Column[] = [
   },
   {
     slug: "ask-well",
-    level: "입문",
+    cat: "use",
     date: "2026-10-14",
     title: "사주 보고 남은 질문, 어떻게 물어야 답이 선명할까? 고민을 사주에 묻는 법",
     summary:
@@ -829,7 +842,7 @@ export const COLUMNS: Column[] = [
   },
   {
     slug: "dohwa",
-    level: "입문",
+    cat: "sal",
     date: "2026-10-15",
     title: "도화살이란? 사람을 끄는 사주와 도화살에 대한 오해 세 가지",
     summary:
@@ -892,7 +905,7 @@ export const COLUMNS: Column[] = [
   },
   {
     slug: "hwagae",
-    level: "입문",
+    cat: "sal",
     date: "2026-10-16",
     title: "화개살이란? 혼자가 편한 사람의 사주와 화개의 진짜 뜻",
     summary:
@@ -955,7 +968,7 @@ export const COLUMNS: Column[] = [
   },
   {
     slug: "ilju",
-    level: "입문",
+    cat: "read",
     date: "2026-10-17",
     title: "일주란? 60일주 읽는 법, 태어난 날 두 글자가 말해 주는 나",
     summary:
@@ -1014,7 +1027,7 @@ export const COLUMNS: Column[] = [
   },
   {
     slug: "daeun",
-    level: "입문",
+    cat: "flow",
     date: "2026-10-18",
     title: "대운이란? 10년마다 바뀌는 큰 흐름, 언제부터 어떻게 정해질까",
     summary:
@@ -1082,7 +1095,7 @@ export const COLUMNS: Column[] = [
   },
   {
     slug: "gunghap-basics",
-    level: "입문",
+    cat: "pair",
     date: "2026-10-19",
     title: "사주 궁합 보는 법, 띠보다 중요한 배우자 자리의 합과 충",
     summary:
@@ -1147,7 +1160,7 @@ export const COLUMNS: Column[] = [
   },
   {
     slug: "2027-jeongmi",
-    level: "입문",
+    cat: "flow",
     date: "2026-10-20",
     title: "2027년 정미년은 어떤 해일까? 붉은 양의 해, 언제부터 시작될까",
     summary:

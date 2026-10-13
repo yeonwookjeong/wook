@@ -1,4 +1,4 @@
-import { columnBySlug, titleLines } from "@/lib/columns";
+import { catLabel, columnBySlug, titleLines } from "@/lib/columns";
 import { columnImage, storeImage } from "@/lib/og";
 
 // Each column's card when it is shared or shown as a search thumbnail: its own title, not the site's.
@@ -10,5 +10,5 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   const c = columnBySlug((await params).slug);
   if (!c) return storeImage();
   const [head, sub] = titleLines(c.title);
-  return columnImage({ level: c.level, head, sub });
+  return columnImage({ level: catLabel(c.cat), head, sub });
 }

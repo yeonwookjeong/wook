@@ -7,7 +7,7 @@ import EightCells from "@/components/EightCells";
 import TrackLink from "@/components/TrackLink";
 import TrackView from "@/components/TrackView";
 import { SITE_NAME, siteUrl } from "@/lib/brand";
-import { columnBySlug, columnDate, isPublished, publishedColumns, type ColumnBlock } from "@/lib/columns";
+import { catLabel, columnBySlug, columnDate, isPublished, publishedColumns, type ColumnBlock } from "@/lib/columns";
 import { hanjaNum } from "@/lib/hanjaNum";
 
 // One article of 훈도의 사주 이야기 (lib/columns.ts): readable as it is, with no birthday asked, then a way on to
@@ -145,7 +145,7 @@ export default async function ColumnPage({ params, searchParams }: PageProps<"/c
   const header = (
     <header>
       <p className="text-[12px] font-extrabold text-seal">
-        <Link href="/column">훈도의 사주 이야기</Link> · {c.level}
+        <Link href="/column">훈도의 사주 이야기</Link> · <Link href={`/column?c=${c.cat}`}>{catLabel(c.cat)}</Link>
       </p>
       <h1 className="mt-2 font-myeongjo text-[26px] leading-tight font-extrabold">
         <ColumnTitle title={c.title} />

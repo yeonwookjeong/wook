@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { isAdmin } from "@/lib/admin";
-import { COLUMNS, columnDate, isPublished, kstToday } from "@/lib/columns";
+import { catLabel, COLUMNS, columnDate, isPublished, kstToday } from "@/lib/columns";
 
 export const metadata: Metadata = { title: "칼럼 미리보기 · 관리자", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -34,7 +34,7 @@ export default async function ColumnsPage() {
               {d > 0 ? `예약 · D-${d}` : "공개 중"}
             </span>
             <span className="text-ink-soft">
-              {columnDate(c.date)} · {c.level}
+              {columnDate(c.date)} · {catLabel(c.cat)}
             </span>
           </span>
           <b className="mt-1 block font-myeongjo leading-snug">{c.title}</b>
