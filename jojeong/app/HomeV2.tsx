@@ -155,13 +155,11 @@ const PROMISES: [string, React.ReactNode][] = [
   ["記憶", <>다음에 오면 <b>지난 이야기부터</b> 기억해요</>],
 ];
 
-// A 현판 as it hangs under real eaves: a wide dark board with the name carved in gold, held in a 단청 frame
-// (red, green, gold), two iron hooks above. 聽心堂: the hall where the heart is heard.
+// The 현판 heading the card: a wide dark board with the name carved in gold, held in a 단청 frame (red, green,
+// gold). 聽心堂: the hall where the heart is heard.
 function Plaque() {
   return (
-    <div className="relative z-10 mx-auto -mb-6 w-fit">
-      <span aria-hidden className="absolute -top-2 left-[22%] h-3 w-1 rounded-full bg-[#2b2622]" />
-      <span aria-hidden className="absolute -top-2 right-[22%] h-3 w-1 rounded-full bg-[#2b2622]" />
+    <div className="relative mx-auto w-fit">
       <div className="rounded-[3px] bg-[#7a2a1f] p-[3px] shadow-[0_8px_16px_rgb(0_0_0/0.35)]">
         <div className="rounded-[2px] bg-[#2f6b5a] p-[2px]">
           <div className="rounded-[1px] bg-[#d4af5f] p-px">
@@ -171,23 +169,23 @@ function Plaque() {
           </div>
         </div>
       </div>
-      <p className="relative mt-1.5 text-center text-[10.5px] font-bold tracking-[0.12em] text-[#e2bc68]/75">청심당 · 마음을 듣는 정 훈도의 사랑방</p>
+      <p className="relative mt-2 text-center text-[10.5px] font-bold tracking-[0.12em] text-[#e2bc68]/75">청심당 · 마음을 듣는 정 훈도의 사랑방</p>
     </div>
   );
 }
 
 function Sangdam({ credits }: { credits: number | null }) {
   return (
-    <section className="mt-8">
-      <Plaque />
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-b from-[#222d3b] to-[#1a232f] px-5 pt-10 pb-5 text-hanji shadow-[0_8px_22px_rgb(33_27_23/0.18),inset_0_0_0_1px_rgb(212_175_95/0.35)]">
+    <section className="mt-6">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-b from-[#222d3b] to-[#1a232f] px-5 pt-5 pb-5 text-hanji shadow-[0_8px_22px_rgb(33_27_23/0.18),inset_0_0_0_1px_rgb(212_175_95/0.35)]">
         {/* 문살: the lattice of a paper window, faint */}
         <span
           aria-hidden
           className="absolute inset-0 opacity-[0.07] [background-image:linear-gradient(#e2bc68_1px,transparent_1px),linear-gradient(90deg,#e2bc68_1px,transparent_1px)] [background-size:28px_28px]"
         />
         <span aria-hidden className="absolute -top-12 -right-12 size-44 rounded-full bg-[radial-gradient(circle,rgb(226_188_104/0.25),transparent_65%)]" />
-        <div className="relative flex items-center gap-3">
+        <Plaque />
+        <div className="relative mt-5 flex items-center gap-3 border-t border-[#e2bc68]/15 pt-4">
           <HundoFace size={52} />
           <h2 className="font-myeongjo text-[19px] leading-snug font-extrabold">
             보고서는 내 사주를 읽고,
