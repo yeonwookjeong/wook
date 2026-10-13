@@ -4,7 +4,7 @@ import SnsLinks from "./SnsLinks";
 import FooterAd from "./FooterAd";
 import { BUSINESS, ftcLookupUrl, hasBusinessInfo } from "@/lib/business";
 import { ownedOrderIds } from "@/lib/pay";
-import { askShown, currentMember, membersEnabled } from "@/lib/members";
+import { askShown, currentMember, memberNo, membersEnabled, VIA_LABEL, viaOf } from "@/lib/members";
 import AskLink from "./AskLink";
 
 // The brand mark: a red 訓導 seal beside the character's name. Used at the top and bottom of every page.
@@ -48,7 +48,24 @@ export async function SiteHeader() {
               <span className="hidden group-open:inline">✕</span>
               {bought > 0 && <span className="absolute -top-1 -right-1 size-2.5 rounded-full bg-seal" />}
             </summary>
-            <div className="card absolute top-11 right-0 z-30 flex w-48 flex-col py-1.5 text-[14px] font-bold">
+            <div className="card absolute top-11 right-0 z-30 flex w-56 flex-col py-1.5 text-[14px] font-bold">
+              {/* Who is signed in (or the way to sign in), so the reader always knows. */}
+              {membersEnabled() &&
+                (member ? (
+                  <div className="mx-2 mb-1 rounded-lg bg-ink/5 px-3 py-2.5 font-normal">
+                    <span className="block text-[13.5px] font-bold">
+                      {member.nick}님 <span className="text-[11px] font-normal text-ink-soft">· {VIA_LABEL[viaOf(member.id)]} 로그인 중</span>
+                    </span>
+                    <span className="block text-[11.5px] text-ink-soft">
+                      회원 번호 {memberNo(member.id)} · 남은 질문 {member.credits}개
+                    </span>
+                  </div>
+                ) : (
+                  <Link href="/login" className="mx-2 mb-1 rounded-lg bg-jjok px-3 py-2.5 text-center text-[13.5px] text-hanji">
+                    로그인 · 가입
+                    <span className="block text-[11px] font-normal opacity-75">산 보고서를 계정에 보관해요</span>
+                  </Link>
+                ))}
               {[
                 ["/my", `내 보고서${bought ? ` · ${bought}` : ""}`],
                 ["/reports", "전체 보고서"],
@@ -60,6 +77,11 @@ export async function SiteHeader() {
                   {label}
                 </Link>
               ))}
+              {member && (
+                <a href="/logout" className="mt-1 border-t border-ink/10 px-4 pt-2.5 pb-1.5 text-[13px] font-normal text-ink-soft">
+                  로그아웃
+                </a>
+              )}
             </div>
           </details>
         </nav>
