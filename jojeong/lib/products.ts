@@ -1,3 +1,4 @@
+import { OPEN } from "./open";
 // 정 훈도의 비밀 보고서. One free report (조선 신분 감정) opens the shelf; the paid ones all cost the same fixed
 // price, lowered only on the special days listed in SALES.
 
@@ -263,7 +264,7 @@ export const PRICE = 990;
 // ── A안 (docs/product-plan-2027.md, 2026-10-10): a report is priced by what it holds, the sets are the new two, and
 // the dearer ones come with questions for 정 훈도. Off for customers until it is switched on with 청심당's opening
 // (PRICING_A_LIVE); the owner's 시안 모드 sees and pays it already (lib/pricing.ts).
-export const PRICING_A_LIVE = false;
+export const PRICING_A_LIVE = OPEN;
 export type Pricing = "old" | "a";
 const A_PRICE: Partial<Record<ProductId, number>> = { pyeongsaeng: 2900, gunghap: 1900 };
 // `ny`: the coming year (lib/yeonun.ts newYearOf), whose 연운 is the 신년운세.

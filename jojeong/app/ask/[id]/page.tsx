@@ -1,3 +1,4 @@
+import { openNow } from "@/lib/launch";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -12,7 +13,6 @@ import SaveLetter from "../SaveLetter";
 import CreditSlips from "../CreditSlips";
 import { Room, RoomArt } from "../Hall";
 import { FigureOf, VerdictCard } from "../Figures";
-import { isPreview } from "@/lib/admin";
 import { defaultFigures, figureKit } from "@/lib/askFigures";
 import { withFigures } from "@/lib/askText";
 
@@ -36,9 +36,9 @@ export default async function MemberRoomPage({ params }: PageProps<"/ask/[id]">)
   const last = room.messages.at(-1);
   const lastGuest = [...room.messages].reverse().find((m) => m.role === "guest");
   const lastAnswer = room.messages.findLastIndex((m) => m.role === "hundo" && !m.choices);
-  // 시안 모드: the pictures each letter marks ([[圖|…]]), drawn from the chart; letters from before the marks get
-  // two by their topic.
-  const pictures = await isPreview();
+  // From the opening (and in 시안 모드): the pictures each letter marks ([[圖|…]]), drawn from the chart; letters
+  // from before the marks get two by their topic.
+  const pictures = await openNow();
   const letterOf = (i: number) => {
     const text = room.messages[i].text;
     if (!pictures) return { text };
