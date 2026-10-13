@@ -48,7 +48,7 @@ export const GOLD_BUTTON =
 // warm wooden floor the letters are laid on. Full width of the column; the question bar sits at its foot.
 export function Room({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative -mx-4 mt-3 min-h-[70vh] overflow-clip bg-[linear-gradient(180deg,#1b2430_0,#222c38_260px,#2c2219_460px,#231b14_100%)] px-4 pt-5 pb-0 text-hanji">
+    <div className="relative -mx-4 min-h-[70vh] overflow-clip bg-[linear-gradient(180deg,#1b2430_0,#222c38_260px,#2c2219_460px,#231b14_100%)] px-4 pt-0 pb-0 text-hanji">
       {/* 창호: the lattice of the paper window behind the plaque, lit from outside */}
       <span
         aria-hidden
@@ -116,7 +116,8 @@ export function Floor({ children, className = "" }: { children: React.ReactNode;
 // 청심당 inside, as drawn (public/cards/sarangbang.webp: 정 훈도 at his desk, the star screen, the moonlit doors):
 // the picture with the plaque over its ceiling beams, fading into the night blue where `children` sit.
 // `short`: a wide crop of it with no plaque (his hat sits high), as the head of a room (app/ask/[id]).
-export function RoomArt({ children, short = false, caption }: { children?: React.ReactNode; short?: boolean; caption?: string }) {
+// `corner`: laid over the picture's top left (the way back, in a room).
+export function RoomArt({ children, short = false, caption, corner }: { children?: React.ReactNode; short?: boolean; caption?: string; corner?: React.ReactNode }) {
   return (
     <div className="relative -mx-4 overflow-clip bg-[#1b2430] text-hanji">
       <div className={`relative ${short ? "aspect-[5/4]" : "aspect-[1122/1402]"}`}>
@@ -128,8 +129,9 @@ export function RoomArt({ children, short = false, caption }: { children?: React
           sizes="440px"
           className={`object-cover ${short ? "object-[50%_32%]" : ""}`}
         />
-        <span aria-hidden className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-[#141a22]/85 to-transparent" />
+        <span aria-hidden className={`absolute inset-x-0 top-0 bg-gradient-to-b to-transparent ${short ? "h-14 from-[#141a22]/45" : "h-28 from-[#141a22]/85"}`} />
         <span aria-hidden className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-[#1b2430]" />
+        {corner && <div className="absolute top-3 left-4 z-10">{corner}</div>}
         {!short && (
           <div className="absolute inset-x-0 top-3 flex justify-center">
             <Plaque caption={caption} />
