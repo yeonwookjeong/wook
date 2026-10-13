@@ -68,7 +68,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
         <HundoFace size={64} />
       </div>
       <h1 className="mt-3 font-myeongjo text-xl font-extrabold">정 훈도의 사랑방에 드시옵소서</h1>
-      <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink-soft">산 보고서와 질문이 계정에 담겨, 다른 기기에서도 그대로 열려요.</p>
+      <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink-soft">로그인하면 산 보고서와 질문이 계정에 보관돼, 다른 기기에서도 그대로 열려요.</p>
       {(q.login === "fail" || q.login === "again") && (
         <p role="alert" className="mt-4 rounded-xl bg-seal/10 px-3 py-2 text-sm text-seal">
           로그인이 끝나지 않았어요. 다시 시도해 주세요.

@@ -65,3 +65,48 @@ export function Room({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
+// The front of the hall (app/ask): a tiled roof with upturned eaves, the plaque under them, two red pillars and
+// the paper doors between them lit from inside. Full width of the column; what is inside sits on the doors.
+export function Gate({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="relative -mx-4 overflow-clip bg-[linear-gradient(180deg,#141a22_0,#1b2430_180px,#222c38_100%)] text-hanji">
+      {/* the night sky and a moon behind the roof */}
+      <span aria-hidden className="absolute top-6 right-10 size-10 rounded-full bg-[#f3e1b0]/80 shadow-[0_0_40px_10px_rgb(243_225_176/0.25)]" />
+      <svg aria-hidden viewBox="0 0 400 130" className="relative block w-full" preserveAspectRatio="none">
+        <defs>
+          <pattern id="giwa" width="9" height="20" patternUnits="userSpaceOnUse">
+            <rect width="9" height="20" fill="#232a33" />
+            <rect x="0" width="4.5" height="20" fill="#2c3540" />
+          </pattern>
+        </defs>
+        {/* 용마루 (ridge) and the roof falling to upturned eaves */}
+        <path d="M70 46 Q200 26 330 46 L330 52 Q200 33 70 52 Z" fill="#11161c" />
+        <path d="M70 50 Q200 31 330 50 L392 92 Q398 80 400 72 L400 104 Q200 70 0 104 L0 72 Q2 80 8 92 Z" fill="url(#giwa)" />
+        <path d="M0 104 Q200 70 400 104 L400 112 Q200 79 0 112 Z" fill="#7a2a1f" />
+        <path d="M0 112 Q200 79 400 112 L400 116 Q200 84 0 116 Z" fill="#2f6b5a" />
+        <path d="M0 116 Q200 84 400 116 L400 118 Q200 87 0 118 Z" fill="#d4af5f" opacity="0.8" />
+      </svg>
+      {/* 기둥 */}
+      <span aria-hidden className="absolute top-[22%] bottom-0 left-3 w-3 bg-[linear-gradient(90deg,#5e1f17,#8a3326,#5e1f17)]" />
+      <span aria-hidden className="absolute top-[22%] right-3 bottom-0 w-3 bg-[linear-gradient(90deg,#5e1f17,#8a3326,#5e1f17)]" />
+      {/* 창호: paper doors lit from inside */}
+      <span
+        aria-hidden
+        className="absolute inset-x-8 top-[30%] bottom-0 bg-[radial-gradient(ellipse_at_50%_30%,rgb(243_225_176/0.16),transparent_70%)] opacity-90 [background-image:linear-gradient(rgb(226_188_104/0.16)_1.5px,transparent_1.5px),linear-gradient(90deg,rgb(226_188_104/0.16)_1.5px,transparent_1.5px),radial-gradient(ellipse_at_50%_30%,rgb(243_225_176/0.16),transparent_70%)] [background-size:30px_40px,30px_40px,100%_100%]"
+      />
+      <div className="relative -mt-3 px-8 pb-7">{children}</div>
+    </div>
+  );
+}
+
+// A section of the hall's floor, below the gate: dark wood with board lines.
+export function Floor({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div
+      className={`relative -mx-4 bg-[#241c15] px-4 py-7 text-hanji [background-image:repeating-linear-gradient(90deg,rgb(0_0_0/0.22)_0_1px,transparent_1px_72px),repeating-linear-gradient(180deg,rgb(255_255_255/0.025)_0_1px,transparent_1px_9px)] ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
