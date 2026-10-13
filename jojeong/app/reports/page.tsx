@@ -186,7 +186,7 @@ async function ShelfA({ owned }: { owned: ReturnType<typeof ownedByProduct> }) {
               <span className="mt-2 flex flex-wrap gap-1.5">
                 {SETS[s].products.map((p) => (
                   <span key={p} className="rounded-md border border-gold/40 bg-white/5 px-2 py-0.5 text-[12px] font-bold text-hanji/90">
-                    {p === "yeonun" && ny ? `${ny} 총운` : (SHORT[p] ?? productById(p)!.title)}
+                    {p === "yeonun" && ny ? `${ny} 신년운세` : (SHORT[p] ?? productById(p)!.title)}
                   </span>
                 ))}
               </span>
@@ -204,7 +204,7 @@ async function ShelfA({ owned }: { owned: ReturnType<typeof ownedByProduct> }) {
           <ShelfRow
             x={item("yeonun", {
               href: `/reports/yeonun?y=${ny}`,
-              title: `${ny} 총운`,
+              title: `${ny} 신년운세`,
               line: "붉은 양의 해, 나에게 무슨 일이 올까? 열두 달 흐름과 좋은 날",
               price: priceFor("yeonun", "a", ny, ny),
               qs: bonusFor("a", "yeonun", null, ny, ny),

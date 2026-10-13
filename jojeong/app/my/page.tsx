@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ownedOrders } from "@/lib/pay";
 import { productById, SETS } from "@/lib/products";
-import { askShown, currentMember, membersEnabled } from "@/lib/members";
+import { askShown, currentMember, membersEnabled, VIA_LABEL, viaEnabled, type Via } from "@/lib/members";
 
 export const metadata: Metadata = { title: "내 보고서", robots: { index: false } };
 
@@ -22,10 +22,16 @@ export default async function MyReportsPage() {
         <section className="mt-5 rounded-2xl border border-[#d4af5f]/50 bg-[#fbf6ea] px-4 py-4 text-center">
           <p className="font-myeongjo text-[16px] font-extrabold">이 브라우저에만 저장된 보고서예요</p>
           <p className="mt-1 text-[13px] leading-relaxed text-ink-soft">
-            브라우저 기록을 지우거나 기기를 바꾸면 못 열 수 있어요. 카카오로 로그인해 두면 계정에 보관돼요.
+            브라우저 기록을 지우거나 기기를 바꾸면 못 열 수 있어요. 로그인해 두면 계정에 보관돼 어느 기기에서든 열려요.
           </p>
-          <Link href="/login?next=/my" className="mt-3 block rounded-2xl bg-[#FEE500] py-3 font-bold text-[#191919]">
-            카카오로 로그인
+          <Link href="/login?next=/my" className="mt-3 block rounded-2xl bg-ink py-3 font-bold text-hanji">
+            로그인하고 계정에 보관하기
+            <span className="block text-[11px] font-normal opacity-70">
+              {(Object.keys(VIA_LABEL) as Via[])
+                .filter(viaEnabled)
+                .map((v) => VIA_LABEL[v])
+                .join(" · ")}
+            </span>
           </Link>
         </section>
       )}

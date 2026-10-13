@@ -3,7 +3,8 @@ import PayButton from "./PayButton";
 import { hanjaNum } from "@/lib/hanjaNum";
 import { josa } from "@/lib/josa";
 import { payEnabled } from "@/lib/pay";
-import { bonusFor, PRICE, priceFor, productById, saleLabel, saleNow, SETS, setPrice, setRegular, setsWith, type Product, type ProductId, type SetId } from "@/lib/products";
+import { bonusFor, PRICE, priceFor, productById, saleLabel, saleNow, SETS, setsWith, type Product, type ProductId, type SetId } from "@/lib/products";
+import { setOffer, type SetOffer } from "@/lib/upgrade";
 import { pricingNow } from "@/lib/pricing";
 import { newYearOf } from "@/lib/yeonun";
 
@@ -35,27 +36,45 @@ export default async function Paywall({
   const bonus = bonusFor(pr, product.id, null, request.y, ny);
   // Sets are offered for a one-person report bought for a saved chart. A set holding a 연운 only while there is
   // a coming year, and on a 연운 page only for that year.
-  const sets = request.p
+  const offered = request.p
     ? setsWith(product.id, pr).filter((s) => !SETS[s].products.includes("yeonun") || (ny !== null && (request.y === undefined || request.y === String(ny))))
     : [];
-  const titleIn = (id: ProductId) => (id === "yeonun" && ny !== null ? `${ny} 신년운세` : productById(id)!.title);
+  // What each set costs this chart: less what was already bought for it, or not offered when that is no deal.
+  const offers = new Map<SetId, SetOffer>();
+  for (const s of offered) {
+    const o = await setOffer(s, request.p, pr, ny);
+    if (o) offers.set(s, o);
+  }
+  const sets = offered.filter((s) => offers.has(s));
+  const titleIn = (id: ProductId) => (id === "yeonun" && ny !== null ? `${ny} 신년운세` : productById(id)!.title.split(" · ")[0]);
   // Money and work showed three sets under the single report and sold least: one set in front, the rest folded.
   const lead = (pr === "a" ? FRONT_SET_A : FRONT_SET)[product.id];
   const front = lead && sets.includes(lead) ? [lead] : sets;
   const folded = sets.filter((s) => !front.includes(s));
   const setButton = (s: SetId) => {
-    const list = SETS[s].products;
-    const regular = setRegular(s, pr, ny);
-    const qs = bonusFor(pr, null, s);
+    const o = offers.get(s)!;
+    const won = (n: number) => `${n.toLocaleString("ko-KR")}원`;
+    const qs = o.bonus ? ` · 정 훈도 질문 ${o.bonus}개 포함` : "";
+    // Already has some of the set: the difference, and what is still missing.
+    if (o.owned.length) {
+      const missing = SETS[s].products.filter((id) => !o.owned.includes(id));
+      return (
+        <div key={s}>
+          <PayButton secondary request={{ set: s, p: request.p, from: product.id }} label={`${SETS[s].title}로 올리기 +${won(o.price)}`} />
+          <p className="mt-1 text-[11px] text-ink-soft">
+            {josa(o.owned.map(titleIn).join(" · "), "은/는")} 이미 있어서 {won(o.credit)} 빼 드려요 · {josa(missing.map(titleIn).join(" · "), "을/를")} 따로 사면{" "}
+            {won(o.regular)}
+            {qs}
+          </p>
+        </div>
+      );
+    }
     return (
       <div key={s}>
-        <PayButton
-          secondary
-          request={{ set: s, p: request.p, from: product.id }}
-          label={`${SETS[s].title} ${setPrice(s, pr).toLocaleString("ko-KR")}원 (따로 사면 ${regular.toLocaleString("ko-KR")}원)`}
-        />
+        <PayButton secondary request={{ set: s, p: request.p, from: product.id }} label={`${SETS[s].title} ${won(o.price)} (따로 사면 ${won(o.regular)})`} />
         <p className="mt-1 text-[11px] text-ink-soft">
-          {josa(list.map(titleIn).join(" · "), "을/를")} 이 사주로 한 번에{qs ? ` · 정 훈도 질문 ${qs}개 포함` : ""}
+          {josa(SETS[s].products.map(titleIn).join(" · "), "을/를")} 이 사주로 한 번에
+          {qs}
         </p>
       </div>
     );
