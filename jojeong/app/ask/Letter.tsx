@@ -44,10 +44,10 @@ export function RoomHead({ person, ilju, credits, extra, bare = false }: { perso
   return (
     <section className={bare ? "mt-4 px-1" : "jjok-box mt-3 px-4 pt-4 pb-3"}>
       <div className="flex items-center gap-3">
-        <HundoFace size={50} />
+        {!bare && <HundoFace size={50} />}
         <div className="min-w-0 flex-1">
           {!bare && <p className="font-myeongjo text-[11px] font-bold tracking-[0.25em] text-[#d4af5f]">觀象監 · 問訓導</p>}
-          <h1 className="font-myeongjo text-[19px] font-extrabold">정 훈도의 사랑방</h1>
+          <h1 className="font-myeongjo text-[19px] font-extrabold">{bare ? `${person.name}님의 사랑방` : "정 훈도의 사랑방"}</h1>
           <p className="truncate text-[12.5px] opacity-75">
             {person.name}님 · {ilju}
             {extra ? ` · ${extra}` : ""}

@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 // 청심당 (聽心堂), the hall where 정 훈도 hears the guest: the night-blue card with a faint paper-window lattice and a
 // warm glow, headed by its 현판. Shared by the home's card (app/HomeV2.tsx) and the hall's own page (app/ask).
 
@@ -107,6 +109,34 @@ export function Floor({ children, className = "" }: { children: React.ReactNode;
       className={`relative -mx-4 bg-[#241c15] px-4 py-7 text-hanji [background-image:repeating-linear-gradient(90deg,rgb(0_0_0/0.22)_0_1px,transparent_1px_72px),repeating-linear-gradient(180deg,rgb(255_255_255/0.025)_0_1px,transparent_1px_9px)] ${className}`}
     >
       {children}
+    </div>
+  );
+}
+
+// 청심당 inside, as drawn (public/cards/sarangbang.webp: 정 훈도 at his desk, the star screen, the moonlit doors):
+// the picture with the plaque over its ceiling beams, fading into the night blue where `children` sit.
+// `short`: a wide crop of it with no plaque (his hat sits high), as the head of a room (app/ask/[id]).
+export function RoomArt({ children, short = false, caption }: { children?: React.ReactNode; short?: boolean; caption?: string }) {
+  return (
+    <div className="relative -mx-4 overflow-clip bg-[#1b2430] text-hanji">
+      <div className={`relative ${short ? "aspect-[5/4]" : "aspect-[1122/1402]"}`}>
+        <Image
+          src="/cards/sarangbang.webp"
+          alt="정 훈도가 사랑방 서안 앞에 앉아 그대를 맞는 모습"
+          fill
+          priority
+          sizes="440px"
+          className={`object-cover ${short ? "object-[50%_32%]" : ""}`}
+        />
+        <span aria-hidden className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-[#141a22]/85 to-transparent" />
+        <span aria-hidden className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-[#1b2430]" />
+        {!short && (
+          <div className="absolute inset-x-0 top-3 flex justify-center">
+            <Plaque caption={caption} />
+          </div>
+        )}
+      </div>
+      {children && <div className="relative -mt-14 px-6 pb-7">{children}</div>}
     </div>
   );
 }
