@@ -5,7 +5,8 @@ import { ANONYMOUS, loadTossPayments } from "@tosspayments/tosspayments-sdk";
 
 // Makes the order on our side, then opens the Toss payment window (카드·간편결제). Toss returns the buyer to
 // /pay/success or /pay/fail. With PAY_MOCK the window is skipped and the success page is opened directly.
-export default function PayButton({ request, label, secondary = false }: { request: Record<string, string>; label: string; secondary?: boolean }) {
+// `className`: a look of the page's own (청심당's gold), in place of the two below.
+export default function PayButton({ request, label, secondary = false, className }: { request: Record<string, string>; label: string; secondary?: boolean; className?: string }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,9 +50,10 @@ export default function PayButton({ request, label, secondary = false }: { reque
         onClick={pay}
         disabled={busy}
         className={
-          secondary
+          className ??
+          (secondary
             ? "mt-2 w-full rounded-2xl border-2 border-seal/50 py-3 font-myeongjo font-extrabold text-seal disabled:opacity-60"
-            : "mt-4 w-full rounded-2xl bg-seal py-4 font-myeongjo text-lg font-extrabold text-hanji shadow-[0_6px_0_#7d1a14] disabled:opacity-60"
+            : "mt-4 w-full rounded-2xl bg-seal py-4 font-myeongjo text-lg font-extrabold text-hanji shadow-[0_6px_0_#7d1a14] disabled:opacity-60")
         }
       >
         {busy ? "결제창을 여는 중이에요…" : label}

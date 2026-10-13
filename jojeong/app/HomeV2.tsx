@@ -1,3 +1,4 @@
+import { Plaque } from "./ask/Hall";
 import Image from "next/image";
 import Link from "next/link";
 import { forgetMeAction } from "@/app/actions";
@@ -154,25 +155,6 @@ const PROMISES: [string, React.ReactNode][] = [
   ["一事", <><b>오늘 바로</b> 해 볼 한 가지</>],
   ["記憶", <>다음에 오면 <b>지난 이야기부터</b> 기억해요</>],
 ];
-
-// The 현판 heading the card: a wide dark board with the name carved in gold, held in a 단청 frame (red, green,
-// gold). 聽心堂: the hall where the heart is heard.
-function Plaque() {
-  return (
-    <div className="relative mx-auto w-fit">
-      <div className="rounded-[3px] bg-[#7a2a1f] p-[3px] shadow-[0_8px_16px_rgb(0_0_0/0.35)]">
-        <div className="rounded-[2px] bg-[#2f6b5a] p-[2px]">
-          <div className="rounded-[1px] bg-[#d4af5f] p-px">
-            <div className="bg-[linear-gradient(180deg,#2a2016,#1d160f)] [background-image:repeating-linear-gradient(90deg,rgb(255_255_255/0.025)_0_2px,transparent_2px_7px),linear-gradient(180deg,#2a2016,#1d160f)] px-7 pt-2 pb-1.5 text-center">
-              <p className="font-myeongjo text-[26px] leading-none tracking-[0.35em] text-[#e2bc68] drop-shadow-[0_1px_0_rgb(0_0_0/0.6)] [padding-left:0.35em]">聽心堂</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <p className="relative mt-2 text-center text-[10.5px] font-bold tracking-[0.12em] text-[#e2bc68]/75">청심당 · 마음을 듣는 정 훈도의 사랑방</p>
-    </div>
-  );
-}
 
 function Sangdam({ credits }: { credits: number | null }) {
   return (
