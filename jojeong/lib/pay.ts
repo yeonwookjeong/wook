@@ -41,6 +41,9 @@ export type Order = {
   bonus?: number;
   bonusMember?: string;
   bonusGiven?: boolean;
+  // The written report each product of this order opened with (its text's key, lib/store.ts getReportText), kept
+  // the first time it is read: it opens that same text ever after, whatever later changes to how reports are asked.
+  texts?: Partial<Record<ProductId, string>>;
   // A payment made to try the site (the owner's own, or marked so on /admin): kept, but out of the dashboard.
   test?: boolean;
   createdAt: number;
@@ -129,6 +132,13 @@ export async function giftOrders(limit = 100): Promise<Order[]> {
 // An order written back as it is (the 질문권 'credited' mark), for the payment pages.
 export async function setOrderRawPublic(order: Order) {
   await setOrderRaw(order.id, JSON.stringify(order));
+}
+
+// Keeps which text this order's report opened with (the order read fresh, so nothing written meanwhile is lost).
+export async function pinReportText(orderId: string, product: ProductId, key: string): Promise<void> {
+  const o = await getOrder(orderId);
+  if (!o || o.texts?.[product] === key) return;
+  await setOrderRaw(o.id, JSON.stringify({ ...o, texts: { ...o.texts, [product]: key } }));
 }
 
 // Marks a paid order as a test payment (or a real one again), for the owner's dashboard.

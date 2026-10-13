@@ -58,6 +58,10 @@ import { saleKey } from "@/lib/sales";
 import { KINDS, OFFERED, parseSearch, pickDays, searchDay, startMonths } from "@/lib/taekil";
 import { yearReading } from "@/lib/yearly";
 
+// From when a bought report opens with "바로 읽기" on top and the life report's free analysis folded. Orders paid
+// before it keep the page as it was when they were bought.
+const READ_FIRST_SINCE = Date.parse("2026-10-13T07:00:00Z");
+
 export async function generateMetadata({ params }: PageProps<"/reports/[id]">): Promise<Metadata> {
   const product = productById((await params).id);
   return product ? { title: product.title, description: product.tagline } : {};
@@ -654,6 +658,34 @@ async function OpenReport({
   // is folded. One who was given it never saw that analysis, so it stays open for them.
   if (unlock) {
     const chapters = chaptersOf(product.id).length;
+    // Bought before the read-first page: it opens as it did when it was bought (analysis open, report below).
+    if ((unlock.paidAt ?? unlock.createdAt) < READ_FIRST_SINCE)
+      return (
+        <>
+          <Header product={product} subjectName={`${name}님`} />
+          <OrderLink
+            id={unlock.id}
+            gift={!!unlock.gift}
+            others={(unlock.bundle ?? [])
+              .filter((id) => id !== product.id)
+              .map((id) => ({ href: `/reports/${id}?order=${unlock.id}`, title: productById(id)!.title }))}
+          />
+          {analysis(true)}
+          {!intro && chartFold}
+          <div id="report-start" className="scroll-mt-4">
+            <AiReport request={{ product: product.id, order: unlock.id }} chapters={chaptersOf(product.id)} modern />
+          </div>
+          {product.id === "yeonae" && (
+            <Link href="/reports/gunghap?from=yeonae" className="doc-paper mt-6 flex items-center gap-3 px-5 py-4">
+              <span className="min-w-0 flex-1">
+                <b className="block font-myeongjo">마음에 둔 사람이 있다면, 그 사람과는 어떨까요?</b>
+                <span className="block text-[12px] text-ink-soft">두 사람이 왜 끌리고 어디서 부딪히는지, 오래 가려면 무엇을 지킬지 봐 드려요</span>
+              </span>
+              <span className="shrink-0 text-sm font-bold text-seal">궁합 보기 →</span>
+            </Link>
+          )}
+        </>
+      );
     return (
       <>
         <Header product={product} subjectName={`${name}님`} />

@@ -35,7 +35,10 @@ export type JobRequest = { product: string; court?: string; m?: string; t?: stri
 
 // `v`: which prompt writes it. v5 is kept only to find the reports bought before v6, so they open as they were read.
 // `oldBrief`: the three-grade life flow the writer was told before the five grades (see app/api/report/route.ts).
-export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, oldBrief = false): Promise<ReportJob | { error: string; status: number }> {
+// `at`: when it was bought (ms). The 연운 speaks of its year from the year it was bought in ("이미 지난 해다(지금은
+// 2026년)"), so a report bought in 2026 keeps that wording, and so its key, after the new year. Unset: now.
+export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, oldBrief = false, at?: number): Promise<ReportJob | { error: string; status: number }> {
+  const nowYear = thisYear(at === undefined ? undefined : new Date(at));
   const product = productById(req.product);
   const spec = product && SPECS[v][product.id as ProductId];
   // A free report is never written (no spec either): free means no AI cost.
@@ -109,14 +112,14 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
     if (!me) return { error: "사주를 다시 입력해 주세요.", status: 400 };
     subjectLine = product.modern ? `[대상] ${me.name} ('${me.name}님'이라 부를 것)` : `[대상] ${me.name} ('그대'라 부를 것)`;
     // 연운: the year chosen is part of what was bought.
-    const y = product.id === "yeonun" ? yearOf(req.y, profileOf(me), thisYear()) : null;
+    const y = product.id === "yeonun" ? yearOf(req.y, profileOf(me), nowYear) : null;
     if (product.id === "yeonun" && y === null) return { error: "볼 해를 다시 골라 주세요.", status: 400 };
     if (y !== null) subjectLine += ` / 연운: ${y}년(${yearName(y).ko})`;
     briefs = [
       chartBrief(me.name, me.pillars, profileOf(me)),
       freeBrief(me.pillars, profileOf(me), 2026, oldBrief),
       ...deep(product.id, me.pillars, me.gender),
-      ...(y !== null ? [yeonunBrief(me.pillars, profileOf(me), y, thisYear())] : []),
+      ...(y !== null ? [yeonunBrief(me.pillars, profileOf(me), y, nowYear)] : []),
     ].join("\n\n");
   } else {
     if (product.id === "yeonun") return { error: "볼 사람과 해를 다시 골라 주세요.", status: 400 };
@@ -131,7 +134,7 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
 
   const system = systemPromptFor(product, v);
   // 연운 for a year already gone asks its twelve questions in the past tense.
-  const past = product.id === "yeonun" && req.y !== undefined && Number(req.y) < thisYear();
+  const past = product.id === "yeonun" && req.y !== undefined && Number(req.y) < nowYear;
   const prompt = userPrompt(past ? { ...spec, chapters: YEONUN_PAST_TOC } : spec, subjectLine, briefs);
   const key = createHash("sha256").update([v, REPORT_MODEL, product.id, system, prompt].join("\n")).digest("base64url");
   return { key, system, prompt, title: product.title, modern: Boolean(product.modern) };
