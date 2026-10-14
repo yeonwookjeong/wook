@@ -116,7 +116,7 @@ export function MonthsStrip({ title, sub, months, y, pick }: { title: string; su
               <span className={`mt-1 inline-block rounded-md px-2 py-0.5 text-[12px] font-extrabold ${MARK_STYLE[m.rating]}`}>
                 {MARK[m.rating]} {MARK_WORD[m.rating]}
               </span>
-              {m.tags.length > 0 && <span className="mt-1 block text-[10px] leading-tight text-ink-soft">{tagWords(m.tags)}</span>}
+              {m.tags.length > 0 && <span className="mt-1 block text-[11px] leading-tight text-ink-soft">{tagWords(m.tags)}</span>}
             </li>
           );
         })}
@@ -478,7 +478,7 @@ export function FlowFigure({ flow }: { flow: NonNullable<FreeReading["flow"]> })
           <li key={f.from} className={`flex items-start gap-2 py-1.5 text-[12px] ${f.now ? "-mx-1.5 rounded-md bg-seal/8 px-1.5" : ""}`}>
             <span className="w-[4.6rem] shrink-0 tabular-nums">
               <b>{f.age}</b>
-              <span className="block text-[10px] text-ink-soft">
+              <span className="block text-[11px] text-ink-soft">
                 {f.from}~{f.to}
               </span>
             </span>

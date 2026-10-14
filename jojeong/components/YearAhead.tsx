@@ -77,7 +77,7 @@ export default function YearAhead({
         {y.months.map((m) => (
           <div key={m.from} className="flex h-full flex-1 flex-col justify-end">
             <span
-              className="text-center text-[10px] font-bold"
+              className="text-center text-[11px] font-bold"
               style={{ color: MONTH[m.rating].bar }}
             >
               {MONTH[m.rating].mark}
@@ -92,11 +92,11 @@ export default function YearAhead({
           </div>
         ))}
       </div>
-      <div className="mt-1 flex gap-1 text-center text-[9.5px] leading-tight text-ink-soft">
+      <div className="mt-1 flex gap-1 text-center text-[10.5px] leading-tight text-ink-soft">
         {y.months.map((m) => (
           <span key={m.from} className="flex-1">
             {m.from}
-            <span className="block font-myeongjo text-[10px] text-ink">
+            <span className="block font-myeongjo text-[11px] text-ink">
               {m.gz}
             </span>
           </span>
@@ -158,7 +158,7 @@ function Row({
   return (
     <li className={`relative rounded-xl px-3 py-2.5 ${tone}`}>
       <p className="flex items-baseline gap-2">
-        <span className="text-[10px] font-extrabold tracking-wider text-seal">
+        <span className="text-[11px] font-extrabold tracking-wider text-seal">
           {step}
         </span>
         <b className="text-[13px]">{label}</b>
@@ -196,7 +196,7 @@ function Stack({
                 className="flex flex-col items-center leading-tight"
               >
                 {n.gz}
-                <span className="font-sans text-[9.5px] font-normal text-ink-soft">
+                <span className="font-sans text-[10.5px] font-normal text-ink-soft">
                   {n.pos}주
                 </span>
               </span>
@@ -272,7 +272,7 @@ export function YearTeaser({ name, y, d, href }: { name: string; y: YearPreview;
           </div>
         ))}
       </div>
-      <div className="mt-1 flex gap-1 text-center text-[9.5px] text-ink-soft">
+      <div className="mt-1 flex gap-1 text-center text-[10.5px] text-ink-soft">
         {y.months.map((m) => (
           <span key={m.from} className="flex-1">
             {m.from}

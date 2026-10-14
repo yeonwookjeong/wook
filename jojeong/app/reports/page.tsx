@@ -47,7 +47,7 @@ function Row({ p, mine }: { p: Product; mine?: string }) {
           <span className={`mt-0.5 block text-[13px] leading-snug ${free ? "text-ink-soft" : "text-hanji/75"}`}>
             <Keep clauses>{p.tagline}</Keep>
           </span>
-          {where && <span className="mt-1 inline-block border border-gold/60 px-1.5 text-[10px] font-bold text-gold">{where}</span>}
+          {where && <span className="mt-1 inline-block border border-gold/60 px-1.5 text-[11px] font-bold text-gold">{where}</span>}
         </span>
         <span className={`shrink-0 text-right font-myeongjo font-extrabold ${free ? "text-seal" : "text-gold"}`}>
           {mine ? (

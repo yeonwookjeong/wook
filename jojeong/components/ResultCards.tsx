@@ -28,7 +28,7 @@ function Frame({ no, say, children }: { no: string; say: string; children: React
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/hundo-face.png" alt="" className="size-12 shrink-0 rounded-full border-[3px] bg-hanji object-cover" style={{ borderColor: GOLD }} />
         <p className="min-w-0 flex-1 rounded-2xl rounded-bl-sm bg-white px-3 py-1.5 text-[12px] leading-snug font-bold text-ink">{say}</p>
-        <span className="shrink-0 text-[9px] tracking-wider text-hanji/80">hundosaju.com</span>
+        <span className="shrink-0 text-[10.5px] tracking-wider text-hanji/80">hundosaju.com</span>
       </div>
     </div>
   );

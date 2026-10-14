@@ -14,7 +14,7 @@ import type { Relation } from "./relations";
 import type { Person } from "./pairToken";
 import { freeBrief } from "./freeReading";
 import { decadeBrief, decadeOf, domainBrief, isDomain } from "./domains";
-import { newYearOf, thisYear, yearOf, yearName, yeonunBrief } from "./yeonun";
+import { newYearOf, sajuYear, thisYear, yearOf, yearName, yeonunBrief } from "./yeonun";
 import { NEW_YEAR_CHAPTER, PROMPT_NOW, SPECS, systemPromptFor, userPrompt, yearChaptersFor, type PromptVersion } from "./reportPrompts";
 import { dayStart, KINDS, parseSearch, pickDays, searchDay, taekilBrief } from "./taekil";
 import type { Gender } from "./profile";
@@ -43,6 +43,8 @@ export type JobRequest = { product: string; court?: string; m?: string; t?: stri
 // 2026년)"), so a report bought in 2026 keeps that wording, and so its key, after the new year. Unset: now.
 export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, oldBrief = false, at?: number): Promise<ReportJob | { error: string; status: number }> {
   const nowYear = thisYear(at === undefined ? undefined : new Date(at));
+  // The year the charts are read for (turning at 입춘): bought in 2026, the brief stays 2026's, and so its key.
+  const briefYear = sajuYear(at === undefined ? undefined : new Date(at));
   const product = productById(req.product);
   const spec = product && SPECS[v][product.id as ProductId];
   // A free report is never written (no spec either): free means no AI cost.
@@ -59,8 +61,8 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
     const days = pickDays(found.kind, b ? [a, b] : [a], found.from, found.n, dayStart(searchDay(req.d)));
     subjectLine = `[대상] 읽는 사람: ${a.name} ('${a.name}님'이라 부를 것)${b ? ` / 함께하는 사람: ${b.name}` : ""} / 택일: ${KINDS[found.kind].title}`;
     briefs = [
-      chartBrief(a.name, a.pillars, profileOf(a)),
-      ...(b ? [chartBrief(b.name, b.pillars, profileOf(b)), coupleBrief(a, b)] : []),
+      chartBrief(a.name, a.pillars, profileOf(a), briefYear),
+      ...(b ? [chartBrief(b.name, b.pillars, profileOf(b), briefYear), coupleBrief(a, b)] : []),
       taekilBrief(found.kind, days, found.label),
     ].join("\n\n");
   } else if (isPair(product)) {
@@ -76,8 +78,8 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
         ? `[대상] 읽는 사람: ${a.name} ('${a.name}님'이라 부를 것) / 헤어진 상대: ${b.name}`
         : `[대상] 읽는 사람: ${a.name} ('${a.name}님'이라 부를 것) / 상대: ${b.name} / 관계: ${RELATIONS[rel]}`;
     briefs = [
-      chartBrief(a.name, a.pillars, profileOf(a)),
-      chartBrief(b.name, b.pillars, profileOf(b)),
+      chartBrief(a.name, a.pillars, profileOf(a), briefYear),
+      chartBrief(b.name, b.pillars, profileOf(b), briefYear),
       pairBrief(a.name, a.pillars, b.name, b.pillars),
       coupleBrief(a, b),
       // v8 궁합: the two people's ten years and six months, as the report's pictures show them.
@@ -97,20 +99,20 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
       const pairs: string[] = [];
       for (let i = 0; i < people.length; i++)
         for (let j = i + 1; j < people.length; j++) pairs.push(pairBrief(people[i].name, people[i].pillars, people[j].name, people[j].pillars));
-      briefs = [...people.map((x) => chartBrief(x.name, x.pillars, null)), ...pairs].join("\n\n");
+      briefs = [...people.map((x) => chartBrief(x.name, x.pillars, null, briefYear)), ...pairs].join("\n\n");
     } else if (product.id === "dwitjosa") {
       if (!isKing) return { error: "전하만 신하를 뒷조사하실 수 있사옵니다.", status: 403 };
       const target = ministers.find((m) => m.id === req.t);
       if (!target) return { error: "뒷조사할 신하를 골라 주시옵소서.", status: 400 };
       subjectLine = `[대상] 읽는 사람: ${court.kingName} 전하 / 뒷조사 대상: ${target.name}`;
       const kp = await getProfile(court.id, "king");
-      briefs = [chartBrief(`${court.kingName}(전하)`, court.king, kp), chartBrief(target.name, target.pillars, null), pairBrief(court.kingName, court.king, target.name, target.pillars)].join("\n\n");
+      briefs = [chartBrief(`${court.kingName}(전하)`, court.king, kp, briefYear), chartBrief(target.name, target.pillars, null, briefYear), pairBrief(court.kingName, court.king, target.name, target.pillars)].join("\n\n");
     } else {
       const mine = ministers.find((m) => m.id === me);
       if (!mine) return { error: "입궐한 신하 본인만 볼 수 있사옵니다.", status: 403 };
       subjectLine = `[대상] 읽는 사람: 신하 ${mine.name} / 그 조정의 왕: ${court.kingName}`;
       const mp = await getProfile(court.id, mine.id);
-      briefs = [chartBrief(mine.name, mine.pillars, mp), chartBrief(`${court.kingName}(왕)`, court.king, null), pairBrief(court.kingName, court.king, mine.name, mine.pillars)].join("\n\n");
+      briefs = [chartBrief(mine.name, mine.pillars, mp, briefYear), chartBrief(`${court.kingName}(왕)`, court.king, null, briefYear), pairBrief(court.kingName, court.king, mine.name, mine.pillars)].join("\n\n");
     }
   } else if (req.p) {
     // The reader's own chart remembered in the browser (lib/me.ts), carried like one person of a 궁합.
@@ -122,8 +124,8 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
     if (product.id === "yeonun" && y === null) return { error: "볼 해를 다시 골라 주세요.", status: 400 };
     if (y !== null) subjectLine += ` / 연운: ${y}년(${yearName(y).ko})`;
     briefs = [
-      chartBrief(me.name, me.pillars, profileOf(me)),
-      freeBrief(me.pillars, profileOf(me), 2026, oldBrief),
+      chartBrief(me.name, me.pillars, profileOf(me), briefYear),
+      freeBrief(me.pillars, profileOf(me), briefYear, oldBrief),
       ...deep(product.id, me.pillars, me.gender),
       ...(y !== null ? [yeonunBrief(me.pillars, profileOf(me), y, nowYear)] : []),
     ].join("\n\n");
@@ -135,7 +137,7 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
     subjectLine = product.modern
       ? `[대상] ${subject.name} ('${subject.name}님'이라 부를 것)`
       : `[대상] ${subject.name}${subject.king ? " (조정의 왕이므로 '전하'라 부를 것)" : " ('그대'라 부를 것)"}`;
-    briefs = [chartBrief(subject.name, subject.pillars, profile), freeBrief(subject.pillars, profile, 2026, oldBrief), ...deep(product.id, subject.pillars, profile?.gender ?? null)].join("\n\n");
+    briefs = [chartBrief(subject.name, subject.pillars, profile, briefYear), freeBrief(subject.pillars, profile, briefYear, oldBrief), ...deep(product.id, subject.pillars, profile?.gender ?? null)].join("\n\n");
   }
 
   const system = systemPromptFor(product, v);

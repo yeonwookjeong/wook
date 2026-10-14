@@ -183,7 +183,10 @@ const plainCard = (f: string) => {
   return `${g}\n${SUMMARY_STYLE}${g.includes(RARE_ROW) ? `\n${RARE_STYLE}` : ""}`;
 };
 const FOCUS_V9: Partial<Record<ProductId, string>> = Object.fromEntries(
-  Object.entries(FOCUS_V8).map(([id, f]) => [id, f && f.includes("[한눈에]") ? plainCard(f) : f]),
+  Object.entries(FOCUS_V8)
+    // The year is the brief's (lib/brief.ts chartBrief, the chart's year at purchase), never a fixed 2026.
+    .map(([id, f]) => [id, f?.replaceAll("현재 대운과 2026년", "현재 대운과 올해").replaceAll("2026 월운", "올해 월운")] as const)
+    .map(([id, f]) => [id, f && f.includes("[한눈에]") ? plainCard(f) : f]),
 );
 
 export type PromptVersion = "v5" | "v6" | "v7" | "v8" | "v9";

@@ -23,7 +23,7 @@ export default function AdSlot({ className = "mt-8" }: { className?: string }) {
   if (!adsOn) return null;
   return (
     <aside className={className} aria-label="광고">
-      <p className="mb-1 text-center text-[10px] text-ink-soft/70">광고</p>
+      <p className="mb-1 text-center text-[11px] text-ink-soft/70">광고</p>
       <Script
         id="adsbygoogle"
         src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}

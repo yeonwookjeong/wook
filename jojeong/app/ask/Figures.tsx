@@ -27,7 +27,7 @@ function Frame({ title, sub, note, children }: { title: string; sub?: string; no
 }
 
 const Star = () => (
-  <span className="absolute -top-1.5 -right-1.5 z-10 grid size-4 place-items-center rounded-full bg-[#d4af5f] text-[9px] text-white shadow">★</span>
+  <span className="absolute -top-1.5 -right-1.5 z-10 grid size-4 place-items-center rounded-full bg-[#d4af5f] text-[10.5px] text-white shadow">★</span>
 );
 
 function Lit({ on, children }: { on: boolean; children: React.ReactNode }) {
@@ -97,16 +97,16 @@ export function ChartFigure({ f }: { f: Figures }) {
         <span />
         {f.cols.map((c) => (
           <span key={`p${c.pos}`} className="text-[11px] font-bold">
-            {c.pos}주<span className="block text-[9.5px] leading-tight font-normal text-ink-soft">{POS_ROLE[c.pos]}</span>
+            {c.pos}주<span className="block text-[10.5px] leading-tight font-normal text-ink-soft">{POS_ROLE[c.pos]}</span>
           </span>
         ))}
-        <span className="self-center text-left text-[10px] font-bold text-ink-soft">십성</span>
+        <span className="self-center text-left text-[11px] font-bold text-ink-soft">십성</span>
         {f.cols.map((c) => (
           <span key={`g${c.pos}`} className={`text-[10.5px] font-bold ${c.stemLit ? "text-[#b8902f]" : "text-seal"}`}>
             {c.pos === "일" ? "나" : c.stemGod || "·"}
           </span>
         ))}
-        <span className="self-center text-left text-[10px] font-bold text-ink-soft">천간</span>
+        <span className="self-center text-left text-[11px] font-bold text-ink-soft">천간</span>
         {f.cols.map((c) => (
           <div key={`s${c.pos}`} className={`rounded-xl p-0.5 ${c.seatStem ? "outline-2 outline-seal/50 outline-dashed" : ""}`}>
             <Lit on={c.stemLit}>
@@ -114,7 +114,7 @@ export function ChartFigure({ f }: { f: Figures }) {
             </Lit>
           </div>
         ))}
-        <span className="self-center text-left text-[10px] font-bold text-ink-soft">지지</span>
+        <span className="self-center text-left text-[11px] font-bold text-ink-soft">지지</span>
         {f.cols.map((c) => (
           <div key={`b${c.pos}`} className={`rounded-xl p-0.5 ${c.seat ? "outline-2 outline-seal/50 outline-dashed" : ""}`}>
             <Lit on={c.branchLit}>
@@ -122,18 +122,18 @@ export function ChartFigure({ f }: { f: Figures }) {
             </Lit>
           </div>
         ))}
-        <span className="self-center text-left text-[10px] font-bold text-ink-soft">십성</span>
+        <span className="self-center text-left text-[11px] font-bold text-ink-soft">십성</span>
         {f.cols.map((c) => (
           <span key={`u${c.pos}`} className={`text-[10.5px] font-bold ${c.branchLit ? "text-[#b8902f]" : "text-seal"}`}>
             {c.branchGod || "모름"}
-            {c.seat && <span className="block text-[9.5px] text-seal">{c.seat}</span>}
+            {c.seat && <span className="block text-[10.5px] text-seal">{c.seat}</span>}
           </span>
         ))}
       </div>
       <div className="mt-1.5 grid grid-cols-[2.6rem_repeat(4,minmax(0,1fr))] gap-x-1.5 text-center text-[10.5px]">
         {rows.map(([label, cell]) => (
           <div key={label} className="contents">
-            <span className="border-t border-seal/10 py-1 text-left text-[10px] font-bold text-ink-soft">{label}</span>
+            <span className="border-t border-seal/10 py-1 text-left text-[11px] font-bold text-ink-soft">{label}</span>
             {f.cols.map((c) => (
               <span key={c.pos} className="border-t border-seal/10 py-1 leading-tight">
                 {cell(c)}
@@ -177,7 +177,7 @@ export function ElementsFigure({ f }: { f: Figures }) {
             <span className="w-[4.6rem] shrink-0 text-right tabular-nums">
               <b>{pct}%</b> <span className="text-[10.5px] text-ink-soft">({f.count[e]})</span>
               {e === f.starEl && <b className="ml-0.5 text-[#b8902f]">★</b>}
-              {e === f.yong && <b className="ml-0.5 text-[10px] text-seal">용</b>}
+              {e === f.yong && <b className="ml-0.5 text-[11px] text-seal">용</b>}
             </span>
           </li>
         ))}
@@ -207,8 +207,8 @@ export function MonthsFigure({ f }: { f: Figures }) {
               </span>
             </span>
             <span className={`mt-1 text-[11px] leading-tight font-bold ${m.now ? "text-seal" : ""}`}>{m.label}</span>
-            <span className="text-[9.5px] text-ink-soft">{m.from}~</span>
-            <span className="mt-0.5 flex flex-col text-[9.5px] leading-tight text-seal">
+            <span className="text-[10.5px] text-ink-soft">{m.from}~</span>
+            <span className="mt-0.5 flex flex-col text-[10.5px] leading-tight text-seal">
               {m.tags.slice(0, 2).map((t) => (
                 <span key={t}>{t}</span>
               ))}
@@ -257,7 +257,7 @@ export function ClashFigure({ c }: { c: NonNullable<FigureKit["clash"]> }) {
               <Cell value={col.branch === null ? null : BRANCHES[col.branch]} el={col.branch === null ? null : BRANCH_EL[col.branch]} />
               <span className="flex min-h-5 flex-col gap-0.5">
                 {col.touches.map((t, i) => (
-                  <span key={i} className={`rounded-md border px-0.5 py-0.5 text-[9.5px] leading-tight font-bold ${t.good ? TOUCH_GOOD : TOUCH_BAD}`}>
+                  <span key={i} className={`rounded-md border px-0.5 py-0.5 text-[10.5px] leading-tight font-bold ${t.good ? TOUCH_GOOD : TOUCH_BAD}`}>
                     {t.from} {t.kind.split(" · ")[0]}
                     <span className="block font-normal">{t.kind.split(" · ")[1]}</span>
                   </span>
@@ -277,7 +277,7 @@ export function SeatFigure({ s }: { s: NonNullable<FigureKit["seat"]> }) {
     <Frame title="한 자리 들여다보기" sub={`${s.name} · ${s.pos}주`} note={s.meaning}>
       <div className="flex items-start gap-3">
         <div className="flex w-[4.5rem] shrink-0 flex-col gap-1 text-center">
-          <span className="text-[10px] font-bold text-seal">{s.stemGod}</span>
+          <span className="text-[11px] font-bold text-seal">{s.stemGod}</span>
           <Cell value={s.stem === null ? null : STEMS[s.stem]} el={s.stem === null ? null : stemEl(s.stem)} />
           <div className="relative rounded-lg ring-[2.5px] ring-[#d4af5f] ring-offset-1 ring-offset-hanji">
             <Cell value={BRANCHES[s.branch]} el={BRANCH_EL[s.branch]} />
@@ -334,7 +334,7 @@ export function DecadesFigure({ d }: { d: NonNullable<FigureKit["decades"]> }) {
         <span aria-hidden className="absolute top-[3.15rem] right-2 left-2 h-0.5 bg-seal/20" />
         {shown.map((s) => (
           <li key={s.from} className="relative flex flex-col items-center gap-1">
-            <span className={`text-[10px] font-bold ${s.now ? "text-seal" : "text-ink-soft"}`}>{s.god}</span>
+            <span className={`text-[11px] font-bold ${s.now ? "text-seal" : "text-ink-soft"}`}>{s.god}</span>
             <span
               className={`grid size-10 place-items-center rounded-full font-myeongjo text-[13px] font-bold ${s.now ? "bg-seal text-hanji ring-2 ring-[#d4af5f] ring-offset-1 ring-offset-hanji" : "border border-seal/30 bg-hanji"}`}
             >
@@ -345,7 +345,7 @@ export function DecadesFigure({ d }: { d: NonNullable<FigureKit["decades"]> }) {
               {s.from}~{String(s.to).slice(2)}
               {s.now && <span className="block">지금</span>}
             </span>
-            {s.age && <span className="text-[9.5px] text-ink-soft">{s.age}</span>}
+            {s.age && <span className="text-[10.5px] text-ink-soft">{s.age}</span>}
           </li>
         ))}
       </ol>
@@ -469,26 +469,26 @@ export function BondMonthsFigure({ b, name }: { b: Bond; name: string }) {
         {b.months.map((m) => (
           <span key={m.label} className={`leading-tight font-bold ${m.now ? "text-seal" : ""}`}>
             {m.label.replace("내년 ", "")}
-            <span className="block text-[9px] font-normal text-ink-soft">{m.from}~</span>
+            <span className="block text-[10.5px] font-normal text-ink-soft">{m.from}~</span>
           </span>
         ))}
-        <span className="self-center text-left text-[10px] font-bold text-ink-soft">나</span>
+        <span className="self-center text-left text-[11px] font-bold text-ink-soft">나</span>
         {b.months.map((m) => (
           <span key={m.label} className="font-bold">
             {MARK[m.me]}
           </span>
         ))}
-        <span className="self-center truncate text-left text-[10px] font-bold text-ink-soft">{b.label}</span>
+        <span className="self-center truncate text-left text-[11px] font-bold text-ink-soft">{b.label}</span>
         {b.months.map((m) => (
           <span key={m.label} className="font-bold">
             {MARK[m.them]}
           </span>
         ))}
-        <span className="self-center text-left text-[10px] font-bold text-ink-soft">함께</span>
+        <span className="self-center text-left text-[11px] font-bold text-ink-soft">함께</span>
         {b.months.map((m) => (
           <span
             key={m.label}
-            className={`flex min-h-10 flex-col items-center justify-center rounded-md px-0.5 text-[9.5px] leading-tight font-bold ${BOTH_STYLE[m.both]}`}
+            className={`flex min-h-10 flex-col items-center justify-center rounded-md px-0.5 text-[10.5px] leading-tight font-bold ${BOTH_STYLE[m.both]}`}
           >
             {m.both.replace("함께 ", "")}
             {m.meet && <span className="block font-normal">{m.meet}</span>}

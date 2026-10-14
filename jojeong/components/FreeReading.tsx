@@ -210,7 +210,7 @@ export default function FreeReading({
                     <summary className="flex cursor-pointer list-none items-start gap-3 px-3 py-2 [&::-webkit-details-marker]:hidden">
                       <span className="w-[4.6rem] shrink-0 text-[12px] leading-tight">
                         <b className="block">{f.age || `${f.from}년~`}</b>
-                        <span className="text-[10px] text-ink-soft">
+                        <span className="text-[11px] text-ink-soft">
                           {f.from}~{f.to}
                         </span>
                       </span>

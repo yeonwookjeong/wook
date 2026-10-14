@@ -217,7 +217,7 @@ export default function YearReport({
         <ol className="mt-5 grid grid-cols-6 gap-1 text-center" aria-label="월별 흐름">
           {months.map((m, i) => (
             <li key={m.from} className="flex flex-col items-center gap-0.5">
-              <span className="text-[10px] text-ink-soft">{monthLabel(i)}</span>
+              <span className="text-[11px] text-ink-soft">{monthLabel(i)}</span>
               <span className={`flex size-7 items-center justify-center rounded-full text-sm font-bold ${RATING[m.rating].cls}`} aria-label={RATING[m.rating].label}>
                 {RATING[m.rating].mark}
               </span>

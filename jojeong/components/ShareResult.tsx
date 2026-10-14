@@ -99,7 +99,7 @@ export default function ShareResult({
           <p className="px-1 text-[12px] font-bold text-ink-soft">무엇을 보낼까요?</p>
           <button type="button" onClick={() => send("summary")} className="mt-2 w-full rounded-xl border-2 border-seal bg-hanji px-4 py-3 text-left">
             <b className="block font-myeongjo text-[15px]">
-              요약 한 장만 <span className="ml-1 rounded bg-seal px-1.5 py-0.5 text-[10px] text-hanji">추천</span>
+              요약 한 장만 <span className="ml-1 rounded bg-seal px-1.5 py-0.5 text-[11px] text-hanji">추천</span>
             </b>
             <span className="mt-0.5 block text-[12px] leading-snug text-ink-soft">일주, 가장 큰 힘, 돈·사랑·일 한 줄만 보여요. 사주 글자는 담기지 않아요.</span>
           </button>

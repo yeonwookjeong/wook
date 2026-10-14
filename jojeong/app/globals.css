@@ -21,7 +21,7 @@
   --color-ink: #211b17;
   --color-ink-soft: #62564c;
   --color-seal: #b3261e;
-  --color-gold: #a87a22;
+  --color-gold: #86601a; /* text on hanji at 4.8:1 (was #a87a22, 3.3:1) */
   --color-jade: #3d6656;
   /* 쪽빛: indigo with ink in it, for the reports on sale (less cold than the hero's night blue). */
   --color-jjok: #222d3b;

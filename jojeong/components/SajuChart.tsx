@@ -30,7 +30,7 @@ export function Cell({ value, el, blank = "?" }: { value: string | null; el: num
     <div className={`flex aspect-square flex-col items-center justify-center rounded-lg ${EL_STYLE[el]}`}>
       <span className="font-myeongjo text-xl leading-none font-extrabold">{value}</span>
       {/* How it is read, then its element: 경 · 금. */}
-      <span className="mt-0.5 text-[10px] leading-none opacity-80">
+      <span className="mt-0.5 text-[11px] leading-none opacity-80">
         {hanjaKo(value)} · {ELEMENT_KO[el]}
       </span>
     </div>
@@ -87,11 +87,11 @@ export default function SajuChart({
           <div key={s.pos} className="flex flex-col gap-1">
             <span className="text-[11px] text-ink-soft">{s.pos}주</span>
             {/* 십신 over the stem, then the branch with its 십신, hidden stems (지장간) and life stage (12운성) */}
-            <span className="text-[10px] font-bold text-seal">{s.stem === null ? " " : s.pos === "일" ? "나" : tenGod(day, s.stem)}</span>
+            <span className="text-[11px] font-bold text-seal">{s.stem === null ? " " : s.pos === "일" ? "나" : tenGod(day, s.stem)}</span>
             <Cell value={s.stem === null ? null : STEMS[s.stem]} el={s.stem === null ? null : stemEl(s.stem)} />
             <Cell value={s.branch === null ? null : BRANCHES[s.branch]} el={s.branch === null ? null : BRANCH_EL[s.branch]} />
             {s.branch !== null && (
-              <span className="flex flex-col text-[10px] leading-tight text-ink-soft">
+              <span className="flex flex-col text-[11px] leading-tight text-ink-soft">
                 <span className="font-bold text-seal">{tenGod(day, HIDDEN[s.branch].at(-1)![0])}</span>
                 {/* Too small for the brush hand: the plain face keeps these readable. */}
                 <span>{HIDDEN[s.branch].map(([h]) => STEMS[h]).join("")}</span>

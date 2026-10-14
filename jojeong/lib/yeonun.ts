@@ -244,6 +244,12 @@ export function yearRows(p: Pillars, profile: Profile | null, from: number, to: 
 
 // The current year in Korea.
 export const thisYear = (now = new Date()) => new Date(now.getTime() + 9 * 3600000).getUTCFullYear();
+// The year as a chart reads it: it turns at 입춘 (about 4 February), not on 1 January.
+export const sajuYear = (now = new Date()) => {
+  const kst = new Date(now.getTime() + 9 * 3600000);
+  const m = kst.getUTCMonth() + 1;
+  return m === 1 || (m === 2 && kst.getUTCDate() < 4) ? kst.getUTCFullYear() - 1 : kst.getUTCFullYear();
+};
 
 // The coming year sold on its own as 신년운세 (the same 연운 report and order for that year): from September,
 // when people start asking about next year, through February, when the new year has turned at 입춘. Null in

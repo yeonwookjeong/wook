@@ -21,7 +21,7 @@ function Pillar({ label, stem, branch, me }: { label: string; stem: number | und
   const known = stem !== undefined && branch !== undefined && branch !== null;
   return (
     <div className={`rounded-lg border py-1.5 text-center ${me ? "border-[#d4af5f] bg-[#d4af5f]/12" : "border-[#d4af5f]/35 bg-white/[0.04]"}`}>
-      <small className="block text-[10px] opacity-60">{label}</small>
+      <small className="block text-[11px] opacity-60">{label}</small>
       <b className="block font-myeongjo text-[22px] leading-[1.15] font-normal">
         {known ? (
           <>

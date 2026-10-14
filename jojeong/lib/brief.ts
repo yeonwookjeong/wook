@@ -4,6 +4,7 @@ import { selfStars, type Profile } from "./profile";
 import { distinctOf, perHundred } from "./rarity";
 import { BRANCHES, isFull, matchPillars, STEMS, type Pillars } from "./saju";
 import { MONTHS, YEAR, yearReading } from "./yearly";
+import { sajuYear, yearDetail } from "./yeonun";
 
 // A plain-text "chart brief": everything the engine worked out about one person, laid out for the writer of
 // the reports (lib/reportWriter.ts). The writer interprets; it never calculates.
@@ -25,7 +26,9 @@ export function birthYearOf(p: Pillars, profile: Profile | null): { year: number
   return y ? { year: y, certain: false } : null;
 }
 
-export function chartBrief(name: string, p: Pillars, profile: Profile | null): string {
+// `y`: the year the report speaks of as 올해 (the chart's year, turning at 입춘). 2026 keeps its fuller reading
+// (lib/yearly.ts); any other year is read from the 연운 engine (lib/yeonun.ts yearDetail).
+export function chartBrief(name: string, p: Pillars, profile: Profile | null, y = sajuYear()): string {
   const r = readChart(p);
   if (!r || !isFull(p)) return `${name}: 여덟 글자가 온전하지 않은 옛 기록(일주 ${GZ(p.dayStem, p.dayBranch)}, 띠 ${BRANCHES[p.yearBranch]})`;
   const lines: string[] = [];
@@ -33,7 +36,7 @@ export function chartBrief(name: string, p: Pillars, profile: Profile | null): s
   lines.push(`■ ${name}`);
   lines.push(
     `- 기본: ${profile?.gender === "m" ? "남성" : profile?.gender === "f" ? "여성" : "성별 미상"}, ${
-      by ? `${by.year}년생${by.certain ? "" : "(추정)"}, 2026년 만 ${2026 - by.year - 1}~${2026 - by.year}세` : "나이 미상"
+      by ? `${by.year}년생${by.certain ? "" : "(추정)"}, ${y}년 만 ${y - by.year - 1}~${y - by.year}세` : "나이 미상"
     }, 태어난 시각 ${p.hourBranch === null ? "모름(시주 없음)" : "앎"}`,
   );
   lines.push(...distinctLines(p, profile));
@@ -91,7 +94,7 @@ export function chartBrief(name: string, p: Pillars, profile: Profile | null): s
 
   // 대운
   if (profile?.daeun?.length) {
-    const cur = profile.daeun.find((d) => d.from <= 2026 && 2026 <= d.to);
+    const cur = profile.daeun.find((d) => d.from <= y && y <= d.to);
     lines.push(
       `- 대운: ${profile.daeun
         .map((d) => `${GZ(d.stem, d.branch)}(${d.from}~${d.to}, ${tenGod(p.dayStem, d.stem)}/${tenGod(p.dayStem, HIDDEN[d.branch].at(-1)![0])})${d === cur ? "←현재" : ""}`)
@@ -99,23 +102,32 @@ export function chartBrief(name: string, p: Pillars, profile: Profile | null): s
     );
   } else lines.push("- 대운: 성별을 몰라 계산하지 않음");
 
-  // 2026
-  const y = yearReading(p, profile);
+  // 올해
+  const yr = y === 2026 ? yearReading(p, profile) : null;
   const yearMeet = br.flatMap((s) => {
     const m = meetings(YEAR.branch, s.branch!);
     return m.length ? [`${s.pos}지${BRANCHES[s.branch!]}와 ${m.join("·")}`] : [];
   });
-  lines.push(
-    `- 2026 병오(丙午)년: 丙=${tenGod(p.dayStem, 2)}, 午=${tenGod(p.dayStem, 3)}; 午 자리 12운성 ${stageOf(p.dayStem, 6)}; 원국과 ${yearMeet.length ? yearMeet.join(", ") : "특별한 합충 없음"}${
-      stemCombine(2, p.dayStem) ? "; 丙과 일간 천간합" : stemClash(2, p.dayStem) ? "; 丙과 일간 천간충" : ""
-    }; 올해 신살 ${salsAt(p, 6).join(", ") || "없음"}; 엔진 판정 ${y?.verdict ?? "-"}`,
-  );
-  if (y)
+  if (y === 2026)
     lines.push(
-      `- 2026 월운(절기 기준, ◎좋음 ○무난 △조심 ✕고비): ${y.months
+      `- 2026 병오(丙午)년: 丙=${tenGod(p.dayStem, 2)}, 午=${tenGod(p.dayStem, 3)}; 午 자리 12운성 ${stageOf(p.dayStem, 6)}; 원국과 ${yearMeet.length ? yearMeet.join(", ") : "특별한 합충 없음"}${
+        stemCombine(2, p.dayStem) ? "; 丙과 일간 천간합" : stemClash(2, p.dayStem) ? "; 丙과 일간 천간충" : ""
+      }; 올해 신살 ${salsAt(p, 6).join(", ") || "없음"}; 엔진 판정 ${yr?.verdict ?? "-"}`,
+    );
+  if (yr)
+    lines.push(
+      `- 2026 월운(절기 기준, ◎좋음 ○무난 △조심 ✕고비): ${yr.months
         .map((m, i) => `${MONTHS[i].from.split("/")[0]}월 ${m.gz} ${"✕△○◎"[m.rating]}${m.tags.length ? `(${m.tags.join(",")})` : ""}`)
         .join(", ")}`,
     );
+  if (y !== 2026) {
+    const d = yearDetail(p, profile, y, y);
+    if (d)
+      lines.push(
+        `- ${y} ${d.hanja}(${d.ko})년: 위 글자 ${d.gods[0]}, 아래 글자 ${d.gods[1]}; 일간의 12운성 ${d.stage}; 엔진 판정 ${d.verdict}; ${d.theme}`,
+        `- ${y} 월운(절기 기준, ◎좋음 ○무난 △조심 ✕고비): ${d.months.map((m) => `${m.from.split("/")[0]}월 ${m.gz} ${"✕△○◎"[m.rating]}${m.tags.length ? `(${m.tags.join(",")})` : ""}`).join(", ")}`,
+      );
+  }
 
   // 명반 (interpretive aid only)
   if (profile?.palaces) {
@@ -124,10 +136,10 @@ export function chartBrief(name: string, p: Pillars, profile: Profile | null): s
     const natal = Object.entries(profile.natal ?? {})
       .map(([s, k]) => `${s}화${k}`)
       .join(", ");
-    lines.push(`- [참고 전용 · 본문에 용어 언급 금지] 명반: 명궁 주성 ${self.join("·") || "없음"}; ${pal}; 생년사화 ${natal}; 2026 丙년 사화 천동록·천기권·문창과·염정기`);
+    lines.push(`- [참고 전용 · 본문에 용어 언급 금지] 명반: 명궁 주성 ${self.join("·") || "없음"}; ${pal}; 생년사화 ${natal}${y === 2026 ? "; 2026 丙년 사화 천동록·천기권·문창과·염정기" : ""}`);
   }
   // Element flow of the year for balance
-  lines.push(`- 참고: 2026년 화(火) 기운은 이 사람에게 ${FIRE_ROLE(r.yong, r.hee, r.gi)}`);
+  if (y === 2026) lines.push(`- 참고: 2026년 화(火) 기운은 이 사람에게 ${FIRE_ROLE(r.yong, r.hee, r.gi)}`);
   return lines.join("\n");
 }
 

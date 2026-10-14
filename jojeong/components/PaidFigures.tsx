@@ -40,21 +40,21 @@ export function PairYearsFigure({ x, a, b }: { x: PairYears; a: string; b: strin
       note="각자의 칸은 그 사람의 한 해 판정(대길·길·평·조심·인내)이에요. 맨 오른쪽은 두 사람에게 그해가 어떤지예요."
     >
       <div className="grid grid-cols-[2.6rem_2.6rem_2.6rem_1fr] items-center gap-x-1.5 gap-y-1 text-center text-[11.5px]">
-        <span className="text-[10px] font-bold text-ink-soft">해</span>
-        <span className="truncate text-[10px] font-bold text-ink-soft">{a}</span>
-        <span className="truncate text-[10px] font-bold text-ink-soft">{b}</span>
-        <span className="text-[10px] font-bold text-ink-soft">두 사람</span>
+        <span className="text-[11px] font-bold text-ink-soft">해</span>
+        <span className="truncate text-[11px] font-bold text-ink-soft">{a}</span>
+        <span className="truncate text-[11px] font-bold text-ink-soft">{b}</span>
+        <span className="text-[11px] font-bold text-ink-soft">두 사람</span>
         {x.rows.map((r) => (
           <div key={r.year} className="contents">
             <span className={`font-myeongjo font-bold ${r.now ? "text-seal" : ""}`}>
               {r.year}
-              <span className="block text-[9px] font-normal text-ink-soft">{r.gz}</span>
+              <span className="block text-[10.5px] font-normal text-ink-soft">{r.gz}</span>
             </span>
             <span className={`rounded-md py-1 font-bold ${V_STYLE[r.me]}`}>{r.me}</span>
             <span className={`rounded-md py-1 font-bold ${V_STYLE[r.them]}`}>{r.them}</span>
             <span className={`rounded-md px-1.5 py-1 text-left leading-tight font-bold ${MARK_STYLE[r.mark]}`}>
               {r.mark}
-              <span className="block text-[9.5px] font-normal opacity-80">{r.why}</span>
+              <span className="block text-[10.5px] font-normal opacity-80">{r.why}</span>
             </span>
           </div>
         ))}
@@ -73,7 +73,7 @@ export function YearsAheadFigure({ rows, name }: { rows: YearRow[]; name: string
             <span className="w-11 shrink-0 font-myeongjo text-[13px] font-bold">
               {r.year}
               {r.turning && <span className="ml-0.5 text-seal">◆</span>}
-              <span className="block text-[9.5px] font-normal text-ink-soft">{r.age !== null ? `${r.age}세 무렵` : r.ko}</span>
+              <span className="block text-[10.5px] font-normal text-ink-soft">{r.age !== null ? `${r.age}세 무렵` : r.ko}</span>
             </span>
             <span className={`shrink-0 rounded-md px-1.5 py-0.5 text-[11px] font-extrabold ${V_STYLE[r.verdict]}`}>{r.verdict}</span>
             <span className="min-w-0 text-[12px] leading-snug">

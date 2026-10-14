@@ -93,14 +93,14 @@ export async function SiteHeader() {
         <Seal />
         <span className="flex flex-col">
           <span className="font-myeongjo text-[15px] leading-tight font-extrabold">훈도사주</span>
-          <span className="text-[10px] leading-tight text-ink-soft">관상감 명과학 훈도 정가</span>
+          <span className="text-[11px] leading-tight text-ink-soft">관상감 명과학 훈도 정가</span>
         </span>
       </Link>
       <nav className="flex items-center gap-1.5">
         {ask && (
           <AskLink from="header" className="flex items-center gap-1 bg-jjok px-2.5 py-1 font-myeongjo text-xs font-extrabold text-hanji">
             묻기
-            {member && member.credits > 0 && <span className="rounded-full bg-[#d4af5f] px-1.5 text-[10px] leading-4 text-jjok">{member.credits}</span>}
+            {member && member.credits > 0 && <span className="rounded-full bg-[#d4af5f] px-1.5 text-[11px] leading-4 text-jjok">{member.credits}</span>}
           </AskLink>
         )}
         <Link
@@ -108,7 +108,7 @@ export async function SiteHeader() {
           className={`flex items-center gap-1 px-2.5 py-1 font-myeongjo text-xs font-extrabold ${bought ? "bg-seal text-hanji" : "border border-ink/20 text-ink-soft"}`}
         >
           내 보고서
-          {bought > 0 && <span className="rounded-full bg-hanji px-1.5 text-[10px] leading-4 text-seal">{bought}</span>}
+          {bought > 0 && <span className="rounded-full bg-hanji px-1.5 text-[11px] leading-4 text-seal">{bought}</span>}
         </Link>
         <Link href="/reports" className="border border-seal/40 px-2.5 py-1 font-myeongjo text-xs font-extrabold text-seal">
           전체 보고서
