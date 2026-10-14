@@ -409,7 +409,7 @@ export function YearPlaceFigure({ y, rows, decade }: { y: number; rows: YearRow[
 export function PowersFigure({ name, powers, strong, weak }: { name: string; powers: FreeReading["powers"]; strong?: FreeReading["strong"]; weak?: FreeReading["weak"] }) {
   const max = Math.max(...powers.map((p) => p.pct), 1);
   return (
-    <Frame title={`${name}님의 다섯 가지 힘`} sub="사주 여덟 글자의 무게를 다섯 갈래로 나눈 비율이에요">
+    <Frame title={`${name}님의 다섯 가지 힘`} sub="내 사주 전체를 100으로 놓고, 다섯 가지 힘이 각각 얼마씩 차지하는지예요">
       <ul className="flex flex-col gap-1.5">
         {powers.map((p) => (
           <li key={p.group} className="grid grid-cols-[5.2rem_1fr_2.6rem] items-center gap-2 text-[12px]">
@@ -445,7 +445,7 @@ export function ElementsFigure({ name, elements, weights }: { name: string; elem
   const pct = weights ? weights.map((w) => Math.round(w * 100)) : elements.map((e) => Math.round((e / sum) * 100));
   const max = Math.max(...pct, 1);
   return (
-    <Frame title={`${name}님 몸의 다섯 기운`} sub="많은 기운은 과로하기 쉽고, 적은 기운은 따로 챙겨야 하는 곳이에요" note="병을 진단하는 표가 아니라, 생활에서 챙길 곳을 짚는 표예요.">
+    <Frame title={`${name}님 몸의 다섯 기운`} sub="%는 내 사주 안에서 그 기운이 차지하는 비중이에요. 많은 기운은 과로하기 쉽고, 적은 기운은 따로 챙겨야 해요" note="병을 진단하는 표가 아니라, 생활에서 챙길 곳을 짚는 표예요.">
       <ul className="flex flex-col gap-1.5">
         {pct.map((p, e) => (
           <li key={e} className="grid grid-cols-[3.2rem_1fr_2.4rem] items-center gap-2 text-[12px]">
@@ -503,14 +503,14 @@ export function RareFigure({ name, d, areas, skipTop = false }: { name: string; 
   const ilju = areas ? null : d.ilju;
   if (!items.length && !ilju) return null;
   return (
-    <Frame title={`${name}님 사주에서 드문 것${areas ? ` · ${areas.join("·")}` : ""}`} sub="같은 생년월일 구조를 모아 계산한 비율이에요">
+    <Frame title={`${name}님 사주에서 드문 것${areas ? ` · ${areas.join("·")}` : ""}`} sub="이 특징을 가진 사람이 100명 중 몇 명인지예요 (1950~2008년생의 모든 사주와 견줌)">
       <ul className="flex flex-col gap-1.5 text-[12.5px]">
         {ilju && (
           <li className="flex items-baseline justify-between gap-2 rounded-lg bg-seal/8 px-2.5 py-1.5">
             <span>
               같은 {ilju.name}일주 중 <b>{ilju.build}</b>
             </span>
-            <b className="shrink-0 text-seal">{Math.max(1, Math.round(ilju.rate * 100))}%</b>
+            <b className="shrink-0 text-right text-[12px] text-seal">같은 일주 중 {Math.max(1, Math.round(ilju.rate * 100))}%</b>
           </li>
         )}
         {items.map((p) => (
@@ -519,7 +519,7 @@ export function RareFigure({ name, d, areas, skipTop = false }: { name: string; 
               <b>{p.plain}</b>
               <span className="block text-[11px] text-ink-soft">{p.meaning}</span>
             </span>
-            <b className="shrink-0 text-seal">{Math.max(1, Math.round(p.rate * 100))}%</b>
+            <b className="shrink-0 text-[12px] text-seal">{perHundred(p.rate)}</b>
           </li>
         ))}
       </ul>
@@ -531,7 +531,7 @@ export function RareFigure({ name, d, areas, skipTop = false }: { name: string; 
 const pct = (x: number) => Math.round(x <= 1 ? x * 100 : x);
 export function LendsFigure({ c, a, b }: { c: Couple; a: string; b: string }) {
   // What each lends the other is listed in chapter 2 (the two people); here, the one element each needs most.
-  const give = (x: number) => (pct(x) < 5 ? "거의 없어요" : `${pct(x)}% 들어 있어요`);
+  const give = (x: number) => (pct(x) < 5 ? "거의 없어요" : `${pct(x)}%만큼 들어 있어요 (그 사람 사주 전체 중)`);
   return (
     <Frame title="꼭 필요한 기운, 서로 쥐고 있을까" sub="각자 사주의 균형을 잡아 주는 기운이 상대에게 얼마나 있는지예요">
       <ul className="flex flex-col gap-1.5 text-[12.5px]">
