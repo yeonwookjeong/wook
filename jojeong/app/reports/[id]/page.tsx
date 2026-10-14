@@ -61,7 +61,8 @@ import { getProfile } from "@/lib/store";
 import { covers, getOrder, ownedOrderFor, ownedOrders, type Order } from "@/lib/pay";
 import { isAdmin, isPreview } from "@/lib/admin";
 import { renewNow } from "@/lib/launch";
-import { AreaFigure, ChartTop, DaysFigure, ElementsFigure, FlowFigure, LendsFigure, MonthsStrip, PairCharts, PowersFigure, RareFigure, SeatLinesFigure, SeatsFigure, YearPlaceFigure } from "@/components/ReportFigures";
+import { ActionsFigure, AreaFigure, ChartTop, DaysFigure, DecadeLayerFigure, ElementsFigure, FamilyFigure, FlowFigure, HoursFigure, LendsFigure, MomentsFigure, MonthsStrip, NowFigure, PairCharts, PowersFigure, RareFigure, SeatLinesFigure } from "@/components/ReportFigures";
+import { readChart } from "@/lib/myeongri";
 import { YearTeaser } from "@/components/YearAhead";
 import { decadeTags, layersOf, manseOf, salSeats, yearPreviewOf } from "@/lib/freePreview";
 import TrackView from "@/components/TrackView";
@@ -279,7 +280,7 @@ async function OpenReport({
                   r2(unlock)
                     ? figuresFor(chaptersFor(product.id, true), [
                         ["고른 날", <DaysFigure key="d" days={bestDays(days, found.kind)} title="정 훈도가 고른 날" />],
-                        ["몇 시", <DaysFigure key="h" days={bestDays(days, found.kind)} title="그날의 좋은 시간" />],
+                        ["몇 시", <HoursFigure key="h" days={bestDays(days, found.kind)} />],
                       ])
                     : undefined
                 }
@@ -339,7 +340,7 @@ async function OpenReport({
     return (
       <>
         <Header product={product} subjectName={`${a.name}님과 ${b.name}님`} />
-        {couple && <PairIntro a={a} b={b} c={couple} blank={renew ? "모름" : undefined} />}
+        {couple && <PairIntro a={a} b={b} c={couple} blank={renew ? "모름" : undefined} bare={r2(unlock)} />}
         {closeness && <IntimacyIntro a={a} b={b} x={closeness} />}
         {reunion && <ReunionIntro a={a} b={b} r={reunion} />}
         {locked && !unlock ? (
@@ -725,23 +726,25 @@ async function OpenReport({
     // The second pass: the coming year's report has one more chapter (lib/reportPrompts.ts NEW_YEAR_CHAPTER).
     const yearChapters = unlock && r2(unlock) ? yearChaptersFor(y === newYear) : chaptersFor(product.id, true);
     const half = (a: number, b: number) => d.months.map((_, i) => i).filter((i) => i >= a && i < b);
+    // One picture per chapter, each from what that chapter is about: the area's own grade, reasons and months; the
+    // decade under the year; the family seats the year meets; which months for which move; the decisive months.
+    const layers = layersOf(pillars, profile, y);
     const yearFigures =
       unlock && r2(unlock)
         ? figuresFor(yearChapters, [
             ["한 줄로", glance],
-            ["10년 대운", <YearPlaceFigure key="p" y={y} rows={nearRows} decade={decadeNow} />],
+            ["10년 대운", layers && <DecadeLayerFigure key="p" layers={layers} decade={decadeNow} />],
             ...(preview
               ? (["돈", "일과 자리", "사랑", "사람", "몸"] as const).map((kw, i): [string, React.ReactNode] => [
                   kw === "돈" ? "돈:" : kw,
-                  <AreaFigure key={kw} area={["돈", "일", "사랑", "사람", "몸"][i]} preview={preview} months={d.months} best={d.best} worst={d.worst} y={y} />,
+                  <AreaFigure key={kw} area={["돈", "일", "사랑", "사람", "몸"][i]} preview={preview} months={d.months} y={y} />,
                 ])
               : []),
-            ["가족", <SeatsFigure key="f" slots={reading.chart.slots} />],
-            ["움직일 일", <MonthsStrip key="m" title={`${y}년 달마다`} sub="이사·계약·시작은 ◎ 달에, 큰 결정은 ✕ 달을 피해서" months={d.months} y={y} />],
+            ["가족", <FamilyFigure key="f" slots={reading.chart.slots} gender={profile?.gender ?? null} meets={preview?.meets ?? []} y={y} yearGods={preview?.gods} />],
+            ["움직일 일", <ActionsFigure key="m" months={d.months} y={y} />],
             ["상반기", <MonthsStrip key="h1" title="상반기 여섯 달" months={d.months} y={y} pick={half(0, 6)} />],
             ["하반기", <MonthsStrip key="h2" title="하반기 여섯 달" months={d.months} y={y} pick={half(6, 12)} />],
-            ["세 번의 때", <MonthsStrip key="b" title="힘 받는 달" sub="이 해에 가장 좋은 달들이에요" months={d.months} y={y} pick={d.best} />],
-            ["첫 석 달", <MonthsStrip key="f3" title="새해 첫 석 달" sub="입춘부터 석 달, 한 해의 첫 단추" months={d.months} y={y} pick={[0, 1, 2]} />],
+            ["세 번의 때", <MomentsFigure key="b" months={d.months} best={d.best} worst={d.worst} y={y} />],
           ])
         : undefined;
     return (
@@ -760,14 +763,13 @@ async function OpenReport({
             <summary className="doc-paper flex cursor-pointer list-none items-center justify-between px-5 py-4 [&::-webkit-details-marker]:hidden">
               <span>
                 <b className="block font-myeongjo">결제 전에 본 {y}년 무료 화면</b>
-                <span className="text-[12px] text-ink-soft">판정 · 이 해를 움직이는 것 · 달마다 흐름 · 한눈에</span>
+                <span className="text-[12px] text-ink-soft">판정 · 이 해를 움직이는 것 · 달마다 흐름 (한눈에 칸은 1장에)</span>
               </span>
               <span className="text-ink-soft transition group-open:rotate-180" aria-hidden="true">
                 ▾
               </span>
             </summary>
             {yearTop}
-            {glance}
           </details>
         ) : (
           <>
@@ -891,39 +893,30 @@ async function OpenReport({
     const moreFigures = (o: Order): Record<number, React.ReactNode> => {
       const y0 = thisYear(new Date(paidAtOf(o)));
       const chs = chaptersFor(product.id, true);
-      const rare = distinct && <RareFigure name={name} d={distinct} />;
+      // The rare traits go to the chapter they speak to (성격, 돈, 일, 연애, 사람), never one list twice.
+      const rare = (areas: string[]) => distinct && <RareFigure key={areas.join()} name={name} d={distinct} areas={areas} />;
       const powers = free && <PowersFigure name={name} powers={free.powers} strong={free.strong} weak={free.weak} />;
-      const flowNow = free?.flow?.find((f) => f.from <= y0 && y0 <= f.to);
       if (product.id === "pyeongsaeng")
         return figuresFor(chs, [
-          ["어떤 사람", rare],
+          ["어떤 사람", rare(["성격"])],
           ["무기와 약점", powers],
-          ["부모님", <SeatsFigure key="s" slots={reading.chart.slots} />],
+          ["부모님", <FamilyFigure key="s" slots={reading.chart.slots} gods={readChart(pillars)?.gods} gender={gender} />],
+          ["사람 복", rare(["사람"])],
           ["몸", <ElementsFigure key="e" name={name} elements={reading.chart.elements} />],
           ["사계절", free?.flow && <FlowFigure key="f" flow={free.flow} />],
-          [
-            "어디쯤",
-            <YearPlaceFigure
-              key="y"
-              y={y0}
-              rows={yearRows(pillars, profile, y0 - 1, y0 + 1, y0) ?? []}
-              decade={flowNow ? { from: flowNow.from, to: flowNow.to, mood: flowNow.young ? "성장기" : flowNow.mood, theme: flowNow.theme } : null}
-            />,
-          ],
+          ["어디쯤", free?.flow && <NowFigure key="n" flow={free.flow} y={y0} />],
         ]);
       if (!domain) return {};
-      const decade = <DecadeTable key="d" inline name={name} domain={domain} years={decadeOf(domain, pillars, gender)} locked={false} />;
+      // The ten-year table is open above the report (the free card), so the 'when' chapters do not repeat it.
       const yd = yearDetail(pillars, profile, y0, y0);
+      const yp = yearPreviewOf(pillars, profile, y0);
       return figuresFor(chs, [
-        ["어떤 사람", rare],
-        ["어떻게 버는", rare],
-        ["빛날까", rare],
+        ["어떤 사람", rare(["연애"])],
+        ["어떻게 버는", rare(["돈"])],
+        ["빛날까", rare(["일"])],
         ["월급", powers],
         ["회사형", powers],
-        ["결혼은 언제", decade],
-        ["트이는 때", decade],
-        ["언제가", decade],
-        ["인연이 오는 달", yd && <MonthsStrip key="m" title={`${y0}년 달마다`} sub="인연과 만남에 힘이 붙는 달은 ◎" months={yd.months} y={y0} />],
+        ["인연이 오는 달", yd && yp && <AreaFigure key="m" area="사랑" preview={yp} months={yd.months} y={y0} />],
       ]);
     };
     // Bought before the opening: it opens as it did when it was bought (analysis open, report below).
