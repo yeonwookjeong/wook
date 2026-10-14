@@ -3533,7 +3533,7 @@ export async function Card({ q }: { q: CardQuery }) {
           <div style={{ margin: "60px auto 0", width: 120, height: 3, background: "rgba(179,38,30,.35)" }} />
           <Body style={{ marginTop: 50, fontSize: 40 }}>
             진심으로 고맙사옵니다.
-            <br />그 마음에 보답하려
+            <br />남겨 주신 이야기를 담아
             <br />새 단장을 마쳤사옵니다.
           </Body>
         </div>

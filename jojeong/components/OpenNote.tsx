@@ -101,7 +101,7 @@ export default function OpenNote({ member, gift, count }: { member: boolean; gif
               "가오픈 동안 찾아 주신 모든 분께 진심으로 고맙습니다."
             )}
             <br />
-            그 마음에 보답하려 새 단장을 마쳤어요.
+            남겨 주신 이야기를 담아 새 단장을 마쳤어요.
           </p>
           <p className="mt-3 text-[11px] font-bold tracking-[0.2em] text-[#e2bc68]/80">새로 생긴 것</p>
           <ul className="mt-1.5 flex flex-col divide-y divide-[#e2bc68]/15 border-y border-[#e2bc68]/20">
