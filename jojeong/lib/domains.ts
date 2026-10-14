@@ -1,6 +1,8 @@
 import { meetings, salsAt, stageOf } from "./deep";
 import { BRANCH_EL, chartOf, ELEMENT_HANJA, ELEMENT_KO, GROUP_OF, GYEOK_NAME, HIDDEN, readChart, stemEl, tenGod, type GodGroup, type Reading } from "./myeongri";
+import ranks from "./domainRanks.json";
 import type { Gender } from "./profile";
+import { godRank, perHundred, salRate } from "./rarity";
 import { BRANCHES, isFull, STEMS, type FullPillars, type Pillars } from "./saju";
 
 // The deep reports (재물·연애·직업): evidence found only for that subject, and a ten-year calendar computed
@@ -105,7 +107,20 @@ export function domainBrief(domain: Domain, pillars: Pillars, gender: Gender | n
 
 // The free card at the top of a deep report: the subject's own verdict and three findings in plain words,
 // none of which the life report shows. The written report builds on the same evidence (domainBrief).
-export type DomainCard = { type: string; line: string; facts: { label: string; value: string; note: string }[] };
+// rank: where this number stands among all births ("상위 12%", "100명 중 29명"); why: what the number is made of.
+export type DomainCard = { type: string; line: string; facts: { label: string; value: string; note: string; rank?: string; why?: string }[] };
+
+// The numbers above, against the same births as lib/rarity.json (scripts/domainRanks.mts).
+const POWER: Record<GodGroup, string> = { 비겁: "나를 지키는 힘", 식상: "표현하는 힘", 재성: "돈·현실 감각", 관성: "책임·규칙의 힘", 인성: "배우고 받는 힘" };
+const rankWord = (x: { side: "high" | "low"; rate: number }) => (x.rate > 0.4 ? "보통 수준" : `${x.side === "high" ? "상위" : "하위"} ${Math.max(1, Math.round(x.rate * 100))}%`);
+function workRank(name: string, score: number) {
+  const h = (ranks.work as Record<string, number[]>)[name];
+  const total = h.reduce((a, b) => a + b, 0);
+  const above = h.slice(Math.min(140, score)).reduce((a, b) => a + b, 0) / total;
+  const below = h.slice(0, Math.min(140, score) + 1).reduce((a, b) => a + b, 0) / total;
+  return above <= below ? { side: "high" as const, rate: above } : { side: "low" as const, rate: below };
+}
+const MEDIAN = 23; // every work type's median among all births (lib/domainRanks.json)
 
 const WORK_SAL: Record<string, string> = {
   역마: "움직이는 일, 출장·해외·이동이 잦은 일과 인연이 있어요",
@@ -116,17 +131,22 @@ const WORK_SAL: Record<string, string> = {
 };
 
 // How one works best, by which force leads the chart. Each type rests on its own group, helped by the one that
-// feeds it; an organisation needs the officer itself (a chart with no 관성 is not an 조직형, however much 인성).
+// feeds it (a third of it counts); an organisation needs the officer itself (a chart with no 관성 is not an 조직형,
+// however much 인성).
+export const WORK_TYPES: { name: string; basis: GodGroup; helper: GodGroup; where: string; score: (share: (g: GodGroup) => number) => number }[] = [
+  { name: "조직형", basis: "관성", helper: "재성", where: "조직 안에서 자리와 책임을 맡아 올라가는 일", score: (s) => s("관성") + Math.round(s("재성") / 3) },
+  { name: "전문·자격형", basis: "인성", helper: "관성", where: "공부와 자격으로 인정받는 전문 분야", score: (s) => s("인성") + Math.round(s("관성") / 3) },
+  { name: "창작·기술형", basis: "식상", helper: "비겁", where: "내 손과 머리로 만들어 내는 일", score: (s) => s("식상") + Math.round(s("비겁") / 3) },
+  { name: "사업형", basis: "재성", helper: "식상", where: "판을 벌이고 사람과 돈을 굴리는 일", score: (s) => s("재성") + Math.round(s("식상") / 3) },
+  { name: "독립형", basis: "비겁", helper: "인성", where: "내 이름으로 혼자 서는 일, 프리랜서나 자영업", score: (s) => s("비겁") + Math.round(s("인성") / 3) },
+];
 function workTypes(share: (g: GodGroup) => number) {
-  const types = [
-    { name: "조직형", basis: "관성", score: share("관성") + Math.round(share("재성") / 3), where: "조직 안에서 자리와 책임을 맡아 올라가는 일" },
-    { name: "전문·자격형", basis: "인성", score: share("인성") + Math.round(share("관성") / 3), where: "공부와 자격으로 인정받는 전문 분야" },
-    { name: "창작·기술형", basis: "식상", score: share("식상") + Math.round(share("비겁") / 3), where: "내 손과 머리로 만들어 내는 일" },
-    { name: "사업형", basis: "재성", score: share("재성") + Math.round(share("식상") / 3), where: "판을 벌이고 사람과 돈을 굴리는 일" },
-    { name: "독립형", basis: "비겁", score: share("비겁") + Math.round(share("인성") / 3), where: "내 이름으로 혼자 서는 일, 프리랜서나 자영업" },
-  ];
-  return types.sort((a, b) => b.score - a.score).slice(0, 3);
+  return WORK_TYPES.map((w) => ({ ...w, score: w.score(share) }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3);
 }
+// The wealth element's storehouse branch (재고) in the chart.
+export const hasStore = (p: Pillars) => isFull(p) && chartOf(p).some((s) => s.branch === STORE[(stemEl(p.dayStem) + 2) % 5]);
 
 export function domainCard(domain: Domain, pillars: Pillars, gender: Gender | null): DomainCard | null {
   const c = ctxOf(pillars, gender);
@@ -151,8 +171,20 @@ export function domainCard(domain: Domain, pillars: Pillars, gender: Gender | nu
       type,
       line,
       facts: [
-        { label: "돈 기운", value: `${money}%`, note: money >= 30 ? "돈 기운이 많은 편이에요" : money >= 10 ? "보통이에요" : "적은 편이에요" },
-        { label: "재물 창고", value: store ? "있음" : "없음", note: store ? "들어온 돈을 모아 두는 힘이 있어요" : "들어와도 머물게 하는 장치(자동이체·적금)가 필요해요" },
+        {
+          label: "돈 기운",
+          value: `${money}%`,
+          note: money >= 30 ? "돈 기운이 많은 편이에요" : money >= 10 ? "보통이에요" : "적은 편이에요",
+          rank: rankWord(godRank("재성", money / 100)),
+          why: "내 사주 전체를 100으로 놓았을 때 돈·현실 감각의 기운이 차지하는 몫이에요",
+        },
+        {
+          label: "재물 창고",
+          value: store ? "있음" : "없음",
+          note: store ? "들어온 돈을 모아 두는 힘이 있어요" : "들어와도 머물게 하는 장치(자동이체·적금)가 필요해요",
+          rank: `${perHundred(ranks.store / ranks.total)}이 가진`,
+          why: "돈 기운을 담아 두는 땅 글자가 사주에 있는지예요",
+        },
         {
           label: "새는 구멍",
           value: rival ? "있음" : weak ? "주의" : "작음",
@@ -187,19 +219,38 @@ export function domainCard(domain: Domain, pillars: Pillars, gender: Gender | nu
       type,
       line,
       facts: [
-        { label: "배우자 기운", value: `${Math.round(spouse)}%`, note: spouse >= 25 ? "사람이 잘 들어오는 편이에요" : spouse >= 8 ? "보통이에요" : "적은 편이라 먼저 움직여야 해요" },
+        {
+          label: "배우자 기운",
+          value: `${Math.round(spouse)}%`,
+          note: spouse >= 25 ? "사람이 잘 들어오는 편이에요" : spouse >= 8 ? "보통이에요" : "적은 편이라 먼저 움직여야 해요",
+          rank: groups.length === 1 ? rankWord(godRank(groups[0], spouse / 100)) : undefined,
+          why: `내 사주 전체를 100으로 놓았을 때 연인·배우자를 뜻하는 기운이 차지하는 몫이에요${groups.length > 1 ? " (성별을 넣으면 남들과 견줘 드려요)" : ""}`,
+        },
         { label: "배우자 자리", value: shaken ? (bound ? "묶임·흔들림" : "흔들림") : bound ? "묶임" : "안정", note: shaken ? (bound ? "정은 깊은데 부딪히는 글자도 있어 시기를 고르는 게 중요해요" : "부딪히는 글자가 있어 시기를 고르는 게 중요해요") : bound ? "합으로 묶여 정이 깊은 대신 쉽게 못 놓아요" : "큰 흔들림 없이 안정적이에요" },
-        { label: "도화", value: dohwa ? "있음" : "없음", note: dohwa ? "사람을 끄는 매력이 있어 먼저 다가오는 사람이 많아요" : "첫눈보다 알수록 끌리는 매력이에요" },
+        {
+          label: "도화",
+          value: dohwa ? "있음" : "없음",
+          note: dohwa ? "사람을 끄는 매력이 있어 먼저 다가오는 사람이 많아요" : "첫눈보다 알수록 끌리는 매력이에요",
+          rank: salRate("도화") === null ? undefined : `${perHundred(salRate("도화")!)}이 가진`,
+          why: "사람의 눈길을 끄는 글자(자·오·묘·유 중 하나)가 내 사주에 드는지예요",
+        },
       ],
     };
   }
-  const scores = workTypes(share).map((w) => [w.name, w.score, w.where] as [string, number, string]);
+  const top = workTypes(share);
+  const scores = top.map((w) => [w.name, w.score, w.where] as [string, number, string]);
   const sals = [...new Set(chartOf(p).flatMap((s) => (s.branch === null ? [] : salsAt(p, s.branch).filter((x) => x in WORK_SAL))))];
   return {
     type: `${scores[0][0]} 인재`,
     line: `${scores[0][2]}에서 가장 빛나요. 두 번째는 ${scores[1][0]}이라, 둘을 섞은 자리가 가장 오래 가요.`,
     facts: [
-      ...scores.map(([k, v]) => ({ label: k, value: `${v}점`, note: "" })),
+      ...top.map((w) => ({
+        label: w.name,
+        value: `${w.score}점`,
+        note: "",
+        rank: rankWord(workRank(w.name, w.score)),
+        why: `${POWER[w.basis]} ${share(w.basis)} + ${POWER[w.helper]} ${share(w.helper)}의 3분의 1 · 보통 사람은 ${MEDIAN}점 안팎`,
+      })),
       ...(sals.length ? [{ label: "일복 신호", value: sals[0], note: WORK_SAL[sals[0]] }] : []),
     ],
   };
