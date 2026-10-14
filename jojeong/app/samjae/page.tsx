@@ -8,8 +8,8 @@ import { samjaeOf, TTI } from "@/lib/samjae";
 const YEAR = 2026;
 
 export const metadata: Metadata = {
-  title: `${YEAR} 삼재 띠 확인`,
-  description: `${YEAR}년 삼재 띠는 토끼띠·양띠·돼지띠(눌삼재). 띠별 삼재 연도와 들삼재·눌삼재·날삼재를 한눈에 확인하세요.`,
+  title: `${YEAR}·${YEAR + 1} 삼재 띠 확인`,
+  description: `${YEAR}년 삼재 띠는 토끼띠·양띠·돼지띠(눌삼재), ${YEAR + 1}년에는 같은 띠가 날삼재로 끝나요. 띠별 삼재 연도와 들삼재·눌삼재·날삼재를 한눈에 확인하세요.`,
 };
 
 // Free: every 띠's 삼재 this year and next, and the reader's own when a chart is saved. Rule-based, no writer.
@@ -51,16 +51,19 @@ export default async function SamjaePage() {
             <tr className="border-b border-seal/30 text-xs text-ink-soft">
               <th className="py-2 font-normal">띠</th>
               <th className="py-2 font-normal">{YEAR}년</th>
+              <th className="py-2 font-normal">{YEAR + 1}년</th>
               <th className="py-2 font-normal">삼재 연도</th>
             </tr>
           </thead>
           <tbody>
             {TTI.map((name, i) => {
               const s = samjaeOf(i, YEAR);
+              const n = samjaeOf(i, YEAR + 1);
               return (
                 <tr key={name} className={`border-b border-seal/10 ${i === mine ? "bg-gold/10" : ""}`}>
                   <td className="py-2 font-bold">{name}띠</td>
                   <td className={`py-2 ${s.stage ? "font-extrabold text-seal" : "text-ink-soft"}`}>{s.stage ?? "-"}</td>
+                  <td className={`py-2 ${n.stage ? "font-extrabold text-seal" : "text-ink-soft"}`}>{n.stage ?? "-"}</td>
                   <td className="py-2 text-ink-soft">
                     {s.next[0]}~{s.next[2]}
                   </td>

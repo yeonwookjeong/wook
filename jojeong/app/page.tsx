@@ -41,7 +41,7 @@ const TOPICS: { id: ProductId; name: string; ask: string }[] = [
 // Free, computed, no payment: night-blue tiles under the choices (components/FreeTiles.tsx).
 const FREE: FreeTile[] = [
   { href: "/reports/gukjeong", hanja: "國運", title: "내 사주 · 2027", line: "여덟 글자와 2027년 열두 달, 무료로", tag: "내 사주" },
-  { href: "/samjae", hanja: "三災", title: "2026 삼재 띠", line: "토끼·양·돼지띠 눌삼재", tag: "띠별" },
+  { href: "/samjae", hanja: "三災", title: "2026·2027 삼재 띠", line: "토끼·양·돼지띠, 2027년 날삼재로 끝나요", tag: "띠별" },
   { href: "/king", hanja: "王", title: "왕이 될 사주", line: "친구를 불러 내 조정을 꾸리는 놀이", tag: "친구와" },
   { href: "/reports/sinbun", hanja: "身分", title: "조선 신분 감정", line: "조선에 태어났다면 어떤 신분이었을까", tag: "혼자" },
 ];

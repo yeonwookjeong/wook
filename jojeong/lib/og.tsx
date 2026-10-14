@@ -435,7 +435,7 @@ export function storeImage() {
         <div style={{ marginTop: 18, fontSize: 88, fontWeight: 800, color: "#1f1a14", whiteSpace: "nowrap" }}>{SITE_NAME}</div>
         <div style={{ marginTop: 8, fontSize: 38, fontWeight: 800, color: "#8a6d1f" }}>{SITE_TAGLINE}</div>
         <div style={{ marginTop: 34, fontSize: 30, color: "#5c5247", display: "flex", flexDirection: "column", lineHeight: 1.5 }}>
-          <div>평생 사주 · 궁합 · 2026 운세 · 연애 · 재물 · 직업</div>
+          <div>평생 사주 · 궁합 · 2027 신년운세 · 연애 · 재물 · 직업</div>
           <div>같은 일주라도 다 다른, 나만의 여덟 글자</div>
         </div>
       </div>
