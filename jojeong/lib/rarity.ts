@@ -24,6 +24,11 @@ export function godRank(group: GodGroup, share: number): { side: "high" | "low";
   return tail(`god:${group}` as Metric, share);
 }
 
+// How an element's weighted share stands among all births (the chart on top of a bought report).
+export function elementRank(el: number, share: number): { side: "high" | "low"; rate: number } {
+  return tail(`el:${el}` as Metric, share);
+}
+
 // Share of births holding this 신살 anywhere in the chart.
 export const salRate = (name: string): number | null => {
   const n = (data.sals as Record<string, number>)[name];
