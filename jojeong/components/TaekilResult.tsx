@@ -206,6 +206,10 @@ export default function TaekilResult({ kind, days, label, names, full, once = fa
   const weekend = KINDS[kind].weekend ? weekendBest(days) : [];
   const out = ruledOut(days);
   const months = [...new Set(days.map((d) => d.date.slice(0, 7)))].map((ym) => days.filter((d) => d.date.startsWith(ym)));
+  // Over half a year or a year the list of every good day runs long: the ◎ days are listed (and any day the
+  // weekend picks point to), the ○ days stay marked on the calendar.
+  const long = months.length > 3;
+  const listed = long ? good.filter((d) => d.grade === 2 || weekend.some((w) => w.date === d.date)) : good;
   const fit = days.filter((d) => d.fit).length;
   // One line per year of the search (years turn at 입춘, so January still belongs to the year before).
   const dirs =
@@ -294,10 +298,14 @@ export default function TaekilResult({ kind, days, label, names, full, once = fa
         {months.map((m) => (
           <Month key={m[0].date} days={m} />
         ))}
-        <h3 className="mt-6 font-myeongjo font-extrabold">써도 좋은 날 {good.length}일</h3>
-        <p className="text-[11px] text-ink-soft">날짜를 누르면 그날이 좋은 이유가 펼쳐져요</p>
+        <h3 className="mt-6 font-myeongjo font-extrabold">
+          {long ? `가장 좋은 날 ${listed.length}일` : `써도 좋은 날 ${good.length}일`}
+        </h3>
+        <p className="text-[11px] text-ink-soft">
+          {long ? `기간이 길어 ◎ 날만 모았어요. ○ 무난한 날 ${good.length - listed.length}일은 위 달력에 표시돼 있어요. ` : ""}날짜를 누르면 그날이 좋은 이유가 펼쳐져요
+        </p>
         <ul className="mt-2 flex flex-col gap-2">
-          {good.map((d) => (
+          {listed.map((d) => (
             <FoldCard key={d.date} d={d} kind={kind} id={once ? `day-${d.date}` : undefined} />
           ))}
         </ul>

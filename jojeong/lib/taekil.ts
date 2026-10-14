@@ -349,7 +349,8 @@ export function taekilBrief(kind: Kind, days: DayPick[], label: string): string 
 // The months a search may start from: this month and the next eleven.
 export function startMonths(now = new Date()): { value: string; label: string }[] {
   const kst = new Date(now.getTime() + 9 * 3600000);
-  return Array.from({ length: 12 }, (_, i) => {
+  // Two years of starts: a wedding hall is booked a year or more ahead.
+  return Array.from({ length: 24 }, (_, i) => {
     const t = kst.getUTCFullYear() * 12 + kst.getUTCMonth() + i;
     const y = Math.floor(t / 12);
     const m = (t % 12) + 1;
