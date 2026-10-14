@@ -45,6 +45,7 @@ export default function SajuChart({
   gyeok,
   kingdom = true,
   weights,
+  ranks,
 }: {
   slots: Slot[];
   elements: number[];
@@ -56,6 +57,8 @@ export default function SajuChart({
   // The elements as weighed (lib/myeongri.ts: each seat its own weight, the season, the 합), shown as shares
   // instead of the bare count of characters; the count stays beside it.
   weights?: number[];
+  // Where each share stands among everyone (lib/rarity.ts elementRank): "상위 9%" beside the bar when it stands out.
+  ranks?: { side: "high" | "low"; rate: number }[];
 }) {
   const wsum = weights ? weights.reduce((a, b) => a + b, 0) || 1 : 0;
   const shares = weights ? weights.map((w) => Math.round((w / wsum) * 100)) : null;
@@ -98,14 +101,25 @@ export default function SajuChart({
               <span className={`w-16 shrink-0 text-right font-bold tabular-nums ${el === yong ? "text-seal" : ""}`}>
                 {n}% <span className="font-normal text-ink-soft">({elements[el]}자)</span>
               </span>
-            ) : (
+            ) : null}
+            {shares && ranks ? (
+              <span className="w-14 shrink-0 text-right text-[10.5px] font-bold">
+                {ranks[el].rate <= 0.3 ? (
+                  <span className={`rounded px-1 py-0.5 ${ranks[el].side === "high" ? "bg-seal/12 text-seal" : "bg-ink/8 text-ink-soft"}`}>
+                    {ranks[el].side === "high" ? "상위" : "하위"} {Math.max(1, Math.round(ranks[el].rate * 100))}%
+                  </span>
+                ) : (
+                  <span className="font-normal text-ink-soft">보통</span>
+                )}
+              </span>
+            ) : shares ? null : (
               <span className={`w-4 text-right font-bold ${el === yong ? "text-seal" : ""}`}>{n}</span>
             )}
           </li>
         ))}
       </ul>
 
-      {shares && <p className="mt-1.5 text-[10.5px] text-ink-soft">겉 글자 수가 아니라, 땅 글자 속에 숨은 기운과 자리·태어난 계절까지 따진 실제 비중이에요. 그래서 겉에 없는 기운도 %가 나올 수 있어요.</p>}
+      {shares && <p className="mt-1.5 text-[10.5px] text-ink-soft">겉 글자 수가 아니라, 땅 글자 속에 숨은 기운과 자리·태어난 계절까지 따진 실제 비중이에요. 그래서 겉에 없는 기운도 %가 나올 수 있어요.{ranks ? " 상위·하위는 1950~2008년에 태어날 수 있는 모든 날·시의 사주와 견준 값이에요." : ""}</p>}
       <div className="mt-3 flex flex-wrap justify-center gap-1.5 text-xs">
         <span className="rounded-full bg-ink px-2.5 py-1 font-bold text-hanji">{strength}</span>
         {gyeok && <span className="rounded-full border border-ink/40 px-2.5 py-1 font-bold">{gyeok}</span>}

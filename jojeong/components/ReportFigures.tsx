@@ -3,7 +3,7 @@ import { GRADES5, type Layers, type YearPreview } from "@/lib/freePreview";
 import { SCALE5_CHIP } from "@/lib/scale5";
 import type { FreeReading } from "@/lib/freeReading";
 import { ELEMENT_HANJA, ELEMENT_KO, GROUP_OF, type Reading, type Slot, type TenGod } from "@/lib/myeongri";
-import type { Distinct } from "@/lib/rarity";
+import { elementRank, perHundred, type Distinct } from "@/lib/rarity";
 import { BRANCHES, STEMS } from "@/lib/saju";
 import type { DecadeYear } from "@/lib/domains";
 import type { DayPick } from "@/lib/taekil";
@@ -25,13 +25,51 @@ const tagWords = (tags: string[]) => tags.map((t) => TAG_WORD[t] ?? t).join(" ·
 const GROUP_WORD: Record<string, string> = { 비겁: "동료·경쟁", 식상: "표현·재주", 재성: "돈·결과", 관성: "일·책임", 인성: "배움·도움" };
 
 // On top of a bought report, open: the reader's eight characters, the first thing they paid to have read.
-export function ChartTop({ name, chart, year, weights }: { name: string; chart: Parameters<typeof SajuChart>[0]; year?: { y: number; hanja: string; gods: [string, string] }; weights?: number[] }) {
+// The chart's own rarest traits, shown on top (the chapters then leave these out). The element ones are left to the
+// bars, which rank the exact share (a pattern's rate is for its whole bracket, so the two numbers would differ).
+const EL_PATTERNS = ["el-extreme", "missing-two"];
+const topRare = (d: Distinct) => d.patterns.filter((p) => !EL_PATTERNS.includes(p.id)).slice(0, 3);
+export function ChartTop({
+  name,
+  chart,
+  year,
+  weights,
+  distinct,
+}: {
+  name: string;
+  chart: Parameters<typeof SajuChart>[0];
+  year?: { y: number; hanja: string; gods: [string, string] };
+  weights?: number[];
+  distinct?: Distinct | null;
+}) {
+  const wsum = weights ? weights.reduce((a, b) => a + b, 0) || 1 : 1;
+  const ranks = weights?.map((w, e) => elementRank(e, w / wsum));
+  const rare = distinct ? topRare(distinct) : [];
   return (
     <section className="doc-paper mt-4 px-5 pt-5 pb-5">
       <p className="text-center font-myeongjo text-xs font-extrabold tracking-[0.4em] text-seal">命 盤</p>
       <h2 className="mt-1 text-center font-myeongjo text-[18px] font-extrabold">{name}님의 사주팔자</h2>
       <p className="mt-1 text-center text-[11.5px] text-ink-soft">이 여덟 글자로 아래 보고서를 썼어요</p>
-      <SajuChart {...chart} kingdom={false} weights={weights} />
+      <SajuChart {...chart} kingdom={false} weights={weights} ranks={ranks} />
+      {(distinct?.ilju || rare.length > 0) && (
+        <div className="mt-3 rounded-lg bg-white/60 px-3 py-2.5 ring-1 ring-seal/15">
+          <p className="text-[11.5px] font-extrabold text-seal">다른 사람과 견주면</p>
+          {distinct?.ilju && (
+            <p className="mt-1 text-[12.5px] leading-snug">
+              같은 {distinct.ilju.name}일주 가운데서도 <b>{distinct.ilju.build}</b> 구조는{" "}
+              <b className="text-seal">약 {Math.max(1, Math.round(distinct.ilju.rate * 100))}%</b>뿐이에요
+            </p>
+          )}
+          <ul className="mt-1.5 flex flex-col gap-1">
+            {rare.map((p) => (
+              <li key={p.id} className="flex items-baseline justify-between gap-2 text-[12.5px]">
+                <span className="min-w-0">{p.plain}</span>
+                <b className="shrink-0 text-seal">{perHundred(p.rate)}</b>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       {year && (
         <p className="mt-3 rounded-lg bg-seal/5 px-3 py-2 text-center text-[13px] leading-relaxed">
           {year.y}년에 들어오는 두 글자{" "}
@@ -458,8 +496,10 @@ export function FlowFigure({ flow }: { flow: NonNullable<FreeReading["flow"]> })
 
 // What is rare in this chart. With areas, only what belongs to the chapter (돈, 일, 연애…), so the rare traits are
 // spread over the chapters they speak to instead of one list repeated.
-export function RareFigure({ name, d, areas }: { name: string; d: Distinct; areas?: string[] }) {
-  const items = (areas ? d.patterns.filter((p) => areas.includes(p.area)) : d.patterns).slice(0, 3);
+export function RareFigure({ name, d, areas, skipTop = false }: { name: string; d: Distinct; areas?: string[]; skipTop?: boolean }) {
+  const shown = skipTop ? topRare(d).map((p) => p.id) : [];
+  const pool = d.patterns.filter((p) => !shown.includes(p.id));
+  const items = (areas ? pool.filter((p) => areas.includes(p.area)) : pool).slice(0, 3);
   const ilju = areas ? null : d.ilju;
   if (!items.length && !ilju) return null;
   return (

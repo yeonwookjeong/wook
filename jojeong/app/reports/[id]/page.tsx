@@ -755,7 +755,7 @@ async function OpenReport({
         {r2(unlock) && (
           <>
             <Jump gift={unlock!.gift} title={y === newYear ? `${y} 신년운세` : `${y}년 운세`} chapters={yearChapters.length} />
-            <ChartTop name={name} chart={reading.chart} weights={readChart(pillars)?.weights} year={{ y, hanja: d.hanja, gods: d.gods }} />
+            <ChartTop name={name} chart={reading.chart} weights={readChart(pillars)?.weights} distinct={distinct} year={{ y, hanja: d.hanja, gods: d.gods }} />
           </>
         )}
         {r2(unlock) ? (
@@ -895,7 +895,7 @@ async function OpenReport({
       const y0 = thisYear(new Date(paidAtOf(o)));
       const chs = chaptersFor(product.id, true);
       // The rare traits go to the chapter they speak to (성격, 돈, 일, 연애, 사람), never one list twice.
-      const rare = (areas: string[]) => distinct && <RareFigure key={areas.join()} name={name} d={distinct} areas={areas} />;
+      const rare = (areas: string[]) => distinct && <RareFigure key={areas.join()} name={name} d={distinct} areas={areas} skipTop />;
       const powers = free && <PowersFigure name={name} powers={free.powers} strong={free.strong} weak={free.weak} />;
       if (product.id === "pyeongsaeng")
         return figuresFor(chs, [
@@ -966,7 +966,7 @@ async function OpenReport({
         )}
         <Jump gift={unlock.gift} title={product.title} chapters={chapters} />
         {/* The second pass: the eight characters on top, open, the first thing the reader paid to have read. */}
-        {r2(unlock) && <ChartTop name={name} chart={reading.chart} weights={readChart(pillars)?.weights} />}
+        {r2(unlock) && <ChartTop name={name} chart={reading.chart} weights={readChart(pillars)?.weights} distinct={distinct} />}
         {domain && card ? (
           analysis(true)
         ) : (
