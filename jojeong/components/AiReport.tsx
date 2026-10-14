@@ -41,13 +41,18 @@ const WORDS = {
 const SUMMARY_LABEL = "한눈에";
 
 // "## [장 이름] 헤드라인" + paragraphs → sections. Works on partial text while it streams in.
-function parse(text: string): { sections: Section[]; failed: boolean } {
+// `chapters`: the questions asked, so a heading written without its brackets ("2. 질문 헤드라인") still splits into
+// the question and the headline.
+function parse(text: string, chapters: string[] = []): { sections: Section[]; failed: boolean } {
   const failed = text.includes(MARK_ERROR);
   const body = text.replace(MARK_ERROR, "");
   const sections: Section[] = [];
   for (const chunk of body.split(/^##\s+/m).slice(1)) {
     const [head, ...rest] = chunk.split("\n");
-    const m = /^\[([^\]]+)\]\s*(.*)$/.exec(head.trim());
+    const bracketed = /^\[([^\]]+)\]\s*(.*)$/.exec(head.trim());
+    const bare = head.trim().replace(/^\d+\s*[.)]\s*/, "");
+    const asked = bracketed ? null : [chapters[sections.length], ...chapters].find((c) => c && bare.startsWith(c));
+    const m = bracketed ?? (asked ? [bare, asked, bare.slice(asked.length).replace(/^\s*[:\-–—]?\s*/, "")] : null);
     // v9's point lines (lib/reportPrompts.ts POINT_LINES), right under the headline: "이유: …" and "할 일: …".
     const point = (k: string) => rest.map((l) => new RegExp(`^${k}\\s*[:：]\\s*(.+)$`).exec(l.trim())?.[1]).find(Boolean);
     const body = rest.filter((l) => !/^(이유|할 일)\s*[:：]/.test(l.trim()));
@@ -161,7 +166,7 @@ export default function AiReport({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [body]);
 
-  const parsed = parse(text);
+  const parsed = parse(text, chapters);
   const { failed } = parsed;
   // Money and work reports end on a "한눈에" summary (lib/reportPrompts.ts SUMMARY_BLOCK): shown open, as rows.
   const sections = parsed.sections.filter((s) => s.label !== SUMMARY_LABEL);
@@ -234,11 +239,9 @@ export default function AiReport({
             </span>
           </summary>
           <div className="mt-3 border-t border-seal/15 pt-3">
-            {/* The three-line point box (v9): the answer, why, and what to do, before the picture and the text. */}
+            {/* The point box (v9): why, and what to do, under the headline (the answer), before the picture and the text. */}
             {(s.why || s.todo) && (
               <dl className="mb-4 grid grid-cols-[3.2rem_1fr] gap-x-2 gap-y-1.5 rounded-xl bg-seal/5 px-3.5 py-3 text-[14px] leading-snug ring-1 ring-seal/15">
-                <dt className="text-[11.5px] font-extrabold text-seal">답</dt>
-                <dd className="font-bold">{s.headline}</dd>
                 {s.why && (
                   <>
                     <dt className="text-[11.5px] font-extrabold text-seal">이유</dt>
