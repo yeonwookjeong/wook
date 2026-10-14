@@ -852,7 +852,7 @@ async function OpenReport({
   const analysis = (unlocked: boolean) =>
     domain && card ? (
       <>
-        <DomainCard name={name} domain={domain} card={card} />
+        <DomainCard name={name} domain={domain} card={card} ranked={renew} />
         <DecadeTable name={name} domain={domain} years={decadeOf(domain, pillars, gender)} locked={!unlocked && locked} plain={renew} />
         {intro && (
           <details className="group mt-4">
