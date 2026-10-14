@@ -568,6 +568,7 @@ function ListReelCard({ k, anim = false }: { k: string; anim?: boolean }) {
   const r = LIST_REELS[k];
   if (!r) return null;
   const fs = r.fs ?? 34;
+  const perCol = Math.ceil(r.rows.length / (r.cols ?? 1));
   // ?anim=1: the same picture in motion, for a video reel. The title rises in, the rows follow one by one, then the
   // boxes are ticked, and the last frame is the still picture. Frames are captured by setting each animation's time.
   // Everything is on screen from the first frame (the first frame is the hook and the cover); the motion only
@@ -599,9 +600,21 @@ function ListReelCard({ k, anim = false }: { k: string; anim?: boolean }) {
           </p>
           {r.sub && <p style={{ marginTop: 14, fontSize: 28, lineHeight: 1.45, color: "rgba(244,236,219,.85)", fontFamily: sans }}>{r.sub}</p>}
         </div>
-        <div className="doc-paper" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", justifyContent: "space-evenly", padding: "18px 40px", color: INK, ...(anim ? { animation: "lrZoom 7s linear 0s both" } : {}) }}>
+        <div
+          className="doc-paper"
+          style={{
+            flex: 1,
+            minHeight: 0,
+            padding: "18px 40px",
+            color: INK,
+            ...(r.cols
+              ? { display: "grid", gridTemplateColumns: `repeat(${r.cols}, 1fr)`, gridTemplateRows: `repeat(${perCol}, 1fr)`, gridAutoFlow: "column", columnGap: 36 }
+              : { display: "flex", flexDirection: "column", justifyContent: "space-evenly" }),
+            ...(anim ? { animation: "lrZoom 7s linear 0s both" } : {}),
+          }}
+        >
           {r.rows.map(([label, text, note], i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: 20, flex: 1, borderTop: i ? "1.5px solid rgba(179,38,30,.15)" : "none", fontFamily: sans, ...a("lrIn", rowAt(i), 0.45) }}>
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 20, flex: 1, borderTop: i % perCol ? "1.5px solid rgba(179,38,30,.15)" : "none", fontFamily: sans, ...a("lrIn", rowAt(i), 0.45) }}>
               {r.check ? (
                 <span style={{ position: "relative", width: 44, height: 44, flexShrink: 0, border: `4px solid ${SEAL}`, borderRadius: 8 }}>
                   {anim && (

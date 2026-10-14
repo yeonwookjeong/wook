@@ -13,6 +13,8 @@ export type ListReel = {
   brushLabels?: boolean;
   // Checkbox rows instead of labels.
   check?: boolean;
+  // Rows split into this many columns (read top to bottom), for long short-row lists.
+  cols?: number;
   end: string;
   foot: string;
 };
@@ -148,5 +150,40 @@ export const LIST_REELS: Record<string, ListReel> = {
     ],
     end: "두 칸 이상이면, 선은 그대가 먼저 그으시옵소서",
     foot: "무료 사주표 '사주 속 별'에서 도화 확인 · 프로필 링크",
+  },
+  kings: {
+    kicker: "실록 생일로 계산한 조선 왕 27명",
+    title: "그대와 [같은 일주의 왕],\n계시옵니까?",
+    titleSize: 68,
+    sub: "목록에 없으면 왕이 한 분도 나지 않은 일주이옵니다",
+    cols: 2,
+    labelWidth: 112,
+    fs: 34,
+    rows: [
+      ["정묘 :", "경종, 순조"],
+      ["기사 :", "중종"],
+      ["계유 :", "문종, 고종"],
+      ["을해 :", "인조"],
+      ["병자 :", "세조"],
+      ["정축 :", "예종"],
+      ["무인 :", "영조"],
+      ["기묘 :", "정조"],
+      ["신사 :", "순종"],
+      ["무자 :", "명종"],
+      ["기축 :", "선조"],
+      ["신묘 :", "정종, 태종, 성종"],
+      ["임진 :", "세종"],
+      ["갑오 :", "광해군"],
+      ["정유 :", "철종"],
+      ["갑진 :", "효종"],
+      ["정미 :", "연산군"],
+      ["기유 :", "현종"],
+      ["계축 :", "인종"],
+      ["정사 :", "단종"],
+      ["기미 :", "태조"],
+      ["신유 :", "숙종, 헌종"],
+    ],
+    end: "태종·정종·성종, 세 왕이 같은 신묘일주이옵니다",
+    foot: "내 일주는 프로필 링크에서 생일만 넣으면 확인",
   },
 };
