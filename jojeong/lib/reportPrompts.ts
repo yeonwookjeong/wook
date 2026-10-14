@@ -200,9 +200,14 @@ export const yearChaptersFor = (newYear: boolean) => [...(SPECS.v9.yeonun?.chapt
 // The point box of v9: two lines right under each chapter's headline (the headline being the answer), read by
 // components/AiReport.tsx.
 export const POINT_LINES = ["이유", "할 일"] as const;
-const POINTS_RULE = `- 헤드라인 바로 다음 줄에 요점 두 줄을 이 형식 그대로 쓴다(장마다 빠짐없이, 각 30자 안팎, 사주 용어 없이):
+const POINTS_RULE = `- 장 머리 줄은 반드시 '## [' 로 시작하고, 장 질문을 대괄호 안에 그대로 넣는다. 번호를 붙이지 않는다.
+- 헤드라인 바로 다음 줄에 요점 두 줄을 이 형식 그대로 쓴다(장마다 빠짐없이, 각 30자 안팎, 사주 용어 없이, 헤드라인을 되풀이하지 않는다):
 이유: 왜 그런지 한 문장
 할 일: 이 장을 읽고 바로 해 볼 것 한 문장
+- 예:
+## [10년 대운 속의 이 해] 큰 계절은 봄날이니, 한여름 가뭄을 두려워 마세요
+이유: 큰 흐름은 좋지만 올해 기운이 지나치게 뜨거워요
+할 일: 확장보다 지금 가진 것을 지키는 데 힘을 쓰세요
 - 그 아래 본문 3~5문단, 문단 사이는 빈 줄.`;
 // The chapters shown for a bought report: as they were when it was bought.
 export const chaptersFor = (id: ProductId, v8: boolean) => (v8 ? SPECS.v8[id]?.chapters : SPECS.v7[id]?.chapters) ?? [];
