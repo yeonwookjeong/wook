@@ -17,7 +17,6 @@ import { factLines, GANSIN_SIGNS, relationSentence, roleReasons, type Pillars } 
 import { chartOf, GYEOK_NAME, readChart } from "@/lib/myeongri";
 import SajuChart from "@/components/SajuChart";
 import { sinbunOf } from "@/lib/sinbun";
-import { yearPreview } from "@/lib/yearly";
 
 async function loadSeat(id: string, mid: string) {
   const { court, seats } = await loadCourt(id);
@@ -184,7 +183,7 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
           query={`court=${court.id}&m=${seat.minister.id}`}
           highlights={{
             sinbun: `조선에 태어났다면 ‘${sinbunOf(seat.minister.pillars).job}’`,
-            gukjeong: `병오년 운세 ‘${yearPreview(seat.minister.pillars).verdict}’ · 무료로 전부 공개`,
+            gukjeong: "여덟 글자로 보는 성격·재능, 2027년 한눈에까지",
           }}
         />
       )}

@@ -11,7 +11,7 @@ export default function ReportShelf({ ids, query, highlights = {} }: { ids: Prod
       <p className="text-center font-myeongjo text-xs font-extrabold tracking-[0.4em] text-seal">秘 密 報 告</p>
       <h2 className="mt-1 text-center font-myeongjo text-xl font-extrabold">정 훈도의 비밀 보고서</h2>
       <p className="mt-1 text-center text-xs text-ink-soft">
-        <>신분 감정·2026 운세는 무료, 나머지는 사주 풀이를 먼저 보시고 여시옵소서</>
+        <>신분 감정·내 사주 풀이는 값없이 보시고, 나머지는 풀이를 먼저 보신 뒤 여시옵소서</>
       </p>
       {/* The free ones first, then the ones on sale: free → deeper, the order of the funnel, and never the two
           kinds interleaved. */}

@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { computeProfile } from "@/lib/profile";
-import { BirthInputError, type Pillars } from "@/lib/saju";
+import { BirthInputError, courtMessage, type Pillars } from "@/lib/saju";
 import { track } from "@/lib/stats";
 import { addMinister, createCourt, CourtFullError, getCourt, getProfile, listMinisters, MAX_MINISTERS, noteReading, putShare, removeMinister, setProfile } from "@/lib/store";
 import { openCard, openPerson } from "@/lib/shareToken";
@@ -55,7 +55,7 @@ export async function enthroneAction(_prev: FormState, formData: FormData): Prom
     courtId = court.id;
     await track("king");
   } catch (e) {
-    if (e instanceof BirthInputError) return { error: e.message };
+    if (e instanceof BirthInputError) return { error: courtMessage(e) };
     console.error(e);
     return { error: "즉위식 준비 중 문제가 생겼사옵니다. 잠시 후 다시 시도해 주시옵소서." };
   }
@@ -76,7 +76,7 @@ export async function joinCourtAction(_prev: FormState, formData: FormData): Pro
     ministerId = minister.id;
     await track("join");
   } catch (e) {
-    if (e instanceof BirthInputError) return { error: e.message };
+    if (e instanceof BirthInputError) return { error: courtMessage(e) };
     if (e instanceof CourtFullError) return { error: `조정이 가득 찼사옵니다. (최대 ${MAX_MINISTERS}명)` };
     console.error(e);
     return { error: "입궐 중 문제가 생겼사옵니다. 잠시 후 다시 시도해 주시옵소서." };
@@ -117,7 +117,7 @@ export async function appointMinisterAction(_prev: FormState, formData: FormData
     await saveProfile(court.id, ministerId, parsed);
     await track("appoint");
   } catch (e) {
-    if (e instanceof BirthInputError) return { error: e.message };
+    if (e instanceof BirthInputError) return { error: courtMessage(e) };
     if (e instanceof CourtFullError) return { error: `조정이 가득 찼사옵니다. (최대 ${MAX_MINISTERS}명)` };
     console.error(e);
     return { error: "등용 중 문제가 생겼사옵니다. 잠시 후 다시 시도해 주시옵소서." };

@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import Hundo from "@/components/Hundo";
+
+export const metadata: Metadata = { title: "찾는 페이지가 없어요" };
 
 export default function NotFound() {
   return (

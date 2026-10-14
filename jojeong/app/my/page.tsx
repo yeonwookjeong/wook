@@ -7,7 +7,8 @@ import { askShown, currentMember, membersEnabled, VIA_LABEL, viaEnabled, type Vi
 export const metadata: Metadata = { title: "내 보고서", robots: { index: false } };
 
 // Reports bought in this browser. Each keeps its own permanent link (/r/…) for other devices.
-export default async function MyReportsPage() {
+export default async function MyReportsPage({ searchParams }: { searchParams: Promise<{ missing?: string }> }) {
+  const missing = (await searchParams).missing === "1";
   const orders = await ownedOrders();
   // Not signed in (with 청심당 open, or in 시안 모드): these live in this browser only until a sign-in keeps them.
   const nudge = orders.length > 0 && membersEnabled() && (await askShown()) && !(await currentMember().catch(() => null));
@@ -18,6 +19,14 @@ export default async function MyReportsPage() {
         <h1 className="mt-2 font-myeongjo text-3xl font-extrabold">내 보고서</h1>
         <p className="mt-2 text-sm text-ink-soft">이 브라우저에서 결제한 보고서예요</p>
       </section>
+      {/* Came from a /r/… link that leads to no paid order (app/r/[id]/route.ts). */}
+      {missing && (
+        <p role="alert" className="mt-4 rounded-xl bg-seal/10 px-4 py-3 text-center text-[13px] leading-relaxed text-seal">
+          누르신 보고서 링크를 찾지 못했어요. 주소가 끝까지 복사됐는지 확인해 주세요.
+          <br />
+          그래도 안 열리면 <Link href="/contact" className="font-bold underline">문의하기</Link>로 결제일을 알려 주시면 바로 찾아 드려요.
+        </p>
+      )}
       {nudge && (
         <section className="mt-5 rounded-2xl border border-[#d4af5f]/50 bg-[#fbf6ea] px-4 py-4 text-center">
           <p className="font-myeongjo text-[16px] font-extrabold">이 브라우저에만 저장된 보고서예요</p>

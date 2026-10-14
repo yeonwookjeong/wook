@@ -20,7 +20,6 @@ import { KING_TYPES } from "@/lib/kingTypes";
 import { reignTier, TIERS } from "@/lib/reign";
 import { castOf } from "@/lib/sillok";
 import { sinbunOf } from "@/lib/sinbun";
-import { yearPreview } from "@/lib/yearly";
 
 
 export async function generateMetadata({ params }: PageProps<"/court/[id]">): Promise<Metadata> {
@@ -205,7 +204,7 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
               query={`court=${court.id}`}
               highlights={{
                 sinbun: `왕이 아니었다면 ‘${sinbunOf(court.king).job}’`,
-                gukjeong: `병오년 운세 ‘${yearPreview(court.king).verdict}’ · 무료로 전부 공개`,
+                gukjeong: "여덟 글자로 보는 성격·재능, 2027년 한눈에까지",
               }}
             />
           )}

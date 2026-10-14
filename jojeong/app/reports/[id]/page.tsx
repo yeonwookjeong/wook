@@ -499,8 +499,9 @@ async function OpenReport({
               full: `/s/sinbun/${sealPerson("sinbun", me.person)}`,
             }}
             texts={{
-              summary: "훈도사주 · 조선에 태어났다면 나는 무엇이었을까",
-              full: "훈도사주 · 조선에 태어났다면 나는 무엇이었을까",
+              // The result itself goes with the link: a friend opens a line about someone, not an ad.
+              summary: `조선에 태어났다면 나는 '${sinbun.job}' · 너는 뭐였을지 봐 봐 (훈도사주)`,
+              full: `조선에 태어났다면 나는 '${sinbun.job}' · 너는 뭐였을지 봐 봐 (훈도사주)`,
             }}
             card={<SinbunCard who={`${josa(name, "이/가")} 조선에 태어났다면`} rank={sinbun.rank} job={sinbun.job} line={sinbun.line} rise={sinbun.rise} yong={sinbun.yong} />}
           />
@@ -546,6 +547,8 @@ async function OpenReport({
   const intro = distinct && <ChartIntro name={name} d={distinct} slots={reading.chart.slots} lockHref={lifeOwned ? null : lifeHref} />;
   // The card of this reading, for a story (the day pillar, the five powers, money·love·work, how rare the build is).
   const ilju = free ? iljuFacts(pillars.dayStem, pillars.dayBranch) : null;
+  const topPower = free?.powers.reduce((a, b) => (b.pct > a.pct ? b : a));
+  const shareLine = ilju && topPower ? `내 사주는 ${ilju.name} · 가장 큰 힘은 ${topPower.name} ${topPower.pct}% · 너는 뭐야? (훈도사주)` : "훈도사주 · 조선 관상감 훈도가 풀어 주는 사주";
   const sameLine = distinct?.ilju ? `같은 ${hanjaKo(distinct.ilju.name)}일주 중 약 ${Math.max(1, Math.round(distinct.ilju.rate * 100))}%만 이 구조` : "";
   const kindsOf = free ? free.domains.map((d) => [d.domain === "jaemul" ? "돈" : d.domain === "yeonae" ? "사랑" : "일", d.card.type] as [string, string]) : [];
   // At the very end, once the reader has been through all of it: send it to a friend, or keep the card.
@@ -562,8 +565,9 @@ async function OpenReport({
             full: `/s/reading/${sealPerson("reading", me.person)}`,
           }}
           texts={{
-            summary: "훈도사주 · 조선 관상감 훈도가 풀어 주는 무료 사주",
-            full: "훈도사주 · 조선 관상감 훈도가 풀어 주는 무료 사주",
+            // The result itself goes with the link: the day pillar and the strongest of the five powers.
+            summary: shareLine,
+            full: shareLine,
           }}
           card={
             <ReadingCard

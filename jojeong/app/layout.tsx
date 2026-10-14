@@ -19,7 +19,7 @@ const myeongjo = Hahmlet({
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
   title: { default: `${SITE_NAME} · ${SITE_TAGLINE}`, template: `%s · ${SITE_NAME}` },
-  description: "평생 사주, 궁합, 2026 운세, 연애·재물·직업까지. 같은 일주라도 다 다른 당신만의 사주를 정 훈도가 풀어 드려요.",
+  description: "평생 사주, 궁합, 2027 신년운세, 연애·재물·직업까지. 같은 일주라도 다 다른 당신만의 사주를 정 훈도가 풀어 드려요.",
   // Lets AdSense verify the site once the account is set (lib/ads.ts).
   ...(adsAccount && { other: { "google-adsense-account": adsAccount } }),
   // Search Console and 네이버 서치어드바이저 ownership, from the codes each gives (only the content value).

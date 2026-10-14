@@ -73,7 +73,17 @@ export type BirthInput = {
   yaja?: boolean;
 };
 
-export class BirthInputError extends Error {}
+// A wrong birth input, told plainly (해요체) on the present-day pages; `court` is the same in 정 훈도's court speech
+// for the Joseon pages (왕이 될 사주, 조정), read with courtMessage.
+export class BirthInputError extends Error {
+  constructor(
+    message: string,
+    readonly court?: string,
+  ) {
+    super(message);
+  }
+}
+export const courtMessage = (e: BirthInputError) => e.court ?? e.message;
 
 // A late-자시 birth becomes the next calendar day's 자시 (as a solar date, so lunar months roll over correctly).
 export function resolveLateZi(input: BirthInput): BirthInput {
@@ -111,7 +121,12 @@ export function resolveBirthTime(input: BirthInput, clock: { hour: number; minut
 
 export function computePillars(input: BirthInput): Pillars {
   const { year, month, day, calendar, hourBranch } = input;
-  if (year < 1920 || year > 2025) throw new BirthInputError("1920년부터 2025년 사이로 입력해 주시옵소서.");
+  // From 1920 up to today (a child born this year is read too, for a name or a day chosen for them).
+  const kst = new Date(Date.now() + 9 * 3600000);
+  const today = kst.getUTCFullYear() * 10000 + (kst.getUTCMonth() + 1) * 100 + kst.getUTCDate();
+  if (year < 1920) throw new BirthInputError("1920년 이후로 입력해 주세요.", "1920년 이후로 입력해 주시옵소서.");
+  if (year * 10000 + month * 100 + day > today + (calendar === "solar" ? 0 : 200))
+    throw new BirthInputError("아직 오지 않은 날이에요. 생년월일을 다시 확인해 주세요.", "아직 오지 않은 날이옵니다. 생년월일을 다시 살펴 주시옵소서.");
 
   let solar;
   try {
@@ -122,13 +137,14 @@ export function computePillars(input: BirthInput): Pillars {
         : Lunar.fromYmdHms(year, calendar === "lunar-leap" ? -month : month, day, 12, 0, 0).getSolar();
   } catch {
     throw new BirthInputError(
+      calendar === "lunar-leap" ? "그해에는 그 윤달이 없어요." : "없는 날짜예요. 다시 확인해 주세요.",
       calendar === "lunar-leap" ? "그 해에는 해당 윤달이 없사옵니다." : "존재하지 않는 날짜이옵니다.",
     );
   }
   // lunar-javascript keeps impossible solar dates like 2/31 as-is, so check them against the real calendar.
   if (calendar === "solar") {
     const d = new Date(Date.UTC(year, month - 1, day));
-    if (d.getUTCMonth() !== month - 1 || d.getUTCDate() !== day) throw new BirthInputError("존재하지 않는 날짜이옵니다.");
+    if (d.getUTCMonth() !== month - 1 || d.getUTCDate() !== day) throw new BirthInputError("없는 날짜예요. 다시 확인해 주세요.", "존재하지 않는 날짜이옵니다.");
   }
 
   const ec = solar.getLunar().getEightChar();
