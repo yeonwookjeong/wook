@@ -25,13 +25,13 @@ const tagWords = (tags: string[]) => tags.map((t) => TAG_WORD[t] ?? t).join(" ·
 const GROUP_WORD: Record<string, string> = { 비겁: "동료·경쟁", 식상: "표현·재주", 재성: "돈·결과", 관성: "일·책임", 인성: "배움·도움" };
 
 // On top of a bought report, open: the reader's eight characters, the first thing they paid to have read.
-export function ChartTop({ name, chart, year }: { name: string; chart: Parameters<typeof SajuChart>[0]; year?: { y: number; hanja: string; gods: [string, string] } }) {
+export function ChartTop({ name, chart, year, weights }: { name: string; chart: Parameters<typeof SajuChart>[0]; year?: { y: number; hanja: string; gods: [string, string] }; weights?: number[] }) {
   return (
     <section className="doc-paper mt-4 px-5 pt-5 pb-5">
       <p className="text-center font-myeongjo text-xs font-extrabold tracking-[0.4em] text-seal">命 盤</p>
       <h2 className="mt-1 text-center font-myeongjo text-[18px] font-extrabold">{name}님의 사주팔자</h2>
       <p className="mt-1 text-center text-[11.5px] text-ink-soft">이 여덟 글자로 아래 보고서를 썼어요</p>
-      <SajuChart {...chart} kingdom={false} />
+      <SajuChart {...chart} kingdom={false} weights={weights} />
       {year && (
         <p className="mt-3 rounded-lg bg-seal/5 px-3 py-2 text-center text-[13px] leading-relaxed">
           {year.y}년에 들어오는 두 글자{" "}
