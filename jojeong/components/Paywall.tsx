@@ -7,6 +7,8 @@ import { bonusFor, PRICE, priceFor, productById, saleLabel, saleNow, SETS, setsW
 import { setOffer, type SetOffer } from "@/lib/upgrade";
 import { pricingNow } from "@/lib/pricing";
 import { newYearOf } from "@/lib/yeonun";
+import { isPreview } from "@/lib/admin";
+import { currentMember, membersEnabled } from "@/lib/members";
 
 // Where the written report would begin, before it is bought: its chapters, the price, and the payment.
 // Everything above it (the chart and how it was read) stays free.
@@ -112,6 +114,31 @@ export default async function Paywall({
         </p>
         {bonus > 0 && <p className="mt-1 text-[12.5px] font-bold text-[#9a7424]">정 훈도 질문 {bonus}개 포함</p>}
         {note && <p className="mt-3 rounded-xl bg-gold/10 px-3 py-2 text-left text-[12px] leading-relaxed">{note}</p>}
+        {/* 시안: what is being bought, for how much, and what happens next, right above the button (half of those who
+            opened the payment window left it). */}
+        {(await isPreview()) && (
+          <dl className="mt-4 grid grid-cols-[4.2rem_1fr] gap-x-2 gap-y-1.5 rounded-xl border border-seal/25 bg-white/60 px-3.5 py-3 text-left text-[12.5px] leading-snug">
+            <dt className="font-bold text-ink-soft">무엇을</dt>
+            <dd>
+              <b>{product.title}</b> · {chapters.length}장 보고서{request.p ? " (지금 넣은 사주로)" : ""}
+            </dd>
+            <dt className="font-bold text-ink-soft">얼마에</dt>
+            <dd>
+              <b>{price.toLocaleString("ko-KR")}원</b>
+              {bonus > 0 ? ` · 정 훈도 질문 ${bonus}개 포함` : ""} · 한 번 결제, 추가 요금 없음
+            </dd>
+            <dt className="font-bold text-ink-soft">결제 뒤</dt>
+            <dd>이 화면으로 돌아와 바로 써 드려요(1~2분)</dd>
+            <dt className="font-bold text-ink-soft">보관</dt>
+            <dd>
+              {membersEnabled() && (await currentMember().catch(() => null))
+                ? "로그인돼 있어 계정에 보관돼요 · 어느 기기에서든 열려요"
+                : "결제 후 받는 링크로 언제든 다시 열려요 · 카카오로 로그인하면 어느 기기에서든"}
+            </dd>
+            <dt className="font-bold text-ink-soft">결제창</dt>
+            <dd>토스페이먼츠 결제창으로 넘어가요</dd>
+          </dl>
+        )}
         {payEnabled() ? (
           <>
             <PayButton request={request} label={`${price.toLocaleString("ko-KR")}원 결제하고 보기`} />
@@ -139,5 +166,25 @@ export default async function Paywall({
         을 확인해 주세요.
       </p>
     </section>
+  );
+}
+
+// 시안: a slim bar at the top of a long free page, straight to the report's contents and price (the life report's
+// payment sat eight screens down).
+export async function JumpToPay({ product, request, chapters }: { product: Product; request: Record<string, string>; chapters: number }) {
+  if (!(await isPreview())) return null;
+  const price = priceFor(product.id, await pricingNow(), request.y, newYearOf());
+  return (
+    <a href="#report-start" className="mt-3 flex items-center gap-3 rounded-2xl bg-seal px-4 py-3 text-hanji shadow-[0_4px_0_#7d1a14]">
+      <span className="min-w-0 flex-1">
+        <b className="block font-myeongjo text-[15px]">{product.title} 보고서 바로 보기</b>
+        <span className="block text-[11.5px] opacity-85">
+          {chapters}장 · {price.toLocaleString("ko-KR")}원 · 아래 무료 풀이는 그대로 볼 수 있어요
+        </span>
+      </span>
+      <span className="shrink-0 text-lg font-bold" aria-hidden="true">
+        ↓
+      </span>
+    </a>
   );
 }

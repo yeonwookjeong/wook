@@ -12,7 +12,7 @@ import PairIntro, { MiniChart } from "@/components/PairIntro";
 import ReunionIntro from "@/components/ReunionIntro";
 import TaekilForm from "@/components/TaekilForm";
 import TaekilResult from "@/components/TaekilResult";
-import Paywall from "@/components/Paywall";
+import Paywall, { JumpToPay } from "@/components/Paywall";
 import OrderLink from "@/components/OrderLink";
 import DecadeTable from "@/components/DecadeTable";
 import DomainCard from "@/components/DomainCard";
@@ -1015,6 +1015,7 @@ async function OpenReport({
   return (
     <>
       <Header product={product} subjectName={`${name}님`} />
+      {locked && <JumpToPay product={product} request={request} chapters={product.toc.length} />}
       {other}
       {analysis(false)}
       {/* The chart is already on the page in the analysis; the bare table only when that could not be read. */}
