@@ -44,7 +44,8 @@ export async function POST(request: Request) {
   const at = order ? (order.paidAt ?? order.createdAt) : undefined;
   // The second pass (lib/open.ts RENEW2; 시안 모드 before it is on): bought in the opened shop, written with v9's
   // point box. A report bought before the opening never is.
-  const v9 = Boolean(order && isV8(order) && (await renewNow()));
+  // The owner's quick look with no order (app/reports/[id] asOwner) asks v9 to see what a buyer will get.
+  const v9 = order ? Boolean(isV8(order) && (await renewNow())) : (body as { v?: string }).v === "9";
   const job = await jobFor(req, v9 ? "v9" : undefined, false, at);
   if ("error" in job) return Response.json({ error: job.error }, { status: job.status });
   // A v8 text of such an order (read before the second pass) keeps its words and gets the point box beside them.

@@ -108,7 +108,7 @@ function Notice({ children, href, cta }: { children: React.ReactNode; href?: str
 
 const chaptersOf = (id: ProductId) => REPORT_SPECS[id]?.chapters ?? [];
 // A bought two-person report; 궁합 from v8 on with its pictures (the two people, their ten years, their six months).
-async function PairReport({ order, product, a, b, rel, couple }: { order: Order; product: Product; a: Person; b: Person; rel: Relation; couple?: Couple | null }) {
+async function PairReport({ order, product, a, b, rel, couple, request }: { order: Order; product: Product; a: Person; b: Person; rel: Relation; couple?: Couple | null; request: Record<string, string> }) {
   const at = paidAtOf(order);
   let figures: Record<number, React.ReactNode> | undefined;
   if (product.id === "gunghap" && isV8(order)) {
@@ -125,12 +125,14 @@ async function PairReport({ order, product, a, b, rel, couple }: { order: Order;
         ])),
     };
   }
-  return <AiReport request={{ product: product.id, order: order.id }} modern {...(await extrasOf(order, product))} figures={figures} />;
+  return <AiReport request={request} modern {...(await extrasOf(order, product))} figures={figures} />;
 }
 
 // What a report bought in the opened shop adds (lib/reportPrompts.ts isV8): its chapters as bought, the 한눈에 card
 // to keep and "이 장, 정 훈도에게 더 묻기". Orders from before the opening open as they did.
 const paidAtOf = (o: Order) => o.paidAt ?? o.createdAt;
+// The owner's stand-in order is "bought" as the page is read.
+const stampNow = () => Date.now();
 
 // "결제한 보고서 바로 읽기": what was paid for, one tap from the top (to #report-start).
 function Jump({ gift, title, chapters }: { gift?: boolean; title: string; chapters: number }) {
@@ -209,7 +211,15 @@ async function OpenReport({
   // The second pass on bought reports (lib/open.ts RENEW2; 시안 모드 before it is on): only for what was bought
   // in the opened shop, never for a report bought before the opening.
   const renew = await renewNow();
-  const r2 = (o: Order | null | undefined) => Boolean(renew && o && isV8(o));
+  // The owner's quick look (/admin "보고서 바로 확인", no order): the report as one bought now would open, with the
+  // second pass, so it can be checked before RENEW2 is on. A stand-in order with no id; its writing asks v9.
+  const ownerView = !locked && !paid && (await isAdmin());
+  const asOwner = (req: Record<string, string | undefined>): Order | null =>
+    ownerView ? ({ id: "", product: product.id, req, who: "관리자", amount: 0, status: "paid", shop: "a", createdAt: stampNow() } as unknown as Order) : null;
+  const r2 = (o: Order | null | undefined) => Boolean(o && isV8(o) && (renew || o.id === ""));
+  // What the written report is asked with: the order, or for the owner's look the request itself (as v9).
+  const reqOf = (o: Order, base: Record<string, string | undefined>): Record<string, string> =>
+    o.id ? { product: product.id, order: o.id } : (Object.fromEntries(Object.entries({ ...base, product: product.id, v: "9" }).filter(([, v]) => v !== undefined)) as Record<string, string>);
 
   // 택일: the search and chart(s) in the link (or the order); how many good days there are is free, the days themselves when bought.
   if (product.id === "taekil") {
@@ -231,13 +241,13 @@ async function OpenReport({
       );
     }
     const req = { product: product.id, kind: found.kind, from: src.from!, n: String(found.n), a: src.a!, ...(b && { b: src.b! }), d: searchDay(paid?.req.d) };
-    const unlock = paid ?? (locked ? await ownedOrderFor(product.id, req) : null);
+    const unlock = paid ?? (locked ? await ownedOrderFor(product.id, req) : asOwner(req));
     const days = pickDays(found.kind, b ? [a, b] : [a], found.from, found.n);
     const full = !locked || Boolean(unlock);
     return (
       <>
         <Header product={product} subjectName={b ? `${a.name}님과 ${b.name}님` : `${a.name}님`} />
-        {unlock && <OrderLink id={unlock.id} />}
+        {unlock?.id && <OrderLink id={unlock.id} />}
         {r2(unlock) && (
           <>
             <Jump gift={unlock!.gift} title={`택일 · ${KINDS[found.kind].title}`} chapters={chaptersFor(product.id, true).length} />
@@ -262,7 +272,7 @@ async function OpenReport({
             <p className="mt-1 text-center text-xs text-ink-soft">위의 날짜를 두고, 왜 이 날인지와 그날 할 일을 직접 풀어 드려요</p>
             {unlock ? (
               <AiReport
-                request={{ product: product.id, order: unlock.id }}
+                request={reqOf(unlock, req)}
                 modern
                 {...(await extrasOf(unlock, product))}
                 figures={
@@ -325,7 +335,7 @@ async function OpenReport({
     const closeness = product.id === "sokgunghap" ? intimacyOf(a, b) : null;
     const reunion = product.id === "jaehoe" ? reunionOf(a, b) : null;
     const req = { product: product.id, a: pair.a, b: pair.b, rel: FIXED_RELATION[product.id] ?? relationOf(pair.rel) };
-    const unlock = paid ?? (locked ? await ownedOrderFor(product.id, req) : null);
+    const unlock = paid ?? (locked ? await ownedOrderFor(product.id, req) : asOwner(req));
     return (
       <>
         <Header product={product} subjectName={`${a.name}님과 ${b.name}님`} />
@@ -341,11 +351,11 @@ async function OpenReport({
           />
         ) : (
           <>
-            {unlock && <OrderLink id={unlock.id} />}
+            {unlock?.id && <OrderLink id={unlock.id} />}
             {r2(unlock) && <Jump gift={unlock!.gift} title={product.title} chapters={chaptersFor(product.id, true).length} />}
             {unlock ? (
               <div id="report-start" className="scroll-mt-4">
-                <PairReport order={unlock} product={product} a={a} b={b} rel={req.rel} couple={r2(unlock) ? couple : null} />
+                <PairReport order={unlock} product={product} a={a} b={b} rel={req.rel} couple={r2(unlock) ? couple : null} request={reqOf(unlock, req)} />
               </div>
             ) : (
               <AiReport request={req} chapters={chaptersOf(product.id)} modern />
@@ -700,7 +710,7 @@ async function OpenReport({
     if (!d) return (<><Header product={product} /><Notice>이 사주로는 연운을 풀 수 없어요. 다시 넣어 주세요.</Notice></>);
     const { from, to } = yearRange(profile, now);
     const yreq = { product: product.id, p: token ?? "", y: String(y) };
-    const unlock = paid ?? (locked && token ? await ownedOrderFor(product.id, yreq) : null);
+    const unlock = paid ?? (locked && token ? await ownedOrderFor(product.id, yreq) : asOwner(yreq));
     const preview = yearPreviewOf(pillars, profile, y);
     const flowNow = freeReadingOf(pillars, profile)?.flow?.find((f) => f.from <= y && y <= f.to);
     const decadeNow = flowNow ? { from: flowNow.from, to: flowNow.to, mood: flowNow.young ? "성장기" : flowNow.mood, theme: flowNow.theme } : null;
@@ -737,7 +747,7 @@ async function OpenReport({
     return (
       <>
         <Header product={y === newYear ? newYearProduct(product, y) : product} subjectName={`${name}님`} />
-        {unlock && <OrderLink id={unlock.id} />}
+        {unlock?.id && <OrderLink id={unlock.id} />}
         {r2(unlock) && (
           <>
             <Jump gift={unlock!.gift} title={y === newYear ? `${y} 신년운세` : `${y}년 운세`} chapters={yearChapters.length} />
@@ -770,7 +780,7 @@ async function OpenReport({
           <>
             <div id="report-start" className="scroll-mt-4">
               <AiReport
-                request={{ product: product.id, order: unlock.id }}
+                request={reqOf(unlock, yreq)}
                 modern
                 {...(await extrasOf(unlock, product))}
                 {...(r2(unlock) && { chapters: yearChapters, figures: yearFigures })}
@@ -818,7 +828,7 @@ async function OpenReport({
       </>
     );
   }
-  const unlock = paid ?? (locked ? await ownedOrderFor(product.id, { product: product.id, p: me?.token }) : null);
+  const unlock = paid ?? (locked ? await ownedOrderFor(product.id, { product: product.id, p: me?.token }) : asOwner(request));
   const freeYear = newYearOf() ?? thisYear();
   const domain = isDomain(product.id) ? product.id : null;
   const gender = me ? me.person.gender : (profile?.gender ?? null);
@@ -947,13 +957,15 @@ async function OpenReport({
     return (
       <>
         <Header product={product} subjectName={`${name}님`} />
-        <OrderLink
-          id={unlock.id}
-          gift={!!unlock.gift}
-          others={(unlock.bundle ?? [])
-            .filter((id) => id !== product.id)
-            .map((id) => ({ href: `/reports/${id}?order=${unlock.id}`, title: productById(id)!.title }))}
-        />
+        {unlock.id && (
+          <OrderLink
+            id={unlock.id}
+            gift={!!unlock.gift}
+            others={(unlock.bundle ?? [])
+              .filter((id) => id !== product.id)
+              .map((id) => ({ href: `/reports/${id}?order=${unlock.id}`, title: productById(id)!.title }))}
+          />
+        )}
         <Jump gift={unlock.gift} title={product.title} chapters={chapters} />
         {/* The second pass: the eight characters on top, open, the first thing the reader paid to have read. */}
         {r2(unlock) && <ChartTop name={name} chart={reading.chart} />}
@@ -978,7 +990,7 @@ async function OpenReport({
         {!r2(unlock) && !intro && chartFold}
         <div id="report-start" className="scroll-mt-4">
           <AiReport
-            request={{ product: product.id, order: unlock.id }}
+            request={reqOf(unlock, request)}
             modern
             {...(await extrasOf(unlock, product))}
             figures={{ ...lifeFigures(unlock), ...(r2(unlock) ? moreFigures(unlock) : {}) }}
