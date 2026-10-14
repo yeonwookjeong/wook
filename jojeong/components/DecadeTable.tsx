@@ -14,7 +14,9 @@ const PEEK: Domain[] = ["jaemul", "jikup"];
 // first year shows (and, for money and work, the next ◎ and ✕ by name); the rest are placeholders, so nothing
 // paid is in the page source.
 // `inline`: inside a chapter of a bought report (a picture under its headline), so without a page of its own.
-export default function DecadeTable({ name, domain, years, locked, inline = false }: { name: string; domain: Domain; years: DecadeYear[]; locked: boolean; inline?: boolean }) {
+// `plain` (the second pass, lib/open.ts RENEW2): the reasons without the terms in brackets (용신, 겁재…) or "도화:".
+const plainWhy = (w: string) => w.replace(/\s?\((용신|기신|겁재|배우자성|상관|관성|상관견관|식상|재성|인성|비겁)\)/g, "").replace(/^(도화|역마|화개|천을귀인): /, "");
+export default function DecadeTable({ name, domain, years, locked, inline = false, plain = false }: { name: string; domain: Domain; years: DecadeYear[]; locked: boolean; inline?: boolean; plain?: boolean }) {
   if (!years.length) return null;
   const later = years.slice(FREE_YEARS);
   const peek = locked && PEEK.includes(domain) ? [later.find((y) => y.grade === 2), later.find((y) => y.grade === -1)].filter((y) => y !== undefined) : [];
@@ -42,7 +44,7 @@ export default function DecadeTable({ name, domain, years, locked, inline = fals
               {peeked.has(y.year) ? (
                 <span className="text-[12px] leading-snug font-bold text-seal">🔒 왜 그런지, 그해 무엇을 할지는 보고서에</span>
               ) : (
-                <span className="text-[12px] leading-snug text-ink-soft">{y.why.join(" · ") || "특별히 드는 기운이 없는 해예요"}</span>
+                <span className="text-[12px] leading-snug text-ink-soft">{(plain ? y.why.map(plainWhy) : y.why).join(" · ") || "특별히 드는 기운이 없는 해예요"}</span>
               )}
             </span>
           </li>

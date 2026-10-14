@@ -61,7 +61,7 @@ import { getProfile } from "@/lib/store";
 import { covers, getOrder, ownedOrderFor, ownedOrders, type Order } from "@/lib/pay";
 import { isAdmin, isPreview } from "@/lib/admin";
 import { renewNow } from "@/lib/launch";
-import { ActionsFigure, AreaFigure, ChartTop, DaysFigure, DecadeLayerFigure, ElementsFigure, FamilyFigure, FlowFigure, HoursFigure, LendsFigure, MomentsFigure, MonthsStrip, NowFigure, PairCharts, PowersFigure, RareFigure, SeatLinesFigure } from "@/components/ReportFigures";
+import { ActionsFigure, AreaFigure, WhenFigure, SieveFigure, ChartTop, DecadeLayerFigure, ElementsFigure, FamilyFigure, FlowFigure, LendsFigure, MomentsFigure, MonthsStrip, NowFigure, PairCharts, PowersFigure, RareFigure } from "@/components/ReportFigures";
 import { readChart } from "@/lib/myeongri";
 import { YearTeaser } from "@/components/YearAhead";
 import { decadeTags, layersOf, manseOf, salSeats, yearPreviewOf } from "@/lib/freePreview";
@@ -118,11 +118,10 @@ async function PairReport({ order, product, a, b, rel, couple, request }: { orde
     figures = {
       ...(bond && { 1: <BondFigure b={bond} name={a.name} />, 8: <BondMonthsFigure b={bond} name={a.name} /> }),
       ...(years && { 7: <PairYearsFigure x={years} a={a.name} b={b.name} /> }),
-      // The second pass (lib/open.ts RENEW2): what each lends the other, and where the seats meet.
+      // The second pass (lib/open.ts RENEW2): the element each needs, held by the other (chapter 2 lists the rest).
       ...(couple &&
         figuresFor(chaptersFor(product.id, true), [
           ["채워 주는 것", <LendsFigure key="l" c={couple} a={a.name} b={b.name} />],
-          ["싸울 때", <SeatLinesFigure key="s" lines={couple.seat} />],
         ])),
     };
   }
@@ -279,8 +278,8 @@ async function OpenReport({
                 figures={
                   r2(unlock)
                     ? figuresFor(chaptersFor(product.id, true), [
-                        ["고른 날", <DaysFigure key="d" days={bestDays(days, found.kind)} title="정 훈도가 고른 날" />],
-                        ["몇 시", <HoursFigure key="h" days={bestDays(days, found.kind)} />],
+                        // The chosen days, their reasons and hours are open above: here, how they were sieved.
+                        ["흔한 길일표", <SieveFigure key="s" days={days} names={(b ? [a, b] : [a]).map((x) => `${x.name}님`).join("·")} />],
                       ])
                     : undefined
                 }
@@ -540,6 +539,8 @@ async function OpenReport({
   const lifeOwned =
     !(FREE_LOCK || preview) ||
     (product.id === "pyeongsaeng" && Boolean(paid)) ||
+    // A bought report (any topic) never shows a lock inside it; the owner's quick view reads as bought.
+    (renew && (Boolean(paid) || ownerView)) ||
     (self && me ? Boolean(await ownedOrderFor("pyeongsaeng", { product: "pyeongsaeng", p: me.token })) : false);
   const lifeHref = product.id === "pyeongsaeng" ? "#report-start" : `/reports/pyeongsaeng${query ? `?${query}` : ""}`;
   const intro = distinct && <ChartIntro name={name} d={distinct} slots={reading.chart.slots} lockHref={lifeOwned ? null : lifeHref} />;
@@ -718,7 +719,7 @@ async function OpenReport({
     const nearRows = yearRows(pillars, profile, Math.max(from, y - 1), Math.min(to, y + 1), now) ?? [];
     // The area the glance marks 조심, said under "이 해를 움직이는 것" too, so the two never read against each other.
     const careArea = renew ? preview?.areas.filter((a) => a.grade === "조심").sort((p, q) => p.score - q.score)[0] : undefined;
-    const care = careArea ? `다만 ${AREA_WHAT[careArea.area]} 쪽은 이 해에 아껴 써야 하는 곳이에요. 아래 한눈에 칸에서 함께 보세요.` : null;
+    const care = careArea ? `다만 ${AREA_WHAT[careArea.area]} 쪽은 이 해에 아껴 써야 하는 곳이에요. 한눈에 칸에서 함께 보세요.` : null;
     const yearTop = (
       <YearTop d={d} name={name} prev={!paid && y > from ? link(y - 1) : null} next={!paid && y < to ? link(y + 1) : null} list={link()} care={care} listLabel={renew ? "다른 해 고르기" : undefined} />
     );
@@ -852,7 +853,7 @@ async function OpenReport({
     domain && card ? (
       <>
         <DomainCard name={name} domain={domain} card={card} />
-        <DecadeTable name={name} domain={domain} years={decadeOf(domain, pillars, gender)} locked={!unlocked && locked} />
+        <DecadeTable name={name} domain={domain} years={decadeOf(domain, pillars, gender)} locked={!unlocked && locked} plain={renew} />
         {intro && (
           <details className="group mt-4">
             <summary className="doc-paper flex cursor-pointer list-none items-center justify-between px-5 py-4 [&::-webkit-details-marker]:hidden">
@@ -882,9 +883,9 @@ async function OpenReport({
       const from = thisYear(new Date(paidAtOf(o)));
       const ahead = yearRows(pillars, profile, from, from + 9, from);
       return {
-        3: <DecadeTable inline name={name} domain="jaemul" years={decadeOf("jaemul", pillars, gender)} locked={false} />,
-        4: <DecadeTable inline name={name} domain="jikup" years={decadeOf("jikup", pillars, gender)} locked={false} />,
-        5: <DecadeTable inline name={name} domain="yeonae" years={decadeOf("yeonae", pillars, gender)} locked={false} />,
+        3: <DecadeTable inline name={name} domain="jaemul" years={decadeOf("jaemul", pillars, gender)} locked={false} plain={r2(o)} />,
+        4: <DecadeTable inline name={name} domain="jikup" years={decadeOf("jikup", pillars, gender)} locked={false} plain={r2(o)} />,
+        5: <DecadeTable inline name={name} domain="yeonae" years={decadeOf("yeonae", pillars, gender)} locked={false} plain={r2(o)} />,
         ...(ahead && { 11: <YearsAheadFigure rows={ahead} name={name} /> }),
       };
     };
@@ -902,12 +903,13 @@ async function OpenReport({
           ["무기와 약점", powers],
           ["부모님", <FamilyFigure key="s" slots={reading.chart.slots} gods={readChart(pillars)?.gods} gender={gender} />],
           ["사람 복", rare(["사람"])],
-          ["몸", <ElementsFigure key="e" name={name} elements={reading.chart.elements} />],
+          ["몸", <ElementsFigure key="e" name={name} elements={reading.chart.elements} weights={distinct?.weights.weighted} />],
           ["사계절", free?.flow && <FlowFigure key="f" flow={free.flow} />],
           ["어디쯤", free?.flow && <NowFigure key="n" flow={free.flow} y={y0} />],
         ]);
       if (!domain) return {};
-      // The ten-year table is open above the report (the free card), so the 'when' chapters do not repeat it.
+      // The ten-year table is open above the report (the free card): the 'when' chapters show only its answer.
+      const when = <WhenFigure key="w" years={decadeOf(domain, pillars, gender)} title={domain === "yeonae" ? "인연이 닿기 좋은 해" : domain === "jaemul" ? "돈이 트이는 해" : "움직이기 좋은 해"} />;
       const yd = yearDetail(pillars, profile, y0, y0);
       const yp = yearPreviewOf(pillars, profile, y0);
       return figuresFor(chs, [
@@ -916,6 +918,9 @@ async function OpenReport({
         ["빛날까", rare(["일"])],
         ["월급", powers],
         ["회사형", powers],
+        ["결혼은 언제", when],
+        ["트이는 때", when],
+        ["언제가", when],
         ["인연이 오는 달", yd && yp && <AreaFigure key="m" area="사랑" preview={yp} months={yd.months} y={y0} />],
       ]);
     };

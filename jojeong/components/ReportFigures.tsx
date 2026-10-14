@@ -5,6 +5,7 @@ import type { FreeReading } from "@/lib/freeReading";
 import { ELEMENT_HANJA, ELEMENT_KO, GROUP_OF, type Reading, type Slot, type TenGod } from "@/lib/myeongri";
 import type { Distinct } from "@/lib/rarity";
 import { BRANCHES, STEMS } from "@/lib/saju";
+import type { DecadeYear } from "@/lib/domains";
 import type { DayPick } from "@/lib/taekil";
 import type { MonthMark, YearRow } from "@/lib/yeonun";
 import { Frame } from "./PaidFigures";
@@ -17,6 +18,11 @@ import SajuChart from "./SajuChart";
 const MARK = ["✕", "△", "○", "◎"];
 const MARK_STYLE = ["bg-ink text-hanji", "bg-[#d4af5f]/35 text-ink", "bg-seal/15 text-seal", "bg-seal text-hanji"];
 const MARK_WORD = ["조심", "잔잔", "무난", "좋음"];
+// The month tags (lib/yeonun.ts monthMarks) in the reader's words.
+const TAG_WORD: Record<string, string> = { 변동: "변화가 큰 달", "인연·약속": "약속이 잘 붙는 달", 귀인: "도와주는 사람", 합: "마음이 통함" };
+const tagWords = (tags: string[]) => tags.map((t) => TAG_WORD[t] ?? t).join(" · ");
+// What each group of the ten gods brings, plainly.
+const GROUP_WORD: Record<string, string> = { 비겁: "동료·경쟁", 식상: "표현·재주", 재성: "돈·결과", 관성: "일·책임", 인성: "배움·도움" };
 
 // On top of a bought report, open: the reader's eight characters, the first thing they paid to have read.
 export function ChartTop({ name, chart, year }: { name: string; chart: Parameters<typeof SajuChart>[0]; year?: { y: number; hanja: string; gods: [string, string] } }) {
@@ -31,7 +37,10 @@ export function ChartTop({ name, chart, year }: { name: string; chart: Parameter
           {year.y}년에 들어오는 두 글자{" "}
           <b className="font-myeongjo text-[16px] text-seal">{year.hanja}</b>
           <span className="block text-[11.5px] text-ink-soft">
-            {name}님에게는 위 글자가 {year.gods[0]}, 아래 글자가 {year.gods[1]}로 들어와요
+            {name}님에게는{" "}
+            {GROUP_OF[year.gods[0] as TenGod] === GROUP_OF[year.gods[1] as TenGod]
+              ? `'${GROUP_WORD[GROUP_OF[year.gods[0] as TenGod]]}'의 기운이 겹쳐 들어와요`
+              : `'${GROUP_WORD[GROUP_OF[year.gods[0] as TenGod]]}', '${GROUP_WORD[GROUP_OF[year.gods[1] as TenGod]]}'의 기운으로 들어와요`}
           </span>
         </p>
       )}
@@ -69,7 +78,7 @@ export function MonthsStrip({ title, sub, months, y, pick }: { title: string; su
               <span className={`mt-1 inline-block rounded-md px-2 py-0.5 text-[12px] font-extrabold ${MARK_STYLE[m.rating]}`}>
                 {MARK[m.rating]} {MARK_WORD[m.rating]}
               </span>
-              {m.tags.length > 0 && <span className="mt-1 block text-[10px] leading-tight text-ink-soft">{m.tags.join(" · ")}</span>}
+              {m.tags.length > 0 && <span className="mt-1 block text-[10px] leading-tight text-ink-soft">{tagWords(m.tags)}</span>}
             </li>
           );
         })}
@@ -86,11 +95,11 @@ const monthName = (months: MonthMark[], i: number, y: number) => {
   return `${m === 1 && i > 0 ? `${y + 1}년 ` : ""}${m}월`;
 };
 const AREA_MONTHS: Record<string, string> = {
-  돈: "재물의 별(재성)이 드는 달",
-  일: "직장·자리의 별(관성)이 드는 달",
-  사랑: "끌림·약속이 붙거나 배우자의 별이 드는 달",
-  사람: "귀인이나 도와주는 윗사람의 별이 드는 달",
-  몸: "몸을 아껴야 하는 달(일지와 부딪히거나 가장 약한 달)",
+  돈: "돈 들어오기 좋은 달",
+  일: "일이 잘 풀리고 자리가 생기기 좋은 달",
+  사랑: "인연이 닿고 마음이 통하기 좋은 달",
+  사람: "도와주는 사람을 만나기 좋은 달",
+  몸: "몸을 아껴야 하는 달",
 };
 
 // One area of a year (돈, 일…): its own grade on the five steps, what made that grade, and the months its stars
@@ -100,7 +109,7 @@ export function AreaFigure({ area, preview, months, y }: { area: string; preview
   if (!a) return null;
   const g = GRADES5.indexOf(a.grade5);
   return (
-    <Frame title={`${y}년 ${AREA_WHAT[area] ?? area}, 왜 이 판정일까`} sub="그해 들어오는 글자가 내 사주의 어디를 건드리는지로 계산했어요">
+    <Frame title={`${y}년 ${AREA_WHAT[area] ?? area}, 왜 이 판정일까`} sub="그해 들어오는 기운과 내 사주가 만나는 곳으로 봤어요">
       <ol className="grid grid-cols-5 gap-1 text-center">
         {GRADES5.map((x, i) => (
           <li key={x} className={`rounded-md px-0.5 py-1.5 text-[11px] leading-tight font-bold ${i === g ? `${SCALE5_CHIP[i]} ring-2 ring-seal/40` : "bg-ink/5 text-ink-soft opacity-60"}`}>
@@ -108,6 +117,7 @@ export function AreaFigure({ area, preview, months, y }: { area: string; preview
           </li>
         ))}
       </ol>
+      {a.why.length === 0 && <p className="mt-3 rounded-lg bg-white/60 px-2.5 py-1.5 text-[12.5px] ring-1 ring-seal/10">올해는 이쪽을 크게 밀거나 막는 기운이 없어요. 평소 하던 대로 가면 되는 해예요.</p>}
       {a.why.length > 0 && (
         <ul className="mt-3 flex flex-col gap-1 text-[12.5px] leading-snug">
           {a.why.map((w) => (
@@ -128,7 +138,6 @@ export function AreaFigure({ area, preview, months, y }: { area: string; preview
               </span>
             ))}
           </p>
-          <p className="mt-1 text-[11px] text-ink-soft">그중 ◎·○ 달이 이 분야의 기회, △·✕ 달은 같은 일도 한 번 더 따져 볼 달이에요.</p>
         </div>
       )}
     </Frame>
@@ -141,9 +150,9 @@ export function ActionsFigure({ months, y }: { months: MonthMark[]; y: number })
   const rows: [string, string, number[], boolean][] = [
     ["시작·이사·개업", "◎ 힘 받는 달", at((m) => m.rating === 3), true],
     ["계약·약속·합치기", "인연·약속이 붙는 달", at((m) => m.tags.includes("인연·약속") || m.tags.includes("합")), true],
-    ["사람 도움이 필요한 일", "귀인이 드는 달", at((m) => m.tags.includes("귀인")), true],
+    ["사람 도움이 필요한 일", "도와주는 사람이 오는 달", at((m) => m.tags.includes("귀인")), true],
     ["큰 결정은 미루기", "✕ 조심할 달", at((m) => m.rating === 0), false],
-    ["판이 흔들리기 쉬움", "일지와 부딪히는(충) 달", at((m) => m.tags.includes("변동")), false],
+    ["생활이 흔들리기 쉬움", "변화가 큰 달", at((m) => m.tags.includes("변동")), false],
   ];
   const shown = rows.filter((r) => r[2].length);
   if (!shown.length) return null;
@@ -173,7 +182,7 @@ export function MomentsFigure({ months, best, worst, y }: { months: MonthMark[];
       <span className="text-ink-soft">
         {months[i].gz} · {span(i)}
       </span>
-      {months[i].tags.length > 0 && <span className="mt-0.5 block text-[11.5px]">{months[i].tags.join(" · ")}</span>}
+      {months[i].tags.length > 0 && <span className="mt-0.5 block text-[11.5px]">{tagWords(months[i].tags)}</span>}
     </li>
   );
   return (
@@ -219,25 +228,25 @@ export function FamilyFigure({ slots, gods, gender, meets, y, yearGods }: { slot
                 {s.branch === null ? "·" : BRANCHES[s.branch]}
               </b>
               <span className="mt-1 block text-[10.5px] leading-tight font-bold text-seal">{SEAT_WHO[s.pos]}</span>
-              {m && <span className={`mt-1 inline-block rounded px-1 text-[10.5px] font-bold ${soft ? "bg-seal/15 text-seal" : "bg-ink text-hanji"}`}>{y}년과 {m}</span>}
+              {m && (
+                <span className={`mt-1 inline-block rounded px-1 text-[10.5px] font-bold ${soft ? "bg-seal/15 text-seal" : "bg-ink text-hanji"}`}>
+                  {soft ? "가까워짐" : m === "충" ? "흔들림" : "마음 쓸 일"}
+                </span>
+              )}
             </div>
           );
         })}
       </div>
       {yearGods && (
         <ul className="mt-3 flex flex-col gap-1 text-[12.5px]">
-          {yearGods.map((g, i) => (
-            <li key={i} className="rounded-lg bg-seal/8 px-2.5 py-1.5">
-              <b className="text-seal">
-                {i ? "아래 글자" : "위 글자"} · {g}
-              </b>{" "}
-              {WHOSE[GROUP_OF[g as TenGod]]}의 별이 들어와요
-            </li>
-          ))}
+          <li className="rounded-lg bg-seal/8 px-2.5 py-1.5">
+            올해 들어오는 기운은 <b className="text-seal">{[...new Set(yearGods.map((g) => WHOSE[GROUP_OF[g as TenGod]]))].join(", ")}</b> 쪽을 뜻해요. 그쪽 일이
+            늘거나 눈에 띄기 쉬운 해예요.
+          </li>
         </ul>
       )}
-      {quiet && <p className="mt-2 text-[12px]">{y}년 글자는 가족의 네 자리 어디와도 부딪히거나 묶이지 않아요. 집안은 큰 변동 없이 흘러가는 쪽이에요.</p>}
-      {meets && !quiet && <p className="mt-2 text-[11px] text-ink-soft">합은 가까워지고 도움이 오가는 자리, 충·형·원진은 일이 생기거나 마음 쓸 자리예요.</p>}
+      {quiet && <p className="mt-2 text-[12px]">{y}년 기운은 가족의 네 자리 어디도 크게 건드리지 않아요. 집안은 큰 변동 없이 흘러가는 쪽이에요.</p>}
+      {meets && !quiet && <p className="mt-2 text-[11px] text-ink-soft">가까워짐은 도움이 오가는 자리, 흔들림·마음 쓸 일은 올해 신경 써 줄 자리예요.</p>}
       {gods && !y && (
         <>
           <ul className="mt-3 grid grid-cols-2 gap-1.5 text-[12px]">
@@ -255,40 +264,56 @@ export function FamilyFigure({ slots, gods, gender, meets, y, yearGods }: { slot
   );
 }
 
-// 10년 대운 속의 이 해: the decade's two characters and what they meet in the chart, then the year against both.
+// 10년 대운 속의 이 해: the decade, how the year sits with it, and what the year touches in the chart, in words.
+const feelOf = (m: string) => (m.includes("합") ? "tie" : m === "충" ? "clash" : m === "공망" ? "" : "rub");
+const SEAT_PLAIN: Record<string, string> = { 연지: "바깥 관계·윗사람", 월지: "일터·부모", 일지: "나·배우자", 시지: "자녀·아랫사람", 일간: "나 자신" };
+const FEEL_WORD: Record<string, string> = { tie: "가까워져요", clash: "흔들려요", rub: "마음 쓸 일이 생겨요" };
 export function DecadeLayerFigure({ layers, decade }: { layers: Layers; decade: { mood: string; theme: string } | null }) {
   if (!layers.daeun) return null;
+  const withDecade = layers.year.daeun.map((t) => feelOf(t.split(" ").at(-1)!));
+  const fit = withDecade.includes("clash")
+    ? "10년 흐름과 부딪히는 해예요. 계획이 틀어지기 쉬우니 일정에 여유를 두세요."
+    : withDecade.includes("tie")
+      ? "10년 흐름과 손발이 맞는 해예요. 이 10년에 하려던 일을 밀고 가기 좋아요."
+      : withDecade.includes("rub")
+        ? "10년 흐름과 살짝 엇박자가 나는 해예요. 속도를 조금 늦추면 편해요."
+        : "10년 흐름을 그대로 이어 가는 해예요.";
+  const touched = [
+    ...new Map(
+      layers.year.natal
+        .map((t) => [SEAT_PLAIN[t.slice(0, 2)], feelOf(t.split(" ").at(-1)!)] as const)
+        .filter(([seat, f]) => seat && f)
+        .map(([seat, f]) => [`${seat}${f}`, { seat, f }]),
+    ).values(),
+  ];
   return (
-    <Frame title="사주 위에 대운, 대운 위에 이 해" sub="한 해는 지금의 10년(대운) 위에 겹쳐서 읽어요">
+    <Frame title="10년 흐름 속의 이 해" sub="한 해는 지금의 10년(대운) 위에 겹쳐서 읽어요">
       <ol className="flex flex-col gap-1.5 text-[12.5px]">
-        <li className="rounded-lg bg-white/60 px-2.5 py-1.5 ring-1 ring-seal/10">
-          <b>내 사주</b>{" "}
-          <span className="font-myeongjo">
-            {layers.natal
-              .filter((n) => !n.gz.includes("?"))
-              .map((n) => n.gz)
-              .join(" ")}
-          </span>
-        </li>
         <li className="rounded-lg bg-seal/8 px-2.5 py-1.5">
-          <b className="text-seal">
-            대운 <span className="font-myeongjo">{layers.daeun.gz}</span>
-          </b>{" "}
+          <b className="text-seal">지금의 10년</b>{" "}
           <span className="text-ink-soft">
             {layers.daeun.from}~{layers.daeun.to}
             {decade ? ` · ${decade.mood}` : ""}
           </span>
-          <span className="mt-0.5 block text-[11.5px]">{layers.daeun.tags.length ? `내 사주와: ${layers.daeun.tags.join(" · ")}` : "내 사주와 부딪히거나 묶이는 곳 없음"}</span>
+          {decade && <span className="mt-0.5 block text-[12px]">{decade.theme}</span>}
         </li>
         <li className="rounded-lg bg-seal/15 px-2.5 py-1.5 ring-1 ring-seal/30">
-          <b className="text-seal">
-            이 해 <span className="font-myeongjo">{layers.year.gz}</span>
-          </b>
-          <span className="mt-0.5 block text-[11.5px]">내 사주와: {layers.year.natal.length ? layers.year.natal.join(" · ") : "부딪히거나 묶이는 곳 없음"}</span>
-          <span className="block text-[11.5px]">대운과: {layers.year.daeun.length ? layers.year.daeun.join(" · ") : "부딪히거나 묶이는 곳 없음"}</span>
+          <b className="text-seal">이 해와 10년 흐름</b>
+          <span className="mt-0.5 block text-[12px]">{fit}</span>
+        </li>
+        <li className="rounded-lg bg-white/60 px-2.5 py-1.5 ring-1 ring-seal/10">
+          <b>이 해가 건드리는 곳</b>
+          {touched.length ? (
+            touched.map(({ seat, f }) => (
+              <span key={seat + f} className="mt-0.5 block text-[12px]">
+                {seat} 쪽이 {FEEL_WORD[f]}
+              </span>
+            ))
+          ) : (
+            <span className="mt-0.5 block text-[12px]">크게 건드리는 곳 없이 조용히 지나가는 해예요.</span>
+          )}
         </li>
       </ol>
-      {decade && <p className="mt-2 text-[11.5px] text-ink-soft">이 10년의 주제: {decade.theme}</p>}
     </Frame>
   );
 }
@@ -376,9 +401,10 @@ export function PowersFigure({ name, powers, strong, weak }: { name: string; pow
 
 // What is plenty and what is missing, for the body chapter.
 const BODY = ["간·눈·근육", "심장·혈관·잠", "위장·소화", "폐·피부·호흡", "신장·방광·몸의 물"];
-export function ElementsFigure({ name, elements }: { name: string; elements: number[] }) {
+// weights: the weighted shares the free screen quotes (lib/rarity.ts), so the two never show two numbers.
+export function ElementsFigure({ name, elements, weights }: { name: string; elements: number[]; weights?: number[] }) {
   const sum = elements.reduce((a, b) => a + b, 0) || 1;
-  const pct = elements.map((e) => Math.round((e / sum) * 100));
+  const pct = weights ? weights.map((w) => Math.round(w * 100)) : elements.map((e) => Math.round((e / sum) * 100));
   const max = Math.max(...pct, 1);
   return (
     <Frame title={`${name}님 몸의 다섯 기운`} sub="많은 기운은 과로하기 쉽고, 적은 기운은 따로 챙겨야 하는 곳이에요" note="병을 진단하는 표가 아니라, 생활에서 챙길 곳을 짚는 표예요.">
@@ -464,27 +490,23 @@ export function RareFigure({ name, d, areas }: { name: string; d: Distinct; area
 // 궁합: what each lends the other, and what both lack.
 const pct = (x: number) => Math.round(x <= 1 ? x * 100 : x);
 export function LendsFigure({ c, a, b }: { c: Couple; a: string; b: string }) {
+  // What each lends the other is listed in chapter 2 (the two people); here, the one element each needs most.
+  const give = (x: number) => (pct(x) < 5 ? "거의 없어요" : `${pct(x)}% 들어 있어요`);
   return (
-    <Frame title="서로 채워 주는 것, 같이 모자란 것" sub="두 사람의 다섯 기운을 겹쳐 본 결과예요">
+    <Frame title="꼭 필요한 기운, 서로 쥐고 있을까" sub="각자 사주의 균형을 잡아 주는 기운이 상대에게 얼마나 있는지예요">
       <ul className="flex flex-col gap-1.5 text-[12.5px]">
-        {c.lends.map((l, i) => (
-          <li key={i} className="rounded-lg bg-seal/8 px-2.5 py-1.5">
-            <b className="text-seal">
-              {l.from} → {l.to}
-            </b>{" "}
-            {ELEMENT_KO[l.el]}({ELEMENT_HANJA[l.el]}) 기운을 채워 줘요 <span className="text-ink-soft">({l.from}님 사주의 {l.pct}%)</span>
-          </li>
-        ))}
+        <li className="rounded-lg bg-seal/8 px-2.5 py-1.5">
+          <b className="text-seal">{a}님에게 필요한 기운</b> · {b}님 사주에 {give(c.yongGive[0])}
+        </li>
+        <li className="rounded-lg bg-seal/8 px-2.5 py-1.5">
+          <b className="text-seal">{b}님에게 필요한 기운</b> · {a}님 사주에 {give(c.yongGive[1])}
+        </li>
         {c.sharedLack.length > 0 && (
           <li className="rounded-lg bg-ink/5 px-2.5 py-1.5">
             <b>둘 다 모자람</b> {c.sharedLack.map((e) => `${ELEMENT_KO[e]}(${ELEMENT_HANJA[e]})`).join(" · ")} · 함께 밖에서 채워야 하는 기운
           </li>
         )}
-        {!c.lends.length && !c.sharedLack.length && <li className="text-ink-soft">한쪽으로 크게 기울거나 모자란 기운이 없는 사이예요.</li>}
       </ul>
-      <p className="mt-2 text-[11.5px] text-ink-soft">
-        {a}님에게 꼭 필요한 기운이 {b}님 사주에 {pct(c.yongGive[0])}%, {b}님에게 꼭 필요한 기운이 {a}님 사주에 {pct(c.yongGive[1])}% 들어 있어요.
-      </p>
     </Frame>
   );
 }
@@ -548,6 +570,69 @@ export function HoursFigure({ days }: { days: DayPick[] }) {
             </span>
             {d.ceremony && <span className="mt-1 block text-[11.5px]">예식·식사 시간 {d.ceremony}</span>}
             {d.son && <span className="block text-[11.5px]">손 있는 방향 {d.son}</span>}
+          </li>
+        ))}
+      </ol>
+    </Frame>
+  );
+}
+
+// The 'when' chapter of a topic report (돈이 트이는 때, 결혼은 언제, 이직·창업 언제): the ten-year table is open above,
+// so here only its answer: the nearest good years, and the year to get through, with why in plain words.
+const plainWhy = (w: string) => w.replace(/\s?\((용신|기신|겁재|배우자성|상관|관성|상관견관|식상|재성|인성|비겁)\)/g, "").replace(/^(도화|역마|화개|천을귀인): /, "");
+export function WhenFigure({ years, title }: { years: DecadeYear[]; title: string }) {
+  const best = years.filter((y) => y.grade === 2).slice(0, 2);
+  const good = best.length ? best : years.filter((y) => y.grade === 1).slice(0, 2);
+  const watch = years.filter((y) => y.grade === -1).slice(0, 1);
+  if (!good.length && !watch.length) return null;
+  const row = (y: DecadeYear, on: boolean) => (
+    <li key={y.year} className={`rounded-lg px-2.5 py-2 ${on ? "bg-seal/10 ring-1 ring-seal/30" : "bg-ink/5"}`}>
+      <b className="font-myeongjo">
+        {on ? (y.grade === 2 ? "◎" : "○") : "✕"} {y.year}년
+      </b>{" "}
+      <span className="text-ink-soft">· {y.tag}</span>
+      {y.why.length > 0 && <span className="mt-0.5 block text-[11.5px]">{y.why.map(plainWhy).join(" · ")}</span>}
+    </li>
+  );
+  return (
+    <Frame title={title} sub="위 10년 달력에서 이 장의 답만 골랐어요">
+      <ol className="flex flex-col gap-1.5 text-[12.5px]">
+        {good.map((y) => row(y, true))}
+        {watch.map((y) => row(y, false))}
+      </ol>
+    </Frame>
+  );
+}
+
+// 택일 '흔한 길일표와 다른 점': how the almanac's days narrowed down to these, step by step. The chosen days, their
+// reasons and hours are open above the report, so the chapters do not repeat them.
+export function SieveFigure({ days, names }: { days: DayPick[]; names: string }) {
+  const fit = days.filter((d) => d.fit);
+  const clashed = fit.filter((d) => d.warns.some((w) => w.tag.includes("충")));
+  const good = fit.filter((d) => d.grade >= 1);
+  const best = fit.filter((d) => d.grade === 2);
+  if (!fit.length) return null;
+  const steps: [string, number, string][] = [
+    ["기간 안의 모든 날", days.length, ""],
+    ["책력이 이 일에 맞다고 한 날", fit.length, "흔한 길일표는 여기까지예요"],
+    ["그중 사주와 부딪혀 뺀 날", clashed.length, `${names} 사주와 정면으로 부딪히는 날`],
+    ["써도 좋은 날", good.length, ""],
+    ["그중 가장 좋은 날(◎)", best.length, ""],
+  ];
+  const max = days.length || 1;
+  return (
+    <Frame title="길일표에서 내 날까지" sub="같은 길일표도 사주를 대 보면 이만큼 걸러져요">
+      <ol className="flex flex-col gap-1.5 text-[12.5px]">
+        {steps.map(([what, n, note], i) => (
+          <li key={what} className="grid grid-cols-[1fr_2.6rem] items-center gap-2">
+            <span>
+              <span className={i === 2 ? "font-bold" : i >= 3 ? "font-bold text-seal" : ""}>{what}</span>
+              {note && <span className="block text-[10.5px] text-ink-soft">{note}</span>}
+              <span className="mt-0.5 block h-2 rounded-full bg-ink/8">
+                <span className={`block h-2 rounded-full ${i === 2 ? "bg-ink/50" : i >= 3 ? "bg-seal" : "bg-seal/35"}`} style={{ width: `${Math.max(3, (n / max) * 100)}%` }} />
+              </span>
+            </span>
+            <b className="text-right tabular-nums">{n}일</b>
           </li>
         ))}
       </ol>
