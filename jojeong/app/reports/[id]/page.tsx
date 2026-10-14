@@ -125,7 +125,7 @@ async function PairReport({ order, product, a, b, rel, couple, request }: { orde
         ])),
     };
   }
-  return <AiReport request={request} modern {...(await extrasOf(order, product))} figures={figures} />;
+  return <AiReport request={request} modern {...(await extrasOf(order, product))} figures={figures} plain={Boolean(couple)} />;
 }
 
 // What a report bought in the opened shop adds (lib/reportPrompts.ts isV8): its chapters as bought, the 한눈에 card
@@ -786,7 +786,7 @@ async function OpenReport({
                 request={reqOf(unlock, yreq)}
                 modern
                 {...(await extrasOf(unlock, product))}
-                {...(r2(unlock) && { chapters: yearChapters, figures: yearFigures })}
+                {...(r2(unlock) && { chapters: yearChapters, figures: yearFigures, plain: true })}
               />
             </div>
             {isV8(unlock) && d.when !== "past" && (
@@ -992,6 +992,7 @@ async function OpenReport({
             modern
             {...(await extrasOf(unlock, product))}
             figures={{ ...lifeFigures(unlock), ...(r2(unlock) ? moreFigures(unlock) : {}) }}
+            plain={r2(unlock)}
           />
         </div>
         {/* Who reads about love usually has someone in mind: the two-person reading is the next question. */}

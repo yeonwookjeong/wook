@@ -168,6 +168,24 @@ const FOCUS_V8: Partial<Record<ProductId, string>> = {
   gunghap: GUNGHAP_V8,
 };
 
+// v9: the 한눈에 card read plainly. The v8 cards came out as riddles ("흙탕물을 털어내고 비상하는 보석의 형국",
+// rows ending on a noun, "가장 소름 돋는 포인트"); the card is what people save and send, so it says things straight.
+const RARE_ROW = "[나만 가진 한 가지]";
+export const SUMMARY_STYLE = `- 한눈에 카드는 사람들이 저장해서 친구에게 보내는 카드다. 수수께끼처럼 쓰지 말고 바로 알아듣게 쓴다:
+  · 헤드라인은 25자 안팎의 평범한 문장. 오행 비유(흙·보석·숲·물·불), '형국', 사자성어, 거창한 수식 금지. 예: "생각이 깊어 늦게 피지만, 한번 피면 오래 가는 사람"
+  · 줄마다 '~해요/~예요/~세요'로 끝나는 완결된 한 문장. 명사로 끝내지 않는다('망설임' ✕ → '완벽해질 때를 기다리다 기회를 놓치기 쉬워요' ○).
+  · 카드 전체에서 비유는 한 번까지. 추상어(구조, 기운, 방식, 형국)보다 장면과 행동으로.`;
+const RARE_STYLE = `  · ${RARE_ROW} 줄은 브리프 '★ 이 사람만의 특징'의 가장 드문 것 하나를 '100명 중 n명' 숫자와 함께, 그래서 삶에서 어떻게 드러나는지까지 한 문장으로. 예: "배우자 자리가 묶인 100명 중 13명이라, 한번 정 준 사람과는 끝까지 가요"`;
+const plainCard = (f: string) => {
+  const g = f
+    .replace("[가장 소름 돋는 포인트] 이 두 사람에게만 있는 조합 한 가지", "[둘만 가진 한 가지] 이 두 사람에게만 있는 조합 한 가지, 그래서 둘 사이에 어떻게 드러나는지")
+    .replaceAll("[가장 소름 돋는 포인트] 브리프의 '이 사람만의 특징'에서 나온, 같은 일주라도 다른 사람에게는 해당하지 않는 한 가지", `${RARE_ROW} 이 사람만의 드문 특징 하나와 그 숫자`);
+  return `${g}\n${SUMMARY_STYLE}${g.includes(RARE_ROW) ? `\n${RARE_STYLE}` : ""}`;
+};
+const FOCUS_V9: Partial<Record<ProductId, string>> = Object.fromEntries(
+  Object.entries(FOCUS_V8).map(([id, f]) => [id, f && f.includes("[한눈에]") ? plainCard(f) : f]),
+);
+
 export type PromptVersion = "v5" | "v6" | "v7" | "v8" | "v9";
 // v8 is for what is bought in the opened shop (lib/pay.ts Order.shop, set from the grand opening on, and in the
 // owner's 시안 모드). Everything bought before the opening keeps the v7 report and the page it was bought with
@@ -192,7 +210,7 @@ export const SPECS: Record<PromptVersion, Partial<Record<ProductId, ReportSpec>>
   v7: specsOf(FOCUS_V7, true),
   v8: specsOf(FOCUS_V8),
   // v9 (the second pass, lib/open.ts RENEW2): the same chapters, each opening on its three-line point box.
-  v9: specsOf(FOCUS_V8),
+  v9: specsOf(FOCUS_V9),
 };
 // v9's 신년운세 (the coming year's 연운) has one more chapter than another year's.
 export const NEW_YEAR_CHAPTER = "새해 첫 석 달, 이것부터";

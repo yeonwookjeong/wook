@@ -4,7 +4,7 @@ import { productById, type ProductId } from "@/lib/products";
 import { aiEnabled, jobFor, writeReport, type JobRequest } from "@/lib/reportWriter";
 import { isV8 } from "@/lib/reportPrompts";
 import { renewNow } from "@/lib/launch";
-import { hasPoints, mergePoints, pointsJob } from "@/lib/reportPoints";
+import { cardJob, hasPoints, mergeCard, mergePoints, oldCard, pointsJob } from "@/lib/reportPoints";
 import { after } from "next/server";
 import { countReportToday, getReportText, getReportWriting, noteReportError, setReportText, setReportWriting } from "@/lib/store";
 
@@ -49,20 +49,31 @@ export async function POST(request: Request) {
   const job = await jobFor(req, v9 ? "v9" : undefined, false, at);
   if ("error" in job) return Response.json({ error: job.error }, { status: job.status });
   // A v8 text of such an order (read before the second pass) keeps its words and gets the point box beside them.
+  // Each extra (the point box, a plain 한눈에 card) is asked once in the background, then kept and merged.
+  const backfill = async (k: string, mk: () => ReturnType<typeof pointsJob>) => {
+    if (!aiEnabled() || Date.now() - (await getReportWriting(k)) < WRITING_FOR) return;
+    await setReportWriting(k, Date.now());
+    after(async () => {
+      const out = await writeReport(mk(), () => {}).catch(() => null);
+      if (out) await setReportText(k, out);
+      else await setReportWriting(k, 0).catch(() => {});
+    });
+  };
   const withPoints = async (key: string, text: string) => {
-    if (!v9 || hasPoints(text)) return text;
-    const pts = await getReportText(`${key}:pts`);
-    if (pts) return mergePoints(text, pts);
-    const pj = pointsJob(text, key, job.modern);
-    if (aiEnabled() && Date.now() - (await getReportWriting(pj.key)) >= WRITING_FOR) {
-      await setReportWriting(pj.key, Date.now());
-      after(async () => {
-        const out = await writeReport(pj, () => {}).catch(() => null);
-        if (out) await setReportText(pj.key, out);
-        else await setReportWriting(pj.key, 0).catch(() => {});
-      });
+    if (!v9) return text;
+    let out = text;
+    // A text with the point box was written by v9; one without was written before it.
+    if (!hasPoints(text)) {
+      const pts = await getReportText(`${key}:pts`);
+      if (pts) out = mergePoints(out, pts);
+      else await backfill(`${key}:pts`, () => pointsJob(text, key, job.modern));
     }
-    return text;
+    if (oldCard(text)) {
+      const card = await getReportText(`${key}:card`);
+      if (card) out = mergeCard(out, card);
+      else await backfill(`${key}:card`, () => cardJob(text, key, job.modern));
+    }
+    return out;
   };
 
   // The text this order first opened with, kept on the order: it opens that, whatever changed since.

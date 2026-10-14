@@ -26,6 +26,10 @@ export const MOCK_REPORT = `## [그대는 이런 사람이옵니다] 준비는 �
 // a page's per-chapter extras can be tried locally.
 export function mockFor(prompt: string, system = ""): string | null {
   // The point lines of lib/reportPoints.ts, asked for a report already written.
+  if (prompt.startsWith("[한눈에 다시]")) {
+    const rows = [...(/\[지금 카드\]\n([\s\S]*?)\n\n\[보고서 본문\]/.exec(prompt)?.[1] ?? "").matchAll(/^\[([^\]]+)\] /gm)].map((m) => (m[1].includes("소름") ? "나만 가진 한 가지" : m[1]));
+    return `## [한눈에] 시험용 쉬운 헤드라인이에요\n${rows.map((r) => `[${r}] 시험용으로 다시 쓴 문장이에요`).join("\n")}`;
+  }
   if (prompt.startsWith("[요점 보충]")) {
     const n = (prompt.match(/^## /gm) ?? []).length;
     return Array.from({ length: n }, (_, i) => `## ${i + 1}\n이유: 시험용 이유 ${i + 1}이에요\n할 일: 시험용 할 일 ${i + 1}이에요`).join("\n\n");

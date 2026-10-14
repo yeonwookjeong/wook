@@ -84,6 +84,7 @@ export default function AiReport({
   figures,
   ask,
   save,
+  plain = false,
 }: {
   request: Record<string, string>;
   chapters: string[];
@@ -92,6 +93,8 @@ export default function AiReport({
   figures?: Record<number, React.ReactNode>;
   ask?: string;
   save?: string;
+  // The second pass (lib/open.ts RENEW2): a card written before it keeps its words, under the plainer row name.
+  plain?: boolean;
 }) {
   const card = useRef<HTMLElement>(null);
   const [saving, setSaving] = useState<"idle" | "making" | "error">("idle");
@@ -283,10 +286,10 @@ export default function AiReport({
           {summary.headline && <h3 className="mt-1 text-center font-myeongjo text-[17px] leading-snug font-extrabold">{summary.headline}</h3>}
           <dl className="mt-4 flex flex-col divide-y divide-seal/10">
             {summaryRows.map((r, i) => {
-              const key = r.label.includes("소름");
+              const key = r.label.includes("소름") || r.label.includes("가진 한 가지");
               return (
                 <div key={i} className={`flex flex-col gap-0.5 py-2.5 ${key ? "-mx-2 rounded-lg bg-seal/10 px-2" : ""}`}>
-                  <dt className="text-[11px] font-extrabold text-seal">{r.label}</dt>
+                  <dt className="text-[11px] font-extrabold text-seal">{plain && r.label.includes("소름") ? "나만 가진 한 가지" : r.label}</dt>
                   <dd className={`text-[15px] leading-relaxed ${key ? "font-bold" : ""}`}>{r.text}</dd>
                 </div>
               );
