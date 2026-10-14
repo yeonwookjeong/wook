@@ -39,3 +39,7 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# shorts scanner output
+shorts/out/
+__pycache__/
