@@ -75,11 +75,16 @@ export type YearPreview = {
   ko: string;
   verdict: Verdict;
   gods: [string, string];
-  areas: { area: "돈" | "일" | "사랑" | "사람" | "몸"; grade: AreaGrade; score: number }[];
+  areas: { area: "돈" | "일" | "사랑" | "사람" | "몸"; grade: AreaGrade; grade5: Grade5; score: number }[];
   months: { from: string; gz: string; rating: 0 | 1 | 2 | 3 }[];
 };
 
 const gradeOf = (x: number): AreaGrade => (x >= 0.7 ? "좋음" : x > -0.5 ? "보통" : "조심");
+// The five grades of the second pass (lib/open.ts RENEW2), the three above split at their ends: of all charts in
+// a year about a tenth each are 아주 좋음 and 많이 조심 (sampled over 2,200 charts for 2027), so 보통 stays the middle.
+export const GRADES5 = ["아주 좋음", "좋음", "보통", "조심", "많이 조심"] as const;
+export type Grade5 = (typeof GRADES5)[number];
+export const grade5Of = (x: number): Grade5 => (x >= 1.4 ? "아주 좋음" : x >= 0.7 ? "좋음" : x > -0.5 ? "보통" : x > -1.2 ? "조심" : "많이 조심");
 
 export function yearPreviewOf(p: Pillars, profile: Profile | null, y: number): YearPreview | null {
   const r = readChart(p);
@@ -125,11 +130,11 @@ export function yearPreviewOf(p: Pillars, profile: Profile | null, y: number): Y
     verdict: s.verdict,
     gods: [gods[0], gods[1]],
     areas: [
-      { area: "돈", grade: gradeOf(money), score: money },
-      { area: "일", grade: gradeOf(work), score: work },
-      { area: "사랑", grade: gradeOf(love), score: love },
-      { area: "사람", grade: gradeOf(people), score: people },
-      { area: "몸", grade: gradeOf(body), score: body },
+      { area: "돈", grade: gradeOf(money), grade5: grade5Of(money), score: money },
+      { area: "일", grade: gradeOf(work), grade5: grade5Of(work), score: work },
+      { area: "사랑", grade: gradeOf(love), grade5: grade5Of(love), score: love },
+      { area: "사람", grade: gradeOf(people), grade5: grade5Of(people), score: people },
+      { area: "몸", grade: gradeOf(body), grade5: grade5Of(body), score: body },
     ],
     months: monthMarks(p, r, y).map((m) => ({ from: m.from, gz: m.gz, rating: m.rating })),
   };

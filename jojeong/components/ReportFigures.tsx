@@ -1,5 +1,6 @@
 import type { Couple } from "@/lib/couple";
-import type { YearPreview } from "@/lib/freePreview";
+import { GRADES5, type YearPreview } from "@/lib/freePreview";
+import { SCALE5_BAR, SCALE5_CHIP, SCALE5_WIDTH } from "@/lib/scale5";
 import type { FreeReading } from "@/lib/freeReading";
 import { ELEMENT_HANJA, ELEMENT_KO, type Slot } from "@/lib/myeongri";
 import type { Distinct } from "@/lib/rarity";
@@ -77,7 +78,6 @@ export function MonthsStrip({ title, sub, months, y, pick }: { title: string; su
   );
 }
 
-const AREA_W = { 좋음: 92, 보통: 58, 조심: 26 } as const;
 const AREA_WHAT: Record<string, string> = { 돈: "돈과 재물", 일: "일과 자리", 사랑: "사랑과 인연", 사람: "사람과 귀인", 몸: "몸과 마음" };
 
 // One area of a year (돈, 일…) against the others, with the year's best and hardest months.
@@ -89,15 +89,18 @@ export function AreaFigure({ area, preview, months, best, worst, y }: { area: st
   return (
     <Frame title={`${y}년의 ${AREA_WHAT[area] ?? area}`} sub="영역마다 그해 드는 기운을 계산한 결과예요">
       <ul className="flex flex-col gap-1.5">
-        {preview.areas.map((a) => (
-          <li key={a.area} className={`grid grid-cols-[4.6rem_1fr_2.4rem] items-center gap-2 text-[12px] ${a.area === area ? "font-extrabold" : "text-ink-soft"}`}>
-            <span>{AREA_WHAT[a.area]}</span>
-            <span className="h-2.5 rounded-full bg-ink/8">
-              <span className={`block h-2.5 rounded-full ${a.area === area ? "bg-seal" : "bg-seal/30"}`} style={{ width: `${AREA_W[a.grade]}%` }} />
-            </span>
-            <span className="text-right">{a.grade}</span>
-          </li>
-        ))}
+        {preview.areas.map((a) => {
+          const i = GRADES5.indexOf(a.grade5);
+          return (
+            <li key={a.area} className={`grid grid-cols-[4.6rem_1fr_3.6rem] items-center gap-2 text-[12px] ${a.area === area ? "font-extrabold" : "text-ink-soft opacity-70"}`}>
+              <span>{AREA_WHAT[a.area]}</span>
+              <span className="h-2.5 rounded-full bg-ink/8">
+                <span className={`block h-2.5 rounded-full ${SCALE5_BAR[i]}`} style={{ width: `${SCALE5_WIDTH[i]}%` }} />
+              </span>
+              <span className={`justify-self-end rounded-md px-1.5 py-0.5 text-[10.5px] font-bold whitespace-nowrap ${SCALE5_CHIP[i]}`}>{a.grade5}</span>
+            </li>
+          );
+        })}
       </ul>
       {(best.length > 0 || worst.length > 0) && (
         <p className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[12px]">
@@ -119,7 +122,7 @@ export function AreaFigure({ area, preview, months, best, worst, y }: { area: st
 
 // Where this year stands: the years either side, and the ten years it sits in.
 export function YearPlaceFigure({ y, rows, decade }: { y: number; rows: YearRow[]; decade: { from: number; to: number; mood: string; theme: string } | null }) {
-  const V: Record<string, string> = { 대길: "bg-seal text-hanji", 길: "bg-seal/20 text-seal", 평: "bg-ink/10 text-ink", 조심: "bg-[#d4af5f]/35 text-ink", 인내: "bg-ink text-hanji" };
+  const V: Record<string, string> = { 대길: SCALE5_CHIP[0], 길: SCALE5_CHIP[1], 평: SCALE5_CHIP[2], 조심: SCALE5_CHIP[3], 인내: SCALE5_CHIP[4] };
   return (
     <Frame title="10년 흐름 속의 이 해" sub={decade ? `${decade.from}~${decade.to}년 · ${decade.mood}의 10년` : undefined} note={decade ? decade.theme : undefined}>
       <ol className="grid grid-cols-3 gap-1.5 text-center">
@@ -221,7 +224,7 @@ export function ElementsFigure({ name, elements }: { name: string; elements: num
 
 // The flow of life in one table (instead of ten folds): each decade, its mood, and where the reader is now.
 export function FlowFigure({ flow }: { flow: NonNullable<FreeReading["flow"]> }) {
-  const MOOD: Record<string, string> = { 활짝: "bg-seal text-hanji", 기회: "bg-seal/20 text-seal", 무난: "bg-ink/10 text-ink", 다지기: "bg-[#d4af5f]/35 text-ink", 버티기: "bg-ink text-hanji" };
+  const MOOD: Record<string, string> = { 활짝: SCALE5_CHIP[0], 기회: SCALE5_CHIP[1], 무난: SCALE5_CHIP[2], 다지기: SCALE5_CHIP[3], 버티기: SCALE5_CHIP[4] };
   return (
     <Frame title="인생의 10년들" sub="10년마다 바뀌는 큰 흐름(대운) · 지금 있는 칸에 표시했어요">
       <ul className="flex flex-col divide-y divide-seal/10">

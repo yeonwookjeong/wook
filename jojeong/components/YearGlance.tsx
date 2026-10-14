@@ -1,4 +1,6 @@
-import type { YearPreview } from "@/lib/freePreview";
+import { GRADES5, type YearPreview } from "@/lib/freePreview";
+import { SCALE5_BAR, SCALE5_CHIP, SCALE5_WIDTH } from "@/lib/scale5";
+import { josa } from "@/lib/josa";
 import type { YearRow } from "@/lib/yeonun";
 
 // The free "한눈에" of a year (app/reports/[id], 연운): the year between the one before and after, each area of life
@@ -17,11 +19,40 @@ const AREA_WHAT: Record<string, string> = { 돈: "돈과 재물", 일: "일과 �
 
 export type GlanceDecade = { from: number; to: number; mood: string; theme: string } | null;
 
-export default function YearGlance({ name, y, rows, preview, decade }: { name: string; y: number; rows: YearRow[]; preview: YearPreview | null; decade: GlanceDecade }) {
+// `five` (the second pass, lib/open.ts RENEW2): the areas in five grades on the shared scale (lib/scale5.ts), and
+// the closing line said as the grades allow (no "가장 힘이 붙는 곳" in a year with nothing good).
+export default function YearGlance({ name, y, rows, preview, decade, five = false }: { name: string; y: number; rows: YearRow[]; preview: YearPreview | null; decade: GlanceDecade; five?: boolean }) {
   const areas = preview?.areas ?? [];
   const sorted = [...areas].sort((a, b) => b.score - a.score);
   const best = sorted[0];
   const worst = sorted.at(-1);
+  const g5 = (a: (typeof areas)[number]) => GRADES5.indexOf(a.grade5);
+  const join = (xs: typeof areas) => xs.map((a) => AREA_WHAT[a.area]).join(", ");
+  const tops = best ? areas.filter((a) => a.grade5 === best.grade5) : [];
+  const lows = worst ? areas.filter((a) => a.grade5 === worst.grade5) : [];
+  // Said as the grades allow: a good area named as such; in a year with none, the least hard one, unless most
+  // areas sit on the same grade; the hardest one only when it is worse than the rest.
+  const lowOn = Boolean(worst && g5(worst) >= 3 && (!best || g5(worst) > g5(best)));
+  const low = lowOn ? <b>{join(lows)}</b> : null;
+  const lowTopic = lowOn ? <b>{josa(join(lows), "은/는")}</b> : null;
+  const fiveLine =
+    best && worst ? (
+      g5(best) <= 1 ? (
+        <>
+          가장 힘이 붙는 곳은 <b className="text-seal">{join(tops)}</b>
+          {low ? <>, 가장 아껴 쓸 곳은 {low}예요.</> : <>이에요. 크게 조심할 영역은 없어요.</>}
+        </>
+      ) : g5(best) === 2 && tops.length <= 2 ? (
+        <>
+          크게 좋은 영역은 없는 해예요. 그나마 기댈 곳은 <b className="text-seal">{join(tops)}</b>
+          {low ? <>, 가장 아껴 쓸 곳은 {low}예요.</> : <>예요.</>}
+        </>
+      ) : g5(best) === 2 ? (
+        <>대부분의 영역이 보통인, 크게 흔들리지 않는 해예요.{lowTopic && <> 다만 {lowTopic} 아껴 쓰세요.</>}</>
+      ) : (
+        <>대부분의 영역이 조심 쪽에 있는 해예요. 벌이기보다 지키는 데 힘을 쓰세요.{lowTopic && <> 특히 {lowTopic} 많이 아껴 쓰세요.</>}</>
+      )
+    ) : null;
   return (
     <section className="doc-paper mt-4 px-5 pt-6 pb-5">
       <p className="text-center font-myeongjo text-xs font-extrabold tracking-[0.4em] text-seal">한 눈 에</p>
@@ -50,17 +81,28 @@ export default function YearGlance({ name, y, rows, preview, decade }: { name: s
         <>
           <p className="mt-5 text-[12px] font-bold text-seal">영역마다</p>
           <ul className="mt-2 flex flex-col gap-2">
-            {areas.map((a) => (
-              <li key={a.area} className="grid grid-cols-[4.6rem_1fr_2.4rem] items-center gap-2 text-[12.5px]">
-                <span className="font-bold">{AREA_WHAT[a.area]}</span>
-                <span className="h-2.5 rounded-full bg-ink/8">
-                  <span className={`block h-2.5 rounded-full ${AREA_BAR[a.grade]}`} style={{ width: `${AREA_W[a.grade]}%` }} />
-                </span>
-                <span className={`text-right text-[11.5px] font-bold ${a.grade === "좋음" ? "text-seal" : "text-ink-soft"}`}>{a.grade}</span>
-              </li>
-            ))}
+            {areas.map((a) =>
+              five ? (
+                <li key={a.area} className="grid grid-cols-[4.6rem_1fr_3.6rem] items-center gap-2 text-[12.5px]">
+                  <span className="font-bold">{AREA_WHAT[a.area]}</span>
+                  <span className="h-2.5 rounded-full bg-ink/8">
+                    <span className={`block h-2.5 rounded-full ${SCALE5_BAR[g5(a)]}`} style={{ width: `${SCALE5_WIDTH[g5(a)]}%` }} />
+                  </span>
+                  <span className={`justify-self-end rounded-md px-1.5 py-0.5 text-[10.5px] font-bold whitespace-nowrap ${SCALE5_CHIP[g5(a)]}`}>{a.grade5}</span>
+                </li>
+              ) : (
+                <li key={a.area} className="grid grid-cols-[4.6rem_1fr_2.4rem] items-center gap-2 text-[12.5px]">
+                  <span className="font-bold">{AREA_WHAT[a.area]}</span>
+                  <span className="h-2.5 rounded-full bg-ink/8">
+                    <span className={`block h-2.5 rounded-full ${AREA_BAR[a.grade]}`} style={{ width: `${AREA_W[a.grade]}%` }} />
+                  </span>
+                  <span className={`text-right text-[11.5px] font-bold ${a.grade === "좋음" ? "text-seal" : "text-ink-soft"}`}>{a.grade}</span>
+                </li>
+              ),
+            )}
           </ul>
-          {best && worst && best.area !== worst.area && (
+          {five && fiveLine && <p className="mt-3 rounded-lg bg-seal/5 px-3 py-2 text-[13px] leading-relaxed">{fiveLine}</p>}
+          {!five && best && worst && best.area !== worst.area && (
             <p className="mt-3 rounded-lg bg-seal/5 px-3 py-2 text-[13px] leading-relaxed">
               가장 힘이 붙는 곳은 <b className="text-seal">{AREA_WHAT[best.area]}</b>, 가장 아껴 쓸 곳은 <b>{AREA_WHAT[worst.area]}</b>예요.
             </p>
