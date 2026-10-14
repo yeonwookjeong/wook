@@ -21,4 +21,5 @@ export type Kind = keyof typeof KINDS;
 export const kindOf = (v: unknown): Kind | null => (typeof v === "string" && v in KINDS ? (v as Kind) : null);
 // The kinds a new search can choose.
 export const OFFERED = (Object.keys(KINDS) as Kind[]).filter((k) => !("hidden" in KINDS[k]));
-export const SPANS = [1, 3] as const;
+// Up to a year: a wedding or a move is often set a year ahead.
+export const SPANS = [1, 3, 6, 12] as const;
