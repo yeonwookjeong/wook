@@ -755,7 +755,7 @@ async function OpenReport({
         {r2(unlock) && (
           <>
             <Jump gift={unlock!.gift} title={y === newYear ? `${y} 신년운세` : `${y}년 운세`} chapters={yearChapters.length} />
-            <ChartTop name={name} chart={reading.chart} year={{ y, hanja: d.hanja, gods: d.gods }} />
+            <ChartTop name={name} chart={reading.chart} weights={readChart(pillars)?.weights} year={{ y, hanja: d.hanja, gods: d.gods }} />
           </>
         )}
         {r2(unlock) ? (
@@ -966,7 +966,7 @@ async function OpenReport({
         )}
         <Jump gift={unlock.gift} title={product.title} chapters={chapters} />
         {/* The second pass: the eight characters on top, open, the first thing the reader paid to have read. */}
-        {r2(unlock) && <ChartTop name={name} chart={reading.chart} />}
+        {r2(unlock) && <ChartTop name={name} chart={reading.chart} weights={readChart(pillars)?.weights} />}
         {domain && card ? (
           analysis(true)
         ) : (
