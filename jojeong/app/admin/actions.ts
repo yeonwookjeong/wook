@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { refresh } from "next/cache";
 import { isAdmin, setPreview, signIn, signOut } from "@/lib/admin";
 import { isGiftable, originNow } from "@/lib/gift";
-import { createGiftOrder, getOrder, markTestOrder, revokeGiftOrder } from "@/lib/pay";
+import { createGiftOrder, getOrder, giveBonus, markTestOrder, revokeGiftOrder } from "@/lib/pay";
 import { pricingNow } from "@/lib/pricing";
 import { addOrderToMember, changeCredits, getMember } from "@/lib/members";
 import { encodePerson } from "@/lib/pairToken";
@@ -101,7 +101,12 @@ export async function memberFixAction(formData: FormData) {
   const id = String(formData.get("member") ?? "").trim();
   if (!(await getMember(id))) return;
   const orderId = String(formData.get("order") ?? "").trim();
-  if (orderId && (await getOrder(orderId))?.status === "paid") await addOrderToMember(id, orderId);
+  const order = orderId ? await getOrder(orderId) : null;
+  // The questions that came with it go in with it, once (never again at a later sign-in on the first phone).
+  if (order?.status === "paid") {
+    await addOrderToMember(id, orderId);
+    await giveBonus(order, id);
+  }
   const d = Math.trunc(Number(formData.get("credits") ?? 0));
   if (d && Math.abs(d) <= 50) await changeCredits(id, d, "관리자 조정");
   refresh();

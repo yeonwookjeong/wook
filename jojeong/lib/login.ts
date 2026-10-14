@@ -41,7 +41,11 @@ export async function finishLogin(
   next: string,
   extra: { channel?: boolean } = {},
 ) {
-  const browserOrders = await browserOrderIds();
+  // The report link the buyer came back from (?order=…) counts as theirs too, so a report bought without
+  // signing in brings its questions even when the sign-in is on another phone or browser.
+  const linked = new URL(next, request.url).searchParams.get("order") ?? "";
+  const ids = await browserOrderIds();
+  const browserOrders = /^[\w-]{6,64}$/.test(linked) && !ids.includes(linked) ? [linked, ...ids] : ids;
   const { member, joined, added, gifted } = await signInMember(via, accountId, nick, email, {
     orders: browserOrders,
     gifted: Boolean(request.cookies.get(GIFT_COOKIE)?.value),
