@@ -50,7 +50,7 @@ export function ChartTop({
       <p className="text-center font-myeongjo text-xs font-extrabold tracking-[0.4em] text-seal">命 盤</p>
       <h2 className="mt-1 text-center font-myeongjo text-[18px] font-extrabold">{name}님의 사주팔자</h2>
       <p className="mt-1 text-center text-[11.5px] text-ink-soft">이 여덟 글자로 아래 보고서를 썼어요</p>
-      <SajuChart {...chart} kingdom={false} weights={weights} ranks={ranks} />
+      <SajuChart {...chart} kingdom={false} weights={weights} ranks={ranks} explain />
       {(distinct?.ilju || rare.length > 0) && (
         <div className="mt-3 rounded-lg bg-white/60 px-3 py-2.5 ring-1 ring-seal/15">
           <p className="text-[11.5px] font-extrabold text-seal">다른 사람과 견주면</p>
