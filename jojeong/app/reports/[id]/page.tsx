@@ -721,7 +721,7 @@ async function OpenReport({
     const yearTop = (
       <YearTop d={d} name={name} prev={!paid && y > from ? link(y - 1) : null} next={!paid && y < to ? link(y + 1) : null} list={link()} care={care} listLabel={renew ? "다른 해 고르기" : undefined} />
     );
-    const glance = <YearGlance name={name} y={y} rows={nearRows} preview={preview} decade={decadeNow} />;
+    const glance = <YearGlance name={name} y={y} rows={nearRows} preview={preview} decade={decadeNow} five={renew || r2(unlock)} />;
     // The second pass: the coming year's report has one more chapter (lib/reportPrompts.ts NEW_YEAR_CHAPTER).
     const yearChapters = unlock && r2(unlock) ? yearChaptersFor(y === newYear) : chaptersFor(product.id, true);
     const half = (a: number, b: number) => d.months.map((_, i) => i).filter((i) => i >= a && i < b);
