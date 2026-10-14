@@ -106,59 +106,90 @@ export function yearPreviewOf(p: Pillars, profile: Profile | null, y: number): Y
   const hard = (m: string | undefined) => m === "충" ? -1 : m === "형" || m === "원진" ? -0.5 : 0;
   const soft = (m: string | undefined) => (m === "육합" || m === "삼합" ? 0.7 : 0);
 
-  const EL_KO = ["목", "화", "토", "금", "수"];
+  // The reasons in the reader's words (what it means for them), not the rule's (재성, 일지 삼합…).
   const why: Record<"돈" | "일" | "사랑" | "사람" | "몸", AreaWhy[]> = { 돈: [], 일: [], 사랑: [], 사람: [], 몸: [] };
   const add = (area: keyof typeof why, x: number, text: string) => {
-    if (x) why[area].push({ text, up: x > 0 });
+    if (x && text) why[area].push({ text, up: x > 0 });
     return x;
   };
-  const SEAT = { 연: "연주(바깥·윗사람 자리)", 월: "월주(일터·부모 자리)", 일: "일지(나·배우자 자리)", 시: "시주(자녀 자리)" } as const;
-  const meetWord = (pos: Slot["pos"]) => (meetAt(pos) ? `${y}년 글자가 ${SEAT[pos]}와 ${meetAt(pos)}` : "");
-  const welcomeWord = (g: GodGroup) => (welcome(g) > 0 ? ", 내 사주가 반기는 기운" : welcome(g) < 0 ? ", 다만 내 사주엔 버거운 기운" : "");
-  if (Math.abs(base) >= 0.15) for (const a of Object.keys(why) as (keyof typeof why)[]) add(a, base, `한 해 전체 흐름이 ${s.verdict}`);
+  const ON = { 돈: "돈 쪽에도", 일: "일에도", 사랑: "사랑에도", 사람: "사람 사이에도", 몸: "몸에도" } as const;
+  if (Math.abs(base) >= 0.15)
+    for (const a of Object.keys(why) as (keyof typeof why)[])
+      add(a, base, base > 0 ? `한 해 전체가 잘 풀리는 흐름이라 ${ON[a]} 힘이 실려요` : `한 해 전체가 아껴 가는 흐름이라 ${ON[a]} 무리는 금물이에요`);
+  // A meeting with a seat, said for what that seat holds.
+  const meetSaid = (m: string | undefined, clash: string, rub: string, tie = "") => (m === "충" ? clash : m === "형" || m === "원진" ? rub : m === "육합" || m === "삼합" ? tie : "");
 
   const money =
     base +
-    (groups.has("재성") ? add("돈", 0.6 + 0.4 * welcome("재성"), `재물의 별(재성)이 들어오는 해${welcomeWord("재성")}`) : 0) +
-    (gods.includes("겁재") ? add("돈", -0.6, "겁재(돈을 나눠 가져가는 기운)가 함께 들어옴") : 0);
+    (groups.has("재성")
+      ? add(
+          "돈",
+          0.6 + 0.4 * welcome("재성"),
+          welcome("재성") > 0
+            ? "돈이 들어오는 기운이 찾아오고, 그 돈을 손에 쥘 힘도 있어요"
+            : welcome("재성") < 0
+              ? "돈 들어올 일은 생기지만, 욕심내면 버거워 새기 쉬워요"
+              : "돈이 들어오는 기운이 찾아와요",
+        )
+      : 0) +
+    (gods.includes("겁재") ? add("돈", -0.6, "내 돈을 나눠 가져가려는 기운도 함께 와요. 빌려주기·동업은 한 번 더 생각하세요") : 0);
   const work =
     base +
-    (groups.has("관성") ? add("일", 0.6 + 0.4 * welcome("관성"), `직장·자리의 별(관성)이 들어오는 해${welcomeWord("관성")}`) : 0) +
-    (gods.includes("상관") && r.gods.관성 > 0 ? add("일", -0.6, "상관이 들어와 내 사주의 자리 별(관성)을 건드림") : 0) +
-    add("일", hard(meetAt("월")), meetWord("월"));
+    (groups.has("관성")
+      ? add(
+          "일",
+          0.6 + 0.4 * welcome("관성"),
+          welcome("관성") > 0
+            ? "일과 자리가 생기는 기운이 들어와요. 맡는 만큼 인정받기 좋아요"
+            : welcome("관성") < 0
+              ? "자리와 책임이 늘지만, 그만큼 어깨가 무거워질 수 있어요"
+              : "일과 자리가 생기는 기운이 들어와요",
+        )
+      : 0) +
+    (gods.includes("상관") && r.gods.관성 > 0 ? add("일", -0.6, "윗사람과 부딪히기 쉬운 기운이 들어와요. 바른말도 한 박자 쉬고 하세요") : 0) +
+    add("일", hard(meetAt("월")), meetSaid(meetAt("월"), "일터가 흔들리는 해예요. 부서 이동·이직 이야기가 나오기 쉬워요", "일터에서 마음 쓸 일이 생기기 쉬워요"));
   const spouse: GodGroup | null = profile?.gender === "m" ? "재성" : profile?.gender === "f" ? "관성" : null;
   const love =
     base +
-    (spouse && groups.has(spouse) ? add("사랑", 0.8, `배우자의 별(${spouse})이 들어오는 해`) : 0) +
-    add("사랑", soft(meetAt("일")) + hard(meetAt("일")), meetWord("일")) +
-    (s.sals.includes("도화") ? add("사랑", 0.5, "도화(끌림의 별)가 드는 해") : 0) +
-    (stemCombine(stem, p.dayStem) ? add("사랑", 0.5, `${y}년 천간이 내 일간과 합`) : 0);
+    (spouse && groups.has(spouse) ? add("사랑", 0.8, "연인·배우자를 뜻하는 기운이 들어와요. 인연이 닿기 쉬운 해예요") : 0) +
+    add(
+      "사랑",
+      soft(meetAt("일")) + hard(meetAt("일")),
+      meetSaid(meetAt("일"), "가까운 관계에 변화가 오기 쉬워요. 큰 결정은 서두르지 마세요", "가까운 사이에 서운함이 쌓이기 쉬워요. 말로 풀어 주세요", "곁에 있는 인연과 더 단단히 묶이는 해예요"),
+    ) +
+    (s.sals.includes("도화") ? add("사랑", 0.5, "사람을 끄는 매력이 살아나는 해예요") : 0) +
+    (stemCombine(stem, p.dayStem) ? add("사랑", 0.5, "마음이 끌리는 사람이 생기기 쉬운 해예요") : 0);
   const people =
     base +
-    (groups.has("인성") ? add("사람", 0.5 * Math.sign(welcome("인성")), `도와주는 윗사람의 별(인성)이 들어옴${welcomeWord("인성")}`) : 0) +
-    (groups.has("비겁") ? add("사람", 0.5 * Math.sign(welcome("비겁")), `동료·경쟁자의 별(비겁)이 들어옴${welcomeWord("비겁")}`) : 0) +
-    (s.sals.includes("천을귀인") ? add("사람", 1, "천을귀인(돕는 사람의 별)이 드는 해") : 0) +
-    add("사람", hard(meetAt("연")), meetWord("연"));
+    (groups.has("인성")
+      ? add("사람", 0.5 * Math.sign(welcome("인성")), welcome("인성") > 0 ? "나를 챙겨 주는 윗사람 복이 들어와요" : "도움을 받아도 간섭처럼 느껴지기 쉬워요")
+      : 0) +
+    (groups.has("비겁")
+      ? add("사람", 0.5 * Math.sign(welcome("비겁")), welcome("비겁") > 0 ? "함께하는 동료·친구가 힘이 돼 줘요" : "경쟁자가 생기기 쉬워요. 내 몫은 내가 챙기세요")
+      : 0) +
+    (s.sals.includes("천을귀인") ? add("사람", 1, "어려울 때 손을 내밀어 주는 귀인이 드는 해예요") : 0) +
+    add("사람", hard(meetAt("연")), meetSaid(meetAt("연"), "바깥 사람·윗사람과 부딪히기 쉬워요", "바깥 관계에서 오해가 생기기 쉬워요"));
   const bodyEl = elScore(r, BRANCH_EL[branch]) * 0.3;
   const body =
     0.5 +
     base +
-    add("몸", bodyEl, `${y}년의 ${EL_KO[BRANCH_EL[branch]]} 기운이 내 사주에 ${bodyEl > 0 ? "맞는 기운" : "버거운 기운"}`) +
-    add("몸", hard(meetAt("일")), meetWord("일")) +
-    add("몸", hard(meetAt("월")), meetWord("월")) +
-    (s.sals.includes("양인") ? add("몸", -0.7, "양인(과로·다침을 조심할 별)이 드는 해") : 0) +
-    (stemClash(stem, p.dayStem) ? add("몸", -0.5, `${y}년 천간이 내 일간과 충`) : 0);
+    add("몸", bodyEl, bodyEl > 0 ? "올해 기운이 내 몸에 잘 맞아요" : "올해 기운이 내 몸엔 버거워요. 무리하면 금방 지쳐요") +
+    add("몸", hard(meetAt("일")), meetSaid(meetAt("일"), "생활 리듬이 흔들리기 쉬워요. 잠과 끼니부터 지키세요", "잔병치레가 잦아지기 쉬워요")) +
+    add("몸", hard(meetAt("월")), meetSaid(meetAt("월"), "일이 몰려 몸이 상하기 쉬운 해예요", "일 스트레스가 몸으로 오기 쉬워요")) +
+    (s.sals.includes("양인") ? add("몸", -0.7, "과로와 다침을 조심할 기운이 들어와요") : 0) +
+    (stemClash(stem, p.dayStem) ? add("몸", -0.5, "컨디션 기복이 큰 해예요. 쉬는 날을 미리 정해 두세요") : 0);
 
   // The months each area moves in: the month's own stars, read the way the year's are.
   const marks = monthMarks(p, r, y);
   const monthGroups = marks.map((m) => new Set<GodGroup>([GROUP_OF[tenGod(p.dayStem, m.stem)], GROUP_OF[tenGod(p.dayStem, HIDDEN[m.branch].at(-1)![0])]]));
   const monthsWhere = (f: (i: number) => boolean) => marks.map((_, i) => i).filter(f);
+  // Only the months worth marking: where the area's stars land on a good month (몸: the months to spare).
+  const good = (i: number) => marks[i].rating >= 2;
   const areaMonths = {
-    돈: monthsWhere((i) => monthGroups[i].has("재성")),
-    일: monthsWhere((i) => monthGroups[i].has("관성")),
-    // The spouse's star comes in many months: only where it lands well, or where a meeting ties the day seat.
-    사랑: monthsWhere((i) => marks[i].tags.includes("인연·약속") || marks[i].tags.includes("합") || (!!spouse && monthGroups[i].has(spouse) && marks[i].rating >= 2)),
-    사람: monthsWhere((i) => marks[i].tags.includes("귀인") || monthGroups[i].has("인성")),
+    돈: monthsWhere((i) => good(i) && monthGroups[i].has("재성")),
+    일: monthsWhere((i) => good(i) && monthGroups[i].has("관성")),
+    사랑: monthsWhere((i) => good(i) && (marks[i].tags.includes("인연·약속") || marks[i].tags.includes("합") || (!!spouse && monthGroups[i].has(spouse)))),
+    사람: monthsWhere((i) => good(i) && (marks[i].tags.includes("귀인") || monthGroups[i].has("인성"))),
     몸: monthsWhere((i) => marks[i].tags.includes("변동") || marks[i].rating === 0),
   };
 

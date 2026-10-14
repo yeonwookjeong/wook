@@ -208,7 +208,9 @@ const POINTS_RULE = `- 장 머리 줄은 반드시 '## [' 로 시작하고, 장 
 ## [10년 대운 속의 이 해] 큰 계절은 봄날이니, 한여름 가뭄을 두려워 마세요
 이유: 큰 흐름은 좋지만 올해 기운이 지나치게 뜨거워요
 할 일: 확장보다 지금 가진 것을 지키는 데 힘을 쓰세요
-- 그 아래 본문 3~5문단, 문단 사이는 빈 줄.`;
+- 그 아래 본문 3~5문단, 문단 사이는 빈 줄.
+- 본문도 해요체로 쓴다. '~습니다/~입니다'는 장마다 꼭 짚을 한 줄에만.
+- 사주 용어에 한자를 괄호로 붙이지 않는다(삼합(三合) ✕). 용어는 뜻으로 바꿔 말한다: '일지와 삼합' ✕ → '올해 기운이 배우자 자리와 손을 잡아요' ○.`;
 // The chapters shown for a bought report: as they were when it was bought.
 export const chaptersFor = (id: ProductId, v8: boolean) => (v8 ? SPECS.v8[id]?.chapters : SPECS.v7[id]?.chapters) ?? [];
 

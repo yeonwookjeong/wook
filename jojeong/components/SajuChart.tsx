@@ -100,7 +100,7 @@ export default function SajuChart({
         </span>
       </div>
       {slots[0].stem === null && (
-        <p className="mt-2 text-center text-[11px] text-ink-soft">태어난 시간을 몰라 여섯 글자로 보았사옵니다</p>
+        <p className="mt-2 text-center text-[11px] text-ink-soft">태어난 시간을 몰라 여섯 글자로 {kingdom ? "보았사옵니다" : "봤어요"}</p>
       )}
       {kingdom && missing.length > 0 && (
         <ul className="mt-2 flex flex-col gap-0.5 text-center text-[13px] font-bold text-ink">
