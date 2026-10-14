@@ -14,7 +14,7 @@ export default function CreditSlips({ buy = true }: { buy?: boolean }) {
           className={`relative flex flex-col rounded-xl px-1.5 pt-3.5 pb-2 ${n === 3 ? "bg-[#e2bc68]/15 ring-2 ring-[#e2bc68]" : "bg-white/[0.04] ring-1 ring-[#e2bc68]/30"}`}
         >
           {n === 3 && (
-            <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-[#e2bc68] px-2 py-0.5 text-[10px] font-extrabold whitespace-nowrap text-[#17304a]">
+            <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-[#e2bc68] px-2 py-0.5 text-[11px] font-extrabold whitespace-nowrap text-[#17304a]">
               추천
             </span>
           )}

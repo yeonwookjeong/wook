@@ -55,7 +55,7 @@ export default function ChartIntro({
         ))}
         {manse && <span aria-hidden="true" />}
         {slots.map((s) => (
-          <span key={`r${s.pos}`} className="self-start text-[10px] leading-tight text-ink-soft">
+          <span key={`r${s.pos}`} className="self-start text-[11px] leading-tight text-ink-soft">
             {POS_ROLE[s.pos]}
           </span>
         ))}
@@ -65,7 +65,7 @@ export default function ChartIntro({
         ))}
         {manse && <span aria-hidden="true" />}
         {slots.map((s) => (
-          <span key={`m${s.pos}`} className="text-[10px] font-bold text-ink-soft">
+          <span key={`m${s.pos}`} className="text-[11px] font-bold text-ink-soft">
             {s.pos === "일" && s.stem !== null ? "나" : "\u00a0"}
           </span>
         ))}
@@ -75,7 +75,7 @@ export default function ChartIntro({
         ))}
         {manse && <span aria-hidden="true" />}
         {slots.map((s) => (
-          <span key={`u${s.pos}`} className="text-[10px] font-bold text-ink-soft">
+          <span key={`u${s.pos}`} className="text-[11px] font-bold text-ink-soft">
             {s.branch === null ? "모름" : "\u00a0"}
           </span>
         ))}
@@ -158,7 +158,7 @@ function ManseRows({ cols }: { cols: ManseCol[] }) {
     <div className={`mt-2 grid ${MANSE_COLS} gap-x-1.5 text-center text-[11px]`}>
       {rows.map(([label, cell]) => (
         <div key={label} className="contents">
-          <span className="border-t border-seal/10 py-1 text-left text-[10px] leading-tight font-bold text-ink-soft">{label}</span>
+          <span className="border-t border-seal/10 py-1 text-left text-[11px] leading-tight font-bold text-ink-soft">{label}</span>
           {cols.map((c) => (
             <span key={c.pos} className={`border-t border-seal/10 py-1 leading-tight ${c.pos === "일" ? "font-bold" : ""}`}>
               {cell(c) || "?"}

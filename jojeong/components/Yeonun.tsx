@@ -42,7 +42,7 @@ function Row({ r, href, owned }: { r: YearRow; href: string; owned: boolean }) {
         </span>
         <span className="flex shrink-0 flex-col items-end gap-1">
           <span className={`rounded-md px-1.5 py-0.5 text-[11px] font-extrabold ${VERDICT_STYLE[r.verdict]}`}>{r.verdict}</span>
-          {owned && <span className="text-[10px] font-bold text-seal">결제함</span>}
+          {owned && <span className="text-[11px] font-bold text-seal">결제함</span>}
         </span>
       </Link>
     </li>
@@ -256,9 +256,9 @@ export function YearTop({ d, name, prev, next, list, care, listLabel = "연도 �
           {d.months.map((m, i) => (
             <li key={m.from} className="rounded-xl border border-seal/15 bg-white/60 px-1 py-2">
               <span className="block text-[12px] font-bold">{monthName(i)}</span>
-              <span className="block text-[10px] text-ink-soft">{m.from}~</span>
+              <span className="block text-[11px] text-ink-soft">{m.from}~</span>
               <span className={`mt-1 inline-block rounded-md px-1.5 text-xs font-extrabold ${RATING[m.rating].cls}`}>{RATING[m.rating].mark}</span>
-              {m.tags.length > 0 && <span className="mt-0.5 block text-[9px] leading-tight text-ink-soft">{m.tags.join("·")}</span>}
+              {m.tags.length > 0 && <span className="mt-0.5 block text-[10.5px] leading-tight text-ink-soft">{m.tags.join("·")}</span>}
             </li>
           ))}
         </ul>

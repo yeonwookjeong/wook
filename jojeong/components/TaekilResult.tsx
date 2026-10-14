@@ -105,7 +105,7 @@ function Month({ days }: { days: DayPick[] }) {
       </p>
       <div className="mt-2 grid grid-cols-7 gap-1 text-center text-[12px]">
         {"일월화수목금토".split("").map((w) => (
-          <span key={w} className="text-[10px] text-ink-soft">
+          <span key={w} className="text-[11px] text-ink-soft">
             {w}
           </span>
         ))}
@@ -117,7 +117,7 @@ function Month({ days }: { days: DayPick[] }) {
           return (
             <span key={i} className={`rounded-md py-1 ${d ? MARK_STYLE[d.grade] : "text-ink-soft/30"}`}>
               {i + 1}
-              <span className="block text-[10px] leading-none">{d ? (d.grade >= 0 ? MARK[d.grade] : "·") : ""}</span>
+              <span className="block text-[11px] leading-none">{d ? (d.grade >= 0 ? MARK[d.grade] : "·") : ""}</span>
             </span>
           );
         })}
@@ -168,7 +168,7 @@ function Preview({ kind, days, label, names }: { kind: Kind; days: DayPick[]; la
         {stats.map((s) => (
           <div key={s.k} className="rounded-xl border border-seal/15 bg-white/60 px-1 py-2">
             <b className="block font-myeongjo text-xl text-seal">{s.v}</b>
-            <span className="text-[10px] leading-tight text-ink-soft">{s.k}</span>
+            <span className="text-[11px] leading-tight text-ink-soft">{s.k}</span>
           </div>
         ))}
       </div>

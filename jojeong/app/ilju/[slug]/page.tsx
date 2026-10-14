@@ -97,7 +97,7 @@ export default async function IljuPage({ params }: PageProps<"/ilju/[slug]">) {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/hundo-face.png" alt="" className="size-14 rounded-full border-[3px] border-[#d4af5f] bg-hanji object-cover" />
             </div>
-            <p className="absolute right-4 bottom-4 text-[10px] tracking-wider text-hanji/80">hundosaju.com</p>
+            <p className="absolute right-4 bottom-4 text-[11px] tracking-wider text-hanji/80">hundosaju.com</p>
           </div>
         </SaveCard>
       </section>

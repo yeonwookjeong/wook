@@ -25,12 +25,12 @@ export default function EightCells() {
         {COLS.map((c) => (
           <div key={c.pos} className="flex flex-col gap-1">
             <span className="text-[11px] font-bold">{c.pos}</span>
-            <span className="text-[10px] leading-tight text-ink-soft">{c.role}</span>
+            <span className="text-[11px] leading-tight text-ink-soft">{c.role}</span>
             <div className="relative">
               <Cell value={STEMS[c.stem]} el={stemEl(c.stem)} />
               <Badge n={c.n[0]} />
             </div>
-            <span className="text-[10px] font-bold text-ink-soft">{c.pos === "일주" ? "나" : "\u00a0"}</span>
+            <span className="text-[11px] font-bold text-ink-soft">{c.pos === "일주" ? "나" : "\u00a0"}</span>
             <div className="relative">
               <Cell value={BRANCHES[c.branch]} el={BRANCH_EL[c.branch]} />
               <Badge n={c.n[1]} />

@@ -1,3 +1,4 @@
+import { sajuYear } from "./yeonun";
 import { meetings, salsAt, stageOf } from "./deep";
 import { BRANCH_EL, chartOf, ELEMENT_HANJA, ELEMENT_KO, GROUP_OF, GYEOK_NAME, HIDDEN, readChart, stemEl, tenGod, type GodGroup, type Reading } from "./myeongri";
 import ranks from "./domainRanks.json";
@@ -13,7 +14,8 @@ export type Domain = "jaemul" | "yeonae" | "jikup";
 export const DOMAINS: Domain[] = ["jaemul", "yeonae", "jikup"];
 export const isDomain = (id: string): id is Domain => (DOMAINS as string[]).includes(id);
 
-export const DECADE_FROM = 2026;
+// The ten-year tables start with this year (the chart's year, turning at 입춘).
+export const DECADE_FROM = sajuYear();
 const YEARS = 10;
 
 const EL = (e: number) => `${ELEMENT_KO[e]}(${ELEMENT_HANJA[e]})`;

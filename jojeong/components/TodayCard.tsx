@@ -61,7 +61,7 @@ export default function TodayCard({ today, name, frame = "doc-paper mt-5", revea
       <p className="flex items-center justify-between text-xs">
         <span className="flex items-center gap-1.5">
           <span className="font-extrabold text-seal">오늘의 운세</span>
-          {!quiet && <span className="rounded-full bg-seal/10 px-2 py-0.5 text-[10px] font-extrabold text-seal">무료</span>}
+          {!quiet && <span className="rounded-full bg-seal/10 px-2 py-0.5 text-[11px] font-extrabold text-seal">무료</span>}
         </span>
         <span className="text-ink-soft">
           {today.date} · <b className="font-myeongjo text-ink">{today.gz}</b>
@@ -191,7 +191,7 @@ export default function TodayCard({ today, name, frame = "doc-paper mt-5", revea
                 ["좋은 방향", today.lucky.direction],
               ].map(([k, v]) => (
                 <div key={k} className="rounded-xl border border-seal/15 bg-white/50 px-1.5 py-2">
-                  <dt className="text-[10px] text-ink-soft">{k}</dt>
+                  <dt className="text-[11px] text-ink-soft">{k}</dt>
                   <dd className="mt-0.5 font-bold leading-snug">{v}</dd>
                 </div>
               ))}
@@ -205,7 +205,7 @@ export default function TodayCard({ today, name, frame = "doc-paper mt-5", revea
               <ol className="mt-1.5 grid grid-cols-7 gap-1 text-center">
                 {today.week.map((w) => (
                   <li key={w.day} className={`rounded-lg py-1.5 ${w.today ? "bg-seal text-hanji" : "bg-white/50"}`}>
-                    <span className={`block text-[10px] ${w.today ? "" : "text-ink-soft"}`}>
+                    <span className={`block text-[11px] ${w.today ? "" : "text-ink-soft"}`}>
                       {w.day} {w.date}
                     </span>
                     <span className={`block font-bold ${w.today ? "" : w.mark === "◎" ? "text-seal" : w.mark === "△" ? "text-ink-soft" : "text-gold"}`}>
@@ -214,7 +214,7 @@ export default function TodayCard({ today, name, frame = "doc-paper mt-5", revea
                   </li>
                 ))}
               </ol>
-              <p className="mt-1 text-right text-[10px] text-ink-soft">◎ 좋음 · ○ 무난 · △ 대비</p>
+              <p className="mt-1 text-right text-[11px] text-ink-soft">◎ 좋음 · ○ 무난 · △ 대비</p>
             </div>
           )}
 

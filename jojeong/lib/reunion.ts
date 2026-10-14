@@ -1,3 +1,4 @@
+import { sajuYear } from "./yeonun";
 import { coupleOf } from "./couple";
 import { meetings, stemCombine } from "./deep";
 import { ELEMENT_HANJA, ELEMENT_KO } from "./myeongri";
@@ -35,9 +36,9 @@ export function reunionOf(a: Person, b: Person): Reunion | null {
   if (c.sharedLack.length) splits.push(`둘 다 ${c.sharedLack.map(EL).join("·")} 기운이 부족해요. 서로 채워 주지 못한 빈틈이 있었어요.`);
   const verdict: Reunion["verdict"] = !ties.length && !splits.length ? "사주보다 상황이 갈라놓은 인연" : ties.length > splits.length ? "끈이 남아 있는 인연" : ties.length === splits.length ? "당기는 힘과 미는 힘이 비슷한 인연" : "끈이 약한 인연";
 
-  // 2026–2030: a year that combines with either spouse seat, and clashes with neither, brings them back in reach.
+  // This year and the four after: a year that combines with either spouse seat, and clashes with neither, brings them back in reach.
   const windows: Reunion["windows"] = [];
-  for (let y = 2026; y <= 2030; y++) {
+  for (let y = sajuYear(); y <= sajuYear() + 4; y++) {
     const yb = (y - 4) % 12;
     const joins = [a, b].filter((x) => meetings(yb, x.pillars.dayBranch).some((m) => m === "육합" || m === "삼합"));
     const clash = [a, b].some((x) => meetings(yb, x.pillars.dayBranch).includes("충"));
@@ -54,6 +55,6 @@ export function reunionBrief(a: Person, b: Person): string {
     `■ ★ 재회 근거 (이 보고서의 뼈대. 엔진 판정: ${r.verdict})`,
     `- 남아 있는 끈: ${r.ties.length ? r.ties.join(" ") : "뚜렷한 끈 없음"}`,
     `- 멀어지게 한 것: ${r.splits.length ? r.splits.join(" ") : "뚜렷한 구조 없음(사주보다 상황이 멀어지게 했을 가능성)"}`,
-    `- 다시 닿기 좋은 해(2026~2030): ${r.windows.length ? r.windows.map((w) => `${w.year} ${w.gz}(${w.why})`).join(", ") : "뚜렷한 해 없음"}`,
+    `- 다시 닿기 좋은 해(${sajuYear()}~${sajuYear() + 4}): ${r.windows.length ? r.windows.map((w) => `${w.year} ${w.gz}(${w.why})`).join(", ") : "뚜렷한 해 없음"}`,
   ].join("\n");
 }

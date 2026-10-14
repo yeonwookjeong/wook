@@ -38,7 +38,7 @@ export default function SeatRow({
             {seat.minister.name}
             {mine && <span className="ml-1.5 text-xs text-seal">(나)</span>}
             {seat.minister.source === "appointed" && (
-              <span className="ml-1.5 rounded bg-ink/5 px-1.5 py-0.5 align-middle text-[10px] font-normal text-ink-soft">
+              <span className="ml-1.5 rounded bg-ink/5 px-1.5 py-0.5 align-middle text-[11px] font-normal text-ink-soft">
                 직접 등용
               </span>
             )}
@@ -47,7 +47,7 @@ export default function SeatRow({
         </span>
         <span className="shrink-0 text-right">
           <span className="block font-myeongjo text-xl font-extrabold">{seat.match.score}</span>
-          <span className="block text-[10px] text-ink-soft">궁합</span>
+          <span className="block text-[11px] text-ink-soft">궁합</span>
         </span>
       </Link>
       {canDismiss && <DismissButton courtId={courtId} ministerId={seat.minister.id} name={seat.minister.name} />}

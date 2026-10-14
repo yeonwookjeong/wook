@@ -13,7 +13,7 @@ export function MiniChart({ person, blank }: { person: Person; blank?: string })
       <div className="grid grid-cols-4 gap-1 text-center">
         {slots.map((s) => (
           <div key={s.pos} className="flex flex-col gap-1">
-            <span className="text-[10px] text-ink-soft">{s.pos}</span>
+            <span className="text-[11px] text-ink-soft">{s.pos}</span>
             <Cell value={s.stem === null ? null : STEMS[s.stem]} el={s.stem === null ? null : stemEl(s.stem)} blank={blank} />
             <Cell value={s.branch === null ? null : BRANCHES[s.branch]} el={s.branch === null ? null : BRANCH_EL[s.branch]} blank={blank} />
           </div>
