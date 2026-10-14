@@ -24,7 +24,9 @@ export function MiniChart({ person, blank }: { person: Person; blank?: string })
 }
 
 // Before the written 궁합: both charts side by side and what the engine found between them (lib/couple.ts).
-export default function PairIntro({ a, b, c, blank }: { a: Person; b: Person; c: Couple; blank?: string }) {
+// bare: the bought report of the second pass (lib/open.ts RENEW2) shows the seats and what each lends in their own
+// chapters, so the top keeps the charts, the score and the two roles only.
+export default function PairIntro({ a, b, c, blank, bare }: { a: Person; b: Person; c: Couple; blank?: string; bare?: boolean }) {
   const EL = (e: number) => `${ELEMENT_KO[e]}(${ELEMENT_HANJA[e]})`;
   return (
     <section className="doc-paper mt-4 px-4 py-5">
@@ -49,22 +51,22 @@ export default function PairIntro({ a, b, c, blank }: { a: Person; b: Person; c:
         <li className="border-b border-seal/10 pb-2">
           <b>{a.name}</b>님은 {b.name}님에게 <b>{c.roles[1]}</b>
         </li>
-        {c.seat.map((s) => (
+        {!bare && c.seat.map((s) => (
           <li key={s} className="border-b border-seal/10 pb-2">
             {s}
           </li>
         ))}
-        {c.lends.slice(0, 2).map((l) => (
+        {!bare && c.lends.slice(0, 2).map((l) => (
           <li key={`${l.to}-${l.el}`} className="border-b border-seal/10 pb-2">
             {l.to}님에게 부족한 {EL(l.el)} 기운을 <b>{l.from}님</b>이 {l.pct}% 갖고 있어요
           </li>
         ))}
-        {c.sharedLack.length > 0 && (
+        {!bare && c.sharedLack.length > 0 && (
           <li className="border-b border-seal/10 pb-2">둘 다 {c.sharedLack.map(EL).join("·")} 기운이 부족해요. 함께 채워야 할 부분이에요.</li>
         )}
       </ul>
 
-      {c.years.length > 0 && (
+      {!bare && c.years.length > 0 && (
         <p className="mt-3 flex flex-wrap gap-1.5">
           {c.years.map((y) => (
             <span

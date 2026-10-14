@@ -75,9 +75,13 @@ export type YearPreview = {
   ko: string;
   verdict: Verdict;
   gods: [string, string];
-  areas: { area: "돈" | "일" | "사랑" | "사람" | "몸"; grade: AreaGrade; grade5: Grade5; score: number }[];
+  // why: what moved the area's grade, in plain words (+ helps, − costs); months: the months whose stars touch it.
+  areas: { area: "돈" | "일" | "사랑" | "사람" | "몸"; grade: AreaGrade; grade5: Grade5; score: number; why: AreaWhy[]; months: number[] }[];
   months: { from: string; gz: string; rating: 0 | 1 | 2 | 3 }[];
+  // Where the year's branch meets the chart's seats (연 바깥·윗사람, 월 부모·형제·일터, 일 나·배우자, 시 자녀).
+  meets: { pos: Slot["pos"]; meeting: string }[];
 };
+export type AreaWhy = { text: string; up: boolean };
 
 const gradeOf = (x: number): AreaGrade => (x >= 0.7 ? "좋음" : x > -0.5 ? "보통" : "조심");
 // The five grades of the second pass (lib/open.ts RENEW2), the three above split at their ends: of all charts in
@@ -102,25 +106,61 @@ export function yearPreviewOf(p: Pillars, profile: Profile | null, y: number): Y
   const hard = (m: string | undefined) => m === "충" ? -1 : m === "형" || m === "원진" ? -0.5 : 0;
   const soft = (m: string | undefined) => (m === "육합" || m === "삼합" ? 0.7 : 0);
 
-  const money = base + (groups.has("재성") ? 0.6 + 0.4 * welcome("재성") : 0) + (gods.includes("겁재") ? -0.6 : 0);
-  const work = base + (groups.has("관성") ? 0.6 + 0.4 * welcome("관성") : 0) + (gods.includes("상관") && r.gods.관성 > 0 ? -0.6 : 0) + hard(meetAt("월"));
+  const EL_KO = ["목", "화", "토", "금", "수"];
+  const why: Record<"돈" | "일" | "사랑" | "사람" | "몸", AreaWhy[]> = { 돈: [], 일: [], 사랑: [], 사람: [], 몸: [] };
+  const add = (area: keyof typeof why, x: number, text: string) => {
+    if (x) why[area].push({ text, up: x > 0 });
+    return x;
+  };
+  const SEAT = { 연: "연주(바깥·윗사람 자리)", 월: "월주(일터·부모 자리)", 일: "일지(나·배우자 자리)", 시: "시주(자녀 자리)" } as const;
+  const meetWord = (pos: Slot["pos"]) => (meetAt(pos) ? `${y}년 글자가 ${SEAT[pos]}와 ${meetAt(pos)}` : "");
+  const welcomeWord = (g: GodGroup) => (welcome(g) > 0 ? ", 내 사주가 반기는 기운" : welcome(g) < 0 ? ", 다만 내 사주엔 버거운 기운" : "");
+  if (Math.abs(base) >= 0.15) for (const a of Object.keys(why) as (keyof typeof why)[]) add(a, base, `한 해 전체 흐름이 ${s.verdict}`);
+
+  const money =
+    base +
+    (groups.has("재성") ? add("돈", 0.6 + 0.4 * welcome("재성"), `재물의 별(재성)이 들어오는 해${welcomeWord("재성")}`) : 0) +
+    (gods.includes("겁재") ? add("돈", -0.6, "겁재(돈을 나눠 가져가는 기운)가 함께 들어옴") : 0);
+  const work =
+    base +
+    (groups.has("관성") ? add("일", 0.6 + 0.4 * welcome("관성"), `직장·자리의 별(관성)이 들어오는 해${welcomeWord("관성")}`) : 0) +
+    (gods.includes("상관") && r.gods.관성 > 0 ? add("일", -0.6, "상관이 들어와 내 사주의 자리 별(관성)을 건드림") : 0) +
+    add("일", hard(meetAt("월")), meetWord("월"));
   const spouse: GodGroup | null = profile?.gender === "m" ? "재성" : profile?.gender === "f" ? "관성" : null;
   const love =
     base +
-    (spouse && groups.has(spouse) ? 0.8 : 0) +
-    soft(meetAt("일")) +
-    hard(meetAt("일")) +
-    (s.sals.includes("도화") ? 0.5 : 0) +
-    (stemCombine(stem, p.dayStem) ? 0.5 : 0);
-  const people = base + (groups.has("인성") ? 0.5 * Math.sign(welcome("인성")) : 0) + (groups.has("비겁") ? 0.5 * Math.sign(welcome("비겁")) : 0) + (s.sals.includes("천을귀인") ? 1 : 0) + hard(meetAt("연"));
+    (spouse && groups.has(spouse) ? add("사랑", 0.8, `배우자의 별(${spouse})이 들어오는 해`) : 0) +
+    add("사랑", soft(meetAt("일")) + hard(meetAt("일")), meetWord("일")) +
+    (s.sals.includes("도화") ? add("사랑", 0.5, "도화(끌림의 별)가 드는 해") : 0) +
+    (stemCombine(stem, p.dayStem) ? add("사랑", 0.5, `${y}년 천간이 내 일간과 합`) : 0);
+  const people =
+    base +
+    (groups.has("인성") ? add("사람", 0.5 * Math.sign(welcome("인성")), `도와주는 윗사람의 별(인성)이 들어옴${welcomeWord("인성")}`) : 0) +
+    (groups.has("비겁") ? add("사람", 0.5 * Math.sign(welcome("비겁")), `동료·경쟁자의 별(비겁)이 들어옴${welcomeWord("비겁")}`) : 0) +
+    (s.sals.includes("천을귀인") ? add("사람", 1, "천을귀인(돕는 사람의 별)이 드는 해") : 0) +
+    add("사람", hard(meetAt("연")), meetWord("연"));
+  const bodyEl = elScore(r, BRANCH_EL[branch]) * 0.3;
   const body =
     0.5 +
     base +
-    elScore(r, BRANCH_EL[branch]) * 0.3 +
-    hard(meetAt("일")) +
-    hard(meetAt("월")) +
-    (s.sals.includes("양인") ? -0.7 : 0) +
-    (stemClash(stem, p.dayStem) ? -0.5 : 0);
+    add("몸", bodyEl, `${y}년의 ${EL_KO[BRANCH_EL[branch]]} 기운이 내 사주에 ${bodyEl > 0 ? "맞는 기운" : "버거운 기운"}`) +
+    add("몸", hard(meetAt("일")), meetWord("일")) +
+    add("몸", hard(meetAt("월")), meetWord("월")) +
+    (s.sals.includes("양인") ? add("몸", -0.7, "양인(과로·다침을 조심할 별)이 드는 해") : 0) +
+    (stemClash(stem, p.dayStem) ? add("몸", -0.5, `${y}년 천간이 내 일간과 충`) : 0);
+
+  // The months each area moves in: the month's own stars, read the way the year's are.
+  const marks = monthMarks(p, r, y);
+  const monthGroups = marks.map((m) => new Set<GodGroup>([GROUP_OF[tenGod(p.dayStem, m.stem)], GROUP_OF[tenGod(p.dayStem, HIDDEN[m.branch].at(-1)![0])]]));
+  const monthsWhere = (f: (i: number) => boolean) => marks.map((_, i) => i).filter(f);
+  const areaMonths = {
+    돈: monthsWhere((i) => monthGroups[i].has("재성")),
+    일: monthsWhere((i) => monthGroups[i].has("관성")),
+    // The spouse's star comes in many months: only where it lands well, or where a meeting ties the day seat.
+    사랑: monthsWhere((i) => marks[i].tags.includes("인연·약속") || marks[i].tags.includes("합") || (!!spouse && monthGroups[i].has(spouse) && marks[i].rating >= 2)),
+    사람: monthsWhere((i) => marks[i].tags.includes("귀인") || monthGroups[i].has("인성")),
+    몸: monthsWhere((i) => marks[i].tags.includes("변동") || marks[i].rating === 0),
+  };
 
   const n = yearName(y);
   return {
@@ -130,13 +170,14 @@ export function yearPreviewOf(p: Pillars, profile: Profile | null, y: number): Y
     verdict: s.verdict,
     gods: [gods[0], gods[1]],
     areas: [
-      { area: "돈", grade: gradeOf(money), grade5: grade5Of(money), score: money },
-      { area: "일", grade: gradeOf(work), grade5: grade5Of(work), score: work },
-      { area: "사랑", grade: gradeOf(love), grade5: grade5Of(love), score: love },
-      { area: "사람", grade: gradeOf(people), grade5: grade5Of(people), score: people },
-      { area: "몸", grade: gradeOf(body), grade5: grade5Of(body), score: body },
+      { area: "돈", grade: gradeOf(money), grade5: grade5Of(money), score: money, why: why.돈, months: areaMonths.돈 },
+      { area: "일", grade: gradeOf(work), grade5: grade5Of(work), score: work, why: why.일, months: areaMonths.일 },
+      { area: "사랑", grade: gradeOf(love), grade5: grade5Of(love), score: love, why: why.사랑, months: areaMonths.사랑 },
+      { area: "사람", grade: gradeOf(people), grade5: grade5Of(people), score: people, why: why.사람, months: areaMonths.사람 },
+      { area: "몸", grade: gradeOf(body), grade5: grade5Of(body), score: body, why: why.몸, months: areaMonths.몸 },
     ],
-    months: monthMarks(p, r, y).map((m) => ({ from: m.from, gz: m.gz, rating: m.rating })),
+    months: marks.map((m) => ({ from: m.from, gz: m.gz, rating: m.rating })),
+    meets: s.meets.map((m) => ({ pos: m.pos, meeting: m.meeting })),
   };
 }
 
