@@ -564,6 +564,11 @@ function GoldTitle({ text }: { text: string }) {
 
 // A list reel (listReels.ts): the title up top, a paper table filling the middle, two lines below, all inside the
 // part of the picture Instagram's player leaves clear.
+// Hangul readings of the stems and branches, for labels set in the brush hand.
+const READ: Record<string, string> = Object.fromEntries(
+  [..."甲乙丙丁戊己庚辛壬癸子丑寅卯辰巳午未申酉戌亥"].map((h, i) => [h, "갑을병정무기경신임계자축인묘진사오미신유술해"[i]]),
+);
+
 function ListReelCard({ k, anim = false }: { k: string; anim?: boolean }) {
   const r = LIST_REELS[k];
   if (!r) return null;
@@ -637,6 +642,10 @@ function ListReelCard({ k, anim = false }: { k: string; anim?: boolean }) {
                   }}
                 >
                   {label}
+                  {/* The hangul reading beside the brush hand: most readers cannot read the character alone. */}
+                  {r.brushLabels && READ[label] && (
+                    <span style={{ marginLeft: 10, fontFamily: sans, fontSize: fs * 0.95, fontWeight: 800, color: INK, verticalAlign: "middle" }}>{READ[label]}</span>
+                  )}
                 </span>
               )}
               <span style={{ minWidth: 0 }}>
