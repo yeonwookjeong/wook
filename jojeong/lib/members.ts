@@ -25,6 +25,9 @@ export type Member = {
   channel?: boolean; // the question for adding the Kakao channel was given (lib/kakaoChannel.ts)
   rooms: string[]; // their 정 훈도에게 묻기 rooms, newest first
   events?: string[]; // the 질문권 events they took (lib/creditEvents.ts), by code
+  // Consent to news and offers (광고성 정보 수신, optional, never ticked for them): yes or no, and when it was given or
+  // taken back. Asked again after NEWS_RECHECK, as the law asks of a standing consent every two years.
+  news?: { on: boolean; at: number };
   // Every change to the credits, newest last (kept short): why, how many, when.
   log: { at: number; d: number; why: string }[];
 };
@@ -107,6 +110,16 @@ export async function giveChannelGift(id: string): Promise<number> {
   if (given) return 0;
   await noteGiftGiven(channelMark(id));
   return CHANNEL_GIFT;
+}
+
+export const NEWS_RECHECK = 2 * 365 * 24 * 3600 * 1000;
+// Whether to ask the member about news: never asked, or a yes older than two years.
+export const newsToAsk = (m: Member, now = Date.now()) => !m.news || (m.news.on && now - m.news.at > NEWS_RECHECK);
+export async function setNews(id: string, on: boolean) {
+  const m = await getMember(id);
+  if (!m) return;
+  m.news = { on, at: Date.now() };
+  await saveMember(m);
 }
 
 // First sign-in makes the record (with the gift question, on the terms above); later ones find it. Orders this

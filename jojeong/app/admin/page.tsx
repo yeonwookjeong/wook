@@ -554,7 +554,9 @@ async function MembersSection({ find }: { find: string }) {
           {members.length}명 · 남은 질문 합 {held}개
         </span>
       </h2>
-      <p className="mt-0.5 text-[11px] text-ink-soft">{byVia}</p>
+      <p className="mt-0.5 text-[11px] text-ink-soft">
+        {byVia} · 소식 받기 동의 {members.filter((m) => m.news?.on).length}명 (이메일 있음 {members.filter((m) => m.news?.on && m.email).length})
+      </p>
       <form className="mt-2 flex gap-1.5 text-[12px]">
         <input name="mq" defaultValue={find} placeholder="회원 번호(K-123456) · 별명 · 이메일" className="min-w-0 flex-1 rounded-lg border border-ink/15 bg-white/60 px-2 py-1.5" />
         <button className="shrink-0 rounded-full bg-ink px-3 font-bold text-hanji">찾기</button>
@@ -574,7 +576,7 @@ async function MembersSection({ find }: { find: string }) {
             {one.email ?? "이메일 없음"} · <span className="font-mono text-[10.5px]">{one.id}</span>
           </p>
           <p className="mt-1">
-            남은 질문 <b>{one.credits}</b> · 사랑방 {one.rooms.length} · 가입 선물 {one.gift ? "받음" : "없음"}
+            남은 질문 <b>{one.credits}</b> · 사랑방 {one.rooms.length} · 가입 선물 {one.gift ? "받음" : "없음"} · 소식 {one.news ? `${one.news.on ? "동의" : "거부"} ${day(one.news.at)}` : "묻기 전"}
           </p>
           <p className="mt-1 font-bold">질문권 내역</p>
           <ul className="text-[11.5px]">
