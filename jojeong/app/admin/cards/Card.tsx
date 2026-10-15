@@ -644,7 +644,7 @@ function ListReelCard({ k, anim = false }: { k: string; anim?: boolean }) {
                   {label}
                   {/* The hangul reading beside the brush hand: most readers cannot read the character alone. */}
                   {r.brushLabels && READ[label] && (
-                    <span style={{ marginLeft: 10, fontFamily: sans, fontSize: fs * 0.95, fontWeight: 800, color: INK, verticalAlign: "middle" }}>{READ[label]}</span>
+                    <span style={{ marginLeft: 10, fontFamily: serif, fontSize: fs * 0.9, fontWeight: 800, color: SEAL, verticalAlign: "middle" }}>{READ[label]}</span>
                   )}
                 </span>
               )}
