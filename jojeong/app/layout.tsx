@@ -6,8 +6,10 @@ import { SITE_NAME, SITE_SUMMARY, SITE_TAGLINE, SNS_URLS, siteUrl } from "@/lib/
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import VisitBeacon from "@/components/VisitBeacon";
 import OpenNote from "@/components/OpenNote";
+import ChannelNudge from "@/components/ChannelNudge";
+import { isPreview } from "@/lib/admin";
 import { openReadingCount } from "@/lib/store";
-import { askShown, currentMember, JOIN_GIFT, membersEnabled } from "@/lib/members";
+import { askShown, CHANNEL_GIFT, CHANNEL_GIFT_ON, currentMember, JOIN_GIFT, membersEnabled } from "@/lib/members";
 import "./globals.css";
 
 // Headings: Hahmlet, a modern Korean serif (variable weight), for 정 훈도's Joseon-meets-now voice.
@@ -78,6 +80,10 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         {/* The grand opening, once per browser. */}
         {membersEnabled() && (await askShown()) && (
           <OpenNote member={Boolean(await currentMember().catch(() => null))} gift={JOIN_GIFT} count={await openReadingCount()} />
+        )}
+        {/* Kakao members who have not added the channel yet: one more question for adding it (시안 모드 until it is on). */}
+        {membersEnabled() && (CHANNEL_GIFT_ON || (await isPreview())) && (await currentMember().catch(() => null).then((m) => Boolean(m && m.id.startsWith("k") && !m.channel))) && (
+          <ChannelNudge gift={CHANNEL_GIFT} />
         )}
         {/* Page views and visitors, cookieless (Vercel Web Analytics; enable it in the Vercel project). */}
         <Analytics />
