@@ -44,7 +44,7 @@ export const LIST_REELS: Record<string, ListReel> = {
     titleSize: 70,
     sub: "내 태어난 달 아래 글자가 이것이면 → 이런 곳에서 유난히 닳사옵니다",
     brushLabels: true,
-    labelWidth: 120,
+    labelWidth: 150,
     fs: 32,
     rows: [
       ["子", "아침부터 회의가 몰아치는 곳"],
@@ -69,7 +69,7 @@ export const LIST_REELS: Record<string, ListReel> = {
     titleSize: 76,
     sub: "내 배우자 자리 글자가 이것이면 → 이런 상대를 만날 때 고생하옵니다",
     brushLabels: true,
-    labelWidth: 120,
+    labelWidth: 150,
     fs: 32,
     rows: [
       ["子", "감정이 끓어 매번 큰 소리로 끝나는 사람"],
@@ -93,7 +93,7 @@ export const LIST_REELS: Record<string, ListReel> = {
     title: "사주 맨 왼쪽 칸에 숨은\n[그대의 재능]",
     titleSize: 70,
     brushLabels: true,
-    labelWidth: 110,
+    labelWidth: 150,
     fs: 31,
     rows: [
       ["子", "남이 못 본 걸 먼저 알아채는 눈", "분석 · 리서치 · 상담"],
@@ -138,10 +138,10 @@ export const LIST_REELS: Record<string, ListReel> = {
     fs: 34,
     rows: [
       ["① 보기", "태어난 해와 날의 아래 글자 두 개"],
-      ["申·子·辰", "→ 도화 글자는 酉"],
-      ["巳·酉·丑", "→ 도화 글자는 午"],
-      ["寅·午·戌", "→ 도화 글자는 卯"],
-      ["亥·卯·未", "→ 도화 글자는 子"],
+      ["신·자·진", "→ 도화 글자는 유(酉)"],
+      ["사·유·축", "→ 도화 글자는 오(午)"],
+      ["인·오·술", "→ 도화 글자는 묘(卯)"],
+      ["해·묘·미", "→ 도화 글자는 자(子)"],
       ["② 세기", "그 글자가 아래 네 칸에 몇 번 나오는지"],
       ["없음 61명", "알수록 끌리는 사람"],
       ["1칸 33명", "눈길이 모이는 사람"],
