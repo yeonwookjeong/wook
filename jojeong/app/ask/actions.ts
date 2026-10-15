@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { refresh } from "next/cache";
 import { addPerson, ask, createRoom, loadRoom, MAX_PEOPLE, MAX_QUESTION, reChartPerson, removePerson, renamePerson, saveRoom, setRel, TOPICS, type AskRoom, type Topic } from "@/lib/ask";
 import { RELS } from "@/lib/bond";
-import { addRoomToMember, changeCredits, currentMember, type Member } from "@/lib/members";
+import { addRoomToMember, changeCredits, currentMember, setNews, type Member } from "@/lib/members";
 import { encodePerson } from "@/lib/pairToken";
 import { personOf } from "@/lib/personForm";
 import { readMe } from "@/lib/me";
@@ -121,5 +121,13 @@ export async function removePersonAction(formData: FormData) {
   if ("error" in own) return;
   removePerson(own.room, String(formData.get("person") ?? ""));
   await saveRoom(own.room);
+  refresh();
+}
+
+// 소식 받기 (optional): the member's own yes or no, kept with the time; changeable any time.
+export async function newsAction(formData: FormData) {
+  const member = await currentMember();
+  if (!member) return;
+  await setNews(member.id, formData.get("on") === "1");
   refresh();
 }

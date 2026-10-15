@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import CreditSlips from "./CreditSlips";
 import { iljuOf, loadRoom, personOfRoom } from "@/lib/ask";
+import NewsConsent from "@/components/NewsConsent";
 import { ASK_OPEN, CHANNEL_GIFT, CHANNEL_GIFT_ON, currentMember, JOIN_GIFT, KAKAO_CHANNEL, memberNo, membersEnabled, viaEnabled } from "@/lib/members";
 import { OpenRoomForm } from "./AskForms";
 import DraftReturn from "./DraftReturn";
@@ -229,6 +230,7 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
               </div>
             </div>
           )}
+          <NewsConsent member={member} />
           {(q.joined || q.moved || q.bought || q.bonus || q.channel) && (
             <p className="mt-4 rounded-xl border border-[#e2bc68]/30 bg-[#e2bc68]/10 px-3.5 py-2.5 text-center text-[13px] leading-relaxed">
               {q.joined && (member.gift && member.log.some((l) => l.why === "가입 선물") ? `질문 ${JOIN_GIFT}개를 드렸사옵니다. ` : "다시 오셨사옵니다. ")}
