@@ -200,6 +200,28 @@ export async function readingCount(): Promise<number> {
   }
 }
 
+// The free readings up to the opening night (10/13), for the opening note: the total less what the dashboard
+// counted from the next day on (lib/stats.ts "reading" and "king" by day), worked out once and then kept, so the
+// thanks no longer grows with every visitor.
+const COUNTED_AFTER_OPEN = "2026-10-14";
+export async function openReadingCount(): Promise<number> {
+  try {
+    const kept = await backend().get("stats:readings-at-open");
+    if (kept) return Number(kept);
+    const total = await readingCount();
+    if (!total) return 0;
+    const today = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
+    const days: string[] = [];
+    for (let t = Date.parse(COUNTED_AFTER_OPEN); new Date(t).toISOString().slice(0, 10) <= today; t += 86400000) days.push(new Date(t).toISOString().slice(0, 10));
+    const since = await readCounters(days.flatMap((d) => [`st:reading:d:${d}`, `st:king:d:${d}`]));
+    const n = Math.max(0, total - since.reduce((a, b) => a + b, 0));
+    await backend().set("stats:readings-at-open", String(n));
+    return n;
+  } catch {
+    return 0;
+  }
+}
+
 export async function courtCount(): Promise<number> {
   try {
     return Number((await backend().get("stats:courts")) ?? 0);

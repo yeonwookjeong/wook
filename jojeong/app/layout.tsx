@@ -6,7 +6,7 @@ import { SITE_NAME, SITE_SUMMARY, SITE_TAGLINE, SNS_URLS, siteUrl } from "@/lib/
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import VisitBeacon from "@/components/VisitBeacon";
 import OpenNote from "@/components/OpenNote";
-import { readingCount } from "@/lib/store";
+import { openReadingCount } from "@/lib/store";
 import { askShown, currentMember, JOIN_GIFT, membersEnabled } from "@/lib/members";
 import "./globals.css";
 
@@ -77,7 +77,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         </main>
         {/* The grand opening, once per browser. */}
         {membersEnabled() && (await askShown()) && (
-          <OpenNote member={Boolean(await currentMember().catch(() => null))} gift={JOIN_GIFT} count={await readingCount()} />
+          <OpenNote member={Boolean(await currentMember().catch(() => null))} gift={JOIN_GIFT} count={await openReadingCount()} />
         )}
         {/* Page views and visitors, cookieless (Vercel Web Analytics; enable it in the Vercel project). */}
         <Analytics />
