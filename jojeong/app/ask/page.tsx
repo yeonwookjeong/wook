@@ -210,7 +210,7 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
           </div>
           {/* Kakao members who have not had the channel question: add the channel, then come back through Kakao to check. */}
           {CHANNEL_GIFT_ON && member.id.startsWith("k") && !member.channel && (
-            <div className="mt-4 rounded-xl border border-[#FEE500]/40 bg-[#FEE500]/10 px-3.5 py-3 text-center text-[13px] leading-relaxed">
+            <div id="channel" className="mt-4 scroll-mt-4 rounded-xl border border-[#FEE500]/40 bg-[#FEE500]/10 px-3.5 py-3 text-center text-[13px] leading-relaxed">
               <b className="block font-myeongjo text-[14.5px]">카카오톡 채널을 추가하면 질문 {CHANNEL_GIFT}개 더</b>
               <span className="text-hanji/75">새 소식과 좋은 날 알림도 채널로 받아요</span>
               {q.ch && !q.channel && <span className="mt-1 block text-[12px] text-[#e2bc68]">아직 채널 추가가 확인되지 않았어요. 추가한 뒤 다시 눌러 주세요.</span>}
