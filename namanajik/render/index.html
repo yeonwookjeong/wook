@@ -1,0 +1,59 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0b0d;--fg:#f4f4f2;--acc:#ffd60a;--muted:#8a8a8f;--bar:#1f1f24;--up:#4ade80;--down:#f87171}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:'Noto Sans KR',sans-serif;width:1080px;height:1920px;overflow:hidden}
+#wrap{position:relative;width:1080px;height:1920px;padding:110px 60px;box-sizing:border-box}
+#brand{font-size:44px;font-weight:900;letter-spacing:-1px}
+#brand span{color:var(--acc)}
+#title{margin-top:14px;font-size:78px;font-weight:900;line-height:1.08;letter-spacing:-2px}
+#title em{font-style:normal;color:var(--acc)}
+#sub{margin-top:14px;font-size:30px;color:var(--muted)}
+#date{position:absolute;right:60px;top:470px;font-size:40px;font-weight:700;color:var(--muted)}
+#date b{color:var(--fg);font-size:48px}
+#chart{position:absolute;left:60px;right:60px;top:560px;height:1180px}
+.row{position:absolute;left:0;right:0;height:100px;background:var(--bg)}
+.rank{position:absolute;left:0;top:0;width:80px;height:100px;line-height:100px;font-size:50px;font-weight:900;color:var(--muted);text-align:right}
+.bar{position:absolute;left:100px;top:12px;height:76px;background:var(--bar);border-radius:8px}
+.bar.top{background:var(--acc)}
+.label{position:absolute;left:120px;top:0;height:100px;line-height:100px;font-size:36px;font-weight:700;white-space:nowrap}
+.label small{font-weight:400;opacity:.7;font-size:30px;margin-left:8px}
+.bar.top + .label{color:#0b0b0d}
+.meta{position:absolute;right:0;top:0;height:100px;line-height:100px;font-size:28px;color:var(--muted);text-align:right}
+.meta b{color:var(--fg)}
+.meta .d{display:inline-block;min-width:90px;margin-left:10px;font-weight:900}
+.d.up{color:var(--up)}.d.down{color:var(--down)}.d.flat{color:var(--muted)}
+#foot{position:absolute;left:60px;bottom:100px;font-size:26px;color:var(--muted);line-height:1.5}
+</style></head><body><div id="wrap">
+<div id="brand">나만아직<span>?</span></div>
+<div id="title"><span id="yr"></span>년 노래,<br>지금 <em>Top 10</em></div>
+<div id="sub">그때 N위 → 지금 N위 · 유튜브 공식 영상 조회수 7일 증가분</div>
+<div id="date"></div>
+<div id="chart"></div>
+<div id="foot">그때 = <span id="yr2"></span>년 연간 차트 순위 · 집계 대상 <span id="cnt"></span>곡<br>유튜브·유튜브 뮤직 재생수 기준 · 나만아직?</div>
+</div>
+<script>
+let D=null;const ROW=108,SHOW=10;
+fetch('data.json').then(r=>r.json()).then(d=>{D=d;document.getElementById('yr').textContent=d.year;document.getElementById('yr2').textContent=d.year;document.getElementById('cnt').textContent=d.songs.length;build();window.READY=true});
+const fmt=n=>n>=1e4?(n/1e4).toFixed(n>=1e5?0:1)+'만':String(Math.round(n));
+function build(){const c=document.getElementById('chart');D.songs.forEach((s,i)=>{const r=document.createElement('div');r.className='row';r.id='r'+i;
+r.innerHTML=`<div class="rank"></div><div class="bar"></div><div class="label">${s.title}<small>${s.artist}</small></div><div class="meta"><span class="views"></span> · 그때 <b>${s.then}위</b><span class="d"></span></div>`;c.appendChild(r)})}
+const lerp=(a,b,t)=>a+(b-a)*t, ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+const rankAt=w=>{const o=D.songs.map((s,k)=>k).sort((a,b)=>D.songs[b].v[w]-D.songs[a].v[w]);const p={};o.forEach((k,r)=>p[k]=r);return p};
+window.renderFrame=function(t){
+  const n=D.weeks.length-1, x=t*n, i=Math.min(Math.floor(x),n-1), f=ease(Math.min(x-i,1));
+  const vals=D.songs.map(s=>lerp(s.v[i],s.v[i+1],f));
+  const max=Math.max(...vals);
+  const p0=rankAt(i),p1=rankAt(i+1),pc=rankAt(Math.round(x));
+  D.songs.forEach((s,k)=>{const r=document.getElementById('r'+k);const y=lerp(p0[k],p1[k],f);
+    if(y>SHOW+0.5){r.style.display='none';return;} r.style.display='block';
+    r.style.top=(y*ROW)+'px'; r.style.opacity=Math.max(0,Math.min(1,SHOW-0.5-y+1));
+    const w=Math.max(40,Math.sqrt(vals[k]/max)*820); r.style.zIndex=String(1000-Math.round(y*10));const bar=r.querySelector('.bar');bar.style.width=w+'px';bar.classList.toggle('top',pc[k]===0);
+    r.querySelector('.rank').textContent=(pc[k]+1);
+    r.querySelector('.views').textContent=fmt(vals[k]);
+    const delta=s.then-(pc[k]+1);const d=r.querySelector('.d');
+    d.className='d '+(delta>0?'up':delta<0?'down':'flat');d.textContent=delta>0?'▲'+delta:delta<0?'▼'+(-delta):'–';
+  });
+  document.getElementById('date').innerHTML=`<b>${D.weeks[Math.round(x)]}</b> 주`;
+}
+</script></body></html>
