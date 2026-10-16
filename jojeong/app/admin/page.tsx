@@ -568,7 +568,7 @@ async function MembersSection({ find, orders }: { find: string; orders: Order[] 
   const one = needle && needle !== ":channel" && found.length === 1 ? found[0] : null;
   const day = (t: number) => new Date(t + 9 * 3600000).toISOString().slice(0, 16).replace("T", " ");
   return (
-    <section className="doc-paper mt-4 px-4 py-4">
+    <section id="members" className="doc-paper mt-4 scroll-mt-4 px-4 py-4">
       <h2 className="flex items-baseline justify-between font-myeongjo font-extrabold">
         회원
         <span className="text-sm text-ink-soft">
@@ -577,7 +577,7 @@ async function MembersSection({ find, orders }: { find: string; orders: Order[] 
       </h2>
       <p className="mt-0.5 text-[11px] text-ink-soft">
         {byVia} · 채널 추가 {members.filter((m) => m.channel).length}명 (
-        <a href="/admin?mq=%3Achannel" className="underline">
+        <a href="/admin?mq=%3Achannel#members" className="underline">
           명단
         </a>
         ) · 소식 받기 동의 {members.filter((m) => m.news?.on).length}명 (이메일 있음 {members.filter((m) => m.news?.on && m.email).length})
@@ -595,11 +595,11 @@ async function MembersSection({ find, orders }: { find: string; orders: Order[] 
         <dt className="font-bold">연령대</dt>
         <dd>{tally(members.map((m) => m.age ?? "모름"))}</dd>
       </dl>
-      <form className="mt-2 flex gap-1.5 text-[12px]">
+      <form action="/admin#members" className="mt-2 flex gap-1.5 text-[12px]">
         <input name="mq" defaultValue={find} placeholder="회원 번호(K-123456) · 별명 · 이메일" className="min-w-0 flex-1 rounded-lg border border-ink/15 bg-white/60 px-2 py-1.5" />
         <button className="shrink-0 rounded-full bg-ink px-3 font-bold text-hanji">찾기</button>
         {find && (
-          <a href="/admin" className="shrink-0 self-center text-ink-soft underline">
+          <a href="/admin#members" className="shrink-0 self-center text-ink-soft underline">
             전체
           </a>
         )}
@@ -640,7 +640,7 @@ async function MembersSection({ find, orders }: { find: string; orders: Order[] 
           <ul className="mt-2 flex max-h-60 flex-col divide-y divide-seal/10 overflow-y-auto text-[12px]">
             {found.slice(0, 100).map((m) => (
               <li key={m.id}>
-                <a href={`/admin?mq=${encodeURIComponent(m.id)}`} className="flex items-center gap-2 py-1.5">
+                <a href={`/admin?mq=${encodeURIComponent(m.id)}#members`} className="flex items-center gap-2 py-1.5">
                   <span className="w-12 shrink-0 text-ink-soft">{day(m.createdAt).slice(5, 10)}</span>
                   <b className="min-w-0 flex-1 truncate">
                     {m.nick}
