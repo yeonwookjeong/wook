@@ -1,7 +1,7 @@
 import { newsAction } from "@/app/ask/actions";
 import { newsToAsk, type Member } from "@/lib/members";
 
-// 소식 받기, for members: asked once as a plain choice (nothing ticked for them), then a quiet line to change it.
+// 소식 받기, for members: asked once as a plain choice (nothing ticked for them); the answer is changed from NewsToggle.
 export default function NewsConsent({ member }: { member: Member }) {
   if (newsToAsk(member))
     return (
@@ -18,12 +18,19 @@ export default function NewsConsent({ member }: { member: Member }) {
         </div>
       </form>
     );
-  const on = member.news!.on;
+  return null;
+}
+
+// Once answered, the quiet switch at the foot of the page (by 로그아웃 · 회원 탈퇴), so taking it back stays easy.
+export function NewsToggle({ member }: { member: Member }) {
+  if (!member.news || newsToAsk(member)) return null;
+  const on = member.news.on;
   return (
-    <form action={newsAction} className="mt-6 text-center text-[11.5px] text-hanji/60">
-      소식 받기 {on ? "켜짐" : "꺼짐"} ·{" "}
-      <button name="on" value={on ? "0" : "1"} className="underline">
-        {on ? "그만 받기" : "받기"}
+    <form action={newsAction} className="inline">
+      <span className="mx-2 text-ink-soft/40">·</span>
+      <span className="text-ink-soft">소식 {on ? "받는 중" : "안 받음"} </span>
+      <button name="on" value={on ? "0" : "1"} className="text-ink-soft underline">
+        {on ? "끄기" : "켜기"}
       </button>
     </form>
   );

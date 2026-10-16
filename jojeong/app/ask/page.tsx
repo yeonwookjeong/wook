@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import CreditSlips from "./CreditSlips";
 import { iljuOf, loadRoom, personOfRoom } from "@/lib/ask";
-import NewsConsent from "@/components/NewsConsent";
+import NewsConsent, { NewsToggle } from "@/components/NewsConsent";
 import { ASK_OPEN, CHANNEL_GIFT, CHANNEL_GIFT_ON, currentMember, JOIN_GIFT, KAKAO_CHANNEL, memberNo, membersEnabled, viaEnabled } from "@/lib/members";
 import { OpenRoomForm } from "./AskForms";
 import DraftReturn from "./DraftReturn";
@@ -309,7 +309,7 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
         </Floor>
       </Hallway>
 
-      <p className="mt-6 text-center text-[12px]">
+      <div className="mt-6 text-center text-[12px]">
         <span className="text-ink-soft">회원 번호 {memberNo(member.id)}</span>
         <span className="mx-2 text-ink-soft/40">·</span>
         <a href="/logout" className="text-ink-soft underline">
@@ -319,7 +319,8 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
         <Link href="/leave" className="text-ink-soft/70 underline">
           회원 탈퇴
         </Link>
-      </p>
+        <NewsToggle member={member} />
+      </div>
     </>
   );
 }
