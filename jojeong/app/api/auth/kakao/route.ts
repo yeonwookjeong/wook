@@ -4,7 +4,7 @@ import { membersEnabled } from "@/lib/members";
 import { channelAdded } from "@/lib/kakaoChannel";
 
 // Kakao comes back here (the Redirect URI registered for the app) with ?code&state. The code is traded for a token,
-// the token for the user's id, nickname and (once the app may ask for it) email; nothing else is asked for or kept.
+// the token for the user's id, nickname and, as far as the member agreed, email, gender and age band; nothing else is kept.
 export async function GET(request: NextRequest) {
   if (!membersEnabled()) return backTo(request, "/");
   const next = returnedTo(request);
@@ -35,12 +35,15 @@ export async function GET(request: NextRequest) {
   const me = (await meRes?.json().catch(() => null)) as {
     id?: number;
     properties?: { nickname?: string };
-    kakao_account?: { profile?: { nickname?: string }; email?: string; is_email_valid?: boolean; is_email_verified?: boolean };
+    kakao_account?: { profile?: { nickname?: string }; email?: string; is_email_valid?: boolean; is_email_verified?: boolean; gender?: string; age_range?: string };
   } | null;
   if (!me?.id) return backTo(request, "/login?login=fail");
   const account = me.kakao_account;
   const email = account?.email && account.is_email_valid && account.is_email_verified ? account.email : null;
   // Added 훈도사주's channel: one more question, once (lib/members.ts giveChannelGift).
   const channel = (await channelAdded(token.access_token)) === true;
-  return finishLogin(request, "kakao", String(me.id), account?.profile?.nickname ?? me.properties?.nickname ?? "", email, next, { channel });
+  // 성별·연령대: only when the member agreed to share them (선택 동의항목); kept as given, nothing finer.
+  const gender = account?.gender === "male" ? "m" : account?.gender === "female" ? "f" : undefined;
+  const age = /^\d{1,2}~\d{0,2}$/.test(account?.age_range ?? "") ? account?.age_range : undefined;
+  return finishLogin(request, "kakao", String(me.id), account?.profile?.nickname ?? me.properties?.nickname ?? "", email, next, { channel, gender, age });
 }

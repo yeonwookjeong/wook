@@ -1,7 +1,8 @@
 import "server-only";
 import { randomBytes } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
-import { GIFT_COOKIE, giveChannelGift, MEMBER_COOKIE, memberCookieValue, signInMember, VIA_COOKIE, type Via } from "./members";
+import { GIFT_COOKIE, giveChannelGift, MEMBER_COOKIE, memberCookieValue, signInMember, VIA_COOKIE, type SignInProfile, type Via } from "./members";
+import { isSource, SRC_COOKIE } from "./source";
 import { browserOrderIds, getOrder, giveBonus } from "./pay";
 
 // The way in and back for every login (app/login/[via], app/api/auth/*): a one-time state in a cookie, the page to
@@ -39,17 +40,18 @@ export async function finishLogin(
   nick: string,
   email: string | null,
   next: string,
-  extra: { channel?: boolean } = {},
+  extra: SignInProfile = {},
 ) {
   // The report link the buyer came back from (?order=…) counts as theirs too, so a report bought without
   // signing in brings its questions even when the sign-in is on another phone or browser.
   const linked = new URL(next, request.url).searchParams.get("order") ?? "";
   const ids = await browserOrderIds();
+  const src = request.cookies.get(SRC_COOKIE)?.value;
   const browserOrders = /^[\w-]{6,64}$/.test(linked) && !ids.includes(linked) ? [linked, ...ids] : ids;
   const { member, joined, added, gifted } = await signInMember(via, accountId, nick, email, {
     orders: browserOrders,
     gifted: Boolean(request.cookies.get(GIFT_COOKIE)?.value),
-  });
+  }, { ...extra, src: isSource(src) ? src : undefined });
   // Questions that came with reports bought here before signing in (A안), added once.
   let bonus = 0;
   for (const id of browserOrders) {

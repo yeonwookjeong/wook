@@ -1,4 +1,5 @@
 import KeepNote, { BonusTop } from "@/components/KeepNote";
+import ReportFeedback from "@/components/ReportFeedback";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -1113,6 +1114,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
             y: typeof search.y === "string" ? search.y : undefined,
           }}
         />
+        {paid && <ReportFeedback order={paid.id} product={product.id} />}
         {paid && <KeepNote order={paid} back={`/reports/${product.id}?order=${paid.id}`} />}
         {paid && <AskCard from="report" lead="다 읽고 궁금한 것, 정 훈도에게 묻기" />}
       </>

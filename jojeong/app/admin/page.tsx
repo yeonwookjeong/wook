@@ -6,9 +6,10 @@ import CopyButton from "@/components/CopyButton";
 import { GIFTABLE, originNow } from "@/lib/gift";
 import { SALE_KEYS, saleKey, saleLabel } from "@/lib/sales";
 import { productById, SETS } from "@/lib/products";
-import { lastReportError, listInquiries, readingCount } from "@/lib/store";
+import { lastReportError, listInquiries, memberViews, readingCount } from "@/lib/store";
+import { listFeedback } from "@/lib/feedback";
 import { memberFixAction } from "./actions";
-import { allMembers, memberNo, VIA_LABEL, viaOf } from "@/lib/members";
+import { allMembers, memberNo, VIA_LABEL, viaOf, type Member } from "@/lib/members";
 import { adminSignOut, creditEventCreateAction, creditEventToggleAction, giftRevokeAction, inquiryDeleteAction, inquiryDoneAction, testOrderAction } from "./actions";
 import Dashboard, { rangeOf } from "./Dashboard";
 import { threadsPosts } from "@/lib/threads";
@@ -18,7 +19,7 @@ import { isPreview, newYearOf, thisYear } from "@/lib/yeonun";
 import { ASK_FROM, ASK_FROM_LABEL, inPeriods, PERIODS, readStats, type Period } from "@/lib/stats";
 import { SHARE_FROM, STEP_FROM, STEP_LABEL } from "@/lib/nextStep";
 import { COLUMNS, publishedColumns, titleLines } from "@/lib/columns";
-import { SOURCES } from "@/lib/source";
+import { SOURCE_LABEL, SOURCES } from "@/lib/source";
 import { DailyTable, SourceTable } from "./Insights";
 import { CREDIT_KINDS, ledgerOf, waitingBonus } from "@/lib/creditLedger";
 import { closedWhy, listCreditEvents } from "@/lib/creditEvents";
@@ -259,7 +260,9 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
 
       <CreditsSection period={period} orders={orders} origin={origin} />
 
-      <MembersSection find={typeof q.mq === "string" ? q.mq : ""} />
+      <MembersSection find={typeof q.mq === "string" ? q.mq : ""} orders={orders} />
+
+      <FeedbackSection />
 
       <section className="doc-paper mt-4 px-4 py-4">
         <h2 className="font-myeongjo font-extrabold">최근 결제</h2>
@@ -532,8 +535,19 @@ function SalesTable({ period, stats, paid, refunds }: { period: Period; stats: R
 
 // Members: how many, the questions they hold, a search (회원 번호, 별명, 이메일) with the one found in full, and a
 // fix for one (an order onto their account, questions).
-async function MembersSection({ find }: { find: string }) {
+async function MembersSection({ find, orders }: { find: string; orders: Order[] }) {
   const members = await allMembers().catch(() => []);
+  // What each member paid for (not the owner's tests, not refunded), from the orders on their account.
+  const byId = new Map(orders.map((o) => [o.id, o]));
+  const bought = (m: Member) => m.orders.flatMap((id) => byId.get(id) ?? []).filter((o) => o.status === "paid" && !o.test && !o.gift);
+  const spent = (m: Member) => bought(m).reduce((a, o) => a + o.amount, 0);
+  const payers = members.filter((m) => bought(m).length > 0);
+  const tally = (vals: string[]) =>
+    Object.entries(vals.reduce<Record<string, number>>((a, v) => ((a[v] = (a[v] ?? 0) + 1), a), {}))
+      .sort((a, b) => b[1] - a[1])
+      .map(([k, n]) => `${k} ${n}`)
+      .join(" · ");
+  const srcShort = (m: Member) => (m.src ? SOURCE_LABEL[m.src].split(" ")[0] : "");
   const held = members.reduce((a, m) => a + m.credits, 0);
   const byVia = (["kakao", "naver", "google"] as const).map((v) => `${VIA_LABEL[v]} ${members.filter((m) => viaOf(m.id) === v).length}`).join(" · ");
   // "K-123456" as the member reads it out, or any part of the id, nickname or email.
@@ -557,6 +571,19 @@ async function MembersSection({ find }: { find: string }) {
       <p className="mt-0.5 text-[11px] text-ink-soft">
         {byVia} · 소식 받기 동의 {members.filter((m) => m.news?.on).length}명 (이메일 있음 {members.filter((m) => m.news?.on && m.email).length})
       </p>
+      <dl className="mt-1.5 grid grid-cols-[4.5rem_1fr] gap-x-2 gap-y-0.5 rounded-lg bg-white/40 px-2.5 py-2 text-[11.5px]">
+        <dt className="font-bold">결제</dt>
+        <dd>
+          결제한 회원 {payers.length}명 · 두 번 이상 {payers.filter((m) => bought(m).length > 1).length}명 · 회원 결제 합{" "}
+          {payers.reduce((a, m) => a + spent(m), 0).toLocaleString("ko-KR")}원
+        </dd>
+        <dt className="font-bold">들어온 길</dt>
+        <dd>{tally(members.map((m) => (m.src ? SOURCE_LABEL[m.src] : "기록 전")))}</dd>
+        <dt className="font-bold">성별</dt>
+        <dd>{tally(members.map((m) => (m.gender === "m" ? "남" : m.gender === "f" ? "여" : "모름")))}</dd>
+        <dt className="font-bold">연령대</dt>
+        <dd>{tally(members.map((m) => m.age ?? "모름"))}</dd>
+      </dl>
       <form className="mt-2 flex gap-1.5 text-[12px]">
         <input name="mq" defaultValue={find} placeholder="회원 번호(K-123456) · 별명 · 이메일" className="min-w-0 flex-1 rounded-lg border border-ink/15 bg-white/60 px-2 py-1.5" />
         <button className="shrink-0 rounded-full bg-ink px-3 font-bold text-hanji">찾기</button>
@@ -578,6 +605,14 @@ async function MembersSection({ find }: { find: string }) {
           <p className="mt-1">
             남은 질문 <b>{one.credits}</b> · 사랑방 {one.rooms.length} · 가입 선물 {one.gift ? "받음" : "없음"} · 소식 {one.news ? `${one.news.on ? "동의" : "거부"} ${day(one.news.at)}` : "묻기 전"}
           </p>
+          <p className="mt-1">
+            들어온 길 <b>{one.src ? SOURCE_LABEL[one.src] : "기록 전"}</b> · {one.gender === "m" ? "남" : one.gender === "f" ? "여" : "성별 모름"} · {one.age ?? "연령대 모름"}
+          </p>
+          <p className="mt-1">
+            결제 <b>{bought(one).length}회 · {spent(one).toLocaleString("ko-KR")}원</b>
+            {bought(one).length > 0 && ` (${bought(one).map((o) => saleLabel(saleKey(o.product, o.set, o.req.y, o.paidAt ?? o.createdAt)) ?? o.product).join(", ")})`}
+          </p>
+          <Interest id={one.id} />
           <p className="mt-1 font-bold">질문권 내역</p>
           <ul className="text-[11.5px]">
             {[...one.log].reverse().slice(0, 20).map((l, i) => (
@@ -598,7 +633,8 @@ async function MembersSection({ find }: { find: string }) {
                   <span className="w-12 shrink-0 text-ink-soft">{day(m.createdAt).slice(5, 10)}</span>
                   <b className="min-w-0 flex-1 truncate">{m.nick}</b>
                   <span className="shrink-0 text-ink-soft">
-                    보고서 {m.orders.length} · 질문 {m.credits} · 방 {m.rooms.length}
+                    {srcShort(m) && `${srcShort(m)} · `}
+                    {spent(m) > 0 ? `${spent(m).toLocaleString("ko-KR")}원` : "결제 0"} · 질문 {m.credits} · 방 {m.rooms.length}
                   </span>
                   <span className="shrink-0 font-mono text-[10px] text-ink-soft">{memberNo(m.id)}</span>
                 </a>
@@ -616,6 +652,51 @@ async function MembersSection({ find }: { find: string }) {
           <button className="col-span-2 rounded-full bg-ink py-1.5 font-bold text-hanji">적용</button>
         </form>
       </details>
+    </section>
+  );
+}
+
+// What one member looked at most among the paid reports' pages (counted only while signed in).
+async function Interest({ id }: { id: string }) {
+  const counts = await memberViews(id, SALE_KEYS).catch(() => []);
+  const top = SALE_KEYS.map((k, i) => [k, counts[i] ?? 0] as const)
+    .filter(([, n]) => n > 0)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5);
+  return (
+    <p className="mt-1">
+      관심 (본 보고서 화면) {top.length ? top.map(([k, n]) => `${saleLabel(k) ?? k} ${n}`).join(" · ") : "아직 없음"}
+    </p>
+  );
+}
+
+// How the bought reports were liked (components/ReportFeedback.tsx), newest first; a review only with its tick.
+async function FeedbackSection() {
+  const list = await listFeedback().catch(() => []);
+  const up = list.filter((f) => f.up).length;
+  return (
+    <section className="doc-paper mt-4 px-4 py-4">
+      <h2 className="flex items-baseline justify-between font-myeongjo font-extrabold">
+        보고서 만족도
+        <span className="text-sm text-ink-soft">
+          👍 {up} · 👎 {list.length - up} · 후기 동의 {list.filter((f) => f.share).length}
+        </span>
+      </h2>
+      <p className="mt-0.5 text-[11px] text-ink-soft">결제한 보고서 맨 아래에서 받아요. 후기로 쓸 수 있는 건 &lsquo;후기 동의&rsquo; 표시가 있는 것만이에요 (이름 없이).</p>
+      {list.length === 0 ? (
+        <p className="mt-2 text-[12px] text-ink-soft">아직 없어요.</p>
+      ) : (
+        <ul className="mt-2 flex max-h-72 flex-col divide-y divide-seal/10 overflow-y-auto text-[12px]">
+          {list.map((f) => (
+            <li key={`${f.order}:${f.product}`} className="py-1.5">
+              <span className="text-ink-soft">{day(f.at).slice(5)}</span> {f.up ? "👍" : "👎"} <b>{productById(f.product)?.title ?? f.product}</b>
+              {f.share && <span className="ml-1 rounded bg-gold/20 px-1 text-[10.5px] font-bold">후기 동의</span>}
+              {f.member && <span className="ml-1 font-mono text-[10px] text-ink-soft">{memberNo(f.member)}</span>}
+              {f.text && <span className="block text-ink-soft">{f.text}</span>}
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
 }
