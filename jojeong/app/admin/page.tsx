@@ -555,13 +555,17 @@ async function MembersSection({ find, orders }: { find: string; orders: Order[] 
   const byVia = (["kakao", "naver", "google"] as const).map((v) => `${VIA_LABEL[v]} ${members.filter((m) => viaOf(m.id) === v).length}`).join(" · ");
   // "K-123456" as the member reads it out, or any part of the id, nickname or email.
   const needle = find.trim().toLowerCase().replace(/^([kng])-/, "$1");
-  const found = needle
+  // ":channel": the members who added the KakaoTalk channel (and had its question).
+  const found =
+    needle === ":channel"
+      ? [...members].reverse().filter((m) => m.channel)
+      : needle
     ? members.filter((m) => {
         const no = memberNo(m.id).toLowerCase().replace("-", "");
         return no === needle || m.id.toLowerCase().includes(needle) || m.nick.toLowerCase().includes(needle) || (m.email ?? "").toLowerCase().includes(needle);
       })
     : [...members].reverse();
-  const one = needle && found.length === 1 ? found[0] : null;
+  const one = needle && needle !== ":channel" && found.length === 1 ? found[0] : null;
   const day = (t: number) => new Date(t + 9 * 3600000).toISOString().slice(0, 16).replace("T", " ");
   return (
     <section className="doc-paper mt-4 px-4 py-4">
@@ -572,7 +576,11 @@ async function MembersSection({ find, orders }: { find: string; orders: Order[] 
         </span>
       </h2>
       <p className="mt-0.5 text-[11px] text-ink-soft">
-        {byVia} · 소식 받기 동의 {members.filter((m) => m.news?.on).length}명 (이메일 있음 {members.filter((m) => m.news?.on && m.email).length})
+        {byVia} · 채널 추가 {members.filter((m) => m.channel).length}명 (
+        <a href="/admin?mq=%3Achannel" className="underline">
+          명단
+        </a>
+        ) · 소식 받기 동의 {members.filter((m) => m.news?.on).length}명 (이메일 있음 {members.filter((m) => m.news?.on && m.email).length})
       </p>
       <dl className="mt-1.5 grid grid-cols-[4.5rem_1fr] gap-x-2 gap-y-0.5 rounded-lg bg-white/40 px-2.5 py-2 text-[11.5px]">
         <dt className="font-bold">결제</dt>
@@ -606,7 +614,7 @@ async function MembersSection({ find, orders }: { find: string; orders: Order[] 
             {one.email ?? "이메일 없음"} · <span className="font-mono text-[10.5px]">{one.id}</span>
           </p>
           <p className="mt-1">
-            남은 질문 <b>{one.credits}</b> · 사랑방 {one.rooms.length} · 가입 선물 {one.gift ? "받음" : "없음"} · 소식 {one.news ? `${one.news.on ? "동의" : "거부"} ${day(one.news.at)}` : "묻기 전"}
+            남은 질문 <b>{one.credits}</b> · 사랑방 {one.rooms.length} · 가입 선물 {one.gift ? "받음" : "없음"} · 채널 {one.channel ? "추가 ✔" : "아직"} · 소식 {one.news ? `${one.news.on ? "동의" : "거부"} ${day(one.news.at)}` : "묻기 전"}
           </p>
           <p className="mt-1">
             들어온 길 <b>{one.src ? SOURCE_LABEL[one.src] : "기록 전"}</b> · {one.gender === "m" ? "남" : one.gender === "f" ? "여" : "성별 모름"} · {one.age ?? "연령대 모름"}
@@ -634,7 +642,10 @@ async function MembersSection({ find, orders }: { find: string; orders: Order[] 
               <li key={m.id}>
                 <a href={`/admin?mq=${encodeURIComponent(m.id)}`} className="flex items-center gap-2 py-1.5">
                   <span className="w-12 shrink-0 text-ink-soft">{day(m.createdAt).slice(5, 10)}</span>
-                  <b className="min-w-0 flex-1 truncate">{m.nick}</b>
+                  <b className="min-w-0 flex-1 truncate">
+                    {m.nick}
+                    {m.channel && <span className="ml-1 text-[10px] text-[#9a7424]">채널</span>}
+                  </b>
                   <span className="shrink-0 text-ink-soft">
                     {srcShort(m) && `${srcShort(m)} · `}
                     {spent(m) > 0 ? `${spent(m).toLocaleString("ko-KR")}원` : "결제 0"} · 질문 {m.credits} · 방 {m.rooms.length}
