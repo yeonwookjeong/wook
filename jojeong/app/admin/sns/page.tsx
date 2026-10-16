@@ -4,6 +4,9 @@ import { redirect } from "next/navigation";
 import { isAdmin } from "@/lib/admin";
 import { Card } from "../cards/Card";
 import CardSaver from "./CardSaver";
+import { Solar } from "lunar-javascript";
+import { jiaziNo } from "@/lib/cards";
+import { BRANCHES, BRANCHES_KO, STEMS, STEMS_KO } from "@/lib/saju";
 
 export const metadata: Metadata = { title: "SNS 카드", robots: { index: false } };
 
@@ -20,7 +23,26 @@ function sets(): { name: string; note?: string; list: string[]; kind: "card" | "
   return [
     { name: "정식 오픈", note: "2장째에 가오픈 동안의 실제 횟수가 들어가요 (100번 이상일 때)", list: ["c=open-cover", "c=open-thanks", "c=open-new", "c=cta&who=saju"], kind: "card" },
     { name: `${m}월 60일주 랭킹 릴스`, note: "절기가 바뀌는 날 기준의 달", list: [`c=rank-reel&y=${y}&m=${m}`], kind: "reel" },
+    ...dogam(),
   ];
+}
+
+// The 60일주 도감 carousel for today and the next six days: each day's own pillar (표지 · 풀이 · 끝장), so the
+// owner saves that day's three slides and posts them without asking for them.
+function dogam() {
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(Date.now() + 9 * 3600000 + i * 86400000);
+    const l = Solar.fromYmd(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate()).getLunar();
+    const s = (STEMS as readonly string[]).indexOf(l.getDayGan());
+    const b = (BRANCHES as readonly string[]).indexOf(l.getDayZhi());
+    const day = `${d.getUTCMonth() + 1}/${d.getUTCDate()} (${"일월화수목금토"[d.getUTCDay()]})`;
+    return {
+      name: `${i === 0 ? "오늘 · " : ""}${day} 60일주 도감 No.${jiaziNo(s, b)} · ${STEMS_KO[s]}${BRANCHES_KO[b]}일주`,
+      note: i === 0 ? "그날 아침 스레드 도감 글과 같은 일주예요. 세 장을 저장해 인스타 캐러셀로" : undefined,
+      list: [`c=ilju-cover&s=${s}&b=${b}`, `c=ilju&s=${s}&b=${b}`, "c=cta&who=saju"],
+      kind: "card" as const,
+    };
+  });
 }
 
 function Slides({ name, list, kind }: { name: string; list: string[]; kind: "card" | "reel" }) {
