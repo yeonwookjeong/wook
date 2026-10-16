@@ -16,7 +16,7 @@ import { threadsPosts } from "@/lib/threads";
 import GiftForm from "./GiftForm";
 import SignInForm from "./SignInForm";
 import { isPreview, newYearOf, thisYear } from "@/lib/yeonun";
-import { ASK_FROM, ASK_FROM_LABEL, inPeriods, PERIODS, readStats, type Period } from "@/lib/stats";
+import { ASK_FROM, ASK_FROM_LABEL, CH_FROM, CH_FROM_LABEL, inPeriods, PERIODS, readStats, type Period } from "@/lib/stats";
 import { SHARE_FROM, STEP_FROM, STEP_LABEL } from "@/lib/nextStep";
 import { COLUMNS, publishedColumns, titleLines } from "@/lib/columns";
 import { SOURCE_LABEL, SOURCES } from "@/lib/source";
@@ -67,7 +67,8 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   const open = inquiries.filter((q) => !q.done);
   const when = (t: number) => new Date(t + 9 * 3600000).toISOString().slice(5, 16).replace("T", " ");
   const stats = await readStats([
-    ...["uv", "pv", "reading", "king", "join", "appoint", "share_court", "share_result", "save_image", "own_court", "to_saju", "ask_pop", "to_ask"],
+    ...["uv", "pv", "reading", "king", "join", "appoint", "share_court", "share_result", "save_image", "own_court", "to_saju", "ask_pop", "to_ask", "to_channel"],
+    ...CH_FROM.map((f) => `ch:${f}`),
     ...ASK_FROM.map((f) => `ask:${f}`),
     ...STEP_FROM.map((f) => `to:${f}`),
     ...SHARE_FROM.flatMap((f) => [`sh:${f}`, `sv:${f}`]),
@@ -330,6 +331,8 @@ const ROWS: { key: string; label: string; group?: string }[] = [
   { key: "ask_pop", label: "오픈 안내 팝업이 뜬 수", group: "정 훈도에게 묻기" },
   { key: "to_ask", label: "묻기로 이동 (전체)" },
   ...ASK_FROM.map((f) => ({ key: `ask:${f}`, label: `　└ ${ASK_FROM_LABEL[f]}` })),
+  { key: "to_channel", label: "카카오톡 채널 추가 누름 (전체)", group: "카카오톡 채널" },
+  ...CH_FROM.map((f) => ({ key: `ch:${f}`, label: `　└ ${CH_FROM_LABEL[f]}` })),
   { key: "sl:reading", label: "친구가 보낸 링크로 도착: 무료 사주 분석" },
   { key: "sl:sinbun", label: "친구가 보낸 링크로 도착: 조선 신분 감정" },
   { key: "reading", label: "무료 사주 분석" },
