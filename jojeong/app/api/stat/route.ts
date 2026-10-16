@@ -5,7 +5,7 @@ import { isStepFrom } from "@/lib/nextStep";
 import { isSource } from "@/lib/source";
 import { currentMemberId } from "@/lib/members";
 import { noteMemberView } from "@/lib/store";
-import { ASK_FROM, CLIENT_EVENTS, track, trackVisit, type AskFrom, type ClientEvent } from "@/lib/stats";
+import { ASK_FROM, CH_FROM, CLIENT_EVENTS, track, trackVisit, type AskFrom, type ChFrom, type ClientEvent } from "@/lib/stats";
 
 // POST { v: { day, week, month, ever } } for a page view, or { e } for a button a page reports (lib/stats.ts),
 // or `view:<sale>` for a paid report's page (lib/sales.ts), or `cv:<slug>` for a column read (lib/columns.ts).
@@ -26,6 +26,7 @@ export async function POST(request: Request) {
     if (body.e === "share_result" && isStepFrom(body.from)) await track(`sh:${body.from}`);
     if (body.e === "save_image" && isStepFrom(body.from)) await track(`sv:${body.from}`);
     if (body.e === "to_ask" && ASK_FROM.includes(body.from as AskFrom)) await track(`ask:${body.from}`);
+    if (body.e === "to_channel" && CH_FROM.includes(body.from as ChFrom)) await track(`ch:${body.from}`);
   } else if (typeof body.e === "string" && body.e.startsWith("view:") && saleLabel(body.e.slice(5))) {
     await track(body.e as `view:${string}`);
     // A signed-in member's interest, for the owner's member card.
