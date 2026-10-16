@@ -51,7 +51,7 @@ export const KAKAO_CHANNEL = "_xjxfkFX";
 export const CHANNEL_GIFT = 1;
 // On once the Kakao app asks "카카오톡 채널 추가 상태 및 내역" (developers.kakao.com → 동의항목); before that, asking
 // for it at login would end on Kakao's error page.
-export const CHANNEL_GIFT_ON = false;
+export const CHANNEL_GIFT_ON = true;
 export const GIFT_COOKIE = "jj_gifted";
 // The way this browser last signed in, for the "최근에 이 방식으로" note on the login page.
 export const VIA_COOKIE = "jj_via";
