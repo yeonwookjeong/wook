@@ -3,6 +3,8 @@ import { columnBySlug } from "@/lib/columns";
 import { saleLabel } from "@/lib/sales";
 import { isStepFrom } from "@/lib/nextStep";
 import { isSource } from "@/lib/source";
+import { currentMemberId } from "@/lib/members";
+import { noteMemberView } from "@/lib/store";
 import { ASK_FROM, CLIENT_EVENTS, track, trackVisit, type AskFrom, type ClientEvent } from "@/lib/stats";
 
 // POST { v: { day, week, month, ever } } for a page view, or { e } for a button a page reports (lib/stats.ts),
@@ -26,6 +28,9 @@ export async function POST(request: Request) {
     if (body.e === "to_ask" && ASK_FROM.includes(body.from as AskFrom)) await track(`ask:${body.from}`);
   } else if (typeof body.e === "string" && body.e.startsWith("view:") && saleLabel(body.e.slice(5))) {
     await track(body.e as `view:${string}`);
+    // A signed-in member's interest, for the owner's member card.
+    const member = await currentMemberId();
+    if (member) await noteMemberView(member, body.e.slice(5));
   } else if (typeof body.e === "string" && body.e.startsWith("cv:") && columnBySlug(body.e.slice(3))) {
     await track(body.e as `cv:${string}`);
   }

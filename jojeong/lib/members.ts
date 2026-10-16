@@ -3,7 +3,9 @@ import { OPEN } from "./open";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 import { isPreview } from "./admin";
-import { countGiftToday, deleteAskRoom, deleteMemberRaw, getMemberRaw, giftGiven, memberIds, noteGiftGiven, noteMember, setMemberRaw } from "./store";
+import type { Source } from "./source";
+import { SALE_KEYS } from "./sales";
+import { clearMemberViews, countGiftToday, deleteAskRoom, deleteMemberRaw, getMemberRaw, giftGiven, memberIds, noteGiftGiven, noteMember, setMemberRaw } from "./store";
 
 // Members, by Kakao, Naver or Google login (app/login, app/api/auth/*): what a browser cannot keep alone — the
 // reports bought (so they open on any device) and the questions bought for 정 훈도에게 묻기. Only the account id, a
@@ -30,7 +32,14 @@ export type Member = {
   news?: { on: boolean; at: number };
   // Every change to the credits, newest last (kept short): why, how many, when.
   log: { at: number; d: number; why: string }[];
+  // The road this browser first came by (lib/source.ts), kept at joining (or the first sign-in after it was kept).
+  src?: Source;
+  // From Kakao, only when the member agreed to share them (선택 동의): "m" or "f", and the age band ("20~29").
+  gender?: "m" | "f";
+  age?: string;
 };
+// What Kakao may hand over at sign-in beyond the id and nickname, each only with the member's consent.
+export type SignInProfile = { channel?: boolean; gender?: "m" | "f"; age?: string; src?: Source };
 
 export const MEMBER_COOKIE = "jj_member";
 export const JOIN_GIFT = 1;
@@ -88,9 +97,11 @@ export async function saveMember(m: Member) {
 
 // The member signed in on this browser, if any.
 export async function currentMember(): Promise<Member | null> {
-  const id = idFromCookie((await cookies()).get(MEMBER_COOKIE)?.value);
+  const id = await currentMemberId();
   return id ? getMember(id) : null;
 }
+// Only the id, without reading the record (for counting what a member looks at).
+export const currentMemberId = async () => idFromCookie((await cookies()).get(MEMBER_COOKIE)?.value);
 
 const giftMark = (id: string) => createHmac("sha256", secret()).update(`gift:${id}`).digest("base64url");
 
@@ -130,6 +141,7 @@ export async function signInMember(
   nick: string,
   email: string | null,
   browser: { orders: string[]; gifted: boolean },
+  profile: SignInProfile = {},
 ): Promise<{ member: Member; joined: boolean; added: number; gifted: boolean }> {
   const id = `${VIA_PREFIX[via]}${accountId}`;
   let member = await getMember(id);
@@ -152,6 +164,12 @@ export async function signInMember(
     await noteMember(id);
   }
   if (email) member.email = email.slice(0, 120);
+  // The first road stays the first; gender and age follow what Kakao gives now (dropped when consent is taken back).
+  if (!member.src && profile.src) member.src = profile.src;
+  if (via === "kakao") {
+    member.gender = profile.gender;
+    member.age = profile.age;
+  }
   const before = member.orders.length;
   member.orders = [...new Set([...member.orders, ...browser.orders])].slice(0, 200);
   await saveMember(member);
@@ -197,6 +215,7 @@ export async function deleteMember(id: string, unlinkKakao = true) {
   // Members from before the mark was kept: noted now, so joining again brings no second gift.
   if (m?.gift) await noteGiftGiven(giftMark(id));
   await deleteMemberRaw(id);
+  await clearMemberViews(id, SALE_KEYS);
   // Naver and Google links can only be cut with the person's own token, which is not kept: they cut it from their
   // account settings (the leave page says so).
   const admin = process.env.KAKAO_ADMIN_KEY?.trim();
