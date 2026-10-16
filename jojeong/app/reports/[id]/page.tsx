@@ -1,4 +1,4 @@
-import KeepNote from "@/components/KeepNote";
+import KeepNote, { BonusTop } from "@/components/KeepNote";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -1091,6 +1091,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
             ← 전체 보고서
           </Link>
         </nav>
+        {paid && <BonusTop order={paid} back={`/reports/${product.id}?order=${paid.id}`} />}
         <OpenReport
           product={product}
           courtId={courtId}
