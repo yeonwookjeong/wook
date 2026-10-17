@@ -64,10 +64,10 @@ export const LIST_REELS: Record<string, ListReel> = {
     foot: "내 태어난 달 아래 글자는 프로필 링크에서 확인",
   },
   avoid: {
-    kicker: "태어난 날 아래 글자 · 배우자 자리",
+    kicker: "태어난 날 아래 글자",
     title: "그대가 만나면\n[고생하는 사람]",
     titleSize: 76,
-    sub: "내 배우자 자리 글자가 이것이면 → 이런 상대를 만날 때 고생하옵니다",
+    sub: "내 태어난 날 아래 글자가 이것이면 → 이런 상대를 만날 때 고생하옵니다",
     brushLabels: true,
     labelWidth: 150,
     fs: 32,
@@ -86,7 +86,7 @@ export const LIST_REELS: Record<string, ListReel> = {
       ["亥", "마음보다 계산이 먼저인 사람"],
     ],
     end: "어디서 부딪힐지 알면 덜 다치옵니다",
-    foot: "내 배우자 자리 글자는 프로필 링크에서 확인",
+    foot: "내 태어난 날 아래 글자는 프로필 링크에서 확인",
   },
   talent: {
     kicker: "태어난 시 아래 글자",
@@ -228,7 +228,7 @@ export const LIST_REELS: Record<string, ListReel> = {
     foot: "내 태어난 날 아래 글자는 프로필 링크에서 확인",
   },
   sleep: {
-    kicker: "태어난 날 아래 글자 · 배우자 자리",
+    kicker: "태어난 날 아래 글자",
     title: "오늘 밤 그대가\n[잠 못 드는 이유]",
     titleSize: 76,
     brushLabels: true,
@@ -331,7 +331,7 @@ export const LIST_REELS: Record<string, ListReel> = {
     foot: "내 여덟 칸은 프로필 링크에서 생일만 넣으면",
   },
   angry: {
-    kicker: "태어난 날 아래 글자 · 배우자 자리",
+    kicker: "태어난 날 아래 글자",
     title: "그대가 [화났다는 신호]",
     titleSize: 76,
     brushLabels: true,
