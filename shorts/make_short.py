@@ -37,23 +37,27 @@ OUT = HERE / "out"
 
 # 화면 배치 (1080x1920)
 W, H = 1080, 1920
-TOP = 430               # 상단 제목 띠 높이
-VH = 1080               # 가운데 영상 칸 높이 (TOP ~ TOP+VH)
-SUB_Y = TOP + VH - 200  # 자막 세로 위치(영상 칸 아래쪽)
+# 기본 배치는 celeb_pick 계정 기존 쇼츠를 실측한 값
+TOP = 504               # 상단 제목 영역 높이
+VH = 912                # 가운데 영상 칸 높이 (TOP ~ TOP+VH)
+SUB_Y = TOP + VH - 150  # 자막 세로 위치(영상 칸 아래쪽)
 FPS = 30
 CHUNK_CHARS = 13        # 자막 한 덩어리 최대 글자 수(띄어쓰기 포함)
 
 THEMES = {
-    "white": {"bg": (255, 255, 255), "t1": (232, 23, 58), "t2": (17, 17, 17), "small": (110, 110, 110)},
-    "black": {"bg": (0, 0, 0), "t1": (255, 59, 92), "t2": (255, 255, 255), "small": (170, 170, 170)},
+    # celeb_pick 기존 스타일: 검정 배경, 흰 굵은 기울임 제목, [[이름]] 초록 강조, 하단 출처·링크
+    "celebpick": {"bg": (0, 0, 0), "title": (255, 255, 255), "hi": (0, 214, 0),
+                  "credit": (150, 150, 150), "text": (255, 255, 255)},
+    "white": {"bg": (255, 255, 255), "title": (17, 17, 17), "hi": (232, 23, 58),
+              "credit": (110, 110, 110), "text": (17, 17, 17)},
 }
 SUB_STYLES = {
     # 셀럽 대사: 흰 글씨 + 굵은 검정 테두리
-    "celeb": {"fill": (255, 255, 255), "stroke": (0, 0, 0), "box": None, "size": 84},
+    "celeb": {"fill": (255, 255, 255), "stroke": (0, 0, 0), "box": None, "size": 72},
     # TTS: 노란 박스 + 검정 글씨 (원본 대사와 확실히 구분)
-    "tts": {"fill": (17, 17, 17), "stroke": None, "box": (255, 225, 77), "size": 78},
+    "tts": {"fill": (17, 17, 17), "stroke": None, "box": (255, 225, 77), "size": 66},
     # 강조용: 노랑 글씨
-    "yellow": {"fill": (255, 230, 0), "stroke": (0, 0, 0), "box": None, "size": 84},
+    "yellow": {"fill": (255, 230, 0), "stroke": (0, 0, 0), "box": None, "size": 72},
 }
 # TTS 음질 보정: 무음 제거 → 저음 컷 → 선명도 → 컴프레서 → 치찰음 → 쇼츠 표준 음량
 TTS_POLISH = ("silenceremove=start_periods=1:start_threshold=-50dB:stop_periods=-1:"
@@ -424,13 +428,33 @@ def make_tts(text: str, recipe: dict, ff: str) -> Path:
 
 # ---------------------------------------------------------------- 글자 그림
 
-_FONT = None
+_FONTS = None
 
 
-def _pick_font():
-    """굵은 한글 폰트를 찾는다. shorts/fonts 폴더에 넣은 폰트가 있으면 그걸 우선 사용."""
-    cands = sorted((HERE / "fonts").glob("*.[ot]t[fc]")) if (HERE / "fonts").exists() else []
-    cands += [Path(p) for p in (
+def _faces(path: Path):
+    """폰트 파일 안의 (굵은 면, 보통 면) 번호."""
+    rank = ["Heavy", "Black", "ExtraBold", "Bold", "SemiBold"]
+    bold, regular = (len(rank), 0), 0
+    for idx in range(20 if path.suffix.lower() == ".ttc" else 1):
+        try:
+            style = ImageFont.truetype(str(path), 20, index=idx).getname()[1].replace(" ", "").lower()
+        except OSError:
+            break
+        if style in ("regular", "medium", "book"):
+            regular = idx
+        for r, word in enumerate(rank):
+            if word.lower() in style and r < bold[0]:
+                bold = (r, idx)
+    return bold[1], regular
+
+
+def _pick_fonts():
+    """(본문 굵게, 본문 보통, 제목) 폰트. shorts/fonts 폴더의 폰트를 우선 사용.
+    제목 전용은 fonts/title.ttf(또는 .otf)로 넣으면 됩니다."""
+    fdir = HERE / "fonts"
+    mine = sorted(fdir.glob("*.[ot]t[fc]")) if fdir.exists() else []
+    title = next((p for p in mine if p.stem.lower() == "title"), None)
+    cands = [p for p in mine if p.stem.lower() != "title"] + [Path(p) for p in (
         "/System/Library/Fonts/AppleSDGothicNeo.ttc",
         "/System/Library/Fonts/Supplemental/AppleGothic.ttf",
         "C:/Windows/Fonts/malgunbd.ttf",
@@ -439,34 +463,26 @@ def _pick_font():
         "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc",
         "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",
     )]
-    rank = ["Heavy", "Black", "ExtraBold", "Bold", "SemiBold"]
     for path in cands:
-        if not path.exists():
-            continue
-        best = (len(rank), 0)
-        for idx in range(20 if path.suffix.lower() == ".ttc" else 1):
-            try:
-                style = ImageFont.truetype(str(path), 20, index=idx).getname()[1]
-            except OSError:
-                break
-            for r, word in enumerate(rank):
-                if word.lower() in style.lower().replace(" ", "") and r < best[0]:
-                    best = (r, idx)
-        return str(path), best[1]
+        if path.exists():
+            b, r = _faces(path)
+            body_b, body_r = (str(path), b), (str(path), r)
+            return body_b, body_r, ((str(title), 0) if title else body_b)
     die("한글 폰트를 찾지 못했어요. shorts/fonts 폴더에 .ttf/.otf 폰트를 하나 넣어주세요.")
 
 
-def font(size: int):
-    global _FONT
-    if _FONT is None:
-        _FONT = _pick_font()
-    return ImageFont.truetype(_FONT[0], size, index=_FONT[1])
+def font(size: int, kind: str = "bold"):
+    global _FONTS
+    if _FONTS is None:
+        _FONTS = _pick_fonts()
+    path, idx = _FONTS[{"bold": 0, "regular": 1, "title": 2}[kind]]
+    return ImageFont.truetype(path, size, index=idx)
 
 
-def fit(draw, text: str, max_w: int, size: int, min_size: int = 36):
-    while size > min_size and draw.textlength(text, font=font(size)) > max_w:
+def fit(draw, text: str, max_w: int, size: int, min_size: int = 36, kind: str = "bold"):
+    while size > min_size and draw.textlength(text, font=font(size, kind)) > max_w:
         size -= 2
-    return font(size)
+    return font(size, kind)
 
 
 def centered(draw, y: int, text: str, f, fill, stroke=None, stroke_w=0):
@@ -474,23 +490,53 @@ def centered(draw, y: int, text: str, f, fill, stroke=None, stroke_w=0):
     draw.text(((W - w) / 2, y), text, font=f, fill=fill, stroke_width=stroke_w, stroke_fill=stroke)
 
 
+def title_line(img, text: str, cy: int, th: dict, size: int, italic: float):
+    """제목 한 줄. [[이름]]은 강조색. italic>0이면 기울임(기존 계정 제목처럼)."""
+    parts = [(p[2:-2], th["hi"]) if p.startswith("[[") else (p, th["title"])
+             for p in re.split(r"(\[\[.*?\]\])", text) if p]
+    plain = "".join(t for t, _ in parts)
+    probe = ImageDraw.Draw(img)
+    while size > 50 and probe.textlength(plain, font=font(size, "title")) > W - 90:
+        size -= 2
+    f = font(size, "title")
+    lh = int(size * 1.5)
+    layer = Image.new("RGBA", (W, lh), (0, 0, 0, 0))
+    d = ImageDraw.Draw(layer)
+    x = (W - d.textlength(plain, font=f)) / 2
+    for t, color in parts:
+        d.text((x, lh / 2), t, font=f, fill=color, anchor="lm")
+        x += d.textlength(t, font=f)
+    if italic:
+        layer = layer.transform(layer.size, Image.AFFINE, (1, italic, -italic * lh / 2, 0, 1, 0),
+                                resample=Image.BICUBIC)
+    img.alpha_composite(layer, (0, int(cy - lh / 2)))
+
+
 def layout_png(recipe: dict, path: Path):
-    th = THEMES.get(recipe.get("theme", "white"), THEMES["white"])
+    th = THEMES.get(recipe.get("theme", "celebpick"), THEMES["celebpick"])
     img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
     d.rectangle([0, 0, W, TOP], fill=th["bg"])
     d.rectangle([0, TOP + VH, W, H], fill=th["bg"])
-    f1 = fit(d, recipe["title1"], W - 80, 96)
-    f2 = fit(d, recipe["title2"], W - 80, 96)
-    centered(d, 100, recipe["title1"], f1, th["t1"])
-    centered(d, 100 + f1.size + 36, recipe["title2"], f2, th["t2"])
-    y = TOP + VH + 60
-    if recipe.get("link_text"):
-        f = fit(d, recipe["link_text"], W - 120, 58)
-        centered(d, y, recipe["link_text"], f, th["t2"])
-        y += f.size + 30
+    italic = float(recipe.get("title_italic", 0.2))
+    if recipe.get("title2"):
+        title_line(img, recipe["title1"], 301, th, 104, italic)
+        title_line(img, recipe["title2"], 420, th, 104, italic)
+    else:
+        title_line(img, recipe["title1"], 360, th, 104, italic)
+    # 하단: 출처(회색) → (선택) DM 안내 → 프로필 링크
+    y = TOP + VH + 52
     if recipe.get("credit"):
-        centered(d, y, recipe["credit"], fit(d, recipe["credit"], W - 120, 36), th["small"])
+        d.text((W / 2, y), recipe["credit"], font=fit(d, recipe["credit"], W - 120, 30, kind="regular"),
+               fill=th["credit"], anchor="mm")
+        y += 46
+    if recipe.get("dm_text"):
+        d.text((W / 2, y), recipe["dm_text"], font=fit(d, recipe["dm_text"], W - 100, 34, kind="regular"),
+               fill=th["text"], anchor="mm")
+        y += 56
+    if recipe.get("link_text"):
+        d.text((W / 2, y), recipe["link_text"], font=fit(d, recipe["link_text"], W - 120, 38),
+               fill=th["text"], anchor="mm")
     img.save(path)
 
 
@@ -659,7 +705,7 @@ def main():
         subs, channel = Subs(lines, words), ""
     else:
         src, subs, channel = fetch_source(recipe["source"], ff)
-    recipe.setdefault("credit", f"출처: 유튜브 {channel}" if channel else "")
+    recipe.setdefault("credit", f"출처 : {channel}" if channel else "")
     crop_bottom = float(recipe.get("src_crop_bottom", 0.2))
 
     plan = plan_parts(recipe, subs, ff, src, args.check)
@@ -690,7 +736,7 @@ def main():
             png = tmp / f"sub_{i}.png"
             sub_png(p["part"]["text"], p["part"].get("style", "tts"), png)
             overlays.append((png, 0, dur))
-            zoom = (1.18, 1.24)          # TTS: 확 당겨서 시선 집중
+            zoom = (1.12, 1.16)          # TTS: 확 당겨서 시선 집중
         else:
             mode = p["part"].get("sub", "auto")
             style = p["part"].get("style", "celeb")
@@ -703,7 +749,7 @@ def main():
                 png = tmp / f"sub_{i}.png"
                 sub_png(mode, style, png)
                 overlays.append((png, 0, dur))
-            zoom = (1.0, 1.07) if clip_no % 2 == 0 else (1.07, 1.0)  # 줌인/줌아웃 번갈아
+            zoom = (1.0, 1.04) if clip_no % 2 == 0 else (1.04, 1.0)  # 줌인/줌아웃 번갈아
             clip_no += 1
         seg = tmp / f"seg_{i:02d}.mp4"
         render(ff, src, p["start"], dur, layout, overlays, p.get("tts"), seg, zoom, crop_bottom)
