@@ -51,13 +51,29 @@ THEMES = {
     "white": {"bg": (255, 255, 255), "title": (17, 17, 17), "hi": (232, 23, 58),
               "credit": (110, 110, 110), "text": (17, 17, 17)},
 }
-SUB_STYLES = {
-    # 셀럽 대사: 흰 글씨 + 굵은 검정 테두리
-    "celeb": {"fill": (255, 255, 255), "stroke": (0, 0, 0), "box": None, "size": 72},
-    # TTS: 노란 박스 + 검정 글씨 (원본 대사와 확실히 구분)
-    "tts": {"fill": (17, 17, 17), "stroke": None, "box": (255, 225, 77), "size": 66},
-    # 강조용: 노랑 글씨
-    "yellow": {"fill": (255, 230, 0), "stroke": (0, 0, 0), "box": None, "size": 72},
+# 자막 디자인 세트: 레시피 "sub_theme"으로 고름. 각 세트는 셀럽 대사(celeb)와 TTS(tts) 모양을 짝으로 가짐.
+# 키: fill 글자색, stroke 테두리색, sw 테두리 두께, box 배경 박스(RGBA), shadow 그림자, size 글자 크기, tail 말풍선 꼬리
+SUB_THEMES = {
+    "clean": {   # 반투명 검정 바 + 흰 글씨 / TTS는 채널 초록 바
+        "celeb": {"fill": (255, 255, 255), "box": (0, 0, 0, 170), "size": 60},
+        "tts": {"fill": (0, 0, 0), "box": (0, 214, 0, 255), "size": 62},
+    },
+    "variety": {  # 예능 자막: 노란 굵은 글씨 + 두꺼운 테두리 + 그림자 / TTS는 빨간 박스
+        "celeb": {"fill": (255, 230, 0), "stroke": (0, 0, 0), "sw": 11, "shadow": True, "size": 74},
+        "tts": {"fill": (255, 255, 255), "box": (232, 23, 58, 255), "size": 64},
+    },
+    "bubble": {   # 말풍선: 흰 풍선 + 검정 글씨 / TTS는 검정 풍선 + 흰 글씨
+        "celeb": {"fill": (17, 17, 17), "box": (255, 255, 255, 245), "tail": True, "size": 58},
+        "tts": {"fill": (255, 255, 255), "box": (20, 20, 20, 240), "tail": True, "size": 58},
+    },
+    "minimal": {  # 흰 글씨 + 얇은 테두리 + 부드러운 그림자 / TTS는 초록 글씨
+        "celeb": {"fill": (255, 255, 255), "stroke": (0, 0, 0), "sw": 5, "shadow": True, "size": 62},
+        "tts": {"fill": (0, 230, 0), "stroke": (0, 0, 0), "sw": 6, "shadow": True, "size": 66},
+    },
+    "pop": {      # v2 기본: 흰 글씨 + 굵은 검정 테두리 / TTS 노란 박스
+        "celeb": {"fill": (255, 255, 255), "stroke": (0, 0, 0), "sw": 10, "size": 72},
+        "tts": {"fill": (17, 17, 17), "box": (255, 225, 77, 255), "size": 66},
+    },
 }
 # TTS 음질 보정: 무음 제거 → 저음 컷 → 선명도 → 컴프레서 → 치찰음 → 쇼츠 표준 음량
 TTS_POLISH = ("silenceremove=start_periods=1:start_threshold=-50dB:stop_periods=-1:"
@@ -544,34 +560,52 @@ def layout_png(recipe: dict, path: Path):
     img.save(path)
 
 
-def sub_png(text: str, style: str, path: Path):
-    st = SUB_STYLES.get(style, SUB_STYLES["celeb"])
+def sub_png(text: str, role: str, path: Path, theme: str = "clean"):
+    """자막 한 장(투명 PNG). role: celeb / tts"""
+    st = SUB_THEMES.get(theme, SUB_THEMES["clean"]).get(role) or SUB_THEMES["clean"]["celeb"]
     img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
-    max_w = W - 140
+    max_w = W - 160
+    size = st["size"]
     lines = [text]
-    f = fit(d, text, max_w, st["size"], 64)
+    f = fit(d, text, max_w, size, int(size * 0.85))
     if d.textlength(text, font=f) > max_w:  # 너무 길면 줄이기 대신 두 줄로 고르게 나눔
         words = text.split(" ")
         best = min(range(1, len(words)) or [1],
                    key=lambda k: max(d.textlength(" ".join(words[:k]), font=f),
                                      d.textlength(" ".join(words[k:]), font=f)))
         lines = [" ".join(words[:best]), " ".join(words[best:])]
-        f = font(st["size"])
-        while f.size > 48 and max(d.textlength(l, font=f) for l in lines) > max_w:
+        f = font(size)
+        while f.size > 40 and max(d.textlength(l, font=f) for l in lines) > max_w:
             f = font(f.size - 2)
-    lh = f.size + 22
+    lh = int(f.size * 1.32)
     y0 = SUB_Y - (len(lines) - 1) * lh
-    if st["box"]:
+    cy = [y0 + i * lh + f.size / 2 for i in range(len(lines))]
+    sw = st.get("sw", 0)
+
+    if st.get("box"):
         tw = max(d.textlength(l, font=f) for l in lines)
-        pad_x, pad_y = 34, 22
-        d.rounded_rectangle([(W - tw) / 2 - pad_x, y0 - pad_y, (W + tw) / 2 + pad_x,
-                             y0 + (len(lines) - 1) * lh + f.size + pad_y + 8], radius=26, fill=st["box"])
-    for i, line in enumerate(lines):
-        if st["box"]:
-            centered(d, y0 + i * lh, line, f, st["fill"])
-        else:
-            centered(d, y0 + i * lh, line, f, st["fill"], st["stroke"], 10)
+        px, py = int(f.size * 0.55), int(f.size * 0.38)
+        box = [(W - tw) / 2 - px, cy[0] - f.size / 2 - py, (W + tw) / 2 + px, cy[-1] + f.size / 2 + py]
+        layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+        ld = ImageDraw.Draw(layer)
+        ld.rounded_rectangle(box, radius=int(f.size * 0.45), fill=st["box"])
+        if st.get("tail"):  # 말풍선 꼬리
+            x0 = W / 2 - 40
+            ld.polygon([(x0, box[3] - 2), (x0 + 44, box[3] - 2), (x0 + 6, box[3] + 30)], fill=st["box"])
+        img.alpha_composite(layer)
+    if st.get("shadow"):
+        from PIL import ImageFilter
+        sh = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+        sd = ImageDraw.Draw(sh)
+        for c, line in zip(cy, lines):
+            sd.text((W / 2 + 5, c + 6), line, font=f, fill=(0, 0, 0, 170), anchor="mm",
+                    stroke_width=sw, stroke_fill=(0, 0, 0, 170))
+        img.alpha_composite(sh.filter(ImageFilter.GaussianBlur(6)))
+    d = ImageDraw.Draw(img)
+    for c, line in zip(cy, lines):
+        d.text((W / 2, c), line, font=f, fill=st["fill"], anchor="mm",
+               stroke_width=sw, stroke_fill=st.get("stroke"))
     img.save(path)
 
 
@@ -731,6 +765,7 @@ def main():
     layout = tmp / "layout.png"
     layout_png(recipe, layout)
 
+    sub_theme = recipe.get("sub_theme", "clean")
     seg_files, clip_no = [], 0
     for i, p in enumerate(plan, 1):
         print(f"   [{i}/{len(plan)}] 렌더링 중…")
@@ -738,20 +773,19 @@ def main():
         overlays = []
         if p["type"] == "tts":
             png = tmp / f"sub_{i}.png"
-            sub_png(p["part"]["text"], p["part"].get("style", "tts"), png)
+            sub_png(p["part"]["text"], "tts", png, sub_theme)
             overlays.append((png, 0, dur))
             zoom = (1.15, 1.22)          # TTS: 확 당겨서 시선 집중
         else:
             mode = p["part"].get("sub", "auto")
-            style = p["part"].get("style", "celeb")
             if mode == "auto":
                 for j, (s, e, text) in enumerate(subs.chunks(p["start"], p["end"])):
                     png = tmp / f"sub_{i}_{j}.png"
-                    sub_png(text, style, png)
+                    sub_png(text, "celeb", png, sub_theme)
                     overlays.append((png, s - p["start"], e - p["start"]))
             elif mode and mode != "none":
                 png = tmp / f"sub_{i}.png"
-                sub_png(mode, style, png)
+                sub_png(mode, "celeb", png, sub_theme)
                 overlays.append((png, 0, dur))
             zoom = (1.0, 1.08) if clip_no % 2 == 0 else (1.08, 1.0)  # 줌인/줌아웃 번갈아
             clip_no += 1
