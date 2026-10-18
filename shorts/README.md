@@ -52,3 +52,29 @@ python scan.py -f urls.txt --no-comments
 | JS 런타임 관련 경고 | 최신 yt-dlp는 유튜브 처리에 [deno](https://deno.com) 설치를 권장합니다. 경고만 나오고 결과가 나오면 무시해도 돼요 |
 | "한국어 자막이 없어요" | 자막 없는 영상입니다. 그래프 최고점과 댓글 위주로 보세요 |
 | 키워드 구간이 너무 많음 | `keywords.txt`에서 `매일`, `요즘`처럼 흔한 단어를 끕니다 |
+
+---
+
+# 쇼츠 자동 편집 (make_short.py)
+
+레시피(JSON) 한 장으로 **원본 클립 → TTS 질문 → 원본 클립** 쇼츠를 만듭니다. 상단 제목 2줄, 하단 링크 안내와 출처, 색깔 자막(셀럽 대사는 노랑, TTS는 보라)이 들어가고, TTS가 나올 때는 원본 소리가 작아집니다.
+
+```bash
+# 처음 한 번 설치
+python3 -m pip install -U "yt-dlp[default]" edge-tts pillow imageio-ffmpeg
+
+# 구간 시간만 미리 확인 (빠름)
+python3 make_short.py recipes/백진희_발뒤꿈치밤.json --check
+
+# 영상 만들기 → out/쇼츠_백진희_발뒤꿈치밤.mp4
+python3 make_short.py recipes/백진희_발뒤꿈치밤.json
+```
+
+## 레시피 쓰는 법
+- `title1`(빨강), `title2`(검정): 상단 제목 2줄
+- `link_text`: 하단 안내 문구 (프로필 링크 번호)
+- `parts`: 순서대로 이어 붙일 구간
+  - `{"type": "clip", "from": "자막 문구 또는 04:16", "to": "자막 문구 또는 04:25"}`
+  - `{"type": "tts", "text": "읽을 문장", "over": "이 장면 위에서 읽기(문구/시간, 생략하면 바로 앞 구간에 이어서)"}`
+- 문구는 스캐너 리포트의 자막에서 **몇 글자만 그대로 복사**하면 됩니다. 띄어쓰기와 문장부호는 무시하고 찾아요.
+- 폰트를 바꾸려면 `fonts` 폴더를 만들고 .ttf/.otf 파일을 넣으세요 (예: Pretendard Black).
