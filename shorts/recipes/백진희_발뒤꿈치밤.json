@@ -4,13 +4,15 @@
   "title2": "백진희가 3천원에 산 바나나 밤",
   "link_text": "제품 정보는 프로필 링크 46번",
   "theme": "white",
+  "src_crop_bottom": 0.2,
+  "gemini_voice": "Zephyr",
   "voice": "ko-KR-SunHiNeural",
   "rate": "+10%",
   "parts": [
     {"type": "clip", "from": "이거 저희 꿀템인데요", "to": "3,000원 좀 안 하는데"},
-    {"type": "tts",  "text": "3천 원짜리로 발뒤꿈치 관리를 한다고?", "over": "냄새 너무 좋지 않아요"},
+    {"type": "tts", "text": "3천 원짜리로 발뒤꿈치 관리를 한다고?", "over": "냄새 너무 좋지 않아요"},
     {"type": "clip", "from": "큐티클이나", "to": "발뒤꿈치에 바르면 되는데"},
     {"type": "clip", "from": "발에 바르면은", "to": "추천합니다"},
-    {"type": "tts",  "text": "제품 정보는 프로필 링크에 있어요"}
+    {"type": "tts", "text": "제품 정보는 프로필 링크에 있어요"}
   ]
 }

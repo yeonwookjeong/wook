@@ -43,3 +43,6 @@ yarn-error.*
 # shorts scanner output
 shorts/out/
 __pycache__/
+shorts/work/
+shorts/gemini_key.txt
+shorts/fonts/
