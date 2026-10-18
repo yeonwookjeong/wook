@@ -26,15 +26,15 @@ html,body{margin:0;background:var(--bg);color:var(--fg);font-family:'Noto Sans K
 #foot{position:absolute;left:60px;bottom:100px;font-size:26px;color:var(--muted);line-height:1.5}
 </style></head><body><div id="wrap">
 <div id="brand">나만아직<span>?</span></div>
-<div id="title"><span id="yr"></span>년 노래,<br>지금 <em>Top 10</em></div>
+<div id="title"><span id="yr"></span> 노래,<br>지금 <em>Top 10</em></div>
 <div id="sub">그때 N위 → 지금 N위 · 유튜브 공식 영상 조회수 7일 증가분</div>
 <div id="date"></div>
 <div id="chart"></div>
-<div id="foot">그때 = <span id="yr2"></span>년 연간 차트 순위 · 집계 대상 <span id="cnt"></span>곡<br>유튜브·유튜브 뮤직 재생수 기준 · 나만아직?</div>
+<div id="foot">그때 = <span id="yr2"></span> 차트 순위 · 집계 대상 <span id="cnt"></span>곡<br>유튜브·유튜브 뮤직 재생수 기준 · 나만아직?</div>
 </div>
 <script>
 let D=null;const ROW=108,SHOW=10;
-fetch('data.json').then(r=>r.json()).then(d=>{D=d;document.getElementById('yr').textContent=d.year;document.getElementById('yr2').textContent=d.year;document.getElementById('cnt').textContent=d.songs.length;build();window.READY=true});
+fetch('data.json').then(r=>r.json()).then(d=>{D=d;document.getElementById('yr').textContent=d.label||d.year;document.getElementById('yr2').textContent=d.label||d.year;document.getElementById('cnt').textContent=d.songs.length;build();window.READY=true});
 const fmt=n=>n>=1e4?(n/1e4).toFixed(n>=1e5?0:1)+'만':String(Math.round(n));
 function build(){const c=document.getElementById('chart');D.songs.forEach((s,i)=>{const r=document.createElement('div');r.className='row';r.id='r'+i;
 r.innerHTML=`<div class="rank"></div><div class="bar"></div><div class="label">${s.title}<small>${s.artist}</small></div><div class="meta"><span class="views"></span> · 그때 <b>${s.then}위</b><span class="d"></span></div>`;c.appendChild(r)})}

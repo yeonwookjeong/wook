@@ -1,20 +1,22 @@
 // 곡 → 유튜브 영상 ID 매핑 (하루 최대 MAX_SEARCHES_PER_RUN곡, 검색 1회 = 100유닛)
-// 사용법: node scripts/map-videos.js [연도]   예) node scripts/map-videos.js 2012
-// 결과: data/songs/<연도>.csv 의 mv_id / topic_id 채움, 애매한 건 data/mapping/review-<연도>.csv 에 후보 기록
+// 사용법: node scripts/map-videos.js            전체 미매핑 곡
+//         node scripts/map-videos.js 2005-10    특정 차트 목록의 곡만 먼저
 import fs from 'node:fs';
 import path from 'node:path';
-import { loadEnv, loadSongs, saveSongsFile, yt, DIR, toCsv } from './lib.js';
+import { loadEnv, loadSongs, saveSongs, loadList, yt, DIR, toCsv, today } from './lib.js';
 
 loadEnv();
 const MAX = Number(process.env.MAX_SEARCHES_PER_RUN || 95);
-const onlyYear = process.argv[2] ? Number(process.argv[2]) : null;
+const onlyList = process.argv[2] || null;
 
 const norm = s => s.toLowerCase().replace(/\(.*?\)|\[.*?\]|feat\..*$/g, '').replace(/[^\p{L}\p{N}]+/gu, '');
-const OFFICIAL_HINTS = /official|vevo|1thek|stone music|genie|kakao|sm ?town|hybe|jyp|yg ent|cube|starship|pledis|fnc|woollim|rbw|antenna|mystic|loen/i;
+const OFFICIAL_HINTS = /official|vevo|1thek|stone music|genie|kakao|sm ?town|hybe|jyp|yg ent|cube|starship|pledis|fnc|woollim|rbw|antenna|mystic|loen|mnet|kbs|mbc|sbs/i;
 
-const songs = loadSongs().filter(s => !onlyYear || s.year === onlyYear);
-const todo = songs.filter(s => !s.search_done && !(s.mv_id && s.topic_id));
-console.log(`대상 ${songs.length}곡 중 미매핑 ${todo.length}곡, 이번 실행 상한 ${MAX}곡`);
+const songs = loadSongs();
+let targets = songs;
+if (onlyList) { const ids = new Set(loadList(onlyList).map(r => r.song_id)); targets = songs.filter(s => ids.has(s.song_id)); }
+const todo = targets.filter(s => !s.search_done && !(s.mv_id && s.topic_id));
+console.log(`대상 ${targets.length}곡 중 미매핑 ${todo.length}곡, 이번 실행 상한 ${MAX}곡`);
 
 const review = [];
 let used = 0, quotaHit = false;
@@ -27,7 +29,7 @@ for (const s of todo) {
     items = r.items || [];
   } catch (e) {
     if (e.quota) { quotaHit = true; console.error('쿼터 소진. 내일 이어서 실행하면 됩니다.'); break; }
-    console.error(`[${s.year}] ${q}: ${e.message}`); continue;
+    console.error(`${q}: ${e.message}`); continue;
   }
   used++;
   const nt = norm(s.title), na = norm(s.artist);
@@ -38,37 +40,22 @@ for (const s of todo) {
     artistMatch: norm(it.snippet.channelTitle).includes(na) || norm(it.snippet.title).includes(na),
     official: OFFICIAL_HINTS.test(it.snippet.channelTitle) || /\bM\/?V\b|official|뮤직비디오|뮤비/i.test(it.snippet.title),
   }));
-  // Topic 오디오: 채널명이 "가수 - Topic" 이고 제목이 곡명과 맞는 것
   const topic = cands.find(c => c.isTopic && c.titleMatch && c.artistMatch) || cands.find(c => c.isTopic && c.titleMatch);
-  // 공식 MV: Topic 아니고, 제목 일치 + (공식 힌트 또는 가수 채널)
   const mv = cands.find(c => !c.isTopic && c.titleMatch && c.official && c.artistMatch)
           || cands.find(c => !c.isTopic && c.titleMatch && (c.official || c.artistMatch));
   if (topic && !s.topic_id) s.topic_id = topic.id;
   if (mv && !s.mv_id) s.mv_id = mv.id;
-  s.search_done = new Date().toISOString().slice(0, 10);
-  const status = `${s.mv_id ? 'MV' : '--'} ${s.topic_id ? 'Topic' : '-----'}`;
-  console.log(`[${s.year}] ${String(s.then_rank).padStart(3)}위 ${q}  → ${status}`);
+  s.search_done = today();
+  console.log(`${s.song_id} ${q}  → ${s.mv_id ? 'MV' : '--'} ${s.topic_id ? 'Topic' : '-----'}`);
   if (!s.mv_id || !s.topic_id) {
-    cands.slice(0, 5).forEach((c, i) => review.push({ year: s.year, then_rank: s.then_rank, title: s.title, artist: s.artist, missing: !s.mv_id && !s.topic_id ? 'both' : !s.mv_id ? 'mv' : 'topic', cand: i + 1, video_id: c.id, video_title: c.title, channel: c.channel, url: `https://youtu.be/${c.id}` }));
+    cands.slice(0, 5).forEach((c, i) => review.push({ song_id: s.song_id, title: s.title, artist: s.artist, missing: !s.mv_id && !s.topic_id ? 'both' : !s.mv_id ? 'mv' : 'topic', cand: i + 1, video_id: c.id, video_title: c.title, channel: c.channel, url: `https://youtu.be/${c.id}` }));
   }
 }
-
-// 파일별로 저장 (search_done, id 반영)
-const byFile = {};
-for (const s of loadSongs()) { (byFile[s._file] ||= []).push(s); }
-for (const s of songs) { const arr = byFile[s._file]; const i = arr.findIndex(r => r.year === s.year && r.then_rank === s.then_rank && r.title === s.title); if (i >= 0) arr[i] = s; }
-for (const [file, rows] of Object.entries(byFile)) saveSongsFile(file, rows);
-
+saveSongs(songs);
 if (review.length) {
   fs.mkdirSync(DIR.mapping, { recursive: true });
-  const years = [...new Set(review.map(r => r.year))];
-  for (const y of years) {
-    const p = path.join(DIR.mapping, `review-${y}.csv`);
-    const rows = review.filter(r => r.year === y);
-    const header = Object.keys(rows[0]);
-    const prev = fs.existsSync(p) ? fs.readFileSync(p, 'utf8') : toCsv([], header);
-    fs.writeFileSync(p, prev + toCsv(rows, header).split('\n').slice(1).join('\n'));
-    console.log(`수동 확인 필요 → ${path.relative(process.cwd(), p)} (${rows.length}행)`);
-  }
+  const p = path.join(DIR.mapping, `review-${today()}.csv`);
+  fs.writeFileSync(p, toCsv(review, Object.keys(review[0])));
+  console.log(`수동 확인 필요 → data/mapping/${path.basename(p)} (${review.length}행). 맞는 ID를 data/songs.csv에 넣으세요.`);
 }
 console.log(`검색 ${used}회 사용 (약 ${used * 100}유닛)${quotaHit ? ', 쿼터 소진으로 중단' : ''}`);

@@ -1,17 +1,17 @@
-// 공용 유틸: CSV 읽기/쓰기, 날짜, 유튜브 API 호출
+// 공용 유틸: CSV, 곡/차트 목록, 날짜, 유튜브 API
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const DIR = {
-  songs: path.join(ROOT, 'data/songs'),
+  lists: path.join(ROOT, 'data/lists'),        // 차트 목록: 2005-10.csv (월간), 2005.csv (연간)
   snapshots: path.join(ROOT, 'data/snapshots'),
   charts: path.join(ROOT, 'data/charts'),
   mapping: path.join(ROOT, 'data/mapping'),
 };
+export const SONGS_FILE = path.join(ROOT, 'data/songs.csv');   // 고유 곡 1줄씩 (영상 ID 포함)
 
-// .env 파일이 있으면 읽어서 process.env에 채움 (GitHub Actions에서는 Secrets가 대신 들어옴)
 export function loadEnv() {
   const p = path.join(ROOT, '.env');
   if (!fs.existsSync(p)) return;
@@ -36,6 +36,7 @@ export function parseCsv(text) {
     else if (c !== '\r') cell += c;
   }
   if (cell.length || row.length) { row.push(cell); rows.push(row); }
+  if (!rows.length) return [];
   const header = rows.shift().map(h => h.trim());
   return rows.filter(r => r.some(v => v.trim() !== '')).map(r => Object.fromEntries(header.map((h, k) => [h, (r[k] ?? '').trim()])));
 }
@@ -44,25 +45,36 @@ export function toCsv(rows, header) {
   return [header.join(','), ...rows.map(r => header.map(h => esc(r[h])).join(','))].join('\n') + '\n';
 }
 
-export const SONG_HEADER = ['year', 'then_rank', 'title', 'artist', 'mv_id', 'topic_id', 'search_done', 'note'];
+// ---------- 곡 키 ----------
+// 같은 곡을 여러 차트에서 한 곡으로 묶기 위한 키: 곡명+가수를 소문자, 공백/기호 제거
+export const songKey = (title, artist) => (title + '|' + artist).toLowerCase().replace(/\s+/g, '').replace(/[“”"'`’‘.,!?~\-_()\[\]…·:;]/g, '');
 
-// data/songs/*.csv 전부 읽기 (TEMPLATE 제외). 연도는 파일명이 아니라 year 컬럼 기준.
+// ---------- 곡 목록 ----------
+export const SONG_HEADER = ['song_id', 'title', 'artist', 'mv_id', 'topic_id', 'search_done', 'note'];
 export function loadSongs() {
-  if (!fs.existsSync(DIR.songs)) return [];
-  const files = fs.readdirSync(DIR.songs).filter(f => /^\d{4}\.csv$/.test(f)).sort();
-  const songs = [];
-  for (const f of files) {
-    for (const r of parseCsv(fs.readFileSync(path.join(DIR.songs, f), 'utf8'))) {
-      r.year = Number(r.year); r.then_rank = Number(r.then_rank); r._file = f;
-      if (!r.year || !r.title) continue;
-      songs.push(r);
-    }
-  }
-  return songs;
+  if (!fs.existsSync(SONGS_FILE)) return [];
+  return parseCsv(fs.readFileSync(SONGS_FILE, 'utf8')).filter(s => s.song_id);
 }
-export function saveSongsFile(file, rows) {
-  fs.writeFileSync(path.join(DIR.songs, file), toCsv(rows, SONG_HEADER), 'utf8');
+export function saveSongs(rows) {
+  fs.mkdirSync(path.dirname(SONGS_FILE), { recursive: true });
+  fs.writeFileSync(SONGS_FILE, toCsv(rows, SONG_HEADER), 'utf8');
 }
+
+// ---------- 차트 목록 (연간 2005.csv / 월간 2005-10.csv) ----------
+export const LIST_HEADER = ['rank', 'song_id', 'title', 'artist'];
+export function listNames() {
+  if (!fs.existsSync(DIR.lists)) return [];
+  return fs.readdirSync(DIR.lists).filter(f => /^\d{4}(-\d{2})?\.csv$/.test(f)).map(f => f.slice(0, -4)).sort();
+}
+export function loadList(name) {
+  return parseCsv(fs.readFileSync(path.join(DIR.lists, `${name}.csv`), 'utf8')).map(r => ({ ...r, rank: Number(r.rank) }));
+}
+export function saveList(name, rows) {
+  fs.mkdirSync(DIR.lists, { recursive: true });
+  fs.writeFileSync(path.join(DIR.lists, `${name}.csv`), toCsv(rows, LIST_HEADER), 'utf8');
+}
+// "2005-10" → "2005년 10월", "2005" → "2005년"
+export const listLabel = name => name.length === 7 ? `${name.slice(0, 4)}년 ${Number(name.slice(5))}월` : `${name}년`;
 
 // ---------- 날짜 ----------
 export const today = () => new Date().toISOString().slice(0, 10);
@@ -80,7 +92,7 @@ export async function yt(endpoint, params) {
     if (res.ok) return res.json();
     const body = await res.text();
     lastErr = new Error(`YouTube API ${res.status} ${endpoint}: ${body.slice(0, 300)}`);
-    if (res.status === 403 && /quota/i.test(body)) { lastErr.quota = true; throw lastErr; } // 쿼터 소진은 재시도 무의미
+    if (res.status === 403 && /quota/i.test(body)) { lastErr.quota = true; throw lastErr; }
     if (res.status < 500 && res.status !== 429) throw lastErr;
     await new Promise(r => setTimeout(r, 1500 * (attempt + 1)));
   }

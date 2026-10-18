@@ -5,6 +5,7 @@
   "description": "나만아직? — 과거 발매 가요를 현재 유튜브 재생수로 다시 줄 세우는 데이터 파이프라인",
   "engines": { "node": ">=20" },
   "scripts": {
+    "import": "node scripts/import-melon.js",
     "map": "node scripts/map-videos.js",
     "snapshot": "node scripts/snapshot.js",
     "rank": "node scripts/rank.js",
