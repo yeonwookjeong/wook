@@ -40,12 +40,16 @@ CONTEXT_AFTER = 8
 # 이 간격(초) 안에서 연달아 걸린 키워드는 한 구간으로 합침
 MERGE_GAP = 12
 
+# 제품을 진짜 소개할 때 나오는 말. 이 단어가 걸리면 점수 2배.
+STRONG = {"추천", "애정템", "최애", "꿀템", "필수템", "내돈내산", "인생템", "재구매", "브랜드", "제품", "쓰고있", "중독"}
+
 TIMESTAMP_RE = re.compile(r"\b(?:\d{1,2}:)?\d{1,2}:\d{2}\b")
 QUESTION_WORDS = ["어디", "제품", "정보", "브랜드", "이름", "뭐에요", "뭐예요", "뭔가요", "알려", "궁금", "링크"]
 
 
-def load_keywords(path: Path) -> list[str]:
-    """keywords.txt에서 키워드를 읽는다. '#'로 시작하는 줄과 빈 줄은 무시."""
+def load_keywords(path: Path) -> tuple[list[str], list[str]]:
+    """keywords.txt에서 (찾을 단어, 제외할 단어)를 읽는다.
+    '#' 뒤는 무시, '!'로 시작하는 단어는 제외 목록(예: !벌써 → '벌써요'의 '써요'를 무시)."""
     if not path.exists():
         sys.exit(f"키워드 파일이 없습니다: {path}")
     words = []
@@ -53,7 +57,10 @@ def load_keywords(path: Path) -> list[str]:
         line = line.split("#", 1)[0].strip()
         if line:
             words.extend(w.strip() for w in line.split(",") if w.strip())
-    return list(dict.fromkeys(words))  # 중복 제거, 순서 유지
+    words = list(dict.fromkeys(words))  # 중복 제거, 순서 유지
+    keep = [w for w in words if not w.startswith("!")]
+    excludes = [w[1:] for w in words if w.startswith("!") and len(w) > 1]
+    return keep, excludes
 
 
 def fmt_time(sec: float) -> str:
@@ -122,12 +129,15 @@ def parse_vtt(raw: str) -> list[tuple[float, str]]:
     return segs
 
 
-def find_hits(segs, keywords):
+def find_hits(segs, keywords, excludes=()):
     """키워드가 들어간 자막 조각을 찾아 가까운 것끼리 묶은 구간 목록을 만든다."""
     squashed_kw = [(k, squash(k)) for k in keywords]
+    squashed_ex = [squash(e) for e in excludes]
     raw_hits = []
     for t, text in segs:
         s = squash(text)
+        for ex in squashed_ex:
+            s = s.replace(ex, "|")
         found = [k for k, sk in squashed_kw if sk and sk in s]
         if found:
             raw_hits.append((t, found))
@@ -144,7 +154,12 @@ def find_hits(segs, keywords):
         lo, hi = g["start"] - CONTEXT_BEFORE, g["end"] + CONTEXT_AFTER
         g["text"] = " ".join(text for t, text in segs if lo <= t <= hi)
         g["start"] = max(0.0, g["start"] - 1)  # 링크는 1초 일찍 시작
+        g["score"] = sum(2 if k in STRONG else 1 for k in g["keywords"])
     return groups
+
+
+def stars(score: int) -> str:
+    return "⭐⭐⭐" if score >= 6 else "⭐⭐" if score >= 3 else "⭐"
 
 
 # ---------------------------------------------------------------- 그래프/댓글
@@ -179,7 +194,7 @@ def useful_comments(info: dict, keywords, limit: int = 10):
 
 # ---------------------------------------------------------------- 메인
 
-def scan(url: str, keywords, with_comments: bool):
+def scan(url: str, keywords, excludes, with_comments: bool):
     opts = {
         "skip_download": True,
         "quiet": True,
@@ -210,7 +225,7 @@ def scan(url: str, keywords, with_comments: bool):
         "duration": info.get("duration") or 0,
         "description": info.get("description") or "",
         "sub_kind": sub_kind,
-        "hits": find_hits(segs, keywords) if segs else [],
+        "hits": find_hits(segs, keywords, excludes) if segs else [],
         "peaks": heat_peaks(info),
         "comments": useful_comments(info, keywords) if with_comments else [],
     }
@@ -224,14 +239,14 @@ def render_md(r) -> str:
     lines = [f"## {r['title']}", f"- 채널: {r['channel']} / 길이: {fmt_time(r['duration'])}",
              f"- 링크: {r['url']}", ""]
 
-    lines.append(f"### 🔎 키워드 구간 ({r['sub_kind'] or '자막 없음'})")
+    lines.append(f"### 🔎 키워드 구간 ({r['sub_kind'] or '자막 없음'}) — 점수 높은 순")
     if not r["sub_kind"]:
         lines.append("- 한국어 자막이 없어 키워드 검색을 못 했어요. 아래 그래프 최고점과 댓글을 보세요.")
     elif not r["hits"]:
         lines.append("- 걸린 키워드 없음 → keywords.txt에 단어를 추가하거나 다음 영상으로 넘어가세요.")
-    for h in r["hits"]:
+    for h in sorted(r["hits"], key=lambda h: -h["score"]):
         kws = ", ".join(sorted(h["keywords"]))
-        lines.append(f"- [{fmt_time(h['start'])}]({t_link(r['id'], h['start'])}) `{kws}`  {h['text']}")
+        lines.append(f"- {stars(h['score'])} [{fmt_time(h['start'])}]({t_link(r['id'], h['start'])}) `{kws}`  {h['text']}")
     lines.append("")
 
     lines.append("### 📈 가장 많이 다시 본 구간")
@@ -257,17 +272,25 @@ def render_md(r) -> str:
     return "\n".join(lines)
 
 
+CSV_HEADER = ["수집일", "영상제목", "채널", "시간", "점수", "바로가기", "키워드", "자막"]
+
+
 def append_csv(path: Path, results):
+    if path.exists():
+        with path.open(encoding="utf-8-sig") as f:
+            if f.readline().strip() != ",".join(CSV_HEADER):
+                # 예전 형식 파일은 옆으로 치워두고 새로 시작
+                path.rename(path.with_name(path.stem + "_예전형식.csv"))
     new = not path.exists()
     # utf-8-sig: 엑셀에서 열어도 한글이 안 깨지게
     with path.open("a", newline="", encoding="utf-8-sig") as f:
         w = csv.writer(f)
         if new:
-            w.writerow(["수집일", "영상제목", "채널", "시간", "바로가기", "키워드", "자막"])
+            w.writerow(CSV_HEADER)
         today = dt.date.today().isoformat()
         for r in results:
             for h in r["hits"]:
-                w.writerow([today, r["title"], r["channel"], fmt_time(h["start"]),
+                w.writerow([today, r["title"], r["channel"], fmt_time(h["start"]), h["score"],
                             t_link(r["id"], h["start"]), ", ".join(sorted(h["keywords"])), h["text"]])
 
 
@@ -290,21 +313,23 @@ def main():
         ap.print_help()
         sys.exit(1)
 
-    keywords = load_keywords(Path(args.keywords))
+    keywords, excludes = load_keywords(Path(args.keywords))
     OUT_DIR.mkdir(exist_ok=True)
 
     results = []
     for i, url in enumerate(urls, 1):
         print(f"[{i}/{len(urls)}] 스캔 중: {url}")
         try:
-            r = scan(url, keywords, not args.no_comments)
+            r = scan(url, keywords, excludes, not args.no_comments)
         except Exception as e:  # 한 영상이 실패해도 나머지는 계속
             print(f"   ⚠️ 실패: {e}\n   → 'pip install -U yt-dlp'로 업데이트 후 다시 시도해 보세요.")
             continue
         results.append(r)
         print(f"   {r['title'][:50]}  |  키워드 구간 {len(r['hits'])}개, 그래프 최고점 {len(r['peaks'])}개, 댓글 {len(r['comments'])}개")
-        for h in r["hits"][:5]:
-            print(f"   [{fmt_time(h['start'])}] {', '.join(sorted(h['keywords']))} | {h['text'][:60]}")
+        if r["hits"]:
+            print("   점수 높은 구간 Top 5:")
+        for h in sorted(r["hits"], key=lambda h: -h["score"])[:5]:
+            print(f"   {stars(h['score'])} [{fmt_time(h['start'])}] {', '.join(sorted(h['keywords']))} | {h['text'][:60]}")
 
     if not results:
         sys.exit("스캔에 성공한 영상이 없습니다.")
