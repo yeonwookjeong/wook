@@ -14,7 +14,7 @@ if not defined PY (
 )
 
 echo 준비 중... (처음엔 1분 정도 걸려요)
-%PY% -m pip install -q -U yt-dlp
+%PY% -m pip install -q -U "yt-dlp[default]"
 
 :loop
 echo.

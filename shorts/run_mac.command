@@ -8,7 +8,7 @@ if ! command -v python3 >/dev/null; then
 fi
 
 echo "준비 중... (처음엔 1분 정도 걸려요)"
-python3 -m pip install -q -U yt-dlp 2>/dev/null || python3 -m pip install -q -U --user yt-dlp
+python3 -m pip install -q -U "yt-dlp[default]" 2>/dev/null || python3 -m pip install -q -U --user yt-dlp
 
 while true; do
   echo

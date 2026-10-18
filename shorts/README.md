@@ -15,7 +15,7 @@
 1. 파이썬 3.10 이상을 설치합니다 (https://www.python.org/downloads/). 윈도우는 설치 첫 화면에서 **"Add python.exe to PATH" 체크**를 꼭 하세요.
 2. 터미널(윈도우: PowerShell, 맥: 터미널)에서 아래를 실행합니다.
    ```bash
-   pip install -U yt-dlp
+   pip install -U "yt-dlp[default]"
    ```
 
 ## 가장 쉬운 실행: 더블클릭
