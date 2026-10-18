@@ -86,3 +86,8 @@ python3 make_short.py recipes/백진희_발뒤꿈치밤.json
 - **연출**: 원본 구간은 천천히 줌인과 줌아웃을 번갈아 하고, TTS 구간은 확 당겨서 강조합니다.
 - **소리**: TTS가 나오는 동안 원본 소리를 7%로 줄입니다.
 - **TTS**: `gemini_key.txt`에 Google AI Studio 키를 넣으면 Gemini TTS를 씁니다. `python3 make_short.py --voice-test`로 여성 목소리 5종을 비교한 뒤 레시피 `"gemini_voice"`에 고른 이름을 적으세요.
+
+## v3.1 연출
+- 구간 사이에 **전환 효과**가 0.22초씩 들어가요. 줌인, 슬라이드, 흰 화면 번쩍, 위로 밀기, 원형 열림이 번갈아 나오고, 전환할 때마다 '슉' 효과음도 함께 나와요.
+- 각 구간이 시작할 때 **툭 당겼다 풀리는 펀치 줌**이 들어가요. 원본 구간은 8% 줌인과 줌아웃이 번갈아 나오고, TTS 구간은 더 크게 당겨요.
+- 레시피에서 끄는 법: `"transitions": false`, `"sfx": false`, `"punch_zoom": false`

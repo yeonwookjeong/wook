@@ -65,6 +65,10 @@ TTS_POLISH = ("silenceremove=start_periods=1:start_threshold=-50dB:stop_periods=
               "equalizer=f=3000:t=q:w=1:g=2,acompressor=threshold=-18dB:ratio=3:attack=5:release=100,"
               "deesser,loudnorm=I=-14:TP=-1.5:LRA=7")
 BG_DUCK = 0.07  # TTS 나오는 동안 원본 소리 크기 (1 = 원래 크기)
+XFADE = 0.22    # 구간 사이 전환 효과 길이(초)
+# 돌아가며 쓰는 전환 효과 (ffmpeg xfade 이름)
+TRANSITIONS = ["zoomin", "slideleft", "fadewhite", "smoothup", "circleopen", "slideright"]
+PUNCH = 0.10    # 각 구간 시작 0.3초 동안 '툭' 당겼다 풀리는 줌 세기
 
 # Gemini TTS: 위에서부터 차례로 시도 (모델 이름이 바뀌어도 동작하도록)
 GEMINI_MODELS = ["gemini-3.1-flash-tts-preview", "gemini-2.5-flash-preview-tts", "gemini-2.5-flash-tts"]
@@ -573,10 +577,11 @@ def sub_png(text: str, style: str, path: Path):
 
 # ---------------------------------------------------------------- 렌더링
 
-def render(ff: str, src: Path, t0: float, dur: float, layout: Path, subs: list, tts: Path | None,
-           out: Path, zoom: tuple[float, float], crop_bottom: float):
-    """subs: [(png, 시작, 끝)] (구간 기준 상대 시간). zoom: (처음 배율, 끝 배율)"""
-    cmd = [ff, "-y", "-ss", f"{t0:.3f}", "-t", f"{dur:.3f}", "-i", str(src), "-i", str(layout)]
+def render(ff: str, src: Path, t0: float, dur: float, subs: list, tts: Path | None,
+           out: Path, zoom: tuple[float, float], crop_bottom: float, punch: float):
+    """한 구간을 영상 칸(+자막)만 렌더링. 제목·하단 글씨는 마지막에 한 번에 얹는다.
+    subs: [(png, 시작, 끝)] (구간 기준 상대 시간). zoom: (처음 배율, 끝 배율)"""
+    cmd = [ff, "-y", "-ss", f"{t0:.3f}", "-t", f"{dur:.3f}", "-i", str(src)]
     for png, _, _ in subs:
         cmd += ["-i", str(png)]
     if tts:
@@ -585,22 +590,21 @@ def render(ff: str, src: Path, t0: float, dur: float, layout: Path, subs: list, 
     zw, zh = int(W * 1.5), int(VH * 1.5)  # 크게 키운 뒤 줌 → 떨림 없이 부드럽게
     frames = max(int(dur * FPS), 1)
     z0, z1 = zoom
-    zexpr = f"{z0}+({z1}-{z0})*on/{frames}"
+    zexpr = f"{z0}+({z1}-{z0})*on/{frames}+{punch}*max(0,1-on/{int(0.3 * FPS)})"
     fg = [f"[0:v]crop=iw:ih*{1 - crop_bottom:.3f}:0:0,"            # 원본 영상 아래쪽(박혀 있는 자막) 잘라내기
           f"scale={zw}:{zh}:force_original_aspect_ratio=increase,crop={zw}:{zh},setsar=1,fps={FPS},"
           f"zoompan=z='{zexpr}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s={W}x{VH}:fps={FPS},"
-          f"pad={W}:{H}:0:{TOP}:black[b0]",
-          "[b0][1:v]overlay=0:0[b1]"]
-    last = "b1"
+          f"pad={W}:{H}:0:{TOP}:black[b0]"]
+    last = "b0"
     for i, (_, a, b) in enumerate(subs):
-        fg.append(f"[{last}][{i + 2}:v]overlay=0:0:enable='between(t,{a:.2f},{b:.2f})'[s{i}]")
+        fg.append(f"[{last}][{i + 1}:v]overlay=0:0:enable='between(t,{a:.2f},{b:.2f})'[s{i}]")
         last = f"s{i}"
     fg.append(f"[{last}]format=yuv420p[vout]")
     fade = f"afade=t=in:d=0.04,afade=t=out:st={max(dur - 0.06, 0):.3f}:d=0.06"
     if tts:
-        ti = len(subs) + 2
+        ti = len(subs) + 1
         fg.append(f"[0:a]aresample=44100,volume={BG_DUCK}[bg]")
-        fg.append(f"[{ti}:a]aresample=44100,adelay=120|120[t]")
+        fg.append(f"[{ti}:a]aresample=44100,adelay=260|260[t]")
         fg.append(f"[bg][t]amix=inputs=2:duration=first:normalize=0,apad,atrim=0:{dur:.3f},{fade}[aout]")
     else:
         fg.append(f"[0:a]aresample=44100,loudnorm=I=-14:TP=-1.5:LRA=11,apad,atrim=0:{dur:.3f},{fade}[aout]")
@@ -642,7 +646,7 @@ def plan_parts(recipe, subs: Subs, ff: str, src: Path | None, check: bool):
                 tts, dur = None, 1.5 + len(part["text"]) * 0.11  # 대략치
             else:
                 tts = make_tts(part["text"], recipe, ff)
-                dur = duration_of(ff, tts) + 0.35
+                dur = duration_of(ff, tts) + 0.5
             plan.append({"type": "tts", "start": at, "end": at + dur, "tts": tts, "part": part})
         else:
             die(f"{n}번 구간: type은 clip 또는 tts 여야 해요.")
@@ -736,7 +740,7 @@ def main():
             png = tmp / f"sub_{i}.png"
             sub_png(p["part"]["text"], p["part"].get("style", "tts"), png)
             overlays.append((png, 0, dur))
-            zoom = (1.12, 1.16)          # TTS: 확 당겨서 시선 집중
+            zoom = (1.15, 1.22)          # TTS: 확 당겨서 시선 집중
         else:
             mode = p["part"].get("sub", "auto")
             style = p["part"].get("style", "celeb")
@@ -749,19 +753,71 @@ def main():
                 png = tmp / f"sub_{i}.png"
                 sub_png(mode, style, png)
                 overlays.append((png, 0, dur))
-            zoom = (1.0, 1.04) if clip_no % 2 == 0 else (1.04, 1.0)  # 줌인/줌아웃 번갈아
+            zoom = (1.0, 1.08) if clip_no % 2 == 0 else (1.08, 1.0)  # 줌인/줌아웃 번갈아
             clip_no += 1
         seg = tmp / f"seg_{i:02d}.mp4"
-        render(ff, src, p["start"], dur, layout, overlays, p.get("tts"), seg, zoom, crop_bottom)
-        seg_files.append(seg)
+        punch = PUNCH if recipe.get("punch_zoom", True) else 0.0
+        render(ff, src, p["start"], dur, overlays, p.get("tts"), seg, zoom, crop_bottom, punch)
+        seg_files.append((seg, dur))
 
     OUT.mkdir(exist_ok=True)
-    lst = tmp / "list.txt"
-    lst.write_text("".join(f"file '{s.resolve().as_posix()}'\n" for s in seg_files), encoding="utf-8")
     final = OUT / f"쇼츠_{rpath.stem}.mp4"
-    run([ff, "-y", "-f", "concat", "-safe", "0", "-i", str(lst), "-c", "copy",
-         "-movflags", "+faststart", str(final)], "이어 붙이기")
+    print("   이어 붙이는 중…")
+    assemble(ff, seg_files, layout, tmp, final,
+             transitions=recipe.get("transitions", True), sfx=recipe.get("sfx", True))
     print(f"\n✅ 완성: {final}")
+
+
+def assemble(ff: str, segs: list, layout: Path, tmp: Path, final: Path, transitions: bool, sfx: bool):
+    """구간들을 전환 효과(xfade)로 잇고, 제목·하단 레이아웃을 얹고, 전환 때 '슉' 효과음을 넣는다."""
+    n = len(segs)
+    cmd = [ff, "-y"]
+    for seg, _ in segs:
+        cmd += ["-i", str(seg)]
+    cmd += ["-loop", "1", "-i", str(layout)]
+    li = n
+    use_x = transitions and n > 1
+    T = XFADE if use_x else 0.0
+    fg, offsets = [], []
+    if use_x:
+        lv, la, acc = "0:v", "0:a", 0.0
+        for k in range(1, n):
+            acc += segs[k - 1][1] - T
+            offsets.append(acc)
+            tr = TRANSITIONS[(k - 1) % len(TRANSITIONS)]
+            fg.append(f"[{lv}][{k}:v]xfade=transition={tr}:duration={T}:offset={acc:.3f}[xv{k}]")
+            fg.append(f"[{la}][{k}:a]acrossfade=d={T}[xa{k}]")
+            lv, la = f"xv{k}", f"xa{k}"
+    else:
+        fg.append("".join(f"[{k}:v][{k}:a]" for k in range(n)) + f"concat=n={n}:v=1:a=1[xv][xa]")
+        lv, la = "xv", "xa"
+        acc = 0.0
+        for k in range(1, n):
+            acc += segs[k - 1][1]
+            offsets.append(acc)
+    total = sum(d for _, d in segs) - T * (n - 1)
+    fg.append(f"[{lv}][{li}:v]overlay=0:0:shortest=1,format=yuv420p[vout]")
+    if sfx and offsets:
+        whoosh = tmp / "whoosh.wav"
+        run([ff, "-y", "-f", "lavfi", "-i", "anoisesrc=d=0.35:c=pink:a=0.6",
+             "-af", "highpass=f=700,lowpass=f=7000,afade=t=in:d=0.2:curve=exp,"
+                    "afade=t=out:st=0.2:d=0.15,volume=0.22", "-ar", "44100", "-ac", "2", str(whoosh)],
+            "효과음 만들기")
+        cmd += ["-i", str(whoosh)]
+        wi = n + 1
+        m = len(offsets)
+        fg.append(f"[{wi}:a]asplit={m}" + "".join(f"[w{j}]" for j in range(m)) if m > 1 else f"[{wi}:a]anull[w0]")
+        for j, o in enumerate(offsets):
+            ms = max(int((o + T / 2 - 0.2) * 1000), 0)
+            fg.append(f"[w{j}]adelay={ms}|{ms}[wd{j}]")
+        fg.append(f"[{la}]" + "".join(f"[wd{j}]" for j in range(m)) +
+                  f"amix=inputs={m + 1}:duration=first:normalize=0[aout]")
+    else:
+        fg.append(f"[{la}]anull[aout]")
+    cmd += ["-filter_complex", ";".join(fg), "-map", "[vout]", "-map", "[aout]", "-t", f"{total:.3f}",
+            "-r", str(FPS), "-c:v", "libx264", "-preset", "veryfast", "-crf", "19",
+            "-c:a", "aac", "-b:a", "160k", "-ar", "44100", "-ac", "2", "-movflags", "+faststart", str(final)]
+    run(cmd, "이어 붙이기")
 
 
 if __name__ == "__main__":
