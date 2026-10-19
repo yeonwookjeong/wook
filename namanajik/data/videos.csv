@@ -1,8 +1,69 @@
 song_id,role,title,artist,video_id,video_title,channel,published,views,url
-s0006,MV,세글자,엠투엠,LL1qwk3E8rY,세글자,DanalEntertainment,2015-08-13,870551,https://youtu.be/LL1qwk3E8rY
-s0012,Topic,Smile Again,KCM,qRkiRE5ZApE,Smile Again,KCM - Topic,2026-06-25,209788,https://youtu.be/qRkiRE5ZApE
-s0014,Topic,체념 後(후),빅마마,jMqCXu8WZ0E,체념 後(후),Big Mama - Topic,2016-09-22,1893348,https://youtu.be/jMqCXu8WZ0E
-s0024,MV,아니,거미,u7sLFI8SZ2Y,GUMMY(거미) - NO(아니) M/V,YG ENTERTAINMENT,2008-10-03,420327,https://youtu.be/u7sLFI8SZ2Y
-s0040,MV,Girls On Top,보아,MJxaWZk8Vs8,Girls On Top,SMTOWN,2011-06-02,2776707,https://youtu.be/MJxaWZk8Vs8
-s0055,MV,혼자만 하는 사랑,거미,IaOVzBVj5_E,GUMMY(거미) - UNREQUITED LOVE(혼자만 하는 사랑) M/V,YG ENTERTAINMENT,2013-02-01,153261,https://youtu.be/IaOVzBVj5_E
+s0006,MV,세글자,엠투엠,LL1qwk3E8rY,세글자,DanalEntertainment,2015-08-13,870586,https://youtu.be/LL1qwk3E8rY
+s0006,Topic,세글자,엠투엠,2x3Vlt-c4zo,세글자,SG Wannabe - Topic,2020-02-10,4990994,https://youtu.be/2x3Vlt-c4zo
+s0008,Topic,가시,버즈,2I75ion7CAc,가시,Buzz - Topic,2023-10-04,149874,https://youtu.be/2I75ion7CAc
+s0009,Topic,I Love U Oh Thank U (Feat. 김태우 Of God),MC몽,KUi3kGl5Jbg,I Love U Oh Thank U (Feat. 김태우),MC MONG - Topic,2020-02-10,52946542,https://youtu.be/KUi3kGl5Jbg
+s0012,Topic,Smile Again,KCM,qRkiRE5ZApE,Smile Again,KCM - Topic,2026-06-25,210184,https://youtu.be/qRkiRE5ZApE
+s0014,Topic,체념 後(후),빅마마,jMqCXu8WZ0E,체념 後(후),Big Mama - Topic,2016-09-22,1893407,https://youtu.be/jMqCXu8WZ0E
+s0017,Topic,Fly (Feat. Amin. J of Soulciety),에픽하이,sHqLlyBlmQI,Fly (Feat. Amin. J of Soulciety),Epik High - Topic,2017-03-29,27547656,https://youtu.be/sHqLlyBlmQI
+s0019,Topic,사랑스러워,김종국,s-_NawKtFu4,Loveable (사랑스러워) (By Kim Jong Kook(김종국)),Release - Topic,2026-01-19,27,https://youtu.be/s-_NawKtFu4
+s0020,Topic,나에게로 떠나는 여행,버즈,w7adx_CuApw,나에게로 떠나는 여행,Buzz - Topic,2023-10-04,27606239,https://youtu.be/w7adx_CuApw
+s0024,MV,아니,거미,u7sLFI8SZ2Y,아니,YG ENTERTAINMENT,2008-10-03,420327,https://youtu.be/u7sLFI8SZ2Y
+s0024,Topic,아니,거미,179coZjuaKE,아니 (No),Gummy - Topic,2016-09-22,162524,https://youtu.be/179coZjuaKE
+s0025,Topic,일년이면,휘성,8IDgQtp5qdk,일년이면,Realslow - Topic,2020-04-29,5108405,https://youtu.be/8IDgQtp5qdk
+s0030,Topic,한숨만,이정,DWBoAlCqM5c,한숨만 (Deep Sigh),J.Lee - Topic,2018-04-30,2250860,https://youtu.be/DWBoAlCqM5c
+s0031,MV,으라차차,럼블피쉬,ucwpn56kiNI,[MV] Rumble Fish(럼블피쉬) _ Eurachacha(으라차차),1theK (원더케이),2018-09-13,830069,https://youtu.be/ucwpn56kiNI
+s0031,Topic,으라차차,럼블피쉬,J6EEcsNK91k,Eurachacha (으라차차),Rumble Fish - Topic,2018-09-14,18536159,https://youtu.be/J6EEcsNK91k
+s0033,Topic,내가 웃는게 아니야 (Feat. ALI),리쌍,kQQmD9iAQl8,내가 웃는게 아니야 | I`m not Laughing (with ALI),Leessang - Topic,2018-07-19,12999981,https://youtu.be/kQQmD9iAQl8
+s0035,Topic,환희,싸이,fEDqkhSwuC0,환희,Psy - Topic,2025-12-22,2902773,https://youtu.be/fEDqkhSwuC0
+s0036,MV,내 마음의 보석상자,SG 워너비,G-A22G-6pnY,[BEST SELLER] SG워너비 - 내 마음의 보석상자,OGAM Entertainment,2024-09-19,413,https://youtu.be/G-A22G-6pnY
+s0036,Topic,내 마음의 보석상자,SG 워너비,utVlP1O1nBs,내 마음의 보석상자,SG Wannabe - Topic,2017-12-12,256604,https://youtu.be/utVlP1O1nBs
+s0037,Topic,그녀의 남자에게,김종국,U5mjKOJp2RU,그녀의 남자에게,Jong-Kook Kim - Topic,2025-12-24,99067,https://youtu.be/U5mjKOJp2RU
+s0040,MV,Girls On Top,보아,MJxaWZk8Vs8,Girls On Top,SMTOWN,2011-06-02,2776750,https://youtu.be/MJxaWZk8Vs8
+s0041,MV,지지 않는 태양 (Feat. 한 에스더),장우혁,gc-REiUVdnA,[BEST SELLER] 장우혁 - 지지 않는 태양,OGAM Entertainment,2023-06-01,7567,https://youtu.be/gc-REiUVdnA
+s0048,Topic,"떠나가요, 떠나지마요",더 크로스,A2J-UHmQjxo,떠나가요 떠나지마요,더 크로스(The Cross) - Topic,2023-04-01,5854502,https://youtu.be/A2J-UHmQjxo
+s0051,Topic,Good-Bye Luv..,휘성,e7-eoWLxYmU,Good-bye Luv,Realslow - Topic,2023-05-30,775515,https://youtu.be/e7-eoWLxYmU
+s0052,Topic,"1,2,3,4. (원,투,쓰리,포.)",코요태,lC1VV5aYaS0,"1,2,3,4",KOYOTE - Topic,2025-11-14,70723,https://youtu.be/lC1VV5aYaS0
+s0053,MV,울보,휘성,m8SoL0-sVUg,진호(JINHO) - MAGAZINE HO #20 '울보 / 휘성 (Realslow)',United CUBE (CUBE Entertainment Official YouTube Channel),2018-08-31,267412,https://youtu.be/m8SoL0-sVUg
+s0053,Topic,울보,휘성,cGjPQt_q9HA,울보,Realslow - Topic,2020-04-29,653772,https://youtu.be/cGjPQt_q9HA
+s0054,Topic,Rising Sun (순수),동방신기,krNW5K6AjWM,순수 Rising Sun,TOHOSHINKI - Topic,2019-08-02,11086332,https://youtu.be/krNW5K6AjWM
+s0055,MV,혼자만 하는 사랑,거미,IaOVzBVj5_E,혼자만 하는 사랑,YG ENTERTAINMENT,2013-02-01,153261,https://youtu.be/IaOVzBVj5_E
 s0055,Topic,혼자만 하는 사랑,거미,yQFzGcuu9Ps,혼자만 하는 사랑,Gummy - Topic,2016-09-22,4725898,https://youtu.be/yQFzGcuu9Ps
+s0057,Topic,하늘을 걸어서,휘성,oVHYDSv1mHM,하늘을 걸어서,Realslow - Topic,2020-04-29,445280,https://youtu.be/oVHYDSv1mHM
+s0058,MV,꿈의 대화 (R&B Soul ver.),SG 워너비,6iZwrYOWmYo,[BEST SELLER] SG워너비 - 꿈의 대화 (R&B Soul Ver.),OGAM Entertainment,2022-09-15,9833,https://youtu.be/6iZwrYOWmYo
+s0058,Topic,꿈의 대화 (R&B Soul ver.),SG 워너비,l6jLM-Adh4g,꿈의 대화 Acoustic Version,SG Wannabe - Topic,2017-12-12,245371,https://youtu.be/l6jLM-Adh4g
+s0059,Topic,왜 나만,휘성,S4bfrHqUqWc,왜 나만,Realslow - Topic,2020-04-29,290115,https://youtu.be/S4bfrHqUqWc
+s0061,Topic,바본가봐,아이비,NFTE31UAhVk,바본가봐,IVY - Topic,2018-06-07,2819088,https://youtu.be/NFTE31UAhVk
+s0062,Topic,내가 너를 잊는다,휘성,-iwVb6eu9rE,내가 너를 잊는다,Realslow - Topic,2020-04-29,488747,https://youtu.be/-iwVb6eu9rE
+s0063,Topic,2 A.M (2:00am),전혜빈,4X4f1IxZcEE,2 Am (2:00 Am) (2 am (2:00 am)),Jeon Hye Bin - Topic,2019-11-01,678144,https://youtu.be/4X4f1IxZcEE
+s0064,Topic,하나 둘 셋 넷,휘성,JcS02VdNdno,하나 둘 셋 넷,Realslow - Topic,2023-05-30,105703,https://youtu.be/JcS02VdNdno
+s0065,MV,비 오는 날의 수채화,SG 워너비,l7nei3fOiHM,[BEST SELLER] SG워너비 - 비 오는 날의 수채화,OGAM Entertainment,2024-09-04,4971,https://youtu.be/l7nei3fOiHM
+s0065,Topic,비 오는 날의 수채화,SG 워너비,zJys8G_sTZo,비 오는 날의 수채화,SG Wannabe - Topic,2017-12-12,160463,https://youtu.be/zJys8G_sTZo
+s0067,Topic,갈증,윤건,y_aB_YA5Y5M,갈증 (갈증),Yoon Gun - Topic,2025-04-30,53227,https://youtu.be/y_aB_YA5Y5M
+s0068,Topic,가시를 삼키다,JK 김동욱,fawaKYHRppQ,가시를 삼키다 (가시를 삼키다),JK Kim Dong-wook - Topic,2022-05-05,20668,https://youtu.be/fawaKYHRppQ
+s0069,Topic,웃어요,디바,QFbzYXlrlDI,웃어요,Diva - Topic,2025-11-14,10656,https://youtu.be/QFbzYXlrlDI
+s0070,Topic,76-70=♡ (Feat. 휘성),디바,sbbEX5qEu6E,76-70=♡ (feat. Realslow),Diva - Topic,2025-11-14,20112,https://youtu.be/sbbEX5qEu6E
+s0071,Topic,Stay in Me,서지영,oAUwSz3nJzc,Stay In Me,서지영 - Topic,2025-11-22,143465,https://youtu.be/oAUwSz3nJzc
+s0072,Topic,눈물씻고 화장하고,렉시,JjPgVTKTR2M,눈물 씻고 화장 하고,LEXY - Topic,2020-04-21,521024,https://youtu.be/JjPgVTKTR2M
+s0073,Topic,손틈새로...,거미,15EwbNwWhi8,손 틈새로.. (Hands),Gummy - Topic,2016-09-22,589117,https://youtu.be/15EwbNwWhi8
+s0074,Topic,그리고 그후,프리스타일,upNxYk12Pig,그리고 그후,freestyle - Topic,2022-07-18,1085933,https://youtu.be/upNxYk12Pig
+s0076,Topic,Luv Shine,휘성,3AMi31_x3nQ,Luv Shine,Realslow - Topic,2020-04-29,242401,https://youtu.be/3AMi31_x3nQ
+s0077,Topic,Moto,보아,cnTICaE-8J4,MOTO,BoA - Topic,2019-08-02,2065141,https://youtu.be/cnTICaE-8J4
+s0078,MV,FINKL,핑클,lQvv75qaLlo,[MV] Fin.K.L(핑클) _ FINKL,1theK (원더케이),2019-05-23,316674,https://youtu.be/lQvv75qaLlo
+s0079,Topic,"소외된 모두, 왼발을 한 보 앞으로!",드렁큰 타이거,DSqgsCH1MwQ,"소외된 모두, 왼발을 한 보 앞으로!",드렁큰 타이거(Drunken Tiger) - Topic,2017-12-13,1051622,https://youtu.be/DSqgsCH1MwQ
+s0080,Topic,날아가다,휘성,eTej6uuPFDc,날아가다,Realslow - Topic,2020-04-29,56815,https://youtu.be/eTej6uuPFDc
+s0081,Topic,내 손을 놓지 마요,차태현,x0LbrEIeTOo,내 손을 놓지 마요,차태현 - Topic,2025-12-19,3978,https://youtu.be/x0LbrEIeTOo
+s0082,Topic,이별이 오지 못하게,홍수아,ExO6a2WWu3s,이별이 오지 못하게,Page - Topic,2023-10-04,1568616,https://youtu.be/ExO6a2WWu3s
+s0083,Topic,가,휘성,pxiHeLXAlU8,가,Realslow - Topic,2020-04-29,129408,https://youtu.be/pxiHeLXAlU8
+s0086,Topic,청춘예찬,자우림,Qb2SmlJmLlE,Ode to youth (청춘예찬),Jaurim - Topic,2019-11-01,186640,https://youtu.be/Qb2SmlJmLlE
+s0087,Topic,잘 부탁드립니다,익스,INX3CCu_Vv8,Take good care of me (잘 부탁드립니다),Los Ex - Topic,2019-11-01,11072496,https://youtu.be/INX3CCu_Vv8
+s0088,Topic,Hey U,레몬트리,cqp-UIDvnLY,Hey U,K2 - Topic,2021-05-17,1629,https://youtu.be/cqp-UIDvnLY
+s0089,Topic,Bump!!!,이민우,zOK7CcmieFw,BUMP 2015 Live Version,Lee Min Joo - Topic,2021-07-02,2605,https://youtu.be/zOK7CcmieFw
+s0090,Topic,첫사랑,파란,CTn7qpqAydE,첫사랑,파란(Paran) - Topic,2020-03-01,2157597,https://youtu.be/CTn7qpqAydE
+s0092,Topic,Fill This Night,클래지콰이,65fkLnjOVwA,Fill This Night (Fill This Night),Clazziquai - Topic,2025-03-31,500910,https://youtu.be/65fkLnjOVwA
+s0093,MV,사랑과 우정 사이,SG 워너비,oEfqQcAPDdA,[BEST SELLER] sg WANNABE - 사랑과 우정사이,OGAM Entertainment,2025-03-13,1038,https://youtu.be/oEfqQcAPDdA
+s0093,Topic,사랑과 우정 사이,SG 워너비,Ysf56_7TUU0,사랑과 우정 사이 (피노키오) (With 김연우),Kim Kyung Ho - Topic,2023-06-30,3579780,https://youtu.be/Ysf56_7TUU0
+s0094,Topic,기적같은 너,김시진,kxZ62vE3CM8,기적같은 너,Han Gyeong Soo - Topic,2023-07-21,5070,https://youtu.be/kxZ62vE3CM8
+s0095,Topic,사랑 한 장,휘성,KBkcewdGQgQ,사랑 한 장,Realslow - Topic,2020-04-29,166856,https://youtu.be/KBkcewdGQgQ
+s0096,Topic,오늘밤 일,아이비,qw31NghME-Y,오늘밤 일,IVY - Topic,2018-06-07,359942,https://youtu.be/qw31NghME-Y
+s0097,Topic,이 밤을 다시한번,홍경민,0LBxApob0Lw,이 밤을 다시한번,Hong Kyung-Min - Topic,2026-04-30,6824,https://youtu.be/0LBxApob0Lw
