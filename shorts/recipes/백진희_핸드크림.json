@@ -1,0 +1,17 @@
+{
+  "source": "https://youtu.be/-WHTMYjhqHw",
+  "title1": "[[백진희]]가 강추한",
+  "title2": "안 끈적이는 핸드크림",
+  "link_text": "프로필 링크 47번",
+  "theme": "celebpick",
+  "sub_theme": "premium",
+  "clip_subs": false,
+  "gemini_voice": "Zephyr",
+  "voice": "ko-KR-SunHiNeural",
+  "rate": "+10%",
+  "parts": [
+    {"type": "clip", "from": "핸드크림 옛날에는", "to": "쿠팡이 다 들어와 있더라고요"},
+    {"type": "tts", "text": "끈적임 없이 촉촉하다는 이 핸드크림, 뭐길래?"},
+    {"type": "clip", "from": "바르면 손에 벨벳이", "to": "아주 강추한 겁니다"}
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "source": "https://youtu.be/-WHTMYjhqHw",
+  "title1": "[[백진희]] 가방 속",
+  "title2": "옷 얼룩 지우는 필수템",
+  "link_text": "프로필 링크 48번",
+  "theme": "celebpick",
+  "sub_theme": "premium",
+  "clip_subs": false,
+  "gemini_voice": "Zephyr",
+  "voice": "ko-KR-SunHiNeural",
+  "rate": "+10%",
+  "parts": [
+    {"type": "clip", "from": "이건 이제 저의 필수템인데", "to": "뭐 튀었을 때"},
+    {"type": "tts", "text": "옷에 뭐 튀었을 때 꺼낸다는 이거, 정체가 뭘까?"},
+    {"type": "clip", "from": "저의 필수템 아주 잘 지워져서", "to": "꼭 들고 다닙니다"}
+  ]
+}

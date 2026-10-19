@@ -108,3 +108,8 @@ python3 make_short.py recipes/백진희_발뒤꿈치밤.json
 
 ## 자막 없이 (원본 자막 살리기)
 레시피에 `"clip_subs": false`를 넣으면 원본 구간에는 내 자막을 넣지 않고, 원본에 박혀 있는 자막을 그대로 보여줘요(기존 계정 방식). TTS 구간만 원본 아래쪽을 잘라내고 TTS 자막을 넣어요. 다시 내 자막으로 돌리려면 `true`로 바꾸세요.
+
+## 레시피 전부 한 번에 만들기
+```bash
+for f in recipes/*.json; do python3 make_short.py "$f"; done
+```
