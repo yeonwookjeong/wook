@@ -1,0 +1,511 @@
+song_id,title,artist,mv_id,topic_id,search_done,note
+s0001,죄와벌,SG 워너비,,,,앨범: 살다가
+s0002,겁쟁이,버즈,,,,앨범: Buzz Effect
+s0003,사랑했나봐,윤도현,,,,앨범: Difference
+s0004,살다가,SG 워너비,,,,앨범: 살다가
+s0005,광(狂),SG 워너비,,,,앨범: 살다가
+s0006,세글자,엠투엠,,,,원제: 세글자 (드라마 '루루공주' 김정은 메인 테마) / 앨범: M to M
+s0007,제자리 걸음,김종국,,,,앨범: This Is Me
+s0008,가시,버즈,,,,앨범: Buzz Effect
+s0009,I Love U Oh Thank U (Feat. 김태우 Of God),MC몽,,,,앨범: His Story
+s0010,둘이서,채연,,,,원제: 둘이서 (CF - 빙그레 '바나나맛 우유') / 앨범: Virginalness Bloom
+s0011,너에게 전하는 아홉가지 바램,KCM,,,,앨범: Growing Up
+s0012,Smile Again,KCM,,,,앨범: Growing Up
+s0013,사랑은...하나다,테이,,,,앨범: Ucupracacia
+s0014,체념 後(후),빅마마,,,,앨범: It's Unique
+s0015,귀로,나얼,,,,앨범: Back To The Soul Flight
+s0016,내 눈물이 하는 말,견우,,,,앨범: City Of Angel
+s0017,Fly (Feat. Amin. J of Soulciety),에픽하이,,,,앨범: Swan Songs
+s0018,사랑인걸,모세,,,,"앨범: 사랑, 그 간절한 그리움 1집"
+s0019,사랑스러워,김종국,,,,앨범: This Is Me
+s0020,나에게로 떠나는 여행,버즈,,,,앨범: Buzz Effect
+s0021,"별, 바람, 햇살 그리고 사랑",김종국,,,,앨범: This Is Me
+s0022,꽃피는 봄이오면,BMK,,,,앨범: Soul Food
+s0023,안부 (Duet With 나윤권),별,,,,앨범: 별 2집
+s0024,아니,거미,,,,앨범: For The Bloom
+s0025,일년이면,휘성,,,,앨범: LOVE.. LOVE..? LOVE..!
+s0026,Y (Please Tell Me Why),프리스타일,,,,앨범: Freestyle 3
+s0027,가슴 아파도,환희,,,,앨범: 패션 70s OST
+s0028,천하무적 (Feat. 박장근 Of Supersta),MC몽,,,,앨범: His Story
+s0029,Super Star,쥬얼리,,,,앨범: 4집 Super Star
+s0030,한숨만,이정,,,,앨범: 한숨만
+s0031,으라차차,럼블피쉬,,,,앨범: Have A Nice Dream
+s0032,보통날,god,,,,앨범: 보통날
+s0033,내가 웃는게 아니야 (Feat. ALI),리쌍,,,,앨범: Library Of Soul
+s0034,눈물이 나요,조성모,,,,앨범: My First
+s0035,환희,싸이,,,,앨범: Remake & Mix 18번
+s0036,내 마음의 보석상자,SG 워너비,,,,앨범: Classic Odyssey
+s0037,그녀의 남자에게,김종국,,,,앨범: This Is Me
+s0038,벌,버즈,,,,앨범: Buzz Effect
+s0039,같은 생각,신혜성,,,,앨범: 오월지련
+s0040,Girls On Top,보아,,,,앨범: Girls On Top
+s0041,지지 않는 태양 (Feat. 한 에스더),장우혁,,,,앨범: No More Drama
+s0042,응급실,izi,,,,앨범: 쾌걸춘향 OST
+s0043,여자,빅마마,,,,앨범: It's Unique
+s0044,Happiness,가비엔제이,,,,앨범: The Very First
+s0045,잘 지내나요,성시경,,,,앨범: 다시 꿈꾸고 싶다
+s0046,거짓말,버즈,,,,앨범: Buzz Effect
+s0047,봄날,아이,,,,앨범: 봄날 OST
+s0048,"떠나가요, 떠나지마요",더 크로스,,,,앨범: Rush
+s0049,사랑은 가슴이 시킨다,버즈,,,,앨범: 사랑은 가슴이 시킨다
+s0050,헤어지자고,윤건,,,,원제: 헤어지자고 (MBC 슬픈연가 삽입곡) / 앨범: Now Is.. 2집
+s0051,Good-Bye Luv..,휘성,,,,앨범: LOVE.. LOVE..? LOVE..!
+s0052,"1,2,3,4. (원,투,쓰리,포.)",코요태,,,,앨범: 필업 (Feel Up)
+s0053,울보,휘성,,,,앨범: LOVE.. LOVE..? LOVE..!
+s0054,Rising Sun (순수),동방신기,,,,앨범: Rising Sun
+s0055,혼자만 하는 사랑,거미,,,,앨범: For The Bloom
+s0056,현명한 이별,슈가,,,,앨범: Sweet Lips
+s0057,하늘을 걸어서,휘성,,,,앨범: LOVE.. LOVE..? LOVE..!
+s0058,꿈의 대화 (R&B Soul ver.),SG 워너비,,,,앨범: Classic Odyssey
+s0059,왜 나만,휘성,,,,앨범: LOVE.. LOVE..? LOVE..!
+s0060,추억속의 재회,엠씨더맥스,,,,앨범: Memory Traveler
+s0061,바본가봐,아이비,,,,앨범: My Sweet And Free Day
+s0062,내가 너를 잊는다,휘성,,,,앨범: LOVE.. LOVE..? LOVE..!
+s0063,2 A.M (2:00am),전혜빈,,,,앨범: In My Fantasy
+s0064,하나 둘 셋 넷,휘성,,,,앨범: LOVE.. LOVE..? LOVE..!
+s0065,비 오는 날의 수채화,SG 워너비,,,,앨범: Classic Odyssey
+s0066,은영이에게 Part 2,KCM,,,,앨범: Growing Up
+s0067,갈증,윤건,,,,앨범: 이별에 대처하는 우리의 자세 OST
+s0068,가시를 삼키다,JK 김동욱,,,,앨범: Acousti.K
+s0069,웃어요,디바,,,,앨범: Only Diva
+s0070,76-70=♡ (Feat. 휘성),디바,,,,앨범: Only Diva
+s0071,Stay in Me,서지영,,,,앨범: Listen To My Heart
+s0072,눈물씻고 화장하고,렉시,,,,앨범: Lextacy
+s0073,손틈새로...,거미,,,,앨범: For The Bloom
+s0074,그리고 그후,프리스타일,,,,앨범: Funkiest Family Juice
+s0075,힙합 뮤직 (Feat. 임정희),주석,,,,앨범: Superior Vol.2 - Seoul City's Finest
+s0076,Luv Shine,휘성,,,,앨범: LOVE.. LOVE..? LOVE..!
+s0077,Moto,보아,,,,앨범: Girls On Top
+s0078,FINKL,핑클,,,,앨범: 핑클 디지털 앨범
+s0079,"소외된 모두, 왼발을 한 보 앞으로!",드렁큰 타이거,,,,앨범: 1945 해방
+s0080,날아가다,휘성,,,,앨범: LOVE.. LOVE..? LOVE..!
+s0081,내 손을 놓지 마요,차태현,,,,앨범: 새드무비 OST
+s0082,이별이 오지 못하게,홍수아,,,,앨범: 논스톱 5 OST
+s0083,가,휘성,,,,앨범: LOVE.. LOVE..? LOVE..!
+s0084,숙녀에게,유리상자,,,,앨범: 동상이몽
+s0085,단 하나의 사랑,유해준,,,,앨범: 프라하의 연인 OST
+s0086,청춘예찬,자우림,,,,앨범: 靑春禮讚 (청춘예찬)
+s0087,잘 부탁드립니다,익스,,,,원제: 잘 부탁드립니다 (CF - 한국야쿠르트 산타페 EX편) / 앨범: 2005 MBC 대학가요제
+s0088,Hey U,레몬트리,,,,앨범: Hey U
+s0089,Bump!!!,이민우,,,,앨범: IInd Winds
+s0090,첫사랑,파란,,,,앨범: Paran The First
+s0091,All for you,연정훈,,,,앨범: 연정훈 Vol.1
+s0092,Fill This Night,클래지콰이,,,,원제: Fill This Night (CF - '메가패스&친구들' 클래지콰이 편 ) / 앨범: Color Your Soul
+s0093,사랑과 우정 사이,SG 워너비,,,,앨범: Classic Odyssey
+s0094,기적같은 너,김시진,,,,앨범: 프라하의 연인 OST
+s0095,사랑 한 장,휘성,,,,앨범: LOVE.. LOVE..? LOVE..!
+s0096,오늘밤 일,아이비,,,,앨범: My Sweet And Free Day
+s0097,이 밤을 다시한번,홍경민,,,,앨범: Emotion In Memory
+s0098,행운,KCM,,,,앨범: Growing Up
+s0099,Morning,휘성,,,,앨범: LOVE.. LOVE..? LOVE..!
+s0100,Happy Birthday To You,구혜선,,,,앨범: 논스톱 5 OST
+s0101,경고,코요태,,,,앨범: 필업 (Feel Up)
+s0102,내 사람,휘성,,,,앨범: LOVE.. LOVE..? LOVE..!
+s0103,시계태엽,임정희,,,,앨범: Music Is My Life
+s0104,슬픈 혼잣말,숄,,,,앨범: 슬픈 혼잣말
+s0105,Too Hot,휘성,,,,앨범: LOVE.. LOVE..? LOVE..!
+s0106,바보 (Unforgettable),동방신기,,,,앨범: Rising Sun
+s0107,Kiss Kiss,미나,,,,앨범: Kiss Kiss
+s0108,활주,버즈,,,,원제: 활주 ('나루토' 여는 노래) / 앨범: We 3 (투니버스 만화영화 주제가 Best)
+s0109,약속했던 그때에 (Always There...),동방신기,,,,앨범: Rising Sun
+s0110,Anyclub (Feat.Teddy),이효리,,,,"원제: Anyclub (Feat.Teddy) ( CF - Anycall Anyclub 이효리, 에릭, 권상우편 ) / 앨범: Anyclub (Single)"
+s0111,커다란..너무 커다란..,휘성,,,,앨범: LOVE.. LOVE..? LOVE..!
+s0112,보통여자,린(LYn),,,,앨범: One And Only Feeling
+s0113,Hey DJ (70's Remix),프리스타일,,,,앨범: Funkiest Family Juice
+s0114,이번만큼은,임재범,,,,앨범: 프라하의 연인 OST
+s0115,당신은 내게 그런 사랑입니다(Original Ver.),소냐,,,,앨범: A New Life
+s0116,Tic Tac Toe (틱택토),부가킹즈,,,,앨범: The Renaissance
+s0117,아픔이 사라진 후,윤미래,,,,앨범: 프라하의 연인 OST
+s0118,Butterfly,핑클,,,,앨범: 핑클 디지털 앨범
+s0119,기대,나윤권,,,,앨범: 기대
+s0120,운다,손호영,,,,앨범: 손호영 1집 Yes
+s0121,까만안경 (Feat. Day Light),"이루, Daylight",,,,앨범: 이루 LEVEL II
+s0122,아이스크림,MC몽,,,,앨범: The Way I Am
+s0123,제발,이승기,,,,앨범: 남자가 여자를 사랑할 때
+s0124,거리에서,성시경,,,,앨범: The Ballads
+s0125,Timeless (Feat. 시아준수),장리인,,,,앨범: Timeless
+s0126,The Day,"제아, 김연지",,,,앨범: To My Lover
+s0127,I Love Rock & Roll,코요태,,,,앨범: London Koyote
+s0128,죽을만큼..,오종혁,,,,앨범: OJ Issue
+s0129,소리쳐,이승철,,,,앨범: Reflection Of Sound
+s0130,마이동풍,배치기,,,,앨범: 마이동풍 (馬耳東風)
+s0131,울지마,버즈,,,,앨범: ‘떠나’ 그리고 ‘울지마’
+s0132,O -正.反.合.(정반합),동방신기,,,,앨범: O -正.反.合. (정반합)
+s0133,사랑을 찾아서,엠씨더맥스,,,,앨범: Rainbow Vol. 2
+s0134,우리 이제 어떻게 하나요,"김현철, 거미",,,,앨범: 우리 이제 어떻게 하나요
+s0135,정 (情),"제아, 김연지",,,,앨범: To My Lover
+s0136,"사랑, 참...",홍경민,,,,앨범: Evolution Of Rhythm
+s0137,La La La,빅뱅,,,,앨범: BigBang Is V.I.P (Single)
+s0138,그녀를 사랑해줘요,하동균,,,,앨범: Stand Alone
+s0139,옛날여자,간미연,,,,앨범: Refreshing
+s0140,원하고 원망하죠,이승기,,,,앨범: 남자가 여자를 사랑할 때
+s0141,가슴이 아려와,란 (RAN),,,,앨범: 에스진VS란
+s0142,너에게 쓰는 편지 Part 2 (Feat. LISA),MC몽,,,,앨범: The Way I Am
+s0143,그대 때문에,박기영,,,,앨범: Bohemian
+s0144,너무 아픈 이 말 (Feat. 지선),알렉스,,,,앨범: 각인 (刻人)
+s0145,I'm Coming (Feat. Tablo),비,,,,앨범: Rain's World
+s0146,비행기,거북이,,,,앨범: 거북이 사요!!
+s0147,Never Mind,빅마마,,,,앨범: For The People
+s0148,연예인,싸이,,,,앨범: 싸집
+s0149,Key Of Heart,보아,,,,원제: Key Of Heart (CF - 올림푸스) / 앨범: Key Of Heart (Single)
+s0150,LOVE ALL,gavy nj project group [H7美人(미인)],,,,앨범: gavy nj project group [H7美人(미인)]
+s0151,마음을 잃다,넬 (NELL),,,,앨범: Healing Process
+s0152,Happy Day,체리필터,,,,앨범: Peace N’ Rock N’ Roll
+s0153,해바라기,JK 김동욱,,,,앨범: Zebra
+s0154,We Belong Together,빅뱅,,,,앨범: BigBang First Single
+s0155,칵테일 사랑,거북이,,,,앨범: The Land Of Turtles
+s0156,Second,브라운아이드걸스,,,,앨범: Your Story (스페셜 리페키지 앨범)
+s0157,"이따, 이따요",장윤정,,,,"앨범: 이따, 이따요"
+s0158,Yeah,박정아,,,,앨범: Yeah
+s0159,다섯걸음,파란,,,,앨범: Beyond The Blue Sky
+s0160,아프고 아파도,솔플라워,,,,앨범: Fantastic Story (Special Single)
+s0161,Tomorrow,환희,,,,앨범: 오버 더 레인보우 OST
+s0162,미친 사랑의 노래,씨야,,,,앨범: 투명인간 최장수 OST
+s0163,철수야 사랑해,이정현,,,,앨범: Fantastic Girl
+s0164,Still Believe,비,,,,원제: Still Believe (BMW 뮤직필름 OST 중) / 앨범: BMW meets truth (Single)
+s0165,지금은 연애중,바보킴 & 투앤비,,,,앨범: 지금은 연애중..
+s0166,좋아 좋아,서영은,,,,앨범: Remake Romantic 2
+s0167,가로수 그늘 아래 서면,임재범,,,,앨범: The Story Of Musicians - 옛사랑
+s0168,Love Me Love Me,이지혜,,,,앨범: special single #+1
+s0169,사랑은,더 네임,,,,앨범: Second Chance To Fly
+s0170,Hold the line,"조pd, 브라운아이드걸스",,,,앨범: HOLD THE LINE
+s0171,My Love (And),버즈,,,,앨범: Perfect
+s0172,눈물뿐인 바보,빅뱅,,,,앨범: BigBang First Single
+s0173,Dream Of My Life,신승훈,,,,앨범: The Romanticist
+s0174,남자를 몰라,버즈,,,,앨범: Perfect
+s0175,Still Loving You,BGH4,,,,앨범: Memories Of HIM
+s0176,Maybe I Love You (Feat. 빅톤),걸 프렌즈,,,,앨범: Another Myself
+s0177,Cutie Honey,아유미,,,,앨범: Cutie Honey
+s0178,You And Me,자우림,,,,앨범: Ashes To Ashes
+s0179,With U,비,,,,앨범: Rain's World
+s0180,카시오페아 (Cassiopeia) (Feat. 임정희),비,,,,앨범: Rain's World
+s0181,그때처럼 사랑할 수 있을까...,오현란,,,,앨범: 그때처럼 사랑할 수 있을까...
+s0182,술이야,바이브,,,,앨범: Re - Feel
+s0183,불꽃 (Feat. 개리),장혜진,,,,앨범: 불꽃 (Single)
+s0184,내가 누웠던 침대 (In My Bed),비,,,,앨범: Rain's World
+s0185,백일몽 (Feat. 이은미),허니 패밀리,,,,앨범: Honey Family 2006 Single #.01
+s0186,This Love,빅뱅,,,,앨범: BigBang First Single
+s0187,그댈 위한 사랑,이정,,,,앨범: 천국보다 낯선 OST
+s0188,Please…,BGH4,,,,앨범: Memories Of HIM
+s0189,단 한사람,고유진 (플라워),,,,앨범: 소문난 칠공주 OST
+s0190,은인,버즈,,,,앨범: Perfect
+s0191,한번만 더,이승기,,,,앨범: 남자가 여자를 사랑할 때
+s0192,구두,씨야,,,,앨범: 여인의 향기
+s0193,사랑 같은 건,스윗소로우,,,,앨범: 사랑 같은 건
+s0194,I Go,럼블피쉬,,,,앨범: I Go
+s0195,사랑 안해,백지영,,,,앨범: Smile Again
+s0196,그리운 날엔,성시경,,,,앨범: The Ballads
+s0197,One By One,배슬기,,,,앨범: The First Album
+s0198,내 사람: Partner For Life,SG 워너비,,,,앨범: The 3rd Masterpiece
+s0199,애수 (哀愁),일 락,,,,앨범: Sorrow
+s0200,폭풍속으로 (One Way) (Feat. 에스더),장우혁,,,,앨범: My Way
+s0201,Yes,손호영,,,,앨범: 손호영 1집 Yes
+s0202,I'll Be There,동방신기,,,,앨범: O -正.反.合. (정반합)
+s0203,시간이 흘러서,씨엘,,,,앨범: 시간이 흘러서
+s0204,못된 영화 (Feat. Ivy),MC몽,,,,앨범: The Way I Am
+s0205,하루도 (Not A Single Day),비,,,,앨범: Rain's World
+s0206,사랑 따위 Part 2 : 그 자리에 (Feat. 길) (Clean Ver.),김진표,,,,앨범: 사랑 따위
+s0207,나쁜 사람,백지영,,,,앨범: 황진이 OST
+s0208,21살 이야기,JJMP,,,,앨범: 2006 MBC 대학가요제
+s0209,기도 (Feat. 박효신),MC몽,,,,앨범: The Way I Am
+s0210,아디오,이승기,,,,앨범: 남자가 여자를 사랑할 때
+s0211,세상에 단 하나뿐인 마음 (You're My Miracle),동방신기,,,,앨범: O -正.反.合. (정반합)
+s0212,하고싶은 말,김태우,,,,앨범: Solo Special Album
+s0213,벌써 일년,브라운 아이즈,,,,앨범: Brown Eyes
+s0214,알 수 없는 인생,이문세,,,,앨범: 이문세 + 발칙한 여자들 OST
+s0215,사랑할 땐 몰랐던 것들,성시경,,,,앨범: The Ballads
+s0216,외눈박이 물고기,지현우,,,,앨범: 지현우의 Love letter 외눈박이 물고기
+s0217,Mama,쿤타&뉴올리언스,,,,앨범: Koonta In Nuoliunce
+s0218,V.I.P,빅뱅,,,,앨범: BigBang Is V.I.P (Single)
+s0219,Tell me (Sampling From 'Two Of Hearts'),원더걸스,,,,앨범: The Wonder Years
+s0220,거짓말,빅뱅,,,,앨범: Always
+s0221,매일매일,V.O.S,,,,앨범: 꽃이 웃는다
+s0222,사랑은 맛있다♡,휘성,,,,앨범: Eternal Essence Of Music
+s0223,배반,빅마마,,,,앨범: Blossom
+s0224,사랑 하나면 돼,백지영,,,,앨범: 여섯번째 기적
+s0225,둘이라서,이루,,,,앨범: Eru Returns
+s0226,못된 남자,엠투엠,,,,앨범: 못된 남자
+s0227,착한거짓말,이승기,,,,앨범: 이별 이야기
+s0228,천둥,FT아일랜드,,,,앨범: Cheerful Sensibility
+s0229,단발머리,이수영,,,,앨범: 내려놓음
+s0230,키 작은 꼬마 이야기,하하,,,,앨범: 강변북로가요제
+s0231,결국…너잖아,블랙펄,,,,앨범: 결국... 너잖아
+s0232,사랑에 미치면 (Feat. 아웃캐스트 빅보이 & J.Y.Park 'The Asiansoul'),임정희,,,,앨범: Before I Go J-Lim
+s0233,투명한 눈물,먼데이 키즈,,,,앨범: Incompletion
+s0234,사랑을 잃고 난 노래하네,에이트,,,,앨범: The First
+s0235,물끄러미,지아,,,,앨범: Voice Of Heaven
+s0236,다시 만난 세계 (Into The New World),소녀시대,,,,앨범: 다시 만난 세계
+s0237,사랑앓이,FT아일랜드,,,,앨범: Cheerful Sensibility
+s0238,사랑도... 이별도...,이기찬,,,,앨범: 사랑도... 이별도...
+s0239,So Fresh (Feat. 김태우),MC몽,,,,원제: So Fresh (Feat. 김태우) (위대한 캣츠비 OST 삽입곡) / 앨범: So Fresh (Single)
+s0240,또 한번 사랑은 가고,"왁스, 이기찬",,,,앨범: 또 한번 사랑은 가고...
+s0241,나 이젠 (Duet 진성 Of 먼데이키즈),최현준,,,,앨범: NA2ZEN (나이젠)
+s0242,눈물로 (Duet 이정),제이,,,,앨범: 눈물로
+s0243,너에게 속았다,브라운아이드걸스,,,,앨범: 떠나라 미스김
+s0244,좋은걸 어떡해,블랙펄,,,,앨범: Black Pearl (블랙펄)
+s0245,그대 내게 다시,럼블피쉬,,,,앨범: 그대 내게 다시
+s0246,우리가 사랑했다면,하울,,,,앨범: 우리가 사랑했다면
+s0247,그녀를 뺏겠습니다,크라운제이,,,,앨범: Miss Me?
+s0248,미안했어요,박기영,,,,앨범: 미안했어요
+s0249,첫사람,신혜성,,,,"앨범: The Beginning, New Days"
+s0250,이별…후에,"더 네임, 럼블피쉬",,,,앨범: 이별...후에
+s0251,한번 더 이별,성시경,,,,앨범: 한번 더 이별
+s0252,가라 사랑아,장혜진,,,,앨범: Tomboy
+s0253,그래도 사랑합니다,일 락,,,,앨범: 그래도 사랑합니다
+s0254,뒷모습,나윤권,,,,앨범: 뒷모습 후(後)
+s0255,미련한 가슴아,이수 (엠씨더맥스),,,,앨범: 개와 늑대의 시간 OST
+s0256,사랑이 그래요,오종혁,,,,앨범: 사랑이 그래요
+s0257,사랑의 인사,씨야,,,,앨범: Lovely Sweet Heart
+s0258,I Promise You,"원티드, 이정",,,,앨범: 7DAYZ & WANTED
+s0259,남자라서 웃어요,"김장훈, 에픽하이",,,,앨범: 김장훈의 트롯
+s0260,결혼할까요,씨야,,,,앨범: Lovely Sweet Heart
+s0261,못난이,메이비,,,,앨범: Luv Cloud
+s0262,손수건,김동완,,,,앨범: Kim Dong Wan Is
+s0263,사랑..그게 뭔데,양파,,,,앨범: The Windows Of My Soul
+s0264,사랑의 숲에서 길을 잃다 (Feat. 임창정),제드,,,,앨범: Show Time Project - JED 1st Single
+s0265,느껴봐,체리필터,,,,앨범: Rewind (Remake Album)
+s0266,사랑공식,코요태,,,,앨범: Koyote Dance Best And 9.5
+s0267,눈물,엠씨더맥스,,,,앨범: RETURNS PART 2
+s0268,사랑은 가슴이 시킨다 Part.2,버즈,,,,앨범: 사랑은 가슴이 시킨다 Part.2
+s0269,Ballerino,리쌍,,,,앨범: Black Sun
+s0270,그대만…,타이푼,,,,앨범: Travel
+s0271,My Angel,플라이 투 더 스카이,,,,앨범: No Limitations
+s0272,Queen (V.I.P 2),바다,,,,앨범: Queen
+s0273,"사랑해요 (Feat. V.O.S 김경록, 태인)",나몰라패밀리,,,,앨범: 나몰라패밀리
+s0274,오아시스 (Feat. 이재훈),브라운아이드걸스,,,,앨범: 내가 여름이다.
+s0275,얼마나 (Feat. 버블 시스터즈),비욘드,,,,앨범: 얼마나
+s0276,돈 돈! (Don't Don),슈퍼주니어,,,,앨범: 돈 돈! (Don't Don)
+s0277,Memories,프리스타일,,,,앨범: 2007 Memories
+s0278,여우비,제이워크,,,,앨범: 여우비
+s0279,Hit,초신성,,,,앨범: 1st Album
+s0280,한사람만,FT아일랜드,,,,앨범: Cheerful Sensibility
+s0281,하늘에 내 마음이,손호영,,,,앨범: Sweet Love
+s0282,내마음별과같이 (Feat. KCM),지아,,,,앨범: Voice Of Heaven
+s0283,사랑한다,이승철,,,,앨범: The Secret Of Color 2
+s0284,머리를 자르고,Daylight,,,,앨범: 머리를 자르고
+s0285,내 잘못이니까,김동완,,,,앨범: Kim Dong Wan Is - Special Package
+s0286,부디..,V.O.S,,,,앨범: 꽃이 웃는다
+s0287,다쳐도 좋아,휘성,,,,앨범: Eternal Essence Of Music
+s0288,수호천사,지아,,,,앨범: Voice Of Heaven
+s0289,못난이,홍경민,,,,"앨범: Music For My Life, Life For My Music"
+s0290,일년을 하루같이,바비 킴,,,,앨범: 쩐의 전쟁 OST 1.5집
+s0291,우리가 이별할 때 (Duet 백지영),소울스타,,,,앨범: 우리가 이별할 때 (Single)
+s0292,사랑이 뭐길래,춘자 (春子),,,,앨범: 춘자
+s0293,한여름날의 꿈 (Duet With 옥주현),SG 워너비,,,,앨범: The Sentimental Chord
+s0294,사랑해서 사랑해서,박완규,,,,앨범: Love song
+s0295,널 볼때마다,강균성 (노을),,,,앨범: A Path Of Love
+s0296,천국 (Feat. MC 몽),빅마마,,,,앨범: Blossom
+s0297,아무렇지 않은 척,빅뱅,,,,앨범: Always
+s0298,녹슨 가슴,먼데이 키즈,,,,앨범: Incompletion
+s0299,가슴아 그만해,엠씨더맥스,,,,앨범: Returns
+s0300,통화 연결음,써니힐,,,,앨범: Love Letter
+s0301,사랑해,플라이 투 더 스카이,,,,원제: 사랑해 ('우리 결혼했어요' 삽입곡) / 앨범: No Limitations
+s0302,안부,빅마마,,,,앨범: Blossom
+s0303,없는 번호,빅뱅,,,,앨범: Always
+s0304,슬기 Say,배슬기,,,,앨범: Flying
+s0305,사랑해서…(이영현 솔로),빅마마,,,,앨범: Blossom
+s0306,행복,슈퍼주니어,,,,앨범: 2007 Summer SMTOWN
+s0307,이럴거면,아이비,,,,앨범: A Sweet Moment
+s0308,...사랑했잖아... Part II,린(LYn),,,,앨범: The Pride Of The Morning (Special Edition)
+s0309,철부지,최재훈,,,,앨범: Above Water-Still Waters Run Deep
+s0310,Walking In The Rain,원우,,,,앨범: Walking In The Rain
+s0311,초심으로,"최정철, 조pd",,,,앨범: The Return Of The Prodigal Son - 돌아온 탕아
+s0312,주정,드렁큰 타이거,,,,앨범: Sky Is The Limit
+s0313,"사랑, 버리고 버려도",영애 (Young愛),,,,앨범: Young愛(애)
+s0314,사랑아,더원,,,,앨범: 내 남자의 여자 OST
+s0315,위로,김사랑,,,,앨범: U - Turn
+s0316,Nobody,원더걸스,,,,앨범: The Wonder Years - Trilogy
+s0317,어쩌다,브라운아이드걸스,,,,앨범: My style
+s0318,하루 하루,빅뱅,,,,앨범: Stand Up (2008 빅뱅 3rd Mini Album)
+s0319,주문-MIROTIC (Clean Ver.),동방신기,,,,앨범: The 4th Album ‘MIROTIC’
+s0320,미쳤어 (Feat. 에릭),손담비,,,,앨범: 손담비 Mini Album Vol. 2
+s0321,천국,빅뱅,,,,앨범: Stand Up (2008 빅뱅 3rd Mini Album)
+s0322,1분 1초 (Feat. 타루),에픽하이,,,,앨범: Lovescream (소품집)
+s0323,들리나요...,태연,,,,앨범: 베토벤 바이러스 OST
+s0324,You,브라운아이드걸스,,,,앨범: My style
+s0325,Hey Mr. Big,이효리,,,,앨범: It's Hyorish
+s0326,Hot Girl,씨야,,,,앨범: Brilliant Change
+s0327,10점 만점에 10점,2PM,,,,앨범: Hottest Time Of The Day
+s0328,사랑이 그렇게 쉬워 (Feat. 태인),나몰라패밀리,,,,앨범: 사랑이 그렇게 쉬워
+s0329,이노래,2am,,,,앨범: 이노래
+s0330,사랑후애 (僞愛),FT아일랜드,,,,앨범: Colorful Sensibility
+s0331,눈물은 모르게,엠씨더맥스,,,,앨범: Via 6
+s0332,U-Go-Girl (With 낯선),이효리,,,,앨범: It's Hyorish
+s0333,슬픔활용법,김범수,,,,앨범: 김범수 6집
+s0334,산소 같은 너 (Love Like Oxygen),샤이니,,,,앨범: SHINee The 1st Album 'The SHINee World'
+s0335,사랑해 미안해,지아,,,,앨범: 로드무비
+s0336,사랑과 전쟁 (Narr. 하하),다비치,,,,앨범: Vivid Summer Edition (1st Amaranth Repackage Album)
+s0337,내사람,환희,,,,앨범: 베토벤 바이러스 OST
+s0338,착한 사람,빅뱅,,,,앨범: Stand Up (2008 빅뱅 3rd Mini Album)
+s0339,Fly Boy,크라운제이,,,,앨범: Fly Boy
+s0340,Love Story,비,,,,앨범: Rainism
+s0341,Never Say Goodbye,먼데이 키즈,,,,앨범: Recollection
+s0342,Oh My Friend (Feat. 노브레인),빅뱅,,,,앨범: Stand Up (2008 빅뱅 3rd Mini Album)
+s0343,신데렐라,서인영,,,,앨범: Elly Is Cinderella
+s0344,텔레파시,윤하,,,,앨범: Someday
+s0345,가지마 가지마,브라운 아이즈,,,,앨범: Two Things Needed For The Same Purpose And 5 Objets
+s0346,So Hot,원더걸스,,,,앨범: So Hot
+s0347,너 때문에,브라운 아이즈,,,,앨범: Two Things Needed For The Same Purpose And 5 Objets
+s0348,바람의 노래,조성모,,,,앨범: 바람의 화원 OST
+s0349,남자를 믿지마 (Feat. Big Tone),이민우,,,,앨범: M Rizing
+s0350,Rock U,카라,,,,앨범: 카라 1st
+s0351,Lady,빅뱅,,,,앨범: Stand Up (2008 빅뱅 3rd Mini Album)
+s0352,키스미 키스미 (Kiss Me Kiss Me),이현지,,,,앨범: Kiss Me Kiss Me
+s0353,눈물소리,하동균,,,,앨범: 눈물소리 (Digital Single)
+s0354,사랑을 원해,쿨 (COOL),,,,앨범: 사랑을 원해
+s0355,미치겠어 (Feat. M.A.C),MC몽,,,,앨범: Show's Just Begun
+s0356,가시 물고기,엠씨더맥스,,,,앨범: Stage #1 - TOP
+s0357,Blue Moon,"씨야, 다비치, 블랙펄",,,,앨범: Color Pink
+s0358,그럴꺼면 왜 (Feat. 베이지),PK 헤만,,,,앨범: 그럴꺼면 왜
+s0359,"날 봐, 귀순",대성,,,,"앨범: 날 봐, 귀순 (Digital Single)"
+s0360,못된 여자 (Feat. 서인영),원투,,,,앨범: 2008 One Two (Digital Single)
+s0361,It's Okay (Feat. 화요비),언터쳐블,,,,원제: It's Okay (Feat. 화요비) ('우리 결혼했어요' 화요비 테마곡) / 앨범: It's Okay
+s0362,누난 너무 예뻐 (Replay),샤이니,,,,앨범: 누난 너무 예뻐 (Replay)
+s0363,Number 1,빅뱅,,,,앨범: Number 1
+s0364,Kiss,김건모,,,,앨범: Soul Groove
+s0365,환상의 짝꿍 (Feat. 예은 Of 원더걸스),H-유진,,,,앨범: 환상의 짝꿍
+s0366,Rainism (Clean Ver.),비,,,,앨범: Rainism
+s0367,나만 바라봐,태양,,,,앨범: Hot
+s0368,라디오를 켜봐요,신승훈,,,,앨범: Radio Wave
+s0369,흔적,BGH4,,,,앨범: Missing You
+s0370,에너지 (Feat. 선예),마이티 마우스,,,,앨범: Energy
+s0371,D.I.S.C.O (Feat. TOP),엄정화,,,,원제: D.I.S.C.O  (Feat. TOP) / 앨범: D.I.S.C.O
+s0372,사랑같은건 없나봐,가비엔제이,,,,원제: 사랑같은건 없나봐 (우리 결혼했어요 삽입곡) / 앨범: 사랑같은건 없나봐
+s0373,발자국,먼데이 키즈,,,,앨범: Inside Story
+s0374,병원에 가다 (이별..) (Song By 민경),다비치,,,,앨범: 병원에 가다
+s0375,윤은혜 샐러드송 (샐러드기념일) '지펠 CF',"윤은혜, 이동건",,,,앨범: 샐러드 기념일
+s0376,헤어질 땐 말없이,김동희,,,,앨범: Halfway
+s0377,"전국민 러브송 (Feat. MC몽, 유리 Of Cool)",박장근,,,,앨범: 장근이의 전국민 러브송 (Digital Single)
+s0378,미아,아이유,,,,앨범: Lost And Found
+s0379,"가니 (Feat. SG워너비 (김용준), 황정음, Mario)",씨야,,,,앨범: Brilliant Change
+s0380,운명을 거슬러,"SG 워너비, 김종욱",,,,앨범: 에덴의 동쪽 OST
+s0381,You (대단한 우연),스윗소로우,,,,앨범: Sweet Sorrow
+s0382,미정 (美晶),가비 퀸즈,,,,앨범: To The Heart
+s0383,Love In The Ice,동방신기,,,,앨범: The 4th Album ‘MIROTIC’
+s0384,No.3 (Feat. Sol Flower),배치기,,,,앨범: Out Of Control
+s0385,안녕 나의 사랑,성시경,,,,"앨범: 여기, 내 맘속에..."
+s0386,"미안해, 고마워, 사랑해",먼데이 키즈,,,,앨범: Recollection
+s0387,그대 나를 보나요,박기영,,,,앨범: Acoustic+ Best
+s0388,Solo (Feat. Alex),다이나믹 듀오,,,,앨범: Last Days
+s0389,그대만 보여요 (Feat. BigBang T.O.P),지아,,,,앨범: 로드무비
+s0390,Do It Do It (Feat. Maniac),솔비,,,,앨범: Do It
+s0391,투명인간,손담비,,,,앨범: 투명인간
+s0392,괜찮아,낯선,,,,앨범: 괜찮아
+s0393,우리들의 행복한 시간 (Feat. 주(Joo) Narr. 안혜경),"미노 (프리스타일), 타우",,,,앨범: The First Songs For You To Remember Our Happy Days
+s0394,Moai,서태지,,,,앨범: Seotaiji 8th Atomos Part Moai
+s0395,만약에,태연,,,,앨범: 쾌도 홍길동 OST
+s0396,I Know,손호영,,,,앨범: Returns
+s0397,"사랑은 너 하나뿐 (Feat. 지오, 쇼군)",애즈원,,,,앨범: 사랑은 너 하나뿐
+s0398,난 행복해,지아,,,,앨범: 로드무비
+s0399,라라라,SG 워너비,,,,앨범: My Friend
+s0400,상심증후군 (Feat.Daylight),"노블레스, Daylight",,,,앨범: Broken Heart Syndrome
+s0401,Beautiful Life,V.O.S,,,,앨범: Wonderful Things
+s0402,Nobody (Rainstone Remix),원더걸스,,,,앨범: The Wonder Years - Trilogy
+s0403,애심 (愛心),거미,,,,앨범: 신의 저울 OST
+s0404,부탁해요 (Narr. 솔비),어썸,,,,앨범: Color 하나...
+s0405,그대라면,알렉스,,,,앨범: My Vintage Romance
+s0406,First Kiss,포맨,,,,앨범: First Kiss
+s0407,반쪽,V.O.S,,,,앨범: Wonderful Things
+s0408,Reason (Male Ver.),바비 킴,,,,앨범: 타짜 OST
+s0409,그대에게 바래요,"솔비, 김종욱",,,,앨범: 그대에게 바래요
+s0410,어제보다 오늘 더,김종국,,,,앨범: Here I Am
+s0411,Crazy Love,동방신기,,,,앨범: The 4th Album ‘MIROTIC’
+s0412,나는 아직도 (Duet. 드림걸스 MJ),태사비애,,,,앨범: 나는 아직도
+s0413,TTL (Time To Love),"티아라, 초신성",,,,앨범: TTL (Time To Love)
+s0414,사랑비,김태우,,,,앨범: T-Virus
+s0415,사랑한 후에,박효신,,,,앨범: Gift (Part.1)
+s0416,우리 헤어지자,이승기,,,,앨범: Shadow
+s0417,"헤어지지 못하는 여자, 떠나가지 못하는 남자 (Feat. 정인)",리쌍,,,,앨범: Hexagonal
+s0418,Muzik,4minute,,,,앨범: For Muzik
+s0419,Heartbreaker,G-DRAGON,,,,앨범: Heartbreaker
+s0420,라차타 (LA chA TA),f(x),,,,앨범: 라차타
+s0421,30분전 (Feat. 임정희),이현,,,,앨범: 30분전
+s0422,핼쑥해졌대,가비엔제이,,,,앨범: Heartbreak Hotel
+s0423,Kiss (Feat. CL),산다라박,,,,앨범: Kiss
+s0424,내 귀에 캔디 (Feat. 택연 Of 2PM),백지영,,,,앨범: Ego
+s0425,미스터,카라,,,,앨범: Revolution
+s0426,Abracadabra,브라운아이드걸스,,,,앨범: Sound G.
+s0427,사랑인걸요,"태연, 써니",,,,앨범: 맨땅에 헤딩 OST
+s0428,따라해 (Wannabe) (Feat. Mellow),에픽하이,,,,앨범: [e]
+s0429,Chocolate Love (Retro Pop Ver.),소녀시대,,,,앨범: Chocolate Love
+s0430,주르륵,휘성,,,,앨범: Vocolate
+s0431,가인 (Feat. Nemo Of 미스에스),배치기,,,,앨범: 367일
+s0432,그 남자 그 여자의 사정,"유이 (애프터스쿨), 전진, 숙희",,,,앨범: 인사(人事): 연·애·별(緣·愛·別)
+s0433,Vari2ty,쥬얼리,,,,앨범: Sophisticated
+s0434,사랑이 뭐길래,미스에스,,,,앨범: Miss $ S Class
+s0435,심장병,"아웃사이더, MC 스나이퍼, 호란",,,,앨범: 환타스틱 프로젝트 Vol.1
+s0436,면사포,이승기,,,,앨범: Shadow
+s0437,In The Club,2NE1,,,,앨범: 2NE1 1st Mini Album
+s0438,거짓말 (Part.1),티아라,,,,앨범: 거짓말
+s0439,"호러쇼 (Feat. 강호동, Whale)",MC몽,,,,앨범: Humanimal (Repackage)
+s0440,죽일 놈 (Guilty),다이나믹 듀오,,,,앨범: Band Of Dynamic Brothers
+s0441,사랑 참 어렵다,이승철,,,,앨범: 사랑 참 어렵다 (이승철 10th 리패키지)
+s0442,변해가네 (Feat. 정인),리쌍,,,,앨범: Hexagonal
+s0443,I Don't Care,2NE1,,,,앨범: 2NE1 1st Mini Album
+s0444,Hot Stuff,다비치,,,,앨범: 아가씨를 부탁해 OST
+s0445,생각이나,부활,,,,앨범: 25th Anniversary: Retrospect
+s0446,속았다 (Narration Of 이요원),태군,,,,앨범: The 3rd Mini Album
+s0447,눈물도 아까워 (Feat. 현아 From 4Minute),나비,,,,앨범: 눈물도 아까워
+s0448,TTL Listen 2,"티아라, 초신성",,,,앨범: TTL Listen 2
+s0449,미안해,다이나믹 듀오,,,,앨범: Triple Dynamite (0CD VS Gaeko)
+s0450,독설,테이,,,,앨범: The Shine 2009
+s0451,Ring Ding Dong,샤이니,,,,"앨범: 2009, Year Of Us"
+s0452,Wanna,카라,,,,앨범: Revolution
+s0453,사랑한단 말을 못해서,케이윌,,,,앨범: 쏘울 스페셜 OST
+s0454,너라면 좋겠어,윤도현,,,,앨범: Harmony (Present For 날아라 펭귄)
+s0455,Carousel (Feat. 이적),리쌍,,,,앨범: Hexagonal
+s0456,소년이여,G-DRAGON,,,,앨범: Heartbreaker
+s0457,Where U At,태양,,,,앨범: Where U At
+s0458,Hello (Feat. 다라),G-DRAGON,,,,앨범: Heartbreaker
+s0459,Pretty Boy,2NE1,,,,앨범: 2NE1 1st Mini Album
+s0460,바래,FT아일랜드,,,,앨범: Cross & Change
+s0461,연애특강 (FEAT. 한예슬),마이티 마우스,,,,앨범: Love Class
+s0462,우리 지금 만나 (Feat. 장기하와 얼굴들),리쌍,,,,앨범: Hexagonal
+s0463,내 사랑 내 곁에,럼블피쉬,,,,앨범: 내 사랑 내 곁에
+s0464,Breathe,G-DRAGON,,,,앨범: Heartbreaker
+s0465,초콜릿,"케이윌, 마리오",,,,앨범: Color Chocolate
+s0466,피아니시모 (Pianissimo),체리필터,,,,앨범: Rocksteric
+s0467,잊지 말아요,백지영,,,,앨범: 아이리스 OST (Part 1)
+s0468,I Don't Care (Reggae Mix Ver.),2NE1,,,,앨범: I Don't Care (Reggae Mix Ver.)
+s0469,안 줄래,4minute,,,,앨범: For Muzik
+s0470,울고 싶어 우는 사람이 있겠어 (Cry Mix),에이트,,,,앨범: 울고 싶어 우는 사람이 있겠어
+s0471,외톨이,아웃사이더,,,,앨범: Maestro
+s0472,Candy Man,브라운아이드걸스,,,,앨범: Sound G.
+s0473,"Indian Boy (Feat. 장근이, B.I)",MC몽,,,,앨범: Humanimal
+s0474,불꽃놀이 (Fireworks),다이나믹 듀오,,,,앨범: Band Of Dynamic Brothers
+s0475,사랑한다면서,오종혁,,,,앨범: 상심: Heartbreak
+s0476,너 정말이니,럼블피쉬,,,,앨범: One Sweet Day
+s0477,눈물아 안녕,아이비,,,,앨범: I Be..
+s0478,소원을 말해봐 (Genie),소녀시대,,,,앨범: '소원을 말해봐 (Genie)' The Second Mini Album
+s0479,사랑이라서,임재범,,,,앨범: 사랑이라서
+s0480,아몰레드 (Amoled),"손담비, 애프터스쿨",,,,앨범: 아몰레드
+s0481,내 이름 부르지마,이수영,,,,앨범: 9th Dazzle
+s0482,Yes I'm In Love (Feat. 2PM 택연),바다,,,,앨범: Yes I'm In Love
+s0483,Hot Issue,4minute,,,,앨범: Hot Issue
+s0484,N-Time (Feat. 티아라),황정음,,,,앨범: N-Time
+s0485,이 노래를 들으면 (Feat. 수호),태사비애,,,,앨범: 이 노래를 들으면
+s0486,기억이 안나,별,,,,앨범: 2009 No.1 Diva's Love (기억이 안나)
+s0487,Lie,FT아일랜드,,,,앨범: One Date
+s0488,I Want You Back,시크릿,,,,앨범: I Want You Back
+s0489,사랑할 수도 미워할 수도,애즈원,,,,앨범: 드라뮤지끄 Vol.1 (Part.1)
+s0490,말할걸 그랬지,박지헌,,,,앨범: 말할걸 그랬지 (유영석 20주년 기념앨범 Part. 3)
+s0491,"헤어질 거 같애 (Feat. MJ Of Sunnyside, 신혜)",박지헌,,,,앨범: 헤어질 거 같애
+s0492,나는... (Feat. Ivy),MC몽,,,,앨범: Humanimal (Repackage)
+s0493,Chocolate Love (Electronic Pop Ver.),f(x),,,,앨범: Chocolate Love
+s0494,결혼해 줄래 (Feat. BIZNIZ),이승기,,,,앨범: 결혼해줄래
+s0495,내 몸은 너를 지웠다 (Feat. Enzo.B),리쌍,,,,앨범: Hexagonal
+s0496,Oh Yeah,엠블랙,,,,앨범: Just Blaq
+s0497,Let's Go Party,2NE1,,,,앨범: 2NE1 1st Mini Album
+s0498,Girl,유리,,,,앨범: Chocolate #2 - Lovely Taste
+s0499,슬프지 않아요 (Feat. 소윤),PK 헤만,,,,앨범: Taste Of Love
+s0500,니가 밉다,2PM,,,,앨범: 2:00PM Time For Change
+s0501,"가을로 (Feat. 프리스타일 미노, Daylight, 이상)",타우,,,,앨범: 우리들의 행복한 시간 그 후...내 머리속의 지우개 Part 2
+s0502,"The Leaders (Feat. Teddy, CL)",G-DRAGON,,,,앨범: Heartbreaker
+s0503,I Love You (Feat. 미료),나르샤,,,,앨범: 아가씨를 부탁해 OST 1.5집
+s0504,사랑..그 몹쓸병,휘성,,,,앨범: Vocolate
+s0505,잘가요 내사랑,에이트,,,,앨범: 잘가요 내사랑
+s0506,Gossip Man (Feat. 김건모),G-DRAGON,,,,앨범: Heartbreaker
+s0507,Supermagic,Supreme Team,,,,앨범: Supreme Team Guide To Excellent Adventure
+s0508,Strong Girl,쥬얼리,,,,앨범: Sophisticated
+s0509,One Way Ticket,키네틱 플로우,,,,앨범: G-days
+s0510,일터 (Feat. Bizzy),리쌍,,,,앨범: Hexagonal
