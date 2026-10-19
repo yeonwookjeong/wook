@@ -1025,11 +1025,32 @@ def main():
     final = OUT / f"쇼츠_{rpath.stem}{suffix}.mp4"
     print("   이어 붙이는 중…")
     assemble(ff, seg_files, layout, tmp, final,
-             transitions=recipe.get("transitions", True), sfx=recipe.get("sfx", True))
-    print(f"\n✅ 완성: {final}")
+             transitions=recipe.get("transitions", True), sfx=recipe.get("sfx", True),
+             bgm=(HERE / recipe["bgm"]) if recipe.get("bgm") else None,
+             bgm_volume=float(recipe.get("bgm_volume", 0.12)))
+    caption = final.with_suffix(".txt")
+    caption.write_text(upload_text(recipe), encoding="utf-8")
+    print(f"\n✅ 완성: {final}\n   업로드용 문구: {caption}")
 
 
-def assemble(ff: str, segs: list, layout: Path, tmp: Path, final: Path, transitions: bool, sfx: bool):
+DISCLOSURE = "이 게시물은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다."
+
+
+def upload_text(recipe: dict) -> str:
+    """업로드할 때 복사해서 쓰는 제목·설명·해시태그·고지 문구."""
+    plain = lambda t: re.sub(r"\[\[|\]\]", "", t or "")
+    title = f"{plain(recipe['title1'])} {plain(recipe.get('title2', ''))}".strip()
+    names = re.findall(r"\[\[(.*?)\]\]", recipe["title1"] + recipe.get("title2", ""))
+    tags = [f"#{n.replace(' ', '')}" for n in names]
+    tags += [f"#{t}" for t in recipe.get("hashtags", ["셀럽템", "연예인추천템", "쿠팡추천템", "꿀템", "추천템"])]
+    link = recipe.get("link_text", "프로필 링크")
+    return (f"[제목]\n{title}\n\n"
+            f"[설명/캡션]\n{title}\n제품 정보는 {link}에서 확인하세요 👆\n\n{' '.join(tags)}\n\n{DISCLOSURE}\n\n"
+            f"[고정 댓글]\n{DISCLOSURE}\n")
+
+
+def assemble(ff: str, segs: list, layout: Path, tmp: Path, final: Path, transitions: bool, sfx: bool,
+             bgm: Path | None = None, bgm_volume: float = 0.12):
     """구간들을 전환 효과(xfade)로 잇고, 제목·하단 레이아웃을 얹고, 전환 때 '슉' 효과음을 넣는다."""
     n = len(segs)
     cmd = [ff, "-y"]
@@ -1072,9 +1093,20 @@ def assemble(ff: str, segs: list, layout: Path, tmp: Path, final: Path, transiti
             ms = max(int((o + T / 2 - 0.2) * 1000), 0)
             fg.append(f"[w{j}]adelay={ms}|{ms}[wd{j}]")
         fg.append(f"[{la}]" + "".join(f"[wd{j}]" for j in range(m)) +
-                  f"amix=inputs={m + 1}:duration=first:normalize=0[aout]")
+                  f"amix=inputs={m + 1}:duration=first:normalize=0[amain]")
     else:
-        fg.append(f"[{la}]anull[aout]")
+        fg.append(f"[{la}]anull[amain]")
+    if bgm:
+        # 배경음악: 영상 길이만큼 반복, 말소리가 나오면 자동으로 작아짐(사이드체인 덕킹), 끝에서 페이드아웃
+        bi = cmd.count("-i")  # 지금까지 넣은 입력 개수 = 배경음악 입력 번호
+        cmd += ["-stream_loop", "-1", "-i", str(bgm)]
+        fg.append("[amain]asplit=2[am1][am2]")
+        fg.append(f"[{bi}:a]aresample=44100,aformat=channel_layouts=stereo,volume={bgm_volume},"
+                  f"atrim=0:{total:.3f},afade=t=out:st={max(total - 1.2, 0):.3f}:d=1.2[bg0]")
+        fg.append("[bg0][am2]sidechaincompress=threshold=0.03:ratio=6:attack=15:release=350[bgd]")
+        fg.append("[am1][bgd]amix=inputs=2:duration=first:normalize=0[aout]")
+    else:
+        fg.append("[amain]anull[aout]")
     cmd += ["-filter_complex", ";".join(fg), "-map", "[vout]", "-map", "[aout]", "-t", f"{total:.3f}",
             "-r", str(FPS), "-c:v", "libx264", "-preset", "veryfast", "-crf", "19",
             "-c:a", "aac", "-b:a", "160k", "-ar", "44100", "-ac", "2", "-movflags", "+faststart", str(final)]
