@@ -1,0 +1,21 @@
+# 이름 음절의 로마자(국어의 로마자 표기법)가 영어로 이상하게 읽히거나 외국인이 발음하기 어려운 경우. 초안, 원어민·검수자 확인 필요.
+# level: avoid = 후보에서 뺌 · warn = 감점하고 결과에 안내 · hard = 발음이 어려워 감점
+syllable	rr	level	why
+국	guk	avoid	gook: 영어권 인종 비하 속어와 같은 소리
+숙	suk	avoid	suck처럼 읽힘
+동	dong	warn	영어 속어(dong)로 읽힘. 이름 끝 글자로는 피함
+신	sin	warn	sin(죄)
+필	pil	warn	pill(알약)
+강	gang	warn	gang(폭력단)
+분	bun	warn	bun(빵, 엉덩이 속어)
+범	beom	warn	흔한 비공식 표기 Bum이 bum(엉덩이·부랑자)
+석	seok	warn	흔한 비공식 표기 Suk/Suck
+이	i	warn	대명사 I와 헷갈림. 이름 끝 글자로는 피함
+은	eun	hard	영어에 없는 모음 ㅡ
+의	ui	hard	이중모음, 표기와 소리가 다름
+응	eung	hard	영어에 없는 모음 ㅡ
+경	gyeong	hard	gy- 첫소리와 eo 모음
+화	hwa	hard	hw- 첫소리
+웅	ung	hard	ung은 영어에서 끝소리로만 씀
+렬	ryeol	hard	ry- 첫소리와 eo 모음
+륜	ryun	hard	ry- 첫소리
