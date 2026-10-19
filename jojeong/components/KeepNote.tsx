@@ -42,3 +42,19 @@ export default async function KeepNote({ order, back }: { order: Order; back: st
     </section>
   );
 }
+
+// At the top of a bought report: a buyer not signed in whose questions are still waiting.
+// The report is long, so the note at the bottom is easy to miss.
+export async function BonusTop({ order, back }: { order: Order; back: string }) {
+  if (!order.bonus || order.bonusGiven || !membersEnabled() || !(await askShown())) return null;
+  if (await currentMember().catch(() => null)) return null;
+  return (
+    <Link
+      href={`/login?next=${encodeURIComponent(back)}`}
+      className="mt-3 flex items-center justify-between gap-2 rounded-2xl bg-[#FEE500] px-4 py-3 text-[14px] font-bold text-[#191919]"
+    >
+      <span>정 훈도 질문 {order.bonus}개가 기다리고 있어요</span>
+      <span className="shrink-0">카카오로 받기 →</span>
+    </Link>
+  );
+}

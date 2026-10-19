@@ -5,12 +5,16 @@ import { bumpCounters, readCounters } from "./store";
 // day, plus a running total. Only numbers are kept, nothing about who did what.
 
 // Events a page may report itself (app/api/stat); the rest are counted on the server where they happen.
-export const CLIENT_EVENTS = ["share_court", "share_result", "save_image", "own_court", "to_saju", "ask_pop", "to_ask"] as const;
+export const CLIENT_EVENTS = ["share_court", "share_result", "save_image", "own_court", "to_saju", "ask_pop", "to_ask", "to_channel"] as const;
 // Where a step into 정 훈도에게 묻기 was taken: the opening note, the header, the home tile, the end of the free
 // reading, the end of a bought report.
 export const ASK_FROM = ["pop", "header", "home", "free", "report", "chapter"] as const;
 export type AskFrom = (typeof ASK_FROM)[number];
 export const ASK_FROM_LABEL: Record<AskFrom, string> = { pop: "오픈 안내 팝업", header: "상단 묻기 버튼", home: "홈 타일", free: "무료 사주 끝", report: "보고서 끝", chapter: "보고서 장마다" };
+// Where the KakaoTalk channel was added from (components/ChannelCard.tsx).
+export const CH_FROM = ["free", "report"] as const;
+export type ChFrom = (typeof CH_FROM)[number];
+export const CH_FROM_LABEL: Record<ChFrom, string> = { free: "무료 사주 끝", report: "보고서 끝" };
 export type ClientEvent = (typeof CLIENT_EVENTS)[number];
 export type StatEvent = ClientEvent | "pv" | "king" | "join" | "appoint" | "reading";
 
@@ -40,7 +44,8 @@ export async function track(
     | `sv:${string}`
     | `sl:${string}`
     | `cv:${string}`
-    | `ask:${string}`,
+    | `ask:${string}`
+    | `ch:${string}`,
 ) {
   await bumpCounters([dayKey(event, kstDay()), allKey(event)]);
 }

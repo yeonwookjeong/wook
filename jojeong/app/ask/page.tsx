@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import CreditSlips from "./CreditSlips";
 import { iljuOf, loadRoom, personOfRoom } from "@/lib/ask";
+import NewsConsent, { NewsToggle } from "@/components/NewsConsent";
 import { ASK_OPEN, CHANNEL_GIFT, CHANNEL_GIFT_ON, currentMember, JOIN_GIFT, KAKAO_CHANNEL, memberNo, membersEnabled, viaEnabled } from "@/lib/members";
 import { OpenRoomForm } from "./AskForms";
 import DraftReturn from "./DraftReturn";
@@ -210,7 +211,7 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
           </div>
           {/* Kakao members who have not had the channel question: add the channel, then come back through Kakao to check. */}
           {CHANNEL_GIFT_ON && member.id.startsWith("k") && !member.channel && (
-            <div className="mt-4 rounded-xl border border-[#FEE500]/40 bg-[#FEE500]/10 px-3.5 py-3 text-center text-[13px] leading-relaxed">
+            <div id="channel" className="mt-4 scroll-mt-4 rounded-xl border border-[#FEE500]/40 bg-[#FEE500]/10 px-3.5 py-3 text-center text-[13px] leading-relaxed">
               <b className="block font-myeongjo text-[14.5px]">카카오톡 채널을 추가하면 질문 {CHANNEL_GIFT}개 더</b>
               <span className="text-hanji/75">새 소식과 좋은 날 알림도 채널로 받아요</span>
               {q.ch && !q.channel && <span className="mt-1 block text-[12px] text-[#e2bc68]">아직 채널 추가가 확인되지 않았어요. 추가한 뒤 다시 눌러 주세요.</span>}
@@ -229,6 +230,7 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
               </div>
             </div>
           )}
+          <NewsConsent member={member} />
           {(q.joined || q.moved || q.bought || q.bonus || q.channel) && (
             <p className="mt-4 rounded-xl border border-[#e2bc68]/30 bg-[#e2bc68]/10 px-3.5 py-2.5 text-center text-[13px] leading-relaxed">
               {q.joined && (member.gift && member.log.some((l) => l.why === "가입 선물") ? `질문 ${JOIN_GIFT}개를 드렸사옵니다. ` : "다시 오셨사옵니다. ")}
@@ -307,7 +309,7 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
         </Floor>
       </Hallway>
 
-      <p className="mt-6 text-center text-[12px]">
+      <div className="mt-6 text-center text-[12px]">
         <span className="text-ink-soft">회원 번호 {memberNo(member.id)}</span>
         <span className="mx-2 text-ink-soft/40">·</span>
         <a href="/logout" className="text-ink-soft underline">
@@ -317,7 +319,8 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
         <Link href="/leave" className="text-ink-soft/70 underline">
           회원 탈퇴
         </Link>
-      </p>
+        <NewsToggle member={member} />
+      </div>
     </>
   );
 }

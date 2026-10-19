@@ -1,4 +1,5 @@
-import KeepNote from "@/components/KeepNote";
+import KeepNote, { BonusTop } from "@/components/KeepNote";
+import ReportFeedback from "@/components/ReportFeedback";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -19,6 +20,7 @@ import DomainCard from "@/components/DomainCard";
 import FreeReading from "@/components/FreeReading";
 import ShareResult from "@/components/ShareResult";
 import AskCard from "@/components/AskCard";
+import ChannelCard from "@/components/ChannelCard";
 import { ReadingCard, SinbunCard } from "@/components/ResultCards";
 import { iljuFacts } from "@/lib/cards";
 import { sinbunStory } from "@/lib/sinbun";
@@ -659,6 +661,7 @@ async function OpenReport({
           <span className="mt-1 block text-[13px] text-ink-soft">나는 어떤 사람인지부터 앞으로 10년, 꼭 잡아야 할 기회까지 →</span>
         </Link>
         {self && <AskCard from="free" lead="풀이를 보고 생긴 고민, 정 훈도에게 묻기" />}
+        {self && <ChannelCard from="free" />}
         {shareEnd}
         {meDeepen}
         {other}
@@ -1091,6 +1094,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
             ← 전체 보고서
           </Link>
         </nav>
+        {paid && <BonusTop order={paid} back={`/reports/${product.id}?order=${paid.id}`} />}
         <OpenReport
           product={product}
           courtId={courtId}
@@ -1112,8 +1116,10 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
             y: typeof search.y === "string" ? search.y : undefined,
           }}
         />
+        {paid && <ReportFeedback order={paid.id} product={product.id} />}
         {paid && <KeepNote order={paid} back={`/reports/${product.id}?order=${paid.id}`} />}
         {paid && <AskCard from="report" lead="다 읽고 궁금한 것, 정 훈도에게 묻기" />}
+        {paid && <ChannelCard from="report" />}
       </>
     );
 

@@ -411,6 +411,35 @@ export async function deleteMemberRaw(id: string) {
   await backend().remove("members", id);
 }
 
+// What a signed-in member looked at: one counter per report page (lib/sales.ts key), for the owner's member card.
+// Counters of their own, so a view never rewrites the member record (and its questions) at the same time.
+const viewKey = (id: string, key: string) => `mv:${id}:${key}`;
+export async function noteMemberView(id: string, key: string) {
+  if (MEMBER_ID.test(id)) await backend().incr(viewKey(id, key)).catch(() => {});
+}
+export async function memberViews(id: string, keys: string[]): Promise<number[]> {
+  return readCounters(keys.map((k) => viewKey(id, k)));
+}
+export async function clearMemberViews(id: string, keys: string[]) {
+  if (MEMBER_ID.test(id)) await Promise.all(keys.map((k) => backend().set(viewKey(id, k), ""))).catch(() => {});
+}
+
+// How a bought report was liked (components/ReportFeedback.tsx): one record per order and report, newest last
+// in `feedbacks`. A second answer replaces the first.
+export async function getFeedbackRaw(key: string): Promise<string | null> {
+  return backend().get(`fb:${key}`);
+}
+export async function setFeedbackRaw(key: string, raw: string, isNew: boolean) {
+  await backend().set(`fb:${key}`, raw);
+  if (isNew) await backend().push("feedbacks", key);
+}
+export async function feedbackKeys(): Promise<string[]> {
+  return backend().list("feedbacks");
+}
+export async function getFeedbacksRaw(keys: string[]): Promise<(string | null)[]> {
+  return keys.length ? backend().mget(keys.map((k) => `fb:${k}`)) : [];
+}
+
 // 질문권 events (lib/creditEvents.ts): one record each by its code, `cevents` lists them for the owner, and a
 // counter of how many have taken it.
 export async function getCreditEventRaw(code: string): Promise<string | null> {

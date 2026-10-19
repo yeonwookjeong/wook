@@ -2,6 +2,7 @@ import Link from "next/link";
 import PayButton from "./PayButton";
 import { hanjaNum } from "@/lib/hanjaNum";
 import { josa } from "@/lib/josa";
+import { currentMember, membersEnabled } from "@/lib/members";
 import { payEnabled } from "@/lib/pay";
 import { bonusFor, PRICE, priceFor, productById, saleLabel, saleNow, SETS, setsWith, type Product, type ProductId, type SetId } from "@/lib/products";
 import { setOffer, type SetOffer } from "@/lib/upgrade";
@@ -34,6 +35,8 @@ export default async function Paywall({
   // A sale shows only on the 990-won reports (lib/products.ts priceFor).
   const sale = price < PRICE ? saleNow() : null;
   const bonus = bonusFor(pr, product.id, null, request.y, ny);
+  // A buyer not signed in gets the questions at Kakao login, so say so before paying.
+  const guest = bonus > 0 && membersEnabled() && !(await currentMember().catch(() => null));
   // Sets are offered for a one-person report bought for a saved chart. A set holding a 연운 only while there is
   // a coming year, and on a 연운 page only for that year.
   const offered = request.p
@@ -110,7 +113,11 @@ export default async function Paywall({
           {sale && <s className="text-base text-ink-soft">{PRICE.toLocaleString("ko-KR")}원</s>}
           <span className="font-myeongjo text-3xl font-extrabold text-seal">{price.toLocaleString("ko-KR")}원</span>
         </p>
-        {bonus > 0 && <p className="mt-1 text-[12.5px] font-bold text-[#9a7424]">정 훈도 질문 {bonus}개 포함</p>}
+        {bonus > 0 && (
+          <p className="mt-1 text-[12.5px] font-bold text-[#9a7424]">
+            정 훈도 질문 {bonus}개 포함{guest && <span className="font-normal"> · 카카오 로그인하면 바로 받아요</span>}
+          </p>
+        )}
         {note && <p className="mt-3 rounded-xl bg-gold/10 px-3 py-2 text-left text-[12px] leading-relaxed">{note}</p>}
         {payEnabled() ? (
           <>
