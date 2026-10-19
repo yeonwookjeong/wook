@@ -22,7 +22,9 @@ const review = [];
 let used = 0, quotaHit = false;
 for (const s of todo) {
   if (used >= MAX) break;
-  const q = `${s.artist} ${s.title}`;
+  // 검색어: 괄호 설명은 빼고 Feat.만 남김 ("Tell me (Sampling From ...)" → "Tell me")
+  const qTitle = s.title.replace(/\s*\((?!feat)[^()]*\)/gi, '').replace(/\s{2,}/g, ' ').trim() || s.title;
+  const q = `${s.artist.split(',')[0]} ${qTitle}`;
   let items;
   try {
     const r = await yt('search', { part: 'snippet', q, type: 'video', videoCategoryId: 10, maxResults: 8, regionCode: 'KR', relevanceLanguage: 'ko' });
