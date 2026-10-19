@@ -85,6 +85,43 @@ for (const s of todo) {
     cands.slice(0, 6).forEach((c, i) => review.push({ song_id: s.song_id, title: s.title, artist: s.artist, missing: !s.mv_id && !s.topic_id ? 'both' : !s.mv_id ? 'mv' : 'topic', cand: i + 1, video_id: c.id, video_title: c.title, channel: c.channel, desc: c.desc, url: `https://youtu.be/${c.id}` }));
   }
 }
+// ---------- 재시도 패스: 검색은 했지만 Topic 음원이 없는 곡 → 검색어를 바꿔 최대 3회 더 ----------
+const RETRY_MAX = Number(process.env.RETRY_SEARCHES_PER_RUN || 30);
+const retryTargets = targets.filter(s => s.search_done && !s.topic_id && !/retry_done/.test(s.note));
+let retryUsed = 0;
+for (const s of retryTargets) {
+  if (quotaHit || used >= MAX || retryUsed >= RETRY_MAX) break;
+  const nt = norm(s.title), na = norm(s.artist.split(',')[0]);
+  const album = (s.note.match(/앨범: ([^/]+)/) || [])[1]?.trim();
+  const nal = album ? normKeep(album) : null;
+  const plainTitle = s.title.replace(/\s*\([^()]*\)/g, '').trim() || s.title;
+  const variants = [
+    `${plainTitle} ${album || ''} provided to youtube`,          // Topic 설명문 첫 줄 문구
+    `"${plainTitle}" ${s.artist.split(',')[0]}`,                    // 제목 정확 일치 + 가수
+    `${plainTitle} ${s.artist.split(',')[0]} 2005 2006 2007 2008 2009 topic`,
+  ];
+  let found = null;
+  for (const q of variants) {
+    if (quotaHit || used >= MAX || retryUsed >= RETRY_MAX) break;
+    let items;
+    try { items = (await yt('search', { part: 'snippet', q, type: 'video', videoCategoryId: 10, maxResults: 10, regionCode: 'KR' })).items || []; }
+    catch (e) { if (e.quota) { quotaHit = true; console.error('쿼터 소진(재시도).'); break; } console.error(`재시도 ${q}: ${e.message}`); continue; }
+    used++; retryUsed++;
+    const pool = items.filter(it => / - Topic$/.test(it.snippet.channelTitle)).map(it => {
+      const blob = normKeep(it.snippet.title + ' ' + it.snippet.channelTitle + ' ' + (it.snippet.description || ''));
+      const t = norm(it.snippet.title);
+      return { id: it.id.videoId, title: it.snippet.title, channel: it.snippet.channelTitle,
+        titleMatch: t.includes(nt) || nt.includes(t) && t.length >= 2 || normKeep(it.snippet.title).includes(normKeep(plainTitle)),
+        artistMatch: blob.includes(na), albumMatch: nal ? blob.includes(nal) : false };
+    }).filter(c => c.titleMatch);
+    found = pool.find(c => c.artistMatch && c.albumMatch) || pool.find(c => c.albumMatch) || pool.find(c => c.artistMatch) || (pool.length === 1 ? pool[0] : null);
+    if (found) break;
+  }
+  if (found) { s.topic_id = found.id; s.note = (s.note ? s.note + ' / ' : '') + `retry_done: ${found.channel}`; console.log(`재시도 성공 ${s.title} - ${s.artist} → ${found.channel}`); }
+  else if (!quotaHit) { s.note = (s.note ? s.note + ' / ' : '') + 'retry_done: 못 찾음'; console.log(`재시도 실패 ${s.title} - ${s.artist}`); }
+}
+if (retryTargets.length) console.log(`재시도 대상 ${retryTargets.length}곡, 검색 ${retryUsed}회`);
+
 saveSongs(songs);
 if (review.length) {
   fs.mkdirSync(DIR.mapping, { recursive: true });
