@@ -31,7 +31,13 @@ if (!entries.length) { console.error('곡을 하나도 못 읽었습니다. 멜�
 // 표시용/검색용 정리
 const DESC = /\s*\((?:[^()]*(?:드라마|CF|OST|삽입곡|테마|주제가|타이틀|메인|광고|여는 노래|오프닝|엔딩)[^()]*)\)/g;   // 설명형 괄호는 메모로
 const cleanTitle = t => t.replace(DESC, '').replace(/\s{2,}/g, ' ').trim();
-const cleanArtist = a => a.replace(/\s*\([A-Za-z0-9 .'&!,-]+\)\s*$/, '').trim();   // "거미 (GUMMY)" → "거미"
+const cleanOne = a => {
+  a = a.trim();
+  const m = a.match(/^([A-Za-z0-9 .'&!-]+)\s*\(([^()]*[가-힣][^()]*)\)$/);   // "BIGBANG (빅뱅)" → "빅뱅"
+  if (m) return m[2].trim();
+  return a.replace(/\s*\([A-Za-z0-9 .'&!,-]+\)\s*$/, '').trim();           // "거미 (GUMMY)" → "거미"
+};
+const cleanArtist = a => a.split(/,\s*/).map(cleanOne).join(', ');            // "김현철, 거미 (GUMMY)" → "김현철, 거미"
 
 // 외국곡 제외 목록 (data/exclude-artists.txt)
 const exPath = path.join(ROOT, 'data/exclude-artists.txt');
