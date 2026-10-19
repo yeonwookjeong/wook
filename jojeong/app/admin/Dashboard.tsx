@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Order } from "@/lib/pay";
 import { SALE_KEYS, saleKey, saleLabel } from "@/lib/sales";
-import { SOURCE_LABEL, SOURCES, type Source } from "@/lib/source";
+import { DIRECT_KIND_LABEL, DIRECT_KINDS, SOURCE_LABEL, SOURCES, type Source } from "@/lib/source";
 import { daysBetween, readDays, readStats } from "@/lib/stats";
 import type { ThreadsPost } from "@/lib/threads";
 
@@ -59,7 +59,7 @@ export default async function Dashboard({
   // 오늘 is a day still running: against a whole yesterday it would always look like a fall, so it has none.
   const prevDays = span.days > 1 && start >= LAUNCH && prevFrom >= LAUNCH ? daysBetween(prevFrom, shift(from, -1)) : [];
 
-  const events = ["uv", "pv", "reading", ...SOURCES.map((s) => `src:${s}`), ...SALE_KEYS.flatMap((k) => [`view:${k}`, `co:${k}`])];
+  const events = ["uv", "pv", "reading", ...SOURCES.map((s) => `src:${s}`), ...DIRECT_KINDS.map((k) => `dx:${k}`), ...SALE_KEYS.flatMap((k) => [`view:${k}`, `co:${k}`])];
   const [cur, prev, ever] = await Promise.all([
     readDays(events, days),
     prevDays.length ? readDays(["uv", "reading"], prevDays) : Promise.resolve({} as Record<string, number[]>),
@@ -98,6 +98,10 @@ export default async function Dashboard({
     })
     .filter((r) => r.visitors > 0 || r.n > 0)
     .sort((a, b) => b.won - a.won);
+  // "직접 · 알 수 없음" by the kind of browser (lib/source.ts directKind), counted from the evening of 10/19.
+  const direct = DIRECT_KINDS.map((k) => ({ k, v: sum(`dx:${k}`) }))
+    .filter((d) => d.v > 0)
+    .sort((a, b) => b.v - a.v);
 
   // Reports: shoppers on the page, payment windows opened, paid.
   const products = SALE_KEYS.map((k) => {
@@ -244,6 +248,16 @@ export default async function Dashboard({
               <tr key={r.s} className="border-t border-seal/10">
                 <td className="py-1.5 text-left">
                   <b>{ROAD_LABEL(r.s)}</b>
+                  {r.s === "direct" && direct.length > 0 && (
+                    <span className="mt-1 flex flex-col gap-0.5 text-[10.5px] font-normal text-ink-soft">
+                      {direct.map((d) => (
+                        <span key={d.k} className="flex justify-between gap-2">
+                          <span className="truncate">└ {DIRECT_KIND_LABEL[d.k].replace(/ \(.*\)$/, "")}</span>
+                          <span className="shrink-0 tabular-nums">{n(d.v)}</span>
+                        </span>
+                      ))}
+                    </span>
+                  )}
                   {r.s === "threads" && range !== "today" && threadViews > 0 && (
                     <span className="block text-[10.5px] text-ink-soft">
                       조회 {man(threadViews)} → {pctText(r.visitors, threadViews, 2)}
@@ -264,7 +278,7 @@ export default async function Dashboard({
         <p className="mt-2 text-[10.5px] leading-relaxed text-ink-soft">
           새 방문은 그 길로 처음 온 브라우저(10/1부터), 결제는 처음 온 길 기준이에요. 스레드 조회는 이 기간에 올린 글의 조회수로, 실시간이 아니라{" "}
           {synced ? `${new Date(synced + 9 * 3600000).toISOString().slice(5, 16).replace("T", " ").replace("-", "/")} 기준` : "마지막으로 가져온 때 기준"}
-          이에요(스레드 성적표에서 &lsquo;지금 가져오기&rsquo;로 새로 받아요). 지난 글도 계속 방문을 데려와서, 오늘처럼 짧은 기간에는 비율을 보여 주지 않아요.
+          이에요(스레드 성적표에서 &lsquo;지금 가져오기&rsquo;로 새로 받아요). 지난 글도 계속 방문을 데려와서, 오늘처럼 짧은 기간에는 비율을 보여 주지 않아요. 직접 · 알 수 없음 아래 칸은 어떤 브라우저였는지예요(10/19 저녁부터): &lsquo;앱 안 브라우저&rsquo;는 이름을 숨긴 앱에서, &lsquo;사파리·크롬&rsquo;은 주소를 직접 치거나 붙여 넣어 온 거예요.
         </p>
       </div>
 
