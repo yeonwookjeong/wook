@@ -41,7 +41,9 @@ export default function MeForm({ next, submit = "내 사주로 보기", defaultN
     keepValues(formAction)(e);
   };
   return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-4">
+    // `action` too, so a tap before the page's script has loaded (slow in-app browsers) still posts to the server
+    // and gets counted, instead of reloading the page with the birth date in the address.
+    <form action={formAction} onSubmit={onSubmit} className="flex flex-col gap-4">
       <input type="hidden" name="next" value={next} />
       <PersonFields nameLabel="이름" unknownHour="모름" modern defaultName={defaultName} />
       {state.error && (
