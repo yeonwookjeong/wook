@@ -33,7 +33,7 @@ function ErrorLine({ error }: { error: string | null }) {
 export function OpenRoomForm() {
   const [state, action, pending] = useActionState<FormState, FormData>(openRoomAction, { error: null });
   return (
-    <form onSubmit={keepValues(action)} className="mt-3 flex flex-col gap-3">
+    <form action={action} onSubmit={keepValues(action)} className="mt-3 flex flex-col gap-3">
       <PersonFields nameLabel="이름" unknownHour="모름" modern binaryGender genderLabel="성별 · 배우자의 별과 10년 흐름을 볼 때 꼭 필요해요" />
       <ErrorLine error={state.error} />
       <button type="submit" disabled={pending} className="rounded-xl bg-ink py-3 text-sm font-extrabold text-hanji disabled:opacity-60">
@@ -309,7 +309,7 @@ export function ChooseForm({ room, question, topic, choices }: { room: string; q
 export function AttachOtherForm({ room, person }: { room: string; person?: string }) {
   const [state, action, pending] = useActionState<FormState, FormData>(attachOtherAction, { error: null });
   return (
-    <form onSubmit={keepValues(action)} className="mt-3 flex flex-col gap-3">
+    <form action={action} onSubmit={keepValues(action)} className="mt-3 flex flex-col gap-3">
       <input type="hidden" name="room" value={room} />
       {person && <input type="hidden" name="person" value={person} />}
       {!person && (

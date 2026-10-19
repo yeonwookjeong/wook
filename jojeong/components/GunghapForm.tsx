@@ -30,7 +30,7 @@ export default function GunghapForm({ savedName, product = "gunghap" }: { savedN
   const [useSaved, setUseSaved] = useState(savedName !== null);
 
   return (
-    <form onSubmit={keepValues(formAction)} className="flex flex-col gap-4">
+    <form action={formAction} onSubmit={keepValues(formAction)} className="flex flex-col gap-4">
       <input type="hidden" name="product" value={product} />
       {product === "gunghap" && (
         <fieldset className="flex flex-col gap-1.5">
