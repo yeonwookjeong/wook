@@ -121,3 +121,11 @@ for f in recipes/*.json; do python3 make_short.py "$f"; done
 ```
 - Gemini 말투는 레시피의 `"tts_style"`(영어 지시문)로 바꿀 수 있어요.
 - 실행하면 `🔊 TTS: Gemini Zephyr`처럼 실제로 쓰인 엔진이 표시돼요. `edge-tts(구형 무료)`로 나오면 Gemini 키가 안 읽힌 거예요.
+
+## ElevenLabs TTS (추천: 가장 자연스러운 한국어)
+1. elevenlabs.io 가입 → 상업적으로 쓰려면 유료(Starter 이상) 요금제
+2. 프로필 → API Keys에서 키를 만들고, `shorts/elevenlabs_key.txt`에 붙여넣기
+3. Voices → Voice Library에서 `Korean`으로 검색 → 마음에 드는 여성 목소리를 **Add to my voices**
+4. `python3 make_short.py --list-voices`로 ID를 확인하고 레시피에 `"eleven_voice": "ID"` (없으면 한국어 목소리를 자동 선택)
+
+키가 있으면 ElevenLabs가 Gemini보다 먼저 쓰여요. tts 구간의 `"say"`에는 `[surprised]`, `[curious]`, `[excited]` 같은 감정 태그를 넣을 수 있고(eleven_v3), 자막에는 `"text"`가 나와요.

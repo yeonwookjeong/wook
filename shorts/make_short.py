@@ -428,6 +428,78 @@ def edge_tts_make(text: str, voice: str, rate: str, mp3_out: Path):
         die(f"TTS 만들기 실패: {e}")
 
 
+# ---------------- ElevenLabs (유료 Starter $5/월부터 상업적 사용 가능 — 가장 자연스러운 한국어 TTS)
+
+ELEVEN_MODELS = ["eleven_v3", "eleven_multilingual_v2"]  # 위에서부터 시도
+
+
+def eleven_key():
+    key = os.environ.get("ELEVENLABS_API_KEY", "").strip()
+    f = HERE / "elevenlabs_key.txt"
+    if not key and f.exists():
+        key = f.read_text(encoding="utf-8").strip()
+    return key or None
+
+
+def _eleven(method: str, path: str, key: str, body: dict | None = None):
+    req = urllib.request.Request(f"https://api.elevenlabs.io{path}", method=method,
+                                 data=json.dumps(body).encode() if body is not None else None,
+                                 headers={"xi-api-key": key, "Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=120) as r:
+        return r.read()
+
+
+def eleven_voices(key: str):
+    try:
+        return json.loads(_eleven("GET", "/v1/voices", key)).get("voices", [])
+    except urllib.error.HTTPError as e:
+        if e.code in (401, 403):
+            die("ElevenLabs 키가 맞지 않아요. elevenlabs_key.txt 내용을 확인하세요.")
+        die(f"ElevenLabs 목소리 목록을 못 불러왔어요 (HTTP {e.code}).")
+
+
+def _is_korean(v: dict) -> bool:
+    blob = json.dumps(v.get("labels", {}), ensure_ascii=False).lower() + " " + v.get("name", "").lower()
+    langs = " ".join(str(x.get("language", "")) for x in v.get("verified_languages", []) or [])
+    return "korean" in blob or "한국" in blob or " ko" in f" {langs}"
+
+
+def pick_eleven_voice(recipe: dict, key: str) -> str:
+    if recipe.get("eleven_voice"):
+        return recipe["eleven_voice"]
+    voices = eleven_voices(key)
+    ko = [v for v in voices if _is_korean(v)]
+    if not ko:
+        die("ElevenLabs '내 목소리'에 한국어 목소리가 없어요.\n"
+            "   elevenlabs.io → Voices → Voice Library에서 'Korean'으로 검색해 마음에 드는 여성 목소리를\n"
+            "   'Add to my voices' 한 뒤 다시 실행하세요. (python3 make_short.py --list-voices 로 확인)")
+    print(f"      (레시피에 eleven_voice가 없어 '{ko[0]['name']}' 목소리를 자동 선택)")
+    return ko[0]["voice_id"]
+
+
+def eleven_tts(text: str, voice_id: str, key: str, mp3_out: Path, models: list[str]):
+    """eleven_v3는 [excited] 같은 감정 태그를 이해함. 다른 모델로 넘어가면 태그는 지워서 보냄."""
+    last = ""
+    for model in models:
+        say = text if model == "eleven_v3" else re.sub(r"\[[^\]]*\]\s*", "", text)
+        settings = ({"stability": 0.5} if model == "eleven_v3" else
+                    {"stability": 0.35, "similarity_boost": 0.8, "style": 0.35, "use_speaker_boost": True})
+        body = {"text": say, "model_id": model, "voice_settings": settings, "language_code": "ko"}
+        for attempt in (body, {k: v for k, v in body.items() if k != "language_code"}):
+            try:
+                data = _eleven("POST", f"/v1/text-to-speech/{voice_id}?output_format=mp3_44100_128", key, attempt)
+                mp3_out.write_bytes(data)
+                return model
+            except urllib.error.HTTPError as e:
+                msg = e.read().decode("utf-8", "replace")[:300]
+                if e.code in (401, 403) and "quota" not in msg.lower():
+                    die("ElevenLabs 키가 맞지 않거나 권한이 없어요. elevenlabs_key.txt를 확인하세요.")
+                if e.code == 429 or "quota" in msg.lower():
+                    die("ElevenLabs 이번 달 사용량을 다 썼어요. 요금제를 확인하세요.")
+                last = f"{model}: HTTP {e.code} {msg}"
+    die(f"ElevenLabs TTS 실패 → {last}")
+
+
 def make_tts(text: str, recipe: dict, ff: str, audio_file: str | None = None) -> Path:
     WORK.mkdir(exist_ok=True)
     if audio_file:  # 캡컷·타입캐스트 등에서 직접 만든 음성 파일 사용
@@ -441,20 +513,34 @@ def make_tts(text: str, recipe: dict, ff: str, audio_file: str | None = None) ->
             "음성 파일 정리")
         print(f"      🔊 직접 넣은 음성: {src_path.name}")
         return clean
-    key = gemini_key()
-    engine = recipe.get("tts_engine") or ("gemini" if key else "edge")
-    if engine == "gemini" and not key:
+    ekey, gkey = eleven_key(), gemini_key()
+    engine = recipe.get("tts_engine") or ("elevenlabs" if ekey else "gemini" if gkey else "edge")
+    if engine == "elevenlabs" and not ekey:
+        die("ElevenLabs 키가 없어요. shorts 폴더에 elevenlabs_key.txt를 만들고 키를 붙여넣으세요.")
+    if engine == "gemini" and not gkey:
         die("Gemini 키가 없어요. shorts 폴더에 gemini_key.txt를 만들고 키를 붙여넣으세요.")
-    voice = recipe.get("gemini_voice", GEMINI_VOICES[0]) if engine == "gemini" \
-        else recipe.get("voice", "ko-KR-SunHiNeural")
+    key = ekey if engine == "elevenlabs" else gkey
+    if engine == "elevenlabs":
+        voice = pick_eleven_voice(recipe, key)
+    elif engine == "gemini":
+        voice = recipe.get("gemini_voice", GEMINI_VOICES[0])
+    else:
+        voice = recipe.get("voice", "ko-KR-SunHiNeural")
     style = recipe.get("tts_style", GEMINI_STYLE)
-    tag = hashlib.md5(f"{engine}|{voice}|{recipe.get('rate')}|{style}|{TTS_POLISH}|{recipe.get('tts_speed')}|{text}"
+    tag = hashlib.md5(f"{engine}|{voice}|{recipe.get('eleven_model')}|{recipe.get('rate')}|{style}|{TTS_POLISH}|{recipe.get('tts_speed')}|{text}"
                       .encode()).hexdigest()[:10]
-    print(f"      🔊 TTS: {'Gemini ' + voice if engine == 'gemini' else 'edge-tts(구형 무료) ' + voice}")
+    label = {"elevenlabs": "ElevenLabs", "gemini": "Gemini", "edge": "edge-tts(구형 무료)"}[engine]
+    print(f"      🔊 TTS: {label} {voice}")
     clean = WORK / f"tts_{tag}.wav"
     if clean.exists():
         return clean
-    if engine == "gemini":
+    if engine == "elevenlabs":
+        raw = WORK / f"tts_{tag}.mp3"
+        models = [recipe["eleven_model"]] if recipe.get("eleven_model") else ELEVEN_MODELS
+        used = eleven_tts(text, voice, key, raw, models)
+        print(f"      (모델: {used})")
+        src = ["-i", str(raw)]
+    elif engine == "gemini":
         raw = WORK / f"tts_{tag}.pcm"
         gemini_tts(text, voice, key, raw, style)
         src = ["-f", "s16le", "-ar", "24000", "-ac", "1", "-i", str(raw)]
@@ -741,7 +827,7 @@ def plan_parts(recipe, subs: Subs, ff: str, src: Path | None, check: bool):
             if check:
                 tts, dur = None, 1.5 + len(part["text"]) * 0.11  # 대략치
             else:
-                tts = make_tts(part["text"], recipe, ff, part.get("audio"))
+                tts = make_tts(part.get("say", part["text"]), recipe, ff, part.get("audio"))
                 dur = duration_of(ff, tts) + 0.5
             plan.append({"type": "tts", "start": at, "end": at + dur, "tts": tts, "part": part})
         else:
@@ -769,6 +855,7 @@ def main():
     ap.add_argument("recipe", nargs="?", help="레시피 JSON 파일")
     ap.add_argument("--check", action="store_true", help="영상은 만들지 않고 구간 시간만 확인")
     ap.add_argument("--voice-test", action="store_true", help="Gemini 목소리 샘플 만들기")
+    ap.add_argument("--list-voices", action="store_true", help="ElevenLabs 내 목소리 목록 보기")
     ap.add_argument("--video", help="(선택) 이미 받아둔 원본 영상 파일")
     ap.add_argument("--subs", help="(선택) --video와 함께 쓸 자막 파일(.vtt/.json3)")
     ap.add_argument("--asr", help="(선택) --video와 함께 쓸 자동자막 json3(컷 정밀용)")
@@ -777,6 +864,13 @@ def main():
     ff = ffmpeg_exe()
     if args.voice_test:
         voice_test(ff)
+        return
+    if args.list_voices:
+        key = eleven_key() or die("elevenlabs_key.txt가 없어요.")
+        for v in eleven_voices(key):
+            mark = "🇰🇷" if _is_korean(v) else "  "
+            print(f"{mark} {v.get('name', '')[:30]:30s}  {v['voice_id']}  {v.get('labels', {})}")
+        print("\n마음에 드는 목소리의 ID를 레시피에 \"eleven_voice\": \"ID\" 로 넣으세요.")
         return
     if not args.recipe:
         ap.print_help()
