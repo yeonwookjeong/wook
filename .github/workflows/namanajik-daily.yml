@@ -18,8 +18,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - name: 영상 매핑 (수동 실행 시에만)
-        if: ${{ github.event.inputs.map_list != '' }}
+      - name: 영상 매핑 (매일 쿼터 한도 내에서 미매핑 곡 이어서, 수동 실행 시 특정 목록 우선)
         run: node scripts/map-videos.js ${{ github.event.inputs.map_list }}
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}

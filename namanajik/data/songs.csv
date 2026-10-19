@@ -4,7 +4,7 @@ s0002,겁쟁이,버즈,,,,앨범: Buzz Effect
 s0003,사랑했나봐,윤도현,,,,앨범: Difference
 s0004,살다가,SG 워너비,,,,앨범: 살다가
 s0005,광(狂),SG 워너비,,,,앨범: 살다가
-s0006,세글자,엠투엠,LL1qwk3E8rY,2x3Vlt-c4zo,2026-10-19,원제: 세글자 (드라마 '루루공주' 김정은 메인 테마) / 앨범: M to M
+s0006,세글자,엠투엠,LL1qwk3E8rY,,2026-10-19,원제: 세글자 (드라마 '루루공주' 김정은 메인 테마) / 앨범: M to M / Topic 자동선택 오류(다른 가수) → 수동 확인 필요
 s0007,제자리 걸음,김종국,,,2026-10-19,앨범: This Is Me
 s0008,가시,버즈,,2I75ion7CAc,2026-10-19,앨범: Buzz Effect
 s0009,I Love U Oh Thank U (Feat. 김태우 Of God),MC몽,,KUi3kGl5Jbg,2026-10-19,앨범: His Story
@@ -17,7 +17,7 @@ s0015,귀로,나얼,,,,앨범: Back To The Soul Flight
 s0016,내 눈물이 하는 말,견우,,,2026-10-19,앨범: City Of Angel
 s0017,Fly (Feat. Amin. J of Soulciety),에픽하이,,sHqLlyBlmQI,2026-10-19,앨범: Swan Songs
 s0018,사랑인걸,모세,,,,"앨범: 사랑, 그 간절한 그리움 1집"
-s0019,사랑스러워,김종국,,s-_NawKtFu4,2026-10-19,앨범: This Is Me
+s0019,사랑스러워,김종국,,,2026-10-19,앨범: This Is Me / Topic 자동선택 오류(다른 가수) → 수동 확인 필요
 s0020,나에게로 떠나는 여행,버즈,,w7adx_CuApw,2026-10-19,앨범: Buzz Effect
 s0021,"별, 바람, 햇살 그리고 사랑",김종국,,,2026-10-19,앨범: This Is Me
 s0022,꽃피는 봄이오면,BMK,,,,앨범: Soul Food
@@ -51,7 +51,7 @@ s0049,사랑은 가슴이 시킨다,버즈,,,,앨범: 사랑은 가슴이 시킨
 s0050,헤어지자고,윤건,,,,원제: 헤어지자고 (MBC 슬픈연가 삽입곡) / 앨범: Now Is.. 2집
 s0051,Good-Bye Luv..,휘성,,e7-eoWLxYmU,2026-10-19,앨범: LOVE.. LOVE..? LOVE..!
 s0052,"1,2,3,4. (원,투,쓰리,포.)",코요태,,lC1VV5aYaS0,2026-10-19,앨범: 필업 (Feel Up)
-s0053,울보,휘성,m8SoL0-sVUg,cGjPQt_q9HA,2026-10-19,앨범: LOVE.. LOVE..? LOVE..!
+s0053,울보,휘성,,cGjPQt_q9HA,2026-10-19,앨범: LOVE.. LOVE..? LOVE..! / MV 자동선택 오류(커버) → 수동 확인 필요
 s0054,Rising Sun (순수),동방신기,,krNW5K6AjWM,2026-10-19,앨범: Rising Sun
 s0055,혼자만 하는 사랑,거미,IaOVzBVj5_E,yQFzGcuu9Ps,2026-10-19,앨범: For The Bloom
 s0056,현명한 이별,슈가,,,2026-10-19,앨범: Sweet Lips
@@ -86,13 +86,13 @@ s0084,숙녀에게,유리상자,,,2026-10-19,앨범: 동상이몽
 s0085,단 하나의 사랑,유해준,,,2026-10-19,앨범: 프라하의 연인 OST
 s0086,청춘예찬,자우림,,Qb2SmlJmLlE,2026-10-19,앨범: 靑春禮讚 (청춘예찬)
 s0087,잘 부탁드립니다,익스,,INX3CCu_Vv8,2026-10-19,원제: 잘 부탁드립니다 (CF - 한국야쿠르트 산타페 EX편) / 앨범: 2005 MBC 대학가요제
-s0088,Hey U,레몬트리,,cqp-UIDvnLY,2026-10-19,앨범: Hey U
-s0089,Bump!!!,이민우,,zOK7CcmieFw,2026-10-19,앨범: IInd Winds
+s0088,Hey U,레몬트리,,,2026-10-19,앨범: Hey U / Topic 자동선택 오류(다른 가수) → 수동 확인 필요
+s0089,Bump!!!,이민우,,,2026-10-19,앨범: IInd Winds / Topic 자동선택 오류(다른 가수) → 수동 확인 필요
 s0090,첫사랑,파란,,CTn7qpqAydE,2026-10-19,앨범: Paran The First
 s0091,All for you,연정훈,,,2026-10-19,앨범: 연정훈 Vol.1
 s0092,Fill This Night,클래지콰이,,65fkLnjOVwA,2026-10-19,원제: Fill This Night (CF - '메가패스&친구들' 클래지콰이 편 ) / 앨범: Color Your Soul
-s0093,사랑과 우정 사이,SG 워너비,oEfqQcAPDdA,Ysf56_7TUU0,2026-10-19,앨범: Classic Odyssey
-s0094,기적같은 너,김시진,,kxZ62vE3CM8,2026-10-19,앨범: 프라하의 연인 OST
+s0093,사랑과 우정 사이,SG 워너비,oEfqQcAPDdA,,2026-10-19,앨범: Classic Odyssey / Topic 자동선택 오류(다른 가수) → 수동 확인 필요
+s0094,기적같은 너,김시진,,,2026-10-19,앨범: 프라하의 연인 OST / Topic 자동선택 오류(다른 가수) → 수동 확인 필요
 s0095,사랑 한 장,휘성,,KBkcewdGQgQ,2026-10-19,앨범: LOVE.. LOVE..? LOVE..!
 s0096,오늘밤 일,아이비,,qw31NghME-Y,2026-10-19,앨범: My Sweet And Free Day
 s0097,이 밤을 다시한번,홍경민,,0LBxApob0Lw,2026-10-19,앨범: Emotion In Memory
