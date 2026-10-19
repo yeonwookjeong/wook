@@ -56,12 +56,15 @@ export const DIRECT_KIND_LABEL: Record<DirectKind, string> = {
   band: "밴드",
   x: "X (트위터)",
   desktop: "PC",
-  bot: "검색 로봇·미리보기",
+  bot: "검색 로봇·미리보기 (10/19 밤부터 방문에서 뺌)",
   unknown: "알 수 없음",
 };
 export const isDirectKind = (v: unknown): v is DirectKind => DIRECT_KINDS.includes(v as DirectKind);
+// Robots and page-preview fetchers that run the page's script: not visitors at all.
+export const isBotUa = (ua: string) => /bot|crawl|spider|slurp|preview|HeadlessChrome|Lighthouse|facebookexternalhit|Yeti|Daumoa/i.test(ua);
+
 export function directKind(ua: string): DirectKind {
-  if (/bot|crawl|spider|preview|HeadlessChrome/i.test(ua)) return "bot";
+  if (isBotUa(ua)) return "bot";
   if (/FBAN|FBAV|FB_IAB|Messenger/i.test(ua)) return "facebook";
   if (/\bLine\//i.test(ua)) return "line";
   if (/BAND\//.test(ua)) return "band";

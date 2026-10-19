@@ -2,7 +2,7 @@ import { isAdmin } from "@/lib/admin";
 import { columnBySlug } from "@/lib/columns";
 import { saleLabel } from "@/lib/sales";
 import { isStepFrom } from "@/lib/nextStep";
-import { isDirectKind, isSource } from "@/lib/source";
+import { isBotUa, isDirectKind, isSource } from "@/lib/source";
 import { currentMemberId } from "@/lib/members";
 import { noteMemberView } from "@/lib/store";
 import { ASK_FROM, CH_FROM, CLIENT_EVENTS, track, trackVisit, type AskFrom, type ChFrom, type ClientEvent } from "@/lib/stats";
@@ -12,7 +12,7 @@ import { ASK_FROM, CH_FROM, CLIENT_EVENTS, track, trackVisit, type AskFrom, type
 // The owner's own browsing is not counted.
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => null)) as { v?: Record<string, unknown>; e?: string; from?: string; src?: string; dx?: string } | null;
-  if (!body || (await isAdmin())) return new Response(null, { status: 204 });
+  if (!body || (await isAdmin()) || isBotUa(request.headers.get("user-agent") ?? "")) return new Response(null, { status: 204 });
   if (body.v) {
     const v = body.v;
     await trackVisit({ day: v.day === true, week: v.week === true, month: v.month === true, ever: v.ever === true });
