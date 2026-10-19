@@ -1,6 +1,6 @@
 song_id,title,artist,mv_id,topic_id,search_done,note
-s0001,죄와벌,SG 워너비,,,,앨범: 살다가
-s0002,겁쟁이,버즈,,,,앨범: Buzz Effect
+s0001,죄와벌,SG 워너비,,,2026-10-19,앨범: 살다가 / retry_done: 못 찾음
+s0002,겁쟁이,버즈,,,2026-10-19,앨범: Buzz Effect / retry_done: 못 찾음
 s0003,사랑했나봐,윤도현,,,,앨범: Difference
 s0004,살다가,SG 워너비,,,,앨범: 살다가
 s0005,광(狂),SG 워너비,,,,앨범: 살다가
@@ -20,7 +20,7 @@ s0018,사랑인걸,모세,,,,"앨범: 사랑, 그 간절한 그리움 1집"
 s0019,사랑스러워,김종국,,,2026-10-19,앨범: This Is Me / Topic 자동선택 오류(다른 가수) → 수동 확인 필요 / retry_done: 못 찾음
 s0020,나에게로 떠나는 여행,버즈,,w7adx_CuApw,2026-10-19,앨범: Buzz Effect
 s0021,"별, 바람, 햇살 그리고 사랑",김종국,,,2026-10-19,앨범: This Is Me / retry_done: 못 찾음
-s0022,꽃피는 봄이오면,BMK,,,,앨범: Soul Food
+s0022,꽃피는 봄이오면,BMK,ku4YHSTDi5s,PMeFllo1x8w,2026-10-19,앨범: Soul Food
 s0023,안부 (Duet With 나윤권),별,,,,앨범: 별 2집
 s0024,아니,거미,u7sLFI8SZ2Y,179coZjuaKE,2026-10-19,앨범: For The Bloom
 s0025,일년이면,휘성,,8IDgQtp5qdk,2026-10-19,앨범: LOVE.. LOVE..? LOVE..!
@@ -235,7 +235,7 @@ s0233,투명한 눈물,먼데이 키즈,,,,앨범: Incompletion
 s0234,사랑을 잃고 난 노래하네,에이트,,,,앨범: The First
 s0235,물끄러미,지아,,,,앨범: Voice Of Heaven
 s0236,다시 만난 세계 (Into The New World),소녀시대,,,,앨범: 다시 만난 세계
-s0237,사랑앓이,FT아일랜드,,,,앨범: Cheerful Sensibility
+s0237,사랑앓이,FT아일랜드,aSyXgv_v3no,,2026-10-19,앨범: Cheerful Sensibility / retry_done: 못 찾음
 s0238,사랑도... 이별도...,이기찬,,,,앨범: 사랑도... 이별도...
 s0239,So Fresh (Feat. 김태우),MC몽,,,,원제: So Fresh (Feat. 김태우) (위대한 캣츠비 OST 삽입곡) / 앨범: So Fresh (Single)
 s0240,또 한번 사랑은 가고,"왁스, 이기찬",,,,앨범: 또 한번 사랑은 가고...
@@ -354,7 +354,7 @@ s0352,키스미 키스미 (Kiss Me Kiss Me),이현지,,,,앨범: Kiss Me Kiss Me
 s0353,눈물소리,하동균,,,,앨범: 눈물소리 (Digital Single)
 s0354,사랑을 원해,쿨 (COOL),,,,앨범: 사랑을 원해
 s0355,미치겠어 (Feat. M.A.C),MC몽,,,,앨범: Show's Just Begun
-s0356,가시 물고기,엠씨더맥스,,,,앨범: Stage #1 - TOP
+s0356,가시 물고기,엠씨더맥스,,,2026-10-19,앨범: Stage #1 - TOP / retry_done: 못 찾음
 s0357,Blue Moon,"씨야, 다비치, 블랙펄",,,,앨범: Color Pink
 s0358,그럴꺼면 왜 (Feat. 베이지),PK 헤만,,,,앨범: 그럴꺼면 왜
 s0359,"날 봐, 귀순",대성,,,,"앨범: 날 봐, 귀순 (Digital Single)"
