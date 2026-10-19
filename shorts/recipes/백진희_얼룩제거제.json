@@ -6,13 +6,13 @@
   "theme": "celebpick",
   "sub_theme": "premium",
   "clip_subs": false,
-  "google_voice": "ko-KR-Chirp3-HD-Leda",
+  "google_voice": "ko-KR-Chirp3-HD-Kore",
   "gemini_voice": "Zephyr",
   "voice": "ko-KR-SunHiNeural",
   "rate": "+10%",
   "parts": [
     {"type": "clip", "from": "이건 이제 저의 필수템인데", "to": "뭐 튀었을 때"},
-    {"type": "tts", "text": "옷에 뭐 튀면 바로 꺼낸다는 이거, 뭐야?", "say": "[curious] 옷에 뭐 튀면 바로 꺼낸다는 이거, 뭐야?"},
+    {"type": "tts", "text": "흰 옷에 김치국물 튀어도 이걸로 바로 지운대"},
     {"type": "clip", "from": "저의 필수템 아주 잘 지워져서", "to": "꼭 들고 다닙니다"}
   ]
 }

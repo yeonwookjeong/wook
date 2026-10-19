@@ -6,13 +6,13 @@
   "theme": "celebpick",
   "sub_theme": "premium",
   "clip_subs": false,
-  "google_voice": "ko-KR-Chirp3-HD-Leda",
+  "google_voice": "ko-KR-Chirp3-HD-Kore",
   "gemini_voice": "Zephyr",
   "voice": "ko-KR-SunHiNeural",
   "rate": "+10%",
   "parts": [
     {"type": "clip", "from": "핸드크림 옛날에는", "to": "쿠팡이 다 들어와 있더라고요"},
-    {"type": "tts", "text": "안 끈적이는데 촉촉하다고? 이거 뭔데?", "say": "[curious] 안 끈적이는데 촉촉하다고? 이거 뭔데?"},
+    {"type": "tts", "text": "근데 바른 느낌이 진짜 미쳤대"},
     {"type": "clip", "from": "바르면 손에 벨벳이", "to": "아주 강추한 겁니다"}
   ]
 }

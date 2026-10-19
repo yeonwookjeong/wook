@@ -514,19 +514,20 @@ def google_key():
     return key or None
 
 
-def google_tts(text: str, voice: str, key: str, mp3_out: Path, rate: float):
+def google_tts(text: str, voice: str, key: str, mp3_out: Path, rate: float) -> bool:
+    """속도 지정이 먹혔으면 True. 안 먹히는 목소리면 False (그땐 나중에 직접 빠르게 만듦)."""
     body = {"input": {"text": text},
             "voice": {"languageCode": "ko-KR", "name": voice},
             "audioConfig": {"audioEncoding": "MP3", "sampleRateHertz": 44100, "speakingRate": rate}}
     last = ""
-    for attempt in (body, {**body, "audioConfig": {"audioEncoding": "MP3"}}):  # 속도 지정이 안 되는 목소리면 빼고 재시도
+    for applied, attempt in ((True, body), (False, {**body, "audioConfig": {"audioEncoding": "MP3"}})):
         req = urllib.request.Request("https://texttospeech.googleapis.com/v1/text:synthesize",
                                      data=json.dumps(attempt).encode(),
                                      headers={"Content-Type": "application/json", "x-goog-api-key": key})
         try:
             with urllib.request.urlopen(req, timeout=60) as r:
                 mp3_out.write_bytes(base64.b64decode(json.loads(r.read())["audioContent"]))
-            return
+            return applied
         except urllib.error.HTTPError as e:
             msg = e.read().decode("utf-8", "replace")[:400]
             if e.code == 403 and ("disabled" in msg or "not been used" in msg):
@@ -569,7 +570,7 @@ def make_tts(text: str, recipe: dict, ff: str, audio_file: str | None = None) ->
     else:
         voice = recipe.get("voice", "ko-KR-SunHiNeural")
     style = recipe.get("tts_style", GEMINI_STYLE)
-    tag = hashlib.md5(f"{engine}|{voice}|{recipe.get('eleven_model')}|{recipe.get('rate')}|{style}|{TTS_POLISH}|{recipe.get('tts_speed')}|{text}"
+    tag = hashlib.md5(f"{engine}|{voice}|{recipe.get('eleven_model')}|{recipe.get('rate')}|{style}|{TTS_POLISH}|{recipe.get('tts_speed')}|{recipe.get('google_rate')}|{text}"
                       .encode()).hexdigest()[:10]
     label = {"elevenlabs": "ElevenLabs", "google": "Google Cloud", "gemini": "Gemini",
              "edge": "edge-tts(구형 무료)"}[engine]
@@ -579,7 +580,9 @@ def make_tts(text: str, recipe: dict, ff: str, audio_file: str | None = None) ->
         return clean
     if engine == "google":
         raw = WORK / f"tts_{tag}.mp3"
-        google_tts(re.sub(r"\[[^\]]*\]\s*", "", text), voice, key, raw, float(recipe.get("google_rate", 1.1)))
+        g_rate = float(recipe.get("google_rate", 1.25))
+        if not google_tts(re.sub(r"\[[^\]]*\]\s*", "", text), voice, key, raw, g_rate):
+            recipe = {**recipe, "tts_speed": recipe.get("tts_speed", g_rate)}  # 속도 지정이 안 먹혔으면 직접 빠르게
         src = ["-i", str(raw)]
     elif engine == "elevenlabs":
         raw = WORK / f"tts_{tag}.mp3"
