@@ -9,10 +9,12 @@
   "blur": true,
   "google_voice": "ko-KR-Chirp3-HD-Kore",
   "parts": [
-    {"type": "tts", "text": "백진희가 파우치에 늘 넣고 다닌다는 필수템은?", "media": ["broll/백진희_5.jpg", "broll/백진희_6.jpg", {"src": "https://youtu.be/jRF2DEoO9Sc", "at": "auto", "n": 4}, {"at": "01:55"}, {"src": "https://youtu.be/jRF2DEoO9Sc", "at": "auto", "n": 5}]},
+    {"type": "tts", "text": "백진희가 파우치에 늘 넣고 다닌다는 필수템은?", "media": ["broll/백진희_5.jpg", "broll/백진희_6.jpg", "auto"]},
     {"type": "clip", "from": "이건 이제 저의 필수템인데", "to": "뭐 튀었을 때"},
     {"type": "tts", "text": "효과는?"},
     {"type": "clip", "from": "저의 필수템 아주 잘 지워져서", "to": "꼭 들고 다닙니다"}
   ],
-  "google_rate": 1.45
+  "google_rate": 1.45,
+  "broll_query": "백진희 브이로그",
+  "broll_offset": 2
 }

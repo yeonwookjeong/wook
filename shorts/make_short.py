@@ -322,7 +322,7 @@ class Subs:
 
 # ---------------------------------------------------------------- 원본 영상
 
-def fetch_source(url: str, ff: str):
+def fetch_source(url: str, ff: str, height: int = 1080):
     try:
         import yt_dlp
     except ImportError:
@@ -333,7 +333,8 @@ def fetch_source(url: str, ff: str):
     WORK.mkdir(exist_ok=True)
     opts = {
         "quiet": True, "no_warnings": True,
-        "format": "bv*[height<=1080][ext=mp4]+ba[ext=m4a]/b[height<=1080][ext=mp4]/bv*[height<=1080]+ba/b",
+        "format": (f"bv*[height<={height}][ext=mp4]+ba[ext=m4a]/b[height<={height}][ext=mp4]/"
+                   f"bv*[height<={height}]+ba/b"),
         "merge_output_format": "mp4",
         "outtmpl": str(WORK / "%(id)s.%(ext)s"),
         "ffmpeg_location": ff,
@@ -1002,10 +1003,41 @@ def render(ff: str, items: list, dur: float, subs: list, tts: Path | None, out: 
 _SOURCES = {}
 
 
+_SEARCHES = {}
+
+
+def search_videos(query: str, exclude: str = "", limit: int = 10) -> list[str]:
+    """유튜브에서 검색해 쓸 만한 영상 링크 목록(1분~40분짜리)을 돌려줌."""
+    if query in _SEARCHES:
+        return _SEARCHES[query]
+    import yt_dlp
+    with yt_dlp.YoutubeDL({"quiet": True, "no_warnings": True, "extract_flat": True}) as ydl:
+        res = ydl.extract_info(f"ytsearch{limit}:{query}", download=False)
+    urls = []
+    for e in res.get("entries") or []:
+        d = e.get("duration") or 0
+        if e.get("id") and e["id"] not in exclude and 60 <= d <= 2400:
+            urls.append(f"https://www.youtube.com/watch?v={e['id']}")
+    _SEARCHES[query] = urls
+    print(f"      🔎 '{query}' 검색 결과 {len(urls)}개")
+    return urls
+
+
 def media_items(p: dict, dur: float, src: Path, subs: "Subs", ff: str) -> list:
     """TTS 구간 화면: "media"에 적은 인스타 캡처·다른 영상들을 나눠 보여줌. 없으면 원본 그 장면."""
     out = []
-    for m in p["part"].get("media", []):
+    media = p["part"].get("media")
+    if media is None and p["part"].get("intro"):
+        media = ["auto"]  # 도입부인데 자료를 안 적었으면 자동 검색
+    expanded = []
+    for m in media or []:
+        if m == "auto":  # "auto" = 셀럽 이름으로 유튜브 검색 → 영상 3개에서 한 장면씩
+            q, k = p["part"].get("broll_query"), int(p["part"].get("broll_n", 0))
+            if q:
+                expanded += [{"search": q, "video": v, "at": "auto", "n": k} for v in range(3)]
+        else:
+            expanded.append(m)
+    for m in expanded:
         if isinstance(m, str):  # 내 파일 (broll 폴더의 사진/영상)
             path = Path(m) if Path(m).is_absolute() else HERE / m
             if not path.exists():
@@ -1014,9 +1046,16 @@ def media_items(p: dict, dur: float, src: Path, subs: "Subs", ff: str) -> list:
             out.append({"path": path, "t0": float(0), "image": path.suffix.lower() in IMAGE_EXT, "source": False})
         else:                   # 유튜브 영상의 특정 장면 {"at": "01:23"} 또는 {"src": "다른링크", "at": ...}
             vpath, vsubs = src, subs
+            if m.get("search"):  # 셀럽 이름 등으로 유튜브를 검색해서 k번째 영상을 자동으로 씀
+                found = search_videos(m["search"], exclude=src.stem)
+                if not found:
+                    print(f"      ⚠️ '{m['search']}' 검색 결과가 없어서 건너뜀")
+                    continue
+                m = {**m, "src": found[int(m.get("video", 0)) % len(found)]}
+                print(f"      🎬 자동으로 고른 영상: {m['src']}")
             if m.get("src"):
                 if m["src"] not in _SOURCES:
-                    _SOURCES[m["src"]] = fetch_source(m["src"], ff)[:2]
+                    _SOURCES[m["src"]] = fetch_source(m["src"], ff, height=720)[:2]
                 vpath, vsubs = _SOURCES[m["src"]]
             if str(m.get("at", "auto")) == "auto":  # 시간을 안 정하면 자동으로 볼만한 장면 선택
                 moments = auto_moments(vpath, ff)
@@ -1146,6 +1185,14 @@ def main():
         recipe["google_voice"], suffix = v, "_" + v.split("-")[-1]
     # clip_subs=false: 원본 구간엔 내 자막을 안 넣고 원본에 박힌 자막을 그대로 살림(기존 계정 방식)
     clip_subs = recipe.get("clip_subs", True)
+    # 자동 B-roll: 첫 TTS(도입부)에 자료가 없으면 "셀럽 이름 + 키워드"로 유튜브를 검색해서 씀
+    names = re.findall(r"\[\[(.*?)\]\]", recipe["title1"] + recipe.get("title2", ""))
+    query = recipe.get("broll_query") or (f"{names[0]} 브이로그" if names else None)
+    first_tts = next((pp for pp in recipe["parts"] if pp.get("type") == "tts"), None)
+    if first_tts is not None and recipe.get("auto_broll", True):
+        first_tts.setdefault("intro", True)
+        first_tts.setdefault("broll_query", query)
+        first_tts.setdefault("broll_n", recipe.get("broll_offset", 0))
     crop_bottom = float(recipe.get("src_crop_bottom", 0.2 if clip_subs else 0.0))
     # 원본 좌상단·우상단(채널 로고 자리) 흐리게. false면 끔, 직접 [[x,y,w,h],...] 비율로도 지정 가능
     blur = recipe.get("blur", True)
