@@ -12,7 +12,7 @@ const onlyList = process.argv[2] || null;
 const norm = s => s.toLowerCase().replace(/\(.*?\)|\[.*?\]|feat\..*$/g, '').replace(/[^\p{L}\p{N}]+/gu, '');
 const normKeep = s => s.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');   // 괄호 안 포함, 설명문 대조용
 // "공식"으로 인정하는 채널: 방송사·음반사·유통사·공식 채널. 가사 영상, 노래방, 개인 업로드는 제외
-const OFFICIAL_CH = /official|vevo|1thek|원더케이|smtown|kbs|mbc|sbs|mnet|m2|jtbc|tvn|stone music|genie|kakao|danal|cube|jyp|yg ent|hybe|pledis|starship|fnc|woollim|rbw|antenna|mystic|loen|baambc|뱀비씨|가요톱10|kpop classic|entertainment|records|music|뮤직|엔터테인먼트/i;
+const OFFICIAL_CH = /official|vevo|1thek|원더케이|smtown|\bkbs\b|kbs ?kpop|\bmbc|\bsbs|mnet|\bm2\b|jtbc|\btvn\b|stone music|genie music|지니뮤직|kakao ?ent|카카오엔터|danal|cube ent|united cube|\bjyp\b|yg ent|\bhybe\b|pledis|starship|\bfnc\b|woollim|\brbw\b|antenna|mystic|\bloen\b|baambc|뱀비씨|가요톱10|kpop classic|entertainment|엔터테인먼트|\brecords\b|레코드|뮤직비디오 공식/i;
 const BAD_TITLE = /가사|lyric|노래방|karaoke|cover|커버|reaction|리액션|remix|리믹스|inst\b|mr\b|tj노래방|금영|8d|slowed|sped up|nightcore|1시간|1 hour|loop|반복|모음|playlist|플레이리스트/i;
 const songs = loadSongs();
 let targets = songs;
