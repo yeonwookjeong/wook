@@ -6,15 +6,13 @@ import { HundoFace } from "@/app/ask/Letter";
 import AskLink from "@/components/AskLink";
 import ColumnTitle from "@/components/ColumnTitle";
 import Keep from "@/components/Keep";
-import MeForm from "@/components/MeForm";
-import NoticeBar, { type Notice } from "@/components/NoticeBar";
 import TodayCard from "@/components/TodayCard";
 import { StarChart } from "@/components/StoreHero";
 import { publishedColumns } from "@/lib/columns";
 import { hanjaNum } from "@/lib/hanjaNum";
 import { monthPillarNow, rankMonth } from "@/lib/iljuRank";
 import { readMe } from "@/lib/me";
-import { askShown, CHANNEL_GIFT, CHANNEL_GIFT_ON, currentMember, JOIN_GIFT } from "@/lib/members";
+import { askShown, currentMember, JOIN_GIFT } from "@/lib/members";
 import { STEMS, BRANCHES, STEMS_KO, BRANCHES_KO } from "@/lib/saju";
 import type { Today } from "@/lib/today";
 import { profileOf } from "@/lib/pairToken";
@@ -51,18 +49,8 @@ const CHIPS: { href: string; hanja: string; label: string }[] = [
 
 const SHOW_COUNT_FROM = 100;
 
-// The notices taking turns at the top (components/NoticeBar.tsx): each one a thing on the site now, nothing promised
-// that is not there.
-function notices(ask: boolean): Notice[] {
-  return [
-    { text: "2027 정미년, 내 사주엔 무슨 바람이?", href: "/reports/gukjeong" },
-    ...(ask && CHANNEL_GIFT_ON ? [{ text: `카카오 채널 추가하면 정 훈도 질문 ${CHANNEL_GIFT}개 선물`, href: "/ask#channel" }] : []),
-    { text: "이달의 일주 랭킹, 내 일주는 몇 위일까", href: "/ranking" },
-  ];
-}
-
 // First visit (A): 정 훈도 standing on the night stage, one button, 묻기 as a gold line under it.
-function HeroStage({ ask, count }: { ask: boolean; count: number }) {
+function HeroStage({ ask }: { ask: boolean }) {
   return (
     <header className="animate-rise relative mt-3 h-[480px] overflow-hidden rounded-3xl bg-[#0f2236] text-[#f7efd9] shadow-[0_10px_30px_rgb(33_27_23/0.22),inset_0_0_0_1px_rgb(212_175_95/0.35)]">
       {/* 관상감 under the night sky, the star chart drawn over it, and 정 훈도 in front. */}
@@ -85,18 +73,13 @@ function HeroStage({ ask, count }: { ask: boolean; count: number }) {
           <br />
           <b className="text-[#f7efd9]">나한테만 맞는 말</b>
         </p>
-        <a
-          href="#start"
+        <Link
+          href="/reports/gukjeong?new=1"
           className="mt-6 block w-[205px] rounded-2xl bg-[#e2bc68] py-3.5 text-center font-myeongjo text-[16px] font-extrabold text-[#17304a] shadow-[0_5px_0_#9c7a2e]"
         >
           내 사주 무료로 보기
-        </a>
-        <p className="mt-2 w-[205px] text-center text-[11px] text-[#f3ead0]/70">바로 아래에 생년월일만 넣으면 돼요</p>
-        {count >= SHOW_COUNT_FROM && (
-          <p className="mt-3 w-[205px] text-center text-[12px] text-[#f3ead0]/85">
-            지금까지 <b className="font-myeongjo text-[15px] text-[#e2bc68]">{count.toLocaleString("ko-KR")}</b>건을 풀어 드렸어요
-          </p>
-        )}
+        </Link>
+        <p className="mt-2 w-[205px] text-center text-[11px] text-[#f3ead0]/70">생년월일만 넣으면 바로</p>
         {ask && (
           <AskLink from="home" className="mt-4 block w-[205px] text-center text-[13px] leading-snug font-bold text-[#e2bc68]">
             정 훈도에게 묻기 →
@@ -267,7 +250,6 @@ export default async function HomeV2() {
 
   return (
     <div className="tone-night flex flex-col">
-      <NoticeBar notices={notices(ask)} />
       {me ? (
         <HeroMe
           name={me.person.name}
@@ -279,19 +261,11 @@ export default async function HomeV2() {
           ny={ny}
         />
       ) : (
-        <>
-          <HeroStage ask={ask} count={count} />
-          {/* The form itself on the first screen's next fold: one step fewer than going to the report page. */}
-          <section id="start" className="card mt-4 scroll-mt-4 rounded-2xl px-5 pt-5 pb-4">
-            <h2 className="font-myeongjo text-[19px] font-extrabold">생일만 넣으면 여덟 칸이 바로</h2>
-            <p className="mt-1 mb-4 text-[13px] text-ink-soft">2027년 열두 달 흐름까지 함께 보여 드려요.</p>
-            <MeForm next="/reports/gukjeong" submit="내 사주 펼치기" />
-          </section>
-        </>
+        <HeroStage ask={ask} />
       )}
 
       {/* How many charts he has read, under the first screen where it can be seen (it was lost on the picture). */}
-      {me && count >= SHOW_COUNT_FROM && (
+      {count >= SHOW_COUNT_FROM && (
         <p className="mt-3 flex items-center justify-center gap-2 text-[13px] text-ink-soft">
           <span aria-hidden className="h-px w-6 bg-gold/40" />
           지금까지 <b className="font-myeongjo text-[17px] text-gold">{count.toLocaleString("ko-KR")}</b>건의 사주를 풀어 드렸어요
