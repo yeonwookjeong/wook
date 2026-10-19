@@ -19,7 +19,7 @@ import { isPreview, newYearOf, thisYear } from "@/lib/yeonun";
 import { ASK_FROM, ASK_FROM_LABEL, CH_FROM, CH_FROM_LABEL, inPeriods, PERIODS, readStats, type Period } from "@/lib/stats";
 import { SHARE_FROM, STEP_FROM, STEP_LABEL } from "@/lib/nextStep";
 import { COLUMNS, publishedColumns, titleLines } from "@/lib/columns";
-import { DIRECT_KIND_LABEL, DIRECT_KINDS, SOURCE_LABEL, SOURCES } from "@/lib/source";
+import { SOURCE_LABEL, SOURCES } from "@/lib/source";
 import { DailyTable, SourceTable } from "./Insights";
 import { CREDIT_KINDS, ledgerOf, waitingBonus } from "@/lib/creditLedger";
 import { closedWhy, listCreditEvents } from "@/lib/creditEvents";
@@ -74,7 +74,6 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
     ...SHARE_FROM.flatMap((f) => [`sh:${f}`, `sv:${f}`]),
     ...["reading", "sinbun"].map((k) => `sl:${k}`),
     ...SOURCES.map((s) => `src:${s}`),
-    ...DIRECT_KINDS.map((k) => `dx:${k}`),
     ...SALE_KEYS.flatMap((k) => [`view:${k}`, `co:${k}`]),
     ...COLUMNS.map((c) => `cv:${c.slug}`),
   ]);
@@ -340,8 +339,6 @@ const ROWS: { key: string; label: string; group?: string }[] = [
   { key: "me_try", label: "　└ 생일 입력 보냄 (전체)" },
   { key: "me_err", label: "　└ 입력 오류로 되돌아감" },
   { key: "me_same", label: "　└ 이미 본 사주를 다시 넣음" },
-  // New visitors counted as "직접 · 알 수 없음", by the kind of browser (lib/source.ts directKind).
-  ...DIRECT_KINDS.map((k, i) => ({ key: `dx:${k}`, label: DIRECT_KIND_LABEL[k], ...(i === 0 && { group: "새 방문자 중 직접 · 알 수 없음, 어떤 브라우저였나" }) })),
 ];
 
 // 훈도의 사주 이야기: reads of every column and of each one open now (newest first); its button on to the
