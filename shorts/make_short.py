@@ -369,7 +369,31 @@ def fetch_source(url: str, ff: str):
                     words = []
                 break
         print(f"   자막: {kind or '없음'} {len(lines)}줄, 컷 정밀용 자동자막 단어 {len(words)}개")
+    _INFOS[str(video)] = {"duration": info.get("duration") or 0, "heatmap": info.get("heatmap") or []}
     return video, Subs(lines, words), info.get("channel") or info.get("uploader") or ""
+
+
+_INFOS = {}  # 받아온 영상별 길이·'많이 다시 본 구간' 정보
+
+
+def auto_moments(video: Path, ff: str, count: int = 8) -> list[float]:
+    """자동으로 고른 볼만한 장면 시각들: 많이 다시 본 구간 → 없으면 영상 전체에 고르게."""
+    info = _INFOS.get(str(video), {})
+    dur = info.get("duration") or duration_of(ff, video)
+    picks = []
+    for h in sorted(info.get("heatmap", []), key=lambda x: -x.get("value", 0)):
+        t = h["start_time"]
+        if 5 < t < dur - 8 and all(abs(t - q) >= 12 for q in picks):
+            picks.append(t)
+        if len(picks) == count:
+            break
+    for frac in (0.15, 0.3, 0.45, 0.6, 0.75, 0.9, 0.22, 0.52):
+        if len(picks) >= count:
+            break
+        t = dur * frac
+        if all(abs(t - q) >= 12 for q in picks):
+            picks.append(t)
+    return picks
 
 
 def snap(ff: str, src: Path, t: float, edge: str, win: float = 0.6) -> float:
@@ -994,7 +1018,12 @@ def media_items(p: dict, dur: float, src: Path, subs: "Subs", ff: str) -> list:
                 if m["src"] not in _SOURCES:
                     _SOURCES[m["src"]] = fetch_source(m["src"], ff)[:2]
                 vpath, vsubs = _SOURCES[m["src"]]
-            t, _ = resolve(m.get("at", 0), vsubs, 0, "start")
+            if str(m.get("at", "auto")) == "auto":  # 시간을 안 정하면 자동으로 볼만한 장면 선택
+                moments = auto_moments(vpath, ff)
+                t = moments[int(m.get("n", 0)) % len(moments)]
+                print(f"      🎞️ 자동 선택 장면: {fmt(t)}")
+            else:
+                t, _ = resolve(m["at"], vsubs, 0, "start")
             out.append({"path": vpath, "t0": t, "image": False, "source": True})
     if not out:
         return [{"path": src, "t0": p["start"], "dur": dur, "image": False, "source": True}]
@@ -1124,6 +1153,10 @@ def main():
     use_layout(recipe.get("theme", "celebpick"))
 
     plan = plan_parts(recipe, subs, ff, src, args.check)
+    src_len = duration_of(ff, src)
+    for i, p in enumerate(plan, 1):
+        if p["end"] > src_len + 0.5:
+            die(f"{i}번 구간({fmt(p['start'])}~{fmt(p['end'])})이 원본 영상 길이({fmt(src_len)})를 넘어요.")
     total = sum(p["end"] - p["start"] for p in plan)
     print("\n   구간 시간표")
     for i, p in enumerate(plan, 1):

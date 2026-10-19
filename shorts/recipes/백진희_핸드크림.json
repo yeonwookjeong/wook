@@ -9,7 +9,7 @@
   "blur": true,
   "google_voice": "ko-KR-Chirp3-HD-Kore",
   "parts": [
-    {"type": "tts", "text": "편집숍에서만 팔아서 구하기 힘들었다는 백진희의 강추 핸드크림?", "media": ["broll/백진희_3.jpg", "broll/백진희_4.jpg", {"at": "00:06"}, {"at": "11:52"}]},
+    {"type": "tts", "text": "편집숍에서만 팔아서 구하기 힘들었다는 백진희의 강추 핸드크림?", "media": ["broll/백진희_3.jpg", "broll/백진희_4.jpg", {"src": "https://youtu.be/jRF2DEoO9Sc", "at": "auto", "n": 2}, {"at": "00:06"}, {"src": "https://youtu.be/jRF2DEoO9Sc", "at": "auto", "n": 3}]},
     {"type": "clip", "from": "핸드크림 옛날에는", "to": "쿠팡이 다 들어와 있더라고요"},
     {"type": "tts", "text": "이 핸드크림이 특별한 이유는"},
     {"type": "clip", "from": "바르면 손에 벨벳이", "to": "아주 강추한 겁니다"}

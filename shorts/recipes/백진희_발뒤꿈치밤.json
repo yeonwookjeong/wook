@@ -9,7 +9,7 @@
   "blur": true,
   "google_voice": "ko-KR-Chirp3-HD-Kore",
   "parts": [
-    {"type": "tts", "text": "향에 진심인 백진희가 태국 공항에서 사 온 3천 원짜리 꿀템?", "media": ["broll/백진희_1.jpg", "broll/백진희_2.jpg", {"at": "00:02"}, {"at": "01:52"}]},
+    {"type": "tts", "text": "향에 진심인 백진희가 태국 공항에서 사 온 3천 원짜리 꿀템?", "media": ["broll/백진희_1.jpg", "broll/백진희_2.jpg", {"src": "https://youtu.be/jRF2DEoO9Sc", "at": "auto", "n": 0}, {"at": "00:02"}, {"src": "https://youtu.be/jRF2DEoO9Sc", "at": "auto", "n": 1}]},
     {"type": "clip", "from": "이거 저희 꿀템인데요", "to": "3,000원 좀 안 하는데"},
     {"type": "tts", "text": "백진희가 알려준 진짜 용도는", "over": "냄새 너무 좋지 않아요"},
     {"type": "clip", "from": "큐티클이나", "to": "발뒤꿈치에 바르면 되는데"},
