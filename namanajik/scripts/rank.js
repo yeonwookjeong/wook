@@ -5,7 +5,8 @@ import path from 'node:path';
 import { loadSongs, listNames, loadList, listLabel, readJson, writeJson, addDays, today, DIR } from './lib.js';
 
 const WINDOW = 7;      // 증가분 기간(일)
-const RANKED = 30;     // 공식 순위 범위 (그 아래는 노이즈)
+const RANKED = 100;    // 순위 매기는 범위 (목록 전체). 플레이리스트는 상위 PLAYLIST곡
+export const PLAYLIST = 50;
 const SPIKE_X = 8;     // 지난 증가분 대비 8배 넘게 튀면 보류
 
 const date = process.argv[2] || today();
