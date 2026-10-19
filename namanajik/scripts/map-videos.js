@@ -10,8 +10,10 @@ const MAX = Number(process.env.MAX_SEARCHES_PER_RUN || 95);
 const onlyList = process.argv[2] || null;
 
 const norm = s => s.toLowerCase().replace(/\(.*?\)|\[.*?\]|feat\..*$/g, '').replace(/[^\p{L}\p{N}]+/gu, '');
-const OFFICIAL_HINTS = /official|vevo|1thek|stone music|genie|kakao|sm ?town|hybe|jyp|yg ent|cube|starship|pledis|fnc|woollim|rbw|antenna|mystic|loen|mnet|kbs|mbc|sbs/i;
-
+const normKeep = s => s.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');   // 괄호 안 포함, 설명문 대조용
+// "공식"으로 인정하는 채널: 방송사·음반사·유통사·공식 채널. 가사 영상, 노래방, 개인 업로드는 제외
+const OFFICIAL_CH = /official|vevo|1thek|원더케이|smtown|kbs|mbc|sbs|mnet|m2|jtbc|tvn|stone music|genie|kakao|danal|cube|jyp|yg ent|hybe|pledis|starship|fnc|woollim|rbw|antenna|mystic|loen|baambc|뱀비씨|가요톱10|kpop classic|entertainment|records|music|뮤직|엔터테인먼트/i;
+const BAD_TITLE = /가사|lyric|노래방|karaoke|cover|커버|reaction|리액션|remix|리믹스|inst\b|mr\b|tj노래방|금영|8d|slowed|sped up|nightcore|1시간|1 hour|loop|반복|모음|playlist|플레이리스트/i;
 const songs = loadSongs();
 let targets = songs;
 if (onlyList) { const ids = new Set(loadList(onlyList).map(r => r.song_id)); targets = songs.filter(s => ids.has(s.song_id)); }
@@ -34,17 +36,29 @@ for (const s of todo) {
     console.error(`${q}: ${e.message}`); continue;
   }
   used++;
-  const nt = norm(s.title), na = norm(s.artist);
-  const cands = items.map(it => ({
-    id: it.id.videoId, title: it.snippet.title, channel: it.snippet.channelTitle,
-    isTopic: / - Topic$/.test(it.snippet.channelTitle),
-    titleMatch: norm(it.snippet.title).includes(nt),
-    artistMatch: norm(it.snippet.channelTitle).includes(na) || norm(it.snippet.title).includes(na),
-    official: OFFICIAL_HINTS.test(it.snippet.channelTitle) || /\bM\/?V\b|official|뮤직비디오|뮤비/i.test(it.snippet.title),
-  }));
-  const topic = cands.find(c => c.isTopic && c.titleMatch && c.artistMatch) || cands.find(c => c.isTopic && c.titleMatch);
-  const mv = cands.find(c => !c.isTopic && c.titleMatch && c.official && c.artistMatch)
-          || cands.find(c => !c.isTopic && c.titleMatch && (c.official || c.artistMatch));
+  const nt = norm(s.title), na = norm(s.artist.split(',')[0]);
+  const album = (s.note.match(/앨범: ([^/]+)/) || [])[1]?.trim();
+  const nal = album ? normKeep(album) : null;
+  const cands = items.map(it => {
+    const title = it.snippet.title, ch = it.snippet.channelTitle, desc = it.snippet.description || '';
+    const blob = normKeep(title + ' ' + ch + ' ' + desc);
+    return {
+      id: it.id.videoId, title, channel: ch,
+      isTopic: / - Topic$/.test(ch),
+      titleMatch: norm(title).includes(nt) || normKeep(title).includes(normKeep(s.title)),
+      artistMatch: blob.includes(na),                       // Topic 영상은 설명문에 "곡 · 가수 · 앨범"이 있음
+      albumMatch: nal ? blob.includes(nal) : false,
+      officialCh: OFFICIAL_CH.test(ch),
+      mvTitle: /\bM\/?V\b|official|뮤직비디오|뮤비/i.test(title),
+      badTitle: BAD_TITLE.test(title),
+    };
+  });
+  // Topic: 제목 일치 + (가수 또는 앨범 일치). 가수·앨범 확인 안 되면 선택하지 않고 검토로
+  const topic = cands.find(c => c.isTopic && c.titleMatch && c.artistMatch && c.albumMatch)
+             || cands.find(c => c.isTopic && c.titleMatch && (c.artistMatch || c.albumMatch));
+  // MV: 제목 일치 + 가사/노래방류 아님 + 공식 채널. 공식 MV 표기가 있으면 우선
+  const mvPool = cands.filter(c => !c.isTopic && c.titleMatch && !c.badTitle && (c.officialCh || c.artistMatch && c.mvTitle));
+  const mv = mvPool.find(c => c.mvTitle && c.artistMatch) || mvPool.find(c => c.mvTitle) || mvPool.find(c => c.artistMatch) || mvPool[0];
   if (topic && !s.topic_id) s.topic_id = topic.id;
   if (mv && !s.mv_id) s.mv_id = mv.id;
   s.search_done = today();
