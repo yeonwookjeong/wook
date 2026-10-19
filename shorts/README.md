@@ -105,3 +105,6 @@ python3 make_short.py recipes/백진희_발뒤꿈치밤.json
 | `pop` | 흰 글씨 + 굵은 검정 테두리 (v2) | 노란 박스 |
 
 폰트: `assets/fonts`에 [Pretendard](https://github.com/orioncactus/pretendard)(SIL OFL 1.1, 상업적 사용 가능)가 함께 들어 있어요. 다른 폰트를 쓰려면 `fonts` 폴더에 넣으면 그 폰트가 먼저 쓰여요.
+
+## 자막 없이 (원본 자막 살리기)
+레시피에 `"clip_subs": false`를 넣으면 원본 구간에는 내 자막을 넣지 않고, 원본에 박혀 있는 자막을 그대로 보여줘요(기존 계정 방식). TTS 구간만 원본 아래쪽을 잘라내고 TTS 자막을 넣어요. 다시 내 자막으로 돌리려면 `true`로 바꾸세요.

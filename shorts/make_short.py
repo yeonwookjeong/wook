@@ -790,7 +790,9 @@ def main():
     else:
         src, subs, channel = fetch_source(recipe["source"], ff)
     recipe.setdefault("credit", f"출처 : {channel}" if channel else "")
-    crop_bottom = float(recipe.get("src_crop_bottom", 0.2))
+    # clip_subs=false: 원본 구간엔 내 자막을 안 넣고 원본에 박힌 자막을 그대로 살림(기존 계정 방식)
+    clip_subs = recipe.get("clip_subs", True)
+    crop_bottom = float(recipe.get("src_crop_bottom", 0.2 if clip_subs else 0.0))
 
     plan = plan_parts(recipe, subs, ff, src, args.check)
     total = sum(p["end"] - p["start"] for p in plan)
@@ -831,7 +833,7 @@ def main():
             overlays += pop(png, p["part"]["text"], "tts", 0, dur)
             zoom = (1.15, 1.22)          # TTS: 확 당겨서 시선 집중
         else:
-            mode = p["part"].get("sub", "auto")
+            mode = p["part"].get("sub", "auto" if clip_subs else "none")
             if mode == "auto":
                 for j, (s, e, text) in enumerate(subs.chunks(p["start"], p["end"])):
                     png = tmp / f"sub_{i}_{j}.png"
@@ -845,7 +847,9 @@ def main():
             clip_no += 1
         seg = tmp / f"seg_{i:02d}.mp4"
         punch = PUNCH if recipe.get("punch_zoom", True) else 0.0
-        render(ff, src, p["start"], dur, overlays, p.get("tts"), seg, zoom, crop_bottom, punch)
+        # TTS 구간은 원본 자막이 TTS 자막과 겹치지 않게 항상 아래쪽을 잘라냄
+        crop = max(crop_bottom, 0.2) if p["type"] == "tts" else crop_bottom
+        render(ff, src, p["start"], dur, overlays, p.get("tts"), seg, zoom, crop, punch)
         seg_files.append((seg, dur))
 
     OUT.mkdir(exist_ok=True)

@@ -5,7 +5,7 @@
   "link_text": "프로필 링크 46번",
   "theme": "celebpick",
   "sub_theme": "premium",
-  "src_crop_bottom": 0.2,
+  "clip_subs": false,
   "gemini_voice": "Zephyr",
   "voice": "ko-KR-SunHiNeural",
   "rate": "+10%",
