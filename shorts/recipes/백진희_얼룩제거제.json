@@ -1,18 +1,19 @@
 {
   "source": "https://youtu.be/-WHTMYjhqHw",
-  "title1": "[[백진희]] 가방 속",
-  "title2": "옷 얼룩 지우는 필수템",
+  "title1": "[[흰 옷]] 입는 날 필수",
+  "title2": "백진희 파우치 속 얼룩템",
   "link_text": "프로필 링크 48번",
-  "theme": "celebpick",
-  "sub_theme": "premium",
-  "clip_subs": false,
+  "theme": "story",
+  "sub_theme": "story",
+  "clip_subs": true,
   "google_voice": "ko-KR-Chirp3-HD-Kore",
   "gemini_voice": "Zephyr",
   "voice": "ko-KR-SunHiNeural",
   "rate": "+10%",
   "parts": [
+    {"type": "tts", "text": "흰 옷 입는 날이면 백진희가 꼭 챙긴다는 이것"},
     {"type": "clip", "from": "이건 이제 저의 필수템인데", "to": "뭐 튀었을 때"},
-    {"type": "tts", "text": "흰 옷에 김치국물 튀어도 이걸로 바로 지운대"},
+    {"type": "tts", "text": "김치국물이 튀어도 바로 지워진다는데"},
     {"type": "clip", "from": "저의 필수템 아주 잘 지워져서", "to": "꼭 들고 다닙니다"}
   ]
 }

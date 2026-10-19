@@ -1,18 +1,19 @@
 {
   "source": "https://youtu.be/-WHTMYjhqHw",
-  "title1": "[[백진희]]가 강추한",
-  "title2": "안 끈적이는 핸드크림",
+  "title1": "[[편집숍]]에서만 팔던",
+  "title2": "백진희의 인생 핸드크림",
   "link_text": "프로필 링크 47번",
-  "theme": "celebpick",
-  "sub_theme": "premium",
-  "clip_subs": false,
+  "theme": "story",
+  "sub_theme": "story",
+  "clip_subs": true,
   "google_voice": "ko-KR-Chirp3-HD-Kore",
   "gemini_voice": "Zephyr",
   "voice": "ko-KR-SunHiNeural",
   "rate": "+10%",
   "parts": [
+    {"type": "tts", "text": "편집숍에서만 살 수 있었던 백진희의 인생 핸드크림"},
     {"type": "clip", "from": "핸드크림 옛날에는", "to": "쿠팡이 다 들어와 있더라고요"},
-    {"type": "tts", "text": "근데 바른 느낌이 진짜 미쳤대"},
+    {"type": "tts", "text": "발라보면 느낌이 완전 다르다는데"},
     {"type": "clip", "from": "바르면 손에 벨벳이", "to": "아주 강추한 겁니다"}
   ]
 }

@@ -41,6 +41,14 @@ W, H = 1080, 1920
 TOP = 504               # 상단 제목 영역 높이
 VH = 912                # 가운데 영상 칸 높이 (TOP ~ TOP+VH)
 SUB_Y = TOP + VH - 150  # 자막 세로 위치(영상 칸 아래쪽)
+# 테마별 배치: (TOP, VH, SUB_Y). story는 참고 채널 실측(흰 상단 458px + 아래 전체 영상)
+LAYOUTS = {"celebpick": (504, 912, 504 + 912 - 150), "white": (504, 912, 504 + 912 - 150),
+           "story": (458, 1920 - 458, 1250)}
+
+
+def use_layout(theme: str):
+    global TOP, VH, SUB_Y
+    TOP, VH, SUB_Y = LAYOUTS.get(theme, LAYOUTS["celebpick"])
 FPS = 30
 CHUNK_CHARS = 13        # 자막 한 덩어리 최대 글자 수(띄어쓰기 포함)
 
@@ -54,6 +62,12 @@ THEMES = {
 # 자막 디자인 세트: 레시피 "sub_theme"으로 고름. 각 세트는 셀럽 대사(celeb)와 TTS(tts) 모양을 짝으로 가짐.
 # 키: fill 글자색, stroke 테두리색, sw 테두리 두께, box 배경 박스(RGBA), shadow 그림자, size 글자 크기, tail 말풍선 꼬리
 SUB_THEMES = {
+    "story": {    # 참고 채널 스타일: 셀럽 대사는 “따옴표” + 노랑 강조, 내레이션(TTS)은 흰 글씨
+        "celeb": {"fill": (255, 255, 255), "stroke": (0, 0, 0), "sw": 7, "shadow": True, "size": 64,
+                  "hi": (248, 216, 8), "quote": True},
+        "tts": {"fill": (255, 255, 255), "stroke": (0, 0, 0), "sw": 7, "shadow": True, "size": 66,
+                "hi": (248, 216, 8)},
+    },
     "premium": {  # 기본: Pretendard Black 흰 글씨 + 얇은 테두리 + 부드러운 그림자, 핵심 단어는 초록 강조
                   # TTS는 노란 글씨로 구분. 등장할 때 살짝 커지며 '팝' 하고 나타남
         "celeb": {"fill": (255, 255, 255), "stroke": (0, 0, 0), "sw": 6, "shadow": True, "size": 70,
@@ -698,7 +712,67 @@ def title_line(img, text: str, cy: int, th: dict, size: int, italic: float):
     img.alpha_composite(layer, (0, int(cy - lh / 2)))
 
 
+def strip_emoji(t: str) -> str:
+    """폰트에 없는 이모지는 네모로 깨지므로 뺌."""
+    return re.sub(r"[\U00010000-\U0010FFFF\u2600-\u27BF\uFE0F]", "", t or "").strip()
+
+
+def story_layout(recipe: dict, img):
+    """참고 채널 스타일: 흰 상단, 작은 출처, 검정 박스 제목(노랑 강조), 흰 알약 부제, 아래는 영상 전체."""
+    d = ImageDraw.Draw(img)
+    d.rectangle([0, 0, W, TOP], fill=(255, 255, 255))
+    yellow, white = (248, 216, 8), (255, 255, 255)
+    # 제목 1줄: 검정 둥근 박스 + 굵은 기울임 글씨
+    t1 = strip_emoji(recipe["title1"])
+    parts = [(p[2:-2], yellow) if p.startswith("[[") else (p, white) for p in re.split(r"(\[\[.*?\]\])", t1) if p]
+    plain = "".join(t for t, _ in parts)
+    size = 96
+    while size > 50 and d.textlength(plain, font=font(size, "title")) > W - 200:
+        size -= 2
+    f = font(size, "title")
+    tw = d.textlength(plain, font=f)
+    lh = int(size * 1.45)
+    layer = Image.new("RGBA", (W, lh), (0, 0, 0, 0))
+    ld = ImageDraw.Draw(layer)
+    ld.rounded_rectangle([(W - tw) / 2 - 34, 4, (W + tw) / 2 + 34, lh - 4], radius=22, fill=(10, 10, 10))
+    x = (W - tw) / 2
+    for t, color in parts:
+        ld.text((x, lh / 2), t, font=f, fill=color, anchor="lm")
+        x += ld.textlength(t, font=f)
+    k = float(recipe.get("title_italic", 0.12))
+    layer = layer.transform(layer.size, Image.AFFINE, (1, k, -k * lh / 2, 0, 1, 0), resample=Image.BICUBIC)
+    img.alpha_composite(layer, (0, 282 - lh // 2))
+    # 출처: 제목 박스 왼쪽 위 작게
+    if recipe.get("credit"):
+        cf = font(30, "title")
+        d.text(((W - tw) / 2 - 20, 282 - lh // 2 - 8), recipe["credit"], font=cf, fill=(17, 17, 17), anchor="ls")
+    # 제목 2줄: 흰 알약 + 검정 글씨 + 은은한 그림자
+    if recipe.get("title2"):
+        t2 = strip_emoji(re.sub(r"\[\[|\]\]", "", recipe["title2"]))
+        f2 = fit(d, t2, W - 220, 52)
+        w2 = d.textlength(t2, font=f2)
+        box = [(W - w2) / 2 - 30, 400 - 38, (W + w2) / 2 + 30, 400 + 38]
+        from PIL import ImageFilter
+        sh = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+        ImageDraw.Draw(sh).rounded_rectangle([box[0], box[1] + 5, box[2], box[3] + 5], radius=38,
+                                             fill=(150, 130, 200, 120))
+        img.alpha_composite(sh.filter(ImageFilter.GaussianBlur(8)))
+        d = ImageDraw.Draw(img)
+        d.rounded_rectangle(box, radius=38, fill=(255, 255, 255), outline=(225, 225, 235), width=2)
+        d.text((W / 2, 400), t2, font=f2, fill=(17, 17, 17), anchor="mm")
+    # 프로필 링크: 영상 아래쪽에 작게 (그림자)
+    if recipe.get("link_text"):
+        lf = font(40)
+        d.text((W / 2, H - 120), recipe["link_text"], font=lf, fill=(255, 255, 255), anchor="mm",
+               stroke_width=5, stroke_fill=(0, 0, 0))
+
+
 def layout_png(recipe: dict, path: Path):
+    if recipe.get("theme") == "story":
+        img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+        story_layout(recipe, img)
+        img.save(path)
+        return
     th = THEMES.get(recipe.get("theme", "celebpick"), THEMES["celebpick"])
     img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
@@ -751,6 +825,9 @@ def is_hi(word: str) -> bool:
 def sub_png(text: str, role: str, path: Path, theme: str = "premium", scale: float = 1.0):
     """자막 한 장(투명 PNG). role: celeb / tts. scale<1이면 '팝' 등장용 작은 버전."""
     st = SUB_THEMES.get(theme, SUB_THEMES["premium"]).get(role) or SUB_THEMES["premium"]["celeb"]
+    text = strip_emoji(text)
+    if st.get("quote"):
+        text = f"\u201c{text}\u201d"
     img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
     max_w = W - 160
@@ -962,6 +1039,7 @@ def main():
     # clip_subs=false: 원본 구간엔 내 자막을 안 넣고 원본에 박힌 자막을 그대로 살림(기존 계정 방식)
     clip_subs = recipe.get("clip_subs", True)
     crop_bottom = float(recipe.get("src_crop_bottom", 0.2 if clip_subs else 0.0))
+    use_layout(recipe.get("theme", "celebpick"))
 
     plan = plan_parts(recipe, subs, ff, src, args.check)
     total = sum(p["end"] - p["start"] for p in plan)
@@ -997,9 +1075,13 @@ def main():
         dur = p["end"] - p["start"]
         overlays = []
         if p["type"] == "tts":
-            png = tmp / f"sub_{i}.png"
-            sub_png(p["part"]["text"], "tts", png, sub_theme)
-            overlays += pop(png, p["part"]["text"], "tts", 0, dur)
+            # 내레이션 자막을 짧은 한 줄씩 끊어 말하는 속도에 맞춰 넘김 (참고 채널 방식)
+            pieces = Subs([(0.26, dur - 0.1, p["part"]["text"])]).chunks(0, dur) \
+                if recipe.get("tts_chunks", True) else [(0, dur, p["part"]["text"])]
+            for j, (a, b, text) in enumerate(pieces):
+                png = tmp / f"sub_{i}_{j}.png"
+                sub_png(text, "tts", png, sub_theme)
+                overlays += pop(png, text, "tts", 0 if j == 0 else a, dur if j == len(pieces) - 1 else b)
             zoom = (1.15, 1.22)          # TTS: 확 당겨서 시선 집중
         else:
             mode = p["part"].get("sub", "auto" if clip_subs else "none")
