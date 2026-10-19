@@ -11,9 +11,11 @@ const onlyList = process.argv[2] || null;
 
 const norm = s => s.toLowerCase().replace(/\(.*?\)|\[.*?\]|feat\..*$/g, '').replace(/[^\p{L}\p{N}]+/gu, '');
 const normKeep = s => s.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');   // 괄호 안 포함, 설명문 대조용
-// "공식"으로 인정하는 채널: 방송사·음반사·유통사·공식 채널. 가사 영상, 노래방, 개인 업로드는 제외
-const OFFICIAL_CH = /official|vevo|1thek|원더케이|smtown|\bkbs\b|kbs ?kpop|\bmbc|\bsbs|mnet|\bm2\b|jtbc|\btvn\b|stone music|genie music|지니뮤직|kakao ?ent|카카오엔터|danal|cube ent|united cube|\bjyp\b|yg ent|\bhybe\b|pledis|starship|\bfnc\b|woollim|\brbw\b|antenna|mystic|\bloen\b|baambc|뱀비씨|가요톱10|kpop classic|entertainment|엔터테인먼트|\brecords\b|레코드|뮤직비디오 공식/i;
-const BAD_TITLE = /가사|lyric|노래방|karaoke|cover|커버|reaction|리액션|remix|리믹스|inst\b|mr\b|tj노래방|금영|8d|slowed|sped up|nightcore|1시간|1 hour|loop|반복|모음|playlist|플레이리스트/i;
+// MV로 인정하는 채널: 가수 본인 채널, 소속사·음반사·유통사 공식 채널. 방송사(KBS/MBC/SBS/Mnet 등)와 개인 채널은 제외
+const OFFICIAL_CH = /official|vevo|1thek|원더케이|smtown|stone music|genie music|지니뮤직|kakao ?ent|카카오엔터|danal|cube ent|united cube|\bjyp\b|yg ent|\bhybe\b|pledis|starship|\bfnc\b|woollim|\brbw\b|antenna|mystic|\bloen\b|entertainment|엔터테인먼트|\brecords\b|레코드|music\s*&\s*new|뮤직앤뉴|nhn ?bugs|벅스|neowiz|네오위즈|cj ?e&m|pony ?canyon|포니캐년|warner|워너|universal|유니버설|sony|소니|kt ?music|cj ?music|dreamus|드림어스/i;
+// 방송 무대·라이브·직캠·가사·노래방·커버·리믹스·티저는 제외 (음원 순위이므로 MV와 음원만)
+const BAD_TITLE = /가사|lyric|노래방|karaoke|cover|커버|reaction|리액션|remix|리믹스|\binst\b|\bmr\b|tj노래방|금영|8d|slowed|sped up|nightcore|1시간|1 hour|loop|반복|모음|playlist|플레이리스트|live|라이브|직캠|fancam|무대|stage|concert|콘서트|쇼케이스|showcase|teaser|티저|방송|kbs|mbc|sbs|mnet|인기가요|뮤직뱅크|music bank|쇼! 음악중심|엠카운트다운|m countdown|더 시즌즈|스케치북|러브레터|콘서트7080|유희열|성시경의|가요톱10/i;
+const BROADCASTER = /\bkbs|\bmbc|\bsbs|mnet|jtbc|\btvn\b|\bm2\b|baambc|뱀비씨|가요톱10|kpop classic|방송/i;
 const songs = loadSongs();
 let targets = songs;
 if (onlyList) { const ids = new Set(loadList(onlyList).map(r => r.song_id)); targets = songs.filter(s => ids.has(s.song_id)); }
@@ -48,7 +50,7 @@ for (const s of todo) {
       titleMatch: norm(title).includes(nt) || normKeep(title).includes(normKeep(s.title)),
       artistMatch: blob.includes(na),                       // Topic 영상은 설명문에 "곡 · 가수 · 앨범"이 있음
       albumMatch: nal ? blob.includes(nal) : false,
-      officialCh: OFFICIAL_CH.test(ch),
+      officialCh: OFFICIAL_CH.test(ch) && !BROADCASTER.test(ch),
       mvTitle: /\bM\/?V\b|official|뮤직비디오|뮤비/i.test(title),
       badTitle: BAD_TITLE.test(title),
     };
@@ -57,7 +59,9 @@ for (const s of todo) {
   const topic = cands.find(c => c.isTopic && c.titleMatch && c.artistMatch && c.albumMatch)
              || cands.find(c => c.isTopic && c.titleMatch && (c.artistMatch || c.albumMatch));
   // MV: 제목 일치 + 가사/노래방류 아님 + 공식 채널. 공식 MV 표기가 있으면 우선
-  const mvPool = cands.filter(c => !c.isTopic && c.titleMatch && !c.badTitle && (c.officialCh || c.artistMatch && c.mvTitle));
+  // MV: 제목 일치 + 제외어 없음 + (소속사·유통사 채널 또는 가수 본인 채널명)
+  const artistCh = c => normKeep(c.channel).includes(na) && !BROADCASTER.test(c.channel);
+  const mvPool = cands.filter(c => !c.isTopic && c.titleMatch && !c.badTitle && (c.officialCh || artistCh(c)));
   const mv = mvPool.find(c => c.mvTitle && c.artistMatch) || mvPool.find(c => c.mvTitle) || mvPool.find(c => c.artistMatch) || mvPool[0];
   if (topic && !s.topic_id) s.topic_id = topic.id;
   if (mv && !s.mv_id) s.mv_id = mv.id;
