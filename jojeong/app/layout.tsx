@@ -7,6 +7,7 @@ import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import VisitBeacon from "@/components/VisitBeacon";
 import OpenNote from "@/components/OpenNote";
 import ChannelNudge from "@/components/ChannelNudge";
+import ChromeGate from "@/components/ChromeGate";
 import { isPreview } from "@/lib/admin";
 import { openReadingCount } from "@/lib/store";
 import { askShown, CHANNEL_GIFT, CHANNEL_GIFT_ON, currentMember, JOIN_GIFT, membersEnabled } from "@/lib/members";
@@ -73,17 +74,25 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="min-h-full">
         <main className="mx-auto flex min-h-dvh w-full max-w-[440px] flex-col px-4 pb-8">
-          <SiteHeader />
+          <ChromeGate>
+            <SiteHeader />
+          </ChromeGate>
           {children}
-          <SiteFooter />
+          <ChromeGate>
+            <SiteFooter />
+          </ChromeGate>
         </main>
         {/* The grand opening, once per browser. */}
         {membersEnabled() && (await askShown()) && (
-          <OpenNote member={Boolean(await currentMember().catch(() => null))} gift={JOIN_GIFT} count={await openReadingCount()} />
+          <ChromeGate>
+            <OpenNote member={Boolean(await currentMember().catch(() => null))} gift={JOIN_GIFT} count={await openReadingCount()} />
+          </ChromeGate>
         )}
         {/* Kakao members who have not added the channel yet: one more question for adding it (시안 모드 until it is on). */}
         {membersEnabled() && (CHANNEL_GIFT_ON || (await isPreview())) && (await currentMember().catch(() => null).then((m) => Boolean(m && m.id.startsWith("k") && !m.channel))) && (
-          <ChannelNudge gift={CHANNEL_GIFT} />
+          <ChromeGate>
+            <ChannelNudge gift={CHANNEL_GIFT} />
+          </ChromeGate>
         )}
         {/* Page views and visitors, cookieless (Vercel Web Analytics; enable it in the Vercel project). */}
         <Analytics />
