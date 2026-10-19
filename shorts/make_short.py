@@ -500,6 +500,43 @@ def eleven_tts(text: str, voice_id: str, key: str, mp3_out: Path, models: list[s
     die(f"ElevenLabs TTS 실패 → {last}")
 
 
+# ---------------- Google Cloud TTS (월 무료 한도 안에서는 무료, 상업적 사용 가능)
+
+GOOGLE_VOICES = ["ko-KR-Chirp3-HD-Aoede", "ko-KR-Chirp3-HD-Leda", "ko-KR-Chirp3-HD-Kore",
+                 "ko-KR-Chirp3-HD-Zephyr", "ko-KR-Chirp3-HD-Autonoe", "ko-KR-Neural2-A"]
+
+
+def google_key():
+    key = os.environ.get("GOOGLE_TTS_API_KEY", "").strip()
+    f = HERE / "google_tts_key.txt"
+    if not key and f.exists():
+        key = f.read_text(encoding="utf-8").strip()
+    return key or None
+
+
+def google_tts(text: str, voice: str, key: str, mp3_out: Path, rate: float):
+    body = {"input": {"text": text},
+            "voice": {"languageCode": "ko-KR", "name": voice},
+            "audioConfig": {"audioEncoding": "MP3", "sampleRateHertz": 44100, "speakingRate": rate}}
+    last = ""
+    for attempt in (body, {**body, "audioConfig": {"audioEncoding": "MP3"}}):  # 속도 지정이 안 되는 목소리면 빼고 재시도
+        req = urllib.request.Request("https://texttospeech.googleapis.com/v1/text:synthesize",
+                                     data=json.dumps(attempt).encode(),
+                                     headers={"Content-Type": "application/json", "x-goog-api-key": key})
+        try:
+            with urllib.request.urlopen(req, timeout=60) as r:
+                mp3_out.write_bytes(base64.b64decode(json.loads(r.read())["audioContent"]))
+            return
+        except urllib.error.HTTPError as e:
+            msg = e.read().decode("utf-8", "replace")[:400]
+            if e.code == 403 and ("disabled" in msg or "not been used" in msg):
+                die("구글 클라우드에서 'Cloud Text-to-Speech API'가 꺼져 있어요. 콘솔에서 '사용'을 눌러주세요.")
+            if e.code in (401, 403):
+                die(f"구글 TTS 키 문제예요: {msg}")
+            last = f"HTTP {e.code} {msg}"
+    die(f"구글 TTS 실패 ({voice}) → {last}")
+
+
 def make_tts(text: str, recipe: dict, ff: str, audio_file: str | None = None) -> Path:
     WORK.mkdir(exist_ok=True)
     if audio_file:  # 캡컷·타입캐스트 등에서 직접 만든 음성 파일 사용
@@ -513,15 +550,20 @@ def make_tts(text: str, recipe: dict, ff: str, audio_file: str | None = None) ->
             "음성 파일 정리")
         print(f"      🔊 직접 넣은 음성: {src_path.name}")
         return clean
-    ekey, gkey = eleven_key(), gemini_key()
-    engine = recipe.get("tts_engine") or ("elevenlabs" if ekey else "gemini" if gkey else "edge")
+    ekey, gkey, ckey = eleven_key(), gemini_key(), google_key()
+    engine = recipe.get("tts_engine") or ("elevenlabs" if ekey else "google" if ckey
+                                          else "gemini" if gkey else "edge")
+    if engine == "google" and not ckey:
+        die("구글 TTS 키가 없어요. shorts 폴더에 google_tts_key.txt를 만들고 키를 붙여넣으세요.")
     if engine == "elevenlabs" and not ekey:
         die("ElevenLabs 키가 없어요. shorts 폴더에 elevenlabs_key.txt를 만들고 키를 붙여넣으세요.")
     if engine == "gemini" and not gkey:
         die("Gemini 키가 없어요. shorts 폴더에 gemini_key.txt를 만들고 키를 붙여넣으세요.")
-    key = ekey if engine == "elevenlabs" else gkey
+    key = {"elevenlabs": ekey, "google": ckey}.get(engine, gkey)
     if engine == "elevenlabs":
         voice = pick_eleven_voice(recipe, key)
+    elif engine == "google":
+        voice = recipe.get("google_voice", GOOGLE_VOICES[0])
     elif engine == "gemini":
         voice = recipe.get("gemini_voice", GEMINI_VOICES[0])
     else:
@@ -529,12 +571,17 @@ def make_tts(text: str, recipe: dict, ff: str, audio_file: str | None = None) ->
     style = recipe.get("tts_style", GEMINI_STYLE)
     tag = hashlib.md5(f"{engine}|{voice}|{recipe.get('eleven_model')}|{recipe.get('rate')}|{style}|{TTS_POLISH}|{recipe.get('tts_speed')}|{text}"
                       .encode()).hexdigest()[:10]
-    label = {"elevenlabs": "ElevenLabs", "gemini": "Gemini", "edge": "edge-tts(구형 무료)"}[engine]
+    label = {"elevenlabs": "ElevenLabs", "google": "Google Cloud", "gemini": "Gemini",
+             "edge": "edge-tts(구형 무료)"}[engine]
     print(f"      🔊 TTS: {label} {voice}")
     clean = WORK / f"tts_{tag}.wav"
     if clean.exists():
         return clean
-    if engine == "elevenlabs":
+    if engine == "google":
+        raw = WORK / f"tts_{tag}.mp3"
+        google_tts(re.sub(r"\[[^\]]*\]\s*", "", text), voice, key, raw, float(recipe.get("google_rate", 1.1)))
+        src = ["-i", str(raw)]
+    elif engine == "elevenlabs":
         raw = WORK / f"tts_{tag}.mp3"
         models = [recipe["eleven_model"]] if recipe.get("eleven_model") else ELEVEN_MODELS
         used = eleven_tts(text, voice, key, raw, models)
@@ -838,14 +885,18 @@ def plan_parts(recipe, subs: Subs, ff: str, src: Path | None, check: bool):
 def voice_test(ff: str):
     """같은 문장을 여러 목소리로 만들어 out/목소리_*.wav로 저장."""
     OUT.mkdir(exist_ok=True)
-    line = "3천 원짜리로 발뒤꿈치 관리를 한다고?"
-    if not gemini_key():
-        die("Gemini 키가 없어요. shorts 폴더에 gemini_key.txt를 만들고 키를 붙여넣은 뒤 다시 실행하세요.")
-    for v in GEMINI_VOICES:
+    line = "아니 이게 3천 원이라고?"
+    if google_key():
+        engine, field, voices = "google", "google_voice", GOOGLE_VOICES
+    elif gemini_key():
+        engine, field, voices = "gemini", "gemini_voice", GEMINI_VOICES
+    else:
+        die("google_tts_key.txt 또는 gemini_key.txt가 없어요. 키를 넣은 뒤 다시 실행하세요.")
+    for v in voices:
         print(f"   {v} 만드는 중…")
-        p = make_tts(line, {"tts_engine": "gemini", "gemini_voice": v}, ff)
+        p = make_tts(line, {"tts_engine": engine, field: v}, ff)
         shutil.copy(p, OUT / f"목소리_{v}.wav")
-    print(f"\n✅ out 폴더의 목소리_*.wav를 들어보고, 마음에 드는 이름을 레시피 \"gemini_voice\"에 적으세요.")
+    print(f"\n✅ out 폴더의 목소리_*.wav를 들어보고, 마음에 드는 이름을 레시피 \"{field}\"에 적으세요.")
 
 
 def main():

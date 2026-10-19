@@ -129,3 +129,6 @@ for f in recipes/*.json; do python3 make_short.py "$f"; done
 4. `python3 make_short.py --list-voices`로 ID를 확인하고 레시피에 `"eleven_voice": "ID"` (없으면 한국어 목소리를 자동 선택)
 
 키가 있으면 ElevenLabs가 Gemini보다 먼저 쓰여요. tts 구간의 `"say"`에는 `[surprised]`, `[curious]`, `[excited]` 같은 감정 태그를 넣을 수 있고(eleven_v3), 자막에는 `"text"`가 나와요.
+
+## Google Cloud TTS (월 무료 한도 안에서 무료)
+`shorts/google_tts_key.txt`에 구글 클라우드 API 키를 넣으면 ElevenLabs 다음 순위로 쓰여요. 기본 목소리는 `ko-KR-Chirp3-HD-Aoede`이고, `python3 make_short.py --voice-test`로 여성 목소리 6종을 비교한 뒤 레시피 `"google_voice"`에 적으세요. 말하는 속도는 `"google_rate"`(기본 1.1)로 조절해요.
