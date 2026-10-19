@@ -6,13 +6,14 @@ import { HundoFace } from "@/app/ask/Letter";
 import AskLink from "@/components/AskLink";
 import ColumnTitle from "@/components/ColumnTitle";
 import Keep from "@/components/Keep";
+import NoticeBar, { type Notice } from "@/components/NoticeBar";
 import TodayCard from "@/components/TodayCard";
 import { StarChart } from "@/components/StoreHero";
 import { publishedColumns } from "@/lib/columns";
 import { hanjaNum } from "@/lib/hanjaNum";
 import { monthPillarNow, rankMonth } from "@/lib/iljuRank";
 import { readMe } from "@/lib/me";
-import { askShown, currentMember, JOIN_GIFT } from "@/lib/members";
+import { askShown, CHANNEL_GIFT, CHANNEL_GIFT_ON, currentMember, JOIN_GIFT } from "@/lib/members";
 import { STEMS, BRANCHES, STEMS_KO, BRANCHES_KO } from "@/lib/saju";
 import type { Today } from "@/lib/today";
 import { profileOf } from "@/lib/pairToken";
@@ -48,6 +49,16 @@ const CHIPS: { href: string; hanja: string; label: string }[] = [
 ];
 
 const SHOW_COUNT_FROM = 100;
+
+// The notices taking turns at the top (components/NoticeBar.tsx): each one a thing on the site now, nothing promised
+// that is not there.
+function notices(ask: boolean): Notice[] {
+  return [
+    { text: "2027 정미년, 내 사주엔 무슨 바람이?", href: "/reports/gukjeong" },
+    ...(ask && CHANNEL_GIFT_ON ? [{ text: `카카오 채널 추가하면 정 훈도 질문 ${CHANNEL_GIFT}개 선물`, href: "/ask#channel" }] : []),
+    { text: "이달의 일주 랭킹, 내 일주는 몇 위일까", href: "/ranking" },
+  ];
+}
 
 // First visit (A): 정 훈도 standing on the night stage, one button, 묻기 as a gold line under it.
 function HeroStage({ ask }: { ask: boolean }) {
@@ -250,6 +261,7 @@ export default async function HomeV2() {
 
   return (
     <div className="tone-night flex flex-col">
+      <NoticeBar notices={notices(ask)} />
       {me ? (
         <HeroMe
           name={me.person.name}
