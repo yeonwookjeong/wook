@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { classify, SRC_COOKIE } from "@/lib/source";
+import { classify, directKind, SRC_COOKIE } from "@/lib/source";
 
 // Reports each page view to /api/stat, and whether this browser is new today, this week, this month or at all.
 // The browser remembers only the dates it was last counted; nothing identifies it.
@@ -51,7 +51,11 @@ export default function VisitBeacon() {
       src = classify({ path, referrer: document.referrer, ua: navigator.userAgent, query: location.search });
       document.cookie = `${SRC_COOKIE}=${src}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
     }
-    send({ v: { day: seen.d !== cur.d, week: seen.w !== cur.w, month: seen.m !== cur.m, ever }, ...(ever && src && { src }) });
+    send({
+      v: { day: seen.d !== cur.d, week: seen.w !== cur.w, month: seen.m !== cur.m, ever },
+      ...(ever && src && { src }),
+      ...(ever && src === "direct" && { dx: directKind(navigator.userAgent) }),
+    });
     try {
       localStorage.setItem("hv", JSON.stringify(cur));
     } catch {}
