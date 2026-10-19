@@ -54,6 +54,12 @@ THEMES = {
 # 자막 디자인 세트: 레시피 "sub_theme"으로 고름. 각 세트는 셀럽 대사(celeb)와 TTS(tts) 모양을 짝으로 가짐.
 # 키: fill 글자색, stroke 테두리색, sw 테두리 두께, box 배경 박스(RGBA), shadow 그림자, size 글자 크기, tail 말풍선 꼬리
 SUB_THEMES = {
+    "premium": {  # 기본: Pretendard Black 흰 글씨 + 얇은 테두리 + 부드러운 그림자, 핵심 단어는 초록 강조
+                  # TTS는 노란 글씨로 구분. 등장할 때 살짝 커지며 '팝' 하고 나타남
+        "celeb": {"fill": (255, 255, 255), "stroke": (0, 0, 0), "sw": 6, "shadow": True, "size": 70,
+                  "hi": (0, 214, 0)},
+        "tts": {"fill": (255, 226, 0), "stroke": (0, 0, 0), "sw": 7, "shadow": True, "size": 74},
+    },
     "clean": {   # 반투명 검정 바 + 흰 글씨 / TTS는 채널 초록 바
         "celeb": {"fill": (255, 255, 255), "box": (0, 0, 0, 170), "size": 60},
         "tts": {"fill": (0, 0, 0), "box": (0, 214, 0, 255), "size": 62},
@@ -469,26 +475,34 @@ def _faces(path: Path):
 
 
 def _pick_fonts():
-    """(본문 굵게, 본문 보통, 제목) 폰트. shorts/fonts 폴더의 폰트를 우선 사용.
+    """(본문 굵게, 본문 보통, 제목) 폰트.
+    우선순위: shorts/fonts 폴더(직접 넣은 폰트) → 함께 들어있는 Pretendard → 시스템 폰트.
     제목 전용은 fonts/title.ttf(또는 .otf)로 넣으면 됩니다."""
     fdir = HERE / "fonts"
     mine = sorted(fdir.glob("*.[ot]t[fc]")) if fdir.exists() else []
     title = next((p for p in mine if p.stem.lower() == "title"), None)
-    cands = [p for p in mine if p.stem.lower() != "title"] + [Path(p) for p in (
-        "/System/Library/Fonts/AppleSDGothicNeo.ttc",
-        "/System/Library/Fonts/Supplemental/AppleGothic.ttf",
-        "C:/Windows/Fonts/malgunbd.ttf",
-        "C:/Windows/Fonts/malgun.ttf",
-        "/usr/share/fonts/opentype/noto/NotoSansCJK-Black.ttc",
-        "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc",
-        "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",
-    )]
-    for path in cands:
-        if path.exists():
-            b, r = _faces(path)
-            body_b, body_r = (str(path), b), (str(path), r)
-            return body_b, body_r, ((str(title), 0) if title else body_b)
-    die("한글 폰트를 찾지 못했어요. shorts/fonts 폴더에 .ttf/.otf 폰트를 하나 넣어주세요.")
+    body = [p for p in mine if p.stem.lower() != "title"]
+    if body:
+        b, r = _faces(body[0])
+        bold, regular = (str(body[0]), b), (str(body[0]), r)
+    else:
+        bundled = HERE / "assets" / "fonts"
+        black, reg = bundled / "Pretendard-Black.otf", bundled / "Pretendard-Regular.otf"
+        if black.exists() and reg.exists():
+            bold, regular = (str(black), 0), (str(reg), 0)
+        else:
+            for path in [Path(p) for p in (
+                "/System/Library/Fonts/AppleSDGothicNeo.ttc",
+                "C:/Windows/Fonts/malgunbd.ttf",
+                "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",
+            )]:
+                if path.exists():
+                    b, r = _faces(path)
+                    bold, regular = (str(path), b), (str(path), r)
+                    break
+            else:
+                die("한글 폰트를 찾지 못했어요. shorts/fonts 폴더에 .ttf/.otf 폰트를 하나 넣어주세요.")
+    return bold, regular, ((str(title), 0) if title else bold)
 
 
 def font(size: int, kind: str = "bold"):
@@ -560,13 +574,35 @@ def layout_png(recipe: dict, path: Path):
     img.save(path)
 
 
-def sub_png(text: str, role: str, path: Path, theme: str = "clean"):
-    """자막 한 장(투명 PNG). role: celeb / tts"""
-    st = SUB_THEMES.get(theme, SUB_THEMES["clean"]).get(role) or SUB_THEMES["clean"]["celeb"]
+_HI_WORDS = None
+
+
+def hi_words():
+    """강조할 단어: keywords.txt의 키워드(2글자 이상)."""
+    global _HI_WORDS
+    if _HI_WORDS is None:
+        _HI_WORDS = []
+        kw = HERE / "keywords.txt"
+        if kw.exists():
+            for line in kw.read_text(encoding="utf-8").splitlines():
+                line = line.split("#", 1)[0]
+                _HI_WORDS += [w.strip() for w in line.split(",")
+                              if len(w.strip()) >= 2 and not w.strip().startswith("!")]
+    return _HI_WORDS
+
+
+def is_hi(word: str) -> bool:
+    n = norm(word)
+    return bool(re.search(r"\d", n)) or any(norm(k) in n for k in hi_words() if norm(k))
+
+
+def sub_png(text: str, role: str, path: Path, theme: str = "premium", scale: float = 1.0):
+    """자막 한 장(투명 PNG). role: celeb / tts. scale<1이면 '팝' 등장용 작은 버전."""
+    st = SUB_THEMES.get(theme, SUB_THEMES["premium"]).get(role) or SUB_THEMES["premium"]["celeb"]
     img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
     max_w = W - 160
-    size = st["size"]
+    size = int(st["size"] * scale)
     lines = [text]
     f = fit(d, text, max_w, size, int(size * 0.85))
     if d.textlength(text, font=f) > max_w:  # 너무 길면 줄이기 대신 두 줄로 고르게 나눔
@@ -581,7 +617,7 @@ def sub_png(text: str, role: str, path: Path, theme: str = "clean"):
     lh = int(f.size * 1.32)
     y0 = SUB_Y - (len(lines) - 1) * lh
     cy = [y0 + i * lh + f.size / 2 for i in range(len(lines))]
-    sw = st.get("sw", 0)
+    sw = max(int(st.get("sw", 0) * scale), 0)
 
     if st.get("box"):
         tw = max(d.textlength(l, font=f) for l in lines)
@@ -604,8 +640,18 @@ def sub_png(text: str, role: str, path: Path, theme: str = "clean"):
         img.alpha_composite(sh.filter(ImageFilter.GaussianBlur(6)))
     d = ImageDraw.Draw(img)
     for c, line in zip(cy, lines):
-        d.text((W / 2, c), line, font=f, fill=st["fill"], anchor="mm",
-               stroke_width=sw, stroke_fill=st.get("stroke"))
+        if not st.get("hi"):
+            d.text((W / 2, c), line, font=f, fill=st["fill"], anchor="mm",
+                   stroke_width=sw, stroke_fill=st.get("stroke"))
+            continue
+        # 단어별로 색을 달리해서 왼쪽부터 이어 그림 (핵심 단어 강조)
+        words = line.split(" ")
+        space = d.textlength(" ", font=f)
+        x = W / 2 - d.textlength(line, font=f) / 2
+        for w_ in words:
+            color = st["hi"] if is_hi(w_) else st["fill"]
+            d.text((x, c), w_, font=f, fill=color, anchor="lm", stroke_width=sw, stroke_fill=st.get("stroke"))
+            x += d.textlength(w_, font=f) + space
     img.save(path)
 
 
@@ -765,7 +811,15 @@ def main():
     layout = tmp / "layout.png"
     layout_png(recipe, layout)
 
-    sub_theme = recipe.get("sub_theme", "clean")
+    sub_theme = recipe.get("sub_theme", "premium")
+    def pop(png: Path, text: str, role: str, a: float, b: float):
+        """자막이 살짝 작게 나왔다가 제 크기로 '팝' — 앞 0.07초만 작은 버전."""
+        if b - a < 0.25:
+            return [(png, a, b)]
+        small = png.with_name(png.stem + "_s.png")
+        sub_png(text, role, small, sub_theme, 0.86)
+        return [(small, a, a + 0.07), (png, a + 0.07, b)]
+
     seg_files, clip_no = [], 0
     for i, p in enumerate(plan, 1):
         print(f"   [{i}/{len(plan)}] 렌더링 중…")
@@ -774,7 +828,7 @@ def main():
         if p["type"] == "tts":
             png = tmp / f"sub_{i}.png"
             sub_png(p["part"]["text"], "tts", png, sub_theme)
-            overlays.append((png, 0, dur))
+            overlays += pop(png, p["part"]["text"], "tts", 0, dur)
             zoom = (1.15, 1.22)          # TTS: 확 당겨서 시선 집중
         else:
             mode = p["part"].get("sub", "auto")
@@ -782,7 +836,7 @@ def main():
                 for j, (s, e, text) in enumerate(subs.chunks(p["start"], p["end"])):
                     png = tmp / f"sub_{i}_{j}.png"
                     sub_png(text, "celeb", png, sub_theme)
-                    overlays.append((png, s - p["start"], e - p["start"]))
+                    overlays += pop(png, text, "celeb", s - p["start"], e - p["start"])
             elif mode and mode != "none":
                 png = tmp / f"sub_{i}.png"
                 sub_png(mode, "celeb", png, sub_theme)

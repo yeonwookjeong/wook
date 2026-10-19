@@ -93,12 +93,15 @@ python3 make_short.py recipes/백진희_발뒤꿈치밤.json
 - 레시피에서 끄는 법: `"transitions": false`, `"sfx": false`, `"punch_zoom": false`
 
 ## 자막 디자인 고르기
-레시피에 `"sub_theme": "이름"`을 넣으세요. 기본값은 `clean`이에요.
+레시피에 `"sub_theme": "이름"`을 넣으세요. 기본값은 `premium`이에요.
 
 | 이름 | 셀럽 대사 | TTS |
 |---|---|---|
+| `premium` | Pretendard Black 흰 글씨, 얇은 테두리와 그림자, 핵심 단어(키워드·숫자)는 초록. 살짝 커지며 '팝' 하고 등장 | 노란 글씨 |
 | `clean` | 반투명 검정 바 + 흰 글씨 | 초록 바 + 검정 글씨 |
 | `variety` | 노란 굵은 글씨 + 두꺼운 테두리 + 그림자 (예능 자막) | 빨간 박스 + 흰 글씨 |
 | `bubble` | 흰 말풍선 + 검정 글씨 | 검정 말풍선 + 흰 글씨 |
 | `minimal` | 흰 글씨 + 얇은 테두리 + 그림자 | 초록 글씨 |
 | `pop` | 흰 글씨 + 굵은 검정 테두리 (v2) | 노란 박스 |
+
+폰트: `assets/fonts`에 [Pretendard](https://github.com/orioncactus/pretendard)(SIL OFL 1.1, 상업적 사용 가능)가 함께 들어 있어요. 다른 폰트를 쓰려면 `fonts` 폴더에 넣으면 그 폰트가 먼저 쓰여요.
