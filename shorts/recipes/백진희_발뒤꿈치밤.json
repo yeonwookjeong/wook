@@ -1,19 +1,17 @@
 {
   "source": "https://youtu.be/-WHTMYjhqHw",
-  "title1": "[[겨울마다]] 꼭 챙기는",
-  "title2": "백진희의 3천원 발뒤꿈치템",
+  "title1": "[[백진희]]가 겨울마다 챙기는",
+  "title2": "3천원 발뒤꿈치 꿀템",
   "link_text": "프로필 링크 46번",
-  "theme": "story",
-  "sub_theme": "story",
+  "theme": "celebpick",
+  "sub_theme": "story_green",
   "clip_subs": true,
+  "blur": true,
   "google_voice": "ko-KR-Chirp3-HD-Kore",
-  "gemini_voice": "Zephyr",
-  "voice": "ko-KR-SunHiNeural",
-  "rate": "+10%",
   "parts": [
-    {"type": "tts", "text": "향에 진심인 백진희가 태국 공항에서 꼭 사 온다는 꿀템", "over": "많이 챙겨가는데"},
+    {"type": "tts", "text": "향에 진심인 백진희가 태국 공항에서 꼭 사 온다는 꿀템", "media": ["broll/백진희_1.jpg", "broll/백진희_2.jpg", {"at": "00:02"}, {"at": "01:52"}]},
     {"type": "clip", "from": "이거 저희 꿀템인데요", "to": "3,000원 좀 안 하는데"},
-    {"type": "tts", "text": "이걸 어디에 바르냐면"},
+    {"type": "tts", "text": "이걸 어디에 바르냐면", "over": "냄새 너무 좋지 않아요"},
     {"type": "clip", "from": "큐티클이나", "to": "발뒤꿈치에 바르면 되는데"},
     {"type": "clip", "from": "발에 바르면은", "to": "추천합니다"}
   ]

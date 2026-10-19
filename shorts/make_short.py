@@ -68,6 +68,12 @@ SUB_THEMES = {
         "tts": {"fill": (255, 255, 255), "stroke": (0, 0, 0), "sw": 7, "shadow": True, "size": 66,
                 "hi": (248, 216, 8)},
     },
+    "story_green": {  # story 자막 + 채널 초록 강조 (celebpick 레이아웃과 색 맞춤)
+        "celeb": {"fill": (255, 255, 255), "stroke": (0, 0, 0), "sw": 7, "shadow": True, "size": 62,
+                  "hi": (0, 214, 0), "quote": True},
+        "tts": {"fill": (255, 255, 255), "stroke": (0, 0, 0), "sw": 7, "shadow": True, "size": 64,
+                "hi": (0, 214, 0)},
+    },
     "premium": {  # 기본: Pretendard Black 흰 글씨 + 얇은 테두리 + 부드러운 그림자, 핵심 단어는 초록 강조
                   # TTS는 노란 글씨로 구분. 등장할 때 살짝 커지며 '팝' 하고 나타남
         "celeb": {"fill": (255, 255, 255), "stroke": (0, 0, 0), "sw": 6, "shadow": True, "size": 70,
@@ -886,42 +892,115 @@ def sub_png(text: str, role: str, path: Path, theme: str = "premium", scale: flo
 
 # ---------------------------------------------------------------- 렌더링
 
-def render(ff: str, src: Path, t0: float, dur: float, subs: list, tts: Path | None,
-           out: Path, zoom: tuple[float, float], crop_bottom: float, punch: float):
+DEFAULT_BLUR = [[0, 0, 0.26, 0.16], [0.74, 0, 0.26, 0.16]]  # 원본 좌상단·우상단 로고 자리(비율)
+IMAGE_EXT = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
+
+
+def _blur(label: str, out: str, boxes: list, k: int) -> list[str]:
+    """원본 화면의 지정 영역(채널 로고 등)을 흐리게."""
+    if not boxes:
+        return [f"[{label}]null[{out}]"]
+    n = len(boxes)
+    fg = [f"[{label}]split={n + 1}[bm{k}]" + "".join(f"[bp{k}_{j}]" for j in range(n))]
+    last = f"bm{k}"
+    for j, (x, y, w, h) in enumerate(boxes):
+        fg.append(f"[bp{k}_{j}]crop=iw*{w}:ih*{h}:iw*{x}:ih*{y},"
+                  f"boxblur=lr='min(w,h)/5':lp=3:cr='min(cw,ch)/5':cp=3[bb{k}_{j}]")
+        nxt = out if j == n - 1 else f"bo{k}_{j}"
+        fg.append(f"[{last}][bb{k}_{j}]overlay=main_w*{x}:main_h*{y}[{nxt}]")
+        last = nxt
+    return fg
+
+
+def render(ff: str, items: list, dur: float, subs: list, tts: Path | None, out: Path,
+           zoom: tuple[float, float], crop_bottom: float, punch: float, blur: list):
     """한 구간을 영상 칸(+자막)만 렌더링. 제목·하단 글씨는 마지막에 한 번에 얹는다.
+    items: [{"path", "t0", "dur", "image", "source"}] 화면 소스들(여러 개면 이어 붙임)
     subs: [(png, 시작, 끝)] (구간 기준 상대 시간). zoom: (처음 배율, 끝 배율)"""
-    cmd = [ff, "-y", "-ss", f"{t0:.3f}", "-t", f"{dur:.3f}", "-i", str(src)]
+    cmd = [ff, "-y"]
+    for it in items:
+        if it["image"]:
+            cmd += ["-loop", "1", "-t", f"{it['dur']:.3f}", "-i", str(it["path"])]
+        else:
+            cmd += ["-ss", f"{it['t0']:.3f}", "-t", f"{it['dur']:.3f}", "-i", str(it["path"])]
+    si = len(items)
     for png, _, _ in subs:
         cmd += ["-i", str(png)]
+    ti = si + len(subs)
     if tts:
         cmd += ["-i", str(tts)]
 
     zw, zh = int(W * 1.5), int(VH * 1.5)  # 크게 키운 뒤 줌 → 떨림 없이 부드럽게
-    frames = max(int(dur * FPS), 1)
-    z0, z1 = zoom
-    zexpr = f"{z0}+({z1}-{z0})*on/{frames}+{punch}*max(0,1-on/{int(0.3 * FPS)})"
-    fg = [f"[0:v]crop=iw:ih*{1 - crop_bottom:.3f}:0:0,"            # 원본 영상 아래쪽(박혀 있는 자막) 잘라내기
-          f"scale={zw}:{zh}:force_original_aspect_ratio=increase,crop={zw}:{zh},setsar=1,fps={FPS},"
-          f"zoompan=z='{zexpr}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s={W}x{VH}:fps={FPS},"
-          f"pad={W}:{H}:0:{TOP}:black[b0]"]
+    fg = []
+    for k, it in enumerate(items):
+        frames = max(int(it["dur"] * FPS), 1)
+        z0, z1 = (1.0, 1.12) if it["image"] else zoom   # 사진은 천천히 당기는 켄번스 효과
+        zexpr = f"{z0}+({z1}-{z0})*on/{frames}+{punch}*max(0,1-on/{int(0.3 * FPS)})"
+        if it["source"]:
+            fg += _blur(f"{k}:v", f"bl{k}", blur, k)
+            pre = f"[bl{k}]crop=iw:ih*{1 - crop_bottom:.3f}:0:0,"  # 아래쪽(박힌 자막) 잘라내기
+        else:
+            pre = f"[{k}:v]"
+        fg.append(f"{pre}scale={zw}:{zh}:force_original_aspect_ratio=increase,crop={zw}:{zh},setsar=1,"
+                  f"fps={FPS},zoompan=z='{zexpr}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:"
+                  f"s={W}x{VH}:fps={FPS},trim=duration={it['dur']:.3f},setpts=PTS-STARTPTS[m{k}]")
+    if len(items) > 1:
+        fg.append("".join(f"[m{k}]" for k in range(len(items))) + f"concat=n={len(items)}:v=1:a=0[vc]")
+    else:
+        fg.append("[m0]null[vc]")
+    fg.append(f"[vc]pad={W}:{H}:0:{TOP}:black[b0]")
     last = "b0"
     for i, (_, a, b) in enumerate(subs):
-        fg.append(f"[{last}][{i + 1}:v]overlay=0:0:enable='between(t,{a:.2f},{b:.2f})'[s{i}]")
+        fg.append(f"[{last}][{si + i}:v]overlay=0:0:enable='between(t,{a:.2f},{b:.2f})'[s{i}]")
         last = f"s{i}"
     fg.append(f"[{last}]format=yuv420p[vout]")
+
     fade = f"afade=t=in:d=0.04,afade=t=out:st={max(dur - 0.06, 0):.3f}:d=0.06"
+    base_audio = items[0]["source"] and not items[0]["image"]  # 원본 영상이면 그 소리를 바닥에 깔기
     if tts:
-        ti = len(subs) + 1
-        fg.append(f"[0:a]aresample=44100,volume={BG_DUCK}[bg]")
+        if base_audio:
+            fg.append(f"[0:a]aresample=44100,volume={BG_DUCK}[bg]")
+        else:
+            fg.append(f"anullsrc=r=44100:cl=stereo,atrim=0:{dur:.3f}[bg]")
         fg.append(f"[{ti}:a]aresample=44100,adelay=260|260[t]")
-        fg.append(f"[bg][t]amix=inputs=2:duration=first:normalize=0,apad,atrim=0:{dur:.3f},{fade}[aout]")
-    else:
+        fg.append(f"[bg][t]amix=inputs=2:duration=longest:normalize=0,apad,atrim=0:{dur:.3f},{fade}[aout]")
+    elif base_audio:
         fg.append(f"[0:a]aresample=44100,loudnorm=I=-14:TP=-1.5:LRA=11,apad,atrim=0:{dur:.3f},{fade}[aout]")
+    else:
+        fg.append(f"anullsrc=r=44100:cl=stereo,atrim=0:{dur:.3f}[aout]")
 
     cmd += ["-filter_complex", ";".join(fg), "-map", "[vout]", "-map", "[aout]",
             "-t", f"{dur:.3f}", "-r", str(FPS), "-c:v", "libx264", "-preset", "veryfast", "-crf", "19",
             "-c:a", "aac", "-b:a", "160k", "-ar", "44100", "-ac", "2", str(out)]
     run(cmd, f"구간 렌더링({out.name})")
+
+
+_SOURCES = {}
+
+
+def media_items(p: dict, dur: float, src: Path, subs: "Subs", ff: str) -> list:
+    """TTS 구간 화면: "media"에 적은 인스타 캡처·다른 영상들을 나눠 보여줌. 없으면 원본 그 장면."""
+    out = []
+    for m in p["part"].get("media", []):
+        if isinstance(m, str):  # 내 파일 (broll 폴더의 사진/영상)
+            path = Path(m) if Path(m).is_absolute() else HERE / m
+            if not path.exists():
+                print(f"      ⚠️ 자료 파일이 없어서 건너뜀: {m}")
+                continue
+            out.append({"path": path, "t0": float(0), "image": path.suffix.lower() in IMAGE_EXT, "source": False})
+        else:                   # 유튜브 영상의 특정 장면 {"at": "01:23"} 또는 {"src": "다른링크", "at": ...}
+            vpath, vsubs = src, subs
+            if m.get("src"):
+                if m["src"] not in _SOURCES:
+                    _SOURCES[m["src"]] = fetch_source(m["src"], ff)[:2]
+                vpath, vsubs = _SOURCES[m["src"]]
+            t, _ = resolve(m.get("at", 0), vsubs, 0, "start")
+            out.append({"path": vpath, "t0": t, "image": False, "source": True})
+    if not out:
+        return [{"path": src, "t0": p["start"], "dur": dur, "image": False, "source": True}]
+    for it in out:
+        it["dur"] = dur / len(out)
+    return out
 
 
 def resolve(v, subs: Subs, after: float, edge: str) -> tuple[float, bool]:
@@ -1039,6 +1118,9 @@ def main():
     # clip_subs=false: 원본 구간엔 내 자막을 안 넣고 원본에 박힌 자막을 그대로 살림(기존 계정 방식)
     clip_subs = recipe.get("clip_subs", True)
     crop_bottom = float(recipe.get("src_crop_bottom", 0.2 if clip_subs else 0.0))
+    # 원본 좌상단·우상단(채널 로고 자리) 흐리게. false면 끔, 직접 [[x,y,w,h],...] 비율로도 지정 가능
+    blur = recipe.get("blur", True)
+    blur = DEFAULT_BLUR if blur is True else (blur or [])
     use_layout(recipe.get("theme", "celebpick"))
 
     plan = plan_parts(recipe, subs, ff, src, args.check)
@@ -1100,7 +1182,9 @@ def main():
         punch = PUNCH if recipe.get("punch_zoom", True) else 0.0
         # TTS 구간은 원본 자막이 TTS 자막과 겹치지 않게 항상 아래쪽을 잘라냄
         crop = max(crop_bottom, 0.2) if p["type"] == "tts" else crop_bottom
-        render(ff, src, p["start"], dur, overlays, p.get("tts"), seg, zoom, crop, punch)
+        items = media_items(p, dur, src, subs, ff) if p["type"] == "tts" else \
+            [{"path": src, "t0": p["start"], "dur": dur, "image": False, "source": True}]
+        render(ff, items, dur, overlays, p.get("tts"), seg, zoom, crop, punch, blur)
         seg_files.append((seg, dur))
 
     OUT.mkdir(exist_ok=True)

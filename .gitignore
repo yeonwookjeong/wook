@@ -48,3 +48,9 @@ shorts/gemini_key.txt
 shorts/fonts/
 shorts/elevenlabs_key.txt
 shorts/google_tts_key.txt
+shorts/broll/*
+!shorts/broll/README.txt
+shorts/my_tts/*
+!shorts/my_tts/README.txt
+shorts/bgm/*
+!shorts/bgm/README.txt
