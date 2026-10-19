@@ -113,3 +113,11 @@ python3 make_short.py recipes/백진희_발뒤꿈치밤.json
 ```bash
 for f in recipes/*.json; do python3 make_short.py "$f"; done
 ```
+
+## TTS 음성 직접 넣기 (캡컷·타입캐스트 등)
+`my_tts` 폴더에 음성 파일을 넣고 tts 구간에 `"audio"`를 적으세요. 자막은 `"text"`로 나와요.
+```json
+{"type": "tts", "text": "3천 원짜리로 발뒤꿈치 관리를 한다고?", "audio": "my_tts/발뒤꿈치_질문.mp3"}
+```
+- Gemini 말투는 레시피의 `"tts_style"`(영어 지시문)로 바꿀 수 있어요.
+- 실행하면 `🔊 TTS: Gemini Zephyr`처럼 실제로 쓰인 엔진이 표시돼요. `edge-tts(구형 무료)`로 나오면 Gemini 키가 안 읽힌 거예요.

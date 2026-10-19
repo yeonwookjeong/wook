@@ -82,10 +82,11 @@ SUB_THEMES = {
     },
 }
 # TTS 음질 보정: 무음 제거 → 저음 컷 → 선명도 → 컴프레서 → 치찰음 → 쇼츠 표준 음량
-TTS_POLISH = ("silenceremove=start_periods=1:start_threshold=-50dB:stop_periods=-1:"
-              "stop_duration=0.25:stop_threshold=-50dB,highpass=f=80,"
-              "equalizer=f=3000:t=q:w=1:g=2,acompressor=threshold=-18dB:ratio=3:attack=5:release=100,"
-              "deesser,loudnorm=I=-14:TP=-1.5:LRA=7")
+# 가볍게만 손봄: 앞뒤 무음만 자르고(문장 중간 숨 쉬는 틈은 살림) 저음 잡음 컷 + 음량 맞춤.
+# 과한 압축·치찰음 제거·배속은 기계음처럼 들리게 만들어서 뺐음.
+_TRIM = "silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.03"
+TTS_POLISH = (f"{_TRIM},areverse,{_TRIM},areverse,highpass=f=70,"
+              "acompressor=threshold=-20dB:ratio=1.8:attack=10:release=150,loudnorm=I=-15:TP=-1.5:LRA=9")
 BG_DUCK = 0.07  # TTS 나오는 동안 원본 소리 크기 (1 = 원래 크기)
 XFADE = 0.22    # 구간 사이 전환 효과 길이(초)
 # 돌아가며 쓰는 전환 효과 (ffmpeg xfade 이름)
@@ -95,9 +96,10 @@ PUNCH = 0.10    # 각 구간 시작 0.3초 동안 '툭' 당겼다 풀리는 줌 
 # Gemini TTS: 위에서부터 차례로 시도 (모델 이름이 바뀌어도 동작하도록)
 GEMINI_MODELS = ["gemini-3.1-flash-tts-preview", "gemini-2.5-flash-preview-tts", "gemini-2.5-flash-tts"]
 GEMINI_VOICES = ["Zephyr", "Leda", "Aoede", "Kore", "Autonoe"]  # 여성 음성 후보
-GEMINI_STYLE = ("Read the Korean line below aloud as a bright, upbeat, friendly Korean woman in her 20s "
-                "who runs a shopping YouTube channel. Natural and slightly fast, curious tone. "
-                "Read ONLY the Korean line:")
+GEMINI_STYLE = ("You are a Korean woman in her mid-20s chatting casually with a close friend, "
+                "genuinely surprised and curious. Speak in natural spoken Korean with lively intonation, "
+                "a little faster than normal, like a real person reacting in a TikTok video, "
+                "not like an announcer or narrator. Say only this line:")
 
 INSTALL = 'python3 -m pip install -U "yt-dlp[default]" edge-tts pillow imageio-ffmpeg'
 
@@ -377,9 +379,9 @@ def gemini_key():
     return key or None
 
 
-def gemini_tts(text: str, voice: str, key: str, pcm_out: Path):
+def gemini_tts(text: str, voice: str, key: str, pcm_out: Path, style: str = GEMINI_STYLE):
     body = json.dumps({
-        "contents": [{"parts": [{"text": f"{GEMINI_STYLE}\n{text}"}]}],
+        "contents": [{"parts": [{"text": f"{style}\n{text}"}]}],
         "generationConfig": {
             "responseModalities": ["AUDIO"],
             "speechConfig": {"voiceConfig": {"prebuiltVoiceConfig": {"voiceName": voice}}},
@@ -426,27 +428,41 @@ def edge_tts_make(text: str, voice: str, rate: str, mp3_out: Path):
         die(f"TTS 만들기 실패: {e}")
 
 
-def make_tts(text: str, recipe: dict, ff: str) -> Path:
+def make_tts(text: str, recipe: dict, ff: str, audio_file: str | None = None) -> Path:
     WORK.mkdir(exist_ok=True)
+    if audio_file:  # 캡컷·타입캐스트 등에서 직접 만든 음성 파일 사용
+        src_path = Path(audio_file)
+        if not src_path.is_absolute():
+            src_path = HERE / src_path
+        if not src_path.exists():
+            die(f"음성 파일이 없어요: {src_path}")
+        clean = WORK / f"tts_file_{hashlib.md5(str(src_path).encode()).hexdigest()[:8]}.wav"
+        run([ff, "-y", "-i", str(src_path), "-af", TTS_POLISH, "-ar", "44100", "-ac", "2", str(clean)],
+            "음성 파일 정리")
+        print(f"      🔊 직접 넣은 음성: {src_path.name}")
+        return clean
     key = gemini_key()
     engine = recipe.get("tts_engine") or ("gemini" if key else "edge")
     if engine == "gemini" and not key:
         die("Gemini 키가 없어요. shorts 폴더에 gemini_key.txt를 만들고 키를 붙여넣으세요.")
     voice = recipe.get("gemini_voice", GEMINI_VOICES[0]) if engine == "gemini" \
         else recipe.get("voice", "ko-KR-SunHiNeural")
-    tag = hashlib.md5(f"{engine}|{voice}|{recipe.get('rate')}|{GEMINI_STYLE}|{text}".encode()).hexdigest()[:10]
+    style = recipe.get("tts_style", GEMINI_STYLE)
+    tag = hashlib.md5(f"{engine}|{voice}|{recipe.get('rate')}|{style}|{TTS_POLISH}|{recipe.get('tts_speed')}|{text}"
+                      .encode()).hexdigest()[:10]
+    print(f"      🔊 TTS: {'Gemini ' + voice if engine == 'gemini' else 'edge-tts(구형 무료) ' + voice}")
     clean = WORK / f"tts_{tag}.wav"
     if clean.exists():
         return clean
     if engine == "gemini":
         raw = WORK / f"tts_{tag}.pcm"
-        gemini_tts(text, voice, key, raw)
+        gemini_tts(text, voice, key, raw, style)
         src = ["-f", "s16le", "-ar", "24000", "-ac", "1", "-i", str(raw)]
     else:
         raw = WORK / f"tts_{tag}.mp3"
         edge_tts_make(text, voice, recipe.get("rate", "+10%"), raw)
         src = ["-i", str(raw)]
-    speed = float(recipe.get("tts_speed", 1.08 if engine == "gemini" else 1.0))
+    speed = float(recipe.get("tts_speed", 1.0))
     af = (f"atempo={speed}," if abs(speed - 1) > 0.01 else "") + TTS_POLISH
     run([ff, "-y", *src, "-af", af, "-ar", "44100", "-ac", "2", str(clean)], "TTS 음질 보정")
     return clean
@@ -725,7 +741,7 @@ def plan_parts(recipe, subs: Subs, ff: str, src: Path | None, check: bool):
             if check:
                 tts, dur = None, 1.5 + len(part["text"]) * 0.11  # 대략치
             else:
-                tts = make_tts(part["text"], recipe, ff)
+                tts = make_tts(part["text"], recipe, ff, part.get("audio"))
                 dur = duration_of(ff, tts) + 0.5
             plan.append({"type": "tts", "start": at, "end": at + dur, "tts": tts, "part": part})
         else:
