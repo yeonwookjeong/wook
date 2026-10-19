@@ -6,6 +6,7 @@
   "theme": "celebpick",
   "sub_theme": "premium",
   "clip_subs": false,
+  "google_voice": "ko-KR-Chirp3-HD-Leda",
   "gemini_voice": "Zephyr",
   "voice": "ko-KR-SunHiNeural",
   "rate": "+10%",

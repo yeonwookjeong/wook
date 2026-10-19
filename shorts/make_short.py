@@ -907,6 +907,7 @@ def main():
     ap.add_argument("--check", action="store_true", help="영상은 만들지 않고 구간 시간만 확인")
     ap.add_argument("--voice-test", action="store_true", help="Gemini 목소리 샘플 만들기")
     ap.add_argument("--list-voices", action="store_true", help="ElevenLabs 내 목소리 목록 보기")
+    ap.add_argument("--voice", help="이번 실행만 구글 목소리 바꾸기 (예: Leda, Kore). 파일 이름 끝에 붙음")
     ap.add_argument("--video", help="(선택) 이미 받아둔 원본 영상 파일")
     ap.add_argument("--subs", help="(선택) --video와 함께 쓸 자막 파일(.vtt/.json3)")
     ap.add_argument("--asr", help="(선택) --video와 함께 쓸 자동자막 json3(컷 정밀용)")
@@ -951,6 +952,10 @@ def main():
     else:
         src, subs, channel = fetch_source(recipe["source"], ff)
     recipe.setdefault("credit", f"출처 : {channel}" if channel else "")
+    suffix = ""
+    if args.voice:
+        v = args.voice if args.voice.startswith("ko-KR") else f"ko-KR-Chirp3-HD-{args.voice}"
+        recipe["google_voice"], suffix = v, "_" + v.split("-")[-1]
     # clip_subs=false: 원본 구간엔 내 자막을 안 넣고 원본에 박힌 자막을 그대로 살림(기존 계정 방식)
     clip_subs = recipe.get("clip_subs", True)
     crop_bottom = float(recipe.get("src_crop_bottom", 0.2 if clip_subs else 0.0))
@@ -1014,7 +1019,7 @@ def main():
         seg_files.append((seg, dur))
 
     OUT.mkdir(exist_ok=True)
-    final = OUT / f"쇼츠_{rpath.stem}.mp4"
+    final = OUT / f"쇼츠_{rpath.stem}{suffix}.mp4"
     print("   이어 붙이는 중…")
     assemble(ff, seg_files, layout, tmp, final,
              transitions=recipe.get("transitions", True), sfx=recipe.get("sfx", True))
