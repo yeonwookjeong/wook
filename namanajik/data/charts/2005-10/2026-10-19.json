@@ -15,12 +15,12 @@
    "artist": "MC몽",
    "mv_id": "FPNFLBlOuwE",
    "topic_id": "KUi3kGl5Jbg",
-   "total": 52981678,
+   "total": 52981731,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": 24,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -36,7 +36,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 21,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -47,12 +47,12 @@
    "artist": "에픽하이",
    "mv_id": "Pu8H-CUHN9k",
    "topic_id": "sHqLlyBlmQI",
-   "total": 27998981,
+   "total": 27999048,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": 4,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -68,7 +68,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 11,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -79,12 +79,12 @@
    "artist": "나윤권",
    "mv_id": "bXUnIOQb7zU",
    "topic_id": "iIMZZgeZrrI",
-   "total": 9999298,
+   "total": 9999335,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": 94,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -100,7 +100,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 22,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -111,12 +111,12 @@
    "artist": "더 크로스",
    "mv_id": "Hyh99IS1Nik",
    "topic_id": "A2J-UHmQjxo",
-   "total": 5911578,
+   "total": 5911614,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": 39,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -127,12 +127,12 @@
    "artist": "휘성",
    "mv_id": "8xIisnfg22g",
    "topic_id": "8IDgQtp5qdk",
-   "total": 5110922,
+   "total": 5110935,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": -6,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -143,12 +143,12 @@
    "artist": "거미",
    "mv_id": "v4XTmpbV6jU",
    "topic_id": "yQFzGcuu9Ps",
-   "total": 4785309,
+   "total": 4785301,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": 7,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -164,7 +164,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 16,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -180,7 +180,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 51,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -196,7 +196,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 88,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -212,7 +212,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 19,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -223,12 +223,12 @@
    "artist": "구혜선",
    "mv_id": "Gpx175eLXuU",
    "topic_id": "CKcikQChvkY",
-   "total": 2258375,
+   "total": 2258376,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": 64,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -239,12 +239,12 @@
    "artist": "파란",
    "mv_id": "g_2s_0jhtsI",
    "topic_id": "CTn7qpqAydE",
-   "total": 2182781,
+   "total": 2182780,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": 51,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -260,7 +260,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 25,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -276,7 +276,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 69,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -287,12 +287,12 @@
    "artist": "휘성",
    "mv_id": "vSB8GWSFIF4",
    "topic_id": "oVHYDSv1mHM",
-   "total": 1319547,
+   "total": 1319564,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": 0,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -303,12 +303,12 @@
    "artist": "프리스타일",
    "mv_id": "6EUxiRYAl-s",
    "topic_id": "upNxYk12Pig",
-   "total": 1310968,
+   "total": 1310981,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": 26,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -319,12 +319,12 @@
    "artist": "부가킹즈",
    "mv_id": "0zk8fMNTYbs",
    "topic_id": "yjSaLQjLiDI",
-   "total": 1112456,
+   "total": 1112463,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": 76,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -340,7 +340,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 61,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -351,12 +351,12 @@
    "artist": "드렁큰 타이거",
    "mv_id": "iq75FNeSL_c",
    "topic_id": "DSqgsCH1MwQ",
-   "total": 1059614,
+   "total": 1059643,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": 30,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -367,12 +367,12 @@
    "artist": "김종국",
    "mv_id": "Ul3c8nzM2Aw",
    "topic_id": "ir5K6gIaTDc",
-   "total": 1030268,
+   "total": 1030273,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": 7,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -383,12 +383,12 @@
    "artist": "유해준",
    "mv_id": "0neujpxyfSo",
    "topic_id": null,
-   "total": 980012,
+   "total": 980019,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": 36,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -404,7 +404,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 63,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -415,12 +415,12 @@
    "artist": "휘성",
    "mv_id": "m8SoL0-sVUg",
    "topic_id": "cGjPQt_q9HA",
-   "total": 921176,
+   "total": 921184,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": -12,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -431,12 +431,12 @@
    "artist": "엠투엠",
    "mv_id": "LL1qwk3E8rY",
    "topic_id": null,
-   "total": 870555,
+   "total": 870551,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": -26,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -447,12 +447,12 @@
    "artist": "휘성",
    "mv_id": "FXLW8kS-WHY",
    "topic_id": "e7-eoWLxYmU",
-   "total": 784556,
+   "total": 784560,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": -23,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -468,7 +468,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 51,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -484,7 +484,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": -1,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -495,12 +495,12 @@
    "artist": "거미",
    "mv_id": "XSPIabep-7g",
    "topic_id": "15EwbNwWhi8",
-   "total": 598589,
+   "total": 598579,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": 13,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -511,12 +511,12 @@
    "artist": "렉시",
    "mv_id": "n7D53pfTGkA",
    "topic_id": "JjPgVTKTR2M",
-   "total": 559518,
+   "total": 559501,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": 11,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -527,12 +527,12 @@
    "artist": "휘성",
    "mv_id": "vHjzQ9g5soY",
    "topic_id": "-iwVb6eu9rE",
-   "total": 544568,
+   "total": 544547,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": -6,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -543,12 +543,12 @@
    "artist": "김종국",
    "mv_id": "8qWKnx2IWF0",
    "topic_id": null,
-   "total": 510894,
+   "total": 510901,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": -24,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -564,7 +564,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 48,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -580,7 +580,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 53,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -596,7 +596,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": -25,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -612,7 +612,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 34,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -628,7 +628,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 11,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -639,12 +639,12 @@
    "artist": "SG 워너비",
    "mv_id": "qGDUfSQ59oM",
    "topic_id": "l6jLM-Adh4g",
-   "total": 304297,
+   "total": 304302,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": -21,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -655,12 +655,12 @@
    "artist": "휘성",
    "mv_id": "ZEXMzPSvH3o",
    "topic_id": "S4bfrHqUqWc",
-   "total": 297079,
+   "total": 297082,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": -21,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -671,12 +671,12 @@
    "artist": "버즈",
    "mv_id": "Omv4bjbpK04",
    "topic_id": "2I75ion7CAc",
-   "total": 296624,
+   "total": 296649,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": 11,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -692,7 +692,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 11,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -703,12 +703,12 @@
    "artist": "장우혁",
    "mv_id": "kJsFy9L887M",
    "topic_id": null,
-   "total": 273761,
+   "total": 273757,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": -36,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -719,12 +719,12 @@
    "artist": "휘성",
    "mv_id": "chpfEqkBRgw",
    "topic_id": "3AMi31_x3nQ",
-   "total": 243188,
+   "total": 243189,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": 3,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -735,12 +735,12 @@
    "artist": "KCM",
    "mv_id": "NoyY2AGU6as",
    "topic_id": "qRkiRE5ZApE",
-   "total": 226066,
+   "total": 226061,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": -8,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -751,12 +751,12 @@
    "artist": "서지영",
    "mv_id": "-_hi_LeLmsY",
    "topic_id": "oAUwSz3nJzc",
-   "total": 181889,
+   "total": 181902,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": -7,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -772,7 +772,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 23,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -783,12 +783,12 @@
    "artist": "이효리",
    "mv_id": "LEqi5jPNwWA",
    "topic_id": null,
-   "total": 174039,
+   "total": 174043,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": 41,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -799,12 +799,12 @@
    "artist": "거미",
    "mv_id": "be5ZNX9NQ_4",
    "topic_id": "179coZjuaKE",
-   "total": 170621,
+   "total": 170623,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": -47,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -815,12 +815,12 @@
    "artist": "휘성",
    "mv_id": "Zp2ppBlKbss",
    "topic_id": "pxiHeLXAlU8",
-   "total": 139767,
+   "total": 139763,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": 7,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -831,12 +831,12 @@
    "artist": "김종국",
    "mv_id": "xtWoxbIOHcs",
    "topic_id": "U5mjKOJp2RU",
-   "total": 116647,
+   "total": 116667,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": -28,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -852,7 +852,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 16,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -868,7 +868,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 27,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -879,12 +879,12 @@
    "artist": "코요태",
    "mv_id": "5zb8Rg89XFc",
    "topic_id": "lC1VV5aYaS0",
-   "total": 79927,
+   "total": 79918,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": -46,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -900,7 +900,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": -22,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -916,7 +916,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 20,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -932,7 +932,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 39,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -948,7 +948,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 0,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -959,12 +959,12 @@
    "artist": "휘성",
    "mv_id": "sAcKZOrCFoQ",
    "topic_id": "eTej6uuPFDc",
-   "total": 60101,
+   "total": 60095,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": -5,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -975,12 +975,12 @@
    "artist": "윤건",
    "mv_id": "h4ryIFtQB2k",
    "topic_id": "y_aB_YA5Y5M",
-   "total": 54796,
+   "total": 54801,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": -26,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -996,7 +996,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 23,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -1012,7 +1012,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 28,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -1028,7 +1028,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": -60,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -1044,7 +1044,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": -32,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -1060,7 +1060,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 21,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -1071,12 +1071,12 @@
    "artist": "엠씨더맥스",
    "mv_id": "yaaE0_GSvyc",
    "topic_id": null,
-   "total": 28871,
+   "total": 28869,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": -45,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -1092,7 +1092,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 2,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -1108,7 +1108,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 5,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -1124,7 +1124,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": -14,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -1140,7 +1140,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": -22,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -1151,12 +1151,12 @@
    "artist": "디바",
    "mv_id": "SXY7wiDBp0w",
    "topic_id": "sbbEX5qEu6E",
-   "total": 24001,
+   "total": 24011,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": -33,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -1167,12 +1167,12 @@
    "artist": "JK 김동욱",
    "mv_id": "zlpNVHe0db0",
    "topic_id": "fawaKYHRppQ",
-   "total": 23908,
+   "total": 23907,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": -37,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -1188,7 +1188,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": -17,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -1199,12 +1199,12 @@
    "artist": "디바",
    "mv_id": "UNmcZK4NlfA",
    "topic_id": "QFbzYXlrlDI",
-   "total": 22160,
+   "total": 22157,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": -38,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -1220,7 +1220,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": -59,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -1236,7 +1236,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": -2,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -1252,7 +1252,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 15,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -1268,7 +1268,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 15,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -1284,7 +1284,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 18,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -1300,7 +1300,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 14,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -1316,7 +1316,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": -35,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -1332,7 +1332,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": -20,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -1348,7 +1348,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": -78,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -1364,7 +1364,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": -64,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -1380,7 +1380,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": -22,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -1396,7 +1396,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": 5,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -1407,12 +1407,12 @@
    "artist": "KCM",
    "mv_id": "OmfmQobQ4uM",
    "topic_id": null,
-   "total": 3922,
+   "total": 3924,
    "delta": null,
    "per_day": null,
    "flags": [],
    "change_vs_then": -77,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -1428,7 +1428,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": -22,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -1444,7 +1444,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": -22,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -1460,7 +1460,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": -78,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   },
   {
@@ -1476,7 +1476,7 @@
    "per_day": null,
    "flags": [],
    "change_vs_then": -31,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   }
  ],
