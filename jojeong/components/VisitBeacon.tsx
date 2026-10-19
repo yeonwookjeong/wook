@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { classify, directKind, SRC_COOKIE } from "@/lib/source";
+import { classify, directKind, isBotUa, SRC_COOKIE } from "@/lib/source";
 
 // Reports each page view to /api/stat, and whether this browser is new today, this week, this month or at all.
 // The browser remembers only the dates it was last counted; nothing identifies it.
@@ -33,6 +33,8 @@ export default function VisitBeacon() {
   useEffect(() => {
     // The owner's pages and the social card renderer are not visits.
     if (path.startsWith("/admin")) return;
+    // Robots, link previews and automated browsers are not visitors.
+    if (isBotUa(navigator.userAgent) || navigator.webdriver) return;
     const now = Date.now();
     const seen = { d: "", w: "", m: "" };
     let ever = true;

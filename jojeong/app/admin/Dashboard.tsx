@@ -99,9 +99,13 @@ export default async function Dashboard({
     .filter((r) => r.visitors > 0 || r.n > 0)
     .sort((a, b) => b.won - a.won);
   // "직접 · 알 수 없음" by the kind of browser (lib/source.ts directKind), counted from the evening of 10/19.
-  const direct = DIRECT_KINDS.map((k) => ({ k, v: sum(`dx:${k}`) }))
+  const direct: { label: string; v: number }[] = DIRECT_KINDS.map((k) => ({ label: DIRECT_KIND_LABEL[k].replace(/ \((?!10\/19).*\)$/, ""), v: sum(`dx:${k}`) }))
     .filter((d) => d.v > 0)
     .sort((a, b) => b.v - a.v);
+  // The ones counted before the breakdown began can't be split any more: shown as such, so the rows add up.
+  const directAll = sum("src:direct");
+  const directSplit = direct.reduce((a, d) => a + d.v, 0);
+  if (direct.length && directAll > directSplit) direct.push({ label: "나누기 전 (10/19 저녁 이전, 나눌 수 없음)", v: directAll - directSplit });
 
   // Reports: shoppers on the page, payment windows opened, paid.
   const products = SALE_KEYS.map((k) => {
@@ -237,10 +241,10 @@ export default async function Dashboard({
           <thead className="text-[10.5px] text-ink-soft">
             <tr>
               <th className="py-1 text-left font-normal">길</th>
-              <th className="font-normal">새 방문</th>
-              <th className="font-normal">결제</th>
-              <th className="font-normal">결제율</th>
-              <th className="font-normal">1명당</th>
+              <th className="pl-2 font-normal">새 방문</th>
+              <th className="pl-2 font-normal">결제</th>
+              <th className="pl-2 font-normal">결제율</th>
+              <th className="pl-2 font-normal">1명당</th>
             </tr>
           </thead>
           <tbody>
@@ -251,8 +255,8 @@ export default async function Dashboard({
                   {r.s === "direct" && direct.length > 0 && (
                     <span className="mt-1 flex flex-col gap-0.5 text-[10.5px] font-normal text-ink-soft">
                       {direct.map((d) => (
-                        <span key={d.k} className="flex justify-between gap-2">
-                          <span className="truncate">└ {DIRECT_KIND_LABEL[d.k].replace(/ \(.*\)$/, "")}</span>
+                        <span key={d.label} className="flex justify-between gap-2">
+                          <span>└ {d.label}</span>
                           <span className="shrink-0 tabular-nums">{n(d.v)}</span>
                         </span>
                       ))}
@@ -269,7 +273,8 @@ export default async function Dashboard({
                   {n(r.n)}
                   <span className="block text-[10.5px] text-ink-soft">{man(r.won)}</span>
                 </td>
-                <td className="font-bold">{r.s === "none" ? "–" : pctText(r.n, r.visitors)}</td>
+                {/* A buyer who first came before this span is not among its new visitors: no rate then. */}
+                <td className="font-bold">{r.s === "none" || r.n > r.visitors ? "–" : pctText(r.n, r.visitors)}</td>
                 <td>{r.s === "none" || !r.visitors ? "–" : `${n(r.won / r.visitors)}원`}</td>
               </tr>
             ))}
