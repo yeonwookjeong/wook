@@ -16,7 +16,9 @@ export const CH_FROM = ["free", "report"] as const;
 export type ChFrom = (typeof CH_FROM)[number];
 export const CH_FROM_LABEL: Record<ChFrom, string> = { free: "무료 사주 끝", report: "보고서 끝" };
 export type ClientEvent = (typeof CLIENT_EVENTS)[number];
-export type StatEvent = ClientEvent | "pv" | "king" | "join" | "appoint" | "reading";
+// me_try: the free reading form sent; me_err: it came back with an input error; me_same: the chart already
+// saved in this browser was sent again (not a new reading).
+export type StatEvent = ClientEvent | "pv" | "king" | "join" | "appoint" | "reading" | "me_try" | "me_err" | "me_same";
 
 const KST = 9 * 3600000;
 export const kstDay = (t = Date.now()) => new Date(t + KST).toISOString().slice(0, 10);

@@ -201,6 +201,7 @@ export async function gunghapAction(_prev: FormState, formData: FormData): Promi
 // ── 내 사주: entered once on any report page, remembered in this browser (lib/me.ts).
 export async function saveMeAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const next = String(formData.get("next") ?? "");
+  await track("me_try").catch(() => {});
   try {
     const before = await readMe();
     const person = await personOf(formData, "", "내 사주");
@@ -208,8 +209,12 @@ export async function saveMeAction(_prev: FormState, formData: FormData): Promis
     // Counted once per chart: adding the hour or gender to the same birth date is not a new reading.
     if (!before || before.person.birthYear !== person.birthYear || before.person.pillars.dayStem !== person.pillars.dayStem || before.person.pillars.dayBranch !== person.pillars.dayBranch)
       await noteReading();
+    else await track("me_same").catch(() => {});
   } catch (e) {
-    if (e instanceof BirthInputError) return { error: e.message.replace(/^내 사주: /, "") };
+    if (e instanceof BirthInputError) {
+      await track("me_err").catch(() => {});
+      return { error: e.message.replace(/^내 사주: /, "") };
+    }
     console.error(e);
     return { error: "사주를 준비하다 문제가 생겼어요. 잠시 후 다시 시도해 주세요." };
   }
