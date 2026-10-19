@@ -271,8 +271,8 @@ export const LIST_REELS: Record<string, ListReel> = {
     foot: "내 여덟 칸은 프로필 링크에서 생일만 넣으면",
   },
   goegang: {
-    kicker: "경진 · 경술 · 임진 · 임술 · 무술",
-    title: "태어난 날이 이 다섯이면\n[괴강(魁罡)]",
+    kicker: "경진 · 경술 · 임진 · 무술",
+    title: "태어난 날이 이 넷이면\n[괴강(魁罡)]",
     titleSize: 68,
     sub: "몇 개나 해당되시옵니까?",
     check: true,

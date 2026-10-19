@@ -47,8 +47,8 @@ export function gongmang(p: Pillars): number[] {
   return [(start + 10) % 12, (start + 11) % 12];
 }
 
-// 괴강·백호 day pillars.
-export const isGoegang = (p: Pillars) => ["6-4", "6-10", "8-4", "8-10", "4-10"].includes(`${p.dayStem}-${p.dayBranch}`);
+// 괴강·백호 day pillars. 괴강 is the classical four (연해자평 「논괴강」, 삼명통회 권4): 庚辰 庚戌 壬辰 戊戌; 壬戌 is a later addition.
+export const isGoegang = (p: Pillars) => ["6-4", "6-10", "8-4", "4-10"].includes(`${p.dayStem}-${p.dayBranch}`);
 export const isBaekho = (p: Pillars) => ["0-4", "1-7", "2-10", "3-1", "4-4", "8-10", "9-1"].includes(`${p.dayStem}-${p.dayBranch}`);
 
 // ── Meetings between two branches, strongest first.
