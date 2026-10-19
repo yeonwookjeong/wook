@@ -35,14 +35,15 @@ const cleanOne = a => {
   a = a.trim();
   const m = a.match(/^([A-Za-z0-9 .'&!-]+)\s*\(([^()]*[가-힣][^()]*)\)$/);   // "BIGBANG (빅뱅)" → "빅뱅"
   if (m) return m[2].trim();
-  return a.replace(/\s*\([A-Za-z0-9 .'&!,-]+\)\s*$/, '').trim();           // "거미 (GUMMY)" → "거미"
+  const stripped = a.replace(/\s*\([A-Za-z0-9 .'&!,-]+\)\s*$/, '').trim();   // "거미 (GUMMY)" → "거미"
+  return stripped.length >= 2 ? stripped : a;                                   // "f(x)" 는 그대로
 };
 const cleanArtist = a => a.split(/,\s*/).map(cleanOne).join(', ');            // "김현철, 거미 (GUMMY)" → "김현철, 거미"
 
 // 외국곡 제외 목록 (data/exclude-artists.txt)
 const exPath = path.join(ROOT, 'data/exclude-artists.txt');
 const excluded = new Set(fs.existsSync(exPath) ? fs.readFileSync(exPath, 'utf8').split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#')) : []);
-const KNOWN_LATIN_KR = new Set(['KCM', 'god', 'BMK', 'izi', 'MC몽', 'JK 김동욱', 'ALi', 'Ailee', 'IU', 'Zion.T', 'Crush', 'DEAN', 'BoA', 'Rain', 'BIGBANG', 'EXO', 'BTS', 'NCT', 'SHINee', 'TWICE', 'ITZY', 'IVE', 'NMIXX', 'aespa', 'BLACKPINK', 'LE SSERAFIM', 'NewJeans', 'Stray Kids', 'ATEEZ', 'SEVENTEEN', 'WINNER', 'iKON', 'AKMU', 'Heize', 'pH-1', 'Loco', 'GRAY', 'Jay Park', 'Dok2', 'Beenzino', 'Epik High', 'Dynamic Duo', 'Leessang', 'Sung Si Kyung']);
+const KNOWN_LATIN_KR = new Set(['KCM', 'god', 'BMK', 'izi', 'MC몽', 'JK 김동욱', 'V.O.S', 'Daylight', 'BGH4', 'JJMP', '2PM', '2am', '2AM', '4minute', '4Minute', 'G-DRAGON', 'f(x)', '2NE1', 'Supreme Team', 'T.O.P', 'TAEYANG', 'CL', 'HyunA', 'MBLAQ', 'B1A4', 'BTOB', 'VIXX', 'GOT7', 'MONSTA X', 'WINNER', 'iKON', 'Red Velvet', 'gugudan', 'Apink', 'EXID', 'AOA', 'GFRIEND', 'OH MY GIRL', 'LOONA', 'KARD', 'fromis_9', 'Wanna One', 'X1', 'TXT', 'ENHYPEN', 'STAYC', 'Kep1er', 'BIBI', 'Zico', 'ZICO', 'Dean', 'Colde', 'Sik-K', 'Paloalto', 'Simon Dominic', 'E SENS', 'Verbal Jint', 'San E', 'Bizzy', 'Tiger JK', 'Yoon Mirae', 'Drunken Tiger', 'DJ DOC', 'UV', 'MC Sniper', 'Outsider', 'Nell', 'Hyukoh', 'The Black Skirts', 'SURL', 'ADOY', 'SE SO NEON', 'wave to earth', 'Peppertones', 'Standing Egg', '10cm', 'Urban Zakapa', 'Epitone Project', 'Toy', 'Eddy Kim', 'Roy Kim', 'Sam Kim', 'Jung Seung Hwan', 'Paul Kim', 'Car, the garden', 'George', 'SOLE', 'Jukjae', 'LeeHi', 'Ailee', 'ALi', 'IU', 'Zion.T', 'Crush', 'DEAN', 'BoA', 'Rain', 'BIGBANG', 'EXO', 'BTS', 'NCT', 'SHINee', 'TWICE', 'ITZY', 'IVE', 'NMIXX', 'aespa', 'BLACKPINK', 'LE SSERAFIM', 'NewJeans', 'Stray Kids', 'ATEEZ', 'SEVENTEEN', 'AKMU', 'Heize', 'pH-1', 'Loco', 'GRAY', 'Jay Park', 'Dok2', 'Beenzino', 'Epik High', 'Dynamic Duo', 'Leessang', 'ALi', 'Ailee', 'IU', 'Zion.T', 'Crush', 'DEAN', 'BoA', 'Rain', 'BIGBANG', 'EXO', 'BTS', 'NCT', 'SHINee', 'TWICE', 'ITZY', 'IVE', 'NMIXX', 'aespa', 'BLACKPINK', 'LE SSERAFIM', 'NewJeans', 'Stray Kids', 'ATEEZ', 'SEVENTEEN', 'WINNER', 'iKON', 'AKMU', 'Heize', 'pH-1', 'Loco', 'GRAY', 'Jay Park', 'Dok2', 'Beenzino', 'Epik High', 'Dynamic Duo', 'Leessang', 'Sung Si Kyung']);
 const skipped = [], latinCheck = [];
 const songs = loadSongs();
 const byKey = new Map(songs.map(s => [songKey(s.title, s.artist), s]));
