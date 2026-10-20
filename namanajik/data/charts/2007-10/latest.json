@@ -1,9 +1,9 @@
 {
  "list": "2007-10",
  "label": "2007년 10월",
- "date": "2026-10-19",
- "basis": "2026-10-19 누적 조회수 (첫 스냅샷, 임시)",
- "window_days": 0,
+ "date": "2026-10-20",
+ "basis": "2026-10-19 → 2026-10-20 (1일 증가분)",
+ "window_days": 1,
  "ranked": 100,
  "total_songs": 97,
  "chart": [
@@ -15,12 +15,12 @@
    "artist": "FT아일랜드",
    "mv_id": "aSyXgv_v3no",
    "topic_id": null,
-   "total": 4523290,
-   "delta": null,
-   "per_day": null,
+   "total": 4524100,
+   "delta": 810,
+   "per_day": 810,
    "flags": [],
    "change_vs_then": 18,
-   "change_vs_last": null,
+   "change_vs_last": 0,
    "official": true
   }
  ],
