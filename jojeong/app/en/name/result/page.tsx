@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { cityById } from "@/lib/cities";
 import { computePillars, resolveBirthTime, type BirthInput } from "@/lib/saju";
-import { ELEMENTS, suggestNames, type Kind, type NamePick } from "@/lib/naming/engine";
+import { ELEMENTS, suggestNames, type Kind, type NamePick, type Prefs } from "@/lib/naming/engine";
 import { SURNAMES, type Feel } from "@/lib/naming/names";
 
 export const metadata: Metadata = { title: "Your Korean name" };
@@ -44,6 +44,7 @@ export default async function NameResult({ searchParams }: PageProps<"/en/name/r
   const time = /^(\d{2}):(\d{2})$/.exec(one("t"));
   const feel = (["m", "f", "n"].includes(one("g")) ? one("g") : "n") as Feel;
   const kind = (one("k") === "pure" ? "pure" : "hanja") as Kind;
+  const prefs: Prefs = { sound: one("sn") !== "0", era: one("ea") === "young" ? "young" : one("ea") === "any" ? "any" : "age" };
   if (!date) return <Problem text="That birth date didn't come through." />;
 
   const base: BirthInput = { year: +date[1], month: +date[2], day: +date[3], calendar: "solar", hourBranch: null };
@@ -60,12 +61,12 @@ export default async function NameResult({ searchParams }: PageProps<"/en/name/r
   }
   let result: ReturnType<typeof suggestNames> = null;
   try {
-    result = suggestNames({ first, last, birthYear: base.year, pillars: computePillars(input), feel, kind, surname: one("s") || undefined });
+    result = suggestNames({ first, last, birthYear: base.year, pillars: computePillars(input), feel, kind, surname: one("s") || undefined, prefs });
   } catch {
     result = null;
   }
   if (!result) return <Problem text="I couldn't read a chart for that date. Please check it and try again." />;
-  const { surname, chart, picks } = result;
+  const { surname, chart, picks, theirSound, targetEra, soundAlt } = result;
   const pick = picks[0];
   if (!pick) return <Problem text="No name fits every rule for this chart yet. Try the other kind of name." />;
 
@@ -98,7 +99,7 @@ export default async function NameResult({ searchParams }: PageProps<"/en/name/r
                   {c.ch} <span className="text-[15px] text-ink-soft">{c.ko}</span>
                 </p>
                 <p className="mt-1.5 text-[13.5px]">“{c.meaning}”</p>
-                <p className="mt-0.5 text-[12px] text-ink-soft">brings {ELEMENTS[c.el]}</p>
+                <p className="mt-0.5 text-[12px] text-ink-soft">{c.el >= 0 ? `brings ${ELEMENTS[c.el]}` : "chosen for its sound and meaning"}</p>
               </div>
             ))}
           </div>
@@ -115,7 +116,7 @@ export default async function NameResult({ searchParams }: PageProps<"/en/name/r
           Your chart is {STRENGTH[chart.strength] ?? "balanced"}. What brings it into balance is <b>{need}</b>, fed by{" "}
           <b>{ELEMENTS[chart.hee]}</b>.{" "}
           {pick.chars
-            ? `So ${pick.chars.map((c) => `${c.ch} brings ${ELEMENTS[c.el]}`).join(" and ")}.`
+            ? `So ${pick.chars.filter((c) => c.el >= 0).map((c) => `${c.ch} brings ${ELEMENTS[c.el]}`).join(" and ")}.`
             : `“${pick.pure!.en}” belongs to ${ELEMENTS[pick.pure!.el]}.`}
         </p>
         <ul className="mt-1 flex flex-wrap gap-1.5 text-[12px]">
@@ -129,11 +130,46 @@ export default async function NameResult({ searchParams }: PageProps<"/en/name/r
       <section className="flex flex-col gap-2">
         <h2 className="font-myeongjo text-[18px] font-extrabold">How it sounds to Koreans</h2>
         <ul className="flex flex-col gap-1 text-[14.5px] leading-relaxed">
-          <li>· {ERA[pick.era]}</li>
+          {prefs.sound && (
+            <li>
+              {pick.soundsLike ? "✓ " : "· "}
+              <b>{pick.soundsLike ? `Sounds like ${first}.` : `Not far from ${first}.`}</b> {first} in Korean letters is {theirSound}; your name is {pick.ko}.
+              {!pick.soundsLike && " No name close enough also fit your chart, so the chart came first."}
+            </li>
+          )}
+          {targetEra && pick.era === targetEra && (
+            <li>
+              ✓ <b>{prefs.era === "age" ? "Fits your generation." : "Young and current."}</b>{" "}
+              {prefs.era === "age" ? `Koreans born around ${base.year} often have names like this.` : "A name heard among Koreans born after 2000."}
+            </li>
+          )}
+          {prefs.era === "young" && base.year < 1990 && (
+            <li>· Koreans may hear this as a much younger person&apos;s name. That can be part of the charm.</li>
+          )}
+          {!(targetEra && pick.era === targetEra) && <li>· {ERA[pick.era]}</li>}
           <li>· {FEEL[pick.feel]}</li>
           <li>· {pick.hard ? "One sound takes a little practice for English speakers." : "Easy to say in English."}</li>
         </ul>
       </section>
+
+      {soundAlt && (
+        <section className="rounded-2xl border border-ink/15 bg-white/60 px-5 py-4">
+          <p className="text-[11px] font-bold tracking-[0.15em] text-gold">CLOSEST TO {first.toUpperCase()}</p>
+          <p className="mt-2 font-myeongjo text-[30px] leading-none font-extrabold">
+            {surname.ko}
+            {soundAlt.ko}{" "}
+            {soundAlt.chars && <span className="text-[20px] font-normal text-seal">{surname.hanja + soundAlt.chars.map((c) => c.ch).join("")}</span>}
+          </p>
+          <p className="mt-1 text-[15px] font-bold">
+            {surname.en} {soundAlt.roman}
+          </p>
+          {soundAlt.chars && <p className="mt-1 text-[13px] text-ink-soft">{soundAlt.chars.map((c) => `${c.ch} “${c.meaning}”`).join(" · ")}</p>}
+          <p className="mt-2 text-[13.5px] leading-relaxed">
+            The name that sounds most like {first} ({theirSound}).{" "}
+            {soundAlt.chars ? "Its characters carry less of what your chart needs, so it comes second." : "Written in Hangul only, as many Korean names are: no Hanja for it carries what your chart needs."}
+          </p>
+        </section>
+      )}
 
       <section className="flex flex-col gap-2">
         <h2 className="font-myeongjo text-[18px] font-extrabold">Your family name</h2>

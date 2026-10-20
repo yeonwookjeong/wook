@@ -20,6 +20,10 @@ export const GIVEN: GivenName[] = [
   ...rows("f", "old", "은영 미정 지영 현정 미영 은정 선영 혜정 미경 정은"),
   ...rows("n", "new", "지우 서진 시온 유빈 지안 현서 이안 주아"),
   ...rows("n", "mid", "지민 수현 민혁 은수 정민 현진"),
+  // Korean names that also sound like common foreign ones (Hannah, Mia, Leah, Sarah, Noah, Juan…)
+  ...rows("f", "new", "한나 미아 리아 세라 지나 하나 나리"),
+  ...rows("f", "mid", "수지"),
+  ...rows("m", "new", "노아 주안"),
 ];
 
 // 순우리말 (pure Korean) names: no Hanja, the word itself is the meaning. el links the meaning to an element by our

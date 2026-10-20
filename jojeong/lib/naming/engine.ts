@@ -2,6 +2,7 @@ import "server-only";
 import { readChart } from "@/lib/myeongri";
 import type { Pillars } from "@/lib/saju";
 import pool from "./pool.json";
+import { koreanSound, soundCloseness } from "./sound";
 import { GIVEN, PURE, ROMAN_AVOID, SURNAMES, type Era, type Feel, type GivenName, type PureName, type Surname } from "./names";
 
 // A Korean name from a birth chart (docs/naming.md, the theory in docs/naming-study.md):
@@ -28,11 +29,11 @@ const CHARS: Char[] = (pool as [string, string, number, number, number, number, 
 // A meaning worth carrying in a name: the first English sense must say something good (the hanja table's
 // negative filter only removes the bad, this keeps the plain or odd out: "lukewarm", "reed of a loom").
 const GOOD =
-  /\b(bright|brilliant|shine|shining|light|sun|star|virtue|virtuous|kind|benevolent|wise|wisdom|clever|intelligent|talent|talented|beautiful|beauty|elegant|fine|grace|graceful|jade|gem|treasure|precious|pearl|gold|auspicious|lucky|fortune|blessing|happy|happiness|joy|joyful|peace|peaceful|calm|harmony|harmonious|great|grand|lofty|high|noble|eminent|excellent|superior|lead|first|origin|spring|summer|autumn|forest|woods|tree|pine|bamboo|flower|flowers|blossom|bloom|orchid|lotus|river|sea|ocean|stream|rain|dew|clear|pure|clean|mountain|peak|hill|field|capital|literature|literary|writing|study|learn|art|music|song|poem|truth|true|sincere|sincerity|faithful|loyal|honest|upright|correct|right|just|righteous|filial|respect|gentle|warm|tender|love|generous|abundant|prosper|prosperous|flourish|flourishing|rich|wealth|achieve|success|accomplish|complete|perfect|strong|firm|brave|heroic|hero|courage|eternal|long|vast|wide|broad|deep|open|new|fresh|rise|rising|dawn|morning|dragon|phoenix|crane|tiger|excel|rule|standard|model|pattern|gather|fragrant|fragrance|virtuous|hope|grow|cultivate)\b/i;
+  /\b(bright|brilliant|shine|shining|light|sun|star|virtue|virtuous|kind|benevolent|wise|wisdom|clever|intelligent|talent|talented|beautiful|beauty|elegant|fine|grace|graceful|jade|gem|treasure|precious|pearl|gold|auspicious|lucky|fortune|blessing|happy|happiness|joy|joyful|peace|peaceful|calm|harmony|harmonious|great|grand|lofty|high|noble|eminent|excellent|superior|lead|first|origin|spring|summer|autumn|forest|woods|tree|pine|bamboo|flower|flowers|blossom|bloom|orchid|lotus|river|sea|ocean|stream|rain|dew|clear|pure|clean|mountain|peak|hill|field|capital|literature|literary|writing|study|learn|art|music|song|poem|truth|true|sincere|sincerity|faithful|loyal|honest|upright|correct|right|righteous|filial|respect|gentle|warm|tender|love|generous|abundant|prosper|prosperous|flourish|flourishing|rich|wealth|achieve|success|accomplish|complete|perfect|strong|firm|brave|heroic|hero|courage|eternal|long|vast|wide|broad|deep|open|new|fresh|rise|rising|dawn|morning|dragon|phoenix|crane|tiger|excel|rule|standard|model|pattern|gather|fragrant|fragrance|virtuous|hope|grow|cultivate)\b/i;
 
 // Never: a place or a person's name ("a river in Hebei"), a plain object that reads oddly in a name, or a rare
 // character outside the basic CJK block (U+4E00–9FFF) that phones may not even draw.
-const NOT = /\b(province|county|district|prefecture|surname|name of|a river in|river in|mountain in|state of|ditch|furrow|lead|islet|indeed|lump|decline|setting|dusk|dim)\b/i;
+const NOT = /\b(province|county|district|prefecture|surname|name of|a river in|river in|mountain in|state of|ditch|furrow|lead|islet|indeed|lump|decline|setting|dusk|dim|sweep|only|mountain range|range in)\b/i;
 // The wider pool (not 교육용 한자) is used only for characters Korean parents actually choose for names.
 // Draft from naming practice; to be checked against registered names and by Korean reviewers.
 const NAME_HANJA = new Set([
@@ -109,7 +110,10 @@ export function surnameFor(last: string): Surname {
 const eraFor = (year: number): Era => (year >= 1995 ? "new" : year >= 1975 ? "mid" : "old");
 
 export type Kind = "hanja" | "pure";
-export type NameRequest = { first: string; last: string; birthYear: number; pillars: Pillars; feel: Feel; kind: Kind; surname?: string };
+// What the person asked for beyond the chart (the chart is always followed): to sound like their own name, and
+// the generation the name should feel like (their own, a young one, or none in particular).
+export type Prefs = { sound: boolean; era: "age" | "young" | "any" };
+export type NameRequest = { first: string; last: string; birthYear: number; pillars: Pillars; feel: Feel; kind: Kind; surname?: string; prefs?: Prefs };
 export type PickedChar = { ch: string; ko: string; meaning: string; el: number; sure: boolean };
 export type NamePick = {
   ko: string; // given name in Hangul
@@ -122,11 +126,17 @@ export type NamePick = {
   suri: { won: number; hyeong: number; i: number; jeong: number; allLucky: boolean } | null;
   soundFlow: boolean;
   soundsLike: boolean; // close to the person's own first name
+  closeness: number; // 0..1, how close it sounds (lib/naming/sound.ts)
   hard: boolean; // a syllable English speakers find hard
   score: number;
 };
 export type NameResult = {
   surname: Surname;
+  theirSound: string; // their first name in Korean sounds ("Ryan" → "라이언")
+  // When the sound was asked for but no name both sounds like theirs and carries the chart's elements: the
+  // closest-sounding name anyway, with good characters that are at least not ones to avoid. Shown second.
+  soundAlt: { ko: string; roman: string; closeness: number; chars: PickedChar[] | null } | null;
+  targetEra: Era | null; // the generation aimed at, null when none was asked for
   chart: { strength: string; yong: number; hee: number; avoid: number[] };
   picks: NamePick[];
 };
@@ -136,9 +146,11 @@ export function suggestNames(req: NameRequest): NameResult | null {
   if (!chart) return null;
   const { yong, hee } = chart;
   const avoid = [...new Set([chart.gi, ...(chart.burden != null ? [chart.burden] : [])])].filter((e) => e !== yong && e !== hee);
+  // (a character of unknown element, -1, is never one to avoid: it brings nothing either way)
   const surname = SURNAMES.find((s) => s.ko === req.surname) ?? surnameFor(req.last);
-  const enFirst = englishSound(req.first);
-  const era = eraFor(req.birthYear);
+  const prefs: Prefs = req.prefs ?? { sound: true, era: "age" };
+  const theirSound = koreanSound(req.first);
+  const era: Era | null = prefs.era === "age" ? eraFor(req.birthYear) : prefs.era === "young" ? "new" : null;
   const feelOk = (f: Feel) => req.feel === "n" || f === "n" || f === req.feel;
   const base = { strength: chart.strength, yong, hee, avoid };
 
@@ -147,20 +159,23 @@ export function suggestNames(req: NameRequest): NameResult | null {
     const se = [soundEl(surname.ko), soundEl(s1), soundEl(s2)];
     const soundFlow = flows(se[0], se[1]) && flows(se[1], se[2]);
     const soundClash = checks(se[0], se[1]) || checks(se[1], se[2]);
-    const soundsLike = consonantLike(s1, enFirst) && vowelLike(s1, enFirst);
+    const closeness = soundCloseness(ko, theirSound);
+    const soundsLike = closeness >= 0.75;
     const marks = [s1, s2].map((s) => ROMAN_AVOID[s]);
     const hard = marks.includes("hard");
     let score = 0;
     if (soundFlow) score += 1.5;
     else if (soundClash) score -= 1;
-    if (soundsLike) score += 2;
-    else if (consonantLike(s1, enFirst)) score += 0.8;
+    // Asked for: the sound weighs as much as the chart; not asked for, a close sound is still a small plus.
+    score += closeness * (prefs.sound ? 7 : 1);
     score -= marks.filter((m) => m === "warn").length * 1.5 + marks.filter((m) => m === "hard").length;
     // A name should feel like the person's own generation (a 40-year-old with a toddler's name reads oddly).
-    const gap = Math.abs(["old", "mid", "new"].indexOf(nameEra) - ["old", "mid", "new"].indexOf(era));
-    score += gap === 0 ? 2 : gap === 1 ? 0.3 : -1.5;
+    if (era) {
+      const gap = Math.abs(["old", "mid", "new"].indexOf(nameEra) - ["old", "mid", "new"].indexOf(era));
+      score += gap === 0 ? 2 : gap === 1 ? 0.3 : -1.5;
+    } else if (nameEra === "old") score -= 0.5; // "any generation": lean away from names that sound dated
     if (jamo(s1).f && jamo(s2).c === 11) score -= 0.5; // 받침 then ㅇ: the sound slides (연음), harder to spell out
-    return { ko, roman: romanize(ko), feel, era: nameEra, soundFlow, soundsLike, hard, score, blocked: marks.includes("avoid") || s1 === surname.ko };
+    return { ko, roman: romanize(ko), feel, era: nameEra, soundFlow, soundsLike, closeness, hard, score, blocked: marks.includes("avoid") || s1 === surname.ko };
   };
 
   const picks: NamePick[] = [];
@@ -175,11 +190,14 @@ export function suggestNames(req: NameRequest): NameResult | null {
   } else {
     // Familiar characters first; then the wider pool of name characters; and only if still short of three
     // names, one character of the needed element beside a neutral one (neither needed nor to avoid).
+    // When the sound was asked for, one more step: the needed element in one character, and beside it a familiar
+    // character whose element no dictionary agrees on (-1), so a name like Se-ra can still be written.
     const neutral = [0, 1, 2, 3, 4].filter((e) => e !== yong && e !== hee && !avoid.includes(e));
-    for (const level of [0, 1, 2]) {
+    for (const level of prefs.sound ? [0, 1, 2, 3] : [0, 1, 2]) {
       const wide = level > 0;
       const pairs: [number, number, number][] = [[yong, hee, 3], [hee, yong, 3], [yong, yong, 2]];
       if (level === 2) for (const n of neutral) pairs.push([yong, n, 1], [n, yong, 1], [hee, n, 0.5], [n, hee, 0.5]);
+      if (level === 3) pairs.splice(0, pairs.length, [yong, -1, 0.8], [-1, yong, 0.8], [hee, -1, 0.4], [-1, hee, 0.4]);
       for (const g of GIVEN) {
         if (!feelOk(g.feel)) continue;
         const c = common(g.ko, g.feel, g.era);
@@ -187,7 +205,7 @@ export function suggestNames(req: NameRequest): NameResult | null {
         const [s1, s2] = [...g.ko];
         for (const [e1, e2, fit] of pairs) {
           const pick = (syl: string, el: number) =>
-            CHARS.filter((h) => h.el === el && h.ko.includes(syl) && (h.pool === 1 || (wide && h.pool === 2 && NAME_HANJA.has(h.ch))) && usable(h)).sort(
+            CHARS.filter((h) => h.el === el && h.ko.includes(syl) && (h.pool === 1 || (wide && h.pool === 2 && NAME_HANJA.has(h.ch)) || (el === -1 && h.pool === 3)) && usable(h)).sort(
               (a, b) => a.pool - b.pool || Number(b.sure) - Number(a.sure) || a.won - b.won,
             );
           for (const c1 of pick(s1, e1).slice(0, 3))
@@ -199,7 +217,8 @@ export function suggestNames(req: NameRequest): NameResult | null {
               const odd = won.map((w) => w % 2);
               if (odd.every((o) => o === odd[0])) continue;
               suri.allLucky = GOOD81.has(suri.hyeong) && GOOD81.has(suri.i);
-              let score = c.score + fit + (suri.allLucky ? 1 : 0) + (c1.sure && c2.sure ? 0.5 : 0) - (c1.pool + c2.pool - 2) * 0.7;
+              let score = c.score + fit + (suri.allLucky ? 1 : 0) + (c1.sure && c2.sure ? 0.5 : 0) - (Math.min(c1.pool, 2) + Math.min(c2.pool, 2) - 2) * 0.7;
+              score -= (c1.pool === 3 ? 0.5 : 0) + (c2.pool === 3 ? 0.5 : 0);
               score = Math.round(score * 10) / 10;
               picks.push({
                 ...c,
@@ -215,7 +234,8 @@ export function suggestNames(req: NameRequest): NameResult | null {
             }
         }
       }
-      if (new Set(picks.map((p) => p.ko[0])).size >= 3) break;
+      // Enough names, and (if the sound was asked for) one that really sounds like theirs: stop widening.
+      if (new Set(picks.map((p) => p.ko[0])).size >= 3 && (!prefs.sound || picks.some((p) => p.soundsLike))) break;
     }
   }
 
@@ -227,7 +247,25 @@ export function suggestNames(req: NameRequest): NameResult | null {
     out.push(p);
     if (out.length === 3) break;
   }
-  return { surname, chart: base, picks: out };
+  let soundAlt: NameResult["soundAlt"] = null;
+  if (prefs.sound && !out.some((p) => p.soundsLike)) {
+    const pool = req.kind === "pure" ? PURE.map((p) => ({ ko: p.ko, feel: p.feel })) : GIVEN;
+    const near = pool
+      .filter((g) => feelOk(g.feel) && g.ko[0] !== surname.ko && ![...g.ko].some((x) => ROMAN_AVOID[x] === "avoid"))
+      .map((g) => ({ ko: g.ko, closeness: soundCloseness(g.ko, theirSound) }))
+      .filter((g) => g.closeness >= 0.75)
+      .sort((a, b) => b.closeness - a.closeness)[0];
+    if (near) {
+      const best = (syl: string) =>
+        CHARS.filter((h) => h.ko.includes(syl) && !avoid.includes(h.el) && (h.pool === 1 || h.pool === 3 || NAME_HANJA.has(h.ch)) && usable(h)).sort(
+          (a, b) => Number(b.el === yong || b.el === hee) - Number(a.el === yong || a.el === hee) || a.pool - b.pool || a.won - b.won,
+        )[0];
+      const cs = req.kind === "pure" ? [] : [...near.ko].map((syl) => ({ syl, h: best(syl) }));
+      const chars = cs.length && cs.every((c) => c.h) ? cs.map(({ syl, h }) => ({ ch: h!.ch, ko: syl, meaning: h!.def, el: h!.el, sure: h!.sure })) : null;
+      soundAlt = { ko: near.ko, roman: romanize(near.ko), closeness: near.closeness, chars };
+    }
+  }
+  return { surname, theirSound, soundAlt, targetEra: era, chart: base, picks: out };
 }
 
 export type { GivenName };

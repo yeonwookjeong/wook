@@ -48,6 +48,10 @@ export default function NameForm() {
   const [city, setCity] = useState<City | null>(null);
   const [feel, setFeel] = useState<"f" | "m" | "n">("n");
   const [kind, setKind] = useState<"hanja" | "pure">("hanja");
+  // What matters beyond the chart, any combination. "My generation" and "young" pull opposite ways, so one
+  // unticks the other; neither ticked means no generation in particular.
+  const [sound, setSound] = useState(true);
+  const [era, setEra] = useState<"age" | "young" | "any">("age");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const options = useMemo(() => (city && query === city.en ? [] : searchCities(query, 6)), [query, city]);
@@ -63,7 +67,7 @@ export default function NameForm() {
     const typed = searchCities(query, 1)[0];
     const place = city ?? (typed && typed.en.toLowerCase() === query.trim().toLowerCase() ? typed : null);
     if (!noTime && !place) return setError("Pick the city you were born in from the list (or the nearest big city).");
-    const q = new URLSearchParams({ f: first.trim().slice(0, 40), d: `${y}-${pad(m)}-${pad(d)}`, g: feel, k: kind });
+    const q = new URLSearchParams({ f: first.trim().slice(0, 40), d: `${y}-${pad(m)}-${pad(d)}`, g: feel, k: kind, sn: sound ? "1" : "0", ea: era });
     if (last.trim()) q.set("l", last.trim().slice(0, 40));
     if (!noTime) {
       q.set("t", `${pad((Number(hour) % 12) + (pm ? 12 : 0))}:${pad(Number(minute))}`);
@@ -184,6 +188,34 @@ export default function NameForm() {
             : "Native Korean words with no Hanja, like Haneul (sky). The word itself is the meaning."}
         </p>
       </div>
+
+      <fieldset>
+        <legend className={label}>What matters to you? (choose any)</legend>
+        <div className="flex flex-col gap-2 text-[14px]">
+          <label className="flex items-start gap-2.5">
+            <input type="checkbox" checked={sound} onChange={(e) => setSound(e.target.checked)} className="mt-0.5 size-4 shrink-0 accent-seal" />
+            <span>
+              <b>Sounds like my name</b>
+              <span className="block text-[12px] text-ink-soft">A Korean name close to the sound of yours. Sarah → Se-ra, Noah → No-a.</span>
+            </span>
+          </label>
+          <label className="flex items-start gap-2.5">
+            <input type="checkbox" checked={era === "age"} onChange={(e) => setEra(e.target.checked ? "age" : "any")} className="mt-0.5 size-4 shrink-0 accent-seal" />
+            <span>
+              <b>Fits my generation</b>
+              <span className="block text-[12px] text-ink-soft">Korean names have generations. Yours will sound like someone your age, using your birth year.</span>
+            </span>
+          </label>
+          <label className="flex items-start gap-2.5">
+            <input type="checkbox" checked={era === "young"} onChange={(e) => setEra(e.target.checked ? "young" : "any")} className="mt-0.5 size-4 shrink-0 accent-seal" />
+            <span>
+              <b>Young &amp; trendy</b>
+              <span className="block text-[12px] text-ink-soft">A name popular among Koreans born after 2000, whatever your age.</span>
+            </span>
+          </label>
+          <p className="text-[12px] text-ink-soft">Always: each character is chosen for the balance of your birth chart.</p>
+        </div>
+      </fieldset>
 
       {error && <p className="text-[13.5px] font-bold text-seal">{error}</p>}
       <button type="submit" disabled={busy} className="rounded-full bg-seal px-5 py-3.5 font-myeongjo text-[17px] font-extrabold text-hanji disabled:opacity-60">
