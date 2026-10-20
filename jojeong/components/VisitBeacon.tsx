@@ -53,6 +53,14 @@ export default function VisitBeacon() {
       src = classify({ path, referrer: document.referrer, ua: navigator.userAgent, query: location.search });
       document.cookie = `${SRC_COOKIE}=${src}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
     }
+    // The tag has done its work: off the address, so a link copied from here and shared on doesn't carry it.
+    try {
+      const url = new URL(location.href);
+      if (url.searchParams.has("utm_source")) {
+        [...url.searchParams.keys()].filter((k) => k.startsWith("utm_")).forEach((k) => url.searchParams.delete(k));
+        history.replaceState(history.state, "", url.pathname + url.search + url.hash);
+      }
+    } catch {}
     send({
       v: { day: seen.d !== cur.d, week: seen.w !== cur.w, month: seen.m !== cur.m, ever },
       ...(ever && src && { src }),
