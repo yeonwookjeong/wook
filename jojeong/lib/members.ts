@@ -103,6 +103,11 @@ export async function currentMember(): Promise<Member | null> {
 // Only the id, without reading the record (for counting what a member looks at).
 export const currentMemberId = async () => idFromCookie((await cookies()).get(MEMBER_COOKIE)?.value);
 
+// A short keyed hash of a member id for the owner's order CSV: it ties one buyer's orders together without the id
+// itself (a Kakao id is a number short enough to guess back from a plain hash). It changes if the secret does.
+// "M" first, so a spreadsheet keeps it as text (never a number or a formula).
+export const buyerTag = (id: string) => `M${createHmac("sha256", secret()).update(`buyer:${id}`).digest("hex").slice(0, 10)}`;
+
 const giftMark = (id: string) => createHmac("sha256", secret()).update(`gift:${id}`).digest("base64url");
 
 // The channel question, once per Kakao account: kept as a mark like the joining gift, so leaving and joining
@@ -200,8 +205,9 @@ export async function addRoomToMember(id: string, roomId: string) {
   await saveMember(m);
 }
 
-export async function allMembers(): Promise<Member[]> {
-  const ids = [...new Set(await memberIds())].slice(-500);
+// The latest `limit` members (the admin list); the owner's CSVs ask for all of them.
+export async function allMembers(limit = 500): Promise<Member[]> {
+  const ids = [...new Set(await memberIds())].slice(-limit);
   const ms = await Promise.all(ids.map(getMember));
   return ms.filter((m): m is Member => Boolean(m));
 }

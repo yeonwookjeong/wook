@@ -1,5 +1,6 @@
 import { isAdmin } from "@/lib/admin";
 import { COLUMNS } from "@/lib/columns";
+import { allMembers } from "@/lib/members";
 import { STEP_FROM } from "@/lib/nextStep";
 import { paidOrders } from "@/lib/pay";
 import { SALE_KEYS, saleLabel } from "@/lib/sales";
@@ -37,7 +38,10 @@ export async function GET(request: Request) {
     days,
   );
   const orders = await paidOrders();
-  const head = ["날짜", "요일", ...events.map(([, l]) => l), "결제", "매출", "환불", "테스트 결제"];
+  // 가입: members joined that day (Kakao, Naver, Google), from each member's own `createdAt`, so the past is there
+  // too. Members who left are deleted with their record, so a day's count is of those still members today.
+  const members = await allMembers(Infinity);
+  const head = ["날짜", "요일", ...events.map(([, l]) => l), "결제", "매출", "환불", "테스트 결제", "가입"];
   const rows = days.map((d, i) => {
     const mine = orders.filter((o) => kday(o.paidAt ?? o.createdAt) === d);
     const real = mine.filter((o) => !o.test);
@@ -50,6 +54,7 @@ export async function GET(request: Request) {
       paid.reduce((a, o) => a + o.amount, 0),
       real.filter((o) => o.status === "canceled").length,
       mine.filter((o) => o.test).length,
+      members.filter((m) => kday(m.createdAt) === d).length,
     ];
   });
   // A BOM so Excel reads the Korean as UTF-8.
