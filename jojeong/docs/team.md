@@ -57,7 +57,8 @@
 [관상감 집무실](https://claude.ai/artifact/XudGP8W56wGjHH7LmaTx8b)은 대표님이 휴대폰·맥북에서 팀 상태를 보는 곳이다. 팀장이 `ArtifactData` 도구로 기록한다(도구가 없는 환경이면 보고 끝에 "집무실 기록 못 함"이라고 적는다).
 
 - 책상 `desks/<직원>` (lead·engineer·content·reviewer·growth·care·global·newbiz): 일을 시작할 때, 대표님 결정이 필요할 때, 끝날 때 `update`로 `status`(working·waiting·done·idle), `task`(한 줄), `updated_at`(ISO 시각), `link`(이 대화 주소 `https://claude.ai/code/<세션 id>`)를 바꾼다. 읽은 `version`을 `if_version`으로 넘긴다.
-- 결재함 `inbox/<짧은 영문 id>`: 대표님 결정이 필요할 때 `set`으로 `{desk, title, detail, link, created_at, resolved: false}`. 대표님 답을 받아 처리했으면 `resolved: true`.
+- 결재함 `inbox/<짧은 영문 id>`: 대표님 결정이 필요할 때 `set`으로 `{desk, title, detail, report, options, rec, link, created_at, resolved: false}`. 대표님 답을 받아 처리했으면 `resolved: true`.
+  - `detail`: 무엇을 왜 정해야 하는지 두 줄 요약. `report`: 상세 보고(근거·편별 목록·선택지별 장단점·모르는 것). `rec`: 팀장 추천 선택지 번호(0부터, 없으면 생략). 카드만 보고 결정할 수 있게 쓴다(2026-10-21 대표님 지시).
 - 한 일마다 기록은 시작·결재·끝 세 번이면 충분하다. 진행 중 세세한 갱신은 하지 않는다.
 - 대화 `messages/<id>`: `{from, ch, text, created_at}`. `ch`는 `all`(전체 정리) 또는 직원 키(engineer·content·reviewer·growth·care·global·newbiz). 집무실에서 온 요청은 `[집무실][ch=<채널>]`로 시작하니, 결과는 **그 채널**에 남긴다(직원의 접수·진행은 직원 이름, 결과 보고는 팀장 이름). 끝난 일의 한 줄 요약과 대표님 결정이 필요한 것은 `ch=all`에도 팀장 이름으로 남긴다.
 - **직원 방 지시는 그 직원이 바로 진행한다(2026-10-21 대표님 지시).** `[집무실][ch=<직원>]`으로 온 말은 팀장이 되묻지 않고 바로 그 직원 에이전트에게 넘겨 일을 시작한다.
