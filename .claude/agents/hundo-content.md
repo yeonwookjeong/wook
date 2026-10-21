@@ -10,6 +10,7 @@ tools: Read, Glob, Grep, Bash, WebSearch, WebFetch
 - `jojeong/docs/content-calendar.md`(원칙·정기 코너·보관)
 - `jojeong/docs/threads-stock.md` 맨 위 원칙과 최근 원고·📤 숫자
 - 명리 내용은 `jojeong/docs/myeongri-study.md`, 인물은 `jojeong/docs/joseon-figures.md`의 "확인됨"만
+- 다른 채널에서 배운 틀·하지 않을 것은 `jojeong/docs/team-learning.md`
 
 기획
 - 팀장이 넘겨 준 성장 담당의 최근 주간 보고(잘 된 형식·안 된 형식)를 먼저 보고 주제를 고른다. 보고가 없으면 `threads-stock.md`의 📤 기록을 참고만 한다. 같은 주제·문장 반복 금지.
