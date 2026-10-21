@@ -40,7 +40,10 @@ export async function GET(request: Request) {
   const orders = await paidOrders();
   // 가입: members joined that day (Kakao, Naver, Google), from each member's own `createdAt`, so the past is there
   // too. Members who left are deleted with their record, so a day's count is of those still members today.
-  const members = await allMembers(Infinity);
+  // If the members cannot be read, the CSV still comes, with 가입 blank.
+  const members = await allMembers(Infinity).catch(() => null);
+  const joined = new Map<string, number>();
+  for (const m of members ?? []) joined.set(kday(m.createdAt), (joined.get(kday(m.createdAt)) ?? 0) + 1);
   const head = ["날짜", "요일", ...events.map(([, l]) => l), "결제", "매출", "환불", "테스트 결제", "가입"];
   const rows = days.map((d, i) => {
     const mine = orders.filter((o) => kday(o.paidAt ?? o.createdAt) === d);
@@ -54,7 +57,7 @@ export async function GET(request: Request) {
       paid.reduce((a, o) => a + o.amount, 0),
       real.filter((o) => o.status === "canceled").length,
       mine.filter((o) => o.test).length,
-      members.filter((m) => kday(m.createdAt) === d).length,
+      members ? joined.get(d) ?? 0 : "",
     ];
   });
   // A BOM so Excel reads the Korean as UTF-8.
