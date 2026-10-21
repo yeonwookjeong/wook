@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 import { isPreview } from "./admin";
 import type { Source } from "./source";
 import { SALE_KEYS } from "./sales";
-import { clearMemberViews, countGiftToday, deleteAskRoom, deleteMemberRaw, getMemberRaw, giftGiven, memberIds, noteGiftGiven, noteMember, setMemberRaw } from "./store";
+import { clearMemberViews, countGiftToday, deleteAskRoom, deleteMemberRaw, getMemberRaw, getMembersRaw, giftGiven, memberIds, noteGiftGiven, noteMember, setMemberRaw } from "./store";
 
 // Members, by Kakao, Naver or Google login (app/login, app/api/auth/*): what a browser cannot keep alone — the
 // reports bought (so they open on any device) and the questions bought for 정 훈도에게 묻기. Only the account id, a
@@ -102,6 +102,12 @@ export async function currentMember(): Promise<Member | null> {
 }
 // Only the id, without reading the record (for counting what a member looks at).
 export const currentMemberId = async () => idFromCookie((await cookies()).get(MEMBER_COOKIE)?.value);
+
+// A short keyed hash of a member id for the owner's order CSV: it ties one buyer's orders together without the id
+// itself (a Kakao id is a number short enough to guess back from a plain hash). It changes if the secret does.
+// "M" first, so a spreadsheet keeps it as text (never a number or a formula). Without the secret, nothing: an
+// unkeyed hash could be guessed back.
+export const buyerTag = (id: string) => (secret() ? `M${createHmac("sha256", secret()).update(`buyer:${id}`).digest("hex").slice(0, 10)}` : "");
 
 const giftMark = (id: string) => createHmac("sha256", secret()).update(`gift:${id}`).digest("base64url");
 
@@ -200,10 +206,17 @@ export async function addRoomToMember(id: string, roomId: string) {
   await saveMember(m);
 }
 
-export async function allMembers(): Promise<Member[]> {
-  const ids = [...new Set(await memberIds())].slice(-500);
-  const ms = await Promise.all(ids.map(getMember));
-  return ms.filter((m): m is Member => Boolean(m));
+// The latest `limit` members (the admin list); the owner's CSVs ask for all of them.
+export async function allMembers(limit = 500): Promise<Member[]> {
+  const ids = [...new Set(await memberIds())].slice(-limit);
+  return (await getMembersRaw(ids)).flatMap((raw) => {
+    if (!raw) return [];
+    try {
+      return [JSON.parse(raw) as Member];
+    } catch {
+      return [];
+    }
+  });
 }
 
 // Leaving: the member record and their consultation rooms go at once (lib/privacy: 회원 탈퇴 시 지체 없이 삭제).

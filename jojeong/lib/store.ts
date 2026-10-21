@@ -384,6 +384,13 @@ export async function getMemberRaw(id: string): Promise<string | null> {
   if (!MEMBER_ID.test(id)) return null;
   return backend().get(`member:${id}`);
 }
+// Many at once, 500 keys a round trip (the owner's lists and CSVs), in the order asked.
+export async function getMembersRaw(ids: string[]): Promise<(string | null)[]> {
+  const ok = ids.filter((id) => MEMBER_ID.test(id));
+  const out: (string | null)[] = [];
+  for (let i = 0; i < ok.length; i += 500) out.push(...(await backend().mget(ok.slice(i, i + 500).map((id) => `member:${id}`))));
+  return out;
+}
 export async function setMemberRaw(id: string, raw: string) {
   await backend().set(`member:${id}`, raw);
 }
