@@ -1,8 +1,0 @@
-# 외국곡으로 보고 가져오기에서 제외할 가수 (한 줄에 하나, 멜론 표기 그대로)
-Sweetbox
-Britney Spears
-Craig David
-Jem
-Ne-Yo
-Kelly Clarkson
-Mariah Carey

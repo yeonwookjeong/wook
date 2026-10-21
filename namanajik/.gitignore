@@ -1,5 +1,0 @@
-node_modules/
-.env
-render/frames/
-render/*.mp4
-render/*.png
