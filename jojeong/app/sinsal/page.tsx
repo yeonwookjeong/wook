@@ -5,7 +5,7 @@ import MeForm from "@/components/MeForm";
 import NextStep from "@/components/NextStep";
 import { readMe } from "@/lib/me";
 import { STEPS } from "@/lib/nextStep";
-import { CARDS, imageOf, per100, sinsalOf, type Card } from "@/lib/sinsal";
+import { CARDS, imageOf, MUSAL, per100, sinsalOf, type Card } from "@/lib/sinsal";
 
 export const metadata: Metadata = {
   title: "신살 감정 · 내 사주에 적힌 살",
@@ -39,35 +39,31 @@ export default async function SinsalPage() {
     );
 
   const gender = me.person.gender === "f" ? "f" : me.person.gender === "m" ? "m" : null;
-  const { head, rest } = sinsalOf(me.person.pillars);
+  const { head, rest, kinds, cells, summary } = sinsalOf(me.person.pillars);
   const noHour = me.person.pillars.hourBranch === null;
 
   return (
     <>
       <Header />
-      {head ? (
-        <section className="doc-paper mt-4 overflow-hidden">
-          <Image src={imageOf(head, gender)} alt={`${head.sal} · ${head.nick}`} width={800} height={1000} priority className="h-auto w-full" />
-          <div className="px-5 pt-5 pb-6 text-center">
-            <p className="text-xs font-extrabold text-seal">{me.person.name}님의 사주에서 가장 드문 살</p>
-            <p className="mt-2 font-myeongjo text-sm tracking-[0.3em] text-ink-soft">{head.hanja}</p>
-            <h2 className="mt-1 font-myeongjo text-2xl font-extrabold">
-              {head.sal} · {head.nick}
-            </h2>
-            <p className="mt-1 text-[15px] font-bold">{head.line}</p>
-            <p className="mt-2 inline-block rounded-full bg-gold/15 px-3 py-1 text-xs font-bold">{howRare(head)}</p>
-            <p className="mt-4 text-left text-[14px] leading-relaxed">{head.body}</p>
-          </div>
-        </section>
-      ) : (
-        <section className="doc-paper mt-4 px-5 py-6 text-center">
-          <p className="text-xs font-extrabold text-seal">{me.person.name}님의 사주</p>
-          <h2 className="mt-2 font-myeongjo text-2xl font-extrabold">신살이 하나도 없는 사주</h2>
-          <p className="mt-2 text-[14px] leading-relaxed">
-            100명 중 2명이 채 안 되는 드문 사주예요. 살에 휘둘리지 않고 여덟 글자 그 자체의 힘으로 사는 사람이에요.
-          </p>
-        </section>
-      )}
+      <section className="mt-4 rounded-xl bg-gold/10 px-4 py-3 text-center">
+        <p className="text-[15px] font-extrabold">
+          {me.person.name}님 사주에 적힌 살: {kinds ? `${kinds}가지 · ${cells}칸` : "없음"}
+        </p>
+        <p className="mt-1 text-[13px] text-ink-soft">{summary}</p>
+      </section>
+      <section className="doc-paper mt-4 overflow-hidden">
+        <Image src={imageOf(head, gender)} alt={`${head.sal} · ${head.nick}`} width={800} height={1000} priority className="h-auto w-full" />
+        <div className="px-5 pt-5 pb-6 text-center">
+          <p className="text-xs font-extrabold text-seal">{kinds ? `${me.person.name}님의 사주에서 가장 드문 살` : `${me.person.name}님의 사주`}</p>
+          <p className="mt-2 font-myeongjo text-sm tracking-[0.3em] text-ink-soft">{head.hanja}</p>
+          <h2 className="mt-1 font-myeongjo text-2xl font-extrabold">
+            {head.sal} · {head.nick}
+          </h2>
+          <p className="mt-1 text-[15px] font-bold">{head.line}</p>
+          <p className="mt-2 inline-block rounded-full bg-gold/15 px-3 py-1 text-xs font-bold">{howRare(head)}</p>
+          <p className="mt-4 text-left text-[14px] leading-relaxed">{head.body}</p>
+        </div>
+      </section>
 
       {rest.length > 0 && (
         <section className="doc-paper mt-5 px-5 py-5">
@@ -109,7 +105,7 @@ function Header() {
       <p className="font-myeongjo text-sm font-extrabold tracking-[0.4em] text-seal">神 煞</p>
       <h1 className="mt-2 font-myeongjo text-3xl font-extrabold">신살 감정</h1>
       <p className="mt-2 text-[15px] leading-relaxed">내 사주에 적힌 살, 그리고 그 살의 얼굴</p>
-      <p className="mt-1 text-xs text-ink-soft">무료 · 19가지 살 캐릭터</p>
+      <p className="mt-1 text-xs text-ink-soft">무료 · 20가지 살 캐릭터</p>
     </section>
   );
 }
@@ -118,9 +114,9 @@ function Header() {
 function Gallery() {
   return (
     <section className="doc-paper mt-5 px-4 py-5">
-      <h2 className="text-center font-myeongjo text-lg font-extrabold">나올 수 있는 19가지 살</h2>
+      <h2 className="text-center font-myeongjo text-lg font-extrabold">나올 수 있는 20가지 살</h2>
       <ul className="mt-3 grid grid-cols-3 gap-2">
-        {CARDS.map((c, i) => (
+        {[...CARDS, MUSAL].map((c, i) => (
           <li key={c.id} className="text-center">
             <Image src={imageOf(c, i % 2 ? "f" : "m")} alt={c.nick} width={200} height={250} className="h-auto w-full rounded-md" />
             <p className="mt-1 text-[12px] font-bold leading-tight">{c.sal}</p>
