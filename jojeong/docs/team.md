@@ -59,6 +59,9 @@
 - 책상 `desks/<직원>` (lead·engineer·content·reviewer·growth·care·global·newbiz): 일을 시작할 때, 대표님 결정이 필요할 때, 끝날 때 `update`로 `status`(working·waiting·done·idle), `task`(한 줄), `updated_at`(ISO 시각), `link`(이 대화 주소 `https://claude.ai/code/<세션 id>`)를 바꾼다. 읽은 `version`을 `if_version`으로 넘긴다.
 - 결재함 `inbox/<짧은 영문 id>`: 대표님 결정이 필요할 때 `set`으로 `{desk, title, detail, link, created_at, resolved: false}`. 대표님 답을 받아 처리했으면 `resolved: true`.
 - 한 일마다 기록은 시작·결재·끝 세 번이면 충분하다. 진행 중 세세한 갱신은 하지 않는다.
+- 대화 `messages/<id>`: `{from, ch, text, created_at}`. `ch`는 `all`(전체 정리) 또는 직원 키(engineer·content·reviewer·growth·care·global·newbiz). 집무실에서 온 요청은 `[집무실][ch=<채널>]`로 시작하니, 결과는 **그 채널**에 그 직원 이름(`from`)으로 남긴다. 끝난 일의 한 줄 요약과 대표님 결정이 필요한 것은 `ch=all`에도 팀장 이름으로 남긴다.
+- 접수 답은 집무실 페이지가 바로 남긴다. 작업 대화는 시작할 때 책상을 `working`으로 바꾸고, 끝나면 결과를 남긴다. 댓글 스레드에는 한 줄만 답하고 해결 표시한다(대표님은 대화창을 본다).
+- `created_at`은 실제 현재 시각(UTC ISO)으로 쓴다. 지어낸 시각을 넣지 않는다.
 
 ## 대표님께 먼저 묻는 것
 
