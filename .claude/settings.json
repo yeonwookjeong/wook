@@ -14,11 +14,11 @@
       "mcp__github__create_pull_request",
       "mcp__github__update_pull_request",
       "mcp__github__pull_request_read",
+      "mcp__github__merge_pull_request",
       "Bash(git push -u origin:*)",
       "Bash(git push origin:*)"
     ],
     "ask": [
-      "mcp__github__merge_pull_request",
       "Bash(rm -rf:*)",
       "Bash(git push --force:*)",
       "Bash(git push -f:*)"
