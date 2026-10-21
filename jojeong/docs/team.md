@@ -59,7 +59,7 @@
 - 책상 `desks/<직원>` (lead·engineer·content·reviewer·growth·care·global·newbiz): 일을 시작할 때, 대표님 결정이 필요할 때, 끝날 때 `update`로 `status`(working·waiting·done·idle), `task`(한 줄), `updated_at`(ISO 시각), `link`(이 대화 주소 `https://claude.ai/code/<세션 id>`)를 바꾼다. 읽은 `version`을 `if_version`으로 넘긴다.
 - 결재함 `inbox/<짧은 영문 id>`: 대표님 결정이 필요할 때 `set`으로 `{desk, title, detail, link, created_at, resolved: false}`. 대표님 답을 받아 처리했으면 `resolved: true`.
 - 한 일마다 기록은 시작·결재·끝 세 번이면 충분하다. 진행 중 세세한 갱신은 하지 않는다.
-- 대화 `messages/<id>`: `{from, ch, text, created_at}`. `ch`는 `all`(전체 정리) 또는 직원 키(engineer·content·reviewer·growth·care·global·newbiz). 집무실에서 온 요청은 `[집무실][ch=<채널>]`로 시작하니, 결과는 **그 채널**에 그 직원 이름(`from`)으로 남긴다. 끝난 일의 한 줄 요약과 대표님 결정이 필요한 것은 `ch=all`에도 팀장 이름으로 남긴다.
+- 대화 `messages/<id>`: `{from, ch, text, created_at}`. `ch`는 `all`(전체 정리) 또는 직원 키(engineer·content·reviewer·growth·care·global·newbiz). 집무실에서 온 요청은 `[집무실][ch=<채널>]`로 시작하니, 결과는 **그 채널**에 남긴다(직원의 접수·진행은 직원 이름, 결과 보고는 팀장 이름). 끝난 일의 한 줄 요약과 대표님 결정이 필요한 것은 `ch=all`에도 팀장 이름으로 남긴다.
 - **직원 방 지시는 그 직원이 바로 진행한다(2026-10-21 대표님 지시).** `[집무실][ch=<직원>]`으로 온 말은 팀장이 되묻지 않고 바로 그 직원 에이전트에게 넘겨 일을 시작한다.
 - **보고는 직원 → 팀장 → 대표님.** 직원은 결과·막힌 점을 팀장(윤 도승지)에게 보고한다. 팀장은 확인해 대표님께 보고한다: 그 직원 방에 팀장 이름으로 결과를 올리고, `ch=all`에 한 줄 요약을 남긴다. 직원이 대표님께 직접 결과를 올리지 않는다.
 - 결재함에 올리는 것은 "대표님께 먼저 묻는 것"(아래)과 **머지(손님이 보는 화면 반영)** 뿐이다. 검수가 필요한 일은 reviewer를 거친 뒤 팀장이 올린다.
