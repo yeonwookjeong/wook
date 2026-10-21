@@ -1,4 +1,4 @@
-import { timingSafeEqual } from "node:crypto";
+import { createHash, timingSafeEqual } from "node:crypto";
 import type { NextRequest } from "next/server";
 import { listInquiries } from "@/lib/store";
 import { threadsReplies } from "@/lib/threads";
@@ -14,9 +14,9 @@ const MAX_LIMIT = 200;
 function allowed(request: NextRequest, secret: string): boolean {
   const header = request.headers.get("authorization") ?? "";
   if (!header.startsWith("Bearer ")) return false;
-  const given = Buffer.from(header.slice(7));
-  const want = Buffer.from(secret);
-  return given.length === want.length && timingSafeEqual(given, want);
+  // Both sides hashed first, so the comparison is always 32 bytes and says nothing about the token's length.
+  const hash = (v: string) => createHash("sha256").update(v).digest();
+  return timingSafeEqual(hash(header.slice(7)), hash(secret));
 }
 
 export async function GET(request: NextRequest) {

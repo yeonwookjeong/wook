@@ -136,8 +136,8 @@ export async function syncThreads(): Promise<{ posts: number; fresh: number; fai
   await setThreadsRaw("ids", JSON.stringify(all));
   await setThreadsRaw("synced", String(Date.now()));
   // The replies come last and never break the numbers above: any failure is kept as the status instead.
-  const replies = await syncReplies(list.data, access).catch(async (e: Error) => {
-    const status: RepliesStatus = { ok: false, reason: e.message.slice(0, 300), at: Date.now(), posts: 0, saved: 0 };
+  const replies = await syncReplies(list.data, access).catch(async (e: unknown) => {
+    const status: RepliesStatus = { ok: false, reason: String((e as Error)?.message ?? e).slice(0, 300), at: Date.now(), posts: 0, saved: 0 };
     await setThreadsRaw("replies:status", JSON.stringify(status)).catch(() => {});
     return status;
   });
@@ -161,10 +161,47 @@ export type RepliesStatus = { ok: boolean; reason: string | null; at: number; po
 const REPLY_POSTS = 10;
 const REPLY_DAYS = 7;
 const REPLIES_KEPT = 100;
+const REPLY_PAGES = 2;
+// How long a post's replies are kept (a default until the owner settles it): each fetch starts the count again.
+const REPLIES_TTL = 30 * 86400;
+const REPLY_IDS_KEPT = 60;
 const REPLY_FIELDS = "id,text,username,timestamp,permalink,hide_status";
 // Meta's codes for a missing or refused permission (10, 200-299) and a dead token (190): every post would fail
 // the same way, so the rest are not tried.
 const refused = (e: unknown) => e instanceof ThreadsError && (e.code === 10 || e.code === 190 || (e.code !== undefined && e.code >= 200 && e.code < 300));
+
+type ReplyPage = { data?: Partial<ThreadsReply>[]; paging?: { next?: string } };
+// The next page comes as a whole address from Meta (token included); only one on graph.threads.net is followed.
+async function nextPage(url: string): Promise<ReplyPage> {
+  const u = new URL(url);
+  if (u.origin !== API) throw new ThreadsError("Threads replies: unexpected next page address");
+  return call<ReplyPage>(u.pathname, Object.fromEntries(u.searchParams));
+}
+
+// Replies under one post, up to REPLY_PAGES pages, without my own (my answers in the chain).
+async function repliesOf(id: string, access: string, me: string): Promise<ThreadsReply[]> {
+  let page = await call<ReplyPage>(`/v1.0/${id}/replies`, { fields: REPLY_FIELDS, reverse: "true", access_token: access });
+  const raw: Partial<ThreadsReply>[] = [...(page.data ?? [])];
+  for (let n = 1; n < REPLY_PAGES && page.paging?.next; n++) {
+    page = await nextPage(page.paging.next);
+    raw.push(...(page.data ?? []));
+  }
+  return raw.flatMap((x) =>
+    x.id && !(me && x.username === me)
+      ? [{ id: x.id, text: x.text ?? "", username: x.username ?? "", timestamp: x.timestamp ?? "", permalink: x.permalink ?? "", hide_status: x.hide_status ?? "" }]
+      : [],
+  );
+}
+
+function parseReplies(raw: string | null): ThreadsReplies | null {
+  if (!raw) return null;
+  try {
+    const rec = JSON.parse(raw) as ThreadsReplies;
+    return Array.isArray(rec?.replies) ? rec : null;
+  } catch {
+    return null;
+  }
+}
 
 type ListItem = { id: string; text?: string; timestamp: string; permalink?: string };
 async function syncReplies(items: ListItem[], access: string): Promise<RepliesStatus> {
@@ -172,34 +209,42 @@ async function syncReplies(items: ListItem[], access: string): Promise<RepliesSt
   let reason: string | null = null;
   let saved = 0;
   let posts = 0;
+  // My own username, to leave my answers out. Without it nothing is left out (the call needs only threads_basic).
+  const me = recent.length
+    ? await call<{ username?: string }>("/v1.0/me", { fields: "username", access_token: access })
+        .then((r) => r.username ?? "")
+        .catch(() => "")
+    : "";
   for (const item of recent) {
     let got: ThreadsReply[];
     try {
-      const r = await call<{ data: Partial<ThreadsReply>[] }>(`/v1.0/${item.id}/replies`, { fields: REPLY_FIELDS, reverse: "true", access_token: access });
-      got = (r.data ?? []).flatMap((x) =>
-        x.id
-          ? [{ id: x.id, text: x.text ?? "", username: x.username ?? "", timestamp: x.timestamp ?? "", permalink: x.permalink ?? "", hide_status: x.hide_status ?? "" }]
-          : [],
-      );
+      got = await repliesOf(item.id, access, me);
     } catch (e) {
-      reason ??= (e as Error).message.slice(0, 300);
+      reason ??= String((e as Error)?.message ?? e).slice(0, 300);
       if (refused(e)) break;
       continue;
     }
-    const before = JSON.parse((await getThreadsRaw(`replies:${item.id}`)) || "null") as ThreadsReplies | null;
-    // Newer fetch wins for the same reply (an edit or a hide); the newest REPLIES_KEPT are kept.
-    const byId = new Map((before?.replies ?? []).map((x) => [x.id, x]));
+    // A broken record is dropped and started again, not carried.
+    const before = parseReplies(await getThreadsRaw(`replies:${item.id}`));
+    // Newer fetch wins for the same reply (an edit or a hide); the newest REPLIES_KEPT are kept, mine never.
+    const byId = new Map((before?.replies ?? []).filter((x) => !(me && x.username === me)).map((x) => [x.id, x]));
     for (const x of got) byId.set(x.id, x);
     const replies = [...byId.values()].sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp)).slice(0, REPLIES_KEPT);
     const record: ThreadsReplies = { mediaId: item.id, postText: (item.text ?? "").slice(0, 120), postLink: item.permalink ?? "", fetchedAt: Date.now(), replies };
-    await setThreadsRaw(`replies:${item.id}`, JSON.stringify(record));
+    await setThreadsRaw(`replies:${item.id}`, JSON.stringify(record), REPLIES_TTL);
     saved += got.length;
     posts++;
   }
   if (posts) {
-    const ids = JSON.parse((await getThreadsRaw("replies:ids")) || "[]") as string[];
-    const all = [...new Set([...recent.map((i) => i.id).filter((id) => !ids.includes(id)), ...ids])];
-    await setThreadsRaw("replies:ids", JSON.stringify(all.slice(0, 60)));
+    let ids: string[] = [];
+    try {
+      const parsed = JSON.parse((await getThreadsRaw("replies:ids")) || "[]") as unknown;
+      ids = Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === "string") : [];
+    } catch {}
+    const all = [...new Set([...recent.map((i) => i.id), ...ids])];
+    // Posts falling off the list take their replies with them.
+    await Promise.all(all.slice(REPLY_IDS_KEPT).map((id) => setThreadsRaw(`replies:${id}`, "", 60)));
+    await setThreadsRaw("replies:ids", JSON.stringify(all.slice(0, REPLY_IDS_KEPT)));
   }
   const status: RepliesStatus = { ok: reason === null, reason, at: Date.now(), posts, saved };
   await setThreadsRaw("replies:status", JSON.stringify(status));
@@ -212,13 +257,8 @@ export async function threadsReplies(): Promise<{ replies: (ThreadsReply & { med
   const raws = ids.length ? await getThreadsRawMany(ids.map((id) => `replies:${id}`)) : [];
   const replies = raws
     .flatMap((r) => {
-      if (!r) return [];
-      try {
-        const rec = JSON.parse(r) as ThreadsReplies;
-        return rec.replies.map((x) => ({ ...x, mediaId: rec.mediaId, postText: rec.postText, postLink: rec.postLink }));
-      } catch {
-        return [];
-      }
+      const rec = parseReplies(r);
+      return rec ? rec.replies.map((x) => ({ ...x, mediaId: rec.mediaId, postText: rec.postText, postLink: rec.postLink })) : [];
     })
     .sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp));
   const status = JSON.parse((await getThreadsRaw("replies:status")) || "null") as RepliesStatus | null;
