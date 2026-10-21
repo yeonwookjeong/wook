@@ -2,7 +2,7 @@
 // page first where there is one, the paid report after (무료 → 무료 → 유료). The pages and their steps live here,
 // so a new free page is one more line. Each click is counted as `to:<from>` as well as `to_saju`, for the
 // owner's dashboard (which page actually sends people on).
-export const STEP_FROM = ["king", "court", "minister", "sinbun", "reading", "gukjeong", "ranking", "samjae", "today", "ilju", "column"] as const;
+export const STEP_FROM = ["king", "court", "minister", "sinbun", "reading", "gukjeong", "ranking", "samjae", "today", "ilju", "column", "sinsal"] as const;
 export type StepFrom = (typeof STEP_FROM)[number];
 // The free pages that carry a result card to save or send (components/SaveCard.tsx), counted per page.
 export const SHARE_FROM: StepFrom[] = ["sinbun", "reading", "ilju"];
@@ -20,6 +20,7 @@ export const STEP_LABEL: Record<StepFrom, string> = {
   today: "오늘의 운세",
   ilju: "60일주 사전",
   column: "사주 이야기 (칼럼)",
+  sinsal: "신살 감정",
 };
 
 export type Step = { href: string; title: string; line?: string; seal?: string; kicker?: string; free?: boolean };
@@ -62,6 +63,12 @@ export const STEPS = {
           ask: "내 일주를 모르겠다면",
           main: { href: "/reports/pyeongsaeng", seal: "日柱", kicker: "무료", title: "생년월일만 넣으면 바로 알려 드려요", line: "내 일주와 이번 달 순위, 사주 분석까지", free: true },
         },
+  // 신살 are marks laid over the chart: the step is the chart itself.
+  sinsal: (): Steps => ({
+    ask: "살은 여덟 글자 위에 얹힌 표시예요",
+    main: { href: "/reports/pyeongsaeng", seal: "八字", kicker: "무료", title: "살 아래의 여덟 글자, 내 사주 전체 보기", line: "성향 지도, 돈·사랑·일 판정, 10년 흐름까지", free: true },
+    more: [{ href: "/reports/sinbun", title: "조선 신분 감정" }, { href: "/reports/gunghap", title: "궁합" }],
+  }),
   // A day pillar is two of the eight characters: the step is the other six.
   ilju: (name: string): Steps => ({
     ask: `같은 ${name}라도 여덟 글자가 다르면 다른 사람이에요`,
