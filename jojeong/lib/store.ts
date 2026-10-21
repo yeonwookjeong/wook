@@ -372,8 +372,9 @@ export async function getThreadsRaw(key: string): Promise<string | null> {
 export async function getThreadsRawMany(keys: string[]): Promise<(string | null)[]> {
   return backend().mget(keys.map((k) => `th:${k}`));
 }
-export async function setThreadsRaw(key: string, raw: string) {
-  await backend().set(`th:${key}`, raw);
+// `ttl`: seconds to keep it (the replies under a post); without it, kept for good.
+export async function setThreadsRaw(key: string, raw: string, ttl?: number) {
+  await backend().set(`th:${key}`, raw, ttl);
 }
 
 // Members (lib/members.ts): one record each, by their account id ("k"/"n"/"g" + the Kakao, Naver or Google id).
