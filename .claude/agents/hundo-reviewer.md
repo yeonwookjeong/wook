@@ -19,5 +19,9 @@ AI 보고서·묻기 답변
 - 넘겨받은 답변을 `jojeong/docs/ask-test-questions.md` 채점표로 1~5점 채점한다.
 - 4점 미만이면 원인이 프롬프트(`jojeong/lib/reportPrompts.ts`, `jojeong/lib/ask*.ts`)의 어느 부분인지 짚고 수정 방향을 낸다.
 
+새 상품(출시되는 것부터)
+- 작명: `jojeong/docs/naming.md` 결정표와 `jojeong/docs/naming-study.md` 근거대로 골랐는가, 로마자 금지 목록에 걸리지 않는가.
+- 관상: 얼굴 사진을 동의 없이 보내거나 저장하지 않는가.
+
 판정: 항목마다 `통과 / 수정 필요 / 게시 불가` + 이유 한 줄 (+ 고칠 문장·방향).
 새로 확인한 명리 사실은 "명리 노트에 추가할 것"으로 따로 적는다.
