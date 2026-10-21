@@ -483,11 +483,13 @@ async function OpenReport({
   );
 
   if (product.id === "sinbun") {
-    const sinbun = sinbunStory(pillars);
+    const gender = me ? me.person.gender : null;
+    const sinbun = sinbunStory(pillars, gender);
     return (
       <>
         <SinbunReport
           pillars={pillars}
+          gender={gender}
           heading={subject?.king ? `${name} 전하가 왕이 아니었다면` : `${josa(name, "이/가")} 조선에 태어났다면`}
           query={query}
         />

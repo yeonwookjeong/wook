@@ -122,7 +122,7 @@ export default async function SharedPage({ params }: PageProps<"/s/[kind]/[token
       )}
 
       {person && kind === "sinbun" && pillars ? (
-        <SinbunReport pillars={pillars} heading={`${josa(name, "이/가")} 조선에 태어났다면`} query="" />
+        <SinbunReport pillars={pillars} gender={person.gender} heading={`${josa(name, "이/가")} 조선에 태어났다면`} query="" />
       ) : reading ? (
         <YearReport
           reading={reading}
