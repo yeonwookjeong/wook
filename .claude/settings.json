@@ -3,6 +3,20 @@
     "expo@claude-plugins-official": true
   },
   "permissions": {
+    "allow": [
+      "ArtifactData",
+      "ArtifactComments",
+      "Artifact",
+      "SendUserFile",
+      "Agent",
+      "WebSearch",
+      "WebFetch",
+      "mcp__github__create_pull_request",
+      "mcp__github__update_pull_request",
+      "mcp__github__pull_request_read",
+      "Bash(git push -u origin:*)",
+      "Bash(git push origin:*)"
+    ],
     "ask": [
       "mcp__github__merge_pull_request",
       "Bash(rm -rf:*)",
