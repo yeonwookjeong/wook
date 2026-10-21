@@ -25,8 +25,8 @@ function Stat({ label, children }: { label: string; children: React.ReactNode })
 
 // The free 조선 신분 감정 report: a whole Joseon life in seven chapters, laid out like the 가상 실록.
 // Ends with a bridge to the paid present-day 직업·적성 report.
-export default function SinbunReport({ pillars, heading, query }: { pillars: Pillars; heading: string; query: string }) {
-  const s = sinbunStory(pillars);
+export default function SinbunReport({ pillars, gender, heading, query }: { pillars: Pillars; gender?: "m" | "f" | null; heading: string; query: string }) {
+  const s = sinbunStory(pillars, gender);
   return (
     <RoyalDoc className="mt-3" paperClassName="px-5">
       <p className="text-center font-myeongjo text-sm font-extrabold tracking-[0.4em] text-seal">身 分 鑑 定</p>
@@ -36,6 +36,7 @@ export default function SinbunReport({ pillars, heading, query }: { pillars: Pil
         <span className={`border-2 px-3 py-0.5 font-myeongjo text-sm font-extrabold ${RANK_STYLE[s.rank]}`}>{s.rank}</span>
         <p className="mt-2 font-myeongjo text-3xl font-extrabold">{s.job}</p>
         <p className="mt-1 text-sm text-ink-soft">{s.line}</p>
+        {s.rarity && <p className="mt-2 inline-block rounded-full bg-gold/15 px-3 py-1 text-xs font-bold">100가지 삶 중 · {s.rarity}</p>}
       </div>
 
       <div className="mt-4 grid grid-cols-3 gap-1.5">

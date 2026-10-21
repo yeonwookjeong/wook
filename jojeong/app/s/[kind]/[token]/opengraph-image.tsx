@@ -29,7 +29,7 @@ export default async function Image({ params }: { params: Promise<{ kind: string
   }
   if (!person) return shareImage({ top: "훈도사주", big: "나한테만 맞는 말", small: "생년월일만 넣으면 무료로 바로" });
   if (kind === "sinbun") {
-    const s = sinbunStory(person.pillars);
+    const s = sinbunStory(person.pillars, person.gender);
     return shareImage({ top: `${josa(person.name, "이/가")} 조선에 태어났다면`, badge: s.rank, big: s.job, small: s.line });
   }
   const f = iljuFacts(person.pillars.dayStem, person.pillars.dayBranch);
