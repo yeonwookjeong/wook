@@ -90,7 +90,7 @@ async function numbersOf(id: string, ts: number, access: string): Promise<Number
 // Fetch the latest posts (the first post of each chain; its replies are the chain's other parts) and their numbers.
 // `failed`: posts whose numbers could not be read this time, with the first reason (a missing insights permission
 // shows up only here, since the list itself still comes).
-export async function syncThreads(): Promise<{ posts: number; fresh: number; failed: number; reason: string | null }> {
+export async function syncThreads(): Promise<{ posts: number; fresh: number; failed: number; reason: string | null; replies: RepliesStatus }> {
   type List = { data: { id: string; text?: string; timestamp: string; permalink?: string }[] };
   const listWith = (access: string) => call<List>("/v1.0/me/threads", { fields: "id,text,timestamp,permalink", limit: "40", access_token: access });
   let access = await token();
@@ -135,7 +135,94 @@ export async function syncThreads(): Promise<{ posts: number; fresh: number; fai
   const all = [...known.keys()];
   await setThreadsRaw("ids", JSON.stringify(all));
   await setThreadsRaw("synced", String(Date.now()));
-  return { posts: list.data.length, fresh, failed: fetched.filter((x) => !x).length, reason };
+  // The replies come last and never break the numbers above: any failure is kept as the status instead.
+  const replies = await syncReplies(list.data, access).catch(async (e: Error) => {
+    const status: RepliesStatus = { ok: false, reason: e.message.slice(0, 300), at: Date.now(), posts: 0, saved: 0 };
+    await setThreadsRaw("replies:status", JSON.stringify(status)).catch(() => {});
+    return status;
+  });
+  return { posts: list.data.length, fresh, failed: fetched.filter((x) => !x).length, reason, replies };
+}
+
+// ── Replies under my own posts (the words, not just the count), for the team's read-only inbox (/api/team/inbox).
+// Needs the threads_read_replies permission on the token (with threads_basic). Kept apart from the post records
+// under th:replies:<postId>, so the public numbers (/api/threads-stats) never carry anyone's words.
+export type ThreadsReply = {
+  id: string;
+  text: string;
+  username: string;
+  timestamp: string;
+  permalink: string;
+  hide_status: string;
+};
+export type ThreadsReplies = { mediaId: string; postText: string; postLink: string; fetchedAt: number; replies: ThreadsReply[] };
+export type RepliesStatus = { ok: boolean; reason: string | null; at: number; posts: number; saved: number };
+
+const REPLY_POSTS = 10;
+const REPLY_DAYS = 7;
+const REPLIES_KEPT = 100;
+const REPLY_FIELDS = "id,text,username,timestamp,permalink,hide_status";
+// Meta's codes for a missing or refused permission (10, 200-299) and a dead token (190): every post would fail
+// the same way, so the rest are not tried.
+const refused = (e: unknown) => e instanceof ThreadsError && (e.code === 10 || e.code === 190 || (e.code !== undefined && e.code >= 200 && e.code < 300));
+
+type ListItem = { id: string; text?: string; timestamp: string; permalink?: string };
+async function syncReplies(items: ListItem[], access: string): Promise<RepliesStatus> {
+  const recent = items.filter((i) => Date.now() - Date.parse(i.timestamp) <= REPLY_DAYS * 86400000).slice(0, REPLY_POSTS);
+  let reason: string | null = null;
+  let saved = 0;
+  let posts = 0;
+  for (const item of recent) {
+    let got: ThreadsReply[];
+    try {
+      const r = await call<{ data: Partial<ThreadsReply>[] }>(`/v1.0/${item.id}/replies`, { fields: REPLY_FIELDS, reverse: "true", access_token: access });
+      got = (r.data ?? []).flatMap((x) =>
+        x.id
+          ? [{ id: x.id, text: x.text ?? "", username: x.username ?? "", timestamp: x.timestamp ?? "", permalink: x.permalink ?? "", hide_status: x.hide_status ?? "" }]
+          : [],
+      );
+    } catch (e) {
+      reason ??= (e as Error).message.slice(0, 300);
+      if (refused(e)) break;
+      continue;
+    }
+    const before = JSON.parse((await getThreadsRaw(`replies:${item.id}`)) || "null") as ThreadsReplies | null;
+    // Newer fetch wins for the same reply (an edit or a hide); the newest REPLIES_KEPT are kept.
+    const byId = new Map((before?.replies ?? []).map((x) => [x.id, x]));
+    for (const x of got) byId.set(x.id, x);
+    const replies = [...byId.values()].sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp)).slice(0, REPLIES_KEPT);
+    const record: ThreadsReplies = { mediaId: item.id, postText: (item.text ?? "").slice(0, 120), postLink: item.permalink ?? "", fetchedAt: Date.now(), replies };
+    await setThreadsRaw(`replies:${item.id}`, JSON.stringify(record));
+    saved += got.length;
+    posts++;
+  }
+  if (posts) {
+    const ids = JSON.parse((await getThreadsRaw("replies:ids")) || "[]") as string[];
+    const all = [...new Set([...recent.map((i) => i.id).filter((id) => !ids.includes(id)), ...ids])];
+    await setThreadsRaw("replies:ids", JSON.stringify(all.slice(0, 60)));
+  }
+  const status: RepliesStatus = { ok: reason === null, reason, at: Date.now(), posts, saved };
+  await setThreadsRaw("replies:status", JSON.stringify(status));
+  return status;
+}
+
+// Every reply kept, newest first, and how the last fetch went.
+export async function threadsReplies(): Promise<{ replies: (ThreadsReply & { mediaId: string; postText: string; postLink: string })[]; status: RepliesStatus | null }> {
+  const ids = JSON.parse((await getThreadsRaw("replies:ids")) || "[]") as string[];
+  const raws = ids.length ? await getThreadsRawMany(ids.map((id) => `replies:${id}`)) : [];
+  const replies = raws
+    .flatMap((r) => {
+      if (!r) return [];
+      try {
+        const rec = JSON.parse(r) as ThreadsReplies;
+        return rec.replies.map((x) => ({ ...x, mediaId: rec.mediaId, postText: rec.postText, postLink: rec.postLink }));
+      } catch {
+        return [];
+      }
+    })
+    .sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp));
+  const status = JSON.parse((await getThreadsRaw("replies:status")) || "null") as RepliesStatus | null;
+  return { replies, status };
 }
 
 async function postsOf(ids: string[]): Promise<ThreadsPost[]> {
