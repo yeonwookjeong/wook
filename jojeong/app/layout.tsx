@@ -7,6 +7,7 @@ import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import VisitBeacon from "@/components/VisitBeacon";
 import OpenNote from "@/components/OpenNote";
 import SinsalNote from "@/components/SinsalNote";
+import ClarityTag from "@/components/ClarityTag";
 import ChannelNudge from "@/components/ChannelNudge";
 import { isPreview } from "@/lib/admin";
 import { openReadingCount } from "@/lib/store";
@@ -84,6 +85,8 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         )}
         {/* The 신살 도감, once, for those coming back after the opening note. */}
         <SinsalNote />
+        {/* Scroll and click maps (Microsoft Clarity), once its project ID is set. */}
+        <ClarityTag />
         {/* Kakao members who have not added the channel yet: one more question for adding it (시안 모드 until it is on). */}
         {membersEnabled() && (CHANNEL_GIFT_ON || (await isPreview())) && (await currentMember().catch(() => null).then((m) => Boolean(m && m.id.startsWith("k") && !m.channel))) && (
           <ChannelNudge gift={CHANNEL_GIFT} />
