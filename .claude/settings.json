@@ -17,7 +17,7 @@
       "mcp__github__merge_pull_request",
       "Bash(git push -u origin:*)",
       "Bash(git push origin:*)",
-      "Bash(bash jojeong/scripts/care-inbox.sh:*)"
+      "Bash(bash jojeong/scripts/team-inbox.sh:*)"
     ],
     "ask": [
       "Bash(rm -rf:*)",
