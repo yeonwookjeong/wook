@@ -17,6 +17,19 @@ function Others({ cards, gender, size }: { cards: Card[]; gender: "m" | "f" | nu
   );
 }
 
+// The other 살 the chart holds: their small pictures and their names.
+function With({ cards, gender, size }: { cards: Card[]; gender: "m" | "f" | null; size: number }) {
+  return (
+    <div className="mt-2">
+      <Others cards={cards} gender={gender} size={size} />
+      <p className="mt-1 text-[11px] text-hanji/85">
+        함께 적힌 살 · {cards.slice(0, 4).map((c) => c.sal).join(", ")}
+        {cards.length > 4 && ` 외 ${cards.length - 4}`}
+      </p>
+    </div>
+  );
+}
+
 export function SinsalCardA({ name, head, rest, count, gender }: { name: string; head: Card; rest: Card[]; count: number; gender: "m" | "f" | null }) {
   return (
     <div className="flex aspect-[4/5] w-full flex-col overflow-hidden rounded-2xl bg-[linear-gradient(180deg,#0f2236,#17304a_55%,#1f3d5c)] p-3.5 text-hanji">
@@ -29,26 +42,29 @@ export function SinsalCardA({ name, head, rest, count, gender }: { name: string;
         </span>
         <span style={{ color: GOLD }}>신살 도감 {count}/20</span>
       </div>
-      <div className="doc-paper mx-auto mt-2.5 flex min-h-0 w-[92%] flex-1 flex-col overflow-hidden text-center text-ink">
+      {/* The picture fills the frame (it is near 4:5 itself, so little is cut); the words sit on its dark foot. */}
+      <div className="relative mx-auto mt-2.5 min-h-0 w-full flex-1 overflow-hidden rounded-xl" style={{ boxShadow: `0 0 0 1.5px ${GOLD}99` }}>
         {/* eslint-disable-next-line @next/next/no-img-element -- drawn into an image */}
-        <img src={imageOf(head, gender)} alt="" className="min-h-0 w-full flex-1 object-cover object-top" />
-        <div className="px-2 pt-2 pb-2.5">
-          <p className="text-[11px] text-ink-soft">{name}님의 가장 드문 카드</p>
-          <p className="font-myeongjo text-[19px] leading-tight font-extrabold">
-            {head.sal} · {head.nick}
+        <img src={imageOf(head, gender)} alt="" className="absolute inset-0 h-full w-full object-cover object-top" />
+        <div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,#0a142000,#0a1420eb_45%)] px-3 pt-9 pb-2.5 text-center">
+          <p className="text-[10px] text-hanji/75">{name}님의 가장 드문 카드</p>
+          <p className="font-myeongjo leading-tight font-extrabold">
+            <span className="text-[19px]">{head.sal}</span>
+            <span className="ml-1.5 text-[12px]" style={{ color: GOLD }}>
+              {head.nick}
+            </span>
           </p>
-          <p className="mt-1 inline-block rounded-full px-2.5 py-0.5 text-[10.5px] font-extrabold" style={{ background: `${GOLD}55` }}>
-            {rareText(head)}
+          <p className="mt-1 flex flex-wrap items-center justify-center gap-x-1.5 text-[10px] text-hanji/85">
+            <span className="rounded-full px-2 py-px font-extrabold text-[#0f2236]" style={{ background: GOLD }}>
+              {rareText(head)}
+            </span>
+            {rest.length > 0 && (
+              <span>
+                함께 적힌 살 · {rest.slice(0, 3).map((c) => c.sal).join(", ")}
+                {rest.length > 3 && ` 외 ${rest.length - 3}`}
+              </span>
+            )}
           </p>
-          {rest.length > 0 && (
-            <div className="mt-1.5">
-              <Others cards={rest} gender={gender} size={30} />
-              <p className="mt-1 text-[10.5px] text-ink-soft">
-                함께 적힌 살 · {rest.slice(0, 4).map((c) => c.sal).join(", ")}
-                {rest.length > 4 && ` 외 ${rest.length - 4}`}
-              </p>
-            </div>
-          )}
         </div>
       </div>
       <div className="mt-2.5 flex items-center gap-2">
@@ -77,12 +93,8 @@ export function SinsalCardB({ name, head, rest, count, gender }: { name: string;
             {rareText(head)}
           </span>
         </p>
-        <div className="mt-3 flex items-center justify-center gap-2">
-          <Others cards={[head, ...rest]} gender={gender} size={28} />
-          <span className="text-[13px] font-extrabold">
-            {count} / 20
-          </span>
-        </div>
+        {rest.length > 0 && <With cards={rest} gender={gender} size={30} />}
+        <p className="mt-2 text-[13px] font-extrabold">신살 도감 {count} / 20</p>
         <p className="mt-3 text-[11px] font-extrabold" style={{ color: GOLD }}>
           훈도사주 · 신살 도감
         </p>
