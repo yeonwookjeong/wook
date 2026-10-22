@@ -58,10 +58,10 @@ export default function SinsalShare({ name, path, text, cards }: { name: string;
   }
 
   return (
-    <section className="doc-paper mt-6 px-5 py-6 text-center">
-      <p className="font-myeongjo text-xs font-extrabold tracking-[0.4em] text-seal">傳 達</p>
+    <section className="mt-5 rounded-2xl border border-[#d4af5f]/30 bg-white/[0.04] px-5 py-6 text-center">
+      <p className="font-myeongjo text-xs font-extrabold tracking-[0.4em] text-[#d4af5f]">傳 達</p>
       <h2 className="mt-1 font-myeongjo text-lg font-extrabold">친구 사주로 빈칸 채우기</h2>
-      <p className="mt-2 text-[13px] leading-relaxed text-ink-soft">
+      <p className="mt-2 text-[13px] leading-relaxed text-hanji/70">
         친구에게는 {name}님의 카드가 가려진 채로 가요. 친구가 자기 생일을 넣으면 두 사람 카드가 함께 열리고, 합친 도감이 나와요.
       </p>
       <button
@@ -78,18 +78,18 @@ export default function SinsalShare({ name, path, text, cards }: { name: string;
             type="button"
             onClick={() => save(w)}
             disabled={state === "making"}
-            className="rounded-2xl border-2 border-seal bg-white/70 py-3 font-myeongjo text-[14px] font-extrabold text-seal disabled:opacity-60"
+            className="rounded-2xl border-2 border-[#d4af5f] py-3 font-myeongjo text-[14px] font-extrabold text-[#d4af5f] disabled:opacity-60"
           >
             {w === "feed" ? "카드 저장 · 피드" : "카드 저장 · 스토리"}
           </button>
         ))}
       </div>
-      {state === "making" && <p className="mt-2 text-xs text-ink-soft">카드를 만드는 중…</p>}
-      {state === "error" && <p className="mt-2 text-xs text-seal">카드를 만들지 못했어요. 화면을 캡처해 주세요.</p>}
-      <p className="mt-3 text-[11px] text-ink-soft/80">생년월일은 담기지 않아요. 보낸 링크는 1년간 열려요.</p>
+      {state === "making" && <p className="mt-2 text-xs text-hanji/70">카드를 만드는 중…</p>}
+      {state === "error" && <p className="mt-2 text-xs text-[#f0a39c]">카드를 만들지 못했어요. 화면을 캡처해 주세요.</p>}
+      <p className="mt-3 text-[11px] text-hanji/50">생년월일은 담기지 않아요. 보낸 링크는 1년간 열려요.</p>
       {shown && made[shown] ? (
         <div className="mt-4">
-          <p className="text-[12px] leading-relaxed text-ink-soft">사진첩(다운로드)에 저장했어요. 저장이 안 됐다면 아래 이미지를 길게 눌러 저장해 주세요.</p>
+          <p className="text-[12px] leading-relaxed text-hanji/70">사진첩(다운로드)에 저장했어요. 저장이 안 됐다면 아래 이미지를 길게 눌러 저장해 주세요.</p>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={made[shown]} alt="내 신살 카드" className="mx-auto mt-2 w-full max-w-[320px] rounded-2xl" />
         </div>
