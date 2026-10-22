@@ -7,6 +7,7 @@ import FreeReading from "@/components/FreeReading";
 import Hundo from "@/components/Hundo";
 import MeForm from "@/components/MeForm";
 import SinbunReport from "@/components/SinbunReport";
+import SinsalShared from "@/components/SinsalShared";
 import YearReport from "@/components/YearReport";
 import { freeReadingOf } from "@/lib/freeReading";
 import { josa } from "@/lib/josa";
@@ -23,15 +24,15 @@ import { yearReading } from "@/lib/yearly";
 //   the whole free result as the sender saw it, with the form for their own at the top and the foot; or
 //   the sender's summary card only (no chart), with the form below it.
 // Either leads to the same free page.
-const NEXT = { reading: "/reports/gukjeong", sinbun: "/reports/sinbun" } as const;
+const NEXT = { reading: "/reports/gukjeong", sinbun: "/reports/sinbun", sinsal: "/sinsal" } as const;
 
 async function load(params: PageProps<"/s/[kind]/[token]">["params"]) {
   const { kind, token } = await params;
   if (!isShareKind(kind)) return null;
   const person = openPerson(kind, token);
-  if (person) return { kind, person, card: null };
+  if (person) return { kind, token, person, card: null };
   const card = openCard(kind, token);
-  return card ? { kind, person: null, card } : null;
+  return card ? { kind, token, person: null, card } : null;
 }
 
 export async function generateMetadata({ params }: PageProps<"/s/[kind]/[token]">): Promise<Metadata> {
@@ -39,18 +40,32 @@ export async function generateMetadata({ params }: PageProps<"/s/[kind]/[token]"
   if (!got) return {};
   const { kind } = got;
   const who = got.person ? got.person.name : got.card!.n;
-  const title = kind === "reading" ? `${who}님의 사주 풀이` : `${josa(who, "이/가")} 조선에 태어났다면`;
-  const description = kind === "reading" ? "그대의 사주는 어떠하옵니까? 생년월일만 넣으면 무료로 바로 보여 드려요." : "그대는 조선에서 무엇이었을까요? 생년월일만 넣으면 무료로 바로 감정해 드려요.";
+  const title = kind === "reading" ? `${who}님의 사주 풀이` : kind === "sinsal" ? `${who}님은 이 20가지 살 중 무엇일까?` : `${josa(who, "이/가")} 조선에 태어났다면`;
+  const description =
+    kind === "reading"
+      ? "그대의 사주는 어떠하옵니까? 생년월일만 넣으면 무료로 바로 보여 드려요."
+      : kind === "sinsal"
+        ? "맞혀 보고 내 살도 보기. 생일을 넣으면 두 사람 카드가 함께 열려요."
+        : "그대는 조선에서 무엇이었을까요? 생년월일만 넣으면 무료로 바로 감정해 드려요.";
   return { title, description, robots: { index: false }, openGraph: { title, description } };
 }
 
 export default async function SharedPage({ params }: PageProps<"/s/[kind]/[token]">) {
   const got = await load(params);
   if (!got) notFound();
-  const { kind, person, card } = got;
+  const { kind, token, person, card } = got;
   const me = await readMe();
   // A friend's link opened: how many arrive this way (the owner's table).
   await track(`sl:${kind}`).catch(() => {});
+  if (kind === "sinsal") {
+    if (!person) notFound();
+    return (
+      <>
+        <SinsalShared sender={person} me={me?.person ?? null} token={token} />
+        <AdSlot />
+      </>
+    );
+  }
 
   const name = person ? person.name : (card as { n: string }).n;
   const profile = person ? profileOf(person) : null;
