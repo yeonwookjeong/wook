@@ -55,10 +55,21 @@ function parse(text: string, chapters: string[] = []): { sections: Section[]; fa
     const m = bracketed ?? (asked ? [bare, asked, bare.slice(asked.length).replace(/^\s*[:\-–—]?\s*/, "")] : null);
     // v9's point lines (lib/reportPrompts.ts POINT_LINES), right under the headline: "이유: …" and "할 일: …".
     const point = (k: string) => rest.map((l) => new RegExp(`^${k}\\s*[:：]\\s*(.+)$`).exec(l.trim())?.[1]).find(Boolean);
-    const body = rest.filter((l) => !/^(이유|할 일)\s*[:：]/.test(l.trim()));
+    let body = rest.filter((l) => !/^(이유|할 일)\s*[:：]/.test(l.trim()));
+    let headline = (m ? m[2] : head).trim();
+    // A heading written with the chapter name alone ("## [결정적인 세 번의 때 …]"): the headline is the short line
+    // right under it, or, failing that, the chapter name itself, so no chapter shows an empty title.
+    if (!headline) {
+      const i = body.findIndex((l) => l.trim());
+      const first = i >= 0 ? body[i].replace(/\*\*/g, "").trim() : "";
+      if (first && first.length <= 60 && !/[.。]$/.test(first) && i + 1 < body.length && !body[i + 1].trim()) {
+        headline = first;
+        body = body.slice(i + 1);
+      } else headline = m ? m[1] : "";
+    }
     sections.push({
       label: m ? m[1] : "",
-      headline: (m ? m[2] : head).trim(),
+      headline,
       why: point("이유"),
       todo: point("할 일"),
       paras: body

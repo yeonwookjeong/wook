@@ -34,6 +34,8 @@ export default function OpenNote({ member, gift, count }: { member: boolean; gif
         // The earlier notes said part of this: one is enough.
         localStorage.setItem("ao2", "1");
         localStorage.setItem("rn", "1");
+        // Not the 신살 도감 note on this same visit (components/SinsalNote.tsx).
+        sessionStorage.setItem("open-now", "1");
       } catch {}
       setShow(true);
       trackEvent("ask_pop");
