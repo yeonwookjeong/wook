@@ -25,6 +25,8 @@ const art = Object.fromEntries(
   ),
 ) as Record<Mood, string>;
 
+const sinsalFour = `data:image/jpeg;base64,${(await readFile(join(process.cwd(), "public/sinsal/og-four.jpg"))).toString("base64")}`;
+
 const throne = `data:image/svg+xml;base64,${(await readFile(join(process.cwd(), "public/irworobongdo.svg"))).toString("base64")}`;
 
 const C = { hanji: "#f4ecdb", deep: "#e9dcc0", ink: "#211b17", soft: "#62564c", seal: "#b3261e", gold: "#a87a22" };
@@ -190,6 +192,36 @@ export function shareImage({ top, badge, big, small }: { top: string; badge?: st
         <Portrait mood="face" size={130} />
       </div>
       <div style={{ position: "absolute", right: 90, bottom: 66, display: "flex", fontSize: 30, color: C.gold, fontWeight: 800 }}>{SITE_NAME}</div>
+    </div>,
+    1200,
+    630,
+  );
+}
+
+// A friend's 신살 도감 link: four of the twenty characters and the question, the sender's cards kept hidden.
+export function sinsalShareImage(name: string) {
+  return render(
+    <div style={{ width: 1200, height: 630, display: "flex", position: "relative", fontFamily: "Myeongjo" }}>
+      {/* eslint-disable-next-line @next/next/no-img-element -- rendered by Satori, not the browser */}
+      <img src={sinsalFour} width={1200} height={630} alt="" style={{ position: "absolute", left: 0, top: 0 }} />
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: 230,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "flex-end",
+          paddingBottom: 40,
+          background: "linear-gradient(180deg, rgba(15,34,54,0), rgba(15,34,54,0.95) 45%)",
+        }}
+      >
+        <div style={{ fontSize: 58, fontWeight: 800, color: C.hanji }}>{`${name}님은 이 20가지 살 중 무엇일까?`}</div>
+        <div style={{ marginTop: 10, fontSize: 30, color: "#d4af5f", fontWeight: 800 }}>{`맞혀 보고 내 살도 보기 · ${SITE_NAME}`}</div>
+      </div>
     </div>,
     1200,
     630,

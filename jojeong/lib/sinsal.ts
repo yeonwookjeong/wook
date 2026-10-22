@@ -39,7 +39,7 @@ export const CARDS: Card[] = [
   { id: "hwagae3", no: 11, sal: "화개 셋", hanja: "華蓋", nick: "구름 위 은둔 고수", line: "멀리 내다보는 사람", body: "화개 글자가 세 칸 이상인 드문 사주예요. 세상과 한 걸음 떨어져 볼 줄 알아서, 남들이 못 보는 것을 먼저 알아채요." },
   { id: "yangin", no: 12, sal: "양인", hanja: "羊刃", nick: "칼 쥔 승부사", line: "지는 걸 못 참는 사람", body: "칼을 쥐고 태어났다는 기운이에요. 휘두르면 상처가 되고, 쥐고 다루면 실력이 돼요. 승부가 걸린 자리에서 힘이 나는 사주예요." },
   { id: "yangin2", no: 13, sal: "양인 둘", hanja: "羊刃", nick: "양손 장수", line: "위기에 가장 빨리 결단하는 사람", body: "양인 글자가 두 칸이에요. 결단과 추진력이 아주 센 사주라, 힘을 어디에 쓰느냐가 인생을 가르는 열쇠예요." },
-  { id: "goegang", no: 14, sal: "괴강", hanja: "魁罡", nick: "판을 이끄는 우두머리", line: "앞장서서 판을 이끄는 사람", body: "태어난 날이 괴강 넷(경진·경술·임진·무술) 중 하나예요. 북두칠성의 머리별 이름처럼 무리 앞에 서는 기운이라, 세다는 말은 흠이 아니라 그 힘의 다른 이름이에요." },
+  { id: "goegang", no: 14, sal: "괴강", hanja: "魁罡", nick: "판을 이끄는 우두머리", line: "앞장서서 판을 이끄는 사람", body: "태어난 날이 괴강 넷(경진·경술·임진·무술) 중 하나예요. 하괴(河魁)·천강(天罡) 두 별 이름에서 온 말로, 무리 앞에 서는 기운이라, 세다는 말은 흠이 아니라 그 힘의 다른 이름이에요." },
   { id: "baekho", no: 15, sal: "백호", hanja: "白虎", nick: "흰 범의 기세", line: "위기 때 몸이 먼저 나가는 사람", body: "태어난 날이 백호 일곱 중 하나예요. 흰 범처럼 기세가 센 칸이라 예전엔 겁을 줬지만, 지금은 몸과 손을 쓰는 일, 위기를 해결하는 일로 읽어요." },
   { id: "gwimun", no: 16, sal: "귀문관", hanja: "鬼門關", nick: "예민한 촉의 천재", line: "남들이 놓치는 걸 먼저 느끼는 사람", body: "감각이 예민하게 열려 있는 기운이에요. 직감과 영감이 뛰어난 대신 쉽게 지칠 수 있어서, 혼자 쉬는 시간을 꼭 챙겨야 하는 사주예요." },
   { id: "gwimun2", no: 17, sal: "귀문관 둘", hanja: "鬼門關", nick: "꿈과 현실 사이 몽상가", line: "상상력이 현실보다 큰 사람", body: "귀문관이 두 번 이상 짝을 이뤄요. 상상하는 힘이 아주 커서 창작에서 빛나는 사주예요. 생각을 글이나 그림으로 꺼내 둘수록 마음이 편해져요." },
@@ -114,6 +114,40 @@ export function sinsalOf(p: Pillars): Reading {
   const counts = [held.cheoneul, held.munchang, held.dohwa, held.yeokma, held.hwagae, held.yangin, held.gwimun, held.hongyeom, held.goegang ? 1 : 0, held.baekho ? 1 : 0];
   const cells = counts.reduce((a, b) => a + b, 0);
   return { head: ids.length ? BY_ID[ids[0]] : MUSAL, rest: ids.slice(1).map((id) => BY_ID[id]), held, kinds: ids.length, cells, summary: summaryOf(ids.length, Math.max(...counts)) };
+}
+
+// "100명 중 약 4명": whole numbers from 3 up, one decimal below (무살 1.5, 양인 둘 2.0 → 2).
+export function rareText(c: Card): string {
+  const n = per100(c.id);
+  if (n >= 3) return `100명 중 약 ${Math.round(n)}명`;
+  if (n >= 1) return `100명 중 약 ${n.toFixed(1).replace(/\.0$/, "")}명`;
+  return `1,000명 중 약 ${Math.max(1, Math.round(n * 10))}명`;
+}
+
+// Every card in the book, the empty chart's last.
+export const BOOK: Card[] = [...CARDS, MUSAL];
+
+// Which of the four pillars (0 해, 1 달, 2 날, 3 시) carry a card: the branches for most, the day for 괴강·백호,
+// both ends of each pair for 귀문관.
+export function placesOf(p: Pillars, id: SinsalId): number[] {
+  const branches = [p.yearBranch, p.monthBranch, p.dayBranch, p.hourBranch];
+  const at = (test: (b: number) => boolean) => branches.flatMap((b, i) => (b !== null && b !== undefined && test(b) ? [i] : []));
+  const base = id.replace(/\d$/, "");
+  const NAME: Record<string, string> = { cheoneul: "천을귀인", munchang: "문창귀인", dohwa: "도화", yeokma: "역마", hwagae: "화개", yangin: "양인" };
+  if (NAME[base]) return at((b) => (salsAt(p, b) as string[]).includes(NAME[base]));
+  if (base === "hongyeom") return at((b) => b === HONGYEOM[p.dayStem]);
+  if (base === "goegang" || base === "baekho") return [2];
+  if (base === "gwimun") {
+    const out = new Set<number>();
+    for (let i = 0; i < 4; i++)
+      for (let j = i + 1; j < 4; j++) {
+        const [a, b] = [branches[i], branches[j]];
+        if (a === null || a === undefined || b === null || b === undefined) continue;
+        if (GWIMUN.has(`${Math.min(a, b)}-${Math.max(a, b)}`)) [i, j].forEach((k) => out.add(k));
+      }
+    return [...out].sort();
+  }
+  return [];
 }
 
 export const imageOf = (c: Card, gender: "m" | "f" | null) => `/sinsal/${gender === "f" ? "F" : "M"}${String(c.no).padStart(2, "0")}.webp`;

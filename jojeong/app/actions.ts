@@ -218,14 +218,20 @@ export async function saveMeAction(_prev: FormState, formData: FormData): Promis
     console.error(e);
     return { error: "사주를 준비하다 문제가 생겼어요. 잠시 후 다시 시도해 주세요." };
   }
-  redirect(/^\/reports\/[a-z]+(\?y=\d{4})?$/.test(next) ? next : next === "/#today" ? "/#today" : "/");
+  redirect(meNext(next));
+}
+
+// Where the form may send the reader back to: a report, the 신살 도감, a friend's 신살 link, or today's card.
+function meNext(next: string) {
+  if (/^\/reports\/[a-z]+(\?y=\d{4})?$/.test(next) || next === "/sinsal" || /^\/s\/sinsal\/[\w.-]{20,2400}$/.test(next)) return next;
+  return next === "/#today" ? "/#today" : "/";
 }
 
 // "친구에게 보내기": the long signed address turned into a short one. Only an address this site signed is kept.
 export async function shortShareAction(path: string): Promise<string | null> {
-  const m = /^\/s\/(reading|sinbun)\/([\w.-]{20,2400})$/.exec(path);
+  const m = /^\/s\/(reading|sinbun|sinsal)\/([\w.-]{20,2400})$/.exec(path);
   if (!m) return null;
-  const kind = m[1] as "reading" | "sinbun";
+  const kind = m[1] as "reading" | "sinbun" | "sinsal";
   if (!openPerson(kind, m[2]) && !openCard(kind, m[2])) return null;
   try {
     return `/l/${await putShare(path)}`;
