@@ -23,7 +23,7 @@ export default function SinsalShared({ sender, me, token }: { sender: Person; me
       <section className="pt-6 text-center">
         <p className="font-myeongjo text-sm font-extrabold tracking-[0.4em] text-[#d4af5f]">傳 達</p>
         <h1 className="mt-2 font-myeongjo text-2xl font-extrabold">{name}님이 신살 도감을 보내왔어요</h1>
-        <p className="mt-1 text-xs text-hanji/60">내 사주에 적힌 살, 20장 중 몇 장?</p>
+        <p className="mt-1 text-xs text-hanji/60">나는 무슨 살을 타고났을까</p>
       </section>
 
       <section className={`${NIGHT_PANEL} mt-4 px-4 py-3 text-center`}>
