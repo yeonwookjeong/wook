@@ -5,12 +5,10 @@ import { adsAccount } from "@/lib/ads";
 import { SITE_NAME, SITE_SUMMARY, SITE_TAGLINE, SNS_URLS, siteUrl } from "@/lib/brand";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import VisitBeacon from "@/components/VisitBeacon";
-import OpenNote from "@/components/OpenNote";
 import SinsalNote from "@/components/SinsalNote";
 import ClarityTag from "@/components/ClarityTag";
 import ChannelNudge from "@/components/ChannelNudge";
 import { isPreview } from "@/lib/admin";
-import { openReadingCount } from "@/lib/store";
 import { askShown, CHANNEL_GIFT, CHANNEL_GIFT_ON, currentMember, JOIN_GIFT, membersEnabled } from "@/lib/members";
 import "./globals.css";
 
@@ -79,13 +77,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           {children}
           <SiteFooter />
         </main>
-        {/* The grand opening, once per browser. */}
-        {membersEnabled() && (await askShown()) && (
-          <OpenNote member={Boolean(await currentMember().catch(() => null))} gift={JOIN_GIFT} count={await openReadingCount()} />
-        )}
-        {/* The 신살 도감, once, for those coming back after the opening note. */}
-        <SinsalNote />
-        {/* Scroll and click maps (Microsoft Clarity), once its project ID is set. */}
+        {/* One notice, once per browser: the 신살 도감, with the sign-up gift for those not yet members. */}
+        <SinsalNote gift={membersEnabled() && (await askShown()) && !(await currentMember().catch(() => null)) ? JOIN_GIFT : 0} />
+        {/* Scroll and click maps (Microsoft Clarity). */}
         <ClarityTag />
         {/* Kakao members who have not added the channel yet: one more question for adding it (시안 모드 until it is on). */}
         {membersEnabled() && (CHANNEL_GIFT_ON || (await isPreview())) && (await currentMember().catch(() => null).then((m) => Boolean(m && m.id.startsWith("k") && !m.channel))) && (
