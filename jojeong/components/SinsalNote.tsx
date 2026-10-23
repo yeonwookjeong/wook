@@ -4,16 +4,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import AskLink from "./AskLink";
 import { trackEvent } from "./VisitBeacon";
 
-// The 신살 도감 for those who come back: one notice, once per browser, only to someone who already saw the opening
-// note (components/OpenNote.tsx) on an earlier visit, never on the same visit. Quiet where OpenNote is quiet, and
-// on the 도감 itself (seeing it counts as seen).
+// The one notice (it replaced the grand-opening note): the 신살 도감, once per browser, a moment after arriving. Never
+// over paying, a bought report, the room, the owner's pages, a friend's link or a reading on screen, nor on the 도감
+// itself (seeing it counts as seen). `gift`: the questions a Kakao sign-up brings, shown under it to non-members.
 const QUIET = ["/ask", "/pay", "/admin", "/login", "/r/", "/my", "/leave", "/logout", "/e/", "/s/"];
 const SEEN = "sinsal1";
 const FACES = ["M05", "F18", "M14", "F07"];
 
-export default function SinsalNote() {
+export default function SinsalNote({ gift }: { gift: number }) {
   const path = usePathname();
   const [show, setShow] = useState(false);
   useEffect(() => {
@@ -23,8 +24,7 @@ export default function SinsalNote() {
         return;
       }
       if (QUIET.some((q) => path.startsWith(q)) || location.search.includes("order=")) return;
-      // Returning only: the opening note was seen before, and not on this visit.
-      if (!localStorage.getItem("open1") || localStorage.getItem(SEEN) || sessionStorage.getItem("open-now")) return;
+      if (localStorage.getItem(SEEN)) return;
     } catch {
       return;
     }
@@ -81,6 +81,11 @@ export default function SinsalNote() {
           >
             내 카드 펼치기
           </Link>
+          {gift > 0 && (
+            <AskLink from="pop" onClick={close} className="mt-3 block rounded-xl border border-[#d4af5f]/30 px-3 py-2 text-[12.5px] leading-snug text-hanji/85">
+              고민이 있다면 <b className="text-[#d4af5f]">카카오로 로그인하고 정 훈도에게 첫 질문 {gift}개</b> 선물 받기 →
+            </AskLink>
+          )}
           <button type="button" onClick={close} className="mt-3 text-[12.5px] text-hanji/60">
             다음에 볼게요
           </button>
