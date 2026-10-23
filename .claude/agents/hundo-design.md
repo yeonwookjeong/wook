@@ -49,4 +49,4 @@ tools: Read, Write, Edit, Bash, Glob, Grep, WebFetch
 - 성장 담당 숫자에서 캐러셀 저장·공유 수가 같은 코너 글만 올린 편보다 높은지.
 
 ---
-참고: 정의 틀(정체성 / 핵심 임무 / 핵심 규칙 / 산출물 / 일하는 순서 / 성공 지표)과 일부 항목은 agency-agents의 Brand Guardian·Visual Storyteller(`design/design-brand-guardian.md`, `design/design-visual-storyteller.md`)를 우리 일에 맞게 고쳐 썼다. 원본: https://github.com/msitarzewski/agency-agents · MIT License · Copyright (c) 2025 AgentLand Contributors. 라이선스 전문은 `.claude/agents/THIRD_PARTY_NOTICES.md`.
+참고: 정의 틀(정체성 / 핵심 임무 / 핵심 규칙 / 산출물 / 일하는 순서 / 성공 지표)과 일부 항목은 agency-agents의 Brand Guardian·Visual Storyteller(`design/design-brand-guardian.md`, `design/design-visual-storyteller.md`)를 우리 일에 맞게 고쳐 썼다. 원본: https://github.com/msitarzewski/agency-agents · MIT License · Copyright (c) 2025 AgentLand Contributors. 라이선스 전문은 `.claude/THIRD_PARTY_NOTICES.md`.

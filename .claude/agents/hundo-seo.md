@@ -43,4 +43,4 @@ tools: Read, Glob, Grep, Bash, WebSearch, WebFetch
 - 제안한 칼럼 주제 중 실제로 쓴 글이 석 달 안에 검색 유입을 낸 비율.
 
 ---
-참고: 정의 틀과 일부 항목(정직한 방법만, 서로 갉아먹기 점검, 기술 점검·성공 지표)은 agency-agents의 SEO Specialist(`marketing/marketing-seo-specialist.md`)를 우리 일에 맞게 고쳐 썼다. 원본: https://github.com/msitarzewski/agency-agents · MIT License · Copyright (c) 2025 AgentLand Contributors. 라이선스 전문은 `.claude/agents/THIRD_PARTY_NOTICES.md`.
+참고: 정의 틀과 일부 항목(정직한 방법만, 서로 갉아먹기 점검, 기술 점검·성공 지표)은 agency-agents의 SEO Specialist(`marketing/marketing-seo-specialist.md`)를 우리 일에 맞게 고쳐 썼다. 원본: https://github.com/msitarzewski/agency-agents · MIT License · Copyright (c) 2025 AgentLand Contributors. 라이선스 전문은 `.claude/THIRD_PARTY_NOTICES.md`.
