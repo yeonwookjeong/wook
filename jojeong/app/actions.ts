@@ -223,7 +223,7 @@ export async function saveMeAction(_prev: FormState, formData: FormData): Promis
 
 // Where the form may send the reader back to: a report, the 신살 도감, a friend's 신살 link, or today's card.
 function meNext(next: string) {
-  if (/^\/reports\/[a-z]+(\?y=\d{4})?$/.test(next) || next === "/sinsal" || /^\/s\/sinsal\/[\w.-]{20,2400}$/.test(next)) return next;
+  if (/^\/reports\/[a-z]+(\?y=\d{4})?$/.test(next) || next === "/sinsal" || /^\/s\/sinsal\/[\w.-]{20,2400}$/.test(next) || /^\/sinsal\?f=[\w.-]{20,2400}$/.test(next)) return next;
   return next === "/#today" ? "/#today" : "/";
 }
 

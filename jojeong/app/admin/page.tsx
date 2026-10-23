@@ -67,7 +67,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   const open = inquiries.filter((q) => !q.done);
   const when = (t: number) => new Date(t + 9 * 3600000).toISOString().slice(5, 16).replace("T", " ");
   const stats = await readStats([
-    ...["uv", "pv", "reading", "me_try", "me_err", "me_same", "king", "join", "appoint", "share_court", "share_result", "save_image", "own_court", "to_saju", "ask_pop", "to_ask", "to_channel", "sinsal_pop", "sinsal_open", "sinsal_view"],
+    ...["uv", "pv", "reading", "me_try", "me_err", "me_same", "king", "join", "appoint", "share_court", "share_result", "save_image", "own_court", "to_saju", "ask_pop", "to_ask", "to_channel", "sinsal_pop", "sinsal_open", "sinsal_view", "sinsal_friend_open", "sinsal_friend_view"],
     ...CH_FROM.map((f) => `ch:${f}`),
     ...ASK_FROM.map((f) => `ask:${f}`),
     ...STEP_FROM.map((f) => `to:${f}`),
@@ -339,6 +339,8 @@ const ROWS: { key: string; label: string; group?: string }[] = [
   { key: "sinsal_pop", label: "신살 도감 팝업이 뜬 수", group: "신살 도감" },
   { key: "sinsal_open", label: "신살 도감: 생일 넣기 전 첫 화면" },
   { key: "sinsal_view", label: "신살 도감: 결과(내 카드) 본 수" },
+  { key: "sinsal_friend_open", label: "　└ 친구 링크를 연 친구 (보낸 사람 본인 제외)" },
+  { key: "sinsal_friend_view", label: "　└ 친구 링크로 와서 내 카드까지 본 친구" },
   { key: "reading", label: "무료 사주 분석" },
   { key: "me_try", label: "　└ 생일 입력 보냄 (전체)" },
   { key: "me_err", label: "　└ 입력 오류로 되돌아감" },

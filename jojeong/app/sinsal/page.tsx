@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import AdSlot from "@/components/AdSlot";
-import MeForm from "@/components/MeForm";
 import NextStep from "@/components/NextStep";
 import SinsalBoard from "@/components/SinsalBoard";
+import SinsalStart, { SinsalHeader } from "@/components/SinsalStart";
+import SinsalWithFriend from "@/components/SinsalWithFriend";
 import SinsalCards from "@/components/SinsalCards";
 import SinsalNight, { NIGHT_GOLD, NIGHT_PANEL } from "@/components/SinsalNight";
 import { SinsalCardA, SinsalCardB } from "@/components/SinsalSaveCards";
@@ -10,7 +11,7 @@ import SinsalShare from "@/components/SinsalShare";
 import TrackOnce from "@/components/TrackOnce";
 import { readMe } from "@/lib/me";
 import { STEPS } from "@/lib/nextStep";
-import { sealPerson } from "@/lib/shareToken";
+import { openPerson, sealPerson } from "@/lib/shareToken";
 import { BOOK, CARDS, per100, placesOf, rareText, sinsalOf } from "@/lib/sinsal";
 
 export const metadata: Metadata = {
@@ -24,27 +25,18 @@ const RAREST = BOOK.reduce((a, b) => (per100(b.id) < per100(a.id) ? b : a));
 
 // Free, rule-based (lib/sinsal.ts): every 신살 the chart holds as a card, rarest first, then the book of 20 with
 // the empty places a friend's chart can fill, and the link that sends the book with its cards hidden.
-export default async function SinsalPage() {
+// `f`: the friend's link this visit came from (app/s/[kind]/[token]), kept so its arrivals are counted.
+export default async function SinsalPage({ searchParams }: PageProps<"/sinsal">) {
   const me = await readMe();
+  const f = (await searchParams).f;
+  const friend = typeof f === "string" ? openPerson("sinsal", f) : null;
+  const fromFriend = friend !== null;
 
   if (!me)
     return (
       <SinsalNight>
         <TrackOnce e="sinsal_open" />
-        <Header />
-        <section className={`${NIGHT_PANEL} mt-4 px-4 pt-5 pb-5`}>
-          <p className="text-center text-[13.5px] leading-relaxed text-hanji/85">
-            살은 사주 여덟 글자 위에 얹힌 표시예요.
-            <br />
-            보통은 <b className={NIGHT_GOLD}>3~4장</b>, 100명 중 1.5명은 하나도 없어요.
-          </p>
-          <div className="mt-4">
-            <SinsalBoard owned={new Set()} gender={null} />
-          </div>
-        </section>
-        <section className="card mt-4 px-5 pt-5 pb-6 text-ink">
-          <MeForm next="/sinsal" submit="내 카드 펼치기" />
-        </section>
+        <SinsalStart next={fromFriend ? `/sinsal?f=${f}` : "/sinsal"} />
       </SinsalNight>
     );
 
@@ -61,7 +53,8 @@ export default async function SinsalPage() {
     <>
       <SinsalNight>
         <TrackOnce e="sinsal_view" />
-        <Header />
+        {fromFriend && <TrackOnce e="sinsal_friend_view" />}
+        <SinsalHeader />
         <section className={`${NIGHT_PANEL} mt-4 px-4 py-3 text-center`}>
           <p className="font-myeongjo text-[17px] font-extrabold">
             {name}님은 <span className={NIGHT_GOLD}>{kinds ? `20장 중 ${kinds}장` : "무살 카드 1장"}</span>
@@ -83,6 +76,8 @@ export default async function SinsalPage() {
             가장 흔한 카드 {COMMONEST.sal} ({rareText(COMMONEST)}) · 가장 귀한 카드 {RAREST.sal} ({rareText(RAREST)})
           </p>
         </section>
+
+        {friend && <SinsalWithFriend friend={friend} me={me.person} />}
 
         <SinsalShare
           name={name}
@@ -109,13 +104,3 @@ export default async function SinsalPage() {
   );
 }
 
-function Header() {
-  return (
-    <section className="pt-6 text-center">
-      <p className="font-myeongjo text-sm font-extrabold tracking-[0.4em] text-[#d4af5f]">神 煞 圖 鑑</p>
-      <h1 className="mt-2 font-myeongjo text-3xl font-extrabold">신살 도감</h1>
-      <p className="mt-2 text-[15px] leading-relaxed text-hanji/85">나는 무슨 살을 타고났을까</p>
-      <p className="mt-1 text-xs text-hanji/55">무료 · 도화일까, 역마일까, 아무 살도 없는 100명 중 1.5명일까</p>
-    </section>
-  );
-}

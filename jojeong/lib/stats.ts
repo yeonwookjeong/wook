@@ -5,7 +5,7 @@ import { bumpCounters, readCounters } from "./store";
 // day, plus a running total. Only numbers are kept, nothing about who did what.
 
 // Events a page may report itself (app/api/stat); the rest are counted on the server where they happen.
-export const CLIENT_EVENTS = ["share_court", "share_result", "save_image", "own_court", "to_saju", "ask_pop", "to_ask", "to_channel", "sinsal_pop", "sinsal_open", "sinsal_view"] as const;
+export const CLIENT_EVENTS = ["share_court", "share_result", "save_image", "own_court", "to_saju", "ask_pop", "to_ask", "to_channel", "sinsal_pop", "sinsal_open", "sinsal_view", "sinsal_friend_open", "sinsal_friend_view"] as const;
 // Where a step into 정 훈도에게 묻기 was taken: the opening note, the header, the home tile, the end of the free
 // reading, the end of a bought report.
 export const ASK_FROM = ["pop", "header", "home", "free", "report", "chapter"] as const;
