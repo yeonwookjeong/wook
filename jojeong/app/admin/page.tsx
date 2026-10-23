@@ -67,7 +67,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   const open = inquiries.filter((q) => !q.done);
   const when = (t: number) => new Date(t + 9 * 3600000).toISOString().slice(5, 16).replace("T", " ");
   const stats = await readStats([
-    ...["uv", "pv", "reading", "me_try", "me_err", "me_same", "king", "join", "appoint", "share_court", "share_result", "save_image", "own_court", "to_saju", "ask_pop", "to_ask", "to_channel", "sinsal_pop"],
+    ...["uv", "pv", "reading", "me_try", "me_err", "me_same", "king", "join", "appoint", "share_court", "share_result", "save_image", "own_court", "to_saju", "ask_pop", "to_ask", "to_channel", "sinsal_pop", "sinsal_open", "sinsal_view"],
     ...CH_FROM.map((f) => `ch:${f}`),
     ...ASK_FROM.map((f) => `ask:${f}`),
     ...STEP_FROM.map((f) => `to:${f}`),
@@ -328,7 +328,7 @@ const ROWS: { key: string; label: string; group?: string }[] = [
     { key: `sh:${f}`, label: `${STEP_LABEL[f]}: 친구에게 보내기`, ...(f === SHARE_FROM[0] && { group: "공유" }) },
     { key: `sv:${f}`, label: `${STEP_LABEL[f]}: 카드 저장` },
   ]),
-  { key: "ask_pop", label: "오픈 안내 팝업이 뜬 수", group: "정 훈도에게 묻기" },
+  { key: "ask_pop", label: "오픈 안내 팝업이 뜬 수 (10/23 신살 도감 팝업으로 교체)", group: "정 훈도에게 묻기" },
   { key: "to_ask", label: "묻기로 이동 (전체)" },
   ...ASK_FROM.map((f) => ({ key: `ask:${f}`, label: `　└ ${ASK_FROM_LABEL[f]}` })),
   { key: "to_channel", label: "카카오톡 채널 추가 누름 (전체)", group: "카카오톡 채널" },
@@ -336,7 +336,9 @@ const ROWS: { key: string; label: string; group?: string }[] = [
   { key: "sl:reading", label: "친구가 보낸 링크로 도착: 무료 사주 분석" },
   { key: "sl:sinbun", label: "친구가 보낸 링크로 도착: 조선 신분 감정" },
   { key: "sl:sinsal", label: "친구가 보낸 링크로 도착: 신살 도감" },
-  { key: "sinsal_pop", label: "재방문 신살 도감 팝업이 뜬 수" },
+  { key: "sinsal_pop", label: "신살 도감 팝업이 뜬 수", group: "신살 도감" },
+  { key: "sinsal_open", label: "신살 도감: 생일 넣기 전 첫 화면" },
+  { key: "sinsal_view", label: "신살 도감: 결과(내 카드) 본 수" },
   { key: "reading", label: "무료 사주 분석" },
   { key: "me_try", label: "　└ 생일 입력 보냄 (전체)" },
   { key: "me_err", label: "　└ 입력 오류로 되돌아감" },
