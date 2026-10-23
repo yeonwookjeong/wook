@@ -52,39 +52,43 @@ const CHIPS: { href: string; hanja: string; label: string }[] = [
 const SHOW_COUNT_FROM = 100;
 
 // The year-end season (KST 11/1 to the end of February): the first row under the top card is next year's 신년운세
-// and the two love reports people look for then, 재회운 and 연애운 for those alone. Products as they are; only
-// their place on the home changes with the date.
+// and the love reports people look for then: 재회운 while it is on sale (궁합 in its place while it is shelved), and
+// 연애·결혼운 for those alone. Products as they are; only their place on the home changes with the date.
 function yearEndSeason(now = new Date()): boolean {
   const m = new Date(now.getTime() + 9 * 3600000).getUTCMonth() + 1;
   return m >= 11 || m <= 2;
 }
 
+const LOVE_PAIR = productById("jaehoe")
+  ? { href: "/reports/jaehoe", hanja: "再會", title: "재회운", line: "헤어진 그 사람, 다시 올까?" }
+  : { href: "/reports/gunghap", hanja: "宮合", title: "궁합", line: "우리, 진짜 잘 맞을까?" };
+
+// `name`: a visitor back with a chart already has 신년운세 as the top card's button, so the wide card is left out.
 function SeasonRow({ ny, name }: { ny: number; name: string | null }) {
+  const half = [LOVE_PAIR, { href: "/reports/yeonae", hanja: "緣分", title: "연애·결혼운", line: "솔로라면, 내 인연은 언제 올까?" }];
   return (
     <section aria-label="연말연초에 많이 보는 풀이" className="mt-4 grid grid-cols-2 gap-2">
-      <Link href={`/reports/yeonun?y=${ny}`} className="col-span-2 flex items-center gap-3 rounded-2xl bg-jjok px-4 py-3.5 text-hanji shadow-[0_4px_0_#131a23,inset_0_0_0_1px_rgb(212_175_95/0.45)]">
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-lg border-2 border-[#e2bc68]/70 font-myeongjo text-[13px] font-extrabold text-[#e2bc68]">新年</span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-[11px] font-bold tracking-wide text-[#e2bc68]">
-            {ny} {yearName(ny).ko.replace("년", "")}년 · {yearNickname(ny)}
+      {!name && (
+        <Link href={`/reports/yeonun?y=${ny}`} className="col-span-2 flex items-center gap-3 rounded-2xl bg-jjok px-4 py-3.5 text-hanji shadow-[0_4px_0_#131a23,inset_0_0_0_1px_rgb(212_175_95/0.45)]">
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-lg border-2 border-[#e2bc68]/70 font-myeongjo text-[13px] font-extrabold text-[#e2bc68]">新年</span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[11px] font-bold tracking-wide text-[#e2bc68]">
+              {ny} {yearName(ny).ko.replace("년", "")}년 · {yearNickname(ny)}
+            </span>
+            <b className="block font-myeongjo text-[17px] leading-snug">{ny} 신년운세</b>
+            <span className="block text-[12px] text-hanji/70">한 해 판정·달마다 흐름 무료</span>
           </span>
-          <b className="block font-myeongjo text-[17px] leading-snug">{name ? `${name}님의 ${ny}년 신년운세` : `${ny} 신년운세`}</b>
-          <span className="block text-[12px] text-hanji/70">한 해 판정과 달마다 흐름은 무료로 먼저</span>
-        </span>
-        <span className="shrink-0 text-[12px] font-bold text-[#e2bc68]">{isPreview(ny) ? "미리 보기 →" : "보기 →"}</span>
-      </Link>
-      <Link href="/reports/jaehoe" className="card flex flex-col rounded-2xl px-4 pt-3.5 pb-3">
-        <span className="font-myeongjo text-[15px] text-seal">再會</span>
-        <b className="mt-1 font-myeongjo text-[16px] leading-tight">재회운</b>
-        <span className="mt-1 flex-1 text-[12px] leading-snug text-ink-soft">헤어진 그 사람, 다시 올까?</span>
-        <span className="mt-2 text-right text-[12px] font-bold text-seal">보기 →</span>
-      </Link>
-      <Link href="/reports/yeonae" className="card flex flex-col rounded-2xl px-4 pt-3.5 pb-3">
-        <span className="font-myeongjo text-[15px] text-seal">緣分</span>
-        <b className="mt-1 font-myeongjo text-[16px] leading-tight">솔로 연애운</b>
-        <span className="mt-1 flex-1 text-[12px] leading-snug text-ink-soft">내 인연은 언제, 어떤 사람으로?</span>
-        <span className="mt-2 text-right text-[12px] font-bold text-seal">보기 →</span>
-      </Link>
+          <span className="shrink-0 text-[12px] font-bold text-[#e2bc68]">{isPreview(ny) ? "미리 보기 →" : "보기 →"}</span>
+        </Link>
+      )}
+      {half.map((c) => (
+        <Link key={c.href} href={c.href} className="card flex flex-col rounded-2xl px-4 pt-3.5 pb-3">
+          <span className="font-myeongjo text-[15px] text-seal">{c.hanja}</span>
+          <b className="mt-1 font-myeongjo text-[16px] leading-tight">{c.title}</b>
+          <span className="mt-1 flex-1 text-[12px] leading-snug text-ink-soft">{c.line}</span>
+          <span className="mt-2 text-right text-[12px] font-bold text-seal">보기 →</span>
+        </Link>
+      ))}
     </section>
   );
 }
@@ -93,7 +97,7 @@ function SeasonRow({ ny, name }: { ny: number; name: string | null }) {
 // that is not there.
 function notices(ask: boolean, season: boolean): Notice[] {
   return [
-    ...(season ? [{ text: "헤어진 그 사람, 다시 올까? 재회운", href: "/reports/jaehoe" }] : []),
+    ...(season ? [{ text: `${LOVE_PAIR.line} ${LOVE_PAIR.title}`, href: LOVE_PAIR.href }] : []),
     { text: "2027 정미년, 내 사주엔 무슨 바람이?", href: "/reports/gukjeong" },
     ...(ask && CHANNEL_GIFT_ON ? [{ text: `카카오 채널 추가하면 정 훈도 질문 ${CHANNEL_GIFT}개 선물`, href: "/ask#channel" }] : []),
     { text: "이달의 일주 랭킹, 내 일주는 몇 위일까", href: "/ranking" },
