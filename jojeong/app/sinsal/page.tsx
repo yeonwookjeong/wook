@@ -10,6 +10,7 @@ import { SinsalCardA, SinsalCardB } from "@/components/SinsalSaveCards";
 import SinsalShare from "@/components/SinsalShare";
 import TrackOnce from "@/components/TrackOnce";
 import { readMe } from "@/lib/me";
+import { samePerson } from "@/lib/pairToken";
 import { STEPS } from "@/lib/nextStep";
 import { openPerson, sealPerson } from "@/lib/shareToken";
 import { BOOK, CARDS, per100, placesOf, rareText, sinsalOf } from "@/lib/sinsal";
@@ -29,7 +30,9 @@ const RAREST = BOOK.reduce((a, b) => (per100(b.id) < per100(a.id) ? b : a));
 export default async function SinsalPage({ searchParams }: PageProps<"/sinsal">) {
   const me = await readMe();
   const f = (await searchParams).f;
-  const friend = typeof f === "string" ? openPerson("sinsal", f) : null;
+  const sender = typeof f === "string" ? openPerson("sinsal", f) : null;
+  // The sender coming back through their own link sees their result alone, not themselves twice.
+  const friend = sender && !(me && samePerson(sender, me.person)) ? sender : null;
   const fromFriend = friend !== null;
 
   if (!me)
@@ -47,7 +50,6 @@ export default async function SinsalPage({ searchParams }: PageProps<"/sinsal">)
   const count = kinds || 1;
   const name = me.person.name;
   const noHour = p.hourBranch === null;
-  const hint = head.id === "musal" ? `힌트: ${rareText(head)}만 받는 카드` : `힌트: ${rareText(head)}만 있는 살`;
 
   return (
     <>
@@ -82,7 +84,7 @@ export default async function SinsalPage({ searchParams }: PageProps<"/sinsal">)
         <SinsalShare
           name={name}
           path={`/s/sinsal/${sealPerson("sinsal", me.person)}`}
-          text={`내 사주에 적힌 살 맞혀 봐\n${hint}`}
+          text={"내 사주에 적힌 살 카드야. 너는 무슨 살이야? 겹치는 살도 보여 줘"}
           cards={{
             feed: <SinsalCardA name={name} head={head} rest={rest} count={count} gender={gender} />,
             story: <SinsalCardB name={name} head={head} rest={rest} count={count} gender={gender} />,

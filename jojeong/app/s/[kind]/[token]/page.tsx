@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: PageProps<"/s/[kind]/[token]"
   if (!got) return {};
   const { kind } = got;
   const who = got.person ? got.person.name : got.card!.n;
-  const title = kind === "reading" ? `${who}님의 사주 풀이` : kind === "sinsal" ? `${who}님은 이 20가지 살 중 무엇일까?` : `${josa(who, "이/가")} 조선에 태어났다면`;
+  const title = kind === "reading" ? `${who}님의 사주 풀이` : kind === "sinsal" ? `${who}님이 보낸 신살 도감` : `${josa(who, "이/가")} 조선에 태어났다면`;
   const description =
     kind === "reading"
       ? "그대의 사주는 어떠하옵니까? 생년월일만 넣으면 무료로 바로 보여 드려요."

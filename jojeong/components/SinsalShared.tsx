@@ -2,12 +2,7 @@ import Link from "next/link";
 import SinsalNight from "@/components/SinsalNight";
 import SinsalStart from "@/components/SinsalStart";
 import TrackOnce from "@/components/TrackOnce";
-import type { Person } from "@/lib/pairToken";
-
-// The same eight characters and name: the sender opening their own link.
-const samePerson = (a: Person, b: Person) =>
-  a.name === b.name &&
-  (["yearStem", "yearBranch", "monthStem", "monthBranch", "dayStem", "dayBranch", "hourBranch"] as const).every((k) => a.pillars[k] === b.pillars[k]);
+import { samePerson, type Person } from "@/lib/pairToken";
 
 // A friend's 신살 도감 link (2026-10-23 대표님 지시): the friend sees the 도감's own first screen, with one line on
 // top saying who sent it. The sender's cards are not shown at all; entering a chart leads to the friend's own

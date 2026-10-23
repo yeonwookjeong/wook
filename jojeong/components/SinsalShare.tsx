@@ -5,8 +5,8 @@ import { shortShareAction } from "@/app/actions";
 import { keepPng, makePng } from "@/lib/cardExport";
 import { trackEvent } from "./VisitBeacon";
 
-// The foot of the 신살 도감: send a friend the book with the cards hidden (they see them once they enter their own
-// chart), or keep a card as an image: 4:5 for a feed or chat, 9:16 for a story.
+// The foot of the 신살 도감: send a friend the link (they get the 도감's first screen, then their own cards and the
+// 살 the two share, app/s/[kind]/[token]), or keep a card as an image: 4:5 for a feed or chat, 9:16 for a story.
 export default function SinsalShare({ name, path, text, cards }: { name: string; path: string; text: string; cards: { feed: React.ReactNode; story: React.ReactNode } }) {
   const [state, setState] = useState<"idle" | "making" | "error" | "copied">("idle");
   const [shown, setShown] = useState<"feed" | "story" | null>(null);
@@ -62,7 +62,7 @@ export default function SinsalShare({ name, path, text, cards }: { name: string;
       <p className="font-myeongjo text-xs font-extrabold tracking-[0.4em] text-[#d4af5f]">傳 達</p>
       <h2 className="mt-1 font-myeongjo text-lg font-extrabold">친구에게 보내기</h2>
       <p className="mt-2 text-[13px] leading-relaxed text-hanji/70">
-        친구에게는 {name}님 카드 대신 신살 도감 첫 화면이 가요. 친구가 자기 생일을 넣으면 친구 카드가 펼쳐지고, 맨 아래에 {name}님과 겹치는 살이 나와요.
+        친구에게는 {name}님 카드 대신 신살 도감 첫 화면이 가요. 친구가 자기 생일을 넣으면 친구 카드가 펼쳐지고, 친구 카드 아래에 {name}님과 겹치는 살이 나와요.
       </p>
       <button
         type="button"
