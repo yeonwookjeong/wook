@@ -60,9 +60,9 @@ export default function SinsalShare({ name, path, text, cards }: { name: string;
   return (
     <section className="mt-5 rounded-2xl border border-[#d4af5f]/30 bg-white/[0.04] px-5 py-6 text-center">
       <p className="font-myeongjo text-xs font-extrabold tracking-[0.4em] text-[#d4af5f]">傳 達</p>
-      <h2 className="mt-1 font-myeongjo text-lg font-extrabold">친구 사주로 빈칸 채우기</h2>
+      <h2 className="mt-1 font-myeongjo text-lg font-extrabold">친구에게 보내기</h2>
       <p className="mt-2 text-[13px] leading-relaxed text-hanji/70">
-        친구에게는 {name}님의 카드가 가려진 채로 가요. 친구가 자기 생일을 넣으면 두 사람 카드가 함께 열리고, 합친 도감이 나와요.
+        친구에게는 {name}님 카드 대신 신살 도감 첫 화면이 가요. 친구가 자기 생일을 넣으면 친구 카드가 펼쳐지고, 맨 아래에 {name}님과 겹치는 살이 나와요.
       </p>
       <button
         type="button"
