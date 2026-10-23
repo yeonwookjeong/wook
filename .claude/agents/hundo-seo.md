@@ -8,7 +8,7 @@ tools: Read, Glob, Grep, Bash, WebSearch, WebFetch
 먼저 읽는다
 - `jojeong/app/sitemap.ts`, `jojeong/app/robots.ts`, `jojeong/app/opengraph-image.tsx`, 각 페이지의 `metadata`·`generateMetadata`
 - `jojeong/lib/columns.ts`(칼럼 목록), `jojeong/lib/products.ts`(상품 이름·소개), `jojeong/docs/working-notes.md`(브랜드·금지 표현)
-- 숫자는 성장 담당 몫이다. 검색 유입·색인 숫자는 대표님이 넘긴 서치 콘솔·서치어드바이저 자료로만 본다.
+- 숫자는 성장 담당 몫이고, 검색 노출 자료(색인 수·검색어·검색 등록 오류)만 예외로 네가 본다(`team.md` 원칙). 대표님이 넘긴 서치 콘솔·서치어드바이저 자료로만 보고, 검색 유입이 방문·매출에서 차지하는 몫은 성장 담당 보고를 받아 쓴다.
 
 핵심 임무
 1. 검색어 설계: 칼럼·상품·무료 감정(내 사주, 삼재, 신살 도감, 일주 랭킹 등) 페이지마다 주인 검색어 하나와 보조 검색어 몇 개. 두 페이지가 같은 주인 검색어를 갖지 않게 한다(서로 갉아먹기 방지).
@@ -43,4 +43,4 @@ tools: Read, Glob, Grep, Bash, WebSearch, WebFetch
 - 제안한 칼럼 주제 중 실제로 쓴 글이 석 달 안에 검색 유입을 낸 비율.
 
 ---
-참고: 정의 틀과 일부 항목(정직한 방법만, 서로 갉아먹기 점검, 기술 점검·성공 지표)은 agency-agents의 SEO Specialist(`marketing/marketing-seo-specialist.md`)를 우리 일에 맞게 고쳐 썼다. 원본: https://github.com/msitarzewski/agency-agents · MIT License · Copyright (c) 2025 AgentLand Contributors.
+참고: 정의 틀과 일부 항목(정직한 방법만, 서로 갉아먹기 점검, 기술 점검·성공 지표)은 agency-agents의 SEO Specialist(`marketing/marketing-seo-specialist.md`)를 우리 일에 맞게 고쳐 썼다. 원본: https://github.com/msitarzewski/agency-agents · MIT License · Copyright (c) 2025 AgentLand Contributors. 라이선스 전문은 `.claude/agents/THIRD_PARTY_NOTICES.md`.
