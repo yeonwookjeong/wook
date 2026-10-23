@@ -64,6 +64,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   const ny = newYearOf();
   const inquiries = await listInquiries().catch(() => []);
   const writeError = await lastReportError();
+  const writeRisk = await lastReportError("risk");
   const open = inquiries.filter((q) => !q.done);
   const when = (t: number) => new Date(t + 9 * 3600000).toISOString().slice(5, 16).replace("T", " ");
   const stats = await readStats([
@@ -119,6 +120,13 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
           <p className="text-sm font-extrabold text-seal">보고서 쓰기 실패 · {when(writeError.at)}</p>
           <p className="mt-1 text-[12px] leading-relaxed break-all">{writeError.message}</p>
           <p className="mt-1 text-[11px] text-ink-soft">최근 이틀 안의 마지막 실패만 보여요. 고친 뒤 보고서를 다시 열면 새로 써요.</p>
+        </section>
+      )}
+      {writeRisk && (
+        <section className="mt-4 rounded-xl border-2 border-seal bg-seal/10 px-4 py-3">
+          <p className="text-sm font-extrabold text-seal">보고서 위험 문구 · {when(writeRisk.at)}</p>
+          <p className="mt-1 text-[12px] leading-relaxed break-all">{writeRisk.message}</p>
+          <p className="mt-1 text-[11px] text-ink-soft">손님에게 이미 보인 글이에요. 최근 이틀 안의 마지막 한 건만 보여요.</p>
         </section>
       )}
 
