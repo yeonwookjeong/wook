@@ -90,19 +90,29 @@ async function numbersOf(id: string, ts: number, access: string): Promise<Number
 // Fetch the latest posts (the first post of each chain; its replies are the chain's other parts) and their numbers.
 // `failed`: posts whose numbers could not be read this time, with the first reason (a missing insights permission
 // shows up only here, since the list itself still comes).
-export async function syncThreads(): Promise<{ posts: number; fresh: number; failed: number; reason: string | null; replies: RepliesStatus }> {
-  type List = { data: { id: string; text?: string; timestamp: string; permalink?: string }[] };
+type List = { data: { id: string; text?: string; timestamp: string; permalink?: string }[] };
+async function latestPosts(): Promise<{ list: List; access: string }> {
   const listWith = (access: string) => call<List>("/v1.0/me/threads", { fields: "id,text,timestamp,permalink", limit: "40", access_token: access });
-  let access = await token();
-  let list: List;
+  const access = await token();
   try {
-    list = await listWith(access);
+    return { list: await listWith(access), access };
   } catch (e) {
     // The stored token died (expired or revoked): start again from the one in Vercel.
     if (!(e instanceof ThreadsError && e.code === 190)) throw e;
-    access = await token(true);
-    list = await listWith(access);
+    const again = await token(true);
+    return { list: await listWith(again), access: again };
   }
+}
+
+// A failed replies fetch is kept as the status, so the inbox shows why and when.
+async function failedReplies(e: unknown): Promise<RepliesStatus> {
+  const status: RepliesStatus = { ok: false, reason: String((e as Error)?.message ?? e).slice(0, 300), at: Date.now(), posts: 0, saved: 0 };
+  await setThreadsRaw("replies:status", JSON.stringify(status)).catch(() => {});
+  return status;
+}
+
+export async function syncThreads(): Promise<{ posts: number; fresh: number; failed: number; reason: string | null; replies: RepliesStatus }> {
+  const { list, access } = await latestPosts();
   const ids = JSON.parse((await getThreadsRaw("ids")) ?? "[]") as string[];
   const known = new Map((await postsOf(ids)).map((p) => [p.id, p]));
   let fresh = 0;
@@ -136,11 +146,7 @@ export async function syncThreads(): Promise<{ posts: number; fresh: number; fai
   await setThreadsRaw("ids", JSON.stringify(all));
   await setThreadsRaw("synced", String(Date.now()));
   // The replies come last and never break the numbers above: any failure is kept as the status instead.
-  const replies = await syncReplies(list.data, access).catch(async (e: unknown) => {
-    const status: RepliesStatus = { ok: false, reason: String((e as Error)?.message ?? e).slice(0, 300), at: Date.now(), posts: 0, saved: 0 };
-    await setThreadsRaw("replies:status", JSON.stringify(status)).catch(() => {});
-    return status;
-  });
+  const replies = await syncReplies(list.data, access).catch(failedReplies);
   return { posts: list.data.length, fresh, failed: fetched.filter((x) => !x).length, reason, replies };
 }
 
@@ -154,6 +160,8 @@ export type ThreadsReply = {
   timestamp: string;
   permalink: string;
   hide_status: string;
+  // Whether my account has answered this reply (null: not known, the last check failed).
+  has_our_reply: boolean | null;
 };
 export type ThreadsReplies = { mediaId: string; postText: string; postLink: string; fetchedAt: number; replies: ThreadsReply[] };
 export type RepliesStatus = { ok: boolean; reason: string | null; at: number; posts: number; saved: number };
@@ -162,6 +170,7 @@ const REPLY_POSTS = 10;
 const REPLY_DAYS = 7;
 const REPLIES_KEPT = 100;
 const REPLY_PAGES = 2;
+const CONVERSATION_PAGES = 3;
 // How long a post's replies are kept (a default until the owner settles it): each fetch starts the count again.
 const REPLIES_TTL = 30 * 86400;
 const REPLY_IDS_KEPT = 60;
@@ -172,10 +181,10 @@ const refused = (e: unknown) => e instanceof ThreadsError && (e.code === 10 || e
 
 type ReplyPage = { data?: Partial<ThreadsReply>[]; paging?: { next?: string } };
 // The next page comes as a whole address from Meta (token included); only one on graph.threads.net is followed.
-async function nextPage(url: string): Promise<ReplyPage> {
+async function nextPage<T = ReplyPage>(url: string): Promise<T> {
   const u = new URL(url);
   if (u.origin !== API) throw new ThreadsError("Threads replies: unexpected next page address");
-  return call<ReplyPage>(u.pathname, Object.fromEntries(u.searchParams));
+  return call<T>(u.pathname, Object.fromEntries(u.searchParams));
 }
 
 // Replies under one post, up to REPLY_PAGES pages, without my own (my answers in the chain).
@@ -188,9 +197,27 @@ async function repliesOf(id: string, access: string, me: string): Promise<Thread
   }
   return raw.flatMap((x) =>
     x.id && !(me && x.username === me)
-      ? [{ id: x.id, text: x.text ?? "", username: x.username ?? "", timestamp: x.timestamp ?? "", permalink: x.permalink ?? "", hide_status: x.hide_status ?? "" }]
+      ? [{ id: x.id, text: x.text ?? "", username: x.username ?? "", timestamp: x.timestamp ?? "", permalink: x.permalink ?? "", hide_status: x.hide_status ?? "", has_our_reply: null }]
       : [],
   );
+}
+
+// The replies I have answered under one post: the whole conversation (every depth) read once, and the ids my own
+// replies point to. Null when it cannot be read, so the earlier answer is kept.
+async function answeredOf(id: string, access: string, me: string): Promise<Set<string> | null> {
+  if (!me) return null;
+  type Conv = { data?: { username?: string; replied_to?: { id?: string } }[]; paging?: { next?: string } };
+  try {
+    let page = await call<Conv>(`/v1.0/${id}/conversation`, { fields: "id,username,replied_to", reverse: "false", access_token: access });
+    const raw = [...(page.data ?? [])];
+    for (let n = 1; n < CONVERSATION_PAGES && page.paging?.next; n++) {
+      page = await nextPage<Conv>(page.paging.next);
+      raw.push(...(page.data ?? []));
+    }
+    return new Set(raw.flatMap((x) => (x.username === me && x.replied_to?.id ? [x.replied_to.id] : [])));
+  } catch {
+    return null;
+  }
 }
 
 function parseReplies(raw: string | null): ThreadsReplies | null {
@@ -226,10 +253,15 @@ async function syncReplies(items: ListItem[], access: string): Promise<RepliesSt
     }
     // A broken record is dropped and started again, not carried.
     const before = parseReplies(await getThreadsRaw(`replies:${item.id}`));
+    const answered = await answeredOf(item.id, access, me);
     // Newer fetch wins for the same reply (an edit or a hide); the newest REPLIES_KEPT are kept, mine never.
+    // Whether I answered is read again for every reply kept; when that read failed, the earlier answer stays.
     const byId = new Map((before?.replies ?? []).filter((x) => !(me && x.username === me)).map((x) => [x.id, x]));
-    for (const x of got) byId.set(x.id, x);
-    const replies = [...byId.values()].sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp)).slice(0, REPLIES_KEPT);
+    for (const x of got) byId.set(x.id, { ...x, has_our_reply: byId.get(x.id)?.has_our_reply ?? null });
+    const replies = [...byId.values()]
+      .map((x) => ({ ...x, has_our_reply: answered ? answered.has(x.id) : (x.has_our_reply ?? null) }))
+      .sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp))
+      .slice(0, REPLIES_KEPT);
     const record: ThreadsReplies = { mediaId: item.id, postText: (item.text ?? "").slice(0, 120), postLink: item.permalink ?? "", fetchedAt: Date.now(), replies };
     await setThreadsRaw(`replies:${item.id}`, JSON.stringify(record), REPLIES_TTL);
     saved += got.length;
@@ -249,6 +281,17 @@ async function syncReplies(items: ListItem[], access: string): Promise<RepliesSt
   const status: RepliesStatus = { ok: reason === null, reason, at: Date.now(), posts, saved };
   await setThreadsRaw("replies:status", JSON.stringify(status));
   return status;
+}
+
+// The replies alone, read again now (the team inbox calls this when the last fetch is old; the once-a-day cron
+// still does the numbers). A failure is kept as the status, never thrown.
+export async function refreshReplies(): Promise<RepliesStatus> {
+  try {
+    const { list, access } = await latestPosts();
+    return await syncReplies(list.data, access);
+  } catch (e) {
+    return failedReplies(e);
+  }
 }
 
 // Every reply kept, newest first, and how the last fetch went.
