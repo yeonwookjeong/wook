@@ -40,12 +40,12 @@ export async function generateMetadata({ params }: PageProps<"/s/[kind]/[token]"
   if (!got) return {};
   const { kind } = got;
   const who = got.person ? got.person.name : got.card!.n;
-  const title = kind === "reading" ? `${who}님의 사주 풀이` : kind === "sinsal" ? `${who}님은 이 20가지 살 중 무엇일까?` : `${josa(who, "이/가")} 조선에 태어났다면`;
+  const title = kind === "reading" ? `${who}님의 사주 풀이` : kind === "sinsal" ? `${who}님이 보낸 신살 도감` : `${josa(who, "이/가")} 조선에 태어났다면`;
   const description =
     kind === "reading"
       ? "그대의 사주는 어떠하옵니까? 생년월일만 넣으면 무료로 바로 보여 드려요."
       : kind === "sinsal"
-        ? "맞혀 보고 내 살도 보기. 생일을 넣으면 두 사람 카드가 함께 열려요."
+        ? "나는 무슨 살을 타고났을까. 생일만 넣으면 내 살 카드가 바로 펼쳐져요."
         : "그대는 조선에서 무엇이었을까요? 생년월일만 넣으면 무료로 바로 감정해 드려요.";
   return { title, description, robots: { index: false }, openGraph: { title, description } };
 }
