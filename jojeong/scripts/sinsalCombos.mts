@@ -1,11 +1,12 @@
-// Builds lib/sinsalCombos.json: how many births hold each whole set of 신살 cards (the lead card and all the rest,
-// as lib/sinsal.ts cardsOf gives them), over every day 1950–2008 at each of the 12 hours, as scripts/sinsal.mts.
-// "이 조합은 100명 중 n명" on the result reads it (2026-10-23 대표님 지시). Run: npx tsx scripts/sinsalCombos.mts
+// Builds lib/sinsalCombos.json: how many births hold each set of 신살 kinds, over every day 1950–2008 at each of the
+// 12 hours, as scripts/sinsal.mts. "이 조합은 100명 중 n명" on the result reads it (2026-10-23 대표님 지시). A 살 held
+// twice or three times (도화 둘) counts as that 살 once: counting them apart split the births into 3,000 sets, most of
+// them "만 명 중 n명", too fine to mean anything (대표님 결정, 486 sets this way). Run: npx tsx scripts/sinsalCombos.mts
 import { writeFileSync } from "node:fs";
 import { computePillars } from "../lib/saju";
 import { cardsOf, heldOf } from "../lib/sinsal";
 
-export const comboKey = (ids: string[]) => [...ids].sort().join("+") || "none";
+export const comboKey = (ids: string[]) => [...new Set(ids.map((id) => id.replace(/\d$/, "")))].sort().join("+") || "none";
 
 const combos: Record<string, number> = {};
 let total = 0;
