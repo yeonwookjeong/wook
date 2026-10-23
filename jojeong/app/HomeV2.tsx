@@ -55,7 +55,7 @@ const SHOW_COUNT_FROM = 100;
 // that is not there.
 function notices(ask: boolean): Notice[] {
   return [
-    { text: "신살 도감: 나는 무슨 살을 타고났을까", href: "/sinsal" },
+    { text: "신살 도감 · 내 살은 뭘까", href: "/sinsal", fresh: true },
     { text: "2027 정미년, 내 사주엔 무슨 바람이?", href: "/reports/gukjeong" },
     ...(ask && CHANNEL_GIFT_ON ? [{ text: `카카오 채널 추가하면 정 훈도 질문 ${CHANNEL_GIFT}개 선물`, href: "/ask#channel" }] : []),
     { text: "이달의 일주 랭킹, 내 일주는 몇 위일까", href: "/ranking" },
