@@ -7,6 +7,7 @@ import SinsalCards from "@/components/SinsalCards";
 import SinsalNight, { NIGHT_GOLD, NIGHT_PANEL } from "@/components/SinsalNight";
 import { SinsalCardA, SinsalCardB } from "@/components/SinsalSaveCards";
 import SinsalShare from "@/components/SinsalShare";
+import TrackOnce from "@/components/TrackOnce";
 import { readMe } from "@/lib/me";
 import { STEPS } from "@/lib/nextStep";
 import { sealPerson } from "@/lib/shareToken";
@@ -29,6 +30,7 @@ export default async function SinsalPage() {
   if (!me)
     return (
       <SinsalNight>
+        <TrackOnce e="sinsal_open" />
         <Header />
         <section className={`${NIGHT_PANEL} mt-4 px-4 pt-5 pb-5`}>
           <p className="text-center text-[13.5px] leading-relaxed text-hanji/85">
@@ -58,6 +60,7 @@ export default async function SinsalPage() {
   return (
     <>
       <SinsalNight>
+        <TrackOnce e="sinsal_view" />
         <Header />
         <section className={`${NIGHT_PANEL} mt-4 px-4 py-3 text-center`}>
           <p className="font-myeongjo text-[17px] font-extrabold">
