@@ -29,9 +29,11 @@ class ThreadsError extends Error {
   }
 }
 const REFRESH_AFTER = 20 * 86400000;
+const CALL_TIMEOUT = 8000;
 
 async function call<T>(path: string, params: Record<string, string>): Promise<T> {
-  const res = await fetch(`${API}${path}?${new URLSearchParams(params)}`, { cache: "no-store" });
+  // A stalled call gives up after a few seconds, so a slow Threads never runs a whole fetch past its time.
+  const res = await fetch(`${API}${path}?${new URLSearchParams(params)}`, { cache: "no-store", signal: AbortSignal.timeout(CALL_TIMEOUT) });
   const body = (await res.json().catch(() => ({}))) as T & {
     error?: { message?: string; type?: string; code?: number; error_subcode?: number; fbtrace_id?: string };
   };
@@ -202,19 +204,20 @@ async function repliesOf(id: string, access: string, me: string): Promise<Thread
   );
 }
 
-// The replies I have answered under one post: the whole conversation (every depth) read once, and the ids my own
-// replies point to. Null when it cannot be read, so the earlier answer is kept.
-async function answeredOf(id: string, access: string, me: string): Promise<Set<string> | null> {
-  if (!me) return null;
-  type Conv = { data?: { username?: string; replied_to?: { id?: string } }[]; paging?: { next?: string } };
+// The replies I have answered under one post: the conversation (every depth), newest first, and the ids my own
+// replies point to. `complete`: every page was read, so a reply not in `ids` has no answer from me; otherwise only
+// the ones found are known. Null when it cannot be read, so the earlier answer is kept.
+async function answeredOf(id: string, access: string, me: string): Promise<{ ids: Set<string>; complete: boolean } | null> {
+  type Conv = { data?: { username?: string; is_reply_owned_by_me?: boolean; replied_to?: { id?: string } }[]; paging?: { next?: string } };
   try {
-    let page = await call<Conv>(`/v1.0/${id}/conversation`, { fields: "id,username,replied_to", reverse: "false", access_token: access });
+    let page = await call<Conv>(`/v1.0/${id}/conversation`, { fields: "id,username,is_reply_owned_by_me,replied_to", reverse: "true", access_token: access });
     const raw = [...(page.data ?? [])];
     for (let n = 1; n < CONVERSATION_PAGES && page.paging?.next; n++) {
       page = await nextPage<Conv>(page.paging.next);
       raw.push(...(page.data ?? []));
     }
-    return new Set(raw.flatMap((x) => (x.username === me && x.replied_to?.id ? [x.replied_to.id] : [])));
+    const mine = (x: (typeof raw)[number]) => x.is_reply_owned_by_me === true || Boolean(me && x.username === me);
+    return { ids: new Set(raw.flatMap((x) => (mine(x) && x.replied_to?.id ? [x.replied_to.id] : []))), complete: !page.paging?.next };
   } catch {
     return null;
   }
@@ -255,11 +258,11 @@ async function syncReplies(items: ListItem[], access: string): Promise<RepliesSt
     const before = parseReplies(await getThreadsRaw(`replies:${item.id}`));
     const answered = await answeredOf(item.id, access, me);
     // Newer fetch wins for the same reply (an edit or a hide); the newest REPLIES_KEPT are kept, mine never.
-    // Whether I answered is read again for every reply kept; when that read failed, the earlier answer stays.
+    // Whether I answered is read again for every reply kept; what that read could not settle keeps the earlier answer.
     const byId = new Map((before?.replies ?? []).filter((x) => !(me && x.username === me)).map((x) => [x.id, x]));
     for (const x of got) byId.set(x.id, { ...x, has_our_reply: byId.get(x.id)?.has_our_reply ?? null });
     const replies = [...byId.values()]
-      .map((x) => ({ ...x, has_our_reply: answered ? answered.has(x.id) : (x.has_our_reply ?? null) }))
+      .map((x) => ({ ...x, has_our_reply: answered?.ids.has(x.id) || (answered?.complete ? false : (x.has_our_reply ?? null)) }))
       .sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp))
       .slice(0, REPLIES_KEPT);
     const record: ThreadsReplies = { mediaId: item.id, postText: (item.text ?? "").slice(0, 120), postLink: item.permalink ?? "", fetchedAt: Date.now(), replies };
@@ -285,12 +288,17 @@ async function syncReplies(items: ListItem[], access: string): Promise<RepliesSt
 
 // The replies alone, read again now (the team inbox calls this when the last fetch is old; the once-a-day cron
 // still does the numbers). A failure is kept as the status, never thrown.
-export async function refreshReplies(): Promise<RepliesStatus> {
+// One at a time: while a fetch is running (marked for 90 seconds at most), another call leaves it be.
+export async function refreshReplies(): Promise<RepliesStatus | null> {
+  if (await getThreadsRaw("replies:refreshing").catch(() => null)) return null;
+  await setThreadsRaw("replies:refreshing", "1", 90).catch(() => {});
   try {
     const { list, access } = await latestPosts();
     return await syncReplies(list.data, access);
   } catch (e) {
     return failedReplies(e);
+  } finally {
+    await setThreadsRaw("replies:refreshing", "", 1).catch(() => {});
   }
 }
 

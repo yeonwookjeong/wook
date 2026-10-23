@@ -7,12 +7,14 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 // Read-only inbox for the team (2026-10-21 결재): the contact-page questions and the replies under my Threads posts,
-// as JSON, opened with TEAM_READ_TOKEN. Unset token: the address does not exist. Nothing here writes or deletes,
-// and nothing (token, contact, words) is logged.
+// as JSON, opened with TEAM_READ_TOKEN. Unset token: the address does not exist. Nothing here deletes, and nothing
+// (token, contact, words) is logged; the only writes are the replies fetched again when they are old (lib/threads.ts).
 const HEADERS = { "cache-control": "no-store", "x-robots-tag": "noindex" };
 const MAX_LIMIT = 200;
 // The replies are fetched once a day by the cron; older than this when the team reads, they are fetched again first.
 const REPLIES_STALE = 30 * 60000;
+// How long the team waits for that fetch; past it, the kept replies come as they are (the status says when).
+const REFRESH_WAIT = 25000;
 
 function allowed(request: NextRequest, secret: string): boolean {
   const header = request.headers.get("authorization") ?? "";
@@ -55,6 +57,6 @@ async function freshReplies(): ReturnType<typeof threadsReplies> {
   const empty = { replies: [], status: null };
   const th = await threadsReplies().catch(() => empty);
   if (!process.env.THREADS_TOKEN || (th.status && Date.now() - th.status.at < REPLIES_STALE)) return th;
-  await refreshReplies();
-  return threadsReplies().catch(() => th);
+  const waited = await Promise.race([refreshReplies().then(() => true), new Promise<false>((r) => setTimeout(() => r(false), REFRESH_WAIT))]);
+  return waited ? threadsReplies().catch(() => th) : th;
 }
