@@ -24,6 +24,8 @@
 - 색: 남색 #141f31 계열, 금 #d9b465, 한지 #f3ead8, 먹 #211b17, 주홍 #b3261e.
 - 카드 한 줄은 12자 안쪽(넘으면 두 줄로 밀려 겹친다).
 - 일간 비유는 단정하지 않는다("흔히 이렇게 빗대옵니다").
+- 3장 카드는 2장에 없는 항목만 쓴다(같은 말을 두 번 하지 않는다). 1장 질문과도 겹치지 않게.
+- 작품명은 박물관 공식 이름으로 쓴다(별칭 금지). 인스타 캡션에도 한 줄: "그림: 국립중앙박물관 소장, 공공누리 제1유형(출처표시), emuseum.go.kr".
 
 ## 그림 고르는 법
 
@@ -45,10 +47,10 @@
 | 10/23 경오 | 3장 | 「일월오봉도」의 붉은 해만 | 午 = 한여름 한낮의 불(해). 병풍 전체는 왕실 상징이라 쓰지 않음 | 국립중앙박물관 본관11615 | https://www.emuseum.go.kr/detail?relicId=PS0100100100101161500000 |
 | 10/24 신미 | 1장 | 「양」(羊圖, 부분) | 未 = 양 | 국립중앙박물관 덕수2174 | https://www.museum.go.kr/MUSEUM/contents/M0502000000.do?schM=view&searchId=search&relicId=1125 |
 | 10/24 신미 | 3장 | 없음 | 辛(보석)에 맞는 공공누리 그림을 아직 못 찾음 | - | - |
-| 10/25 임신 | 1장 | 국보 「백자 철화 포도 원숭이 무늬 항아리」(부분) | 申 = 원숭이 (포도 덩굴에 매달린 원숭이) | 국립중앙박물관 본관2029 | https://www.museum.go.kr/MUSEUM/contents/M0502000000.do?schM=view&searchId=search&relicId=355 |
-| 10/25 임신 | 3장 | 정선 필 「관폭도」(부분) | 壬申 = 바위 사이로 쏟아지는 큰 물 | 국립중앙박물관 본관5074 | https://www.museum.go.kr/MUSEUM/contents/M0502000000.do?schM=view&searchId=search&relicId=6022 |
+| 10/25 임신 | 1장 | 국보 「백자 철화 포도 원숭이무늬 항아리」(부분) | 申 = 원숭이 (포도 덩굴에 매달린 원숭이) | 국립중앙박물관 본관2029 | https://www.museum.go.kr/MUSEUM/contents/M0502000000.do?schM=view&searchId=search&relicId=355 |
+| 10/25 임신 | 3장 | 정선 필 「폭포를 바라보는 선비」(觀瀑圖, 부분) | 壬申 = 바위 사이로 쏟아지는 큰 물 | 국립중앙박물관 본관5074 | https://www.museum.go.kr/MUSEUM/contents/M0502000000.do?schM=view&searchId=search&relicId=6022 |
 | 10/26 계유 | 1장 | 전 변상벽 필 「영모도」 중 닭(부분) | 酉 = 닭 | 국립중앙박물관 본관256-2 | https://www.museum.go.kr/MUSEUM/contents/M0502000000.do?schM=view&searchId=search&relicId=125460 |
-| 10/26 계유 | 3장 | 「비폭도」(부분) | 癸 = 맑은 물, 酉 = 가을 바위 → 바위틈 물 | 국립중앙박물관 덕수5322 | https://www.museum.go.kr/MUSEUM/contents/M0502000000.do?schM=view&searchId=search&relicId=8481 |
+| 10/26 계유 | 3장 | 강세황 필 「높은 곳에서 낙하하는 폭포」(飛瀑圖, 부분) | 癸 = 맑은 물, 酉 = 가을 바위 → 바위틈 물 | 국립중앙박물관 덕수5322 | https://www.museum.go.kr/MUSEUM/contents/M0502000000.do?schM=view&searchId=search&relicId=8481 |
 
 ## 만드는 법
 
@@ -57,7 +59,7 @@
 3. `python3 build-1.py days.json` → `out1/<key>.html`
 4. `node render.cjs out1/<key>.html out1/<key>` → `<key>-1.png`~`-3.png` (Playwright, 구글 폰트를 받으므로 인터넷 필요)
 
-### 하루치 데이터 예시 (10/23 경오)
+### 하루치 데이터 예시 (10/23 경오, 검수 반영본)
 
 ```json
 {
@@ -70,19 +72,19 @@
  "s1ko": "경",
  "b2ko": "오",
  "animal": "말",
- "question": "화나면 그 자리에서<br>말하고, <span style=\"color:var(--gold)\">다음 날<br>잊는 사람</span>",
+ "question": "아닌 건 아니라고<br>해야 <span style=\"color:var(--gold)\">직성이<br>풀리는 사람</span>",
  "plateImg": "horse.jpg",
  "platePos": "50% 62%",
  "plateLine": "午는 말이옵니다",
  "plateCredit": "전 윤두서 「마도」(부분) · 국립중앙박물관 · 공공누리 제1유형",
- "headline": "불볕에<br>달궈질수록<br>단단해지는 무쇠",
+ "headline": "불볕에<br>달궈져 날이 서는<br>무쇠",
  "s1word": "무쇠·바위",
  "b2word": "한여름 불볕",
- "body": "결단이 빠르고 뒤끝이 없사옵니다.<br><b style=\"font-weight:800\">다만</b> 곧은 말이 오해를 사기도 하지요.",
+ "body": "결단이 빠르고 원칙이 분명하옵니다.<br><b style=\"font-weight:800\">다만</b> 곧은 말이 오해를 사기도 하지요.",
  "cardBg": "<img src=\"sun.jpg\" class=\"abs\" style=\"left:560px;top:-40px;width:620px;filter:saturate(1.05) brightness(.9);-webkit-mask-image:radial-gradient(circle at 50% 50%,#000 38%,transparent 70%)\">",
- "r1": "결단 빠르고 뒤끝 없음",
+ "r1": "아닌 건 아니라고 말함",
  "r2": "밀당 없이 직진",
- "r3": "끝까지 지킴",
+ "r3": "겉은 단단, 속은 정 많음",
  "r4": "곧은 말이 부르는 오해",
  "image": "한여름 불볕에 달궈지는 무쇠",
  "cardCredit": "해: 일월오봉도(부분) · 국립중앙박물관 · 공공누리 제1유형"
