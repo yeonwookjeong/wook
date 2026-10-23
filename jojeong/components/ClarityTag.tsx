@@ -3,11 +3,12 @@
 import { usePathname } from "next/navigation";
 import Script from "next/script";
 
-// Microsoft Clarity (scroll depth, clicks, replays), only when NEXT_PUBLIC_CLARITY_ID is set in Vercel. Not started
+// Microsoft Clarity (scroll depth, clicks, replays), project 훈도사주. Not started
 // on a visit that begins on the owner's pages, the questions room, payments or the account pages (Clarity has no
 // documented stop, so a visit that moves there later keeps it); the birth forms are masked (data-clarity-mask) and
 // the project is set to Strict masking in Clarity, so no typed or shown text is recorded.
-const ID = process.env.NEXT_PUBLIC_CLARITY_ID;
+// The project ID is public (it is in every page that loads the tag), so it lives here; the env var can replace it.
+const ID = process.env.NEXT_PUBLIC_CLARITY_ID || "z1yr4ro3jm";
 const QUIET = ["/admin", "/ask", "/pay", "/my", "/login", "/leave", "/logout", "/r/", "/e/"];
 
 export default function ClarityTag() {
