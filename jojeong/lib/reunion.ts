@@ -59,7 +59,7 @@ export function reunionOf(a: Person, b: Person, from = sajuYear(), now = new Dat
     const rough = seat.includes("형") || seat.includes("파");
     ties.push(
       rough
-        ? { w: 1, line: `배우자 자리(일지)끼리 육합이면서 ${seat.includes("형") ? "형" : "파"}이에요. 끌리면서도 자꾸 어긋나는 사이였을 거예요.` }
+        ? { w: 1, line: `배우자 자리(일지)끼리 육합이면서 ${seat.filter((m) => m === "형" || m === "파").join("·")}이에요. 끌리면서도 자꾸 어긋나는 사이였을 거예요.` }
         : { w: 3, line: "배우자 자리(일지)끼리 육합이에요. 함께 있을 때의 편안함이 오래 남는 사이예요." },
     );
   } else if (seat.includes("삼합") && halfCombine(da, db)) ties.push({ w: 2, line: "배우자 자리(일지)끼리 반합이에요. 같은 곳을 바라보던 기억이 끈으로 남아 있어요." });
@@ -79,7 +79,7 @@ export function reunionOf(a: Person, b: Person, from = sajuYear(), now = new Dat
 
   // This year and the four after. A year is a window back only when it joins both spouse seats and holds back
   // neither person: no 충·형·파·원진 on either seat, neither one's own year read as 인내, and for each, not a year
-  // whose stem clashes their day stem or whose elements are their 기신 (2026-10-23 진단, B2). A year that joins one
+  // whose stem clashes their day stem or whose stem and branch are both their 기신 (2026-10-23 진단, B2). A year that joins one
   // seat only is kept apart as "마음이 움직이는 해".
   const to = from + 4;
   const ra = readChart(a.pillars);
@@ -94,7 +94,8 @@ export function reunionOf(a: Person, b: Person, from = sajuYear(), now = new Dat
     const gz = `${STEMS[ys]}${BRANCHES[yb]}`;
     const side = (x: Person, r: ReturnType<typeof readChart>, rows: typeof rowsA) => {
       const m = meetings(yb, x.pillars.dayBranch);
-      const heavy = r && (stemEl(ys) === r.gi || BRANCH_EL[yb] === r.gi);
+      // A 기신 year: its stem and branch both the 기신 element (one of them alone is a mixed year, left to the verdict).
+      const heavy = r && stemEl(ys) === r.gi && BRANCH_EL[yb] === r.gi;
       return {
         join: joins(m, yb, x.pillars.dayBranch),
         strained: strained(m),
@@ -104,6 +105,8 @@ export function reunionOf(a: Person, b: Person, from = sajuYear(), now = new Dat
     const sa = side(a, ra, rowsA);
     const sb = side(b, rb, rowsB);
     if (sa.strained || sb.strained) continue;
+    // A year already gone by `now` (a report reopened later) is no longer a time to come.
+    if (y < sajuYear(now)) continue;
     const monthsLeft = y === sajuYear(now) ? monthsToIpchun(now) : null;
     if (sa.join && sb.join && !sa.held && !sb.held) windows.push({ year: y, gz, kind: "together", why: "두 사람의 배우자 자리에 함께 합이 드는 해", monthsLeft });
     else if (sa.join !== sb.join) {
@@ -124,9 +127,10 @@ function monthsToIpchun(now: Date): number {
 
 const windowLine = (w: ReunionWindow) => `${w.year} ${w.gz}(${w.why}${w.monthsLeft ? `, 올해는 입춘 전까지 약 ${w.monthsLeft}달 남음` : ""})`;
 
-// `from`: the year the brief is read for (the order's year, so a report reopened after 입춘 keeps its years).
-export function reunionBrief(a: Person, b: Person, from = sajuYear()): string {
-  const r = reunionOf(a, b, from);
+// `from`: the year the brief is read for, and `at` the moment (the order's, so a report reopened after 입춘 keeps
+// its years and its "months left").
+export function reunionBrief(a: Person, b: Person, from = sajuYear(), at = Date.now()): string {
+  const r = reunionOf(a, b, from, new Date(at));
   if (!r) return "";
   const together = r.windows.filter((w) => w.kind === "together");
   const stir = r.windows.filter((w) => w.kind === "stir");

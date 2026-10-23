@@ -149,9 +149,9 @@ export async function POST(request: Request) {
         await setReportText(writeJob.key, text);
         if (order) await pinReportText(order.id, product.id as ProductId, writeJob.key).catch(() => {});
         ok = true;
-        // A word the report must not carry is told to the owner (admin's last report error), never shown.
+        // A word the report must not carry is told to the owner (admin page), not hidden from the reader.
         const risky = riskyLines(product.id, text);
-        if (risky.length) await noteReportError(`${writeJob.title}: 위험 문구 ${risky.length}건 (${risky.join(" / ")})`).catch(() => {});
+        if (risky.length) await noteReportError(`${writeJob.title} (${writeJob.key.slice(0, 8)}): ${risky.join(" / ")}`, "risk").catch(() => {});
       } else await noteReportError(`${writeJob.title}: 끝까지 쓰지 못함 (stop_reason)`).catch(() => {});
     } catch (e) {
       console.error(e);
