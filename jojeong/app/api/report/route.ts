@@ -1,6 +1,7 @@
 import { isAdmin } from "@/lib/admin";
 import { covers, getOrder, pinReportText } from "@/lib/pay";
 import { productById, type ProductId } from "@/lib/products";
+import { riskyLines } from "@/lib/reportGuard";
 import { aiEnabled, jobFor, writeReport, type JobRequest } from "@/lib/reportWriter";
 import { isV8 } from "@/lib/reportPrompts";
 import { renewNow } from "@/lib/launch";
@@ -148,6 +149,9 @@ export async function POST(request: Request) {
         await setReportText(writeJob.key, text);
         if (order) await pinReportText(order.id, product.id as ProductId, writeJob.key).catch(() => {});
         ok = true;
+        // A word the report must not carry is told to the owner (admin's last report error), never shown.
+        const risky = riskyLines(product.id, text);
+        if (risky.length) await noteReportError(`${writeJob.title}: 위험 문구 ${risky.length}건 (${risky.join(" / ")})`).catch(() => {});
       } else await noteReportError(`${writeJob.title}: 끝까지 쓰지 못함 (stop_reason)`).catch(() => {});
     } catch (e) {
       console.error(e);
