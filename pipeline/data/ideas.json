@@ -1,5 +1,220 @@
 [
   {
+    "id": "toryvel-20261023-01",
+    "channel": "toryvel",
+    "title": "도쿄역 3층은 67년 동안 없었다",
+    "angle": "지금 사진 찍는 붉은 벽돌 역사가 사실은 2012년에 되찾은 모습이라는 반전",
+    "facts": [
+      {
+        "claim": "1945년 공습으로 남북 돔과 지붕, 내장이 불탔다",
+        "source": "https://www.kajima.co.jp/tech/tokyo_station/index-j.html",
+        "confidence": "high"
+      },
+      {
+        "claim": "전후 3층 역사는 2층으로 복구됐고, 돔 대신 팔각 지붕이 얹혔다",
+        "source": "https://www.kajima.co.jp/tech/tokyo_station/index-j.html",
+        "confidence": "high"
+      },
+      {
+        "claim": "어려운 재정 사정으로 창건 당시 모습으로 복원하지 못했다",
+        "source": "https://tren.hatenablog.com/entry/tokyost2",
+        "confidence": "medium"
+      },
+      {
+        "claim": "2007년 4월 보존·복원 공사를 시작해 2012년 10월 완공, 3층과 돔 지붕을 되살렸다",
+        "source": "https://www.kajima.co.jp/tech/tokyo_station/index-j.html",
+        "confidence": "high"
+      },
+      {
+        "claim": "벽돌 건물 아래에 지하 구조와 면진 장치를 새로 넣었다",
+        "source": "https://www.kajima.co.jp/tech/tokyo_station/index-j.html",
+        "confidence": "high"
+      }
+    ],
+    "place": {
+      "name": "東京駅 丸の内駅舎",
+      "district": "지요다구"
+    },
+    "japan_related": false,
+    "theme": "tokyo-area",
+    "createdAt": "2026-10-23T00:00:00.000Z"
+  },
+  {
+    "id": "toryvel-20261023-02",
+    "channel": "toryvel",
+    "title": "오다이바는 흑선을 막으려고 바다에 쌓은 포대였다",
+    "angle": "데이트 명소의 이름이 사실은 군사 시설 이름이라는 반전",
+    "facts": [
+      {
+        "claim": "1853년 6월 페리 내항을 계기로 해안 방어용 포대 건설이 결정됐다",
+        "source": "https://www.umeshunkyo.or.jp/heritage-backnumber/04sinagawa/page.html",
+        "confidence": "high"
+      },
+      {
+        "claim": "로주 아베 마사히로가 에가와 히데타쓰를 지명했고, 네덜란드 서적을 참고해 서양식 포대를 지었다",
+        "source": "https://www.meihaku.jp/arquebus-basic/shinagawadaiba/",
+        "confidence": "high"
+      },
+      {
+        "claim": "공사는 같은 해 8월 시작, 1854년 일부가 완성됐다. 처음 계획은 11기였다",
+        "source": "https://www.meihaku.jp/arquebus-basic/shinagawadaiba/",
+        "confidence": "medium"
+      },
+      {
+        "claim": "막부에 경의를 담아 포대(台場)에 '御'를 붙여 '오다이바(御台場)'라 부른 것이 지명의 유래다",
+        "source": "https://edokara.tokyo/conts/2015/08/18/127",
+        "confidence": "high"
+      }
+    ],
+    "place": {
+      "name": "お台場 / 品川台場",
+      "district": "미나토구"
+    },
+    "japan_related": false,
+    "theme": "tokyo-area",
+    "createdAt": "2026-10-23T00:00:00.000Z"
+  },
+  {
+    "id": "toryvel-20261023-03",
+    "channel": "toryvel",
+    "title": "니혼바시 위 고속도로는 2040년에 사라진다",
+    "angle": "에도의 기점 다리 위를 60년 넘게 덮은 고가가 철거되는 중. 지금 가면 '덮인 마지막 모습'을 본다",
+    "facts": [
+      {
+        "claim": "1963년 무렵 니혼바시강 위에 수도고속도로 고가가 건설됐다",
+        "source": "https://www.watch.impress.co.jp/docs/news/1394635.html",
+        "confidence": "medium"
+      },
+      {
+        "claim": "간다바시 JCT~에도바시 JCT 약 1.8km를 지하화하며, 사업비는 약 3,200억 엔이다",
+        "source": "https://www.shutoko.jp/ss/nihonbashi-tikaka/future/",
+        "confidence": "high"
+      },
+      {
+        "claim": "지하 루트는 2035년도 완성, 고가 철거는 2040년도 완료 예정이다",
+        "source": "https://www.tokyo-np.co.jp/article/401011",
+        "confidence": "high"
+      },
+      {
+        "claim": "2025년 4월부터 야에스선이 장기 통행 금지되며 공사가 다음 단계로 넘어갔다",
+        "source": "https://kurukura.jp/article/67886-20250522-103/",
+        "confidence": "high"
+      },
+      {
+        "claim": "1964년 올림픽을 위해 지었다는 설명이 흔하지만, 이번 리서치에서는 확인하지 못했다",
+        "source": "",
+        "confidence": "low"
+      }
+    ],
+    "place": {
+      "name": "日本橋",
+      "district": "주오구"
+    },
+    "japan_related": false,
+    "theme": "tokyo-area",
+    "createdAt": "2026-10-23T00:00:00.000Z"
+  },
+  {
+    "id": "toryvel-20261023-04",
+    "channel": "toryvel",
+    "title": "가마쿠라 대불은 원래 건물 안에 있었다",
+    "angle": "야외에 앉은 대불이 '설계'가 아니라 '재난의 결과'라는 반전",
+    "facts": [
+      {
+        "claim": "대불을 덮던 대불전이 무너진 기록이 1334년, 1369년, 1498년 세 차례 있다",
+        "source": "https://www.nikkei.com/article/DGKDZO53741730Y3A400C1L83000/",
+        "confidence": "high"
+      },
+      {
+        "claim": "고토쿠인 공식 설명: 1498년(메이오 7년) 대지진·쓰나미로 대불전이 손상됐고 이후 재건되지 않은 것으로 보인다",
+        "source": "https://miurahantou.jp/kotokuin/",
+        "confidence": "high"
+      },
+      {
+        "claim": "1486년 기록에 이미 대불전이 없었을 수 있다는 지적도 있어, 노좌가 된 정확한 시기는 확정되지 않았다",
+        "source": "https://crd.ndl.go.jp/reference/entry/index.php?id=1000148750&page=ref_view",
+        "confidence": "high"
+      }
+    ],
+    "place": {
+      "name": "鎌倉大仏 高徳院",
+      "district": "가마쿠라시"
+    },
+    "japan_related": false,
+    "theme": "tokyo-area",
+    "createdAt": "2026-10-23T00:00:00.000Z"
+  },
+  {
+    "id": "toryvel-20261023-05",
+    "channel": "toryvel",
+    "title": "가와고에의 '작은 에도' 거리는 큰불이 만들었다",
+    "angle": "에도 분위기 관광지가 사실은 메이지 시대 화재 이후 지은 방화 건축이라는 반전",
+    "facts": [
+      {
+        "claim": "1893년(메이지 26년) 3월 가와고에 대화재로 시가지의 3분의 1 이상이 불탔다",
+        "source": "https://www.city.kawagoe.saitama.jp/museum/kura/1013739.html",
+        "confidence": "high"
+      },
+      {
+        "claim": "큰길에서 유일하게 타지 않고 남은 오사와가 주택(1792년)의 구라즈쿠리를 본보기로 삼았다",
+        "source": "https://www.city.kawagoe.saitama.jp/_res/projects/default_project/_page_/001/004/111/denkentikugaiyour4.pdf",
+        "confidence": "high"
+      },
+      {
+        "claim": "상인들이 앞다퉈 흙벽 창고식 점포(구라즈쿠리)를 지었고, 니혼바시 상가를 참고했다",
+        "source": "https://www.city.kawagoe.saitama.jp/museum/kura/1013739.html",
+        "confidence": "high"
+      },
+      {
+        "claim": "대화재가 유일한 계기였는지는 연구상 논쟁이 남아 있다",
+        "source": "http://tsujimoto.sub.jp/TUS-SOTSU/ONOZAWA2013.pdf",
+        "confidence": "medium"
+      }
+    ],
+    "place": {
+      "name": "川越 蔵造りの町並み",
+      "district": "사이타마현 가와고에시"
+    },
+    "japan_related": false,
+    "theme": "tokyo-area",
+    "createdAt": "2026-10-23T00:00:00.000Z"
+  },
+  {
+    "id": "toryvel-20261023-06",
+    "channel": "toryvel",
+    "title": "시부야 하치코 동상은 두 번째 동상이다",
+    "angle": "만남의 장소 상징이 전쟁 중 녹아 사라졌다가 아들이 다시 만든 것이라는 반전",
+    "facts": [
+      {
+        "claim": "첫 동상은 조각가 안도 테루가 만들어 하치가 살아 있던 1934년에 세워졌다",
+        "source": "https://ja.wikipedia.org/wiki/忠犬ハチ公",
+        "confidence": "high"
+      },
+      {
+        "claim": "전시 금속 공출로 철거돼 1945년 8월 14일 하마마쓰에서 녹여졌다",
+        "source": "https://ja.wikipedia.org/wiki/忠犬ハチ公",
+        "confidence": "medium"
+      },
+      {
+        "claim": "안도 테루는 1945년 공습으로 사망했다",
+        "source": "https://go-to-museums.com/hachiko-ando-3007",
+        "confidence": "high"
+      },
+      {
+        "claim": "전후 아들 안도 타케시가 첫 동상을 본떠 다시 만들었다. 완공은 1948년 8월(1947년으로 적은 자료도 있음)",
+        "source": "https://ja.wikipedia.org/wiki/忠犬ハチ公",
+        "confidence": "medium"
+      }
+    ],
+    "place": {
+      "name": "忠犬ハチ公像",
+      "district": "시부야구"
+    },
+    "japan_related": false,
+    "theme": "tokyo-area",
+    "createdAt": "2026-10-23T00:00:00.000Z"
+  },
+  {
     "id": "toryvel-20260917-01",
     "channel": "toryvel",
     "title": "도다이지 대불전은 원래 크기의 3분의 2다",
@@ -35,8 +250,8 @@
       "name": "東大寺 大仏殿",
       "district": "나라시"
     },
-    "japan_related": true,
-    "theme": "japan-tokyo-nara",
+    "japan_related": false,
+    "theme": "japan-nara",
     "createdAt": "2026-09-17T00:00:00.000Z"
   },
   {
@@ -80,8 +295,8 @@
       "name": "平城宮跡 第一次大極殿",
       "district": "나라시"
     },
-    "japan_related": true,
-    "theme": "japan-tokyo-nara",
+    "japan_related": false,
+    "theme": "japan-nara",
     "createdAt": "2026-09-17T00:00:00.000Z"
   },
   {
@@ -120,8 +335,8 @@
       "name": "奈良公園",
       "district": "나라시"
     },
-    "japan_related": true,
-    "theme": "japan-tokyo-nara",
+    "japan_related": false,
+    "theme": "japan-nara",
     "createdAt": "2026-09-17T00:00:00.000Z"
   },
   {
@@ -160,8 +375,8 @@
       "name": "東京タワー",
       "district": "미나토구"
     },
-    "japan_related": true,
-    "theme": "japan-tokyo-nara",
+    "japan_related": false,
+    "theme": "tokyo-area",
     "createdAt": "2026-09-17T00:00:00.000Z",
     "usedBy": "toryvel-20260917-tokyo-tower"
   },
@@ -201,8 +416,8 @@
       "name": "上野アメ横商店街",
       "district": "다이토구"
     },
-    "japan_related": true,
-    "theme": "japan-tokyo-nara",
+    "japan_related": false,
+    "theme": "tokyo-area",
     "createdAt": "2026-09-17T00:00:00.000Z"
   },
   {
@@ -246,8 +461,8 @@
       "name": "新宿ゴールデン街",
       "district": "신주쿠구"
     },
-    "japan_related": true,
-    "theme": "japan-tokyo-nara",
+    "japan_related": false,
+    "theme": "tokyo-area",
     "createdAt": "2026-09-17T00:00:00.000Z"
   },
   {
