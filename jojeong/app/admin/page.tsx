@@ -67,7 +67,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   const open = inquiries.filter((q) => !q.done);
   const when = (t: number) => new Date(t + 9 * 3600000).toISOString().slice(5, 16).replace("T", " ");
   const stats = await readStats([
-    ...["uv", "pv", "reading", "me_try", "me_err", "me_same", "king", "join", "appoint", "share_court", "share_result", "save_image", "own_court", "to_saju", "ask_pop", "to_ask", "to_channel"],
+    ...["uv", "pv", "reading", "me_try", "me_err", "me_same", "king", "join", "appoint", "share_court", "share_result", "save_image", "own_court", "to_saju", "ask_pop", "to_ask", "to_channel", "sinsal_pop"],
     ...CH_FROM.map((f) => `ch:${f}`),
     ...ASK_FROM.map((f) => `ask:${f}`),
     ...STEP_FROM.map((f) => `to:${f}`),
@@ -336,6 +336,7 @@ const ROWS: { key: string; label: string; group?: string }[] = [
   { key: "sl:reading", label: "친구가 보낸 링크로 도착: 무료 사주 분석" },
   { key: "sl:sinbun", label: "친구가 보낸 링크로 도착: 조선 신분 감정" },
   { key: "sl:sinsal", label: "친구가 보낸 링크로 도착: 신살 도감" },
+  { key: "sinsal_pop", label: "재방문 신살 도감 팝업이 뜬 수" },
   { key: "reading", label: "무료 사주 분석" },
   { key: "me_try", label: "　└ 생일 입력 보냄 (전체)" },
   { key: "me_err", label: "　└ 입력 오류로 되돌아감" },
