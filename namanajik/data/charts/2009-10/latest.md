@@ -1,9 +1,39 @@
 # 2009년 10월 노래, 지금 Top 100
 
-기준: 2026-10-19 → 2026-10-23 (4일 증가분) · 유튜브 공식 영상 조회수(MV + Topic 합산) · 집계 0/98곡
+기준: 2026-10-19 → 2026-10-24 (5일 증가분) · 유튜브 공식 영상 조회수(MV + Topic 합산) · 집계 30/98곡
 
 | 지금 | 곡 | 가수 | 7일 증가 | 그때 | 그때 대비 | 지난번 대비 |
 |---:|---|---|---:|---:|:--:|:--:|
+| 1 | Ring Ding Dong | 샤이니 | 19616만 | 39위 | ▲38 |  |
+| 2 | Heartbreaker | G-DRAGON | 9857만 | 7위 | ▲5 |  |
+| 3 | 사랑비 | 김태우 | 5796만 | 2위 | ▼1 |  |
+| 4 | TTL (Time To Love) | 티아라, 초신성 | 3052만 | 1위 | ▼3 |  |
+| 5 | 라차타 (LA chA TA) | f(x) | 2657만 | 8위 | ▲3 |  |
+| 6 | 생각이나 | 부활 | 2573만 | 33위 | ▲27 |  |
+| 7 | TTL Listen 2 | 티아라, 초신성 | 2557만 | 36위 | ▲29 |  |
+| 8 | In The Club | 2NE1 | 1840만 | 25위 | ▲17 |  |
+| 9 | 눈물도 아까워 (Feat. 현아 From 4Minute) | 나비 | 817만 | 35위 | ▲26 |  |
+| 10 | 거짓말 (Part.1) | 티아라 | 510만 | 26위 | ▲16 |  |
+| 11 | 사랑 참 어렵다 | 이승철 | 423만 | 29위 | ▲18 |  |
+| 12 | Hot Stuff | 다비치 | 352만 | 32위 | ▲20 |  |
+| 13 | 변해가네 (Feat. 정인) | 리쌍 | 336만 | 30위 | ▲17 |  |
+| 14 | Wanna | 카라 | 317만 | 40위 | ▲26 |  |
+| 15 | 가인 (Feat. Nemo Of 미스에스) | 배치기 | 216만 | 19위 | ▲4 |  |
+| 16 | 내 귀에 캔디 (Feat. 택연 Of 2PM) | 백지영 | 201만 | 12위 | ▼4 |  |
+| 17 | Muzik | 4minute | 177만 | 6위 | ▼11 |  |
+| 18 | 핼쑥해졌대 | 가비엔제이 | 108만 | 10위 | ▼8 |  |
+| 19 | 면사포 | 이승기 | 93만 | 24위 | ▲5 |  |
+| 20 | Chocolate Love (Retro Pop Ver.) | 소녀시대 | 93만 | 17위 | ▼3 |  |
+| 21 | 주르륵 | 휘성 | 86만 | 18위 | ▼3 |  |
+| 22 | 우리 헤어지자 | 이승기 | 78만 | 4위 | ▼18 |  |
+| 23 | Abracadabra | 브라운아이드걸스 | 64만 | 14위 | ▼9 |  |
+| 24 | Vari2ty | 쥬얼리 | 42만 | 21위 | ▼3 |  |
+| 25 | 독설 | 테이 | 33만 | 38위 | ▲13 |  |
+| 26 | 사랑이 뭐길래 | 미스에스 | 25만 | 22위 | ▼4 |  |
+| 27 | 30분전 (Feat. 임정희) | 이현 | 24만 | 9위 | ▼18 |  |
+| 28 | 속았다 (Narration Of 이요원) | 태군 | 10만 | 34위 | ▲6 |  |
+| 29 | 심장병 | 아웃사이더, MC 스나이퍼, 호란 | 3.9만 | 23위 | ▼6 |  |
+| 30 | Kiss (Feat. CL) | 산다라박 | 750 | 11위 | ▼19 |  |
 
 보류 곡 없음
-미매핑 98곡: 1위 TTL (Time To Love) - 티아라, 초신성 · 2위 사랑비 - 김태우 · 3위 사랑한 후에 - 박효신 · 4위 우리 헤어지자 - 이승기 · 5위 헤어지지 못하는 여자, 떠나가지 못하는 남자 (Feat. 정인) - 리쌍 · 6위 Muzik - 4minute · 7위 Heartbreaker - G-DRAGON · 8위 라차타 (LA chA TA) - f(x) · 9위 30분전 (Feat. 임정희) - 이현 · 10위 핼쑥해졌대 - 가비엔제이 · 11위 Kiss (Feat. CL) - 산다라박 · 12위 내 귀에 캔디 (Feat. 택연 Of 2PM) - 백지영 · 13위 미스터 - 카라 · 14위 Abracadabra - 브라운아이드걸스 · 15위 사랑인걸요 - 태연, 써니 · 16위 따라해 (Wannabe) (Feat. Mellow) - 에픽하이 · 17위 Chocolate Love (Retro Pop Ver.) - 소녀시대 · 18위 주르륵 - 휘성 · 19위 가인 (Feat. Nemo Of 미스에스) - 배치기 · 20위 그 남자 그 여자의 사정 - 유이 (애프터스쿨), 전진, 숙희 · 21위 Vari2ty - 쥬얼리 · 22위 사랑이 뭐길래 - 미스에스 · 23위 심장병 - 아웃사이더, MC 스나이퍼, 호란 · 24위 면사포 - 이승기 · 25위 In The Club - 2NE1 · 26위 거짓말 (Part.1) - 티아라 · 27위 호러쇼 (Feat. 강호동, Whale) - MC몽 · 28위 죽일 놈 (Guilty) - 다이나믹 듀오 · 29위 사랑 참 어렵다 - 이승철 · 30위 변해가네 (Feat. 정인) - 리쌍 · 31위 I Don't Care - 2NE1 · 32위 Hot Stuff - 다비치 · 33위 생각이나 - 부활 · 34위 속았다 (Narration Of 이요원) - 태군 · 35위 눈물도 아까워 (Feat. 현아 From 4Minute) - 나비 · 36위 TTL Listen 2 - 티아라, 초신성 · 37위 미안해 - 다이나믹 듀오 · 38위 독설 - 테이 · 39위 Ring Ding Dong - 샤이니 · 40위 Wanna - 카라 · 41위 사랑한단 말을 못해서 - 케이윌 · 42위 너라면 좋겠어 - 윤도현 · 43위 Carousel (Feat. 이적) - 리쌍 · 44위 소년이여 - G-DRAGON · 45위 Where U At - 태양 · 46위 Hello (Feat. 다라) - G-DRAGON · 47위 Pretty Boy - 2NE1 · 48위 바래 - FT아일랜드 · 49위 연애특강 (FEAT. 한예슬) - 마이티 마우스 · 50위 우리 지금 만나 (Feat. 장기하와 얼굴들) - 리쌍 · 51위 내 사랑 내 곁에 - 럼블피쉬 · 52위 Breathe - G-DRAGON · 53위 초콜릿 - 케이윌, 마리오 · 54위 피아니시모 (Pianissimo) - 체리필터 · 55위 잊지 말아요 - 백지영 · 56위 I Don't Care (Reggae Mix Ver.) - 2NE1 · 57위 안 줄래 - 4minute · 58위 울고 싶어 우는 사람이 있겠어 (Cry Mix) - 에이트 · 59위 외톨이 - 아웃사이더 · 60위 Candy Man - 브라운아이드걸스 · 61위 Indian Boy (Feat. 장근이, B.I) - MC몽 · 62위 불꽃놀이 (Fireworks) - 다이나믹 듀오 · 63위 사랑한다면서 - 오종혁 · 64위 너 정말이니 - 럼블피쉬 · 65위 눈물아 안녕 - 아이비 · 66위 소원을 말해봐 (Genie) - 소녀시대 · 67위 사랑이라서 - 임재범 · 68위 아몰레드 (Amoled) - 손담비, 애프터스쿨 · 69위 내 이름 부르지마 - 이수영 · 70위 Yes I'm In Love (Feat. 2PM 택연) - 바다 · 71위 Hot Issue - 4minute · 72위 N-Time (Feat. 티아라) - 황정음 · 73위 이 노래를 들으면 (Feat. 수호) - 태사비애 · 74위 기억이 안나 - 별 · 75위 Lie - FT아일랜드 · 76위 I Want You Back - 시크릿 · 77위 사랑할 수도 미워할 수도 - 애즈원 · 78위 말할걸 그랬지 - 박지헌 · 79위 헤어질 거 같애 (Feat. MJ Of Sunnyside, 신혜) - 박지헌 · 80위 나는... (Feat. Ivy) - MC몽 · 81위 Chocolate Love (Electronic Pop Ver.) - f(x) · 82위 결혼해 줄래 (Feat. BIZNIZ) - 이승기 · 83위 내 몸은 너를 지웠다 (Feat. Enzo.B) - 리쌍 · 84위 Oh Yeah - 엠블랙 · 85위 Let's Go Party - 2NE1 · 86위 Girl - 유리 · 87위 슬프지 않아요 (Feat. 소윤) - PK 헤만 · 88위 니가 밉다 - 2PM · 89위 가을로 (Feat. 프리스타일 미노, Daylight, 이상) - 타우 · 90위 The Leaders (Feat. Teddy, CL) - G-DRAGON · 91위 I Love You (Feat. 미료) - 나르샤 · 93위 사랑..그 몹쓸병 - 휘성 · 94위 잘가요 내사랑 - 에이트 · 96위 Gossip Man (Feat. 김건모) - G-DRAGON · 97위 Supermagic - Supreme Team · 98위 Strong Girl - 쥬얼리 · 99위 One Way Ticket - 키네틱 플로우 · 100위 일터 (Feat. Bizzy) - 리쌍
+미매핑 68곡: 3위 사랑한 후에 - 박효신 · 5위 헤어지지 못하는 여자, 떠나가지 못하는 남자 (Feat. 정인) - 리쌍 · 13위 미스터 - 카라 · 15위 사랑인걸요 - 태연, 써니 · 16위 따라해 (Wannabe) (Feat. Mellow) - 에픽하이 · 20위 그 남자 그 여자의 사정 - 유이 (애프터스쿨), 전진, 숙희 · 27위 호러쇼 (Feat. 강호동, Whale) - MC몽 · 28위 죽일 놈 (Guilty) - 다이나믹 듀오 · 31위 I Don't Care - 2NE1 · 37위 미안해 - 다이나믹 듀오 · 41위 사랑한단 말을 못해서 - 케이윌 · 42위 너라면 좋겠어 - 윤도현 · 43위 Carousel (Feat. 이적) - 리쌍 · 44위 소년이여 - G-DRAGON · 45위 Where U At - 태양 · 46위 Hello (Feat. 다라) - G-DRAGON · 47위 Pretty Boy - 2NE1 · 48위 바래 - FT아일랜드 · 49위 연애특강 (FEAT. 한예슬) - 마이티 마우스 · 50위 우리 지금 만나 (Feat. 장기하와 얼굴들) - 리쌍 · 51위 내 사랑 내 곁에 - 럼블피쉬 · 52위 Breathe - G-DRAGON · 53위 초콜릿 - 케이윌, 마리오 · 54위 피아니시모 (Pianissimo) - 체리필터 · 55위 잊지 말아요 - 백지영 · 56위 I Don't Care (Reggae Mix Ver.) - 2NE1 · 57위 안 줄래 - 4minute · 58위 울고 싶어 우는 사람이 있겠어 (Cry Mix) - 에이트 · 59위 외톨이 - 아웃사이더 · 60위 Candy Man - 브라운아이드걸스 · 61위 Indian Boy (Feat. 장근이, B.I) - MC몽 · 62위 불꽃놀이 (Fireworks) - 다이나믹 듀오 · 63위 사랑한다면서 - 오종혁 · 64위 너 정말이니 - 럼블피쉬 · 65위 눈물아 안녕 - 아이비 · 66위 소원을 말해봐 (Genie) - 소녀시대 · 67위 사랑이라서 - 임재범 · 68위 아몰레드 (Amoled) - 손담비, 애프터스쿨 · 69위 내 이름 부르지마 - 이수영 · 70위 Yes I'm In Love (Feat. 2PM 택연) - 바다 · 71위 Hot Issue - 4minute · 72위 N-Time (Feat. 티아라) - 황정음 · 73위 이 노래를 들으면 (Feat. 수호) - 태사비애 · 74위 기억이 안나 - 별 · 75위 Lie - FT아일랜드 · 76위 I Want You Back - 시크릿 · 77위 사랑할 수도 미워할 수도 - 애즈원 · 78위 말할걸 그랬지 - 박지헌 · 79위 헤어질 거 같애 (Feat. MJ Of Sunnyside, 신혜) - 박지헌 · 80위 나는... (Feat. Ivy) - MC몽 · 81위 Chocolate Love (Electronic Pop Ver.) - f(x) · 82위 결혼해 줄래 (Feat. BIZNIZ) - 이승기 · 83위 내 몸은 너를 지웠다 (Feat. Enzo.B) - 리쌍 · 84위 Oh Yeah - 엠블랙 · 85위 Let's Go Party - 2NE1 · 86위 Girl - 유리 · 87위 슬프지 않아요 (Feat. 소윤) - PK 헤만 · 88위 니가 밉다 - 2PM · 89위 가을로 (Feat. 프리스타일 미노, Daylight, 이상) - 타우 · 90위 The Leaders (Feat. Teddy, CL) - G-DRAGON · 91위 I Love You (Feat. 미료) - 나르샤 · 93위 사랑..그 몹쓸병 - 휘성 · 94위 잘가요 내사랑 - 에이트 · 96위 Gossip Man (Feat. 김건모) - G-DRAGON · 97위 Supermagic - Supreme Team · 98위 Strong Girl - 쥬얼리 · 99위 One Way Ticket - 키네틱 플로우 · 100위 일터 (Feat. Bizzy) - 리쌍
