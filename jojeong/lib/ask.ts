@@ -249,7 +249,7 @@ export type AskResult = { ok: true } | { ok: false; error: string };
 // `withId`: the person on the list this question is about (none: the guest alone).
 export async function ask(room: AskRoom, question: string, topic: Topic, chosen?: string, figures = false, withId?: string): Promise<AskResult> {
   const q = question.trim().slice(0, MAX_QUESTION);
-  if (!q) return { ok: false, error: "여쭐 말씀을 적어 주시옵소서." };
+  if (!q) return { ok: false, error: "물으실 말씀을 적어 주시옵소서." };
   const withPerson = room.people?.find((x) => x.id === withId);
   const ctx = context(room, withPerson?.id);
   if (!ctx) return { ok: false, error: "이 방의 사주를 읽지 못했사옵니다." };
@@ -286,13 +286,13 @@ export async function ask(room: AskRoom, question: string, topic: Topic, chosen?
             usage = u;
           },
         );
-  if (!text) return { ok: false, error: "답을 쓰다 끊겼사옵니다. 잠시 뒤 다시 여쭈시옵소서." };
+  if (!text) return { ok: false, error: "답을 쓰다 끊겼사옵니다. 잠시 뒤 다시 물으시옵소서." };
 
   const now = Date.now();
   // A pick among offered topics shows as the pick, not the whole question again.
   room.messages.push({
     role: "guest",
-    text: chosen ? `먼저 여쭙기: ${chosen}` : q,
+    text: chosen ? `먼저 묻기: ${chosen}` : q,
     at: now,
     topic,
     ...(withPerson && { with: withPerson.id, withLabel: withPerson.label }),
@@ -309,7 +309,7 @@ export async function ask(room: AskRoom, question: string, topic: Topic, chosen?
       .slice(0, 4);
     room.messages.push({
       role: "hundo",
-      text: `여러 가지를 함께 여쭈셨사옵니다. 하나씩 깊이 보아야 제대로 아뢸 수 있사오니, 무엇부터 보시겠사옵니까?\n나머지는 질문 하나씩으로 이어서 여쭈시면 되옵니다.`,
+      text: `여러 가지를 함께 물으셨사옵니다. 하나씩 깊이 보아야 제대로 아뢸 수 있사오니, 무엇부터 보시겠사옵니까?\n나머지는 질문 하나씩으로 이어서 물으시면 되옵니다.`,
       at: now,
       choices,
       usage,

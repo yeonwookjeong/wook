@@ -278,7 +278,7 @@ export default function AiReport({
             ))}
             {ask && (
               <Link
-                href={`/ask?draft=${encodeURIComponent(`${ask} ${i + 1}장 '${s.headline}'에서 더 여쭙고 싶어요. `)}`}
+                href={`/ask?draft=${encodeURIComponent(`${ask} ${i + 1}장 '${s.headline}'에서 더 묻고 싶어요. `)}`}
                 onClick={() => trackEvent("to_ask", "chapter")}
                 className="mt-4 flex items-center gap-2 rounded-xl border border-[#d4af5f]/60 bg-[#fbf6ea] px-3.5 py-2.5 text-[13px]"
               >

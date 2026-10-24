@@ -57,7 +57,7 @@ export default async function EventPage({ params, searchParams }: { params: Prom
             {r === "ok" ? `질문 ${event?.credits ?? ""}개를 넣어 드렸어요 🎁` : SAY.taken}
           </p>
           <Link href="/ask" className="mt-4 block rounded-2xl bg-ink py-3.5 font-myeongjo text-[16px] font-extrabold text-hanji">
-            청심당에서 고민 여쭈기 →
+            청심당에서 고민 묻기 →
           </Link>
         </div>
       ) : problem ? (

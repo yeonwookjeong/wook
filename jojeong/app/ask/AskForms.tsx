@@ -191,7 +191,7 @@ export function AskForm({
         {open ? (
           <div className="mb-2 flex flex-col gap-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11.5px] font-bold text-[#e2bc68]/80">여쭐 말씀</span>
+              <span className="text-[11.5px] font-bold text-[#e2bc68]/80">물어볼 것</span>
               <button type="button" onClick={() => setOpen(false)} className="text-[11.5px] text-hanji/60">
                 접기 ▾
               </button>
@@ -264,12 +264,12 @@ export function AskForm({
             rows={open && text ? 3 : 1}
             maxLength={MAX}
             disabled={pending}
-            aria-label="여쭐 말씀"
+            aria-label="물어볼 것"
             placeholder="지금 상황도 한두 줄 적어 주시옵소서"
             className="min-h-11 flex-1 resize-none rounded-2xl border border-[#e2bc68]/30 bg-[#fbf6ea] px-3.5 py-2.5 text-[15px] leading-snug text-ink disabled:opacity-60"
           />
           <button type="submit" disabled={pending || !text.trim()} className="h-11 shrink-0 rounded-2xl bg-[#e2bc68] px-4 font-myeongjo text-sm font-extrabold text-[#17304a] disabled:opacity-50">
-            {pending ? "쓰는 중" : "여쭙기"}
+            {pending ? "쓰는 중" : "묻기"}
           </button>
         </div>
         {open && text && (

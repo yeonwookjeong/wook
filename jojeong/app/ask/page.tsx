@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: "정 훈도에게 묻기",
   // Out of search until it opens (lib/members.ts ASK_OPEN).
   ...(ASK_OPEN ? {} : { robots: { index: false } }),
-  description: "내 사주를 펼쳐 놓고 정 훈도에게 고민 하나를 여쭈어 보세요. 카카오로 로그인하면 처음 한 번 질문 1개를 드려요.",
+  description: "내 사주를 펼쳐 놓고 정 훈도에게 고민 하나를 물어보세요. 카카오로 로그인하면 처음 한 번 질문 1개를 드려요.",
 };
 
 // What a letter looks like, before signing in: a made-up guest, marked 예시, in the five parts he writes.
@@ -165,12 +165,12 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
         </Floor>
 
         <Floor className="border-t border-[#e2bc68]/15">
-          <Eyebrow hanja="問法">이렇게 여쭤요</Eyebrow>
+          <Eyebrow hanja="問法">이렇게 물어요</Eyebrow>
           <ol className="mt-5 flex flex-col gap-2.5">
             {[
               ["一", "카카오로 로그인", `처음 로그인하면 질문 ${JOIN_GIFT}개를 드려요`],
               ["二", "내 사주로 사랑방 열기", "생년월일은 사주 글자로만 바꿔 두고 저장하지 않아요"],
-              ["三", "고민 하나 여쭙기", "무슨 일인지, 누구와, 언제까지 정해야 하는지 적을수록 깊어져요"],
+              ["三", "고민 하나 묻기", "무슨 일인지, 누구와, 언제까지 정해야 하는지 적을수록 깊어져요"],
             ].map(([n, t, d]) => (
               <li key={n} className="flex items-center gap-3 rounded-xl bg-white/[0.04] px-3.5 py-3 ring-1 ring-[#e2bc68]/25">
                 <span className="font-myeongjo text-[24px] leading-none text-[#e2bc68]">{n}</span>
