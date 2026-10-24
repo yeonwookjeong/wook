@@ -7,13 +7,14 @@ import SinsalCards from "@/components/SinsalCards";
 import SinsalNight, { NIGHT_GOLD, NIGHT_PANEL } from "@/components/SinsalNight";
 import { SinsalCardA, SinsalCardB } from "@/components/SinsalSaveCards";
 import SinsalShare from "@/components/SinsalShare";
+import TrackOnce from "@/components/TrackOnce";
 import { readMe } from "@/lib/me";
 import { STEPS } from "@/lib/nextStep";
 import { sealPerson } from "@/lib/shareToken";
 import { BOOK, CARDS, per100, placesOf, rareText, sinsalOf } from "@/lib/sinsal";
 
 export const metadata: Metadata = {
-  title: "신살 도감 · 내 사주에 적힌 살, 20장 중 몇 장?",
+  title: "신살 도감 · 나는 무슨 살을 타고났을까",
   description: "천을귀인, 도화, 역마, 화개, 양인, 괴강, 백호, 귀문관, 홍염. 내 사주에 적힌 살을 카드로 모아 보고, 친구 사주로 도감의 빈칸을 채워 보세요.",
 };
 
@@ -29,6 +30,7 @@ export default async function SinsalPage() {
   if (!me)
     return (
       <SinsalNight>
+        <TrackOnce e="sinsal_open" />
         <Header />
         <section className={`${NIGHT_PANEL} mt-4 px-4 pt-5 pb-5`}>
           <p className="text-center text-[13.5px] leading-relaxed text-hanji/85">
@@ -58,6 +60,7 @@ export default async function SinsalPage() {
   return (
     <>
       <SinsalNight>
+        <TrackOnce e="sinsal_view" />
         <Header />
         <section className={`${NIGHT_PANEL} mt-4 px-4 py-3 text-center`}>
           <p className="font-myeongjo text-[17px] font-extrabold">
@@ -111,8 +114,8 @@ function Header() {
     <section className="pt-6 text-center">
       <p className="font-myeongjo text-sm font-extrabold tracking-[0.4em] text-[#d4af5f]">神 煞 圖 鑑</p>
       <h1 className="mt-2 font-myeongjo text-3xl font-extrabold">신살 도감</h1>
-      <p className="mt-2 text-[15px] leading-relaxed text-hanji/85">내 사주에 적힌 살, 20장 중 몇 장?</p>
-      <p className="mt-1 text-xs text-hanji/55">무료 · 혼자는 많아야 10장, 나머지는 친구 사주로 채워요</p>
+      <p className="mt-2 text-[15px] leading-relaxed text-hanji/85">나는 무슨 살을 타고났을까</p>
+      <p className="mt-1 text-xs text-hanji/55">무료 · 도화일까, 역마일까, 아무 살도 없는 100명 중 1.5명일까</p>
     </section>
   );
 }

@@ -14,7 +14,7 @@ const chip =
 export default function DeepenForm({ courtId, who }: { courtId: string; who: string; needs?: { daeun: boolean; palaces: boolean } }) {
   const [state, action, pending] = useActionState<FormState, FormData>(deepenAction, { error: null });
   return (
-    <form action={action} onSubmit={keepValues(action)} className="flex flex-col gap-3">
+    <form data-clarity-mask="true" action={action} onSubmit={keepValues(action)} className="flex flex-col gap-3">
       <input type="hidden" name="courtId" value={courtId} />
       <input type="hidden" name="who" value={who} />
       <input name="birth" required inputMode="numeric" pattern="[0-9]{8}" maxLength={8} placeholder="생년월일 8자리 (19950312)" className={`${field} tracking-widest`} />
