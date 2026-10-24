@@ -233,7 +233,7 @@ function Sangdam({ credits }: { credits: number | null }) {
           from="home"
           className="relative mt-4 block rounded-2xl bg-[#e2bc68] py-3.5 text-center font-myeongjo text-[16px] font-extrabold text-[#17304a] shadow-[0_5px_0_#9c7a2e]"
         >
-          {credits !== null ? `정 훈도에게 여쭈러 가기 · 남은 질문 ${credits}개` : "카카오로 로그인하고 첫 질문 받기"}
+          {credits !== null ? `정 훈도에게 묻기 · 남은 질문 ${credits}개` : "카카오로 로그인하고 첫 질문 받기"}
         </AskLink>
         {credits === null && <p className="relative mt-2 text-center text-[11.5px] text-hanji/60">카카오로 로그인하면 첫 질문 {JOIN_GIFT}개를 선물로 드려요</p>}
       </div>

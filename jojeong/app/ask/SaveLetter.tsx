@@ -22,7 +22,7 @@ export default function SaveLetter({ target, file, question }: { target: string;
     if (question) {
       const q = document.createElement("p");
       q.style.cssText = "margin:0 4px 12px;padding:10px 14px;border-radius:14px;background:#211b17;color:#f4ecdb;font-size:14px;line-height:1.5";
-      q.textContent = `여쭌 말 · ${question}`;
+      q.textContent = `물은 말 · ${question}`;
       frame.appendChild(q);
     }
     const copy = letter.cloneNode(true) as HTMLElement;
