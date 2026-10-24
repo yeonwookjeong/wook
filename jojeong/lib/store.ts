@@ -289,6 +289,33 @@ export async function paidOrderIds(): Promise<string[]> {
   return backend().list("orders:paid");
 }
 
+// Orders paid in the Apps in Toss mini app (lib/tossApps.ts): which site order each Toss order became, so granting
+// the same Toss order again (a retry, a restore) gives back the same report; a short claim so two grants of one
+// order at once make one site order; and each Toss account's orders (by its anonymous key) for "내 보고서".
+export async function getTossGrant(tossOrderId: string): Promise<string | null> {
+  return backend().get(`toss:grant:${tossOrderId}`);
+}
+export async function setTossGrant(tossOrderId: string, orderId: string) {
+  await backend().set(`toss:grant:${tossOrderId}`, orderId);
+}
+export async function claimTossGrant(tossOrderId: string): Promise<boolean> {
+  const b = backend();
+  const n = await b.incr(`toss:claim:${tossOrderId}`);
+  if (n === 1) await b.set(`toss:claim:${tossOrderId}`, "1", 60).catch(() => {});
+  return n === 1;
+}
+export async function releaseTossGrant(tossOrderId: string) {
+  await backend()
+    .set(`toss:claim:${tossOrderId}`, "0", 1)
+    .catch(() => {});
+}
+export async function noteTossOrder(userKey: string, orderId: string) {
+  await backend().push(`toss:user:${userKey}`, orderId);
+}
+export async function tossOrderIds(userKey: string): Promise<string[]> {
+  return backend().list(`toss:user:${userKey}`);
+}
+
 // Questions sent from the contact page, kept for the owner's inbox (/admin): what it is about, what was
 // written, and an optional email to answer to. Newest last in the list.
 export type Inquiry = { id: string; topic: string; body: string; email: string; at: number; done: boolean };
