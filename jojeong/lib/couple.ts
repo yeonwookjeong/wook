@@ -40,7 +40,7 @@ export type Couple = {
   years: { year: number; gz: string; mark: "함께 좋은 해" | "흔들리기 쉬운 해"; why: string }[];
 };
 
-export function coupleOf(a: Person, b: Person): Couple | null {
+export function coupleOf(a: Person, b: Person, from = sajuYear()): Couple | null {
   const ra = readChart(a.pillars);
   const rb = readChart(b.pillars);
   if (!ra || !rb) return null;
@@ -63,7 +63,7 @@ export function coupleOf(a: Person, b: Person): Couple | null {
   // This year and the four after: a year that combines with both spouse seats pulls the two together; one that clashes either
   // seat shakes the bond.
   const years: Couple["years"] = [];
-  for (let y = sajuYear(); y <= sajuYear() + 4; y++) {
+  for (let y = from; y <= from + 4; y++) {
     const yb = (y - 4) % 12;
     const gz = `${STEMS[(y - 4) % 10]}${BRANCHES[yb]}`;
     const joins = (d: number) => meetings(yb, d).some((m) => m === "육합" || m === "삼합");
@@ -83,8 +83,9 @@ export function coupleOf(a: Person, b: Person): Couple | null {
 }
 
 // The pair's lines for the writer's brief.
-export function coupleBrief(a: Person, b: Person): string {
-  const c = coupleOf(a, b);
+// `from`: the year the brief is read for (재회운 passes the order's year; 궁합 still reads it as of today).
+export function coupleBrief(a: Person, b: Person, from = sajuYear()): string {
+  const c = coupleOf(a, b, from);
   if (!c) return "";
   const ra = readChart(a.pillars)!;
   const rb = readChart(b.pillars)!;
@@ -95,6 +96,6 @@ export function coupleBrief(a: Person, b: Person): string {
     `- 용신 채워 주기: ${a.name}의 용신 ${josa(EL(ra.yong), "을/를")} ${josa(b.name, "이/가")} ${Math.round(c.yongGive[0] * 100)}% 가짐 / ${b.name}의 용신 ${josa(EL(rb.yong), "을/를")} ${josa(a.name, "이/가")} ${Math.round(c.yongGive[1] * 100)}% 가짐`,
     `- 오행 보완: ${c.lends.length ? c.lends.map((l) => `${l.to}에게 부족한 ${josa(EL(l.el), "을/를")} ${josa(l.from, "이/가")} ${l.pct}% 가짐`).join("; ") : "뚜렷한 보완 없음"}${c.sharedLack.length ? ` / 둘 다 부족: ${c.sharedLack.map(EL).join("·")} (함께 채워야 할 것)` : ""}`,
     `- 배우자 자리(일지)끼리: ${c.seat.length ? c.seat.join("; ") : "특별한 합충 없음"}`,
-    `- ★ 두 사람의 해(${sajuYear()}~${sajuYear() + 4}): ${c.years.length ? c.years.map((y) => `${y.year} ${y.gz} ${y.mark}(${y.why})`).join(", ") : "크게 흔들리거나 겹치는 해 없음"}`,
+    `- ★ 두 사람의 해(${from}~${from + 4}): ${c.years.length ? c.years.map((y) => `${y.year} ${y.gz} ${y.mark}(${y.why})`).join(", ") : "크게 흔들리거나 겹치는 해 없음"}`,
   ].join("\n");
 }
