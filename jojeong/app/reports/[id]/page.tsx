@@ -37,7 +37,7 @@ import SinbunReport from "@/components/SinbunReport";
 import YearReport from "@/components/YearReport";
 import { YearList, YearTop } from "@/components/Yeonun";
 import YearGlance from "@/components/YearGlance";
-import { newYearOf, newYearProduct, thisYear, yearDetail, yearOf, yearRange, yearRows } from "@/lib/yeonun";
+import { newYearOf, newYearProduct, sajuYear, thisYear, yearDetail, yearOf, yearRange, yearRows } from "@/lib/yeonun";
 import { josa } from "@/lib/josa";
 import { hanjaKo } from "@/lib/saju";
 import { ownedCourts } from "@/lib/load";
@@ -335,7 +335,9 @@ async function OpenReport({
       return (<><Header product={product} /><Notice href={`/reports/${product.id}`} cta="다시 입력하기">만 19세 이상 두 사람만 볼 수 있는 보고서예요.</Notice></>);
     const couple = product.id === "gunghap" ? coupleOf(a, b) : null;
     const closeness = product.id === "sokgunghap" ? intimacyOf(a, b) : null;
-    const reunion = product.id === "jaehoe" ? reunionOf(a, b) : null;
+    // A bought 재회운 shows the years as of its order, the same ones its pinned text was written with.
+    const boughtAt = paid ? (paid.paidAt ?? paid.createdAt) : undefined;
+    const reunion = product.id === "jaehoe" ? reunionOf(a, b, boughtAt ? sajuYear(new Date(boughtAt)) : undefined) : null;
     const req = { product: product.id, a: pair.a, b: pair.b, rel: FIXED_RELATION[product.id] ?? relationOf(pair.rel) };
     const unlock = paid ?? (locked ? await ownedOrderFor(product.id, req) : asOwner(req));
     return (

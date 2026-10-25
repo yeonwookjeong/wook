@@ -81,11 +81,11 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
       chartBrief(a.name, a.pillars, profileOf(a), briefYear),
       chartBrief(b.name, b.pillars, profileOf(b), briefYear),
       pairBrief(a.name, a.pillars, b.name, b.pillars),
-      coupleBrief(a, b),
+      product.id === "jaehoe" ? coupleBrief(a, b, briefYear) : coupleBrief(a, b),
       // v8 궁합: the two people's ten years and six months, as the report's pictures show them.
       ...(product.id === "gunghap" && (v === "v8" || v === "v9") ? pairBriefs(a, b, rel, nowYear, at ?? Date.now()) : []),
       ...(product.id === "sokgunghap" ? [intimacyBrief(a, b)] : []),
-      ...(product.id === "jaehoe" ? [reunionBrief(a, b)] : []),
+      ...(product.id === "jaehoe" ? [reunionBrief(a, b, briefYear, at ?? Date.now())] : []),
     ].join("\n\n");
   } else if (product.id === "gwangye" || product.id === "dwitjosa" || product.id === "insa") {
     if (!req.court) return { error: "조정을 찾을 수 없사옵니다.", status: 400 };

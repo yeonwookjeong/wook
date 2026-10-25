@@ -245,13 +245,14 @@ export async function getReportWriting(key: string): Promise<number> {
 export async function setReportWriting(key: string, at: number) {
   await backend().set(`writing:${key}`, String(at));
 }
-// The last time a report could not be written, and why (the model's own error), for the owner's page.
-export async function noteReportError(message: string) {
-  await backend().set("report:lastError", JSON.stringify({ at: Date.now(), message: message.slice(0, 500) }));
+// The last time a report could not be written, and why (the model's own error), for the owner's page. `risk`: a
+// report written whole but carrying words it must not (lib/reportGuard.ts), kept apart so it never hides a failure.
+export async function noteReportError(message: string, kind: "error" | "risk" = "error") {
+  await backend().set(kind === "risk" ? "report:lastRisk" : "report:lastError", JSON.stringify({ at: Date.now(), message: message.slice(0, 500) }));
 }
 // Only one from the last two days.
-export async function lastReportError(): Promise<{ at: number; message: string } | null> {
-  const raw = await backend().get("report:lastError").catch(() => null);
+export async function lastReportError(kind: "error" | "risk" = "error"): Promise<{ at: number; message: string } | null> {
+  const raw = await backend().get(kind === "risk" ? "report:lastRisk" : "report:lastError").catch(() => null);
   const e = raw ? (JSON.parse(raw) as { at: number; message: string }) : null;
   return e && Date.now() - e.at < 2 * 86400000 ? e : null;
 }
