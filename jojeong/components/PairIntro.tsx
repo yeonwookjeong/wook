@@ -56,8 +56,8 @@ export default function PairIntro({ a, b, c, years, blank, bare }: { a: Person; 
           <b>{a.name}</b>님은 {b.name}님에게 <b>{c.roles[1]}</b>
         </li>
         {!bare && c.seat.map((s) => (
-          <li key={s} className="border-b border-seal/10 pb-2">
-            {s}
+          <li key={s.term} className="border-b border-seal/10 pb-2">
+            {c.seatName}끼리는 {s.line}
           </li>
         ))}
         {!bare && c.lends.slice(0, 2).map((l) => (

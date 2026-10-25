@@ -1,7 +1,8 @@
 import { meetings } from "./deep";
 import { profileOf, type Person } from "./pairToken";
 import type { Relation } from "./relations";
-import { halfCombine, SEAT_NAME, seatOf, type Rel } from "./rels";
+import { tieYear } from "./couple";
+import { SEAT_NAME, seatOf, type Rel } from "./rels";
 import { BRANCHES, STEMS } from "./saju";
 import { yearRows, type Verdict } from "./yeonun";
 
@@ -33,12 +34,7 @@ export function pairYears(a: Person, b: Person, relation: Relation, from: number
     const gz = `${STEMS[(((y - 4) % 10) + 10) % 10]}${BRANCHES[yBranch]}`;
     const hitA = meetings(yBranch, sa).includes("충");
     const hitB = meetings(yBranch, sb).includes("충");
-    // A 육합 that is also a 형·파 (巳申·寅亥) is not a clean join; a 반합 only with its 왕지.
-    const joins = (s: number) => {
-      const m = meetings(yBranch, s);
-      return (m.includes("육합") && !m.includes("형") && !m.includes("파")) || (m.includes("삼합") && halfCombine(yBranch, s));
-    };
-    const tie = joins(sa) && joins(sb);
+    const tie = tieYear(yBranch, sa, sb);
     const [me, them] = [ra.verdict, rb.verdict];
     // The year clashing a seat shakes the bond when it hits both, or hits one whose own year is hard too; one seat
     // hit in an otherwise fine year is that person's, not the relation's (2026-10-25 강 어사 기준).
@@ -61,7 +57,7 @@ export function pairYears(a: Person, b: Person, relation: Relation, from: number
                 : ["무난한 해", "크게 밀지도 막지도 않는 해"];
     return { year: y, gz, me, them, mark, why, now: i === 0 };
   });
-  return { seat, rows, noDaeun: [a, b].filter((p) => p.gender !== "m" && p.gender !== "f").map((p) => p.name) };
+  return { seat, rows, noDaeun: [a, b].filter((p) => !profileOf(p).daeun?.length).map((p) => p.name) };
 }
 
 export function pairYearsBrief(a: Person, b: Person, x: PairYears): string {

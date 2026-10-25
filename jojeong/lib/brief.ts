@@ -12,6 +12,7 @@ import { sajuYear, yearDetail } from "./yeonun";
 const EL = (e: number) => `${ELEMENT_KO[e]}(${ELEMENT_HANJA[e]})`;
 const GZ = (s: number, b: number) => `${STEMS[s]}${BRANCHES[b]}`;
 const POS_NAME = { 연: "연주(뿌리·집안·어린 시절)", 월: "월주(부모·사회·일터)", 일: "일주(나 자신·배우자 자리)", 시: "시주(자녀·말년·계획)" };
+const posName = (pos: keyof typeof POS_NAME, lover: boolean) => (pos === "일" && !lover ? "일주(나 자신)" : POS_NAME[pos]);
 
 // 60-year cycle position → the most likely birth year for someone alive now (1936–2025).
 function guessYear(p: Pillars): number | null {
@@ -28,7 +29,9 @@ export function birthYearOf(p: Pillars, profile: Profile | null): { year: number
 
 // `y`: the year the report speaks of as 올해 (the chart's year, turning at 입춘). 2026 keeps its fuller reading
 // (lib/yearly.ts); any other year is read from the 연운 engine (lib/yeonun.ts yearDetail).
-export function chartBrief(name: string, p: Pillars, profile: Profile | null, y = sajuYear()): string {
+// lover: false for a 궁합 between family, at work or friends: the spouse seat and love lines are left out, so the
+// writer is not handed them (2026-10-25 궁합 점검). True keeps every other report's brief exactly as it was.
+export function chartBrief(name: string, p: Pillars, profile: Profile | null, y = sajuYear(), lover = true): string {
   const r = readChart(p);
   if (!r || !isFull(p)) return `${name}: 여덟 글자가 온전하지 않은 옛 기록(일주 ${GZ(p.dayStem, p.dayBranch)}, 띠 ${BRANCHES[p.yearBranch]})`;
   const lines: string[] = [];
@@ -39,18 +42,18 @@ export function chartBrief(name: string, p: Pillars, profile: Profile | null, y 
       by ? `${by.year}년생${by.certain ? "" : "(추정)"}, ${y}년 만 ${y - by.year - 1}~${y - by.year}세` : "나이 미상"
     }, 태어난 시각 ${p.hourBranch === null ? "모름(시주 없음)" : "앎"}`,
   );
-  lines.push(...distinctLines(p, profile));
+  lines.push(...distinctLines(p, profile, lover));
   const slots = chartOf(p);
   lines.push("- 원국 (시·일·월·연):");
   for (const s of slots) {
     if (s.stem === null || s.branch === null) {
-      lines.push(`  · ${POS_NAME[s.pos]}: 모름`);
+      lines.push(`  · ${posName(s.pos, lover)}: 모름`);
       continue;
     }
     const stemGod = s.pos === "일" ? "일간(나)" : tenGod(p.dayStem, s.stem);
     const hidden = HIDDEN[s.branch].map(([h]) => `${STEMS[h]}(${tenGod(p.dayStem, h)})`).join(" ");
     lines.push(
-      `  · ${POS_NAME[s.pos]}: ${GZ(s.stem, s.branch)} — 천간 ${STEMS[s.stem]}=${stemGod}, 지지 ${BRANCHES[s.branch]}=${tenGod(p.dayStem, HIDDEN[s.branch].at(-1)![0])}, 지장간 ${hidden}, 12운성 ${stageOf(p.dayStem, s.branch)}`,
+      `  · ${posName(s.pos, lover)}: ${GZ(s.stem, s.branch)} — 천간 ${STEMS[s.stem]}=${stemGod}, 지지 ${BRANCHES[s.branch]}=${tenGod(p.dayStem, HIDDEN[s.branch].at(-1)![0])}, 지장간 ${hidden}, 12운성 ${stageOf(p.dayStem, s.branch)}`,
     );
   }
   const sum = r.weights.reduce((a, b) => a + b, 0);
@@ -144,11 +147,11 @@ export function chartBrief(name: string, p: Pillars, profile: Profile | null, y 
 }
 
 // What sets this chart apart from others with the same day pillar, rarest first, and past years worth naming.
-function distinctLines(p: Pillars, profile: Profile | null): string[] {
+function distinctLines(p: Pillars, profile: Profile | null, lover = true): string[] {
   const d = distinctOf(p, profile?.gender ?? null);
   if (!d) return [];
   const lines = ["- ★ 이 사람만의 특징 (드문 순. 보고서는 이것부터 풀 것. '가이드'는 방향일 뿐, 이 사람의 다른 글자와 엮어 구체적으로 쓸 것):"];
-  d.patterns.forEach((x, i) =>
+  d.patterns.filter((x) => lover || x.area !== "연애").forEach((x, i) =>
     lines.push(`  ${i + 1}. [${x.term}] ${x.plain} — ${perHundred(x.rate)} · 영역 ${x.area} · 가이드: ${x.meaning}`),
   );
   if (d.extremes.length)
@@ -159,7 +162,7 @@ function distinctLines(p: Pillars, profile: Profile | null): string[] {
     );
   if (d.ilju)
     lines.push(`- ★ 같은 일주 안에서: ${d.ilju.build} ${d.ilju.name}일주는 ${d.ilju.name}일주 가운데 약 ${Math.max(1, Math.round(d.ilju.rate * 100))}%`);
-  const past = pastYears(p, profile);
+  const past = pastYears(p, profile).filter((x) => lover || !x.includes("배우자"));
   if (past.length) lines.push(`- ★ 과거 확인용 연도 (이 가운데 2~3개를 골라 '이 무렵 이런 일이 있었을 가능성이 커요'로 짚을 것):\n${past.map((x) => `  · ${x}`).join("\n")}`);
   return lines;
 }

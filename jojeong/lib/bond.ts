@@ -36,14 +36,16 @@ const MEET_LINE: Partial<Record<Meeting, [string, boolean]>> = {
   형: ["형: 가까울수록 날이 서요", false],
   원진: ["원진: 이유 없이 서운함이 쌓여요", false],
 };
-// The bought 궁합 (plain): outside lovers, no 끌림·정 (2026-10-25 강 어사 기준), and only a 반합 with its 왕지.
+// The bought 궁합 (plain): the meaning only, no term; outside lovers, no 끌림·정 (2026-10-25 강 어사 기준), and only
+// a 반합 with its 왕지.
 const PLAIN_MEET: Partial<Record<Meeting, [string, boolean]>> = {
-  육합: ["합: 같이 있을 때 편하고 손발이 잘 맞아요", true],
-  삼합: ["반합: 같은 쪽을 바라봐요", true],
-  충: ["충: 가까이 붙어 지낼수록 생활 방식이 부딪히기 쉬워요", false],
-  형: ["형: 가까울수록 날이 서기 쉬워요", false],
-  원진: ["원진: 서운함이 쌓이기 쉬워요", false],
+  육합: ["같이 있을 때 편하고 손발이 잘 맞아요", true],
+  삼합: ["같은 쪽으로 기운이 모이려 해요", true],
+  충: ["가까이 붙어 지낼수록 생활 방식이 부딪히기 쉬워요", false],
+  형: ["가까울수록 날이 서기 쉬워요", false],
+  원진: ["서운함이 쌓이기 쉬워요", false],
 };
+const LOVER_PLAIN: Partial<Record<Meeting, [string, boolean]>> = { ...PLAIN_MEET, 육합: ["함께 있으면 편하고 정이 깊어져요", true], 충: ["끌림만큼 부딪힘도 커요", false], 원진: ["이유 없이 서운함이 쌓이기 쉬워요", false] };
 
 // What each ten-god group is to the other, by relation (what they are to me).
 export const ROLE: Record<Rel, Record<GodGroup, string>> = {
@@ -129,10 +131,10 @@ export function bondOf(me: Person, them: Person, label: string, relIn: string | 
   const hb = heavy(rb.godWeights);
   const seatA = seatOf(a, rel);
   const seatB = seatOf(b, rel);
-  const lines = plain && rel !== "연인" ? PLAIN_MEET : MEET_LINE;
+  const lines = plain ? (rel === "연인" ? LOVER_PLAIN : PLAIN_MEET) : MEET_LINE;
   const seatName = plain ? SEAT_NAME[rel] : SEAT[rel].name;
   const meet = meetings(seatA, seatB).find((m) => lines[m] && (!plain || m !== "삼합" || halfCombine(seatA, seatB)));
-  const seatLine = meet ? `${seatName}끼리 ${lines[meet]![0]}` : null;
+  const seatLine = meet ? `${seatName}끼리${plain ? "는" : ""} ${lines[meet]![0]}` : null;
   const seatGood = meet ? lines[meet]![1] : null;
 
   // Elements one has plenty of and the other lacks.

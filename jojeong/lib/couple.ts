@@ -12,33 +12,38 @@ import { BRANCHES, matchPillars, STEMS } from "./saju";
 
 const EL = (e: number) => `${ELEMENT_KO[e]}(${ELEMENT_HANJA[e]})`;
 
-// What two seats meeting says: for lovers about the bond itself, for the rest about getting along day to day
-// (2026-10-25 강 어사 기준: no 끌림·정 outside lovers). 巳申·寅亥 are both a 합 and a 형/파, and say both.
+// What two seats meeting says, in the reader's words (the term goes to the writer only, lib/couple.ts coupleBrief):
+// for lovers about the bond itself, for the rest about getting along day to day (2026-10-25 강 어사 기준: no
+// 끌림·정 outside lovers). 巳申·寅亥 are both a 합 and a 형/파, and say both. A 반합 is only a pull, not a bond.
 const LOVER_LINE: Record<string, string> = {
-  육합: "합: 함께 있으면 편하고 정이 깊어지는 사이",
-  삼합: "반합: 같은 곳을 바라보는 사이",
-  방합: "같은 계절: 생활 리듬이 닮은 사이",
-  충: "충: 끌림만큼 부딪힘도 큰 사이",
-  원진: "원진: 이유 없이 서운함이 쌓이기 쉬운 사이",
-  형: "형: 가까울수록 날이 서기 쉬운 사이",
-  해: "해: 작은 오해가 쌓이기 쉬운 사이",
-  파: "파: 약속이 어긋나기 쉬운 사이",
+  육합: "함께 있으면 편하고 정이 깊어지는 사이",
+  삼합: "같은 쪽으로 기운이 모이려는 사이",
+  방합: "생활 리듬이 닮은 사이",
+  충: "끌림만큼 부딪힘도 큰 사이",
+  원진: "이유 없이 서운함이 쌓이기 쉬운 사이",
+  형: "가까울수록 날이 서기 쉬운 사이",
+  해: "작은 오해가 쌓이기 쉬운 사이",
+  파: "약속이 어긋나기 쉬운 사이",
 };
 const PLAIN_LINE: Record<string, string> = {
-  육합: "합: 같이 있을 때 편하고 손발이 잘 맞는 사이",
-  삼합: "반합: 같은 쪽을 바라보는 사이",
-  방합: "같은 계절: 생활 리듬이 닮은 사이",
-  충: "충: 가까이 붙어 지낼수록 생활 방식이 부딪히기 쉬운 사이(거리를 두면 오히려 편해요)",
-  원진: "원진: 서운함이 쌓이기 쉬운 사이",
-  형: "형: 가까울수록 날이 서기 쉬운 사이",
-  해: "해: 작은 오해가 쌓이기 쉬운 사이",
-  파: "파: 약속이 어긋나기 쉬운 사이",
+  ...LOVER_LINE,
+  육합: "같이 있을 때 편하고 손발이 잘 맞는 사이",
+  충: "가까이 붙어 지낼수록 생활 방식이 부딪히기 쉬운 사이(거리를 두면 오히려 편해요)",
+  원진: "서운함이 쌓이기 쉬운 사이",
 };
+const TERM: Record<string, string> = { 육합: "합", 삼합: "반합", 방합: "같은 계절", 충: "충", 원진: "원진", 형: "형", 해: "해", 파: "파" };
+
 // A seat a year joins: 육합 (not one that is also a 형·파), or a 반합 with its 왕지.
-const joins = (x: number, y: number) => {
-  const m = meetings(x, y);
-  return (m.includes("육합") && !m.includes("형") && !m.includes("파")) || (m.includes("삼합") && halfCombine(x, y));
-};
+export function joinsYear(year: number, seat: number) {
+  const m = meetings(year, seat);
+  return (m.includes("육합") && !m.includes("형") && !m.includes("파")) || (m.includes("삼합") && halfCombine(year, seat));
+}
+// A year that binds both seats: each joined, or the year and the two seats make the whole 삼합 (寅午戌 …), even
+// when one pair of the three has no 왕지.
+export function tieYear(year: number, a: number, b: number) {
+  const whole = new Set([year, a, b]).size === 3 && year % 4 === a % 4 && a % 4 === b % 4;
+  return whole || (joinsYear(year, a) && joinsYear(year, b));
+}
 
 export type Couple = {
   score: number;
@@ -46,7 +51,7 @@ export type Couple = {
   lends: { to: string; from: string; el: number; pct: number }[]; // elements one has plenty of and the other lacks
   sharedLack: number[]; // elements both lack
   yongGive: [number, number]; // share of a's 용신 element in b, of b's in a
-  seat: string[];
+  seat: { term: string; line: string }[]; // what the two seats' meeting is called (writer only), and what it means
   seatName: string;
   years: { year: number; gz: string; mark: "함께 좋은 해" | "흔들리기 쉬운 해"; why: string }[];
 };
@@ -72,7 +77,7 @@ export function coupleOf(a: Person, b: Person, from = sajuYear(), rel: Rel = "�
   const [seatA, seatB] = [seatOf(a.pillars, rel), seatOf(b.pillars, rel)];
   const seat = meetings(seatA, seatB)
     .filter((m) => m !== "삼합" || halfCombine(seatA, seatB))
-    .map((m) => `${name}끼리 ${(rel === "연인" ? LOVER_LINE : PLAIN_LINE)[m]}`);
+    .map((m) => ({ term: TERM[m], line: (rel === "연인" ? LOVER_LINE : PLAIN_LINE)[m] }));
   // This year and the four after (from the year the report is read for): a year that combines with both seats pulls
   // the two together; one that clashes either seat shakes the bond. The same rule as the paid ten-year table (lib/pairYears.ts).
   const years: Couple["years"] = [];
@@ -81,7 +86,7 @@ export function coupleOf(a: Person, b: Person, from = sajuYear(), rel: Rel = "�
     const gz = `${STEMS[(((y - 4) % 10) + 10) % 10]}${BRANCHES[yb]}`;
     const clashes = [a, b].filter((x) => meetings(yb, seatOf(x.pillars, rel)).includes("충"));
     if (clashes.length) years.push({ year: y, gz, mark: "흔들리기 쉬운 해", why: `${clashes.map((x) => x.name).join("·")}의 ${name}를 그해 기운이 충` });
-    else if (joins(yb, seatA) && joins(yb, seatB)) years.push({ year: y, gz, mark: "함께 좋은 해", why: `두 사람의 ${name}와 모두 합` });
+    else if (tieYear(yb, seatA, seatB)) years.push({ year: y, gz, mark: "함께 좋은 해", why: `두 사람의 ${name}와 모두 합` });
   }
   return {
     score: matchPillars(a.pillars, b.pillars).score,
@@ -108,7 +113,7 @@ export function coupleBrief(a: Person, b: Person, from = sajuYear(), rel: Rel = 
     `- ${josa(a.name, "은/는")} ${b.name}에게 "${c.roles[1]}" (${tenGod(b.pillars.dayStem, a.pillars.dayStem)})`,
     `- 용신 채워 주기: ${a.name}의 용신 ${josa(EL(ra.yong), "을/를")} ${josa(b.name, "이/가")} ${Math.round(c.yongGive[0] * 100)}% 가짐 / ${b.name}의 용신 ${josa(EL(rb.yong), "을/를")} ${josa(a.name, "이/가")} ${Math.round(c.yongGive[1] * 100)}% 가짐`,
     `- 오행 보완: ${c.lends.length ? c.lends.map((l) => `${l.to}에게 부족한 ${josa(EL(l.el), "을/를")} ${josa(l.from, "이/가")} ${l.pct}% 가짐`).join("; ") : "뚜렷한 보완 없음"}${c.sharedLack.length ? ` / 둘 다 부족: ${c.sharedLack.map(EL).join("·")} (함께 채워야 할 것)` : ""}`,
-    `- 관계 자리(${c.seatName}): ${c.seat.length ? c.seat.join("; ") : "특별한 합충 없음"}`,
+    `- 관계 자리(${c.seatName}): ${c.seat.length ? c.seat.map((x) => `${x.term}: ${x.line}`).join("; ") : "특별한 합충 없음"}`,
     ...(years ? [`- ★ 두 사람의 해(${from}~${from + 4}): ${c.years.length ? c.years.map((y) => `${y.year} ${y.gz} ${y.mark}(${y.why})`).join(", ") : "크게 흔들리거나 겹치는 해 없음"}`] : []),
   ].join("\n");
 }
