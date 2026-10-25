@@ -116,7 +116,7 @@ async function PairReport({ order, product, a, b, rel, couple, request }: { orde
   let figures: Record<number, React.ReactNode> | undefined;
   if (product.id === "gunghap" && isV8(order)) {
     const years = pairYears(a, b, rel, thisYear(new Date(at)));
-    const bond = bondOf(a, b, b.name, REL_OF[rel], at);
+    const bond = bondOf(a, b, b.name, REL_OF[rel], at, true);
     figures = {
       ...(bond && { 1: <BondFigure b={bond} name={a.name} />, 8: <BondMonthsFigure b={bond} name={a.name} /> }),
       ...(years && { 7: <PairYearsFigure x={years} a={a.name} b={b.name} /> }),
@@ -336,6 +336,8 @@ async function OpenReport({
     // A bought 궁합·재회운 shows the years as of its order, the same ones its pinned text was written with.
     const boughtAt = paid ? (paid.paidAt ?? paid.createdAt) : undefined;
     const couple = product.id === "gunghap" ? coupleOf(a, b, boughtAt ? sajuYear(new Date(boughtAt)) : undefined, REL_OF[relationOf(pair.rel)]) : null;
+    // The free card's years are the first five rows of the bought report's ten-year table, so the two never disagree.
+    const coupleYears = couple ? (pairYears(a, b, relationOf(pair.rel), thisYear(boughtAt ? new Date(boughtAt) : undefined), 5)?.rows ?? []) : [];
     const closeness = product.id === "sokgunghap" ? intimacyOf(a, b) : null;
     const reunion = product.id === "jaehoe" ? reunionOf(a, b, boughtAt ? sajuYear(new Date(boughtAt)) : undefined) : null;
     const req = { product: product.id, a: pair.a, b: pair.b, rel: FIXED_RELATION[product.id] ?? relationOf(pair.rel) };
@@ -343,7 +345,7 @@ async function OpenReport({
     return (
       <>
         <Header product={product} subjectName={`${a.name}님과 ${b.name}님`} />
-        {couple && <PairIntro a={a} b={b} c={couple} blank={renew ? "모름" : undefined} bare={r2(unlock)} />}
+        {couple && <PairIntro a={a} b={b} c={couple} years={coupleYears} blank={renew ? "모름" : undefined} bare={r2(unlock)} />}
         {closeness && <IntimacyIntro a={a} b={b} x={closeness} />}
         {reunion && <ReunionIntro a={a} b={b} r={reunion} />}
         {locked && !unlock ? (

@@ -4,7 +4,7 @@ import { josa } from "./josa";
 import { ROLE } from "./bond";
 import { ELEMENT_HANJA, ELEMENT_KO, GROUP_OF, readChart, tenGod } from "./myeongri";
 import type { Person } from "./pairToken";
-import type { Rel } from "./rels";
+import { halfCombine, SEAT_NAME, seatOf, type Rel } from "./rels";
 import { BRANCHES, matchPillars, STEMS } from "./saju";
 
 // Two charts side by side for the 궁합 report: what each is to the other, which elements one lends the other,
@@ -12,24 +12,33 @@ import { BRANCHES, matchPillars, STEMS } from "./saju";
 
 const EL = (e: number) => `${ELEMENT_KO[e]}(${ELEMENT_HANJA[e]})`;
 
-// Which seat of the chart each relation lives in, named for the reader by where the letter sits, not by a role:
-// a parent and child, or two at work, have no '배우자 자리' to speak of (2026-10-25 궁합 점검).
-export const SEAT_NAME: Record<Rel, string> = { 연인: "태어난 날 아래 글자", 일: "태어난 달 아래 글자", 친구: "태어난 달 아래 글자", 가족: "태어난 해 아래 글자" };
-export const seatOf = (p: Person["pillars"], rel: Rel) => (rel === "연인" ? p.dayBranch : rel === "가족" ? p.yearBranch : (p.monthBranch ?? p.dayBranch));
-
-const SEAT_LINE: Record<string, string> = {
+// What two seats meeting says: for lovers about the bond itself, for the rest about getting along day to day
+// (2026-10-25 강 어사 기준: no 끌림·정 outside lovers). 巳申·寅亥 are both a 합 and a 형/파, and say both.
+const LOVER_LINE: Record<string, string> = {
   육합: "합: 함께 있으면 편하고 정이 깊어지는 사이",
   삼합: "반합: 같은 곳을 바라보는 사이",
   방합: "같은 계절: 생활 리듬이 닮은 사이",
-  충: "충: 가까운 만큼 부딪힘도 큰 사이",
+  충: "충: 끌림만큼 부딪힘도 큰 사이",
   원진: "원진: 이유 없이 서운함이 쌓이기 쉬운 사이",
   형: "형: 가까울수록 날이 서기 쉬운 사이",
   해: "해: 작은 오해가 쌓이기 쉬운 사이",
   파: "파: 약속이 어긋나기 쉬운 사이",
 };
-// 子午卯酉: a 반합 with one of these in it is a real half of the three-way combination (as in lib/reunion.ts).
-const halfCombine = (x: number, y: number) => x !== y && x % 4 === y % 4 && (x % 3 === 0 || y % 3 === 0);
-const joins = (x: number, y: number) => meetings(x, y).some((m) => m === "육합" || (m === "삼합" && halfCombine(x, y)));
+const PLAIN_LINE: Record<string, string> = {
+  육합: "합: 같이 있을 때 편하고 손발이 잘 맞는 사이",
+  삼합: "반합: 같은 쪽을 보며 일하기 쉬운 사이",
+  방합: "같은 계절: 생활 리듬이 닮은 사이",
+  충: "충: 가까이 붙어 지낼수록 생활 방식이 부딪히기 쉬운 사이(거리를 두면 오히려 편해요)",
+  원진: "원진: 서운함이 쌓이기 쉬운 사이",
+  형: "형: 가까울수록 날이 서기 쉬운 사이",
+  해: "해: 작은 오해가 쌓이기 쉬운 사이",
+  파: "파: 약속이 어긋나기 쉬운 사이",
+};
+// A seat a year joins: 육합 (not one that is also a 형·파), or a 반합 with its 왕지.
+const joins = (x: number, y: number) => {
+  const m = meetings(x, y);
+  return (m.includes("육합") && !m.includes("형") && !m.includes("파")) || (m.includes("삼합") && halfCombine(x, y));
+};
 
 export type Couple = {
   score: number;
@@ -63,7 +72,7 @@ export function coupleOf(a: Person, b: Person, from = sajuYear(), rel: Rel = "�
   const [seatA, seatB] = [seatOf(a.pillars, rel), seatOf(b.pillars, rel)];
   const seat = meetings(seatA, seatB)
     .filter((m) => m !== "삼합" || halfCombine(seatA, seatB))
-    .map((m) => `${name}끼리 ${SEAT_LINE[m]}`);
+    .map((m) => `${name}끼리 ${(rel === "연인" ? LOVER_LINE : PLAIN_LINE)[m]}`);
   // This year and the four after (from the year the report is read for): a year that combines with both seats pulls
   // the two together; one that clashes either seat shakes the bond. The same rule as the paid ten-year table (lib/pairYears.ts).
   const years: Couple["years"] = [];

@@ -2,14 +2,14 @@ import { josa } from "./josa";
 import { meetings, stemClash, stemCombine, type Meeting } from "./deep";
 import { ELEMENT_HANJA, ELEMENT_KO, GROUP_OF, readChart, stemEl, tenGod, type GodGroup } from "./myeongri";
 import type { Person } from "./pairToken";
-import { BRANCHES, STEMS, type Pillars } from "./saju";
+import { BRANCHES, STEMS } from "./saju";
 import { monthMarks, monthsOf } from "./yeonun";
 
 // Two people in a 사랑방 (lib/ask.ts RoomPerson), read for what they are to each other: a lover, family, someone
 // at work, a friend. Everything here is worked out from the two charts, so the verdict card, the pictures and
 // what 정 훈도 is told agree. The other person is only ever called by the name the guest gave them.
 
-import { RELS, REL_LABEL, type Rel } from "./rels";
+import { halfCombine, RELS, REL_LABEL, SEAT_NAME, seatOf, type Rel } from "./rels";
 export { RELS, REL_LABEL, type Rel };
 
 // Rooms from before the choice: read from what the guest calls them.
@@ -28,7 +28,6 @@ const SEAT: Record<Rel, { pos: "dayBranch" | "monthBranch" | "yearBranch"; name:
   가족: { pos: "yearBranch", name: "집안 자리" },
   친구: { pos: "monthBranch", name: "바깥 자리" },
 };
-const seatOf = (p: Pillars, rel: Rel) => (rel === "연인" ? p.dayBranch : rel === "가족" ? p.yearBranch : (p.monthBranch ?? p.dayBranch));
 
 const MEET_LINE: Partial<Record<Meeting, [string, boolean]>> = {
   육합: ["합: 함께 있으면 편하고 정이 깊어져요", true],
@@ -36,6 +35,14 @@ const MEET_LINE: Partial<Record<Meeting, [string, boolean]>> = {
   충: ["충: 끌림만큼 부딪힘도 커요", false],
   형: ["형: 가까울수록 날이 서요", false],
   원진: ["원진: 이유 없이 서운함이 쌓여요", false],
+};
+// The bought 궁합 (plain): outside lovers, no 끌림·정 (2026-10-25 강 어사 기준), and only a 반합 with its 왕지.
+const PLAIN_MEET: Partial<Record<Meeting, [string, boolean]>> = {
+  육합: ["합: 같이 있을 때 편하고 손발이 잘 맞아요", true],
+  삼합: ["반합: 같은 쪽을 보며 일하기 쉬워요", true],
+  충: ["충: 가까이 붙어 지낼수록 생활 방식이 부딪히기 쉬워요", false],
+  형: ["형: 가까울수록 날이 서기 쉬워요", false],
+  원진: ["원진: 서운함이 쌓이기 쉬워요", false],
 };
 
 // What each ten-god group is to the other, by relation (what they are to me).
@@ -108,7 +115,8 @@ export type Bond = {
 const heavy = (godWeights: Record<GodGroup, number>): GodGroup =>
   (Object.keys(godWeights) as GodGroup[]).reduce((a, b) => (godWeights[b] > godWeights[a] ? b : a));
 
-export function bondOf(me: Person, them: Person, label: string, relIn: string | undefined, at: number): Bond | null {
+// plain: the 궁합 report's figures, where the seats go by the letter's place (lib/rels.ts SEAT_NAME), not by role.
+export function bondOf(me: Person, them: Person, label: string, relIn: string | undefined, at: number, plain = false): Bond | null {
   const ra = readChart(me.pillars);
   const rb = readChart(them.pillars);
   if (!ra || !rb) return null;
@@ -121,9 +129,11 @@ export function bondOf(me: Person, them: Person, label: string, relIn: string | 
   const hb = heavy(rb.godWeights);
   const seatA = seatOf(a, rel);
   const seatB = seatOf(b, rel);
-  const meet = meetings(seatA, seatB).find((m) => MEET_LINE[m]);
-  const seatLine = meet ? `${SEAT[rel].name}끼리 ${MEET_LINE[meet]![0]}` : null;
-  const seatGood = meet ? MEET_LINE[meet]![1] : null;
+  const lines = plain && rel !== "연인" ? PLAIN_MEET : MEET_LINE;
+  const seatName = plain ? SEAT_NAME[rel] : SEAT[rel].name;
+  const meet = meetings(seatA, seatB).find((m) => lines[m] && (!plain || m !== "삼합" || halfCombine(seatA, seatB)));
+  const seatLine = meet ? `${seatName}끼리 ${lines[meet]![0]}` : null;
+  const seatGood = meet ? lines[meet]![1] : null;
 
   // Elements one has plenty of and the other lacks.
   const share = (w: number[]) => {
@@ -232,8 +242,8 @@ export function bondOf(me: Person, them: Person, label: string, relIn: string | 
     const clashB = meetings(yb, seatB).includes("충");
     const joins = (s: number) => meetings(yb, s).some((m) => m === "육합" || m === "삼합");
     if (clashA || clashB)
-      years.push({ year: yy, gz, mark: "흔들리기 쉬운 해", why: `${[clashA && "나", clashB && label].filter(Boolean).join("·")}의 ${SEAT[rel].name}를 충` });
-    else if (joins(seatA) && joins(seatB)) years.push({ year: yy, gz, mark: "함께 좋은 해", why: `두 사람의 ${SEAT[rel].name}와 모두 합` });
+      years.push({ year: yy, gz, mark: "흔들리기 쉬운 해", why: `${[clashA && "나", clashB && label].filter(Boolean).join("·")}의 ${seatName}를 충` });
+    else if (joins(seatA) && joins(seatB)) years.push({ year: yy, gz, mark: "함께 좋은 해", why: `두 사람의 ${seatName}와 모두 합` });
   }
 
   const good = rows.filter((r) => r.grade === 2).length;
@@ -261,7 +271,7 @@ export function bondOf(me: Person, them: Person, label: string, relIn: string | 
     me: { ilju: `${STEMS[a.dayStem]}${BRANCHES[a.dayBranch]}`, el: stemEl(a.dayStem), brings: BRINGS[rel][ha] },
     them: { ilju: `${STEMS[b.dayStem]}${BRANCHES[b.dayBranch]}`, el: stemEl(b.dayStem), brings: BRINGS[rel][hb] },
     roles: [ROLE[rel][theyToMe], ROLE[rel][meToThem]],
-    seat: { name: SEAT[rel].name, line: seatLine, good: seatGood },
+    seat: { name: seatName, line: seatLine, good: seatGood },
     lends,
     rows,
     verdict,

@@ -1,8 +1,7 @@
-import { SEAT_NAME, seatOf } from "./couple";
 import { meetings } from "./deep";
 import { profileOf, type Person } from "./pairToken";
 import type { Relation } from "./relations";
-import type { Rel } from "./rels";
+import { halfCombine, SEAT_NAME, seatOf, type Rel } from "./rels";
 import { BRANCHES, STEMS } from "./saju";
 import { yearRows, type Verdict } from "./yeonun";
 
@@ -11,7 +10,7 @@ import { yearRows, type Verdict } from "./yeonun";
 
 export const REL_OF: Record<Relation, Rel> = { lover: "연인", some: "연인", ex: "연인", work: "일", friend: "친구", family: "가족" };
 
-export type PairMark = "함께 좋은 해" | "정이 깊어지는 해" | "한쪽 흔들림" | "함께 조심" | "관계가 흔들리기 쉬운 해" | "무난한 해";
+export type PairMark = "함께 좋은 해" | "정이 깊어지는 해" | "한쪽 흔들림" | "함께 조심" | "관계가 흔들리기 쉬운 해" | "한 사람 자리가 흔들리는 해" | "무난한 해";
 export type PairYear = { year: number; gz: string; me: Verdict; them: Verdict; mark: PairMark; why: string; now: boolean };
 // noDaeun: who was read without their ten-year 대운 (gender not given), so their grades are said more lightly.
 export type PairYears = { seat: string; rows: PairYear[]; noDaeun: string[] };
@@ -32,23 +31,34 @@ export function pairYears(a: Person, b: Person, relation: Relation, from: number
     const y = ra.year;
     const yBranch = (((y - 4) % 12) + 12) % 12;
     const gz = `${STEMS[(((y - 4) % 10) + 10) % 10]}${BRANCHES[yBranch]}`;
-    const clash = [meetings(yBranch, sa).includes("충") && a.name, meetings(yBranch, sb).includes("충") && b.name].filter(Boolean) as string[];
-    const joins = (s: number) => meetings(yBranch, s).some((m) => m === "육합" || m === "삼합");
+    const hitA = meetings(yBranch, sa).includes("충");
+    const hitB = meetings(yBranch, sb).includes("충");
+    // A 육합 that is also a 형·파 (巳申·寅亥) is not a clean join; a 반합 only with its 왕지.
+    const joins = (s: number) => {
+      const m = meetings(yBranch, s);
+      return (m.includes("육합") && !m.includes("형") && !m.includes("파")) || (m.includes("삼합") && halfCombine(yBranch, s));
+    };
     const tie = joins(sa) && joins(sb);
     const [me, them] = [ra.verdict, rb.verdict];
-    const [mark, why]: [PairMark, string] = clash.length
-      ? ["관계가 흔들리기 쉬운 해", `${clash.join("·")}의 ${seat}를 그해 기운이 충`]
-      : good(me) && good(them)
-        ? tie
-          ? ["정이 깊어지는 해", `둘 다 좋은 해에 두 사람의 ${seat}와 모두 합`]
-          : ["함께 좋은 해", "두 사람 모두 좋은 해"]
-        : bad(me) && bad(them)
-          ? ["함께 조심", "두 사람 모두 버거운 해"]
-          : bad(me) || bad(them)
-            ? ["한쪽 흔들림", `${bad(me) ? a.name : b.name}에게 버거운 해`]
-            : tie
-              ? ["정이 깊어지는 해", `두 사람의 ${seat}와 모두 합`]
-              : ["무난한 해", "크게 밀지도 막지도 않는 해"];
+    // The year clashing a seat shakes the bond when it hits both, or hits one whose own year is hard too; one seat
+    // hit in an otherwise fine year is that person's, not the relation's (2026-10-25 강 어사 기준).
+    const shaken = (hitA && hitB) || (hitA && bad(me)) || (hitB && bad(them));
+    const hitNames = [hitA && a.name, hitB && b.name].filter(Boolean) as string[];
+    const [mark, why]: [PairMark, string] = shaken
+      ? ["관계가 흔들리기 쉬운 해", `${hitNames.join("·")}님의 ${seat}를 그해 기운이 충`]
+      : hitNames.length
+        ? ["한 사람 자리가 흔들리는 해", `${hitNames[0]}님의 ${seat}를 그해 기운이 충`]
+        : good(me) && good(them)
+          ? tie
+            ? ["정이 깊어지는 해", `둘 다 좋은 해에 두 사람의 ${seat}와 모두 합`]
+            : ["함께 좋은 해", "두 사람 모두 좋은 해"]
+          : bad(me) && bad(them)
+            ? ["함께 조심", "두 사람 모두 버거운 해"]
+            : bad(me) || bad(them)
+              ? ["한쪽 흔들림", `${bad(me) ? a.name : b.name}님에게 버거운 해`]
+              : tie
+                ? ["정이 깊어지는 해", `두 사람의 ${seat}와 모두 합`]
+                : ["무난한 해", "크게 밀지도 막지도 않는 해"];
     return { year: y, gz, me, them, mark, why, now: i === 0 };
   });
   return { seat, rows, noDaeun: [a, b].filter((p) => p.gender !== "m" && p.gender !== "f").map((p) => p.name) };
