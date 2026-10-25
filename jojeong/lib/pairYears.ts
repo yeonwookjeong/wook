@@ -2,6 +2,7 @@ import { meetings } from "./deep";
 import { profileOf, type Person } from "./pairToken";
 import type { Relation } from "./relations";
 import { tieYear } from "./couple";
+import { pairYearsV1 } from "./pairYearsLegacy";
 import { SEAT_NAME, seatOf, type Rel } from "./rels";
 import { BRANCHES, STEMS } from "./saju";
 import { yearRows, type Verdict } from "./yeonun";
@@ -66,4 +67,16 @@ export function pairYearsBrief(a: Person, b: Person, x: PairYears): string {
     ...x.rows.map((r) => `- ${r.year} ${r.gz}: ${a.name} ${r.me} / ${b.name} ${r.them} → ${r.mark} (${r.why})`),
     ...(x.noDaeun.length ? [`- ${x.noDaeun.join("·")}님은 성별을 몰라 10년 대운 없이 그해 기운만으로 본 판정이다. 이 사람의 해는 단정하지 말고 가볍게 짚는다.`] : []),
   ].join("\n");
+}
+
+// When 궁합 1단계 went live: a 궁합 bought before it opens its pinned text, written against the old marks
+// (lib/pairYearsLegacy.ts), so its pictures keep them; one bought after gets these.
+export const GUNGHAP_V2_SINCE = Date.parse("2026-10-26T03:00:00Z");
+export const isGunghapV2 = (boughtAt: number | undefined) => boughtAt === undefined || boughtAt >= GUNGHAP_V2_SINCE;
+
+// The table as of the order (`boughtAt`; none: a free look, read the new way).
+export function pairYearsAt(a: Person, b: Person, relation: Relation, from: number, n: number, boughtAt: number | undefined): PairYears | null {
+  if (isGunghapV2(boughtAt)) return pairYears(a, b, relation, from, n);
+  const x = pairYearsV1(a, b, relation, from, n);
+  return x && { ...x, noDaeun: [] };
 }

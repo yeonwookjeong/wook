@@ -48,7 +48,7 @@ import CalendarButton from "@/components/CalendarButton";
 import { PairYearsFigure, YearsAheadFigure } from "@/components/PaidFigures";
 import { BondFigure, BondMonthsFigure } from "@/app/ask/Figures";
 import { bondOf } from "@/lib/bond";
-import { pairYears, REL_OF } from "@/lib/pairYears";
+import { isGunghapV2, pairYearsAt, REL_OF } from "@/lib/pairYears";
 import { askShown } from "@/lib/members";
 import { coupleOf, type Couple } from "@/lib/couple";
 import { intimacyOf } from "@/lib/intimacy";
@@ -115,8 +115,9 @@ async function PairReport({ order, product, a, b, rel, couple, request }: { orde
   const at = paidAtOf(order);
   let figures: Record<number, React.ReactNode> | undefined;
   if (product.id === "gunghap" && isV8(order)) {
-    const years = pairYears(a, b, rel, thisYear(new Date(at)));
-    const bond = bondOf(a, b, b.name, REL_OF[rel], at, true);
+    // Bought before 궁합 1단계: the pictures as its pinned text knew them (lib/pairYears.ts GUNGHAP_V2_SINCE).
+    const years = pairYearsAt(a, b, rel, thisYear(new Date(at)), 10, at);
+    const bond = bondOf(a, b, b.name, REL_OF[rel], at, isGunghapV2(at));
     figures = {
       ...(bond && { 1: <BondFigure b={bond} name={a.name} />, 8: <BondMonthsFigure b={bond} name={a.name} /> }),
       ...(years && { 7: <PairYearsFigure x={years} a={a.name} b={b.name} /> }),
@@ -342,7 +343,7 @@ async function OpenReport({
     const boughtAt = unlock?.id ? (unlock.paidAt ?? unlock.createdAt) : undefined;
     const couple = product.id === "gunghap" ? coupleOf(a, b, boughtAt ? sajuYear(new Date(boughtAt)) : undefined, REL_OF[relationOf(pair.rel)]) : null;
     // The free card's years are the first five rows of the bought report's ten-year table, so the two never disagree.
-    const coupleYears = couple ? (pairYears(a, b, relationOf(pair.rel), thisYear(boughtAt ? new Date(boughtAt) : undefined), 5)?.rows ?? []) : [];
+    const coupleYears = couple ? (pairYearsAt(a, b, relationOf(pair.rel), thisYear(boughtAt ? new Date(boughtAt) : undefined), 5, boughtAt)?.rows ?? []) : [];
     const closeness = product.id === "sokgunghap" ? intimacyOf(a, b) : null;
     const reunion = product.id === "jaehoe" ? reunionOf(a, b, boughtAt ? sajuYear(new Date(boughtAt)) : undefined) : null;
     return (
