@@ -6,6 +6,8 @@ import PersonFields from "@/components/PersonFields";
 import { keepValues } from "@/lib/keepForm";
 import { RELS, REL_LABEL } from "@/lib/rels";
 import { askAction, attachOtherAction, openRoomAction, removePersonAction, type FormState } from "./actions";
+import { trackEvent } from "@/components/VisitBeacon";
+import { clearPending, pendingRoom, setPending, stepOnce } from "@/lib/askFlow";
 
 // The guest's side of 정 훈도에게 묻기 (app/ask): the same forms as the owner's trial room (app/admin/ask), on the
 // member's own actions, which spend a question per answer.
@@ -133,8 +135,16 @@ export function AskForm({
       // eslint-disable-next-line react-hooks/set-state-in-effect -- read once from this browser's storage
       if (d?.text) setText(d.text);
       if (d?.topic) setTopic(d.topic);
-      // Brought from a chapter of a bought report (app/ask/DraftCarry.tsx): into the first room entered, opened.
-      const carried = !d?.text && localStorage.getItem(CARRY_KEY);
+      // Brought from a chapter of a bought report: in the address (app/ask/go, straight into this room) or kept by
+      // app/ask/DraftCarry.tsx before signing in. Into the first room entered, opened.
+      const url = new URL(window.location.href);
+      const inUrl = url.searchParams.get("draft")?.trim();
+      if (inUrl) localStorage.setItem(CARRY_KEY, inUrl.slice(0, 300));
+      // `joined` is set only for a new member (lib/login.ts): counted as a sign-up from the chapter.
+      if (url.searchParams.get("joined") && stepOnce("joined")) trackEvent("askflow_join");
+      for (const k of ["draft", "joined", "opened"]) url.searchParams.delete(k);
+      window.history.replaceState(null, "", url.pathname + url.search);
+      const carried = (!d?.text || inUrl) && localStorage.getItem(CARRY_KEY);
       if (carried) {
         setText(carried.slice(0, 300));
         setOpen(true);
@@ -150,31 +160,60 @@ export function AskForm({
     } catch {}
   };
   const box = useRef<HTMLTextAreaElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  // The packs to buy open just above the question bar, which would cover them: brought into view.
+  const buyBox = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (needCredits) buyBox.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [needCredits]);
+  // Bought more after pressing 묻기 with none left (app/ask/DraftReturn.tsx brings the guest back with ?send=1): the
+  // question written then goes by itself, once.
+  useEffect(() => {
+    try {
+      const url = new URL(window.location.href);
+      if (!url.searchParams.get("send")) return;
+      url.searchParams.delete("send");
+      window.history.replaceState(null, "", url.pathname + url.search);
+      if (pendingRoom() !== room || credits < 1) return;
+      clearPending();
+      // After the draft is back in the box (the effect above), and only if it is.
+      setTimeout(() => {
+        if (box.current?.value.trim()) formRef.current?.requestSubmit();
+      }, 300);
+    } catch {}
+  }, [room, credits]);
   const [sent, setSent] = useState({ question: "", topic: "" });
   const was = useRef(false);
   // The answer has come: bring the new letter into view.
   useEffect(() => {
-    if (was.current && !pending && !state.error) document.getElementById("last-answer")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (was.current && !pending && !state.error) {
+      document.getElementById("last-answer")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (stepOnce("sent")) trackEvent("askflow_sent");
+    }
     was.current = pending;
   }, [pending, state.error]);
   return (
     <>
       {pending && <Writing question={sent.question} topic={sent.topic} />}
       {needCredits && (
-        <section className="mt-4 rounded-2xl bg-white/[0.04] px-4 py-4 ring-1 ring-[#e2bc68]/30">
+        <section ref={buyBox} className="mt-4 scroll-mb-[180px] rounded-2xl bg-white/[0.04] px-4 py-4 ring-1 ring-[#e2bc68]/30">
           <p className="text-center font-myeongjo text-[15px] font-extrabold text-[#e2bc68]">질문을 채우시면 바로 보내 드려요</p>
           <p className="mt-1 text-center text-[12px] opacity-75">써 두신 질문은 그대로 남아 있어요</p>
           {children}
         </section>
       )}
       <form
+        ref={formRef}
         onSubmit={(e) => {
           if (credits < 1) {
             e.preventDefault();
             keep(text, topic);
             setNeedCredits(true);
+            setOpen(false);
+            setPending(room);
             return;
           }
+          clearPending();
           const f = new FormData(e.currentTarget);
           setSent({ question: text.trim(), topic: String(f.get("topic") ?? "") });
           keepValues(action)(e);
@@ -261,7 +300,7 @@ export function AskForm({
               setText(e.target.value.slice(0, MAX));
               keep(e.target.value.slice(0, MAX), topic);
             }}
-            rows={open && text ? 3 : 1}
+            rows={open && text ? 3 : text ? 2 : 1}
             maxLength={MAX}
             disabled={pending}
             aria-label="물어볼 것"

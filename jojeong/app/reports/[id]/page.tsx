@@ -168,6 +168,8 @@ async function extrasOf(o: Order, product: Product) {
   return {
     chapters: chaptersFor(product.id, v8),
     ask: v8 && (await askShown()) ? product.title : undefined,
+    // The chart the report reads (one person's, or the reader's of two): the chapter's question opens a room on it.
+    askChart: o.req.p ?? o.req.a,
     save: v8 ? `hundo-${product.id}` : undefined,
   };
 }

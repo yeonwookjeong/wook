@@ -24,7 +24,7 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       { userAgent: AI_TRAINING, disallow: "/" },
-      { userAgent: "*", allow: "/", disallow: ["/api/", "/court/", "/pay/", "/r/", "/my", "/admin"] },
+      { userAgent: "*", allow: "/", disallow: ["/api/", "/court/", "/pay/", "/r/", "/my", "/admin", "/ask/go"] },
     ],
     sitemap: `${siteUrl()}/sitemap.xml`,
   };
