@@ -333,10 +333,10 @@ async function OpenReport({
     }
     if (ADULT_ONLY.includes(product.id) && !(isAdult(a.birthYear) && isAdult(b.birthYear)))
       return (<><Header product={product} /><Notice href={`/reports/${product.id}`} cta="다시 입력하기">만 19세 이상 두 사람만 볼 수 있는 보고서예요.</Notice></>);
-    const couple = product.id === "gunghap" ? coupleOf(a, b) : null;
-    const closeness = product.id === "sokgunghap" ? intimacyOf(a, b) : null;
-    // A bought 재회운 shows the years as of its order, the same ones its pinned text was written with.
+    // A bought 궁합·재회운 shows the years as of its order, the same ones its pinned text was written with.
     const boughtAt = paid ? (paid.paidAt ?? paid.createdAt) : undefined;
+    const couple = product.id === "gunghap" ? coupleOf(a, b, boughtAt ? sajuYear(new Date(boughtAt)) : undefined, REL_OF[relationOf(pair.rel)]) : null;
+    const closeness = product.id === "sokgunghap" ? intimacyOf(a, b) : null;
     const reunion = product.id === "jaehoe" ? reunionOf(a, b, boughtAt ? sajuYear(new Date(boughtAt)) : undefined) : null;
     const req = { product: product.id, a: pair.a, b: pair.b, rel: FIXED_RELATION[product.id] ?? relationOf(pair.rel) };
     const unlock = paid ?? (locked ? await ownedOrderFor(product.id, req) : asOwner(req));

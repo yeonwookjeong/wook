@@ -6,7 +6,17 @@
 const esc = (x: string) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 // The other person, by the usual words and by name (`○○님`, `○○ 씨`).
 const themOf = (names: string[]) => String.raw`(?:그\s*사람|그분|상대(?:방)?|그\s*쪽${names.map((n) => `|${esc(n)}\s*(?:님|씨)?`).join("")})`;
-const RISKY: Partial<Record<string, (THEM: string) => { re: RegExp; why: string }[]>> = {
+const FATE = { re: /운명(?:의\s*(?:상대|짝|사람)|처럼|이야|이에요|이랍니다|적)/, why: "운명 단정" };
+const ODDS = { re: /(?:확률|가능성)[은는이가]?\s*\d+\s*(?:%|퍼센트)|\d+\s*(?:%|퍼센트)\s*(?:의\s*)?(?:확률|가능성)|열에\s*\S+[은는]/, why: "확률" };
+// `lover`: false for 궁합 between family, at work or friends, where talk of love and the spouse seat hurts (2026-10-25).
+const RISKY: Partial<Record<string, (THEM: string, lover: boolean) => { re: RegExp; why: string }[]>> = {
+  gunghap: (_, lover) => [
+    FATE,
+    ODDS,
+    { re: /천생연분|평생\s*(?:함께\s*갈|가는)\s*(?:인연|사이)/, why: "운명 단정" },
+    { re: /(?:결국|반드시|분명(?:히)?)\s*(?:헤어지|이혼|갈라서)|헤어지게\s*(?:돼|될)|이혼(?:하게\s*(?:돼|될)|할\s*(?:거|운명))|결혼(?:은|을)?\s*못\s*(?:해|할|하게)|오래\s*못\s*가/, why: "결말 단정" },
+    ...(lover ? [] : [{ re: /배우자\s*자리|연애|설렘|이성으로/, why: "연인 아닌 관계에 연애 말" }]),
+  ],
   jaehoe: (THEM) => [
     { re: /(?:반드시|꼭|분명(?:히)?|결국)\s*(?:다시\s*)?(?:돌아(?:와|오|올)|만나(?:게|요|게\s*돼)|이어(?:져|질|지게)|연락(?:이\s*(?:와|올)|해\s*올))/, why: "재회 약속" },
     { re: /기다리(?:면|시면)[^.!?\n]{0,20}(?:와요|올\s*거|돌아|연락이\s*(?:와|올))/, why: "기다림 권유" },
@@ -23,8 +33,8 @@ const SOFT = /수\s*(?:도\s*)?있|쉬운|지도\s*몰|건\s*아니|야\s*(?:한
 const QUOTED = /^\s*(?:이?라(?:고|는)|하는\s*말)/;
 
 // `them`: the other person's name, so "현우님은 아직…" is read like "그 사람은 아직…".
-export function riskyLines(productId: string, text: string, them: string[] = []): string[] {
-  const rules = RISKY[productId]?.(themOf(them.filter(Boolean)));
+export function riskyLines(productId: string, text: string, them: string[] = [], lover = true): string[] {
+  const rules = RISKY[productId]?.(themOf(them.filter(Boolean)), lover);
   if (!rules) return [];
   const hits: string[] = [];
   const clauses = text.split(/(?<=[.!?。])\s+|\n+|[,，]/);

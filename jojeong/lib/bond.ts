@@ -39,7 +39,7 @@ const MEET_LINE: Partial<Record<Meeting, [string, boolean]>> = {
 };
 
 // What each ten-god group is to the other, by relation (what they are to me).
-const ROLE: Record<Rel, Record<GodGroup, string>> = {
+export const ROLE: Record<Rel, Record<GodGroup, string>> = {
   연인: {
     비겁: "친구처럼 대등하게 맞서는 사람",
     식상: "내가 챙기고 표현하게 되는 사람",
@@ -250,10 +250,10 @@ export function bondOf(me: Person, them: Person, label: string, relIn: string | 
   const kind = rel === "일" ? "동업·협업" : rel === "연인" ? "인연" : rel === "가족" ? "가족 사이" : "벗";
   const verdict =
     bad.length === 0 && good >= 3
-      ? `잘 맞는 ${kind}이에요`
+      ? `잘 맞는 ${josa(kind, "이에요/예요")}`
       : bad.length >= 2
-        ? `${TIP[bad[0].label] ?? "조심하면"} 버틸 수 있는 ${kind}이에요`
-        : `${TIP[bad[0]?.label] ?? "서로 맞춰 가면"} 좋은 ${kind}이에요`;
+        ? `${TIP[bad[0].label] ?? "조심하면"} 버틸 수 있는 ${josa(kind, "이에요/예요")}`
+        : `${TIP[bad[0]?.label] ?? "서로 맞춰 가면"} 좋은 ${josa(kind, "이에요/예요")}`;
 
   return {
     rel,

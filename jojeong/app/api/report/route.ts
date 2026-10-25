@@ -2,6 +2,8 @@ import { isAdmin } from "@/lib/admin";
 import { covers, getOrder, pinReportText } from "@/lib/pay";
 import { productById, type ProductId } from "@/lib/products";
 import { decodePerson } from "@/lib/pairToken";
+import { REL_OF } from "@/lib/pairYears";
+import { relationOf } from "@/lib/relations";
 import { riskyLines } from "@/lib/reportGuard";
 import { aiEnabled, jobFor, writeReport, type JobRequest } from "@/lib/reportWriter";
 import { isV8 } from "@/lib/reportPrompts";
@@ -151,7 +153,7 @@ export async function POST(request: Request) {
         if (order) await pinReportText(order.id, product.id as ProductId, writeJob.key).catch(() => {});
         ok = true;
         // A word the report must not carry is told to the owner (admin page), not hidden from the reader.
-        const risky = riskyLines(product.id, text, [decodePerson(req.b)?.name ?? ""]);
+        const risky = riskyLines(product.id, text, [decodePerson(req.b)?.name ?? ""], REL_OF[relationOf(req.rel)] === "연인");
         if (risky.length) await noteReportError(`${writeJob.title} (${writeJob.key.slice(0, 8)}): ${risky.join(" / ")}`, "risk").catch(() => {});
       } else await noteReportError(`${writeJob.title}: 끝까지 쓰지 못함 (stop_reason)`).catch(() => {});
     } catch (e) {

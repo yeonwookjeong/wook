@@ -1,3 +1,4 @@
+import { SEAT_NAME, seatOf } from "./couple";
 import { meetings } from "./deep";
 import { profileOf, type Person } from "./pairToken";
 import type { Relation } from "./relations";
@@ -9,12 +10,11 @@ import { yearRows, type Verdict } from "./yeonun";
 // the year does to the seat their relation lives in. The table is shown in the report and told to 정 훈도 as is.
 
 export const REL_OF: Record<Relation, Rel> = { lover: "연인", some: "연인", ex: "연인", work: "일", friend: "친구", family: "가족" };
-const SEAT_NAME: Record<Rel, string> = { 연인: "배우자 자리", 일: "일터 자리", 가족: "집안 자리", 친구: "바깥 자리" };
-const seatOf = (p: Person["pillars"], rel: Rel) => (rel === "연인" ? p.dayBranch : rel === "가족" ? p.yearBranch : (p.monthBranch ?? p.dayBranch));
 
 export type PairMark = "함께 좋은 해" | "정이 깊어지는 해" | "한쪽 흔들림" | "함께 조심" | "관계가 흔들리기 쉬운 해" | "무난한 해";
 export type PairYear = { year: number; gz: string; me: Verdict; them: Verdict; mark: PairMark; why: string; now: boolean };
-export type PairYears = { seat: string; rows: PairYear[] };
+// noDaeun: who was read without their ten-year 대운 (gender not given), so their grades are said more lightly.
+export type PairYears = { seat: string; rows: PairYear[]; noDaeun: string[] };
 
 const good = (v: Verdict) => v === "대길" || v === "길";
 const bad = (v: Verdict) => v === "조심" || v === "인내";
@@ -51,12 +51,13 @@ export function pairYears(a: Person, b: Person, relation: Relation, from: number
               : ["무난한 해", "크게 밀지도 막지도 않는 해"];
     return { year: y, gz, me, them, mark, why, now: i === 0 };
   });
-  return { seat, rows };
+  return { seat, rows, noDaeun: [a, b].filter((p) => p.gender !== "m" && p.gender !== "f").map((p) => p.name) };
 }
 
 export function pairYearsBrief(a: Person, b: Person, x: PairYears): string {
   return [
     `■ ★ 두 사람의 10년 (${x.seat} 기준, 화면에 표로 그대로 보인다)`,
     ...x.rows.map((r) => `- ${r.year} ${r.gz}: ${a.name} ${r.me} / ${b.name} ${r.them} → ${r.mark} (${r.why})`),
+    ...(x.noDaeun.length ? [`- ${x.noDaeun.join("·")}님은 성별을 몰라 10년 대운 없이 그해 기운만으로 본 판정이다. 이 사람의 해는 단정하지 말고 가볍게 짚는다.`] : []),
   ].join("\n");
 }

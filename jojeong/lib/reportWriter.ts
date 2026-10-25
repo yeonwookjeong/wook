@@ -62,7 +62,7 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
     subjectLine = `[대상] 읽는 사람: ${a.name} ('${a.name}님'이라 부를 것)${b ? ` / 함께하는 사람: ${b.name}` : ""} / 택일: ${KINDS[found.kind].title}`;
     briefs = [
       chartBrief(a.name, a.pillars, profileOf(a), briefYear),
-      ...(b ? [chartBrief(b.name, b.pillars, profileOf(b), briefYear), coupleBrief(a, b)] : []),
+      ...(b ? [chartBrief(b.name, b.pillars, profileOf(b), briefYear), coupleBrief(a, b, briefYear)] : []),
       taekilBrief(found.kind, days, found.label),
     ].join("\n\n");
   } else if (isPair(product)) {
@@ -81,7 +81,8 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
       chartBrief(a.name, a.pillars, profileOf(a), briefYear),
       chartBrief(b.name, b.pillars, profileOf(b), briefYear),
       pairBrief(a.name, a.pillars, b.name, b.pillars),
-      product.id === "jaehoe" ? coupleBrief(a, b, briefYear) : coupleBrief(a, b),
+      // 궁합 v8+ tells the years once, by its ten-year table (pairBriefs).
+      coupleBrief(a, b, briefYear, REL_OF[rel], !(product.id === "gunghap" && (v === "v8" || v === "v9"))),
       // v8 궁합: the two people's ten years and six months, as the report's pictures show them.
       ...(product.id === "gunghap" && (v === "v8" || v === "v9") ? pairBriefs(a, b, rel, nowYear, at ?? Date.now()) : []),
       ...(product.id === "sokgunghap" ? [intimacyBrief(a, b)] : []),
