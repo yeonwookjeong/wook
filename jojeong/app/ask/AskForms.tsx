@@ -6,6 +6,8 @@ import PersonFields from "@/components/PersonFields";
 import { keepValues } from "@/lib/keepForm";
 import { RELS, REL_LABEL } from "@/lib/rels";
 import { askAction, attachOtherAction, openRoomAction, removePersonAction, type FormState } from "./actions";
+import { trackEvent } from "@/components/VisitBeacon";
+import { FROM_CHAPTER, PENDING } from "@/lib/askFlow";
 
 // The guest's side of 정 훈도에게 묻기 (app/ask): the same forms as the owner's trial room (app/admin/ask), on the
 // member's own actions, which spend a question per answer.
@@ -133,8 +135,16 @@ export function AskForm({
       // eslint-disable-next-line react-hooks/set-state-in-effect -- read once from this browser's storage
       if (d?.text) setText(d.text);
       if (d?.topic) setTopic(d.topic);
-      // Brought from a chapter of a bought report (app/ask/DraftCarry.tsx): into the first room entered, opened.
-      const carried = !d?.text && localStorage.getItem(CARRY_KEY);
+      // Brought from a chapter of a bought report: in the address (app/ask/go, straight into this room) or kept by
+      // app/ask/DraftCarry.tsx before signing in. Into the first room entered, opened.
+      const url = new URL(window.location.href);
+      const inUrl = url.searchParams.get("draft")?.trim();
+      if (inUrl) localStorage.setItem(CARRY_KEY, inUrl.slice(0, 300));
+      const fromChapter = localStorage.getItem(FROM_CHAPTER);
+      if (fromChapter && url.searchParams.get("joined")) trackEvent("askflow_join");
+      for (const k of ["draft", "joined", "opened"]) url.searchParams.delete(k);
+      window.history.replaceState(null, "", url.pathname + url.search);
+      const carried = (!d?.text || inUrl) && localStorage.getItem(CARRY_KEY);
       if (carried) {
         setText(carried.slice(0, 300));
         setOpen(true);
@@ -150,6 +160,25 @@ export function AskForm({
     } catch {}
   };
   const box = useRef<HTMLTextAreaElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+  // The packs to buy open just above the question bar, which would cover them: brought into view.
+  const buyBox = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (needCredits) buyBox.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [needCredits]);
+  // Bought more after pressing 묻기 with none left (app/ask/DraftReturn.tsx brings the guest back with ?send=1): the
+  // question written then goes by itself, once.
+  useEffect(() => {
+    try {
+      const url = new URL(window.location.href);
+      if (!url.searchParams.get("send")) return;
+      url.searchParams.delete("send");
+      window.history.replaceState(null, "", url.pathname + url.search);
+      if (localStorage.getItem(PENDING) !== room || credits < 1) return;
+      localStorage.removeItem(PENDING);
+      requestAnimationFrame(() => formRef.current?.requestSubmit());
+    } catch {}
+  }, [room, credits]);
   const [sent, setSent] = useState({ question: "", topic: "" });
   const was = useRef(false);
   // The answer has come: bring the new letter into view.
@@ -161,20 +190,31 @@ export function AskForm({
     <>
       {pending && <Writing question={sent.question} topic={sent.topic} />}
       {needCredits && (
-        <section className="mt-4 rounded-2xl bg-white/[0.04] px-4 py-4 ring-1 ring-[#e2bc68]/30">
+        <section ref={buyBox} className="mt-4 scroll-mb-[180px] rounded-2xl bg-white/[0.04] px-4 py-4 ring-1 ring-[#e2bc68]/30">
           <p className="text-center font-myeongjo text-[15px] font-extrabold text-[#e2bc68]">질문을 채우시면 바로 보내 드려요</p>
           <p className="mt-1 text-center text-[12px] opacity-75">써 두신 질문은 그대로 남아 있어요</p>
           {children}
         </section>
       )}
       <form
+        ref={formRef}
         onSubmit={(e) => {
           if (credits < 1) {
             e.preventDefault();
             keep(text, topic);
             setNeedCredits(true);
+            setOpen(false);
+            try {
+              localStorage.setItem(PENDING, room);
+            } catch {}
             return;
           }
+          try {
+            if (localStorage.getItem(FROM_CHAPTER)) {
+              trackEvent("askflow_sent");
+              localStorage.removeItem(FROM_CHAPTER);
+            }
+          } catch {}
           const f = new FormData(e.currentTarget);
           setSent({ question: text.trim(), topic: String(f.get("topic") ?? "") });
           keepValues(action)(e);

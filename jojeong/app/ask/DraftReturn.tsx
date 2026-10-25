@@ -2,18 +2,27 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { trackEvent } from "@/components/VisitBeacon";
+import { FROM_CHAPTER, PENDING } from "@/lib/askFlow";
 
 // A question written in a room but not sent yet (no questions were left; app/ask/AskForms.tsx keeps it): back to
-// that room, where it waits in the box. Shown on /ask, where buying more lands.
-export default function DraftReturn({ rooms }: { rooms: string[] }) {
+// that room, where it waits in the box. Shown on /ask, where buying more lands. `bought`: just back from paying;
+// a question that was sent with none left (lib/askFlow.ts PENDING) goes back to its room and is sent by itself.
+export default function DraftReturn({ rooms, bought = false }: { rooms: string[]; bought?: boolean }) {
   const [room, setRoom] = useState<string | null>(null);
   useEffect(() => {
     try {
+      const pending = localStorage.getItem(PENDING);
+      if (bought && pending && rooms.includes(pending)) {
+        if (localStorage.getItem(FROM_CHAPTER)) trackEvent("askflow_buy");
+        window.location.replace(`/ask/${pending}?send=1`);
+        return;
+      }
       const found = rooms.find((r) => (JSON.parse(localStorage.getItem(`jj_ask_draft:${r}`) ?? "null") as { text?: string } | null)?.text?.trim());
       // eslint-disable-next-line react-hooks/set-state-in-effect -- read once from this browser's storage
       if (found) setRoom(found);
     } catch {}
-  }, [rooms]);
+  }, [rooms, bought]);
   if (!room) return null;
   return (
     <Link href={`/ask/${room}`} className="jjok-box mt-4 flex items-center gap-3 px-4 py-3.5">

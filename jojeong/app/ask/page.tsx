@@ -112,8 +112,16 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
 
   if (!membersEnabled()) return <p className="doc-paper mt-6 px-5 py-5 text-center text-sm">곧 열려요. 조금만 기다려 주세요.</p>;
 
+  // Came from a chapter of a bought report with its chart (app/ask/go): after signing in, back through there, so
+  // the room on that chart opens with the question in it. The sign-in keeps 200 characters of the way back.
+  const c = typeof q.c === "string" ? q.c : "";
+  const back = c && `/ask/go?c=${c}`.length <= 200 ? `/ask/go?c=${c}` : "/ask";
+  const loginHref = `/login?next=${encodeURIComponent(back)}`;
+
   if (!member)
     return (
+      <>
+      <DraftCarry join={{ href: loginHref, label: others ? "가입하고 질문 1개 받기" : "카카오로 가입하고 질문 1개 받기" }} />
       <Hallway>
         <RoomArt caption="청심당 · 마음을 듣는 방">
           <div className="text-center">
@@ -133,11 +141,10 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
               로그인이 끝나지 않았어요. 다시 해 주세요.
             </p>
           )}
-          <Link href="/login?next=/ask" className={`mt-6 ${GOLD_BUTTON}`}>
+          <Link href={loginHref} className={`mt-6 ${GOLD_BUTTON}`}>
             {login}
           </Link>
           <p className="mt-2.5 text-center text-[11.5px] leading-relaxed text-hanji/60">질문과 상담 기록을 계정에 보관해, 다음에 와도 이어서 이야기해요</p>
-          <DraftCarry />
         </RoomArt>
 
         <Floor>
@@ -189,11 +196,12 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
           <div className="mt-6">
             <CreditSlips buy={false} />
           </div>
-          <Link href="/login?next=/ask" className={`mt-6 ${GOLD_BUTTON}`}>
+          <Link href={loginHref} className={`mt-6 ${GOLD_BUTTON}`}>
             {login}
           </Link>
         </Floor>
       </Hallway>
+      </>
     );
 
   return (
@@ -251,7 +259,7 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
               </button>
             </form>
           ) : null}
-          <DraftReturn rooms={rooms.map((r) => r!.id)} />
+          <DraftReturn rooms={rooms.map((r) => r!.id)} bought={Boolean(q.bought)} />
           <DraftCarry />
         </RoomArt>
 
