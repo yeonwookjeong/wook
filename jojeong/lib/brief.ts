@@ -146,13 +146,20 @@ export function chartBrief(name: string, p: Pillars, profile: Profile | null, y 
   return lines.join("\n");
 }
 
+// A guide line without its sentences about love and marriage (a 궁합 between family, at work or friends).
+const unlove = (t: string) =>
+  t
+    .split(/(?<=[.!?요])\s+/)
+    .filter((x) => !/연애|결혼|배우자/.test(x))
+    .join(" ");
+
 // What sets this chart apart from others with the same day pillar, rarest first, and past years worth naming.
 function distinctLines(p: Pillars, profile: Profile | null, lover = true): string[] {
   const d = distinctOf(p, profile?.gender ?? null);
   if (!d) return [];
   const lines = ["- ★ 이 사람만의 특징 (드문 순. 보고서는 이것부터 풀 것. '가이드'는 방향일 뿐, 이 사람의 다른 글자와 엮어 구체적으로 쓸 것):"];
   d.patterns.filter((x) => lover || x.area !== "연애").forEach((x, i) =>
-    lines.push(`  ${i + 1}. [${x.term}] ${x.plain} — ${perHundred(x.rate)} · 영역 ${x.area} · 가이드: ${x.meaning}`),
+    lines.push(`  ${i + 1}. [${x.term}] ${x.plain} — ${perHundred(x.rate)} · 영역 ${x.area} · 가이드: ${lover ? x.meaning : unlove(x.meaning)}`),
   );
   if (d.extremes.length)
     lines.push(

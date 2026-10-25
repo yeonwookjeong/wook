@@ -237,7 +237,8 @@ export function bondOf(me: Person, them: Person, label: string, relIn: string | 
 
   // Years ahead that shake or pull the two seats.
   const years: Bond["years"] = [];
-  for (let yy = y; yy <= y + 4; yy++) {
+  // The bought 궁합 (plain) tells the years once, by its ten-year table (lib/pairYears.ts), so its figure lists none.
+  for (let yy = y; !plain && yy <= y + 4; yy++) {
     const yb = (((yy - 4) % 12) + 12) % 12;
     const gz = `${STEMS[(((yy - 4) % 10) + 10) % 10]}${BRANCHES[yb]}`;
     const clashA = meetings(yb, seatA).includes("충");

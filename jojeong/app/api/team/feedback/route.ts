@@ -21,10 +21,13 @@ const SCAN = 2000;
 const ref = (order: string) => createHash("sha256").update(order).digest("base64url").slice(0, 10);
 const esc = (x: string) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 function mask(text: string, names: [string | undefined, string | undefined]): string {
+  // Longer name first, so "지수엄마" is not left as "○○엄마"; a one-letter name only where it stands as a name.
+  const pairs = names
+    .map((n, i) => [n?.trim() ?? "", i === 0 ? "○○" : "△△"] as const)
+    .filter(([n]) => n)
+    .sort((x, y) => y[0].length - x[0].length);
   let out = text;
-  names.forEach((n, i) => {
-    if (n && n.trim().length >= 2) out = out.replace(new RegExp(esc(n.trim()), "g"), i === 0 ? "○○" : "△△");
-  });
+  for (const [n, to] of pairs) out = out.replace(new RegExp(n.length >= 2 ? esc(n) : `${esc(n)}(?=\\s*(?:님|씨))`, "g"), to);
   return out;
 }
 
