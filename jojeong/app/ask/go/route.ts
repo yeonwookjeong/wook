@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { createRoom, loadRoom } from "@/lib/ask";
 import { addRoomToMember, currentMember, membersEnabled } from "@/lib/members";
+import { CARRY_CHART } from "@/lib/askFlow";
 import { decodePerson } from "@/lib/pairToken";
 
 export const dynamic = "force-dynamic";
@@ -14,15 +15,24 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   const q = request.nextUrl.searchParams;
   const draft = (q.get("draft") ?? "").slice(0, 300);
-  const c = q.get("c") ?? "";
-  const chart = c.length <= 400 ? decodePerson(c) : null;
+  // The chart: in the address (from the chapter), or kept in a cookie through signing in (the way back keeps only
+  // 200 characters, too few for a chart with its ten-year cycles).
+  const c = q.get("c") ?? request.cookies.get(CARRY_CHART)?.value ?? "";
+  const chart = c.length <= 600 ? decodePerson(c) : null;
   const to = (path: string, params: Record<string, string>) => {
     const url = new URL(path, request.url);
     for (const [k, v] of Object.entries(params)) if (v) url.searchParams.set(k, v);
-    return NextResponse.redirect(url, 303);
+    const res = NextResponse.redirect(url, 303);
+    res.cookies.delete(CARRY_CHART);
+    return res;
   };
   const member = membersEnabled() ? await currentMember() : null;
-  if (!member) return to("/ask", { draft, c: chart ? c : "" });
+  if (!member) {
+    const res = to("/ask", { draft, from: chart ? "chapter" : "" });
+    // Kept for ten minutes, for the sign-in to come back through here (app/ask/page.tsx). Name and eight characters.
+    if (chart) res.cookies.set(CARRY_CHART, c, { httpOnly: true, sameSite: "lax", secure: request.nextUrl.protocol === "https:", path: "/", maxAge: 600 });
+    return res;
+  }
   const joined = q.get("joined") ?? "";
   // A chart without gender cannot open a room (the 10-year cycles and the spouse star need it): the member's page.
   if (!chart?.gender) return to("/ask", { draft, joined });

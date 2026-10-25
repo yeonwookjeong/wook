@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { keepPng, makePng } from "@/lib/cardExport";
 import { trackEvent } from "./VisitBeacon";
-import { FROM_CHAPTER } from "@/lib/askFlow";
+import { startFlow } from "@/lib/askFlow";
 
 type Section = { label: string; headline: string; paras: string[]; why?: string; todo?: string };
 
@@ -285,9 +285,7 @@ export default function AiReport({
                 href={`/ask/go?draft=${encodeURIComponent(`${ask} ${i + 1}장 '${s.headline}'에서 더 묻고 싶어요. `)}${askChart ? `&c=${encodeURIComponent(askChart)}` : ""}`}
                 onClick={() => {
                   trackEvent("to_ask", "chapter");
-                  try {
-                    localStorage.setItem(FROM_CHAPTER, "1");
-                  } catch {}
+                  startFlow();
                 }}
                 className="mt-4 flex items-center gap-2 rounded-xl border border-[#d4af5f]/60 bg-[#fbf6ea] px-3.5 py-2.5 text-[13px]"
               >

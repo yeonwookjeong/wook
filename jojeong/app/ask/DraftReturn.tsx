@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { trackEvent } from "@/components/VisitBeacon";
-import { FROM_CHAPTER, PENDING } from "@/lib/askFlow";
+import { pendingRoom, stepOnce } from "@/lib/askFlow";
 
 // A question written in a room but not sent yet (no questions were left; app/ask/AskForms.tsx keeps it): back to
 // that room, where it waits in the box. Shown on /ask, where buying more lands. `bought`: just back from paying;
@@ -12,9 +12,9 @@ export default function DraftReturn({ rooms, bought = false }: { rooms: string[]
   const [room, setRoom] = useState<string | null>(null);
   useEffect(() => {
     try {
-      const pending = localStorage.getItem(PENDING);
+      if (bought && stepOnce("bought")) trackEvent("askflow_buy");
+      const pending = pendingRoom();
       if (bought && pending && rooms.includes(pending)) {
-        if (localStorage.getItem(FROM_CHAPTER)) trackEvent("askflow_buy");
         window.location.replace(`/ask/${pending}?send=1`);
         return;
       }

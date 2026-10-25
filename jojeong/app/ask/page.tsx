@@ -112,11 +112,9 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
 
   if (!membersEnabled()) return <p className="doc-paper mt-6 px-5 py-5 text-center text-sm">곧 열려요. 조금만 기다려 주세요.</p>;
 
-  // Came from a chapter of a bought report with its chart (app/ask/go): after signing in, back through there, so
-  // the room on that chart opens with the question in it. The sign-in keeps 200 characters of the way back.
-  const c = typeof q.c === "string" ? q.c : "";
-  const back = c && `/ask/go?c=${c}`.length <= 200 ? `/ask/go?c=${c}` : "/ask";
-  const loginHref = `/login?next=${encodeURIComponent(back)}`;
+  // Came from a chapter of a bought report with its chart (app/ask/go keeps it in a cookie): after signing in, back
+  // through there, so the room on that chart opens with the question in it.
+  const loginHref = `/login?next=${encodeURIComponent(q.from === "chapter" ? "/ask/go" : "/ask")}`;
 
   if (!member)
     return (

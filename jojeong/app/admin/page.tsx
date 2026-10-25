@@ -332,7 +332,7 @@ const ROWS: { key: string; label: string; group?: string }[] = [
   { key: "to_ask", label: "묻기로 이동 (전체)" },
   ...ASK_FROM.map((f) => ({ key: `ask:${f}`, label: `　└ ${ASK_FROM_LABEL[f]}` })),
   // 2026-10-25: from a chapter's button on, one step after another (counted once each per visit, in this browser).
-  { key: "askflow_join", label: "　　보고서 장 → 로그인·가입하고 들어옴" },
+  { key: "askflow_join", label: "　　보고서 장 → 새로 가입" },
   { key: "askflow_sent", label: "　　보고서 장 → 질문 보냄" },
   { key: "askflow_buy", label: "　　보고서 장 → 질문 채움(결제)" },
   { key: "to_channel", label: "카카오톡 채널 추가 누름 (전체)", group: "카카오톡 채널" },

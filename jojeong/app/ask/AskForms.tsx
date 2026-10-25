@@ -7,7 +7,7 @@ import { keepValues } from "@/lib/keepForm";
 import { RELS, REL_LABEL } from "@/lib/rels";
 import { askAction, attachOtherAction, openRoomAction, removePersonAction, type FormState } from "./actions";
 import { trackEvent } from "@/components/VisitBeacon";
-import { FROM_CHAPTER, PENDING } from "@/lib/askFlow";
+import { clearPending, pendingRoom, setPending, stepOnce } from "@/lib/askFlow";
 
 // The guest's side of 정 훈도에게 묻기 (app/ask): the same forms as the owner's trial room (app/admin/ask), on the
 // member's own actions, which spend a question per answer.
@@ -140,8 +140,8 @@ export function AskForm({
       const url = new URL(window.location.href);
       const inUrl = url.searchParams.get("draft")?.trim();
       if (inUrl) localStorage.setItem(CARRY_KEY, inUrl.slice(0, 300));
-      const fromChapter = localStorage.getItem(FROM_CHAPTER);
-      if (fromChapter && url.searchParams.get("joined")) trackEvent("askflow_join");
+      // `joined` is set only for a new member (lib/login.ts): counted as a sign-up from the chapter.
+      if (url.searchParams.get("joined") && stepOnce("joined")) trackEvent("askflow_join");
       for (const k of ["draft", "joined", "opened"]) url.searchParams.delete(k);
       window.history.replaceState(null, "", url.pathname + url.search);
       const carried = (!d?.text || inUrl) && localStorage.getItem(CARRY_KEY);
@@ -174,16 +174,22 @@ export function AskForm({
       if (!url.searchParams.get("send")) return;
       url.searchParams.delete("send");
       window.history.replaceState(null, "", url.pathname + url.search);
-      if (localStorage.getItem(PENDING) !== room || credits < 1) return;
-      localStorage.removeItem(PENDING);
-      requestAnimationFrame(() => formRef.current?.requestSubmit());
+      if (pendingRoom() !== room || credits < 1) return;
+      clearPending();
+      // After the draft is back in the box (the effect above), and only if it is.
+      setTimeout(() => {
+        if (box.current?.value.trim()) formRef.current?.requestSubmit();
+      }, 300);
     } catch {}
   }, [room, credits]);
   const [sent, setSent] = useState({ question: "", topic: "" });
   const was = useRef(false);
   // The answer has come: bring the new letter into view.
   useEffect(() => {
-    if (was.current && !pending && !state.error) document.getElementById("last-answer")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (was.current && !pending && !state.error) {
+      document.getElementById("last-answer")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (stepOnce("sent")) trackEvent("askflow_sent");
+    }
     was.current = pending;
   }, [pending, state.error]);
   return (
@@ -204,17 +210,10 @@ export function AskForm({
             keep(text, topic);
             setNeedCredits(true);
             setOpen(false);
-            try {
-              localStorage.setItem(PENDING, room);
-            } catch {}
+            setPending(room);
             return;
           }
-          try {
-            if (localStorage.getItem(FROM_CHAPTER)) {
-              trackEvent("askflow_sent");
-              localStorage.removeItem(FROM_CHAPTER);
-            }
-          } catch {}
+          clearPending();
           const f = new FormData(e.currentTarget);
           setSent({ question: text.trim(), topic: String(f.get("topic") ?? "") });
           keepValues(action)(e);
@@ -301,7 +300,7 @@ export function AskForm({
               setText(e.target.value.slice(0, MAX));
               keep(e.target.value.slice(0, MAX), topic);
             }}
-            rows={open && text ? 3 : 1}
+            rows={open && text ? 3 : text ? 2 : 1}
             maxLength={MAX}
             disabled={pending}
             aria-label="물어볼 것"
