@@ -2,13 +2,13 @@ song_id,title,artist,mv_id,topic_id,search_done,note
 s0001,죄와벌,SG 워너비,,,2026-10-19,앨범: 살다가 / retry_done: 못 찾음
 s0002,겁쟁이,버즈,,,2026-10-19,앨범: Buzz Effect / retry_done: 못 찾음
 s0003,사랑했나봐,윤도현,,MDNzHG4DDhE,2026-10-20,앨범: Difference
-s0004,살다가,SG 워너비,,,2026-10-20,앨범: 살다가
+s0004,살다가,SG 워너비,,,2026-10-20,앨범: 살다가 / retry_done: 못 찾음
 s0005,광(狂),SG 워너비,,VO88htcm09E,2026-10-20,앨범: 살다가
 s0006,세글자,엠투엠,LL1qwk3E8rY,,2026-10-19,원제: 세글자 (드라마 '루루공주' 김정은 메인 테마) / 앨범: M to M / Topic 자동선택 오류(다른 가수) → 수동 확인 필요 / retry_done: 못 찾음
 s0007,제자리 걸음,김종국,,,2026-10-19,앨범: This Is Me / retry_done: 못 찾음
 s0008,가시,버즈,,2I75ion7CAc,2026-10-19,앨범: Buzz Effect
 s0009,I Love U Oh Thank U (Feat. 김태우 Of God),MC몽,,KUi3kGl5Jbg,2026-10-19,앨범: His Story
-s0010,둘이서,채연,,,2026-10-20,원제: 둘이서 (CF - 빙그레 '바나나맛 우유') / 앨범: Virginalness Bloom
+s0010,둘이서,채연,,Cb9eG4Tz1No,2026-10-20,원제: 둘이서 (CF - 빙그레 '바나나맛 우유') / 앨범: Virginalness Bloom / retry_done: Chae Yeon - Topic
 s0011,너에게 전하는 아홉가지 바램,KCM,,,2026-10-19,앨범: Growing Up / retry_done: 못 찾음
 s0012,Smile Again,KCM,,qRkiRE5ZApE,2026-10-19,앨범: Growing Up
 s0013,사랑은...하나다,테이,,JSQp3qWXp7o,2026-10-20,앨범: Ucupracacia
@@ -32,7 +32,7 @@ s0030,한숨만,이정,,DWBoAlCqM5c,2026-10-19,앨범: 한숨만
 s0031,으라차차,럼블피쉬,ucwpn56kiNI,J6EEcsNK91k,2026-10-19,앨범: Have A Nice Dream
 s0032,보통날,god,EiBsfvqGiT0,G59-gZaLYG0,2026-10-20,앨범: 보통날
 s0033,내가 웃는게 아니야 (Feat. ALI),리쌍,,kQQmD9iAQl8,2026-10-19,앨범: Library Of Soul
-s0034,눈물이 나요,조성모,,,2026-10-20,앨범: My First
+s0034,눈물이 나요,조성모,,,2026-10-20,앨범: My First / retry_done: 못 찾음
 s0035,환희,싸이,,fEDqkhSwuC0,2026-10-19,앨범: Remake & Mix 18번
 s0036,내 마음의 보석상자,SG 워너비,G-A22G-6pnY,utVlP1O1nBs,2026-10-19,앨범: Classic Odyssey
 s0037,그녀의 남자에게,김종국,,U5mjKOJp2RU,2026-10-19,앨범: This Is Me
@@ -43,12 +43,12 @@ s0041,지지 않는 태양 (Feat. 한 에스더),장우혁,gc-REiUVdnA,,2026-10-
 s0042,응급실,izi,,W6zKPBsRRog,2026-10-20,앨범: 쾌걸춘향 OST
 s0043,여자,빅마마,,ur-k0KRnawQ,2026-10-20,앨범: It's Unique
 s0044,Happiness,가비엔제이,krVAUiEGBlg,EZ2CkGV8wYk,2026-10-20,앨범: The Very First
-s0045,잘 지내나요,성시경,,,2026-10-20,앨범: 다시 꿈꾸고 싶다
+s0045,잘 지내나요,성시경,,h3cPnOl3xdE,2026-10-20,앨범: 다시 꿈꾸고 싶다 / retry_done: Sung Si Kyung - Topic
 s0046,거짓말,버즈,,M2ybJkuJ4dg,2026-10-20,앨범: Buzz Effect
 s0047,봄날,아이,,p4KHo60xhXM,2026-10-20,앨범: 봄날 OST
 s0048,"떠나가요, 떠나지마요",더 크로스,,A2J-UHmQjxo,2026-10-19,앨범: Rush
 s0049,사랑은 가슴이 시킨다,버즈,3OMb4JxIcUg,fuFJqIfnB5o,2026-10-20,앨범: 사랑은 가슴이 시킨다
-s0050,헤어지자고,윤건,6Rr_23mb6TM,,2026-10-20,원제: 헤어지자고 (MBC 슬픈연가 삽입곡) / 앨범: Now Is.. 2집
+s0050,헤어지자고,윤건,6Rr_23mb6TM,,2026-10-20,원제: 헤어지자고 (MBC 슬픈연가 삽입곡) / 앨범: Now Is.. 2집 / retry_done: 못 찾음
 s0051,Good-Bye Luv..,휘성,,e7-eoWLxYmU,2026-10-19,앨범: LOVE.. LOVE..? LOVE..!
 s0052,"1,2,3,4. (원,투,쓰리,포.)",코요태,,lC1VV5aYaS0,2026-10-19,앨범: 필업 (Feel Up)
 s0053,울보,휘성,,cGjPQt_q9HA,2026-10-19,앨범: LOVE.. LOVE..? LOVE..! / MV 자동선택 오류(커버) → 수동 확인 필요
@@ -115,10 +115,10 @@ s0113,Hey DJ (70's Remix),프리스타일,,TknaoXepoUQ,2026-10-19,앨범: Funkie
 s0114,이번만큼은,임재범,,FIMWmyrPL9w,2026-10-19,앨범: 프라하의 연인 OST
 s0115,당신은 내게 그런 사랑입니다(Original Ver.),소냐,,,2026-10-19,앨범: A New Life / retry_done: 못 찾음
 s0116,Tic Tac Toe (틱택토),부가킹즈,,yjSaLQjLiDI,2026-10-20,앨범: The Renaissance
-s0117,아픔이 사라진 후,윤미래,,,2026-10-20,앨범: 프라하의 연인 OST
+s0117,아픔이 사라진 후,윤미래,,,2026-10-20,앨범: 프라하의 연인 OST / retry_done: 못 찾음
 s0118,Butterfly,핑클,,AbPgMlKB268,2026-10-20,앨범: 핑클 디지털 앨범
 s0119,기대,나윤권,,iIMZZgeZrrI,2026-10-20,앨범: 기대
-s0120,운다,손호영,,,2026-10-20,앨범: 손호영 1집 Yes
+s0120,운다,손호영,,,2026-10-20,앨범: 손호영 1집 Yes / retry_done: 못 찾음
 s0121,까만안경 (Feat. Day Light),"이루, Daylight",,3vH4GiEN0p0,2026-10-20,앨범: 이루 LEVEL II
 s0122,아이스크림,MC몽,7KVyOSyHDhg,m73EFJZRe4A,2026-10-20,앨범: The Way I Am
 s0123,제발,이승기,,4k2H6sgs6fU,2026-10-20,앨범: 남자가 여자를 사랑할 때
@@ -451,61 +451,61 @@ s0449,미안해,다이나믹 듀오,,,2026-10-24,앨범: Triple Dynamite (0CD VS
 s0450,독설,테이,heoqJmXxVTk,NhCYOrUG98g,2026-10-24,앨범: The Shine 2009
 s0451,Ring Ding Dong,샤이니,roughtzsCDI,gewVwuDCHwc,2026-10-24,"앨범: 2009, Year Of Us"
 s0452,Wanna,카라,3K7uDzaPsR8,uoMn9LjFvhE,2026-10-24,앨범: Revolution
-s0453,사랑한단 말을 못해서,케이윌,,,,앨범: 쏘울 스페셜 OST
-s0454,너라면 좋겠어,윤도현,,,,앨범: Harmony (Present For 날아라 펭귄)
-s0455,Carousel (Feat. 이적),리쌍,,,,앨범: Hexagonal
-s0456,소년이여,G-DRAGON,,,,앨범: Heartbreaker
-s0457,Where U At,태양,,,,앨범: Where U At
-s0458,Hello (Feat. 다라),G-DRAGON,,,,앨범: Heartbreaker
-s0459,Pretty Boy,2NE1,,,,앨범: 2NE1 1st Mini Album
-s0460,바래,FT아일랜드,,,,앨범: Cross & Change
-s0461,연애특강 (FEAT. 한예슬),마이티 마우스,,,,앨범: Love Class
-s0462,우리 지금 만나 (Feat. 장기하와 얼굴들),리쌍,,,,앨범: Hexagonal
-s0463,내 사랑 내 곁에,럼블피쉬,,,,앨범: 내 사랑 내 곁에
-s0464,Breathe,G-DRAGON,,,,앨범: Heartbreaker
-s0465,초콜릿,"케이윌, 마리오",,,,앨범: Color Chocolate
-s0466,피아니시모 (Pianissimo),체리필터,,,,앨범: Rocksteric
-s0467,잊지 말아요,백지영,,,,앨범: 아이리스 OST (Part 1)
-s0468,I Don't Care (Reggae Mix Ver.),2NE1,,,,앨범: I Don't Care (Reggae Mix Ver.)
-s0469,안 줄래,4minute,,,,앨범: For Muzik
-s0470,울고 싶어 우는 사람이 있겠어 (Cry Mix),에이트,,,,앨범: 울고 싶어 우는 사람이 있겠어
-s0471,외톨이,아웃사이더,,,,앨범: Maestro
-s0472,Candy Man,브라운아이드걸스,,,,앨범: Sound G.
-s0473,"Indian Boy (Feat. 장근이, B.I)",MC몽,,,,앨범: Humanimal
-s0474,불꽃놀이 (Fireworks),다이나믹 듀오,,,,앨범: Band Of Dynamic Brothers
-s0475,사랑한다면서,오종혁,,,,앨범: 상심: Heartbreak
-s0476,너 정말이니,럼블피쉬,,,,앨범: One Sweet Day
-s0477,눈물아 안녕,아이비,,,,앨범: I Be..
-s0478,소원을 말해봐 (Genie),소녀시대,,,,앨범: '소원을 말해봐 (Genie)' The Second Mini Album
-s0479,사랑이라서,임재범,,,,앨범: 사랑이라서
-s0480,아몰레드 (Amoled),"손담비, 애프터스쿨",,,,앨범: 아몰레드
-s0481,내 이름 부르지마,이수영,,,,앨범: 9th Dazzle
-s0482,Yes I'm In Love (Feat. 2PM 택연),바다,,,,앨범: Yes I'm In Love
-s0483,Hot Issue,4minute,,,,앨범: Hot Issue
-s0484,N-Time (Feat. 티아라),황정음,,,,앨범: N-Time
-s0485,이 노래를 들으면 (Feat. 수호),태사비애,,,,앨범: 이 노래를 들으면
-s0486,기억이 안나,별,,,,앨범: 2009 No.1 Diva's Love (기억이 안나)
-s0487,Lie,FT아일랜드,,,,앨범: One Date
-s0488,I Want You Back,시크릿,,,,앨범: I Want You Back
-s0489,사랑할 수도 미워할 수도,애즈원,,,,앨범: 드라뮤지끄 Vol.1 (Part.1)
-s0490,말할걸 그랬지,박지헌,,,,앨범: 말할걸 그랬지 (유영석 20주년 기념앨범 Part. 3)
-s0491,"헤어질 거 같애 (Feat. MJ Of Sunnyside, 신혜)",박지헌,,,,앨범: 헤어질 거 같애
-s0492,나는... (Feat. Ivy),MC몽,,,,앨범: Humanimal (Repackage)
-s0493,Chocolate Love (Electronic Pop Ver.),f(x),,,,앨범: Chocolate Love
-s0494,결혼해 줄래 (Feat. BIZNIZ),이승기,,,,앨범: 결혼해줄래
-s0495,내 몸은 너를 지웠다 (Feat. Enzo.B),리쌍,,,,앨범: Hexagonal
-s0496,Oh Yeah,엠블랙,,,,앨범: Just Blaq
-s0497,Let's Go Party,2NE1,,,,앨범: 2NE1 1st Mini Album
-s0498,Girl,유리,,,,앨범: Chocolate #2 - Lovely Taste
-s0499,슬프지 않아요 (Feat. 소윤),PK 헤만,,,,앨범: Taste Of Love
-s0500,니가 밉다,2PM,,,,앨범: 2:00PM Time For Change
-s0501,"가을로 (Feat. 프리스타일 미노, Daylight, 이상)",타우,,,,앨범: 우리들의 행복한 시간 그 후...내 머리속의 지우개 Part 2
-s0502,"The Leaders (Feat. Teddy, CL)",G-DRAGON,,,,앨범: Heartbreaker
-s0503,I Love You (Feat. 미료),나르샤,,,,앨범: 아가씨를 부탁해 OST 1.5집
-s0504,사랑..그 몹쓸병,휘성,,,,앨범: Vocolate
-s0505,잘가요 내사랑,에이트,,,,앨범: 잘가요 내사랑
-s0506,Gossip Man (Feat. 김건모),G-DRAGON,,,,앨범: Heartbreaker
-s0507,Supermagic,Supreme Team,,,,앨범: Supreme Team Guide To Excellent Adventure
-s0508,Strong Girl,쥬얼리,,,,앨범: Sophisticated
-s0509,One Way Ticket,키네틱 플로우,,,,앨범: G-days
-s0510,일터 (Feat. Bizzy),리쌍,,,,앨범: Hexagonal
+s0453,사랑한단 말을 못해서,케이윌,Fvp8iWeUXpc,,2026-10-25,앨범: 쏘울 스페셜 OST
+s0454,너라면 좋겠어,윤도현,,R54bZE6-7t4,2026-10-25,앨범: Harmony (Present For 날아라 펭귄)
+s0455,Carousel (Feat. 이적),리쌍,,yIrPtHOWZJE,2026-10-25,앨범: Hexagonal
+s0456,소년이여,G-DRAGON,PMwWxmrQSGE,ioTdT-cmuJE,2026-10-25,앨범: Heartbreaker
+s0457,Where U At,태양,ro0d717tejg,btPF7HrPkyU,2026-10-25,앨범: Where U At
+s0458,Hello (Feat. 다라),G-DRAGON,,xeumQGwNFes,2026-10-25,앨범: Heartbreaker
+s0459,Pretty Boy,2NE1,,_pNHw60X3Ak,2026-10-25,앨범: 2NE1 1st Mini Album
+s0460,바래,FT아일랜드,R0Far5Y9ZCs,,2026-10-25,앨범: Cross & Change
+s0461,연애특강 (FEAT. 한예슬),마이티 마우스,,c3h1r4fM_DQ,2026-10-25,앨범: Love Class
+s0462,우리 지금 만나 (Feat. 장기하와 얼굴들),리쌍,,,2026-10-25,앨범: Hexagonal
+s0463,내 사랑 내 곁에,럼블피쉬,,WBtsij2HMa0,2026-10-25,앨범: 내 사랑 내 곁에
+s0464,Breathe,G-DRAGON,8pin-6JrdHY,4lueEtyH9_A,2026-10-25,앨범: Heartbreaker
+s0465,초콜릿,"케이윌, 마리오",,,2026-10-25,앨범: Color Chocolate
+s0466,피아니시모 (Pianissimo),체리필터,,,2026-10-25,앨범: Rocksteric
+s0467,잊지 말아요,백지영,,tQ3CMaHEmdE,2026-10-25,앨범: 아이리스 OST (Part 1)
+s0468,I Don't Care (Reggae Mix Ver.),2NE1,,,2026-10-25,앨범: I Don't Care (Reggae Mix Ver.)
+s0469,안 줄래,4minute,,UAOghR-YRYQ,2026-10-25,앨범: For Muzik
+s0470,울고 싶어 우는 사람이 있겠어 (Cry Mix),에이트,3k9Qn4w5DG0,cml8_jstQkY,2026-10-25,앨범: 울고 싶어 우는 사람이 있겠어
+s0471,외톨이,아웃사이더,yROjTblMPag,Uw_6rjigreA,2026-10-25,앨범: Maestro
+s0472,Candy Man,브라운아이드걸스,,8bQl4nLr7TA,2026-10-25,앨범: Sound G.
+s0473,"Indian Boy (Feat. 장근이, B.I)",MC몽,sUSyicowAuA,,2026-10-25,앨범: Humanimal
+s0474,불꽃놀이 (Fireworks),다이나믹 듀오,,,2026-10-25,앨범: Band Of Dynamic Brothers
+s0475,사랑한다면서,오종혁,,,2026-10-25,앨범: 상심: Heartbreak
+s0476,너 정말이니,럼블피쉬,,m069QSNlhq0,2026-10-25,앨범: One Sweet Day
+s0477,눈물아 안녕,아이비,Can1TuxxdKI,TH31lOfmkGw,2026-10-25,앨범: I Be..
+s0478,소원을 말해봐 (Genie),소녀시대,6SwiSpudKWI,,2026-10-25,앨범: '소원을 말해봐 (Genie)' The Second Mini Album
+s0479,사랑이라서,임재범,1ALgXMF8m1s,7qDp0y_Hrog,2026-10-25,앨범: 사랑이라서
+s0480,아몰레드 (Amoled),"손담비, 애프터스쿨",,qSbM-jCsClI,2026-10-25,앨범: 아몰레드
+s0481,내 이름 부르지마,이수영,,hLEkAHOjhJA,2026-10-25,앨범: 9th Dazzle
+s0482,Yes I'm In Love (Feat. 2PM 택연),바다,,,2026-10-25,앨범: Yes I'm In Love
+s0483,Hot Issue,4minute,kb4iKfnW2Yo,9EsJILyCRMo,2026-10-25,앨범: Hot Issue
+s0484,N-Time (Feat. 티아라),황정음,SSJsux3Noz4,hvTzUDDPGpk,2026-10-25,앨범: N-Time
+s0485,이 노래를 들으면 (Feat. 수호),태사비애,,DbaifUOfJuA,2026-10-25,앨범: 이 노래를 들으면
+s0486,기억이 안나,별,,nCArSCNW8eM,2026-10-25,앨범: 2009 No.1 Diva's Love (기억이 안나)
+s0487,Lie,FT아일랜드,,gfYJOIgaKIM,2026-10-25,앨범: One Date
+s0488,I Want You Back,시크릿,d3egL0nzREU,Y6wWMUoNS9A,2026-10-25,앨범: I Want You Back
+s0489,사랑할 수도 미워할 수도,애즈원,,,2026-10-25,앨범: 드라뮤지끄 Vol.1 (Part.1)
+s0490,말할걸 그랬지,박지헌,,WgHRjb0vXz8,2026-10-25,앨범: 말할걸 그랬지 (유영석 20주년 기념앨범 Part. 3)
+s0491,"헤어질 거 같애 (Feat. MJ Of Sunnyside, 신혜)",박지헌,6dA83HnkfGk,,2026-10-25,앨범: 헤어질 거 같애
+s0492,나는... (Feat. Ivy),MC몽,poCnOFgYIIc,,2026-10-25,앨범: Humanimal (Repackage)
+s0493,Chocolate Love (Electronic Pop Ver.),f(x),f2WEzjk4pgY,EaaG7ALu9CA,2026-10-25,앨범: Chocolate Love
+s0494,결혼해 줄래 (Feat. BIZNIZ),이승기,,7MPHlqNhh4M,2026-10-25,앨범: 결혼해줄래
+s0495,내 몸은 너를 지웠다 (Feat. Enzo.B),리쌍,,-bcDozfg5ms,2026-10-25,앨범: Hexagonal
+s0496,Oh Yeah,엠블랙,,,2026-10-25,앨범: Just Blaq
+s0497,Let's Go Party,2NE1,,TZrN5_f7TYs,2026-10-25,앨범: 2NE1 1st Mini Album
+s0498,Girl,유리,,,2026-10-25,앨범: Chocolate #2 - Lovely Taste
+s0499,슬프지 않아요 (Feat. 소윤),PK 헤만,,tgbcoLNxT6E,2026-10-25,앨범: Taste Of Love
+s0500,니가 밉다,2PM,M4rZvGF7ICY,,2026-10-25,앨범: 2:00PM Time For Change
+s0501,"가을로 (Feat. 프리스타일 미노, Daylight, 이상)",타우,,vfZJjBk_DZU,2026-10-25,앨범: 우리들의 행복한 시간 그 후...내 머리속의 지우개 Part 2
+s0502,"The Leaders (Feat. Teddy, CL)",G-DRAGON,,oSzP9tUXXec,2026-10-25,앨범: Heartbreaker
+s0503,I Love You (Feat. 미료),나르샤,Djacel967DM,4fCuf2fvtyU,2026-10-25,앨범: 아가씨를 부탁해 OST 1.5집
+s0504,사랑..그 몹쓸병,휘성,,e5V6JYxwM5w,2026-10-25,앨범: Vocolate
+s0505,잘가요 내사랑,에이트,,ZHKPu77ADqM,2026-10-25,앨범: 잘가요 내사랑
+s0506,Gossip Man (Feat. 김건모),G-DRAGON,,M3rWGzTl8UU,2026-10-25,앨범: Heartbreaker
+s0507,Supermagic,Supreme Team,,zCOGV0KzQpQ,2026-10-25,앨범: Supreme Team Guide To Excellent Adventure
+s0508,Strong Girl,쥬얼리,9arnoDVaOR8,1LAW8FcQlz8,2026-10-25,앨범: Sophisticated
+s0509,One Way Ticket,키네틱 플로우,,2UuGS1XmgDg,2026-10-25,앨범: G-days
+s0510,일터 (Feat. Bizzy),리쌍,,X92RbYBNxGE,2026-10-25,앨범: Hexagonal
