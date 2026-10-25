@@ -39,7 +39,7 @@ const MEET_LINE: Partial<Record<Meeting, [string, boolean]>> = {
 // The bought 궁합 (plain): outside lovers, no 끌림·정 (2026-10-25 강 어사 기준), and only a 반합 with its 왕지.
 const PLAIN_MEET: Partial<Record<Meeting, [string, boolean]>> = {
   육합: ["합: 같이 있을 때 편하고 손발이 잘 맞아요", true],
-  삼합: ["반합: 같은 쪽을 보며 일하기 쉬워요", true],
+  삼합: ["반합: 같은 쪽을 바라봐요", true],
   충: ["충: 가까이 붙어 지낼수록 생활 방식이 부딪히기 쉬워요", false],
   형: ["형: 가까울수록 날이 서기 쉬워요", false],
   원진: ["원진: 서운함이 쌓이기 쉬워요", false],
