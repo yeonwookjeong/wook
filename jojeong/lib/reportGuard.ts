@@ -6,7 +6,22 @@
 const esc = (x: string) => x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 // The other person, by the usual words and by name (`○○님`, `○○ 씨`).
 const themOf = (names: string[]) => String.raw`(?:그\s*사람|그분|상대(?:방)?|그\s*쪽${names.map((n) => `|${esc(n)}\s*(?:님|씨)?`).join("")})`;
-const RISKY: Partial<Record<string, (THEM: string) => { re: RegExp; why: string }[]>> = {
+const FATE = { re: /운명(?:의\s*(?:상대|짝|사람)|처럼|이야|이에요|이랍니다|적)/, why: "운명 단정" };
+const ODDS = { re: /(?:확률|가능성)[은는이가]?\s*\d+\s*(?:%|퍼센트)|\d+\s*(?:%|퍼센트)\s*(?:의\s*)?(?:확률|가능성)|열에\s*\S+[은는]/, why: "확률" };
+type Rule = { re: RegExp; why: string; hard?: boolean };
+// `lover`: false for 궁합 between family, at work or friends, where talk of love and the spouse seat hurts however
+// softly it is said (hard: no softening excuses it) (2026-10-25).
+const RISKY: Partial<Record<string, (THEM: string, lover: boolean) => Rule[]>> = {
+  gunghap: (_, lover) => [
+    FATE,
+    ODDS,
+    { re: /천생연분|평생\s*(?:함께\s*갈|가는)\s*(?:인연|사이)/, why: "운명 단정" },
+    {
+      re: /(?:결국|반드시|분명(?:히)?|언젠가)\s*(?:헤어(?:지|져|질)|이혼|갈라(?:서|설|선))|헤어지게\s*(?:돼|될)|이혼(?:하게\s*(?:돼|될)|할\s*(?:거|운명))|결혼(?:은|을)?\s*못\s*(?:해|할|하게|한다)|결혼(?:하기)?(?:는|가)?\s*어려|오래\s*못\s*(?:가|간다|갈)/,
+      why: "결말 단정",
+    },
+    ...(lover ? [] : [{ re: /배우자|연애|설렘|끌림|(?:남편|아내|연인)처럼|이성으로\s*(?:느끼|보|끌)|결혼/, why: "연인 아닌 관계에 연애 말", hard: true }]),
+  ],
   jaehoe: (THEM) => [
     { re: /(?:반드시|꼭|분명(?:히)?|결국)\s*(?:다시\s*)?(?:돌아(?:와|오|올)|만나(?:게|요|게\s*돼)|이어(?:져|질|지게)|연락(?:이\s*(?:와|올)|해\s*올))/, why: "재회 약속" },
     { re: /기다리(?:면|시면)[^.!?\n]{0,20}(?:와요|올\s*거|돌아|연락이\s*(?:와|올))/, why: "기다림 권유" },
@@ -18,19 +33,20 @@ const RISKY: Partial<Record<string, (THEM: string) => { re: RegExp; why: string 
 };
 // A clause that softens or denies what it names ("~할 수 있어요", "~해야 한다는 생각은", "~인 건 아니에요"). Read
 // per clause (split at commas too), so a soft word elsewhere in the sentence ("걱정하지 마세요") excuses nothing.
-const SOFT = /수\s*(?:도\s*)?있|쉬운|지도\s*몰|건\s*아니|야\s*(?:한다|하는|할)|거라고\s*믿기보다|아니에요/;
+const SOFT = /수\s*(?:도\s*)?있|쉬운|지도\s*몰|건\s*아니|야\s*(?:한다|하는|할)|거라고\s*믿기보다|아니에요|아니지만|아니라/;
 // The next clause quoting it back ("운명이에요, 라고 말하는 곳도…").
 const QUOTED = /^\s*(?:이?라(?:고|는)|하는\s*말)/;
 
 // `them`: the other person's name, so "현우님은 아직…" is read like "그 사람은 아직…".
-export function riskyLines(productId: string, text: string, them: string[] = []): string[] {
-  const rules = RISKY[productId]?.(themOf(them.filter(Boolean)));
+export function riskyLines(productId: string, text: string, them: string[] = [], lover = true): string[] {
+  const rules = RISKY[productId]?.(themOf(them.filter(Boolean)), lover);
   if (!rules) return [];
   const hits: string[] = [];
   const clauses = text.split(/(?<=[.!?。])\s+|\n+|[,，]/);
   clauses.forEach((clause, i) => {
-    if (SOFT.test(clause) || QUOTED.test(clauses[i + 1] ?? "")) return;
-    for (const { re, why } of rules) {
+    const soft = SOFT.test(clause) || QUOTED.test(clauses[i + 1] ?? "");
+    for (const { re, why, hard } of rules) {
+      if (soft && !hard) continue;
       const m = clause.match(re);
       if (m) hits.push(`${why}: "${m[0]}"`);
     }

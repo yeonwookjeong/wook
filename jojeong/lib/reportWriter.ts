@@ -4,6 +4,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 import { chartBrief, pairBrief } from "./brief";
 import { coupleBrief } from "./couple";
+import { coupleBriefV1 } from "./coupleLegacy";
 import { decodePerson, profileOf, RELATIONS, relationOf } from "./pairToken";
 import { ADULT_ONLY, FIXED_RELATION, isAdult, isPair, productById, YEONUN_PAST_TOC, type ProductId } from "./products";
 import { intimacyBrief } from "./intimacy";
@@ -62,7 +63,7 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
     subjectLine = `[대상] 읽는 사람: ${a.name} ('${a.name}님'이라 부를 것)${b ? ` / 함께하는 사람: ${b.name}` : ""} / 택일: ${KINDS[found.kind].title}`;
     briefs = [
       chartBrief(a.name, a.pillars, profileOf(a), briefYear),
-      ...(b ? [chartBrief(b.name, b.pillars, profileOf(b), briefYear), coupleBrief(a, b)] : []),
+      ...(b ? [chartBrief(b.name, b.pillars, profileOf(b), briefYear), coupleBriefV1(a, b)] : []),
       taekilBrief(found.kind, days, found.label),
     ].join("\n\n");
   } else if (isPair(product)) {
@@ -78,10 +79,16 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
         ? `[대상] 읽는 사람: ${a.name} ('${a.name}님'이라 부를 것) / 헤어진 상대: ${b.name}`
         : `[대상] 읽는 사람: ${a.name} ('${a.name}님'이라 부를 것) / 상대: ${b.name} / 관계: ${RELATIONS[rel]}`;
     briefs = [
-      chartBrief(a.name, a.pillars, profileOf(a), briefYear),
-      chartBrief(b.name, b.pillars, profileOf(b), briefYear),
+      chartBrief(a.name, a.pillars, profileOf(a), briefYear, REL_OF[rel] === "연인"),
+      chartBrief(b.name, b.pillars, profileOf(b), briefYear, REL_OF[rel] === "연인"),
       pairBrief(a.name, a.pillars, b.name, b.pillars),
-      product.id === "jaehoe" ? coupleBrief(a, b, briefYear) : coupleBrief(a, b),
+      // 궁합 reads the relation, and from v8 tells the years once, by its ten-year table (pairBriefs). The other pair
+      // reports keep the frozen brief, so what was written for them opens unchanged (lib/coupleLegacy.ts).
+      product.id === "gunghap"
+        ? coupleBrief(a, b, briefYear, REL_OF[rel], !(v === "v8" || v === "v9"))
+        : product.id === "jaehoe"
+          ? coupleBriefV1(a, b, briefYear)
+          : coupleBriefV1(a, b),
       // v8 궁합: the two people's ten years and six months, as the report's pictures show them.
       ...(product.id === "gunghap" && (v === "v8" || v === "v9") ? pairBriefs(a, b, rel, nowYear, at ?? Date.now()) : []),
       ...(product.id === "sokgunghap" ? [intimacyBrief(a, b)] : []),

@@ -27,6 +27,7 @@ const MARK_STYLE: Record<string, string> = {
   "함께 좋은 해": "bg-seal/25 text-seal",
   "무난한 해": "bg-ink/8 text-ink",
   "한쪽 흔들림": "bg-[#d4af5f]/35 text-ink",
+  "한 사람 자리가 흔들리는 해": "bg-[#d4af5f]/35 text-ink",
   "함께 조심": "bg-ink/20 text-ink",
   "관계가 흔들리기 쉬운 해": "bg-ink text-hanji",
 };
@@ -37,7 +38,7 @@ export function PairYearsFigure({ x, a, b }: { x: PairYears; a: string; b: strin
     <Frame
       title="우리 둘의 10년"
       sub={`${a}님과 ${b}님, 해마다 각자의 운과 ${x.seat}에 드는 기운`}
-      note="각자의 칸은 그 사람의 한 해 판정(대길·길·평·조심·인내)이에요. 맨 오른쪽은 두 사람에게 그해가 어떤지예요."
+      note={`각자의 칸은 그 사람의 한 해 판정(대길·길·평·조심·인내)이에요. 맨 오른쪽은 두 사람에게 그해가 어떤지예요.${x.noDaeun.length ? ` ${x.noDaeun.join("·")}님은 성별을 몰라 10년 대운 없이 본 판정이에요.` : ""}`}
     >
       <div className="grid grid-cols-[2.6rem_2.6rem_2.6rem_1fr] items-center gap-x-1.5 gap-y-1 text-center text-[11.5px]">
         <span className="text-[11px] font-bold text-ink-soft">해</span>

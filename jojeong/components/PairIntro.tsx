@@ -1,4 +1,5 @@
 import type { Couple } from "@/lib/couple";
+import type { PairYear } from "@/lib/pairYears";
 import { BRANCH_EL, chartOf, ELEMENT_HANJA, ELEMENT_KO, stemEl } from "@/lib/myeongri";
 import type { Person } from "@/lib/pairToken";
 import { BRANCHES, isFull, STEMS } from "@/lib/saju";
@@ -26,7 +27,10 @@ export function MiniChart({ person, blank }: { person: Person; blank?: string })
 // Before the written 궁합: both charts side by side and what the engine found between them (lib/couple.ts).
 // bare: the bought report of the second pass (lib/open.ts RENEW2) shows the seats and what each lends in their own
 // chapters, so the top keeps the charts, the score and the two roles only.
-export default function PairIntro({ a, b, c, blank, bare }: { a: Person; b: Person; c: Couple; blank?: string; bare?: boolean }) {
+// years: the coming five years as the ten-year table marks them (lib/pairYears.ts); only the years that matter get a chip.
+const CHIP = new Set(["정이 깊어지는 해", "함께 좋은 해", "관계가 흔들리기 쉬운 해"]);
+export default function PairIntro({ a, b, c, years, blank, bare }: { a: Person; b: Person; c: Couple; years: PairYear[]; blank?: string; bare?: boolean }) {
+  const chips = years.filter((y) => CHIP.has(y.mark));
   const EL = (e: number) => `${ELEMENT_KO[e]}(${ELEMENT_HANJA[e]})`;
   return (
     <section className="doc-paper mt-4 px-4 py-5">
@@ -52,8 +56,8 @@ export default function PairIntro({ a, b, c, blank, bare }: { a: Person; b: Pers
           <b>{a.name}</b>님은 {b.name}님에게 <b>{c.roles[1]}</b>
         </li>
         {!bare && c.seat.map((s) => (
-          <li key={s} className="border-b border-seal/10 pb-2">
-            {s}
+          <li key={s.term} className="border-b border-seal/10 pb-2">
+            {c.seatName}끼리는 {s.line}
           </li>
         ))}
         {!bare && c.lends.slice(0, 2).map((l) => (
@@ -66,12 +70,12 @@ export default function PairIntro({ a, b, c, blank, bare }: { a: Person; b: Pers
         )}
       </ul>
 
-      {!bare && c.years.length > 0 && (
+      {!bare && chips.length > 0 && (
         <p className="mt-3 flex flex-wrap gap-1.5">
-          {c.years.map((y) => (
+          {chips.map((y) => (
             <span
               key={y.year}
-              className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${y.mark === "함께 좋은 해" ? "bg-seal text-hanji" : "border border-ink/30 text-ink"}`}
+              className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${y.mark === "관계가 흔들리기 쉬운 해" ? "border border-ink/30 text-ink" : "bg-seal text-hanji"}`}
             >
               {y.year} {y.mark}
             </span>

@@ -48,7 +48,7 @@ import CalendarButton from "@/components/CalendarButton";
 import { PairYearsFigure, YearsAheadFigure } from "@/components/PaidFigures";
 import { BondFigure, BondMonthsFigure } from "@/app/ask/Figures";
 import { bondOf } from "@/lib/bond";
-import { pairYears, REL_OF } from "@/lib/pairYears";
+import { isGunghapV2, pairYearsAt, REL_OF } from "@/lib/pairYears";
 import { askShown } from "@/lib/members";
 import { coupleOf, type Couple } from "@/lib/couple";
 import { intimacyOf } from "@/lib/intimacy";
@@ -115,8 +115,9 @@ async function PairReport({ order, product, a, b, rel, couple, request }: { orde
   const at = paidAtOf(order);
   let figures: Record<number, React.ReactNode> | undefined;
   if (product.id === "gunghap" && isV8(order)) {
-    const years = pairYears(a, b, rel, thisYear(new Date(at)));
-    const bond = bondOf(a, b, b.name, REL_OF[rel], at);
+    // Bought before 궁합 1단계: the pictures as its pinned text knew them (lib/pairYears.ts GUNGHAP_V2_SINCE).
+    const years = pairYearsAt(a, b, rel, thisYear(new Date(at)), 10, at);
+    const bond = bondOf(a, b, b.name, REL_OF[rel], at, isGunghapV2(at));
     figures = {
       ...(bond && { 1: <BondFigure b={bond} name={a.name} />, 8: <BondMonthsFigure b={bond} name={a.name} /> }),
       ...(years && { 7: <PairYearsFigure x={years} a={a.name} b={b.name} /> }),
@@ -335,17 +336,20 @@ async function OpenReport({
     }
     if (ADULT_ONLY.includes(product.id) && !(isAdult(a.birthYear) && isAdult(b.birthYear)))
       return (<><Header product={product} /><Notice href={`/reports/${product.id}`} cta="다시 입력하기">만 19세 이상 두 사람만 볼 수 있는 보고서예요.</Notice></>);
-    const couple = product.id === "gunghap" ? coupleOf(a, b) : null;
-    const closeness = product.id === "sokgunghap" ? intimacyOf(a, b) : null;
-    // A bought 재회운 shows the years as of its order, the same ones its pinned text was written with.
-    const boughtAt = paid ? (paid.paidAt ?? paid.createdAt) : undefined;
-    const reunion = product.id === "jaehoe" ? reunionOf(a, b, boughtAt ? sajuYear(new Date(boughtAt)) : undefined) : null;
     const req = { product: product.id, a: pair.a, b: pair.b, rel: FIXED_RELATION[product.id] ?? relationOf(pair.rel) };
     const unlock = paid ?? (locked ? await ownedOrderFor(product.id, req) : asOwner(req));
+    // A bought 궁합·재회운 shows the years as of its order (opened by its link or found as this buyer's), the same
+    // ones its pinned text was written with.
+    const boughtAt = unlock?.id ? (unlock.paidAt ?? unlock.createdAt) : undefined;
+    const couple = product.id === "gunghap" ? coupleOf(a, b, boughtAt ? sajuYear(new Date(boughtAt)) : undefined, REL_OF[relationOf(pair.rel)]) : null;
+    // The free card's years are the first five rows of the bought report's ten-year table, so the two never disagree.
+    const coupleYears = couple ? (pairYearsAt(a, b, relationOf(pair.rel), thisYear(boughtAt ? new Date(boughtAt) : undefined), 5, boughtAt)?.rows ?? []) : [];
+    const closeness = product.id === "sokgunghap" ? intimacyOf(a, b) : null;
+    const reunion = product.id === "jaehoe" ? reunionOf(a, b, boughtAt ? sajuYear(new Date(boughtAt)) : undefined) : null;
     return (
       <>
         <Header product={product} subjectName={`${a.name}님과 ${b.name}님`} />
-        {couple && <PairIntro a={a} b={b} c={couple} blank={renew ? "모름" : undefined} bare={r2(unlock)} />}
+        {couple && <PairIntro a={a} b={b} c={couple} years={coupleYears} blank={renew ? "모름" : undefined} bare={r2(unlock)} />}
         {closeness && <IntimacyIntro a={a} b={b} x={closeness} />}
         {reunion && <ReunionIntro a={a} b={b} r={reunion} />}
         {locked && !unlock ? (
