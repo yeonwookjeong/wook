@@ -268,7 +268,8 @@ export async function ask(room: AskRoom, question: string, topic: Topic, chosen?
     })
     .join("\n");
   const name = personOfRoom(room)!.name;
-  const kit = figures ? figureKit(personOfRoom(room)!, withPerson ? decodePerson(withPerson.token) : null, withPerson?.label ?? "", withPerson?.rel, chosen ?? topic, `${chosen ?? ""} ${q}`, Date.now()) : null;
+  // A pick among offered topics is read for its own words (이직 → 일), not the whole two-topic question.
+  const kit = figures ? figureKit(personOfRoom(room)!, withPerson ? decodePerson(withPerson.token) : null, withPerson?.label ?? "", withPerson?.rel, chosen ? "기타" : topic, chosen ?? q, Date.now()) : null;
   const prompt = [
     ctx,
     ...(kit ? [`[판정 카드 — 답서 맨 위에 이대로 보인다]\n${verdictText(kit)}`, `[그림 재료 — 답서에 넣을 수 있는 그림과 그 안의 값]\n${figureMenu(kit)}`] : []),
