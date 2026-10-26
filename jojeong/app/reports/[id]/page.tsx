@@ -546,7 +546,9 @@ async function OpenReport({
     ? { product: product.id, p: me.token }
     : { product: product.id, ...(courtId && { court: subject!.courtId }), ...(ministerId && { m: ministerId }) };
   // A report bought before ENGINE2_SINCE shows the features its pinned text was written with.
-  const distinct = self ? distinctOf(pillars, profile?.gender ?? null, isEngine2(paid ? readAtOf(paid, product.id) : undefined)) : null;
+  // The order it opens with: by its link, or this buyer's own for the same chart.
+  const owned = paid ?? (self ? await ownedOrderFor(product.id, { ...request, product: product.id }).catch(() => null) : null);
+  const distinct = self ? distinctOf(pillars, profile?.gender ?? null, isEngine2(owned ? readAtOf(owned, product.id) : undefined)) : null;
   const free = self ? freeReadingOf(pillars, profile) : null;
   // The free reading: the chart analysis, then the four computed blocks (powers, 신살, money·love·work, the
   // flow of life). Shown on the free year reading and on the life report before purchase.

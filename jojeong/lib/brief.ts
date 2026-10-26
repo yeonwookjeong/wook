@@ -63,7 +63,9 @@ export function chartBrief(name: string, p: Pillars, profile: Profile | null, y 
   const raw = rawOf(p);
   // v2: an element is "없는" only when no letter of it is there at all, hidden stems included.
   const absent = [0, 1, 2, 3, 4].filter((e) => r.weights[e] === 0 && (!v2 || !raw.els.has(e)));
-  lines.push(`- 오행 비율(궁성·조후 보정): ${[0, 1, 2, 3, 4].map((e) => `${EL(e)} ${Math.round((100 * r.weights[e]) / sum)}%`).join(", ")}${absent.length ? ` / 없는 오행: ${absent.map(EL).join(", ")}` : ""}`);
+  // Without the hour (v2) what is not seen is not called missing.
+  const absentLabel = v2 && p.hourBranch === null ? "세 기둥에서 보이지 않는 오행(시 모름)" : "없는 오행";
+  lines.push(`- 오행 비율(궁성·조후 보정): ${[0, 1, 2, 3, 4].map((e) => `${EL(e)} ${Math.round((100 * r.weights[e]) / sum)}%`).join(", ")}${absent.length ? ` / ${absentLabel}: ${absent.map(EL).join(", ")}` : ""}`);
   const gsum = Object.values(r.godWeights).reduce((a, b) => a + b, 0);
   lines.push(`- 십신 비중: ${Object.entries(r.godWeights).map(([g, w]) => `${g} ${Math.round((100 * w) / gsum)}%`).join(", ")}`);
   if (v2) {

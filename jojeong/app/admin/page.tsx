@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { adminConfigured, isAdmin } from "@/lib/admin";
-import { getOrder, giftOrders, paidOrders, type Order } from "@/lib/pay";
+import { covers, getOrder, giftOrders, paidOrders, type Order } from "@/lib/pay";
 import CopyButton from "@/components/CopyButton";
 import { GIFTABLE, originNow } from "@/lib/gift";
 import { SALE_KEYS, saleKey, saleLabel } from "@/lib/sales";
@@ -738,7 +738,8 @@ async function FeedbackSection() {
 // Under a 👎: have the report written again under today's reading (same link for the buyer), and say when it was.
 async function RewriteBox({ order, product }: { order: string; product: ProductId }) {
   const o = await getOrder(order).catch(() => null);
-  if (!o) return null;
+  // Only a paid order that holds this report can have it written again (lib/pay.ts rewriteReport).
+  if (!o || o.status !== "paid" || !covers(o, product)) return null;
   const at = o.rewritten?.[product];
   const when = (t: number) => new Date(t + 9 * 3600000).toISOString().slice(5, 16).replace("T", " ");
   return (

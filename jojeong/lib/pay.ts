@@ -8,6 +8,7 @@ import type { JobRequest } from "./reportWriter";
 import { isAdmin } from "./admin";
 import { changeCredits, currentMember } from "./members";
 import { getOrderRaw, getOrdersRaw, giftOrderIds, noteGiftOrder, notePaidOrder, paidOrderIds, setOrderRaw } from "./store";
+import { ENGINE2_SINCE } from "./patterns";
 
 // Paying for a report with 토스페이먼츠 (결제창, API 개별 연동 키).
 //   1. /api/pay/order makes an order: the report request, whose chart, and the amount fixed on our side.
@@ -153,9 +154,11 @@ export async function setOrderRawPublic(order: Order) {
 }
 
 // Keeps which text this order's report opened with (the order read fresh, so nothing written meanwhile is lost).
-export async function pinReportText(orderId: string, product: ProductId, key: string): Promise<void> {
+// `startedAt`: when the writing began; one begun before the owner had the report written again is not pinned.
+export async function pinReportText(orderId: string, product: ProductId, key: string, startedAt?: number): Promise<void> {
   const o = await getOrder(orderId);
   if (!o || o.texts?.[product] === key) return;
+  if (startedAt !== undefined && (o.rewritten?.[product] ?? 0) > startedAt) return;
   await setOrderRaw(o.id, JSON.stringify({ ...o, texts: { ...o.texts, [product]: key } }));
 }
 
@@ -165,7 +168,8 @@ export async function rewriteReport(orderId: string, product: ProductId): Promis
   if (!o || o.status !== "paid" || !covers(o, product)) return false;
   const texts = { ...o.texts };
   delete texts[product];
-  await setOrderRaw(o.id, JSON.stringify({ ...o, texts, rewritten: { ...o.rewritten, [product]: Date.now() } }));
+  // Never before ENGINE2_SINCE, so a report written again is always read the new way.
+  await setOrderRaw(o.id, JSON.stringify({ ...o, texts, rewritten: { ...o.rewritten, [product]: Math.max(Date.now(), ENGINE2_SINCE) } }));
   return true;
 }
 // The moment a report is read as of: when it was written again, else when it was bought.

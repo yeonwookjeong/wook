@@ -2,7 +2,7 @@ import { isBaekho, isGoegang, meetings, salsAt, stageOf, type Sal } from "./deep
 import { chartOf, ELEMENT_HANJA, ELEMENT_KO, GROUP_OF, HIDDEN, readChart, stemEl, tenGod, type GodGroup, type Reading, type TenGod } from "./myeongri";
 import { josa } from "./josa";
 import type { Gender } from "./profile";
-import { hourStemOf, isFull, type FullPillars, type Pillars } from "./saju";
+import { hourStemFor, isFull, type FullPillars, type Pillars } from "./saju";
 
 // Classical patterns (격국·십신·합충·신살) that make one chart unlike another with the same day pillar. The
 // engine finds them so the writer does not have to, and lib/rarity.json says how rare each one is.
@@ -441,7 +441,8 @@ export const ENGINE2_SINCE = Date.parse("2026-10-26T06:00:00Z");
 export const isEngine2 = (boughtAt: number | undefined) => boughtAt === undefined || boughtAt >= ENGINE2_SINCE;
 
 export function rawOf(p: Pillars) {
-  const stems = [p.yearStem, p.monthStem, p.hourBranch === null ? null : hourStemOf(p.dayStem, p.hourBranch)].filter((x): x is number => x !== null && x !== undefined);
+  // The hour stem as the chart shows it (a 야자시 birth keeps its own, lib/saju.ts hourStemFor).
+  const stems = [p.yearStem, p.monthStem, hourStemFor(p)].filter((x): x is number => x !== null && x !== undefined);
   const hidden = [p.yearBranch, p.monthBranch, p.dayBranch, p.hourBranch].flatMap((b) => (b === null || b === undefined ? [] : HIDDEN[b].map(([h]) => h)));
   return {
     groups: new Set([...stems, ...hidden].map((x) => GROUP_OF[tenGod(p.dayStem, x)])),

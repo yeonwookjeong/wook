@@ -95,13 +95,15 @@ export async function POST(request: Request) {
   const beforeV7 = order && (order.paidAt ?? order.createdAt) < V7_SINCE ? await jobFor(req, "v6", false, at) : null;
   // Bought before the opening (not in the new shop): the v7 report, and written with v7 if never opened.
   const preV8 = Boolean(order && !isV8(order));
-  const beforeV8 = preV8 ? await jobFor(req, "v7", false, at) : null;
-  // A 연운 bought before its year was fixed to the purchase (2026-10): asked as of this year, as it was then.
-  const asNow = order && product.id === "yeonun" ? await jobFor(req, preV8 ? "v7" : undefined) : null;
+  // (Written again by the owner: the same v7 report, read as of then, under a new key.)
+  const beforeV8 = preV8 ? await jobFor(req, "v7", false, at, rewrittenAt ?? at) : null;
+  // A 연운 bought before its year was fixed to the purchase (2026-10): asked as of this year, as it was then (its
+  // charts read as of the purchase too, so its unpinned text is still found).
+  const asNow = order && product.id === "yeonun" ? await jobFor(req, preV8 ? "v7" : undefined, false, undefined, at) : null;
   // The first of these already written opens (oldest way first), and is kept on the order from then on.
   // An opened-shop order written with v8 before the second pass (and never pinned) opens that, with its points.
   const asV8 = v9 ? await jobFor(req, "v8", false, at) : null;
-  const found = (rewrittenAt ? [job] : [legacy, oldGrades, beforeV7, beforeV8, asV8, job, asNow]).filter((j): j is NonNullable<typeof j> & { key: string } => Boolean(j && !("error" in j)));
+  const found = (rewrittenAt ? [preV8 ? beforeV8 : job] : [legacy, oldGrades, beforeV7, beforeV8, asV8, job, asNow]).filter((j): j is NonNullable<typeof j> & { key: string } => Boolean(j && !("error" in j)));
   for (const j of found) {
     const text = await getReportText(j.key);
     if (!text) continue;
@@ -146,13 +148,15 @@ export async function POST(request: Request) {
       sink.out = null;
     }
   };
+  const startedAt = Date.now();
   const work = (async () => {
     let ok = false;
     try {
       const text = await writeReport(writeJob, push);
       if (text) {
         await setReportText(writeJob.key, text);
-        if (order) await pinReportText(order.id, product.id as ProductId, writeJob.key).catch(() => {});
+        // Begun before the owner had it written again: kept, but not pinned over the coming new text.
+        if (order) await pinReportText(order.id, product.id as ProductId, writeJob.key, startedAt).catch(() => {});
         ok = true;
         // A word the report must not carry is told to the owner (admin page), not hidden from the reader.
         const risky = riskyLines(product.id, text, [decodePerson(req.b)?.name ?? ""], REL_OF[relationOf(req.rel)] === "연인");
