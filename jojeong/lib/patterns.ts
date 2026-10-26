@@ -436,7 +436,7 @@ function contextOf(p: Pillars, gender: Gender | null): Ctx | null {
 // said without the hour, where a quarter of the chart is unseen.
 const GROUP_NONE: Record<string, GodGroup> = { "no-gwan": "관성", "no-jae": "재성", "no-inseong": "인성", "no-bigup": "비겁" };
 const NEEDS_HOUR = new Set([...Object.keys(GROUP_NONE), "missing-two", "rootless"]);
-export const ENGINE2_SINCE = Date.parse("2026-10-26T06:00:00Z");
+export const ENGINE2_SINCE = Date.parse("2026-10-26T06:59:00Z");
 // A report bought before ENGINE2_SINCE keeps the old reading, so its pinned text and its page agree.
 export const isEngine2 = (boughtAt: number | undefined) => boughtAt === undefined || boughtAt >= ENGINE2_SINCE;
 
