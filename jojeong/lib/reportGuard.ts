@@ -48,7 +48,7 @@ const RISKY: Partial<Record<string, (THEM: string, lover: boolean) => Rule[]>> =
 };
 // A clause that softens or denies what it names ("~할 수 있어요", "~해야 한다는 생각은", "~인 건 아니에요"). Read
 // per clause (split at commas too), so a soft word elsewhere in the sentence ("걱정하지 마세요") excuses nothing.
-const SOFT = /수\s*(?:도\s*)?있|쉬운|지도\s*몰|건\s*아니|야\s*(?:한다|하는|할)|야\s*하(?:옵|오|세|시)|편이|(?:으)?면\s|거라고\s*믿기보다|아니에요|아니지만|아니라|아니(?:옵니다|오|사옵니다|외다)|없(?:어요|사옵니다|습니다)/;
+const SOFT = /수\s*(?:도\s*)?있|쉬운|지도\s*몰|건\s*아니|야\s*(?:한다|하는|할)|야\s*하(?:옵|오|세|시)|편이|면\s*좋|거라고\s*믿기보다|아니에요|아니지만|아니라|아니(?:옵니다|오|사옵니다|외다)|(?:할|걱정할)\s*(?:일|필요)[은는이가]?\s*없|사주는\s*없/;
 // The next clause quoting it back ("운명이에요, 라고 말하는 곳도…").
 const QUOTED = /^\s*(?:이?라(?:고|는)|하는\s*말)/;
 
