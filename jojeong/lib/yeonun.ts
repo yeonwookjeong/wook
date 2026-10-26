@@ -38,7 +38,7 @@ export type YearScore = {
 };
 
 // The lowest score each floor allows (v3), just inside its verdict's band (verdictOf below).
-const FLOOR_SCORE: Record<Verdict, number> = { 인내: -Infinity, 조심: -2.9, 평: -0.9, 길: 1, 대길: 3.5 };
+const FLOOR_SCORE: Record<Verdict, number> = { 인내: -Infinity, 조심: -2.9, 평: -0.5, 길: 1, 대길: 3.5 };
 export const verdictOf = (score: number): Verdict => (score >= 3.5 ? "대길" : score >= 1 ? "길" : score > -1 ? "평" : score > -3 ? "조심" : "인내");
 const EL = (e: number) => `${ELEMENT_KO[e]}(${ELEMENT_HANJA[e]})`;
 // A branch as 申(신), with the particle its Korean reading takes.
@@ -128,7 +128,7 @@ export function yearScore(p: FullPillars, r: Reading, profile: Profile | null, y
     const floor: Verdict = welcome(se) && welcome(be) ? "길" : welcome(se) || welcome(be) ? "평" : unwelcome(se) && unwelcome(be) ? "인내" : "조심";
     const least = FLOOR_SCORE[floor];
     if (score < least) {
-      factors.push({ tag: floor === "조심" ? "버거운 기운이 위아래 한쪽뿐이라 크게 꺾이지 않음" : `${floor === "길" ? "용신·희신이 천간·지지에 모두" : "용신·희신이"} 드는 해라 ${floor} 아래로 내리지 않음`, delta: least - score });
+      factors.push({ tag: floor === "조심" ? "천간·지지가 모두 버거운 기운인 해는 아니라 인내까지 내리지 않음" : `${floor === "길" ? "용신·희신이 천간·지지에 모두" : "용신·희신이"} 드는 해라 ${floor} 아래로 내리지 않음`, delta: least - score });
       score = least;
       factors.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
     }

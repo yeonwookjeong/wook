@@ -12,12 +12,17 @@ type Rule = { re: RegExp; why: string; hard?: boolean };
 // Every other written text (the life, love, money, work and year reports, 속궁합, 정 훈도의 묻기 답): fate, odds, a
 // promised result, an ending said as certain, and a death or grave illness foretold (2026-10-26 엔진 점검 4번).
 const ENDING = { re: /(?:결국|반드시|분명(?:히)?|언젠가)\s*(?:헤어(?:지|져|질)|이혼|갈라(?:서|설|선))|헤어지게\s*(?:돼|될)|이혼(?:하게\s*(?:돼|될)|할\s*(?:거|운명))|결혼(?:은|을)?\s*못\s*(?:해|할|하게|한다)|결혼(?:하기)?(?:는|가)?\s*어려|오래\s*못\s*(?:가|간다|갈)/, why: "결말 단정" };
+// Outside 궁합 '오래 못 가' is said of money and luck too: an ending only when it is about the two of them.
+const ENDING_PEOPLE = {
+  re: /(?:결국|반드시|분명(?:히)?|언젠가)\s*(?:헤어(?:지|져|질)|이혼|갈라(?:서|설|선))|헤어지게\s*(?:돼|될)|이혼(?:하게\s*(?:돼|될)|할\s*(?:거|운명))|결혼(?:은|을)?\s*못\s*(?:해|할|하게|한다)|(?:사이|관계|인연|연애|두\s*사람)[^.!?\n]{0,10}오래\s*못\s*(?:가|간다|갈)/,
+  why: "결말 단정",
+};
 const GENERIC = (): Rule[] => [
   FATE,
   ODDS,
-  ENDING,
-  { re: /(?:반드시|틀림없이|무조건|100\s*%)\s*[^.!?\n]{0,15}(?:돼요|됩니다|와요|옵니다|생겨요|생깁니다|이뤄(?:져요|집니다)|성공해요|성공합니다|부자가)/, why: "결과 약속" },
-  { re: /단명|요절|큰\s*병(?:에|이|을)?\s*(?:걸|생기|찾아)|사별(?:해|하게|할)|죽(?:어요|습니다|게\s*돼)/, why: "죽음·큰 병 단정" },
+  ENDING_PEOPLE,
+  { re: /(?:반드시|틀림없이|무조건|100\s*%)\s*[^.!?\n]{0,15}(?:돼요|됩니다|되옵니다|와요|찾아오옵니다|생겨요|생깁니다|생기옵니다|이뤄(?:져요|집니다|지옵니다)|성공해요|성공합니다|부자가)/, why: "결과 약속" },
+  { re: /단명|요절(?!복통)|큰\s*병(?:에|이|을)?\s*(?:걸|생기|찾아)|사별(?:해|하게|할)|(?<!기가\s?)죽(?:어요|습니다|게\s*돼)/, why: "죽음·큰 병 단정" },
 ];
 
 // `lover`: false for 궁합 between family, at work or friends, where talk of love and the spouse seat hurts however
@@ -44,7 +49,7 @@ const RISKY: Partial<Record<string, (THEM: string, lover: boolean) => Rule[]>> =
 };
 // A clause that softens or denies what it names ("~할 수 있어요", "~해야 한다는 생각은", "~인 건 아니에요"). Read
 // per clause (split at commas too), so a soft word elsewhere in the sentence ("걱정하지 마세요") excuses nothing.
-const SOFT = /수\s*(?:도\s*)?있|쉬운|지도\s*몰|건\s*아니|야\s*(?:한다|하는|할)|거라고\s*믿기보다|아니에요|아니지만|아니라/;
+const SOFT = /수\s*(?:도\s*)?있|쉬운|지도\s*몰|건\s*아니|야\s*(?:한다|하는|할)|야\s*하(?:옵|오|세|시)|편이|(?:으)?면\s|거라고\s*믿기보다|아니에요|아니지만|아니라|아니(?:옵니다|오|사옵니다|외다)|없(?:어요|사옵니다|습니다)/;
 // The next clause quoting it back ("운명이에요, 라고 말하는 곳도…").
 const QUOTED = /^\s*(?:이?라(?:고|는)|하는\s*말)/;
 
