@@ -71,7 +71,7 @@ export function pairYearsBrief(a: Person, b: Person, x: PairYears): string {
 
 // When 궁합 1단계 went live: a 궁합 bought before it opens its pinned text, written against the old marks
 // (lib/pairYearsLegacy.ts), so its pictures keep them; one bought after gets these.
-export const GUNGHAP_V2_SINCE = Date.parse("2026-10-26T03:00:00Z");
+export const GUNGHAP_V2_SINCE = Date.parse("2026-10-26T00:30:00Z");
 export const isGunghapV2 = (boughtAt: number | undefined) => boughtAt === undefined || boughtAt >= GUNGHAP_V2_SINCE;
 
 // The table as of the order (`boughtAt`; none: a free look, read the new way).
