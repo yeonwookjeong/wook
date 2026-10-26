@@ -21,7 +21,7 @@ const NO_FUTURE = { re: /(?:사이|관계|인연|두\s*사람|이\s*사람과(?:
 // Any syllable closing on ㅆ (했·셨·았·었·컸…): "~했을 거예요" guesses the reader's past as fact (PAST_V6, 2026-10-26 강 어사).
 // "있을 거예요" is left out: mostly the present or a scene to come ("그런 때가 있을 거예요").
 const SS = Array.from({ length: 399 }, (_, i) => String.fromCharCode(0xac00 + i * 28 + 20)).join("").replace("있", "");
-const PAST = { re: new RegExp(`[${SS}]을\\s*(?:거(?:예요|에요)|것(?:이옵니다|입니다|이에요|이외다))`), why: "과거 단정" };
+const PAST = { re: new RegExp(`[${SS}]을\\s*(?:거(?:예요|에요|외다|옵니다)|겁니다|테(?:지요|죠)|것(?:이옵니다|입니다|이에요|이외다))`), why: "과거 단정" };
 const PROMISE = {
   re: /(?:반드시|틀림없이|무조건|100\s*%)\s*[^.!?\n]{0,15}(?:돼요|됩니다|되옵니다|와요|나와요|(?:나|들어|찾아)(?:옵니다|오옵니다)|생겨요|생깁니다|생기옵니다|이뤄(?:져요|집니다|지옵니다)|성공해요|성공합니다|부자가)/,
   why: "결과 약속",

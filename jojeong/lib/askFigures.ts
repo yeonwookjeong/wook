@@ -221,7 +221,7 @@ function clashOf(p: Person["pillars"], at: number): ClashFig | null {
 // 宮位: one seat close up — what the seat means, its characters and hidden stems with their ten gods, its stage and
 // 신살, and what this year does to it.
 const SEAT_MEANING: Record<Slot["pos"], [string, string]> = {
-  일: ["나와 짝의 자리", "나 자신과 가장 가까운 사람, 결혼 생활의 결, 내 속마음이 머무는 곳"],
+  일: ["나와 짝의 자리", "나 자신과 가장 가까운 사람, 그 사람과 맺는 관계의 결, 내 속마음이 머무는 곳"],
   월: ["일터 자리", "사회에서 맡는 자리, 일하는 방식, 부모와 형제의 그늘"],
   연: ["뿌리 자리", "집안과 어린 시절, 윗사람과 나라·회사 같은 큰 울타리"],
   시: ["말년 자리", "자녀와 아랫사람, 늘그막의 모습, 품고 있는 꿈"],

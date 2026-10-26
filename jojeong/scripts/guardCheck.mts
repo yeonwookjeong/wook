@@ -46,6 +46,8 @@ const CASES: [string, string, boolean, boolean][] = [
   ["gunghap", "서로 말을 아낀 날이 많았을 거예요.", true, true],
   ["pyeongsaeng", "2019년 무렵 이직을 고민했다면, 그건 이 구조 때문이에요.", true, false],
   ["pyeongsaeng", "앞으로 쓸 거예요.", true, false],
+  ["pyeongsaeng", "그 시절 많이 외로웠을 겁니다.", true, true],
+  ["ask", "마음고생이 심하셨을 테지요.", true, true],
 ];
 
 let misses = 0;

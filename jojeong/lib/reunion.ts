@@ -60,7 +60,7 @@ export function reunionOf(a: Person, b: Person, from = sajuYear(), now = new Dat
     const rough = seat.includes("형") || seat.includes("파");
     ties.push(
       rough
-        ? { w: 1, line: `배우자 자리(일지)끼리 육합이면서 ${seat.filter((m) => m === "형" || m === "파").join("·")}이에요. 끌리면서도 자꾸 어긋나는 사이였을 거예요.` }
+        ? { w: 1, line: `배우자 자리(일지)끼리 육합이면서 ${seat.filter((m) => m === "형" || m === "파").join("·")}이에요. ${v3 ? "끌리면서도 자꾸 어긋났다면, 그건 이 구조 때문일 수 있어요." : "끌리면서도 자꾸 어긋나는 사이였을 거예요."}` }
         : { w: 3, line: "배우자 자리(일지)끼리 육합이에요. 함께 있을 때의 편안함이 오래 남는 사이예요." },
     );
   } else if (seat.includes("삼합") && halfCombine(da, db)) ties.push({ w: 2, line: "배우자 자리(일지)끼리 반합이에요. 같은 곳을 바라보던 기억이 끈으로 남아 있어요." });
@@ -70,7 +70,7 @@ export function reunionOf(a: Person, b: Person, from = sajuYear(), now = new Dat
   for (const l of c.lends.slice(0, 1)) ties.push({ w: 1, line: `${l.to}님에게 모자란 ${EL(l.el)} 기운을 ${l.from}님이 ${l.pct}% 갖고 있어요. 곁에 없으면 허전함이 남기 쉬운 사이예요.` });
   if (seat.includes("충")) splits.push({ w: 3, line: "배우자 자리(일지)끼리 충이에요. 끌림만큼 부딪힘도 커서, 같은 문제로 다시 멀어지기 쉬워요." });
   if (seat.includes("원진")) splits.push({ w: 3, line: "배우자 자리(일지)끼리 원진이에요. 말하지 않은 서운함이 쌓여 멀어진 사이일 가능성이 커요." });
-  if (seat.includes("형")) splits.push({ w: 2, line: "배우자 자리(일지)끼리 형이에요. 가까울수록 날이 서는 순간이 있었을 거예요." });
+  if (seat.includes("형")) splits.push({ w: 2, line: `배우자 자리(일지)끼리 형이에요. ${v3 ? "가까울수록 날이 서는 순간이 있었다면, 그건 이 구조 때문일 수 있어요." : "가까울수록 날이 서는 순간이 있었을 거예요."}` });
   if (seat.includes("해") || seat.includes("파")) splits.push({ w: 1, line: "배우자 자리(일지)끼리 어긋나는 관계(해·파)예요. 작은 오해와 엇갈린 약속이 쌓이기 쉬웠어요." });
   if (c.sharedLack.length) splits.push({ w: 1, line: `둘 다 ${c.sharedLack.map(EL).join("·")} 기운이 부족해요. 서로 채워 주지 못한 빈틈이 있었어요.` });
   const T = ties.reduce((s, x) => s + x.w, 0);
