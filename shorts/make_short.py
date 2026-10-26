@@ -1159,7 +1159,12 @@ def media_items(p: dict, dur: float, src: Path, subs: "Subs", ff: str) -> list:
         else:                   # 유튜브 영상의 특정 장면 {"at": "01:23"} 또는 {"src": "다른링크", "at": ...}
             vpath, vsubs = src, subs
             if m.get("search"):  # 셀럽 이름 등으로 유튜브를 검색해서 k번째 영상을 자동으로 씀
-                found = search_videos(m["search"], exclude=src.stem, cc_only=cc_only)
+                try:
+                    found = search_videos(m["search"], exclude=src.stem, cc_only=cc_only)
+                except Exception as e:  # 검색이 막혀도(429 등) 영상 만들기는 계속
+                    print(f"      ⚠️ 유튜브 검색 실패로 자동 자료를 건너뜀 ({type(e).__name__})")
+                    _SEARCHES[(m["search"], cc_only)] = []
+                    found = []
                 if not found:
                     print(f"      ⚠️ '{m['search']}' 검색 결과가 없어서 건너뜀")
                     continue
