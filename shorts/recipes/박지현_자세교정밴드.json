@@ -1,0 +1,22 @@
+{
+  "source": "https://youtu.be/NDyePWmIYeM",
+  "title1": "[[박지현]]이 촬영장마다 챙기는",
+  "title2": "자세 교정 밴드",
+  "link_text": "프로필 링크 51번",
+  "theme": "celebpick",
+  "sub_theme": "story_green",
+  "clip_subs": true,
+  "blur": true,
+  "google_voice": "ko-KR-Chirp3-HD-Kore",
+  "google_rate": 1.45,
+  "broll_query": "박지현 배우",
+  "broll_offset": 2,
+  "parts": [
+    {"type": "tts", "text": "자세 교정에 진심인 배우 박지현이 사람들이 이상하게 봐도 꼭 들고 다닌다는 이것", "media": ["auto", {"at": "08:17"}]},
+    {"type": "clip", "from": "얘는 이걸 들고 다니면", "to": "바로 이거예요"},
+    {"type": "tts", "text": "사용법은 생각보다 간단한데"},
+    {"type": "clip", "from": "저는 한쪽 발로 밟고요", "to": "이렇게 버티는 거예요"},
+    {"type": "tts", "text": "효과는?"},
+    {"type": "clip", "from": "한 5분만 해도", "to": "자주 갖고 다니고"}
+  ]
+}

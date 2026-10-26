@@ -1,0 +1,20 @@
+{
+  "source": "https://youtu.be/NDyePWmIYeM",
+  "title1": "[[박지현]]이 두 개나 들고 다니는",
+  "title2": "말랑 고무 귀마개",
+  "link_text": "프로필 링크 49번",
+  "theme": "celebpick",
+  "sub_theme": "story_green",
+  "clip_subs": true,
+  "blur": true,
+  "google_voice": "ko-KR-Chirp3-HD-Kore",
+  "google_rate": 1.45,
+  "broll_query": "박지현 배우",
+  "broll_offset": 0,
+  "parts": [
+    {"type": "tts", "text": "어릴 때 수영을 했던 배우 박지현이 두 개씩 들고 다닌다는 이것은?", "media": ["auto", {"at": "00:00"}]},
+    {"type": "clip", "from": "고무로 된 귀마개예요", "to": "두 개로 갈라져요"},
+    {"type": "tts", "text": "일반 귀마개와 다른 점은"},
+    {"type": "clip", "from": "이거는 완전 이렇게 말랑말랑해서", "to": "외이도 모양으로 딱 만들어져요"}
+  ]
+}
