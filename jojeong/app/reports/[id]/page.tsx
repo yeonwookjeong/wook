@@ -736,6 +736,8 @@ async function OpenReport({
     const { from, to } = yearRange(profile, now);
     const yreq = { product: product.id, p: token ?? "", y: String(y) };
     const unlock = paid ?? (locked && token ? await ownedOrderFor(product.id, yreq) : asOwner(yreq));
+    // A 연운 is found by its year too: its features as of the order it opens with (bought before ENGINE2_SINCE: old).
+    const yearDistinct = unlock?.id && self ? distinctOf(pillars, profile?.gender ?? null, isEngine2(readAtOf(unlock, product.id))) : distinct;
     const preview = yearPreviewOf(pillars, profile, y);
     const flowNow = freeReadingOf(pillars, profile)?.flow?.find((f) => f.from <= y && y <= f.to);
     const decadeNow = flowNow ? { from: flowNow.from, to: flowNow.to, mood: flowNow.young ? "성장기" : flowNow.mood, theme: flowNow.theme } : null;
@@ -778,7 +780,7 @@ async function OpenReport({
         {r2(unlock) && (
           <>
             <Jump gift={unlock!.gift} title={y === newYear ? `${y} 신년운세` : `${y}년 운세`} chapters={yearChapters.length} />
-            <ChartTop name={name} chart={reading.chart} weights={readChart(pillars)?.weights} distinct={distinct} year={{ y, hanja: d.hanja, gods: d.gods }} />
+            <ChartTop name={name} chart={reading.chart} weights={readChart(pillars)?.weights} distinct={yearDistinct} year={{ y, hanja: d.hanja, gods: d.gods }} />
           </>
         )}
         {r2(unlock) ? (

@@ -73,8 +73,11 @@ export function gunghapScore(a: Person, b: Person, rel: Rel): number {
   if (f.yong) score += Math.min(3, f.yong.count) * 4 - Math.max(0, f.yong.giCount - 1) * 2 - 4;
   return Math.max(12, Math.min(99, score));
 }
-// The average of gunghapScore over random pairs (2026-10-26, 3,000 lover pairs 69.7, friends 68.0), shown beside it.
+// The average of gunghapScore over random pairs, shown beside it (2026-10-26, 3,000 pairs): lovers of opposite
+// known genders, where the spouse star counts, 70; every other pair 68.
 export const GUNGHAP_AVG = 70;
+export const GUNGHAP_AVG_OTHER = 68;
+export const gunghapAvg = (a: Person, b: Person, rel: Rel) => (rel === "연인" && a.gender && b.gender && a.gender !== b.gender ? GUNGHAP_AVG : GUNGHAP_AVG_OTHER);
 
 export type Couple = {
   score: number;
@@ -123,7 +126,7 @@ export function coupleOf(a: Person, b: Person, from = sajuYear(), rel: Rel = "�
   }
   return {
     score: v2 ? gunghapScore(a, b, rel) : matchPillars(a.pillars, b.pillars).score,
-    avg: v2 ? GUNGHAP_AVG : 69,
+    avg: v2 ? gunghapAvg(a, b, rel) : 69,
     roles: [ROLE[rel][GROUP_OF[tenGod(a.pillars.dayStem, b.pillars.dayStem)]], ROLE[rel][GROUP_OF[tenGod(b.pillars.dayStem, a.pillars.dayStem)]]],
     lends,
     sharedLack,

@@ -78,7 +78,7 @@ export function chartBrief(name: string, p: Pillars, profile: Profile | null, y 
   lines.push(`- 일간: ${STEMS[p.dayStem]}${ELEMENT_HANJA[stemEl(p.dayStem)]} / 태어난 계절: ${r.season}`);
   lines.push(
     v2 && p.hourBranch === null
-      ? `- 신강약: ${strengthNoHour(p, r.strength)} (태어난 시를 몰라 세 칸 기준. 일간을 돕는 기운 ${Math.round(r.support * 100)}%. 단정하지 말 것)`
+      ? `- 신강약: ${strengthNoHour(p, r.strength)} (태어난 시를 몰라 세 칸 기준. 일간을 돕는 기운 ${Math.round(r.support * 100)}%. 단정하지 말 것${strongSide(r.strength) !== strongSide(strengthNoHour(p, r.strength)) || strengthNoHour(p, r.strength).includes("갈림") ? ". 아래 용신도 시에 따라 달라질 수 있음" : ""})`
       : `- 신강약: ${r.balanced ? "중화에 가까운 " : ""}${r.strength} (일간을 돕는 기운 ${Math.round(r.support * 100)}%)`,
   );
   lines.push(
@@ -168,10 +168,15 @@ export function chartBrief(name: string, p: Pillars, profile: Profile | null, y 
 // Strength without the hour (2026-10-26 강 어사 기준): read with each of the twelve hours; the same in all twelve
 // stays, otherwise the most common one, a step toward the middle when it is an extreme.
 const STRENGTHS = ["극신약", "신약", "신강", "극신강"] as const;
+const strongSide = (x: string) => (x.includes("갈림") ? null : x.includes("강"));
 function strengthNoHour(p: Pillars, seen: string): string {
   const all = Array.from({ length: 12 }, (_, h) => readChart({ ...p, hourBranch: h })?.strength ?? seen);
   if (all.every((x) => x === all[0])) return all[0];
-  const most = [...new Set(all)].sort((x, y) => all.filter((v) => v === y).length - all.filter((v) => v === x).length)[0];
+  const n = (v: string) => all.filter((x) => x === v).length;
+  const sorted = [...new Set(all)].sort((x, y) => n(y) - n(x));
+  // As many hours one way as the other: say it splits, not one of them.
+  if (sorted.length > 1 && n(sorted[0]) === n(sorted[1]) && strongSide(sorted[0]) !== strongSide(sorted[1])) return "신강·신약이 태어난 시에 따라 갈림";
+  const most = sorted[0];
   const i = STRENGTHS.indexOf(most as (typeof STRENGTHS)[number]);
   return i === 0 ? "신약" : i === 3 ? "신강" : most;
 }
