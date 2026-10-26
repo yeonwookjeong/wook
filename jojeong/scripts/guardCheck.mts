@@ -37,6 +37,15 @@ const CASES: [string, string, boolean, boolean][] = [
   ["ask", "그대는 단명할 상이 아니옵니다.", true, false],
   ["jaemul", "돈이 들어와도 오래 못 가니 모아 두세요.", true, false],
   ["yeonun", "결혼하기 어려운 사주는 없사옵니다.", true, false],
+  // 2026-10-26 재검수: 과거 단정, '나옵니다'로 끝나는 약속
+  ["yeonun", "옮기자는 이야기는 반드시 한 번은 나옵니다.", true, true],
+  ["yeonun", "좋은 기회가 반드시 들어와요.", true, true],
+  ["pyeongsaeng", "하고 싶은 말을 삼킨 날이 많았을 거예요.", true, true],
+  ["pyeongsaeng", "누군가에게 기대 본 기억이 별로 없으셨을 거예요.", true, true],
+  ["ask", "그 시절 마음고생이 컸을 것이옵니다.", true, true],
+  ["gunghap", "서로 말을 아낀 날이 많았을 거예요.", true, true],
+  ["pyeongsaeng", "2019년 무렵 이직을 고민했다면, 그건 이 구조 때문이에요.", true, false],
+  ["pyeongsaeng", "앞으로 쓸 거예요.", true, false],
 ];
 
 let misses = 0;

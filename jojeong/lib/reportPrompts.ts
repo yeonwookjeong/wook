@@ -270,6 +270,8 @@ const DISTINCT_RULES = `[이 사람만의 사주로 쓴다: 가장 중요한 규
 
 // v6 (from 2026-10): the same rules with the past read as a question to the reader, plus the direction that keeps
 // a long report fresh. Derived from the v5 text so a v5 prompt (and the reports cached under it) never changes.
+// Added to every report written on the v3 engine (lib/reportWriter.ts).
+export const PAST_STRICT = `\n\n[지나간 일 — 꼭 지킨다]\n- 지나간 일을 "~했을 거예요", "~셨을 거예요", "~였을 것이옵니다"처럼 단정하지 않는다. "~했다면, 그건 ~ 때문이에요"처럼 읽는 사람이 스스로 확인하게 쓴다.`;
 const DISTINCT_RULES_V6 = DISTINCT_RULES.replace(PAST_V5, PAST_V6) + EXTRA_V6;
 
 // Chapters that all open the same way ("~하시죠?") read like a template. Shared by both voices.

@@ -17,7 +17,7 @@ import type { Person } from "./pairToken";
 import { freeBrief } from "./freeReading";
 import { decadeBrief, decadeOf, domainBrief, isDomain } from "./domains";
 import { newYearOf, sajuYear, thisYear, yearOf, yearName, yeonunBrief } from "./yeonun";
-import { NEW_YEAR_CHAPTER, PROMPT_NOW, SPECS, systemPromptFor, userPrompt, yearChaptersFor, type PromptVersion } from "./reportPrompts";
+import { NEW_YEAR_CHAPTER, PAST_STRICT, PROMPT_NOW, SPECS, systemPromptFor, userPrompt, yearChaptersFor, type PromptVersion } from "./reportPrompts";
 import { dayStart, KINDS, parseSearch, pickDays, searchDay, taekilBrief } from "./taekil";
 import type { Gender } from "./profile";
 import type { Profile } from "./profile";
@@ -156,7 +156,8 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
     briefs = [chartBrief(subject.name, subject.pillars, profile, briefYear), freeBrief(subject.pillars, profile, briefYear, oldBrief), ...deep(product.id, subject.pillars, profile?.gender ?? null)].join("\n\n");
   }
 
-  const system = systemPromptFor(product, v);
+  // v3: the writer kept guessing the past ("~셨을 거예요") despite PAST_V6, so it is said once more (2026-10-26 강 어사 재검수).
+  const system = systemPromptFor(product, v) + (v3 ? PAST_STRICT : "");
   // 연운 for a year already gone asks its twelve questions in the past tense.
   const past = product.id === "yeonun" && req.y !== undefined && Number(req.y) < nowYear;
   // v9's 신년운세 (the coming year, lib/yeonun.ts newYearOf, as of when it was bought) asks one chapter more.
