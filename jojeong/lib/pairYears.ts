@@ -1,7 +1,9 @@
 import { meetings } from "./deep";
 import { profileOf, type Person } from "./pairToken";
 import type { Relation } from "./relations";
-import type { Rel } from "./rels";
+import { tieYear } from "./couple";
+import { pairYearsV1 } from "./pairYearsLegacy";
+import { SEAT_NAME, seatOf, type Rel } from "./rels";
 import { BRANCHES, STEMS } from "./saju";
 import { yearRows, type Verdict } from "./yeonun";
 
@@ -9,12 +11,11 @@ import { yearRows, type Verdict } from "./yeonun";
 // the year does to the seat their relation lives in. The table is shown in the report and told to 정 훈도 as is.
 
 export const REL_OF: Record<Relation, Rel> = { lover: "연인", some: "연인", ex: "연인", work: "일", friend: "친구", family: "가족" };
-const SEAT_NAME: Record<Rel, string> = { 연인: "배우자 자리", 일: "일터 자리", 가족: "집안 자리", 친구: "바깥 자리" };
-const seatOf = (p: Person["pillars"], rel: Rel) => (rel === "연인" ? p.dayBranch : rel === "가족" ? p.yearBranch : (p.monthBranch ?? p.dayBranch));
 
-export type PairMark = "함께 좋은 해" | "정이 깊어지는 해" | "한쪽 흔들림" | "함께 조심" | "관계가 흔들리기 쉬운 해" | "무난한 해";
+export type PairMark = "함께 좋은 해" | "정이 깊어지는 해" | "한쪽 흔들림" | "함께 조심" | "관계가 흔들리기 쉬운 해" | "한 사람 자리가 흔들리는 해" | "무난한 해";
 export type PairYear = { year: number; gz: string; me: Verdict; them: Verdict; mark: PairMark; why: string; now: boolean };
-export type PairYears = { seat: string; rows: PairYear[] };
+// noDaeun: who was read without their ten-year 대운 (gender not given), so their grades are said more lightly.
+export type PairYears = { seat: string; rows: PairYear[]; noDaeun: string[] };
 
 const good = (v: Verdict) => v === "대길" || v === "길";
 const bad = (v: Verdict) => v === "조심" || v === "인내";
@@ -32,31 +33,50 @@ export function pairYears(a: Person, b: Person, relation: Relation, from: number
     const y = ra.year;
     const yBranch = (((y - 4) % 12) + 12) % 12;
     const gz = `${STEMS[(((y - 4) % 10) + 10) % 10]}${BRANCHES[yBranch]}`;
-    const clash = [meetings(yBranch, sa).includes("충") && a.name, meetings(yBranch, sb).includes("충") && b.name].filter(Boolean) as string[];
-    const joins = (s: number) => meetings(yBranch, s).some((m) => m === "육합" || m === "삼합");
-    const tie = joins(sa) && joins(sb);
+    const hitA = meetings(yBranch, sa).includes("충");
+    const hitB = meetings(yBranch, sb).includes("충");
+    const tie = tieYear(yBranch, sa, sb);
     const [me, them] = [ra.verdict, rb.verdict];
-    const [mark, why]: [PairMark, string] = clash.length
-      ? ["관계가 흔들리기 쉬운 해", `${clash.join("·")}의 ${seat}를 그해 기운이 충`]
-      : good(me) && good(them)
-        ? tie
-          ? ["정이 깊어지는 해", `둘 다 좋은 해에 두 사람의 ${seat}와 모두 합`]
-          : ["함께 좋은 해", "두 사람 모두 좋은 해"]
-        : bad(me) && bad(them)
-          ? ["함께 조심", "두 사람 모두 버거운 해"]
-          : bad(me) || bad(them)
-            ? ["한쪽 흔들림", `${bad(me) ? a.name : b.name}에게 버거운 해`]
-            : tie
-              ? ["정이 깊어지는 해", `두 사람의 ${seat}와 모두 합`]
-              : ["무난한 해", "크게 밀지도 막지도 않는 해"];
+    // The year clashing a seat shakes the bond when it hits both, or hits one whose own year is hard too; one seat
+    // hit in an otherwise fine year is that person's, not the relation's (2026-10-25 강 어사 기준).
+    const shaken = (hitA && hitB) || (hitA && bad(me)) || (hitB && bad(them));
+    const hitNames = [hitA && a.name, hitB && b.name].filter(Boolean) as string[];
+    const [mark, why]: [PairMark, string] = shaken
+      ? ["관계가 흔들리기 쉬운 해", `${hitNames.join("·")}님의 ${seat}를 그해 기운이 충`]
+      : hitNames.length
+        ? ["한 사람 자리가 흔들리는 해", `${hitNames[0]}님의 ${seat}를 그해 기운이 충`]
+        : good(me) && good(them)
+          ? tie
+            ? ["정이 깊어지는 해", `둘 다 좋은 해에 두 사람의 ${seat}와 모두 합`]
+            : ["함께 좋은 해", "두 사람 모두 좋은 해"]
+          : bad(me) && bad(them)
+            ? ["함께 조심", "두 사람 모두 버거운 해"]
+            : bad(me) || bad(them)
+              ? ["한쪽 흔들림", `${bad(me) ? a.name : b.name}님에게 버거운 해`]
+              : tie
+                ? ["정이 깊어지는 해", `두 사람의 ${seat}와 모두 합`]
+                : ["무난한 해", "크게 밀지도 막지도 않는 해"];
     return { year: y, gz, me, them, mark, why, now: i === 0 };
   });
-  return { seat, rows };
+  return { seat, rows, noDaeun: [a, b].filter((p) => !profileOf(p).daeun?.length).map((p) => p.name) };
 }
 
 export function pairYearsBrief(a: Person, b: Person, x: PairYears): string {
   return [
     `■ ★ 두 사람의 10년 (${x.seat} 기준, 화면에 표로 그대로 보인다)`,
     ...x.rows.map((r) => `- ${r.year} ${r.gz}: ${a.name} ${r.me} / ${b.name} ${r.them} → ${r.mark} (${r.why})`),
+    ...(x.noDaeun.length ? [`- ${x.noDaeun.join("·")}님은 성별을 몰라 10년 대운 없이 그해 기운만으로 본 판정이다. 이 사람의 해는 단정하지 말고 가볍게 짚는다.`] : []),
   ].join("\n");
+}
+
+// When 궁합 1단계 went live: a 궁합 bought before it opens its pinned text, written against the old marks
+// (lib/pairYearsLegacy.ts), so its pictures keep them; one bought after gets these.
+export const GUNGHAP_V2_SINCE = Date.parse("2026-10-26T00:30:00Z");
+export const isGunghapV2 = (boughtAt: number | undefined) => boughtAt === undefined || boughtAt >= GUNGHAP_V2_SINCE;
+
+// The table as of the order (`boughtAt`; none: a free look, read the new way).
+export function pairYearsAt(a: Person, b: Person, relation: Relation, from: number, n: number, boughtAt: number | undefined): PairYears | null {
+  if (isGunghapV2(boughtAt)) return pairYears(a, b, relation, from, n);
+  const x = pairYearsV1(a, b, relation, from, n);
+  return x && { ...x, noDaeun: [] };
 }

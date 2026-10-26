@@ -77,7 +77,7 @@ export default async function MemberRoomPage({ params }: PageProps<"/ask/[id]">)
             <div className="doc-paper flex items-start gap-3 rounded-[4px] px-5 py-4">
               <HundoFace size={34} ring="seal" />
               <p className="font-myeongjo text-[15px] leading-relaxed">
-                어서 오시옵소서. 소신이 {me.name}님의 여덟 글자를 펼쳐 두었사옵니다. 무엇이 궁금하시옵니까? 한 번에 하나를 여쭈실수록 깊이 답해 드리옵니다.
+                어서 오시옵소서. 소신이 {me.name}님의 여덟 글자를 펼쳐 두었사옵니다. 무엇이 궁금하시옵니까? 한 번에 하나를 물으실수록 깊이 답해 드리옵니다.
               </p>
             </div>
           )}

@@ -2,7 +2,8 @@
 // and written on the order, so the owner can tell which road the paying readers came by. One word, nothing about
 // the person. The road is read once, on the first visit: the page they landed on, then the app they opened it in
 // (Instagram, Threads and 카카오톡 name themselves in the browser's user agent), then the site that sent them.
-export const SOURCES = ["game", "instagram", "threads", "search", "kakao", "other", "direct"] as const;
+// "toss": bought in the Apps in Toss mini app (lib/tossApps.ts); written on its orders, never read from a visit.
+export const SOURCES = ["game", "instagram", "threads", "search", "kakao", "other", "direct", "toss"] as const;
 export type Source = (typeof SOURCES)[number];
 export const isSource = (v: unknown): v is Source => SOURCES.includes(v as Source);
 export const SOURCE_LABEL: Record<Source, string> = {
@@ -13,6 +14,7 @@ export const SOURCE_LABEL: Record<Source, string> = {
   kakao: "카카오톡",
   other: "다른 사이트",
   direct: "직접 · 알 수 없음",
+  toss: "토스 미니앱",
 };
 export const SRC_COOKIE = "jj_src";
 

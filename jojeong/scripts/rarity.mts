@@ -13,6 +13,8 @@ const metrics: Record<string, number[]> = { support: hist() };
 for (const g of groups) metrics[`god:${g}`] = hist();
 for (let e = 0; e < 5; e++) metrics[`el:${e}`] = hist();
 const patterns = { m: Object.fromEntries(PATTERN_IDS.map((id) => [id, 0])), f: Object.fromEntries(PATTERN_IDS.map((id) => [id, 0])) };
+// The same with the "없음" patterns read by what the chart truly holds (lib/patterns.ts ENGINE2_SINCE).
+const patterns2 = { m: Object.fromEntries(PATTERN_IDS.map((id) => [id, 0])), f: Object.fromEntries(PATTERN_IDS.map((id) => [id, 0])) };
 const n = { m: 0, f: 0 };
 // 신살 held anywhere in the chart (one count per chart), for "100명 중 N명" on each.
 const sals: Record<string, number> = {};
@@ -26,7 +28,8 @@ for (let t = Date.UTC(1950, 0, 1); t < Date.UTC(2009, 0, 1); t += 86400000) {
     const r = readChart(p)!;
     const gender = i % 2 ? "f" : "m";
     n[gender]++;
-    for (const x of patternsOf(p, gender)) patterns[gender][x.id]++;
+    for (const x of patternsOf(p, gender, false)) patterns[gender][x.id]++;
+    for (const x of patternsOf(p, gender, true)) patterns2[gender][x.id]++;
     const gsum = Object.values(r.godWeights).reduce((a, b) => a + b, 0) || 1;
     const esum = r.weights.reduce((a, b) => a + b, 0);
     metrics.support[Math.round(r.support * 100)]++;
@@ -45,5 +48,5 @@ for (let t = Date.UTC(1950, 0, 1); t < Date.UTC(2009, 0, 1); t += 86400000) {
     ilju[key].sig[sig] = (ilju[key].sig[sig] ?? 0) + 1;
   }
 }
-writeFileSync(new URL("../lib/rarity.json", import.meta.url), JSON.stringify({ total: n.m + n.f, n, patterns, metrics, ilju, sals }));
+writeFileSync(new URL("../lib/rarity.json", import.meta.url), JSON.stringify({ total: n.m + n.f, n, patterns, patterns2, metrics, ilju, sals }));
 console.log("charts", n.m + n.f);

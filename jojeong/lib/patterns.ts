@@ -2,7 +2,7 @@ import { isBaekho, isGoegang, meetings, salsAt, stageOf, type Sal } from "./deep
 import { chartOf, ELEMENT_HANJA, ELEMENT_KO, GROUP_OF, HIDDEN, readChart, stemEl, tenGod, type GodGroup, type Reading, type TenGod } from "./myeongri";
 import { josa } from "./josa";
 import type { Gender } from "./profile";
-import { isFull, type FullPillars, type Pillars } from "./saju";
+import { hourStemFor, isFull, type FullPillars, type Pillars } from "./saju";
 
 // Classical patterns (격국·십신·합충·신살) that make one chart unlike another with the same day pillar. The
 // engine finds them so the writer does not have to, and lib/rarity.json says how rare each one is.
@@ -429,11 +429,40 @@ function contextOf(p: Pillars, gender: Gender | null): Ctx | null {
   };
 }
 
-// Every pattern the chart shows.
-export function patternsOf(p: Pillars, gender: Gender | null): Pattern[] {
-  const c = contextOf(p, gender);
-  if (!c) return [];
-  return SPECS.filter((s) => s.test(c)).map((s) => ({ id: s.id, term: s.term, plain: s.plain(c), area: s.area, meaning: s.meaning(c) }));
+// The "없음" patterns (2026-10-26 궁합 점검): a group or an element said to be missing. The weighted share counts a
+// letter bound into a 국 as the 국's element and a hidden stem only lightly, so most charts read "없음" still hold
+// the letter (about three in four, scratch count of 20,000 births). From ENGINE2_SINCE a group is "없음" only when
+// no stem and no hidden stem of any branch is of it (合而不化: the letter is still there), and none of these is
+// said without the hour, where a quarter of the chart is unseen.
+const GROUP_NONE: Record<string, GodGroup> = { "no-gwan": "관성", "no-jae": "재성", "no-inseong": "인성", "no-bigup": "비겁" };
+const NEEDS_HOUR = new Set([...Object.keys(GROUP_NONE), "missing-two", "rootless"]);
+export const ENGINE2_SINCE = Date.parse("2026-10-26T06:59:00Z");
+// A report bought before ENGINE2_SINCE keeps the old reading, so its pinned text and its page agree.
+export const isEngine2 = (boughtAt: number | undefined) => boughtAt === undefined || boughtAt >= ENGINE2_SINCE;
+
+export function rawOf(p: Pillars) {
+  // The hour stem as the chart shows it (a 야자시 birth keeps its own, lib/saju.ts hourStemFor).
+  const stems = [p.yearStem, p.monthStem, hourStemFor(p)].filter((x): x is number => x !== null && x !== undefined);
+  const hidden = [p.yearBranch, p.monthBranch, p.dayBranch, p.hourBranch].flatMap((b) => (b === null || b === undefined ? [] : HIDDEN[b].map(([h]) => h)));
+  return {
+    groups: new Set([...stems, ...hidden].map((x) => GROUP_OF[tenGod(p.dayStem, x)])),
+    els: new Set([p.dayStem, ...stems, ...hidden].map(stemEl)),
+  };
+}
+
+// Every pattern the chart shows. v2: read the "없음" patterns as above (false: as before ENGINE2_SINCE).
+export function patternsOf(p: Pillars, gender: Gender | null, v2 = true): Pattern[] {
+  const c0 = contextOf(p, gender);
+  if (!c0) return [];
+  let c = c0;
+  let keep: (id: string) => boolean = () => true;
+  if (v2) {
+    const raw = rawOf(p);
+    // Only the elements truly absent are named missing.
+    c = { ...c0, r: { ...c0.r, missing: c0.r.missing.filter((e) => !raw.els.has(e)) } };
+    keep = (id) => (p.hourBranch !== null || !NEEDS_HOUR.has(id)) && !(GROUP_NONE[id] && raw.groups.has(GROUP_NONE[id]));
+  }
+  return SPECS.filter((s) => keep(s.id) && s.test(c)).map((s) => ({ id: s.id, term: s.term, plain: s.plain(c), area: s.area, meaning: s.meaning(c) }));
 }
 
 export const PATTERN_IDS = SPECS.map((s) => s.id);

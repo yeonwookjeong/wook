@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { adminConfigured, isAdmin } from "@/lib/admin";
-import { giftOrders, paidOrders, type Order } from "@/lib/pay";
+import { covers, getOrder, giftOrders, paidOrders, type Order } from "@/lib/pay";
 import CopyButton from "@/components/CopyButton";
 import { GIFTABLE, originNow } from "@/lib/gift";
 import { SALE_KEYS, saleKey, saleLabel } from "@/lib/sales";
-import { productById, SETS } from "@/lib/products";
+import { productById, SETS, type ProductId } from "@/lib/products";
 import { lastReportError, listInquiries, memberViews, readingCount } from "@/lib/store";
 import { listFeedback } from "@/lib/feedback";
 import { memberFixAction } from "./actions";
 import { allMembers, memberNo, VIA_LABEL, viaOf, type Member } from "@/lib/members";
-import { adminSignOut, creditEventCreateAction, creditEventToggleAction, giftRevokeAction, inquiryDeleteAction, inquiryDoneAction, testOrderAction } from "./actions";
+import { adminSignOut, creditEventCreateAction, creditEventToggleAction, giftRevokeAction, inquiryDeleteAction, inquiryDoneAction, rewriteReportAction, testOrderAction } from "./actions";
 import Dashboard, { rangeOf } from "./Dashboard";
 import { threadsPosts } from "@/lib/threads";
 import GiftForm from "./GiftForm";
@@ -64,10 +64,11 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   const ny = newYearOf();
   const inquiries = await listInquiries().catch(() => []);
   const writeError = await lastReportError();
+  const writeRisk = await lastReportError("risk");
   const open = inquiries.filter((q) => !q.done);
   const when = (t: number) => new Date(t + 9 * 3600000).toISOString().slice(5, 16).replace("T", " ");
   const stats = await readStats([
-    ...["uv", "pv", "reading", "me_try", "me_err", "me_same", "king", "join", "appoint", "share_court", "share_result", "save_image", "own_court", "to_saju", "ask_pop", "to_ask", "to_channel", "sinsal_pop", "sinsal_open", "sinsal_view", "sinsal_friend_open", "sinsal_friend_view"],
+    ...["uv", "pv", "reading", "me_try", "me_err", "me_same", "king", "join", "appoint", "share_court", "share_result", "save_image", "own_court", "to_saju", "ask_pop", "to_ask", "to_channel", "sinsal_pop", "sinsal_open", "sinsal_view", "sinsal_friend_open", "sinsal_friend_view", "askflow_join", "askflow_sent", "askflow_buy"],
     ...CH_FROM.map((f) => `ch:${f}`),
     ...ASK_FROM.map((f) => `ask:${f}`),
     ...STEP_FROM.map((f) => `to:${f}`),
@@ -119,6 +120,13 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
           <p className="text-sm font-extrabold text-seal">보고서 쓰기 실패 · {when(writeError.at)}</p>
           <p className="mt-1 text-[12px] leading-relaxed break-all">{writeError.message}</p>
           <p className="mt-1 text-[11px] text-ink-soft">최근 이틀 안의 마지막 실패만 보여요. 고친 뒤 보고서를 다시 열면 새로 써요.</p>
+        </section>
+      )}
+      {writeRisk && (
+        <section className="mt-4 rounded-xl border-2 border-seal bg-seal/10 px-4 py-3">
+          <p className="text-sm font-extrabold text-seal">보고서 위험 문구 · {when(writeRisk.at)}</p>
+          <p className="mt-1 text-[12px] leading-relaxed break-all">{writeRisk.message}</p>
+          <p className="mt-1 text-[11px] text-ink-soft">손님에게 이미 보인 글이에요. 최근 이틀 안의 마지막 한 건만 보여요.</p>
         </section>
       )}
 
@@ -331,6 +339,10 @@ const ROWS: { key: string; label: string; group?: string }[] = [
   { key: "ask_pop", label: "오픈 안내 팝업이 뜬 수 (10/23 신살 도감 팝업으로 교체)", group: "정 훈도에게 묻기" },
   { key: "to_ask", label: "묻기로 이동 (전체)" },
   ...ASK_FROM.map((f) => ({ key: `ask:${f}`, label: `　└ ${ASK_FROM_LABEL[f]}` })),
+  // 2026-10-25: from a chapter's button on, one step after another (counted once each per visit, in this browser).
+  { key: "askflow_join", label: "　　보고서 장 → 새로 가입" },
+  { key: "askflow_sent", label: "　　보고서 장 → 질문 보냄" },
+  { key: "askflow_buy", label: "　　보고서 장 → 질문 채움(결제)" },
   { key: "to_channel", label: "카카오톡 채널 추가 누름 (전체)", group: "카카오톡 채널" },
   ...CH_FROM.map((f) => ({ key: `ch:${f}`, label: `　└ ${CH_FROM_LABEL[f]}` })),
   { key: "sl:reading", label: "친구가 보낸 링크로 도착: 무료 사주 분석" },
@@ -716,11 +728,35 @@ async function FeedbackSection() {
               {f.share && <span className="ml-1 rounded bg-gold/20 px-1 text-[10.5px] font-bold">후기 동의</span>}
               {f.member && <span className="ml-1 font-mono text-[10px] text-ink-soft">{memberNo(f.member)}</span>}
               {f.text && <span className="block text-ink-soft">{f.text}</span>}
+              {!f.up && <RewriteBox order={f.order} product={f.product} />}
             </li>
           ))}
         </ul>
       )}
     </section>
+  );
+}
+
+// Under a 👎: have the report written again under today's reading (same link for the buyer), and say when it was.
+async function RewriteBox({ order, product }: { order: string; product: ProductId }) {
+  const o = await getOrder(order).catch(() => null);
+  // Only a paid order that holds this report can have it written again (lib/pay.ts rewriteReport).
+  if (!o || o.status !== "paid" || !covers(o, product)) return null;
+  const at = o.rewritten?.[product];
+  const when = (t: number) => new Date(t + 9 * 3600000).toISOString().slice(5, 16).replace("T", " ");
+  return (
+    <form action={rewriteReportAction} className="mt-1 flex items-center gap-2 text-[11px]">
+      <input type="hidden" name="order" value={order} />
+      <input type="hidden" name="product" value={product} />
+      {at && <span className="text-ink-soft">다시 씀 {when(at)}{o.texts?.[product] ? " · 새 글 열림" : " · 아직 안 열림"}</span>}
+      <label className="flex items-center gap-1 text-ink-soft">
+        <input type="checkbox" name="sure" value="1" /> 확인
+      </label>
+      <button className="rounded-full border border-seal/40 px-2 py-0.5 font-bold text-seal">새 기준으로 다시 쓰기</button>
+      <Link href={`/reports/${product}?order=${order}`} className="text-seal underline">
+        열기
+      </Link>
+    </form>
   );
 }
 

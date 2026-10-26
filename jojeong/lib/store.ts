@@ -245,13 +245,14 @@ export async function getReportWriting(key: string): Promise<number> {
 export async function setReportWriting(key: string, at: number) {
   await backend().set(`writing:${key}`, String(at));
 }
-// The last time a report could not be written, and why (the model's own error), for the owner's page.
-export async function noteReportError(message: string) {
-  await backend().set("report:lastError", JSON.stringify({ at: Date.now(), message: message.slice(0, 500) }));
+// The last time a report could not be written, and why (the model's own error), for the owner's page. `risk`: a
+// report written whole but carrying words it must not (lib/reportGuard.ts), kept apart so it never hides a failure.
+export async function noteReportError(message: string, kind: "error" | "risk" = "error") {
+  await backend().set(kind === "risk" ? "report:lastRisk" : "report:lastError", JSON.stringify({ at: Date.now(), message: message.slice(0, 500) }));
 }
 // Only one from the last two days.
-export async function lastReportError(): Promise<{ at: number; message: string } | null> {
-  const raw = await backend().get("report:lastError").catch(() => null);
+export async function lastReportError(kind: "error" | "risk" = "error"): Promise<{ at: number; message: string } | null> {
+  const raw = await backend().get(kind === "risk" ? "report:lastRisk" : "report:lastError").catch(() => null);
   const e = raw ? (JSON.parse(raw) as { at: number; message: string }) : null;
   return e && Date.now() - e.at < 2 * 86400000 ? e : null;
 }
@@ -287,6 +288,33 @@ export async function getOrdersRaw(ids: string[]): Promise<(string | null)[]> {
 }
 export async function paidOrderIds(): Promise<string[]> {
   return backend().list("orders:paid");
+}
+
+// Orders paid in the Apps in Toss mini app (lib/tossApps.ts): which site order each Toss order became, so granting
+// the same Toss order again (a retry, a restore) gives back the same report; a short claim so two grants of one
+// order at once make one site order; and each Toss account's orders (by its anonymous key) for "내 보고서".
+export async function getTossGrant(tossOrderId: string): Promise<string | null> {
+  return backend().get(`toss:grant:${tossOrderId}`);
+}
+export async function setTossGrant(tossOrderId: string, orderId: string) {
+  await backend().set(`toss:grant:${tossOrderId}`, orderId);
+}
+export async function claimTossGrant(tossOrderId: string): Promise<boolean> {
+  const b = backend();
+  const n = await b.incr(`toss:claim:${tossOrderId}`);
+  if (n === 1) await b.set(`toss:claim:${tossOrderId}`, "1", 60).catch(() => {});
+  return n === 1;
+}
+export async function releaseTossGrant(tossOrderId: string) {
+  await backend()
+    .set(`toss:claim:${tossOrderId}`, "0", 1)
+    .catch(() => {});
+}
+export async function noteTossOrder(userKey: string, orderId: string) {
+  await backend().push(`toss:user:${userKey}`, orderId);
+}
+export async function tossOrderIds(userKey: string): Promise<string[]> {
+  return backend().list(`toss:user:${userKey}`);
 }
 
 // Questions sent from the contact page, kept for the owner's inbox (/admin): what it is about, what was
