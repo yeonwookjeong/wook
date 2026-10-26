@@ -344,7 +344,7 @@ async function OpenReport({
     // ones its pinned text was written with.
     const boughtAt = unlock?.id ? (unlock.paidAt ?? unlock.createdAt) : undefined;
     const readAt = unlock?.id ? readAtOf(unlock, product.id) : undefined;
-    const couple = product.id === "gunghap" ? coupleOf(a, b, boughtAt ? sajuYear(new Date(boughtAt)) : undefined, REL_OF[relationOf(pair.rel)]) : null;
+    const couple = product.id === "gunghap" ? coupleOf(a, b, boughtAt ? sajuYear(new Date(boughtAt)) : undefined, REL_OF[relationOf(pair.rel)], isEngine2(readAt)) : null;
     // The free card's years are the first five rows of the bought report's ten-year table, so the two never disagree.
     const coupleYears = couple ? (pairYearsAt(a, b, relationOf(pair.rel), thisYear(boughtAt ? new Date(boughtAt) : undefined), 5, readAt)?.rows ?? []) : [];
     const closeness = product.id === "sokgunghap" ? intimacyOf(a, b) : null;

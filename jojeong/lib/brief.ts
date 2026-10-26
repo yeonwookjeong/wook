@@ -74,7 +74,11 @@ export function chartBrief(name: string, p: Pillars, profile: Profile | null, y 
     if (p.hourBranch === null) lines.push("- 태어난 시 모름: 위 비중은 네 기둥 중 세 기둥만 본 것이다. 어떤 기운도 '없다'고 단정하지 말 것");
   }
   lines.push(`- 일간: ${STEMS[p.dayStem]}${ELEMENT_HANJA[stemEl(p.dayStem)]} / 태어난 계절: ${r.season}`);
-  lines.push(`- 신강약: ${r.balanced ? "중화에 가까운 " : ""}${r.strength} (일간을 돕는 기운 ${Math.round(r.support * 100)}%)`);
+  lines.push(
+    v2 && p.hourBranch === null
+      ? `- 신강약: ${strengthNoHour(p, r.strength)} (태어난 시를 몰라 세 칸 기준. 일간을 돕는 기운 ${Math.round(r.support * 100)}%. 단정하지 말 것)`
+      : `- 신강약: ${r.balanced ? "중화에 가까운 " : ""}${r.strength} (일간을 돕는 기운 ${Math.round(r.support * 100)}%)`,
+  );
   lines.push(
     `- 용신 ${EL(r.yong)} (${
       r.method === "종격"
@@ -159,6 +163,17 @@ export function chartBrief(name: string, p: Pillars, profile: Profile | null, y 
   return lines.join("\n");
 }
 
+// Strength without the hour (2026-10-26 강 어사 기준): read with each of the twelve hours; the same in all twelve
+// stays, otherwise the most common one, a step toward the middle when it is an extreme.
+const STRENGTHS = ["극신약", "신약", "신강", "극신강"] as const;
+function strengthNoHour(p: Pillars, seen: string): string {
+  const all = Array.from({ length: 12 }, (_, h) => readChart({ ...p, hourBranch: h })?.strength ?? seen);
+  if (all.every((x) => x === all[0])) return all[0];
+  const most = [...new Set(all)].sort((x, y) => all.filter((v) => v === y).length - all.filter((v) => v === x).length)[0];
+  const i = STRENGTHS.indexOf(most as (typeof STRENGTHS)[number]);
+  return i === 0 ? "신약" : i === 3 ? "신강" : most;
+}
+
 // A guide line without its sentences about love and marriage (a 궁합 between family, at work or friends).
 const unlove = (t: string) =>
   t
@@ -220,7 +235,8 @@ function FIRE_ROLE(yong: number, hee: number, gi: number) {
 }
 
 // Two people side by side (for 궁합-type reports).
-export function pairBrief(aName: string, a: Pillars, bName: string, b: Pillars): string {
+// `scored`: the score to show instead of matchPillars' (궁합 from ENGINE2_SINCE, lib/couple.ts gunghapScore).
+export function pairBrief(aName: string, a: Pillars, bName: string, b: Pillars, scored?: { score: number; avg: number }): string {
   const m = matchPillars(a, b);
   const f = m.facts;
   const facts = [
@@ -240,5 +256,5 @@ export function pairBrief(aName: string, a: Pillars, bName: string, b: Pillars):
   const rb = readChart(b);
   const ra = readChart(a);
   if (ra && rb) facts.push(`${aName}의 용신 ${EL(ra.yong)} / ${bName}의 용신 ${EL(rb.yong)}`);
-  return `■ ${aName}–${bName} 궁합 (엔진 점수 ${m.score}점, 평균 69)\n- ${facts.join("\n- ")}`;
+  return `■ ${aName}–${bName} 궁합 (엔진 점수 ${scored?.score ?? m.score}점, 평균 ${scored?.avg ?? 69})\n- ${facts.join("\n- ")}`;
 }

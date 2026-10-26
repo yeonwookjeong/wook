@@ -4,7 +4,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 import { chartBrief as chartBriefOf, pairBrief } from "./brief";
 import { isEngine2 } from "./patterns";
-import { coupleBrief } from "./couple";
+import { coupleBrief, GUNGHAP_AVG, gunghapScore } from "./couple";
 import { coupleBriefV1 } from "./coupleLegacy";
 import { decodePerson, profileOf, RELATIONS, relationOf } from "./pairToken";
 import { ADULT_ONLY, FIXED_RELATION, isAdult, isPair, productById, YEONUN_PAST_TOC, type ProductId } from "./products";
@@ -88,11 +88,11 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
     briefs = [
       chartBrief(a.name, a.pillars, profileOf(a), briefYear, REL_OF[rel] === "연인"),
       chartBrief(b.name, b.pillars, profileOf(b), briefYear, REL_OF[rel] === "연인"),
-      pairBrief(a.name, a.pillars, b.name, b.pillars),
+      pairBrief(a.name, a.pillars, b.name, b.pillars, product.id === "gunghap" && v2 ? { score: gunghapScore(a, b, REL_OF[rel]), avg: GUNGHAP_AVG } : undefined),
       // 궁합 reads the relation, and from v8 tells the years once, by its ten-year table (pairBriefs). The other pair
       // reports keep the frozen brief, so what was written for them opens unchanged (lib/coupleLegacy.ts).
       product.id === "gunghap"
-        ? coupleBrief(a, b, briefYear, REL_OF[rel], !(v === "v8" || v === "v9"))
+        ? coupleBrief(a, b, briefYear, REL_OF[rel], !(v === "v8" || v === "v9"), v2)
         : product.id === "jaehoe"
           ? coupleBriefV1(a, b, briefYear)
           : coupleBriefV1(a, b),

@@ -45,7 +45,7 @@ export default function PairIntro({ a, b, c, years, blank, bare }: { a: Person; 
       <div className="mt-5 flex flex-col items-center">
         <span className="text-xs text-ink-soft">궁합 점수</span>
         <span className="font-myeongjo text-4xl font-extrabold text-seal">{c.score}점</span>
-        <span className="text-[11px] text-ink-soft">평균 69점 · 점수보다 아래의 &lsquo;왜&rsquo;가 더 중요해요</span>
+        <span className="text-[11px] text-ink-soft">평균 {c.avg}점 · 점수보다 아래의 &lsquo;왜&rsquo;가 더 중요해요</span>
       </div>
 
       <ul className="mt-4 flex flex-col gap-2 text-[14px] leading-snug">
