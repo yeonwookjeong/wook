@@ -9,7 +9,7 @@
   "blur": true,
   "google_voice": "ko-KR-Chirp3-HD-Kore",
   "google_rate": 1.45,
-  "broll_query": "박지현 배우",
+  "broll_query": "박지현 화보 메이킹",
   "broll_offset": 0,
   "parts": [
     {"type": "tts", "text": "어릴 때 수영을 했던 배우 박지현이 두 개씩 들고 다닌다는 이것은?", "media": ["auto", {"at": "00:00"}]},

@@ -9,7 +9,7 @@
   "blur": true,
   "google_voice": "ko-KR-Chirp3-HD-Kore",
   "google_rate": 1.45,
-  "broll_query": "박지현 배우",
+  "broll_query": "박지현 화보 메이킹",
   "broll_offset": 2,
   "parts": [
     {"type": "tts", "text": "자세 교정에 진심인 배우 박지현이 사람들이 이상하게 봐도 꼭 들고 다닌다는 이것", "media": ["auto", {"at": "08:17"}]},

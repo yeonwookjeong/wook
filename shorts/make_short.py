@@ -322,7 +322,7 @@ class Subs:
 
 # ---------------------------------------------------------------- 원본 영상
 
-def fetch_source(url: str, ff: str, height: int = 1080):
+def fetch_source(url: str, ff: str, height: int = 1080, main: bool = True):
     try:
         import yt_dlp
     except ImportError:
@@ -376,7 +376,7 @@ def fetch_source(url: str, ff: str, height: int = 1080):
                     "channel": info.get("channel") or info.get("uploader") or "",
                     "license": info.get("license") or ""}) if not _ORIGIN else None
     lic = (info.get("license") or "").lower()
-    if "creative commons" not in lic:
+    if main and "creative commons" not in lic:
         print(f"   ⚠️ 이 영상은 크리에이티브 커먼즈가 아니에요: {info.get('webpage_url') or url}")
     return video, Subs(lines, words), info.get("channel") or info.get("uploader") or ""
 
@@ -385,24 +385,75 @@ _INFOS = {}  # 받아온 영상별 길이·'많이 다시 본 구간' 정보
 _ORIGIN = {}  # 메인 원본 영상 정보 (출처 표기용)
 
 
+_FACE = None
+
+
+def _face_area(img) -> float:
+    """얼굴이 화면에서 차지하는 비율(0~1). opencv가 설치돼 있을 때만 계산, 없으면 0."""
+    global _FACE
+    try:
+        import cv2
+        import numpy as np
+    except ImportError:
+        return 0.0
+    if _FACE is None:
+        try:  # OpenCV 4.x에만 있는 얼굴 찾기 기능. 없으면 얼굴 점수 없이 진행
+            _FACE = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+        except AttributeError:
+            _FACE = False
+    if _FACE is False:
+        return 0.0
+    g = cv2.cvtColor(np.array(img.convert("RGB")), cv2.COLOR_RGB2GRAY)
+    faces = _FACE.detectMultiScale(g, scaleFactor=1.15, minNeighbors=5, minSize=(24, 24))
+    if len(faces) == 0:
+        return 0.0
+    w, h = img.size
+    return max(fw * fh for (_, _, fw, fh) in faces) / (w * h)
+
+
+def frame_score(ff: str, video: Path, t: float) -> float:
+    """이 장면이 얼마나 '예쁘고 멋진지' 대략 점수: 선명함 + 색감 + 적당한 밝기 + 얼굴 크기."""
+    from PIL import ImageFilter, ImageStat
+    tmpf = WORK / "_score.jpg"
+    p = subprocess.run([ff, "-y", "-v", "error", "-ss", f"{t:.2f}", "-i", str(video), "-frames:v", "1",
+                        "-vf", "scale=320:-2", str(tmpf)], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if p.returncode != 0 or not tmpf.exists():
+        return -1.0
+    img = Image.open(tmpf).convert("RGB")
+    gray = img.convert("L")
+    sharp = ImageStat.Stat(gray.filter(ImageFilter.FIND_EDGES)).mean[0] / 40       # 흐릿하면 낮음
+    bright = ImageStat.Stat(gray).mean[0] / 255
+    r, g, b = [ImageStat.Stat(c).stddev[0] for c in img.split()]
+    rm, gm, bm = ImageStat.Stat(img).mean
+    color = (abs(rm - gm) + abs(gm - bm) + abs(bm - rm)) / 255 + (r + g + b) / 3 / 128  # 색감·대비
+    bright_ok = 1 - abs(bright - 0.55) * 2                                             # 너무 어둡/밝으면 감점
+    face = _face_area(img)
+    face_bonus = min(face / 0.08, 1.0) * 1.5                                           # 얼굴이 크게 나오면 가점
+    return min(sharp, 1.5) * 0.9 + min(color, 1.5) * 0.6 + bright_ok * 0.6 + face_bonus
+
+
+_MOMENTS = {}
+
+
 def auto_moments(video: Path, ff: str, count: int = 8) -> list[float]:
-    """자동으로 고른 볼만한 장면 시각들: 많이 다시 본 구간 → 없으면 영상 전체에 고르게."""
+    """자동으로 고른 '예쁜' 장면 시각들. 많이 다시 본 구간 + 영상 전체 후보 중 화면 점수가 높은 순."""
+    if str(video) in _MOMENTS:
+        return _MOMENTS[str(video)]
     info = _INFOS.get(str(video), {})
     dur = info.get("duration") or duration_of(ff, video)
+    cands = [h["start_time"] + 1 for h in sorted(info.get("heatmap", []), key=lambda x: -x.get("value", 0))[:6]]
+    cands += [dur * (0.08 + 0.84 * i / 17) for i in range(18)]
+    cands = [t for t in cands if 3 < t < dur - 5]
+    print(f"      🖼️ 예쁜 장면 고르는 중… (후보 {len(cands)}개)")
+    scored = sorted(((frame_score(ff, video, t), t) for t in cands), reverse=True)
     picks = []
-    for h in sorted(info.get("heatmap", []), key=lambda x: -x.get("value", 0)):
-        t = h["start_time"]
-        if 5 < t < dur - 8 and all(abs(t - q) >= 12 for q in picks):
+    for sc, t in scored:
+        if sc > 0 and all(abs(t - q) >= 10 for q in picks):
             picks.append(t)
         if len(picks) == count:
             break
-    for frac in (0.15, 0.3, 0.45, 0.6, 0.75, 0.9, 0.22, 0.52):
-        if len(picks) >= count:
-            break
-        t = dur * frac
-        if all(abs(t - q) >= 12 for q in picks):
-            picks.append(t)
-    return picks
+    _MOMENTS[str(video)] = picks or [dur * 0.3]
+    return _MOMENTS[str(video)]
 
 
 def snap(ff: str, src: Path, t: float, edge: str, win: float = 0.6) -> float:
@@ -989,7 +1040,8 @@ def render(ff: str, items: list, dur: float, subs: list, tts: Path | None, out: 
     fg.append(f"[{last}]format=yuv420p[vout]")
 
     fade = f"afade=t=in:d=0.04,afade=t=out:st={max(dur - 0.06, 0):.3f}:d=0.06"
-    base_audio = items[0]["source"] and not items[0]["image"]  # 원본 영상이면 그 소리를 바닥에 깔기
+    # 원본 영상이면 그 소리를 바닥에 깔기 (도입부 자료 영상은 소리 안 씀)
+    base_audio = items[0]["source"] and not items[0]["image"] and not items[0].get("mute")
     if tts:
         if base_audio:
             fg.append(f"[0:a]aresample=44100,volume={BG_DUCK}[bg]")
@@ -1014,14 +1066,14 @@ _SOURCES = {}
 _SEARCHES = {}
 
 
-def search_videos(query: str, exclude: str = "", limit: int = 10) -> list[str]:
+def search_videos(query: str, exclude: str = "", limit: int = 10, cc_only: bool = False) -> list[str]:
     """유튜브에서 검색해 쓸 만한 영상 링크 목록(1분~40분짜리)을 돌려줌."""
-    if query in _SEARCHES:
-        return _SEARCHES[query]
+    if (query, cc_only) in _SEARCHES:
+        return _SEARCHES[(query, cc_only)]
     import yt_dlp
     from urllib.parse import quote
     # 유튜브 검색 필터 '크리에이티브 커먼즈'(sp=EgIwAQ==)를 걸어서 재사용 가능한 영상만 찾음
-    search_url = f"https://www.youtube.com/results?search_query={quote(query)}&sp=EgIwAQ%3D%3D"
+    search_url = f"https://www.youtube.com/results?search_query={quote(query)}" + ("&sp=EgIwAQ%3D%3D" if cc_only else "")
     with yt_dlp.YoutubeDL({"quiet": True, "no_warnings": True, "extract_flat": True,
                            "playlistend": limit}) as ydl:
         res = ydl.extract_info(search_url, download=False)
@@ -1030,7 +1082,7 @@ def search_videos(query: str, exclude: str = "", limit: int = 10) -> list[str]:
         d = e.get("duration") or 0
         if e.get("id") and e["id"] not in exclude and 60 <= d <= 2400:
             urls.append(f"https://www.youtube.com/watch?v={e['id']}")
-    _SEARCHES[query] = urls
+    _SEARCHES[(query, cc_only)] = urls
     print(f"      🔎 '{query}' 검색 결과 {len(urls)}개")
     return urls
 
@@ -1038,6 +1090,7 @@ def search_videos(query: str, exclude: str = "", limit: int = 10) -> list[str]:
 def media_items(p: dict, dur: float, src: Path, subs: "Subs", ff: str) -> list:
     """TTS 구간 화면: "media"에 적은 인스타 캡처·다른 영상들을 나눠 보여줌. 없으면 원본 그 장면."""
     out = []
+    cc_only = bool(p["part"].get("broll_cc_only", False))  # 도입부 자료는 기본적으로 CC가 아니어도 씀(소리는 안 씀)
     media = p["part"].get("media")
     if media is None and p["part"].get("intro"):
         media = ["auto"]  # 도입부인데 자료를 안 적었으면 자동 검색
@@ -1059,7 +1112,7 @@ def media_items(p: dict, dur: float, src: Path, subs: "Subs", ff: str) -> list:
         else:                   # 유튜브 영상의 특정 장면 {"at": "01:23"} 또는 {"src": "다른링크", "at": ...}
             vpath, vsubs = src, subs
             if m.get("search"):  # 셀럽 이름 등으로 유튜브를 검색해서 k번째 영상을 자동으로 씀
-                found = search_videos(m["search"], exclude=src.stem)
+                found = search_videos(m["search"], exclude=src.stem, cc_only=cc_only)
                 if not found:
                     print(f"      ⚠️ '{m['search']}' 검색 결과가 없어서 건너뜀")
                     continue
@@ -1067,9 +1120,9 @@ def media_items(p: dict, dur: float, src: Path, subs: "Subs", ff: str) -> list:
                 print(f"      🎬 자동으로 고른 영상: {m['src']}")
             if m.get("src"):
                 if m["src"] not in _SOURCES:
-                    _SOURCES[m["src"]] = fetch_source(m["src"], ff, height=720)[:2]
+                    _SOURCES[m["src"]] = fetch_source(m["src"], ff, height=720, main=False)[:2]
                 vpath, vsubs = _SOURCES[m["src"]]
-                if "creative commons" not in _INFOS.get(str(vpath), {}).get("license", "").lower():
+                if cc_only and "creative commons" not in _INFOS.get(str(vpath), {}).get("license", "").lower():
                     print(f"      ⛔ CC 영상이 아니라서 건너뜀: {m['src']}")
                     continue
             if str(m.get("at", "auto")) == "auto":  # 시간을 안 정하면 자동으로 볼만한 장면 선택
@@ -1078,7 +1131,7 @@ def media_items(p: dict, dur: float, src: Path, subs: "Subs", ff: str) -> list:
                 print(f"      🎞️ 자동 선택 장면: {fmt(t)}")
             else:
                 t, _ = resolve(m["at"], vsubs, 0, "start")
-            out.append({"path": vpath, "t0": t, "image": False, "source": True})
+            out.append({"path": vpath, "t0": t, "image": False, "source": True, "mute": True})
     if not out:
         return [{"path": src, "t0": p["start"], "dur": dur, "image": False, "source": True}]
     for it in out:
@@ -1202,12 +1255,15 @@ def main():
     clip_subs = recipe.get("clip_subs", True)
     # 자동 B-roll: 첫 TTS(도입부)에 자료가 없으면 "셀럽 이름 + 키워드"로 유튜브를 검색해서 씀
     names = re.findall(r"\[\[(.*?)\]\]", recipe["title1"] + recipe.get("title2", ""))
-    query = recipe.get("broll_query") or (f"{names[0]} 브이로그" if names else None)
+    query = recipe.get("broll_query") or (f"{names[0]} 화보 메이킹" if names else None)
     first_tts = next((pp for pp in recipe["parts"] if pp.get("type") == "tts"), None)
     if first_tts is not None and recipe.get("auto_broll", True):
         first_tts.setdefault("intro", True)
         first_tts.setdefault("broll_query", query)
         first_tts.setdefault("broll_n", recipe.get("broll_offset", 0))
+    for pp in recipe["parts"]:
+        if pp.get("type") == "tts":
+            pp.setdefault("broll_cc_only", recipe.get("broll_cc_only", False))
     crop_bottom = float(recipe.get("src_crop_bottom", 0.2 if clip_subs else 0.0))
     # 원본 좌상단·우상단(채널 로고 자리) 흐리게. false면 끔, 직접 [[x,y,w,h],...] 비율로도 지정 가능
     blur = recipe.get("blur", True)
