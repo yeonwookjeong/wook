@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import Anthropic from "@anthropic-ai/sdk";
 import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 import { chartBrief as chartBriefOf, pairBrief } from "./brief";
-import { isEngine2 } from "./patterns";
+import { isEngine2, isEngine3 } from "./patterns";
 import { coupleBrief, gunghapAvg, gunghapScore } from "./couple";
 import { coupleBriefV1 } from "./coupleLegacy";
 import { decodePerson, profileOf, RELATIONS, relationOf } from "./pairToken";
@@ -52,7 +52,9 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
   const briefYear = sajuYear(at === undefined ? undefined : new Date(at));
   // Bought before ENGINE2_SINCE: each chart is read as it was then, so the pinned text is found under its key.
   const v2 = isEngine2(readAt);
-  const chartBrief = (name: string, p: Pillars, profile: Profile | null, y: number, lover = true) => chartBriefOf(name, p, profile, y, lover, v2);
+  // Bought before ENGINE3_SINCE: the year verdicts as they were then (no 용신 floor).
+  const v3 = isEngine3(readAt);
+  const chartBrief = (name: string, p: Pillars, profile: Profile | null, y: number, lover: boolean | "same" = true) => chartBriefOf(name, p, profile, y, lover, v2, v3);
   const product = productById(req.product);
   const spec = product && SPECS[v][product.id as ProductId];
   // A free report is never written (no spec either): free means no AI cost.
@@ -86,20 +88,20 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
         ? `[대상] 읽는 사람: ${a.name} ('${a.name}님'이라 부를 것) / 헤어진 상대: ${b.name}`
         : `[대상] 읽는 사람: ${a.name} ('${a.name}님'이라 부를 것) / 상대: ${b.name} / 관계: ${RELATIONS[rel]}`;
     briefs = [
-      chartBrief(a.name, a.pillars, profileOf(a), briefYear, REL_OF[rel] === "연인"),
-      chartBrief(b.name, b.pillars, profileOf(b), briefYear, REL_OF[rel] === "연인"),
-      pairBrief(a.name, a.pillars, b.name, b.pillars, product.id === "gunghap" && v2 ? { score: gunghapScore(a, b, REL_OF[rel]), avg: gunghapAvg(a, b, REL_OF[rel]) } : undefined),
+      chartBrief(a.name, a.pillars, profileOf(a), briefYear, loveOf(a, b, REL_OF[rel], v3)),
+      chartBrief(b.name, b.pillars, profileOf(b), briefYear, loveOf(a, b, REL_OF[rel], v3)),
+      pairBrief(a.name, a.pillars, b.name, b.pillars, product.id === "gunghap" && v2 ? { score: gunghapScore(a, b, REL_OF[rel], v3), avg: gunghapAvg(a, b, REL_OF[rel]) } : undefined),
       // 궁합 reads the relation, and from v8 tells the years once, by its ten-year table (pairBriefs). The other pair
       // reports keep the frozen brief, so what was written for them opens unchanged (lib/coupleLegacy.ts).
       product.id === "gunghap"
-        ? coupleBrief(a, b, briefYear, REL_OF[rel], !(v === "v8" || v === "v9"), v2)
+        ? coupleBrief(a, b, briefYear, REL_OF[rel], !(v === "v8" || v === "v9"), v2, v3)
         : product.id === "jaehoe"
           ? coupleBriefV1(a, b, briefYear)
           : coupleBriefV1(a, b),
       // v8 궁합: the two people's ten years and six months, as the report's pictures show them.
-      ...(product.id === "gunghap" && (v === "v8" || v === "v9") ? pairBriefs(a, b, rel, nowYear, at ?? Date.now()) : []),
+      ...(product.id === "gunghap" && (v === "v8" || v === "v9") ? pairBriefs(a, b, rel, nowYear, at ?? Date.now(), v3) : []),
       ...(product.id === "sokgunghap" ? [intimacyBrief(a, b)] : []),
-      ...(product.id === "jaehoe" ? [reunionBrief(a, b, briefYear, at ?? Date.now())] : []),
+      ...(product.id === "jaehoe" ? [reunionBrief(a, b, briefYear, at ?? Date.now(), v3)] : []),
     ].join("\n\n");
   } else if (product.id === "gwangye" || product.id === "dwitjosa" || product.id === "insa") {
     if (!req.court) return { error: "조정을 찾을 수 없사옵니다.", status: 400 };
@@ -141,7 +143,7 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
       chartBrief(me.name, me.pillars, profileOf(me), briefYear),
       freeBrief(me.pillars, profileOf(me), briefYear, oldBrief),
       ...deep(product.id, me.pillars, me.gender),
-      ...(y !== null ? [yeonunBrief(me.pillars, profileOf(me), y, nowYear)] : []),
+      ...(y !== null ? [yeonunBrief(me.pillars, profileOf(me), y, nowYear, v3)] : []),
     ].join("\n\n");
   } else {
     if (product.id === "yeonun") return { error: "볼 사람과 해를 다시 골라 주세요.", status: 400 };
@@ -169,8 +171,13 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
   return { key, system, prompt, title: product.title, modern: Boolean(product.modern) };
 }
 
-function pairBriefs(a: Person, b: Person, rel: Relation, year: number, at: number): string[] {
-  const years = pairYears(a, b, rel, year);
+// How love is spoken of in each one's brief: not at all outside lovers; for two lovers of the same gender
+// (v3) without the guide lines that take a man and a woman for granted.
+const loveOf = (a: Person, b: Person, rel: string, v3: boolean): boolean | "same" =>
+  rel !== "연인" ? false : v3 && a.gender && a.gender === b.gender ? "same" : true;
+
+function pairBriefs(a: Person, b: Person, rel: Relation, year: number, at: number, v3 = true): string[] {
+  const years = pairYears(a, b, rel, year, 10, v3);
   const bond = bondOf(a, b, b.name, REL_OF[rel], at);
   return [
     ...(years ? [pairYearsBrief(a, b, years)] : []),

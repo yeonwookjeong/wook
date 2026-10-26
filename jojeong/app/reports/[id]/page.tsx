@@ -49,7 +49,7 @@ import { PairYearsFigure, YearsAheadFigure } from "@/components/PaidFigures";
 import { BondFigure, BondMonthsFigure } from "@/app/ask/Figures";
 import { bondOf } from "@/lib/bond";
 import { isGunghapV2, pairYearsAt, REL_OF } from "@/lib/pairYears";
-import { isEngine2 } from "@/lib/patterns";
+import { isEngine2, isEngine3 } from "@/lib/patterns";
 import { askShown } from "@/lib/members";
 import { coupleOf, type Couple } from "@/lib/couple";
 import { intimacyOf } from "@/lib/intimacy";
@@ -348,7 +348,7 @@ async function OpenReport({
     // The free card's years are the first five rows of the bought report's ten-year table, so the two never disagree.
     const coupleYears = couple ? (pairYearsAt(a, b, relationOf(pair.rel), thisYear(boughtAt ? new Date(boughtAt) : undefined), 5, readAt)?.rows ?? []) : [];
     const closeness = product.id === "sokgunghap" ? intimacyOf(a, b) : null;
-    const reunion = product.id === "jaehoe" ? reunionOf(a, b, boughtAt ? sajuYear(new Date(boughtAt)) : undefined) : null;
+    const reunion = product.id === "jaehoe" ? reunionOf(a, b, boughtAt ? sajuYear(new Date(boughtAt)) : undefined, undefined, isEngine3(readAt)) : null;
     return (
       <>
         <Header product={product} subjectName={`${a.name}님과 ${b.name}님`} />
@@ -529,7 +529,15 @@ async function OpenReport({
   }
 
   const profile = me ? profileOf(me.person) : subject!.self ? await getProfile(subject!.courtId, subject!.who) : null;
-  const reading = yearReading(pillars, profile);
+  const request: Record<string, string> = me
+    ? { product: product.id, p: me.token }
+    : { product: product.id, ...(courtId && { court: subject!.courtId }), ...(ministerId && { m: ministerId }) };
+  // A report bought before ENGINE2_SINCE shows the features its pinned text was written with.
+  // The order it opens with: by its link, or this buyer's own for the same chart.
+  const owned = paid ?? (self ? await ownedOrderFor(product.id, { ...request, product: product.id }).catch(() => null) : null);
+  // Its year verdicts as of that order too (ENGINE3_SINCE: the 용신 floor).
+  const ownedV3 = isEngine3(owned ? readAtOf(owned, product.id) : undefined);
+  const reading = yearReading(pillars, profile, ownedV3);
   if (!reading)
     return (
       <>
@@ -542,12 +550,6 @@ async function OpenReport({
         </section>
       </>
     );
-  const request: Record<string, string> = me
-    ? { product: product.id, p: me.token }
-    : { product: product.id, ...(courtId && { court: subject!.courtId }), ...(ministerId && { m: ministerId }) };
-  // A report bought before ENGINE2_SINCE shows the features its pinned text was written with.
-  // The order it opens with: by its link, or this buyer's own for the same chart.
-  const owned = paid ?? (self ? await ownedOrderFor(product.id, { ...request, product: product.id }).catch(() => null) : null);
   const distinct = self ? distinctOf(pillars, profile?.gender ?? null, isEngine2(owned ? readAtOf(owned, product.id) : undefined)) : null;
   const free = self ? freeReadingOf(pillars, profile) : null;
   // The free reading: the chart analysis, then the four computed blocks (powers, 신살, money·love·work, the
@@ -731,17 +733,20 @@ async function OpenReport({
         </>
       );
     }
-    const d = yearDetail(pillars, profile, y, now);
-    if (!d) return (<><Header product={product} /><Notice>이 사주로는 연운을 풀 수 없어요. 다시 넣어 주세요.</Notice></>);
-    const { from, to } = yearRange(profile, now);
     const yreq = { product: product.id, p: token ?? "", y: String(y) };
     const unlock = paid ?? (locked && token ? await ownedOrderFor(product.id, yreq) : asOwner(yreq));
+    // The year as of the order it opens with (bought before ENGINE3_SINCE: without the 용신 floor).
+    const yV3 = isEngine3(unlock?.id ? readAtOf(unlock, product.id) : undefined);
+    const d = yearDetail(pillars, profile, y, now, yV3);
+    if (!d) return (<><Header product={product} /><Notice>이 사주로는 연운을 풀 수 없어요. 다시 넣어 주세요.</Notice></>);
+    const { from, to } = yearRange(profile, now);
+
     // A 연운 is found by its year too: its features as of the order it opens with (bought before ENGINE2_SINCE: old).
     const yearDistinct = unlock?.id && self ? distinctOf(pillars, profile?.gender ?? null, isEngine2(readAtOf(unlock, product.id))) : distinct;
-    const preview = yearPreviewOf(pillars, profile, y);
+    const preview = yearPreviewOf(pillars, profile, y, yV3);
     const flowNow = freeReadingOf(pillars, profile)?.flow?.find((f) => f.from <= y && y <= f.to);
     const decadeNow = flowNow ? { from: flowNow.from, to: flowNow.to, mood: flowNow.young ? "성장기" : flowNow.mood, theme: flowNow.theme } : null;
-    const nearRows = yearRows(pillars, profile, Math.max(from, y - 1), Math.min(to, y + 1), now) ?? [];
+    const nearRows = yearRows(pillars, profile, Math.max(from, y - 1), Math.min(to, y + 1), now, yV3) ?? [];
     // The area the glance marks 조심, said under "이 해를 움직이는 것" too, so the two never read against each other.
     const careArea = renew ? preview?.areas.filter((a) => a.grade === "조심").sort((p, q) => p.score - q.score)[0] : undefined;
     const care = careArea ? `다만 ${AREA_WHAT[careArea.area]} 쪽은 이 해에 아껴 써야 하는 곳이에요. 한눈에 칸에서 함께 보세요.` : null;
@@ -906,7 +911,7 @@ async function OpenReport({
     const lifeFigures = (o: Order): Record<number, React.ReactNode> | undefined => {
       if (product.id !== "pyeongsaeng" || !isV8(o)) return undefined;
       const from = thisYear(new Date(paidAtOf(o)));
-      const ahead = yearRows(pillars, profile, from, from + 9, from);
+      const ahead = yearRows(pillars, profile, from, from + 9, from, isEngine3(readAtOf(o, product.id)));
       return {
         3: <DecadeTable inline name={name} domain="jaemul" years={decadeOf("jaemul", pillars, gender)} locked={false} plain={r2(o)} />,
         4: <DecadeTable inline name={name} domain="jikup" years={decadeOf("jikup", pillars, gender)} locked={false} plain={r2(o)} />,
@@ -935,8 +940,8 @@ async function OpenReport({
       if (!domain) return {};
       // The ten-year table is open above the report (the free card): the 'when' chapters show only its answer.
       const when = <WhenFigure key="w" years={decadeOf(domain, pillars, gender)} title={domain === "yeonae" ? "인연이 닿기 좋은 해" : domain === "jaemul" ? "돈이 트이는 해" : "움직이기 좋은 해"} />;
-      const yd = yearDetail(pillars, profile, y0, y0);
-      const yp = yearPreviewOf(pillars, profile, y0);
+      const yd = yearDetail(pillars, profile, y0, y0, ownedV3);
+      const yp = yearPreviewOf(pillars, profile, y0, ownedV3);
       return figuresFor(chs, [
         ["어떤 사람", rare(["연애"])],
         ["어떻게 버는", rare(["돈"])],

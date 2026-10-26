@@ -90,11 +90,12 @@ export const GRADES5 = ["아주 좋음", "좋음", "보통", "조심", "많이 �
 export type Grade5 = (typeof GRADES5)[number];
 export const grade5Of = (x: number): Grade5 => (x >= 1.4 ? "아주 좋음" : x >= 0.7 ? "좋음" : x > -0.5 ? "보통" : x > -1.2 ? "조심" : "많이 조심");
 
-export function yearPreviewOf(p: Pillars, profile: Profile | null, y: number): YearPreview | null {
+// v3: the year verdict with the 용신 floor (lib/yeonun.ts yearScore); false for a report bought before it.
+export function yearPreviewOf(p: Pillars, profile: Profile | null, y: number, v3 = true): YearPreview | null {
   const r = readChart(p);
   if (!r || !isFull(p)) return null;
   const full = p as FullPillars;
-  const s = yearScore(full, r, profile, y);
+  const s = yearScore(full, r, profile, y, v3);
   const { stem, branch } = yearPillar(y);
   const gods = [tenGod(p.dayStem, stem), tenGod(p.dayStem, HIDDEN[branch].at(-1)![0])] as const;
   const groups = new Set<GodGroup>(gods.map((g) => GROUP_OF[g]));

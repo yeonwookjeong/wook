@@ -439,6 +439,9 @@ const NEEDS_HOUR = new Set([...Object.keys(GROUP_NONE), "missing-two", "rootless
 export const ENGINE2_SINCE = Date.parse("2026-10-26T06:59:00Z");
 // A report bought before ENGINE2_SINCE keeps the old reading, so its pinned text and its page agree.
 export const isEngine2 = (boughtAt: number | undefined) => boughtAt === undefined || boughtAt >= ENGINE2_SINCE;
+// The year verdicts with the 용신 floor and one score for the two of a 궁합 (lib/yeonun.ts yearScore, lib/couple.ts).
+export const ENGINE3_SINCE = Date.parse("2026-10-27T00:00:00Z");
+export const isEngine3 = (boughtAt: number | undefined) => boughtAt === undefined || boughtAt >= ENGINE3_SINCE;
 
 export function rawOf(p: Pillars) {
   // The hour stem as the chart shows it (a 야자시 birth keeps its own, lib/saju.ts hourStemFor).

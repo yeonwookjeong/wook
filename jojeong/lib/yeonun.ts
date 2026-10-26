@@ -37,6 +37,7 @@ export type YearScore = {
   daeun: { stem: number; branch: number; from: number; to: number } | null;
 };
 
+const VERDICT_RANK: Record<Verdict, number> = { 인내: 0, 조심: 1, 평: 2, 길: 3, 대길: 4 };
 export const verdictOf = (score: number): Verdict => (score >= 3.5 ? "대길" : score >= 1 ? "길" : score > -1 ? "평" : score > -3 ? "조심" : "인내");
 const EL = (e: number) => `${ELEMENT_KO[e]}(${ELEMENT_HANJA[e]})`;
 // A branch as 申(신), with the particle its Korean reading takes.
@@ -48,7 +49,10 @@ const ROLE = (r: Reading, e: number) =>
 // welcome), how its branch meets each natal branch (by seat: 일 1.5, 월 1, 연·시 0.5; a 삼합·방합 that gathers an
 // unwelcome element counts nothing), its stem against the natal stems, the 신살 it brings, and the decade it
 // falls in.
-export function yearScore(p: FullPillars, r: Reading, profile: Profile | null, y: number): YearScore {
+// v3 (ENGINE3_SINCE, lib/patterns.ts; 2026-10-26 결재 B안, 강 어사 기준): a year bringing the 용신 or 희신 in its
+// stem or branch is at least 평 (in both, at least 길), and only a year whose stem and branch are both the 기신 may
+// fall to 인내 — before it, everyone read about four years in ten as 조심·인내 (scratch count, 3,000 charts).
+export function yearScore(p: FullPillars, r: Reading, profile: Profile | null, y: number, v3 = true): YearScore {
   const { stem, branch } = yearPillar(y);
   const factors: YearFactor[] = [];
   let score = 0;
@@ -114,7 +118,13 @@ export function yearScore(p: FullPillars, r: Reading, profile: Profile | null, y
   }
 
   factors.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
-  return { score, verdict: verdictOf(score), factors, meets, stemMeets, sals, daeun: d ? { stem: d.stem, branch: d.branch, from: d.from, to: d.to } : null };
+  let verdict = verdictOf(score);
+  if (v3) {
+    const welcome = (e: number) => e === r.yong || e === r.hee;
+    const floor = welcome(se) && welcome(be) ? "길" : welcome(se) || welcome(be) ? "평" : se === r.gi && be === r.gi ? "인내" : "조심";
+    if (VERDICT_RANK[verdict] < VERDICT_RANK[floor]) verdict = floor;
+  }
+  return { score, verdict, factors, meets, stemMeets, sals, daeun: d ? { stem: d.stem, branch: d.branch, from: d.from, to: d.to } : null };
 }
 
 // Month pillars of a year (寅月 from 입춘 to 丑月 of the next January) and the date each starts, read from the
@@ -217,13 +227,13 @@ function reasonLine(r: Reading, s: YearScore, y: number): string {
   return parts.slice(0, 2).join(" · ");
 }
 
-export function yearRows(p: Pillars, profile: Profile | null, from: number, to: number, now: number): YearRow[] | null {
+export function yearRows(p: Pillars, profile: Profile | null, from: number, to: number, now: number, v3 = true): YearRow[] | null {
   const r = readChart(p);
   if (!r || !isFull(p)) return null;
   const by = profile?.birthYear ?? null;
   const rows: YearRow[] = [];
   for (let y = from; y <= to; y++) {
-    const s = yearScore(p, r, profile, y);
+    const s = yearScore(p, r, profile, y, v3);
     const { stem } = yearPillar(y);
     const g = GROUP_OF[tenGod(p.dayStem, stem)];
     const n = yearName(y);
@@ -328,10 +338,10 @@ const SAL_PLAIN: Record<string, string> = {
   공망: "공망이 드는 해라, 애쓴 만큼 손에 잡히지 않는 일이 있어요. 실속을 챙기세요.",
 };
 
-export function yearDetail(p: Pillars, profile: Profile | null, y: number, now: number): YearDetail | null {
+export function yearDetail(p: Pillars, profile: Profile | null, y: number, now: number, v3 = true): YearDetail | null {
   const r = readChart(p);
   if (!r || !isFull(p)) return null;
-  const s = yearScore(p, r, profile, y);
+  const s = yearScore(p, r, profile, y, v3);
   const { stem, branch } = yearPillar(y);
   const n = yearName(y);
   const g = GROUP_OF[tenGod(p.dayStem, stem)];
@@ -411,8 +421,8 @@ export function yearDetail(p: Pillars, profile: Profile | null, y: number, now: 
 }
 
 // For the writer: everything the free screen showed, and the evidence behind it.
-export function yeonunBrief(p: Pillars, profile: Profile | null, y: number, now: number): string {
-  const d = yearDetail(p, profile, y, now);
+export function yeonunBrief(p: Pillars, profile: Profile | null, y: number, now: number, v3 = true): string {
+  const d = yearDetail(p, profile, y, now, v3);
   if (!d) return "";
   const when =
     d.when === "past"

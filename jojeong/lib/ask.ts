@@ -222,7 +222,7 @@ function context(room: AskRoom, withId?: string): string | null {
       chartBrief(chosen.label, other.pillars, profileOf(other)),
       // The same score the 궁합 report shows (lib/couple.ts gunghapScore), not the game's.
       pairBrief(me.name, me.pillars, chosen.label, other.pillars, {
-        score: gunghapScore(me, other, relOf(chosen.rel, chosen.label)),
+        score: gunghapScore(me, other, relOf(chosen.rel, chosen.label)), // v3: the same both ways
         avg: gunghapAvg(me, other, relOf(chosen.rel, chosen.label)),
       }),
       ...(bond ? [bondBrief(bond)] : []),

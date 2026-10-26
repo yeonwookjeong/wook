@@ -68,7 +68,7 @@ function natalBranches(p: FullPillars) {
     .map((s) => ({ pos: s.pos, branch: s.branch! }));
 }
 
-export function yearReading(p: Pillars, profile: Profile | null): YearReading | null {
+export function yearReading(p: Pillars, profile: Profile | null, v3 = true): YearReading | null {
   const r = readChart(p);
   if (!r) return null;
   const full = p as FullPillars;
@@ -138,7 +138,7 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
   const next = daeun?.find((d) => d.from === (now?.to ?? 0) + 1);
 
   // The verdict comes from the one scoring every year uses (lib/yeonun.ts), so 2026 reads the same here and in 연운.
-  const verdict: Verdict = yearScore(full, r, profile, 2026).verdict;
+  const verdict: Verdict = yearScore(full, r, profile, 2026, v3).verdict;
   const stage = stageOf(p.dayStem, YEAR.branch);
 
   // ── 타고난 그릇 (the chart itself)

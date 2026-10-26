@@ -13,7 +13,7 @@ import { sajuYear, yearDetail } from "./yeonun";
 const EL = (e: number) => `${ELEMENT_KO[e]}(${ELEMENT_HANJA[e]})`;
 const GZ = (s: number, b: number) => `${STEMS[s]}${BRANCHES[b]}`;
 const POS_NAME = { 연: "연주(뿌리·집안·어린 시절)", 월: "월주(부모·사회·일터)", 일: "일주(나 자신·배우자 자리)", 시: "시주(자녀·말년·계획)" };
-const posName = (pos: keyof typeof POS_NAME, lover: boolean) => (pos === "일" && !lover ? "일주(나 자신)" : POS_NAME[pos]);
+const posName = (pos: keyof typeof POS_NAME, lover: boolean | "same") => (pos === "일" && !lover ? "일주(나 자신)" : POS_NAME[pos]);
 
 // 60-year cycle position → the most likely birth year for someone alive now (1936–2025).
 function guessYear(p: Pillars): number | null {
@@ -34,7 +34,8 @@ export function birthYearOf(p: Pillars, profile: Profile | null): { year: number
 // writer is not handed them (2026-10-25 궁합 점검). True keeps every other report's brief exactly as it was.
 // v2: the "없음" patterns read by what the chart truly holds, and nothing said missing without the hour
 // (lib/patterns.ts ENGINE2_SINCE); a report bought before it passes false and is asked exactly as before.
-export function chartBrief(name: string, p: Pillars, profile: Profile | null, y = sajuYear(), lover = true, v2 = true): string {
+// v3: the year verdicts read with the 용신 floor (lib/yeonun.ts yearScore, ENGINE3_SINCE).
+export function chartBrief(name: string, p: Pillars, profile: Profile | null, y = sajuYear(), lover: boolean | "same" = true, v2 = true, v3 = true): string {
   const r = readChart(p);
   if (!r || !isFull(p)) return `${name}: 여덟 글자가 온전하지 않은 옛 기록(일주 ${GZ(p.dayStem, p.dayBranch)}, 띠 ${BRANCHES[p.yearBranch]})`;
   const lines: string[] = [];
@@ -125,7 +126,7 @@ export function chartBrief(name: string, p: Pillars, profile: Profile | null, y 
   } else lines.push("- 대운: 성별을 몰라 계산하지 않음");
 
   // 올해
-  const yr = y === 2026 ? yearReading(p, profile) : null;
+  const yr = y === 2026 ? yearReading(p, profile, v3) : null;
   const yearMeet = br.flatMap((s) => {
     const m = meetings(YEAR.branch, s.branch!);
     return m.length ? [`${s.pos}지${BRANCHES[s.branch!]}와 ${m.join("·")}`] : [];
@@ -143,7 +144,7 @@ export function chartBrief(name: string, p: Pillars, profile: Profile | null, y 
         .join(", ")}`,
     );
   if (y !== 2026) {
-    const d = yearDetail(p, profile, y, y);
+    const d = yearDetail(p, profile, y, y, v3);
     if (d)
       lines.push(
         `- ${y} ${d.hanja}(${d.ko})년: 위 글자 ${d.gods[0]}, 아래 글자 ${d.gods[1]}; 일간의 12운성 ${d.stage}; 엔진 판정 ${d.verdict}; ${d.theme}`,
@@ -188,13 +189,23 @@ const unlove = (t: string) =>
     .filter((x) => !/연애|결혼|배우자/.test(x))
     .join(" ");
 
+// Two lovers of the same gender: no guide line that takes a man and a woman for granted.
+const GENDERED = /남자|여자|남편|아내|이성/;
+const ungender = (t: string) =>
+  t
+    .split(/(?<=[.!?요])\s+/)
+    .filter((x) => !GENDERED.test(x))
+    .join(" ");
+
 // What sets this chart apart from others with the same day pillar, rarest first, and past years worth naming.
-function distinctLines(p: Pillars, profile: Profile | null, lover = true, v2 = true): string[] {
+function distinctLines(p: Pillars, profile: Profile | null, lover: boolean | "same" = true, v2 = true): string[] {
   const d = distinctOf(p, profile?.gender ?? null, v2);
   if (!d) return [];
   const lines = ["- ★ 이 사람만의 특징 (드문 순. 보고서는 이것부터 풀 것. '가이드'는 방향일 뿐, 이 사람의 다른 글자와 엮어 구체적으로 쓸 것):"];
-  d.patterns.filter((x) => lover || x.area !== "연애").forEach((x, i) =>
-    lines.push(`  ${i + 1}. [${x.term}] ${x.plain} — ${perHundred(x.rate)} · 영역 ${x.area} · 가이드: ${lover ? x.meaning : unlove(x.meaning)}`),
+  d.patterns
+    .filter((x) => lover === true || (lover === "same" ? !(x.area === "연애" && GENDERED.test(x.plain)) : x.area !== "연애"))
+    .forEach((x, i) =>
+      lines.push(`  ${i + 1}. [${x.term}] ${x.plain} — ${perHundred(x.rate)} · 영역 ${x.area} · 가이드: ${lover === true ? x.meaning : lover === "same" ? ungender(x.meaning) : unlove(x.meaning)}`),
   );
   if (d.extremes.length)
     lines.push(
@@ -204,7 +215,7 @@ function distinctLines(p: Pillars, profile: Profile | null, lover = true, v2 = t
     );
   if (d.ilju)
     lines.push(`- ★ 같은 일주 안에서: ${d.ilju.build} ${d.ilju.name}일주는 ${d.ilju.name}일주 가운데 약 ${Math.max(1, Math.round(d.ilju.rate * 100))}%`);
-  const past = pastYears(p, profile).filter((x) => lover || !x.includes("배우자"));
+  const past = pastYears(p, profile).filter((x) => lover !== false || !x.includes("배우자"));
   if (past.length) lines.push(`- ★ 과거 확인용 연도 (이 가운데 2~3개를 골라 '이 무렵 이런 일이 있었을 가능성이 커요'로 짚을 것):\n${past.map((x) => `  · ${x}`).join("\n")}`);
   return lines;
 }

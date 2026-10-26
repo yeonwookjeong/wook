@@ -2,6 +2,7 @@ import { meetings } from "./deep";
 import { profileOf, type Person } from "./pairToken";
 import type { Relation } from "./relations";
 import { tieYear } from "./couple";
+import { isEngine3 } from "./patterns";
 import { pairYearsV1 } from "./pairYearsLegacy";
 import { SEAT_NAME, seatOf, type Rel } from "./rels";
 import { BRANCHES, STEMS } from "./saju";
@@ -20,10 +21,10 @@ export type PairYears = { seat: string; rows: PairYear[]; noDaeun: string[] };
 const good = (v: Verdict) => v === "대길" || v === "길";
 const bad = (v: Verdict) => v === "조심" || v === "인내";
 
-export function pairYears(a: Person, b: Person, relation: Relation, from: number, n = 10): PairYears | null {
+export function pairYears(a: Person, b: Person, relation: Relation, from: number, n = 10, v3 = true): PairYears | null {
   const rel = REL_OF[relation];
-  const ya = yearRows(a.pillars, profileOf(a), from, from + n - 1, from);
-  const yb = yearRows(b.pillars, profileOf(b), from, from + n - 1, from);
+  const ya = yearRows(a.pillars, profileOf(a), from, from + n - 1, from, v3);
+  const yb = yearRows(b.pillars, profileOf(b), from, from + n - 1, from, v3);
   if (!ya || !yb) return null;
   const sa = seatOf(a.pillars, rel);
   const sb = seatOf(b.pillars, rel);
@@ -76,7 +77,7 @@ export const isGunghapV2 = (boughtAt: number | undefined) => boughtAt === undefi
 
 // The table as of the order (`boughtAt`; none: a free look, read the new way).
 export function pairYearsAt(a: Person, b: Person, relation: Relation, from: number, n: number, boughtAt: number | undefined): PairYears | null {
-  if (isGunghapV2(boughtAt)) return pairYears(a, b, relation, from, n);
+  if (isGunghapV2(boughtAt)) return pairYears(a, b, relation, from, n, isEngine3(boughtAt));
   const x = pairYearsV1(a, b, relation, from, n);
   return x && { ...x, noDaeun: [] };
 }

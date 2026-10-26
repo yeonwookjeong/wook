@@ -47,7 +47,8 @@ const strained = (m: Meeting[]) => m.some((x) => x === "충" || x === "형" || x
 // (scripts/reunionSpread.mts).
 const HOLDS = 3;
 
-export function reunionOf(a: Person, b: Person, from = sajuYear(), now = new Date()): Reunion | null {
+// v3: the year verdicts with the 용신 floor (lib/yeonun.ts yearScore); false for a report bought before it.
+export function reunionOf(a: Person, b: Person, from = sajuYear(), now = new Date(), v3 = true): Reunion | null {
   const c = coupleOf(a, b);
   if (!c) return null;
   const ties: Weighted[] = [];
@@ -84,8 +85,8 @@ export function reunionOf(a: Person, b: Person, from = sajuYear(), now = new Dat
   const to = from + 4;
   const ra = readChart(a.pillars);
   const rb = readChart(b.pillars);
-  const rowsA = yearRows(a.pillars, profileOf(a), from, to, from);
-  const rowsB = yearRows(b.pillars, profileOf(b), from, to, from);
+  const rowsA = yearRows(a.pillars, profileOf(a), from, to, from, v3);
+  const rowsB = yearRows(b.pillars, profileOf(b), from, to, from, v3);
   const verdictOf = (rows: typeof rowsA, y: number): Verdict | null => rows?.find((r) => r.year === y)?.verdict ?? null;
   const windows: ReunionWindow[] = [];
   for (let y = from; y <= to; y++) {
@@ -129,8 +130,8 @@ const windowLine = (w: ReunionWindow) => `${w.year} ${w.gz}(${w.why}${w.monthsLe
 
 // `from`: the year the brief is read for, and `at` the moment (the order's, so a report reopened after 입춘 keeps
 // its years and its "months left").
-export function reunionBrief(a: Person, b: Person, from = sajuYear(), at = Date.now()): string {
-  const r = reunionOf(a, b, from, new Date(at));
+export function reunionBrief(a: Person, b: Person, from = sajuYear(), at = Date.now(), v3 = true): string {
+  const r = reunionOf(a, b, from, new Date(at), v3);
   if (!r) return "";
   const together = r.windows.filter((w) => w.kind === "together");
   const stir = r.windows.filter((w) => w.kind === "stir");
