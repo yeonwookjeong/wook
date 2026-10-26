@@ -28,6 +28,7 @@ const MARK_STYLE: Record<string, string> = {
   "무난한 해": "bg-ink/8 text-ink",
   "한쪽 흔들림": "bg-[#d4af5f]/35 text-ink",
   "한 사람 자리가 흔들리는 해": "bg-[#d4af5f]/35 text-ink",
+  "한 사람이 받쳐 주는 해": "bg-seal/15 text-seal",
   "함께 조심": "bg-ink/20 text-ink",
   "관계가 흔들리기 쉬운 해": "bg-ink text-hanji",
 };

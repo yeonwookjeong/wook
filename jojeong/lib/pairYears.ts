@@ -13,7 +13,7 @@ import { yearRows, type Verdict } from "./yeonun";
 
 export const REL_OF: Record<Relation, Rel> = { lover: "연인", some: "연인", ex: "연인", work: "일", friend: "친구", family: "가족" };
 
-export type PairMark = "함께 좋은 해" | "정이 깊어지는 해" | "한쪽 흔들림" | "함께 조심" | "관계가 흔들리기 쉬운 해" | "한 사람 자리가 흔들리는 해" | "무난한 해";
+export type PairMark = "함께 좋은 해" | "정이 깊어지는 해" | "한쪽 흔들림" | "함께 조심" | "관계가 흔들리기 쉬운 해" | "한 사람 자리가 흔들리는 해" | "한 사람이 받쳐 주는 해" | "무난한 해";
 export type PairYear = { year: number; gz: string; me: Verdict; them: Verdict; mark: PairMark; why: string; now: boolean };
 // noDaeun: who was read without their ten-year 대운 (gender not given), so their grades are said more lightly.
 export type PairYears = { seat: string; rows: PairYear[]; noDaeun: string[] };
@@ -52,8 +52,11 @@ export function pairYears(a: Person, b: Person, relation: Relation, from: number
             : ["함께 좋은 해", "두 사람 모두 좋은 해"]
           : bad(me) && bad(them)
             ? ["함께 조심", "두 사람 모두 버거운 해"]
-            : bad(me) || bad(them)
-              ? ["한쪽 흔들림", `${bad(me) ? a.name : b.name}님에게 버거운 해`]
+            : // B+ (v3, 2026-10-26 강 어사): one only 조심 while the other has a good year is that one held up, not the bond shaken.
+              v3 && ((me === "조심" && good(them)) || (them === "조심" && good(me)))
+              ? ["한 사람이 받쳐 주는 해", `${good(me) ? a.name : b.name}님의 좋은 해가 ${good(me) ? b.name : a.name}님을 받쳐 줄 수 있어요`]
+              : bad(me) || bad(them)
+                ? ["한쪽 흔들림", `${bad(me) ? a.name : b.name}님에게 버거운 해`]
               : tie
                 ? ["정이 깊어지는 해", `두 사람의 ${seat}와 모두 합`]
                 : ["무난한 해", "크게 밀지도 막지도 않는 해"];
