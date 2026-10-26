@@ -179,7 +179,8 @@ def parse_time(v) -> float:
 
 
 def fmt(sec: float) -> str:
-    m, s = divmod(max(sec, 0), 60)
+    t = round(max(sec, 0), 1)
+    m, s = divmod(t, 60)
     return f"{int(m):02d}:{s:04.1f}"
 
 
@@ -281,11 +282,13 @@ class Subs:
         """문구가 나오는 (시작, 끝). 단어 단위 자동자막이 있으면 그걸로 더 정밀하게."""
         if not norm(phrase):
             die(f"빈 문구예요: '{phrase}'")
-        for tl in (self.by_word, self.by_line):
-            if tl:
-                hit = tl.find(phrase, after)
-                if hit:
-                    return hit
+        w = self.by_word.find(phrase, after) if self.by_word else None
+        line = self.by_line.find(phrase, after) if self.by_line else None
+        # 자동자막은 받아쓰기가 틀릴 수 있어서, 줄 자막과 2.5초 넘게 어긋나면 줄 자막을 믿음
+        if w and line and abs(w[0] - line[0]) > 2.5:
+            return line
+        if w or line:
+            return w or line
         die(f"자막에서 '{phrase}' 문구를 못 찾았어요.\n"
             f"   리포트(out/리포트_*.md)의 자막에서 몇 글자만 그대로 복사해 넣어보세요.")
 
@@ -322,7 +325,37 @@ class Subs:
 
 # ---------------------------------------------------------------- 원본 영상
 
+def _video_id(url: str) -> str | None:
+    m = re.search(r"(?:youtu\.be/|v=|shorts/)([\w-]{11})", url)
+    return m.group(1) if m else None
+
+
+def _register(video: Path, meta: dict, url: str, main: bool):
+    _INFOS[str(video)] = {"duration": meta.get("duration") or 0, "heatmap": meta.get("heatmap") or [],
+                          "license": meta.get("license") or ""}
+    if main and not _ORIGIN:
+        _ORIGIN.update({"title": meta.get("title", ""), "url": meta.get("url") or url,
+                        "channel": meta.get("channel", ""), "license": meta.get("license", "")})
+    if main and "creative commons" not in (meta.get("license") or "").lower():
+        print(f"   ⚠️ 이 영상은 크리에이티브 커먼즈가 아니에요: {meta.get('url') or url}")
+
+
 def fetch_source(url: str, ff: str, height: int = 1080, main: bool = True):
+    """영상·자막·정보를 받아옴. 한 번 받은 건 work 폴더에 저장해두고 다음부터는 인터넷 없이 씀
+    (유튜브에 자주 요청하면 'HTTP Error 429: Too Many Requests'로 막히기 때문)."""
+    WORK.mkdir(exist_ok=True)
+    vid = _video_id(url)
+    cache = WORK / f"{vid}_info.json" if vid else None
+    if cache and cache.exists():
+        meta = json.loads(cache.read_text(encoding="utf-8"))
+        video = WORK / meta["file"]
+        if video.exists() and (meta.get("has_subs") or not main):
+            print(f"   원본 영상·자막: 저장해둔 것 사용 ({vid})")
+            _register(video, meta, url, main)
+            lines = [tuple(x) for x in meta.get("lines", [])]
+            words = [tuple(x) for x in meta.get("words", [])]
+            return video, Subs(lines, words), meta.get("channel", "")
+
     try:
         import yt_dlp
     except ImportError:
@@ -330,7 +363,6 @@ def fetch_source(url: str, ff: str, height: int = 1080, main: bool = True):
     sys.path.insert(0, str(HERE))
     from scan import pick_subtitle  # 스캐너와 같은 자막 선택 규칙 사용
 
-    WORK.mkdir(exist_ok=True)
     opts = {
         "quiet": True, "no_warnings": True,
         "format": (f"bv*[height<={height}][ext=mp4]+ba[ext=m4a]/b[height<={height}][ext=mp4]/"
@@ -340,7 +372,12 @@ def fetch_source(url: str, ff: str, height: int = 1080, main: bool = True):
         "ffmpeg_location": ff,
     }
     with yt_dlp.YoutubeDL(opts) as ydl:
-        info = ydl.extract_info(url, download=False)
+        try:
+            info = ydl.extract_info(url, download=False)
+        except Exception as e:
+            if "429" in str(e):
+                die("유튜브가 잠시 요청을 막았어요(429). 10~30분 뒤에 다시 실행해 주세요.")
+            raise
         video = WORK / f"{info['id']}.mp4"
         if video.exists():
             print("   원본 영상: 이미 받아둔 파일 사용")
@@ -356,29 +393,33 @@ def fetch_source(url: str, ff: str, height: int = 1080, main: bool = True):
         def get(url_):
             return ydl.urlopen(url_).read().decode("utf-8", "replace")
 
-        sub, kind = pick_subtitle(info)
-        lines = []
-        if sub:
-            raw = get(sub["url"])
-            lines = parse_json3(raw) if sub["ext"] == "json3" else parse_vtt(raw)
-        words = []
-        for f in (info.get("automatic_captions") or {}).get("ko", []):
-            if f.get("ext") == "json3":
+        lines, words, kind = [], [], None
+        if main:  # 도입부 자료 영상은 자막 필요 없음
+            sub, kind = pick_subtitle(info)
+            if sub:
                 try:
-                    words = parse_json3_words(get(f["url"]))
-                except Exception:
-                    words = []
-                break
-        print(f"   자막: {kind or '없음'} {len(lines)}줄, 컷 정밀용 자동자막 단어 {len(words)}개")
-    _INFOS[str(video)] = {"duration": info.get("duration") or 0, "heatmap": info.get("heatmap") or [],
-                          "license": info.get("license") or ""}
-    _ORIGIN.update({"title": info.get("title", ""), "url": info.get("webpage_url") or url,
-                    "channel": info.get("channel") or info.get("uploader") or "",
-                    "license": info.get("license") or ""}) if not _ORIGIN else None
-    lic = (info.get("license") or "").lower()
-    if main and "creative commons" not in lic:
-        print(f"   ⚠️ 이 영상은 크리에이티브 커먼즈가 아니에요: {info.get('webpage_url') or url}")
-    return video, Subs(lines, words), info.get("channel") or info.get("uploader") or ""
+                    raw = get(sub["url"])
+                    lines = parse_json3(raw) if sub["ext"] == "json3" else parse_vtt(raw)
+                except Exception as e:
+                    if "429" in str(e):
+                        die("유튜브가 잠시 요청을 막았어요(429). 10~30분 뒤에 다시 실행해 주세요.")
+                    raise
+            for f in (info.get("automatic_captions") or {}).get("ko", []):
+                if f.get("ext") == "json3":
+                    try:
+                        words = parse_json3_words(get(f["url"]))
+                    except Exception:
+                        words = []
+                    break
+            print(f"   자막: {kind or '없음'} {len(lines)}줄, 컷 정밀용 자동자막 단어 {len(words)}개")
+
+    meta = {"file": video.name, "duration": info.get("duration") or 0, "heatmap": info.get("heatmap") or [],
+            "license": info.get("license") or "", "title": info.get("title", ""),
+            "url": info.get("webpage_url") or url, "channel": info.get("channel") or info.get("uploader") or "",
+            "has_subs": bool(lines) or main, "lines": lines, "words": words}
+    (WORK / f"{info['id']}_info.json").write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8")
+    _register(video, meta, url, main)
+    return video, Subs(lines, words), meta["channel"]
 
 
 _INFOS = {}  # 받아온 영상별 길이·'많이 다시 본 구간' 정보
@@ -1070,6 +1111,11 @@ def search_videos(query: str, exclude: str = "", limit: int = 10, cc_only: bool 
     """유튜브에서 검색해 쓸 만한 영상 링크 목록(1분~40분짜리)을 돌려줌."""
     if (query, cc_only) in _SEARCHES:
         return _SEARCHES[(query, cc_only)]
+    WORK.mkdir(exist_ok=True)
+    cache = WORK / f"search_{hashlib.md5(f'{query}|{cc_only}'.encode()).hexdigest()[:10]}.json"
+    if cache.exists():  # 같은 검색은 저장해둔 결과 사용 (유튜브 요청 줄이기)
+        _SEARCHES[(query, cc_only)] = json.loads(cache.read_text(encoding="utf-8"))
+        return _SEARCHES[(query, cc_only)]
     import yt_dlp
     from urllib.parse import quote
     # 유튜브 검색 필터 '크리에이티브 커먼즈'(sp=EgIwAQ==)를 걸어서 재사용 가능한 영상만 찾음
@@ -1083,6 +1129,7 @@ def search_videos(query: str, exclude: str = "", limit: int = 10, cc_only: bool 
         if e.get("id") and e["id"] not in exclude and 60 <= d <= 2400:
             urls.append(f"https://www.youtube.com/watch?v={e['id']}")
     _SEARCHES[(query, cc_only)] = urls
+    cache.write_text(json.dumps(urls), encoding="utf-8")
     print(f"      🔎 '{query}' 검색 결과 {len(urls)}개")
     return urls
 
@@ -1120,7 +1167,13 @@ def media_items(p: dict, dur: float, src: Path, subs: "Subs", ff: str) -> list:
                 print(f"      🎬 자동으로 고른 영상: {m['src']}")
             if m.get("src"):
                 if m["src"] not in _SOURCES:
-                    _SOURCES[m["src"]] = fetch_source(m["src"], ff, height=720, main=False)[:2]
+                    try:
+                        _SOURCES[m["src"]] = fetch_source(m["src"], ff, height=720, main=False)[:2]
+                    except (Exception, SystemExit) as e:  # 자료 영상 하나 실패해도 영상 만들기는 계속
+                        print(f"      ⚠️ 자료 영상을 못 받아서 건너뜀 ({type(e).__name__}): {m['src']}")
+                        _SOURCES[m["src"]] = None
+                if _SOURCES[m["src"]] is None:
+                    continue
                 vpath, vsubs = _SOURCES[m["src"]]
                 if cc_only and "creative commons" not in _INFOS.get(str(vpath), {}).get("license", "").lower():
                     print(f"      ⛔ CC 영상이 아니라서 건너뜀: {m['src']}")
