@@ -17,7 +17,7 @@ const ENDING_PEOPLE = {
   why: "결말 단정",
 };
 // "이 사람과는 미래가 없어요": no future said of the two of them (not "돈 걱정할 미래는 없어요").
-const NO_FUTURE = { re: /(?:사이|관계|인연|두\s*사람|이\s*사람과(?:는)?)[^.!?\n]{0,10}(?:미래|희망|가망)(?:이|은|는)?\s*없/, why: "결말 단정", hard: true };
+const NO_FUTURE = { re: /(?:사이|관계|인연|두\s*사람|이\s*사람과(?:는)?)[^.!?\n]{0,10}(?:미래|희망|가망)(?:이|가|은|는)?\s*없/, why: "결말 단정", hard: true };
 const GENERIC = (): Rule[] => [
   FATE,
   ODDS,
