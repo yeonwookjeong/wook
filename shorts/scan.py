@@ -225,6 +225,8 @@ def scan(url: str, keywords, excludes, with_comments: bool):
         "duration": info.get("duration") or 0,
         "description": info.get("description") or "",
         "sub_kind": sub_kind,
+        "license": info.get("license") or "표준 YouTube 라이선스(재사용 불가)",
+        "segs": segs,
         "hits": find_hits(segs, keywords, excludes) if segs else [],
         "peaks": heat_peaks(info),
         "comments": useful_comments(info, keywords) if with_comments else [],
@@ -236,7 +238,10 @@ def t_link(video_id: str, sec: float) -> str:
 
 
 def render_md(r) -> str:
-    lines = [f"## {r['title']}", f"- 채널: {r['channel']} / 길이: {fmt_time(r['duration'])}",
+    lic = r.get("license", "")
+    cc = "✅ 크리에이티브 커먼즈" if "creative commons" in lic.lower() else "⛔ CC 아님"
+    lines = [f"## {r['title']}", f"- 라이선스: {cc} ({lic})",
+             f"- 채널: {r['channel']} / 길이: {fmt_time(r['duration'])}",
              f"- 링크: {r['url']}", ""]
 
     lines.append(f"### 🔎 키워드 구간 ({r['sub_kind'] or '자막 없음'}) — 점수 높은 순")
@@ -303,6 +308,7 @@ def main():
     ap.add_argument("-f", "--file", help="링크 목록 파일(한 줄에 하나)")
     ap.add_argument("-k", "--keywords", default=str(HERE / "keywords.txt"), help="키워드 파일 경로")
     ap.add_argument("--no-comments", action="store_true", help="댓글 수집 생략")
+    ap.add_argument("--full", action="store_true", help="자막 전체를 시간과 함께 out/자막_영상ID.txt로 저장")
     args = ap.parse_args()
 
     urls = list(args.urls)
@@ -325,6 +331,13 @@ def main():
             print(f"   ⚠️ 실패: {e}\n   → 'pip install -U yt-dlp'로 업데이트 후 다시 시도해 보세요.")
             continue
         results.append(r)
+        lic = r["license"]
+        print(f"   라이선스: {'✅ CC' if 'creative commons' in lic.lower() else '⛔ CC 아님'} ({lic})")
+        if args.full and r["segs"]:
+            tpath = OUT_DIR / f"자막_{r['id']}.txt"
+            tpath.write_text(f"{r['title']}\n{r['url']}\n{r['channel']} / {lic}\n\n" +
+                             "\n".join(f"[{fmt_time(t)}] {txt}" for t, txt in r["segs"]), encoding="utf-8")
+            print(f"   전체 자막 저장: {tpath}")
         print(f"   {r['title'][:50]}  |  키워드 구간 {len(r['hits'])}개, 그래프 최고점 {len(r['peaks'])}개, 댓글 {len(r['comments'])}개")
         if r["hits"]:
             print("   점수 높은 구간 Top 5:")

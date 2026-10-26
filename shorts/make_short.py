@@ -370,11 +370,19 @@ def fetch_source(url: str, ff: str, height: int = 1080):
                     words = []
                 break
         print(f"   자막: {kind or '없음'} {len(lines)}줄, 컷 정밀용 자동자막 단어 {len(words)}개")
-    _INFOS[str(video)] = {"duration": info.get("duration") or 0, "heatmap": info.get("heatmap") or []}
+    _INFOS[str(video)] = {"duration": info.get("duration") or 0, "heatmap": info.get("heatmap") or [],
+                          "license": info.get("license") or ""}
+    _ORIGIN.update({"title": info.get("title", ""), "url": info.get("webpage_url") or url,
+                    "channel": info.get("channel") or info.get("uploader") or "",
+                    "license": info.get("license") or ""}) if not _ORIGIN else None
+    lic = (info.get("license") or "").lower()
+    if "creative commons" not in lic:
+        print(f"   ⚠️ 이 영상은 크리에이티브 커먼즈가 아니에요: {info.get('webpage_url') or url}")
     return video, Subs(lines, words), info.get("channel") or info.get("uploader") or ""
 
 
 _INFOS = {}  # 받아온 영상별 길이·'많이 다시 본 구간' 정보
+_ORIGIN = {}  # 메인 원본 영상 정보 (출처 표기용)
 
 
 def auto_moments(video: Path, ff: str, count: int = 8) -> list[float]:
@@ -1011,8 +1019,12 @@ def search_videos(query: str, exclude: str = "", limit: int = 10) -> list[str]:
     if query in _SEARCHES:
         return _SEARCHES[query]
     import yt_dlp
-    with yt_dlp.YoutubeDL({"quiet": True, "no_warnings": True, "extract_flat": True}) as ydl:
-        res = ydl.extract_info(f"ytsearch{limit}:{query}", download=False)
+    from urllib.parse import quote
+    # 유튜브 검색 필터 '크리에이티브 커먼즈'(sp=EgIwAQ==)를 걸어서 재사용 가능한 영상만 찾음
+    search_url = f"https://www.youtube.com/results?search_query={quote(query)}&sp=EgIwAQ%3D%3D"
+    with yt_dlp.YoutubeDL({"quiet": True, "no_warnings": True, "extract_flat": True,
+                           "playlistend": limit}) as ydl:
+        res = ydl.extract_info(search_url, download=False)
     urls = []
     for e in res.get("entries") or []:
         d = e.get("duration") or 0
@@ -1057,6 +1069,9 @@ def media_items(p: dict, dur: float, src: Path, subs: "Subs", ff: str) -> list:
                 if m["src"] not in _SOURCES:
                     _SOURCES[m["src"]] = fetch_source(m["src"], ff, height=720)[:2]
                 vpath, vsubs = _SOURCES[m["src"]]
+                if "creative commons" not in _INFOS.get(str(vpath), {}).get("license", "").lower():
+                    print(f"      ⛔ CC 영상이 아니라서 건너뜀: {m['src']}")
+                    continue
             if str(m.get("at", "auto")) == "auto":  # 시간을 안 정하면 자동으로 볼만한 장면 선택
                 moments = auto_moments(vpath, ff)
                 t = moments[int(m.get("n", 0)) % len(moments)]
@@ -1290,8 +1305,13 @@ def upload_text(recipe: dict) -> str:
     tags = [f"#{n.replace(' ', '')}" for n in names]
     tags += [f"#{t}" for t in recipe.get("hashtags", ["셀럽템", "연예인추천템", "쿠팡추천템", "꿀템", "추천템"])]
     link = recipe.get("link_text", "프로필 링크")
+    credit = ""
+    if _ORIGIN:  # 크리에이티브 커먼즈(CC BY)는 원작자·원본 링크 표기가 조건
+        lic = "CC BY" if "creative commons" in _ORIGIN.get("license", "").lower() else _ORIGIN.get("license", "")
+        credit = f"원본 영상: {_ORIGIN['channel']} - {_ORIGIN['title']}\n{_ORIGIN['url']} ({lic})\n\n"
     return (f"[제목]\n{title}\n\n"
-            f"[설명/캡션]\n{title}\n제품 정보는 {link}에서 확인하세요 👆\n\n{' '.join(tags)}\n\n{DISCLOSURE}\n\n"
+            f"[설명/캡션]\n{title}\n제품 정보는 {link}에서 확인하세요 👆\n\n{' '.join(tags)}\n\n"
+            f"{credit}{DISCLOSURE}\n\n"
             f"[고정 댓글]\n{DISCLOSURE}\n")
 
 
