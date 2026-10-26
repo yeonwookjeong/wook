@@ -10,7 +10,7 @@ import { STEMS_KO, BRANCHES_KO } from "./saju";
 import { plainAnswer } from "./askText";
 import { askRoomIds, getAskRoomRaw, newAskRoomId, noteReportError, setAskRoomRaw } from "./store";
 import { thisYear, yeonunBrief } from "./yeonun";
-import { figureKit, figureMenu, verdictText } from "./askFigures";
+import { figureKit, figureMenu, topicOf, verdictText } from "./askFigures";
 
 // 정 훈도에게 묻기: a room per chart where 정 훈도 answers one question at a time and remembers the talk.
 // He remembers in three layers: the chart and this year's flow (computed when the room opens, recomputed each
@@ -268,8 +268,10 @@ export async function ask(room: AskRoom, question: string, topic: Topic, chosen?
     })
     .join("\n");
   const name = personOfRoom(room)!.name;
-  // A pick among offered topics is read for its own words (이직 → 일), not the whole two-topic question.
-  const kit = figures ? figureKit(personOfRoom(room)!, withPerson ? decodePerson(withPerson.token) : null, withPerson?.label ?? "", withPerson?.rel, chosen ? "기타" : topic, chosen ?? q, Date.now()) : null;
+  // A pick among offered topics is read for its own words (이직 → 일), not the whole two-topic question: a "연애:" it
+  // starts with first, then its words, and the topic the guest picked when it names none.
+  const picked = chosen ? (TOPICS.find((t) => t !== "기타" && chosen.startsWith(`${t}:`)) ?? topicOf("기타", chosen)) : topic;
+  const kit = figures ? figureKit(personOfRoom(room)!, withPerson ? decodePerson(withPerson.token) : null, withPerson?.label ?? "", withPerson?.rel, picked === "기타" ? topic : picked, chosen ?? q, Date.now()) : null;
   const prompt = [
     ctx,
     ...(kit ? [`[판정 카드 — 답서 맨 위에 이대로 보인다]\n${verdictText(kit)}`, `[그림 재료 — 답서에 넣을 수 있는 그림과 그 안의 값]\n${figureMenu(kit)}`] : []),
