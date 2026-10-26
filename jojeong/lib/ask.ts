@@ -220,9 +220,9 @@ function context(room: AskRoom, withId?: string): string | null {
     parts.push(
       `[이번 질문에 함께 보는 사람: ${chosen.label} (관계: ${REL_LABEL[relOf(chosen.rel, chosen.label)]})${chosen.aka?.length ? ` — 전에는 '${chosen.aka.join("', '")}'(이)라고 불렀다` : ""}. 이 사람은 늘 '${chosen.label}'(이)라고 부르고 실명은 쓰지 않는다]`,
       chartBrief(chosen.label, other.pillars, profileOf(other)),
-      // The same score the 궁합 report shows (lib/couple.ts gunghapScore), not the game's.
+      // The same score a 궁합 bought now shows (lib/couple.ts gunghapScore), not the game's.
       pairBrief(me.name, me.pillars, chosen.label, other.pillars, {
-        score: gunghapScore(me, other, relOf(chosen.rel, chosen.label)), // v3: the same both ways
+        score: gunghapScore(me, other, relOf(chosen.rel, chosen.label)),
         avg: gunghapAvg(me, other, relOf(chosen.rel, chosen.label)),
       }),
       ...(bond ? [bondBrief(bond)] : []),

@@ -37,7 +37,8 @@ export type YearScore = {
   daeun: { stem: number; branch: number; from: number; to: number } | null;
 };
 
-const VERDICT_RANK: Record<Verdict, number> = { 인내: 0, 조심: 1, 평: 2, 길: 3, 대길: 4 };
+// The lowest score each floor allows (v3), just inside its verdict's band (verdictOf below).
+const FLOOR_SCORE: Record<Verdict, number> = { 인내: -Infinity, 조심: -2.9, 평: -0.9, 길: 1, 대길: 3.5 };
 export const verdictOf = (score: number): Verdict => (score >= 3.5 ? "대길" : score >= 1 ? "길" : score > -1 ? "평" : score > -3 ? "조심" : "인내");
 const EL = (e: number) => `${ELEMENT_KO[e]}(${ELEMENT_HANJA[e]})`;
 // A branch as 申(신), with the particle its Korean reading takes.
@@ -118,13 +119,19 @@ export function yearScore(p: FullPillars, r: Reading, profile: Profile | null, y
   }
 
   factors.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
-  let verdict = verdictOf(score);
   if (v3) {
+    // The floor lifts the score itself (with its reason among the factors), so the verdict, the five areas read from
+    // the score (lib/freePreview.ts) and what the writer is told all go one way.
     const welcome = (e: number) => e === r.yong || e === r.hee;
-    const floor = welcome(se) && welcome(be) ? "길" : welcome(se) || welcome(be) ? "평" : se === r.gi && be === r.gi ? "인내" : "조심";
-    if (VERDICT_RANK[verdict] < VERDICT_RANK[floor]) verdict = floor;
+    const floor: Verdict = welcome(se) && welcome(be) ? "길" : welcome(se) || welcome(be) ? "평" : se === r.gi && be === r.gi ? "인내" : "조심";
+    const least = FLOOR_SCORE[floor];
+    if (score < least) {
+      factors.push({ tag: floor === "조심" ? "기신이 한쪽뿐이라 크게 꺾이지 않음" : `${floor === "길" ? "용신·희신이 천간·지지에 모두" : "용신·희신이"} 드는 해라 ${floor} 아래로 내리지 않음`, delta: least - score });
+      score = least;
+      factors.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+    }
   }
-  return { score, verdict, factors, meets, stemMeets, sals, daeun: d ? { stem: d.stem, branch: d.branch, from: d.from, to: d.to } : null };
+  return { score, verdict: verdictOf(score), factors, meets, stemMeets, sals, daeun: d ? { stem: d.stem, branch: d.branch, from: d.from, to: d.to } : null };
 }
 
 // Month pillars of a year (寅月 from 입춘 to 丑月 of the next January) and the date each starts, read from the

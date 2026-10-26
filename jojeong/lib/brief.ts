@@ -189,10 +189,12 @@ const unlove = (t: string) =>
     .filter((x) => !/연애|결혼|배우자/.test(x))
     .join(" ");
 
-// Two lovers of the same gender: no guide line that takes a man and a woman for granted.
-const GENDERED = /남자|여자|남편|아내|이성/;
+// Two lovers of the same gender: no wording that takes a man and a woman for granted. The bracketed meanings
+// are said without it, and a sentence still built on it is left out (the feature itself stays).
+const GENDERED = /남자|여자|남편|아내|이성(?!적)/;
+const neutral = (t: string) => t.replace(/일·남자·명예/g, "일·명예").replace(/돈·이성/g, "돈·인연").replace(/두 (남자|여자) 기운/g, "두 인연 기운");
 const ungender = (t: string) =>
-  t
+  neutral(t)
     .split(/(?<=[.!?요])\s+/)
     .filter((x) => !GENDERED.test(x))
     .join(" ");
@@ -203,9 +205,11 @@ function distinctLines(p: Pillars, profile: Profile | null, lover: boolean | "sa
   if (!d) return [];
   const lines = ["- ★ 이 사람만의 특징 (드문 순. 보고서는 이것부터 풀 것. '가이드'는 방향일 뿐, 이 사람의 다른 글자와 엮어 구체적으로 쓸 것):"];
   d.patterns
-    .filter((x) => lover === true || (lover === "same" ? !(x.area === "연애" && GENDERED.test(x.plain)) : x.area !== "연애"))
+    .filter((x) => lover !== false || x.area !== "연애")
+    .map((x) => (lover === "same" ? { ...x, plain: neutral(x.plain), meaning: ungender(x.meaning) } : lover === false ? { ...x, meaning: unlove(x.meaning) } : x))
+    .filter((x) => lover !== "same" || !GENDERED.test(x.plain))
     .forEach((x, i) =>
-      lines.push(`  ${i + 1}. [${x.term}] ${x.plain} — ${perHundred(x.rate)} · 영역 ${x.area} · 가이드: ${lover === true ? x.meaning : lover === "same" ? ungender(x.meaning) : unlove(x.meaning)}`),
+      lines.push(`  ${i + 1}. [${x.term}] ${x.plain} — ${perHundred(x.rate)} · 영역 ${x.area}${x.meaning || lover !== "same" ? ` · 가이드: ${x.meaning}` : ""}`),
   );
   if (d.extremes.length)
     lines.push(

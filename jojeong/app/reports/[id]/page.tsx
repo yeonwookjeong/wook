@@ -344,7 +344,7 @@ async function OpenReport({
     // ones its pinned text was written with.
     const boughtAt = unlock?.id ? (unlock.paidAt ?? unlock.createdAt) : undefined;
     const readAt = unlock?.id ? readAtOf(unlock, product.id) : undefined;
-    const couple = product.id === "gunghap" ? coupleOf(a, b, boughtAt ? sajuYear(new Date(boughtAt)) : undefined, REL_OF[relationOf(pair.rel)], isEngine2(readAt)) : null;
+    const couple = product.id === "gunghap" ? coupleOf(a, b, boughtAt ? sajuYear(new Date(boughtAt)) : undefined, REL_OF[relationOf(pair.rel)], isEngine2(readAt), isEngine3(readAt)) : null;
     // The free card's years are the first five rows of the bought report's ten-year table, so the two never disagree.
     const coupleYears = couple ? (pairYearsAt(a, b, relationOf(pair.rel), thisYear(boughtAt ? new Date(boughtAt) : undefined), 5, readAt)?.rows ?? []) : [];
     const closeness = product.id === "sokgunghap" ? intimacyOf(a, b) : null;
@@ -715,10 +715,13 @@ async function OpenReport({
       `${base}?${new URLSearchParams({ ...(courtId && { court: courtId }), ...(ministerId && { m: ministerId }), ...(year && { y: String(year) }) })}`;
     if (y === null) {
       const { from, to } = yearRange(profile, now);
-      const rows = yearRows(pillars, profile, from, to, now);
-      const owned = (await ownedOrders().catch(() => []))
-        .filter((o) => covers(o, product.id) && o.req.p === token && o.req.y)
-        .map((o) => Number(o.req.y));
+      const bought = (await ownedOrders().catch(() => [])).filter((o) => covers(o, product.id) && o.req.p === token && o.req.y);
+      const owned = bought.map((o) => Number(o.req.y));
+      // A year already bought shows the verdict its report was written with (bought before ENGINE3_SINCE: old).
+      const rows = yearRows(pillars, profile, from, to, now)?.map((row) => {
+        const o = bought.find((x) => Number(x.req.y) === row.year);
+        return o && !isEngine3(readAtOf(o, product.id)) ? (yearRows(pillars, profile, row.year, row.year, now, false)?.[0] ?? row) : row;
+      }) ?? null;
       return (
         <>
           <Header product={product} subjectName={`${name}님`} />
@@ -940,8 +943,9 @@ async function OpenReport({
       if (!domain) return {};
       // The ten-year table is open above the report (the free card): the 'when' chapters show only its answer.
       const when = <WhenFigure key="w" years={decadeOf(domain, pillars, gender)} title={domain === "yeonae" ? "인연이 닿기 좋은 해" : domain === "jaemul" ? "돈이 트이는 해" : "움직이기 좋은 해"} />;
-      const yd = yearDetail(pillars, profile, y0, y0, ownedV3);
-      const yp = yearPreviewOf(pillars, profile, y0, ownedV3);
+      const oV3 = isEngine3(o.id ? readAtOf(o, product.id) : undefined);
+      const yd = yearDetail(pillars, profile, y0, y0, oV3);
+      const yp = yearPreviewOf(pillars, profile, y0, oV3);
       return figuresFor(chs, [
         ["어떤 사람", rare(["연애"])],
         ["어떻게 버는", rare(["돈"])],
