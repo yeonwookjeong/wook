@@ -51,7 +51,7 @@ const ROLE = (r: Reading, e: number) =>
 // unwelcome element counts nothing), its stem against the natal stems, the 신살 it brings, and the decade it
 // falls in.
 // v3 (ENGINE3_SINCE, lib/patterns.ts; 2026-10-26 결재 B안, 강 어사 기준): a year bringing the 용신 or 희신 in its
-// stem or branch is at least 평 (in both, at least 길), and only a year whose stem and branch are both the 기신 may
+// stem or branch is at least 평 (in both, at least 길), and only a year whose stem and branch are both the 기신 (or 구신) may
 // fall to 인내 — before it, everyone read about four years in ten as 조심·인내 (scratch count, 3,000 charts).
 export function yearScore(p: FullPillars, r: Reading, profile: Profile | null, y: number, v3 = true): YearScore {
   const { stem, branch } = yearPillar(y);
@@ -123,10 +123,12 @@ export function yearScore(p: FullPillars, r: Reading, profile: Profile | null, y
     // The floor lifts the score itself (with its reason among the factors), so the verdict, the five areas read from
     // the score (lib/freePreview.ts) and what the writer is told all go one way.
     const welcome = (e: number) => e === r.yong || e === r.hee;
-    const floor: Verdict = welcome(se) && welcome(be) ? "길" : welcome(se) || welcome(be) ? "평" : se === r.gi && be === r.gi ? "인내" : "조심";
+    // The 구신 (what feeds the 기신) weighs as the 기신 does: a year unwelcome above and below may still fall to 인내.
+    const unwelcome = (e: number) => e === r.gi || e === (r.gi + 4) % 5;
+    const floor: Verdict = welcome(se) && welcome(be) ? "길" : welcome(se) || welcome(be) ? "평" : unwelcome(se) && unwelcome(be) ? "인내" : "조심";
     const least = FLOOR_SCORE[floor];
     if (score < least) {
-      factors.push({ tag: floor === "조심" ? "기신이 한쪽뿐이라 크게 꺾이지 않음" : `${floor === "길" ? "용신·희신이 천간·지지에 모두" : "용신·희신이"} 드는 해라 ${floor} 아래로 내리지 않음`, delta: least - score });
+      factors.push({ tag: floor === "조심" ? "버거운 기운이 위아래 한쪽뿐이라 크게 꺾이지 않음" : `${floor === "길" ? "용신·희신이 천간·지지에 모두" : "용신·희신이"} 드는 해라 ${floor} 아래로 내리지 않음`, delta: least - score });
       score = least;
       factors.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
     }
