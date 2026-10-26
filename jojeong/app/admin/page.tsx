@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { adminConfigured, isAdmin } from "@/lib/admin";
-import { giftOrders, paidOrders, type Order } from "@/lib/pay";
+import { covers, getOrder, giftOrders, paidOrders, type Order } from "@/lib/pay";
 import CopyButton from "@/components/CopyButton";
 import { GIFTABLE, originNow } from "@/lib/gift";
 import { SALE_KEYS, saleKey, saleLabel } from "@/lib/sales";
-import { productById, SETS } from "@/lib/products";
+import { productById, SETS, type ProductId } from "@/lib/products";
 import { lastReportError, listInquiries, memberViews, readingCount } from "@/lib/store";
 import { listFeedback } from "@/lib/feedback";
 import { memberFixAction } from "./actions";
 import { allMembers, memberNo, VIA_LABEL, viaOf, type Member } from "@/lib/members";
-import { adminSignOut, creditEventCreateAction, creditEventToggleAction, giftRevokeAction, inquiryDeleteAction, inquiryDoneAction, testOrderAction } from "./actions";
+import { adminSignOut, creditEventCreateAction, creditEventToggleAction, giftRevokeAction, inquiryDeleteAction, inquiryDoneAction, rewriteReportAction, testOrderAction } from "./actions";
 import Dashboard, { rangeOf } from "./Dashboard";
 import { threadsPosts } from "@/lib/threads";
 import GiftForm from "./GiftForm";
@@ -726,11 +726,35 @@ async function FeedbackSection() {
               {f.share && <span className="ml-1 rounded bg-gold/20 px-1 text-[10.5px] font-bold">후기 동의</span>}
               {f.member && <span className="ml-1 font-mono text-[10px] text-ink-soft">{memberNo(f.member)}</span>}
               {f.text && <span className="block text-ink-soft">{f.text}</span>}
+              {!f.up && <RewriteBox order={f.order} product={f.product} />}
             </li>
           ))}
         </ul>
       )}
     </section>
+  );
+}
+
+// Under a 👎: have the report written again under today's reading (same link for the buyer), and say when it was.
+async function RewriteBox({ order, product }: { order: string; product: ProductId }) {
+  const o = await getOrder(order).catch(() => null);
+  // Only a paid order that holds this report can have it written again (lib/pay.ts rewriteReport).
+  if (!o || o.status !== "paid" || !covers(o, product)) return null;
+  const at = o.rewritten?.[product];
+  const when = (t: number) => new Date(t + 9 * 3600000).toISOString().slice(5, 16).replace("T", " ");
+  return (
+    <form action={rewriteReportAction} className="mt-1 flex items-center gap-2 text-[11px]">
+      <input type="hidden" name="order" value={order} />
+      <input type="hidden" name="product" value={product} />
+      {at && <span className="text-ink-soft">다시 씀 {when(at)}{o.texts?.[product] ? " · 새 글 열림" : " · 아직 안 열림"}</span>}
+      <label className="flex items-center gap-1 text-ink-soft">
+        <input type="checkbox" name="sure" value="1" /> 확인
+      </label>
+      <button className="rounded-full border border-seal/40 px-2 py-0.5 font-bold text-seal">새 기준으로 다시 쓰기</button>
+      <Link href={`/reports/${product}?order=${order}`} className="text-seal underline">
+        열기
+      </Link>
+    </form>
   );
 }
 

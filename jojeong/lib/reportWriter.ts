@@ -2,8 +2,9 @@ import "server-only";
 import { createHash } from "node:crypto";
 import Anthropic from "@anthropic-ai/sdk";
 import { GoogleGenAI, ThinkingLevel } from "@google/genai";
-import { chartBrief, pairBrief } from "./brief";
-import { coupleBrief } from "./couple";
+import { chartBrief as chartBriefOf, pairBrief } from "./brief";
+import { isEngine2 } from "./patterns";
+import { coupleBrief, gunghapAvg, gunghapScore } from "./couple";
 import { coupleBriefV1 } from "./coupleLegacy";
 import { decodePerson, profileOf, RELATIONS, relationOf } from "./pairToken";
 import { ADULT_ONLY, FIXED_RELATION, isAdult, isPair, productById, YEONUN_PAST_TOC, type ProductId } from "./products";
@@ -19,6 +20,7 @@ import { newYearOf, sajuYear, thisYear, yearOf, yearName, yeonunBrief } from "./
 import { NEW_YEAR_CHAPTER, PROMPT_NOW, SPECS, systemPromptFor, userPrompt, yearChaptersFor, type PromptVersion } from "./reportPrompts";
 import { dayStart, KINDS, parseSearch, pickDays, searchDay, taekilBrief } from "./taekil";
 import type { Gender } from "./profile";
+import type { Profile } from "./profile";
 import type { Pillars } from "./saju";
 import { getProfile } from "./store";
 import type { Usage } from "./aiCost";
@@ -42,10 +44,15 @@ export type JobRequest = { product: string; court?: string; m?: string; t?: stri
 // `oldBrief`: the three-grade life flow the writer was told before the five grades (see app/api/report/route.ts).
 // `at`: when it was bought (ms). The 연운 speaks of its year from the year it was bought in ("이미 지난 해다(지금은
 // 2026년)"), so a report bought in 2026 keeps that wording, and so its key, after the new year. Unset: now.
-export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, oldBrief = false, at?: number): Promise<ReportJob | { error: string; status: number }> {
+// `at`: when it was bought (the year it is read for). `readAt`: the moment its charts are read as of, the same
+// unless the owner had it written again (lib/pay.ts rewriteReport).
+export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, oldBrief = false, at?: number, readAt = at): Promise<ReportJob | { error: string; status: number }> {
   const nowYear = thisYear(at === undefined ? undefined : new Date(at));
   // The year the charts are read for (turning at 입춘): bought in 2026, the brief stays 2026's, and so its key.
   const briefYear = sajuYear(at === undefined ? undefined : new Date(at));
+  // Bought before ENGINE2_SINCE: each chart is read as it was then, so the pinned text is found under its key.
+  const v2 = isEngine2(readAt);
+  const chartBrief = (name: string, p: Pillars, profile: Profile | null, y: number, lover = true) => chartBriefOf(name, p, profile, y, lover, v2);
   const product = productById(req.product);
   const spec = product && SPECS[v][product.id as ProductId];
   // A free report is never written (no spec either): free means no AI cost.
@@ -81,11 +88,11 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
     briefs = [
       chartBrief(a.name, a.pillars, profileOf(a), briefYear, REL_OF[rel] === "연인"),
       chartBrief(b.name, b.pillars, profileOf(b), briefYear, REL_OF[rel] === "연인"),
-      pairBrief(a.name, a.pillars, b.name, b.pillars),
+      pairBrief(a.name, a.pillars, b.name, b.pillars, product.id === "gunghap" && v2 ? { score: gunghapScore(a, b, REL_OF[rel]), avg: gunghapAvg(a, b, REL_OF[rel]) } : undefined),
       // 궁합 reads the relation, and from v8 tells the years once, by its ten-year table (pairBriefs). The other pair
       // reports keep the frozen brief, so what was written for them opens unchanged (lib/coupleLegacy.ts).
       product.id === "gunghap"
-        ? coupleBrief(a, b, briefYear, REL_OF[rel], !(v === "v8" || v === "v9"))
+        ? coupleBrief(a, b, briefYear, REL_OF[rel], !(v === "v8" || v === "v9"), v2)
         : product.id === "jaehoe"
           ? coupleBriefV1(a, b, briefYear)
           : coupleBriefV1(a, b),

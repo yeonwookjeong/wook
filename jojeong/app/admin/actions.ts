@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { refresh } from "next/cache";
 import { isAdmin, setPreview, signIn, signOut } from "@/lib/admin";
 import { isGiftable, originNow } from "@/lib/gift";
-import { createGiftOrder, getOrder, giveBonus, markTestOrder, revokeGiftOrder } from "@/lib/pay";
+import { createGiftOrder, getOrder, giveBonus, markTestOrder, revokeGiftOrder, rewriteReport } from "@/lib/pay";
 import { pricingNow } from "@/lib/pricing";
 import { addOrderToMember, changeCredits, getMember } from "@/lib/members";
 import { encodePerson } from "@/lib/pairToken";
@@ -91,6 +91,16 @@ export async function previewModeAction(formData: FormData) {
 export async function testOrderAction(formData: FormData) {
   if (!(await isAdmin())) return;
   await markTestOrder(String(formData.get("id") ?? ""), formData.get("test") === "1");
+  refresh();
+}
+
+// A bought report written again under today's reading (a 👎 put right, 2026-10-26 대표님 결재): the next opening
+// writes it anew; the buyer keeps the same link. Owner only, and only when asked twice (the box must be ticked).
+export async function rewriteReportAction(formData: FormData) {
+  if (!(await isAdmin()) || formData.get("sure") !== "1") return;
+  const product = productById(String(formData.get("product") ?? ""));
+  if (!product) return;
+  await rewriteReport(String(formData.get("order") ?? ""), product.id);
   refresh();
 }
 

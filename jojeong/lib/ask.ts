@@ -1,4 +1,5 @@
 import "server-only";
+import { gunghapAvg, gunghapScore } from "./couple";
 import { chartBrief, pairBrief } from "./brief";
 import { bondBrief, bondOf, REL_LABEL, relOf } from "./bond";
 import { decodePerson, profileOf, type Person } from "./pairToken";
@@ -219,7 +220,11 @@ function context(room: AskRoom, withId?: string): string | null {
     parts.push(
       `[이번 질문에 함께 보는 사람: ${chosen.label} (관계: ${REL_LABEL[relOf(chosen.rel, chosen.label)]})${chosen.aka?.length ? ` — 전에는 '${chosen.aka.join("', '")}'(이)라고 불렀다` : ""}. 이 사람은 늘 '${chosen.label}'(이)라고 부르고 실명은 쓰지 않는다]`,
       chartBrief(chosen.label, other.pillars, profileOf(other)),
-      pairBrief(me.name, me.pillars, chosen.label, other.pillars),
+      // The same score the 궁합 report shows (lib/couple.ts gunghapScore), not the game's.
+      pairBrief(me.name, me.pillars, chosen.label, other.pillars, {
+        score: gunghapScore(me, other, relOf(chosen.rel, chosen.label)),
+        avg: gunghapAvg(me, other, relOf(chosen.rel, chosen.label)),
+      }),
       ...(bond ? [bondBrief(bond)] : []),
     );
   }
