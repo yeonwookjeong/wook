@@ -1,5 +1,6 @@
 import "server-only";
 import { gunghapAvg, gunghapScore } from "./couple";
+import { riskyLines } from "./reportGuard";
 import { chartBrief, pairBrief } from "./brief";
 import { bondBrief, bondOf, REL_LABEL, relOf } from "./bond";
 import { decodePerson, profileOf, type Person } from "./pairToken";
@@ -7,7 +8,7 @@ import type { Usage } from "./aiCost";
 import { writeReport } from "./reportWriter";
 import { STEMS_KO, BRANCHES_KO } from "./saju";
 import { plainAnswer } from "./askText";
-import { askRoomIds, getAskRoomRaw, newAskRoomId, setAskRoomRaw } from "./store";
+import { askRoomIds, getAskRoomRaw, newAskRoomId, noteReportError, setAskRoomRaw } from "./store";
 import { thisYear, yeonunBrief } from "./yeonun";
 import { figureKit, figureMenu, verdictText } from "./askFigures";
 
@@ -322,6 +323,9 @@ export async function ask(room: AskRoom, question: string, topic: Topic, chosen?
   } else {
     const [answer, memo] = text.split("[[메모]]");
     room.messages.push({ role: "hundo", text: answer.trim(), at: now, topic, usage });
+    // A word an answer must not carry is told to the owner (admin '보고서 위험 문구'), as for the reports.
+    const risky = riskyLines("ask", answer, [room.people?.find((x) => x.id === withId)?.label ?? ""]);
+    if (risky.length) await noteReportError(`묻기 (${room.id.slice(0, 8)}): ${risky.join(" / ")}`, "risk").catch(() => {});
     if (memo?.trim()) room.memo = memo.trim().slice(0, 1500);
     room.used += 1;
   }

@@ -61,10 +61,10 @@ export type Distinct = {
 };
 
 // v2: the "없음" patterns read by what the chart truly holds (lib/patterns.ts ENGINE2_SINCE), with their own rates.
-export function distinctOf(p: Pillars, gender: Gender | null, v2 = true): Distinct | null {
+export function distinctOf(p: Pillars, gender: Gender | null, v2 = true, v3 = v2): Distinct | null {
   const r = readChart(p);
   if (!r) return null;
-  const patterns = patternsOf(p, gender, v2)
+  const patterns = patternsOf(p, gender, v2, v3)
     .map((x) => ({ ...x, rate: patternRate(x.id, gender, v2) }))
     .sort((a, b) => a.rate - b.rate);
   const gsum = Object.values(r.godWeights).reduce((a, b) => a + b, 0) || 1;

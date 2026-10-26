@@ -46,7 +46,7 @@ export function chartBrief(name: string, p: Pillars, profile: Profile | null, y 
       by ? `${by.year}년생${by.certain ? "" : "(추정)"}, ${y}년 만 ${y - by.year - 1}~${y - by.year}세` : "나이 미상"
     }, 태어난 시각 ${p.hourBranch === null ? "모름(시주 없음)" : "앎"}`,
   );
-  lines.push(...distinctLines(p, profile, lover, v2));
+  lines.push(...distinctLines(p, profile, lover, v2, v3));
   const slots = chartOf(p);
   lines.push("- 원국 (시·일·월·연):");
   for (const s of slots) {
@@ -200,8 +200,8 @@ const ungender = (t: string) =>
     .join(" ");
 
 // What sets this chart apart from others with the same day pillar, rarest first, and past years worth naming.
-function distinctLines(p: Pillars, profile: Profile | null, lover: boolean | "same" = true, v2 = true): string[] {
-  const d = distinctOf(p, profile?.gender ?? null, v2);
+function distinctLines(p: Pillars, profile: Profile | null, lover: boolean | "same" = true, v2 = true, v3 = v2): string[] {
+  const d = distinctOf(p, profile?.gender ?? null, v2, v3);
   if (!d) return [];
   const lines = ["- ★ 이 사람만의 특징 (드문 순. 보고서는 이것부터 풀 것. '가이드'는 방향일 뿐, 이 사람의 다른 글자와 엮어 구체적으로 쓸 것):"];
   d.patterns

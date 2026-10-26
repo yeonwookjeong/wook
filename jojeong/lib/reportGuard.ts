@@ -9,6 +9,17 @@ const themOf = (names: string[]) => String.raw`(?:그\s*사람|그분|상대(?:�
 const FATE = { re: /운명(?:의\s*(?:상대|짝|사람)|처럼|이야|이에요|이랍니다|적)/, why: "운명 단정" };
 const ODDS = { re: /(?:확률|가능성)[은는이가]?\s*\d+\s*(?:%|퍼센트)|\d+\s*(?:%|퍼센트)\s*(?:의\s*)?(?:확률|가능성)|열에\s*\S+[은는]/, why: "확률" };
 type Rule = { re: RegExp; why: string; hard?: boolean };
+// Every other written text (the life, love, money, work and year reports, 속궁합, 정 훈도의 묻기 답): fate, odds, a
+// promised result, an ending said as certain, and a death or grave illness foretold (2026-10-26 엔진 점검 4번).
+const ENDING = { re: /(?:결국|반드시|분명(?:히)?|언젠가)\s*(?:헤어(?:지|져|질)|이혼|갈라(?:서|설|선))|헤어지게\s*(?:돼|될)|이혼(?:하게\s*(?:돼|될)|할\s*(?:거|운명))|결혼(?:은|을)?\s*못\s*(?:해|할|하게|한다)|결혼(?:하기)?(?:는|가)?\s*어려|오래\s*못\s*(?:가|간다|갈)/, why: "결말 단정" };
+const GENERIC = (): Rule[] => [
+  FATE,
+  ODDS,
+  ENDING,
+  { re: /(?:반드시|틀림없이|무조건|100\s*%)\s*[^.!?\n]{0,15}(?:돼요|됩니다|와요|옵니다|생겨요|생깁니다|이뤄(?:져요|집니다)|성공해요|성공합니다|부자가)/, why: "결과 약속" },
+  { re: /단명|요절|큰\s*병(?:에|이|을)?\s*(?:걸|생기|찾아)|사별(?:해|하게|할)|죽(?:어요|습니다|게\s*돼)/, why: "죽음·큰 병 단정" },
+];
+
 // `lover`: false for 궁합 between family, at work or friends, where talk of love and the spouse seat hurts however
 // softly it is said (hard: no softening excuses it) (2026-10-25).
 const RISKY: Partial<Record<string, (THEM: string, lover: boolean) => Rule[]>> = {
@@ -39,7 +50,7 @@ const QUOTED = /^\s*(?:이?라(?:고|는)|하는\s*말)/;
 
 // `them`: the other person's name, so "현우님은 아직…" is read like "그 사람은 아직…".
 export function riskyLines(productId: string, text: string, them: string[] = [], lover = true): string[] {
-  const rules = RISKY[productId]?.(themOf(them.filter(Boolean)), lover);
+  const rules = (RISKY[productId] ?? GENERIC)(themOf(them.filter(Boolean)), lover);
   if (!rules) return [];
   const hits: string[] = [];
   const clauses = text.split(/(?<=[.!?。])\s+|\n+|[,，]/);

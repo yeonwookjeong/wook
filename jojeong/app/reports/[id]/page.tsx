@@ -550,7 +550,7 @@ async function OpenReport({
         </section>
       </>
     );
-  const distinct = self ? distinctOf(pillars, profile?.gender ?? null, isEngine2(owned ? readAtOf(owned, product.id) : undefined)) : null;
+  const distinct = self ? distinctOf(pillars, profile?.gender ?? null, isEngine2(owned ? readAtOf(owned, product.id) : undefined), isEngine3(owned ? readAtOf(owned, product.id) : undefined)) : null;
   const free = self ? freeReadingOf(pillars, profile) : null;
   // The free reading: the chart analysis, then the four computed blocks (powers, 신살, money·love·work, the
   // flow of life). Shown on the free year reading and on the life report before purchase.
@@ -745,7 +745,7 @@ async function OpenReport({
     const { from, to } = yearRange(profile, now);
 
     // A 연운 is found by its year too: its features as of the order it opens with (bought before ENGINE2_SINCE: old).
-    const yearDistinct = unlock?.id && self ? distinctOf(pillars, profile?.gender ?? null, isEngine2(readAtOf(unlock, product.id))) : distinct;
+    const yearDistinct = unlock?.id && self ? distinctOf(pillars, profile?.gender ?? null, isEngine2(readAtOf(unlock, product.id)), isEngine3(readAtOf(unlock, product.id))) : distinct;
     const preview = yearPreviewOf(pillars, profile, y, yV3);
     const flowNow = freeReadingOf(pillars, profile)?.flow?.find((f) => f.from <= y && y <= f.to);
     const decadeNow = flowNow ? { from: flowNow.from, to: flowNow.to, mood: flowNow.young ? "성장기" : flowNow.mood, theme: flowNow.theme } : null;
