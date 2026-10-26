@@ -11,7 +11,6 @@ const ODDS = { re: /(?:확률|가능성)[은는이가]?\s*\d+\s*(?:%|퍼센트)|
 type Rule = { re: RegExp; why: string; hard?: boolean };
 // Every other written text (the life, love, money, work and year reports, 속궁합, 정 훈도의 묻기 답): fate, odds, a
 // promised result, an ending said as certain, and a death or grave illness foretold (2026-10-26 엔진 점검 4번).
-const ENDING = { re: /(?:결국|반드시|분명(?:히)?|언젠가)\s*(?:헤어(?:지|져|질)|이혼|갈라(?:서|설|선))|헤어지게\s*(?:돼|될)|이혼(?:하게\s*(?:돼|될)|할\s*(?:거|운명))|결혼(?:은|을)?\s*못\s*(?:해|할|하게|한다)|결혼(?:하기)?(?:는|가)?\s*어려|오래\s*못\s*(?:가|간다|갈)/, why: "결말 단정" };
 // Outside 궁합 '오래 못 가' is said of money and luck too: an ending only when it is about the two of them.
 const ENDING_PEOPLE = {
   re: /(?:결국|반드시|분명(?:히)?|언젠가)\s*(?:헤어(?:지|져|질)|이혼|갈라(?:서|설|선))|헤어지게\s*(?:돼|될)|이혼(?:하게\s*(?:돼|될)|할\s*(?:거|운명))|결혼(?:은|을)?\s*못\s*(?:해|할|하게|한다)|(?:사이|관계|인연|연애|두\s*사람)[^.!?\n]{0,10}오래\s*못\s*(?:가|간다|갈)/,
