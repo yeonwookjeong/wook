@@ -456,7 +456,7 @@ export function rawOf(p: Pillars) {
 // v3 (ENGINE3_SINCE): the guide lines that read as a verdict on someone's life, said as a leaning instead
 // (2026-10-26 엔진 점검 6번, 강 어사 확인). The old words stay for a report bought before it.
 const SOFTER: [string, string][] = [
-  ["옳은 말을 하고도 손해 본 경험이 있을 거예요.", "옳은 말을 하고도 손해 본 적이 있었을 수 있어요."],
+  ["옳은 말을 하고도 손해 본 경험이 있을 거예요.", "옳은 말을 하고도 손해 본 적이 있을 수 있어요."],
   ["돈 계산에 무심해 손해 보는 일이 잦아요.", "돈 계산에 무심해 손해 보기 쉬워요."],
   ["남자 인연은 늦게 오거나, 친구 같은 사람과 잘 맞아요.", "인연이 천천히 무르익는 편이고, 친구 같은 사람과 잘 맞아요."],
   ["결혼은 서두를수록 흔들리고, 늦을수록 안정적이에요.", "결혼은 서두르기보다 충분히 알아 간 뒤에 할 때 안정되기 쉬워요."],
@@ -466,10 +466,16 @@ const SOFTER: [string, string][] = [
   ["이사·출장·해외·이직이 잦고,", "이사·출장·해외·이직이 잦기 쉽고,"],
   ["추진력이 강한 만큼 사고·수술·다툼 같은 급한 일을 한 번쯤 겪기 쉬워요.", "추진력이 강한 만큼 서두르다 급한 일에 휘말리기 쉬워요."],
   ["겉보기보다 속이 불안하고 주변 영향을 많이 받아요.", "겉보기보다 주변 영향을 많이 받는 편이에요."],
-  ["하고 싶은 말을 참기 어려워 구설이 생기기 쉬워요.", "하고 싶은 말을 참기 어려워 말이 오가기 쉬워요."],
+  ["하고 싶은 말을 참기 어려워 구설이 생기기 쉬워요.", "하고 싶은 말을 참기 어려워 말이 앞서 오해를 사기 쉬워요."],
   ["부모, 특히 어머니의 영향이나 간섭이 컸을 가능성이 커요.", "부모, 특히 어머니의 영향을 많이 받았을 수 있어요."],
 ];
 const softer = (t: string) => SOFTER.reduce((x, [from, to]) => x.replace(from, to), t);
+// The short names shown on the free screen's chips: no '배우자 자리' (대표님 금지어, 2026-10-25).
+const PLAIN_SOFTER: [string, string][] = [
+  ["배우자 자리가 흔들리는 구조", "가까운 관계에서 부딪힘이 큰 구조"],
+  ["배우자 자리가 합으로 묶임", "가까운 사람과 정이 깊게 묶이는 구조"],
+];
+const plainer = (t: string) => PLAIN_SOFTER.reduce((x, [from, to]) => x.replace(from, to), t);
 
 // Every pattern the chart shows. v2: read the "없음" patterns as above (false: as before ENGINE2_SINCE). v3: the
 // guide lines said as a leaning (SOFTER).
@@ -484,7 +490,7 @@ export function patternsOf(p: Pillars, gender: Gender | null, v2 = true, v3 = v2
     c = { ...c0, r: { ...c0.r, missing: c0.r.missing.filter((e) => !raw.els.has(e)) } };
     keep = (id) => (p.hourBranch !== null || !NEEDS_HOUR.has(id)) && !(GROUP_NONE[id] && raw.groups.has(GROUP_NONE[id]));
   }
-  return SPECS.filter((s) => keep(s.id) && s.test(c)).map((s) => ({ id: s.id, term: s.term, plain: s.plain(c), area: s.area, meaning: v3 ? softer(s.meaning(c)) : s.meaning(c) }));
+  return SPECS.filter((s) => keep(s.id) && s.test(c)).map((s) => ({ id: s.id, term: s.term, plain: v3 ? plainer(s.plain(c)) : s.plain(c), area: s.area, meaning: v3 ? softer(s.meaning(c)) : s.meaning(c) }));
 }
 
 export const PATTERN_IDS = SPECS.map((s) => s.id);
