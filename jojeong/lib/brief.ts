@@ -1,6 +1,7 @@
 import { gongmang, isBaekho, isGoegang, meetings, salsAt, stageOf, stemClash, stemCombine } from "./deep";
-import { chartOf, ELEMENT_HANJA, ELEMENT_KO, GYEOK_NAME, HIDDEN, readChart, stemEl, tenGod } from "./myeongri";
+import { chartOf, ELEMENT_HANJA, ELEMENT_KO, GYEOK_NAME, HIDDEN, readChart, stemEl, tenGod, type GodGroup } from "./myeongri";
 import { selfStars, type Profile } from "./profile";
+import { rawOf } from "./patterns";
 import { distinctOf, perHundred } from "./rarity";
 import { BRANCHES, isFull, matchPillars, STEMS, type Pillars } from "./saju";
 import { MONTHS, YEAR, yearReading } from "./yearly";
@@ -31,7 +32,9 @@ export function birthYearOf(p: Pillars, profile: Profile | null): { year: number
 // (lib/yearly.ts); any other year is read from the 연운 engine (lib/yeonun.ts yearDetail).
 // lover: false for a 궁합 between family, at work or friends: the spouse seat and love lines are left out, so the
 // writer is not handed them (2026-10-25 궁합 점검). True keeps every other report's brief exactly as it was.
-export function chartBrief(name: string, p: Pillars, profile: Profile | null, y = sajuYear(), lover = true): string {
+// v2: the "없음" patterns read by what the chart truly holds, and nothing said missing without the hour
+// (lib/patterns.ts ENGINE2_SINCE); a report bought before it passes false and is asked exactly as before.
+export function chartBrief(name: string, p: Pillars, profile: Profile | null, y = sajuYear(), lover = true, v2 = true): string {
   const r = readChart(p);
   if (!r || !isFull(p)) return `${name}: 여덟 글자가 온전하지 않은 옛 기록(일주 ${GZ(p.dayStem, p.dayBranch)}, 띠 ${BRANCHES[p.yearBranch]})`;
   const lines: string[] = [];
@@ -42,7 +45,7 @@ export function chartBrief(name: string, p: Pillars, profile: Profile | null, y 
       by ? `${by.year}년생${by.certain ? "" : "(추정)"}, ${y}년 만 ${y - by.year - 1}~${y - by.year}세` : "나이 미상"
     }, 태어난 시각 ${p.hourBranch === null ? "모름(시주 없음)" : "앎"}`,
   );
-  lines.push(...distinctLines(p, profile, lover));
+  lines.push(...distinctLines(p, profile, lover, v2));
   const slots = chartOf(p);
   lines.push("- 원국 (시·일·월·연):");
   for (const s of slots) {
@@ -57,9 +60,19 @@ export function chartBrief(name: string, p: Pillars, profile: Profile | null, y 
     );
   }
   const sum = r.weights.reduce((a, b) => a + b, 0);
-  lines.push(`- 오행 비율(궁성·조후 보정): ${[0, 1, 2, 3, 4].map((e) => `${EL(e)} ${Math.round((100 * r.weights[e]) / sum)}%`).join(", ")}${r.weights.some((w) => w === 0) ? ` / 없는 오행: ${[0, 1, 2, 3, 4].filter((e) => r.weights[e] === 0).map(EL).join(", ")}` : ""}`);
+  const raw = rawOf(p);
+  // v2: an element is "없는" only when no letter of it is there at all, hidden stems included.
+  const absent = [0, 1, 2, 3, 4].filter((e) => r.weights[e] === 0 && (!v2 || !raw.els.has(e)));
+  lines.push(`- 오행 비율(궁성·조후 보정): ${[0, 1, 2, 3, 4].map((e) => `${EL(e)} ${Math.round((100 * r.weights[e]) / sum)}%`).join(", ")}${absent.length ? ` / 없는 오행: ${absent.map(EL).join(", ")}` : ""}`);
   const gsum = Object.values(r.godWeights).reduce((a, b) => a + b, 0);
   lines.push(`- 십신 비중: ${Object.entries(r.godWeights).map(([g, w]) => `${g} ${Math.round((100 * w) / gsum)}%`).join(", ")}`);
+  if (v2) {
+    // A share near 0% is not "없음" when the letter is there (in a 국 or a hidden stem); and without the hour a
+    // quarter of the chart is unseen (2026-10-26 궁합 점검: "비겁 0% → 내 편이 없다", "뿌리가 전혀 없다").
+    const low = (Object.entries(r.godWeights) as [GodGroup, number][]).filter(([g, w]) => w / gsum < 0.04 && raw.groups.has(g)).map(([g]) => g);
+    if (low.length) lines.push(`- 비중은 낮지만 글자로는 있는 기운: ${low.join(", ")} (합으로 묶였거나 지지 속에 숨어 있음. '없다', '0%', '전혀'로 쓰지 말고 '약하다', '숨어 있다'로 쓸 것)`);
+    if (p.hourBranch === null) lines.push("- 태어난 시 모름: 위 비중은 네 기둥 중 세 기둥만 본 것이다. 어떤 기운도 '없다'고 단정하지 말 것");
+  }
   lines.push(`- 일간: ${STEMS[p.dayStem]}${ELEMENT_HANJA[stemEl(p.dayStem)]} / 태어난 계절: ${r.season}`);
   lines.push(`- 신강약: ${r.balanced ? "중화에 가까운 " : ""}${r.strength} (일간을 돕는 기운 ${Math.round(r.support * 100)}%)`);
   lines.push(
@@ -154,8 +167,8 @@ const unlove = (t: string) =>
     .join(" ");
 
 // What sets this chart apart from others with the same day pillar, rarest first, and past years worth naming.
-function distinctLines(p: Pillars, profile: Profile | null, lover = true): string[] {
-  const d = distinctOf(p, profile?.gender ?? null);
+function distinctLines(p: Pillars, profile: Profile | null, lover = true, v2 = true): string[] {
+  const d = distinctOf(p, profile?.gender ?? null, v2);
   if (!d) return [];
   const lines = ["- ★ 이 사람만의 특징 (드문 순. 보고서는 이것부터 풀 것. '가이드'는 방향일 뿐, 이 사람의 다른 글자와 엮어 구체적으로 쓸 것):"];
   d.patterns.filter((x) => lover || x.area !== "연애").forEach((x, i) =>

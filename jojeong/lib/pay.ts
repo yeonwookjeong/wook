@@ -47,6 +47,9 @@ export type Order = {
   // The written report each product of this order opened with (its text's key, lib/store.ts getReportText), kept
   // the first time it is read: it opens that same text ever after, whatever later changes to how reports are asked.
   texts?: Partial<Record<ProductId, string>>;
+  // When the owner had a report written again under today's reading (admin, a 👎 put right): the report is then
+  // read and drawn as of that moment, not as of the payment (lib/patterns.ts ENGINE2_SINCE, lib/pairYears.ts).
+  rewritten?: Partial<Record<ProductId, number>>;
   // A payment made to try the site (the owner's own, or marked so on /admin): kept, but out of the dashboard.
   test?: boolean;
   createdAt: number;
@@ -155,6 +158,18 @@ export async function pinReportText(orderId: string, product: ProductId, key: st
   if (!o || o.texts?.[product] === key) return;
   await setOrderRaw(o.id, JSON.stringify({ ...o, texts: { ...o.texts, [product]: key } }));
 }
+
+// Has a bought report written again: its pinned text is let go, so the next opening writes it anew, read as of now.
+export async function rewriteReport(orderId: string, product: ProductId): Promise<boolean> {
+  const o = await getOrder(orderId);
+  if (!o || o.status !== "paid" || !covers(o, product)) return false;
+  const texts = { ...o.texts };
+  delete texts[product];
+  await setOrderRaw(o.id, JSON.stringify({ ...o, texts, rewritten: { ...o.rewritten, [product]: Date.now() } }));
+  return true;
+}
+// The moment a report is read as of: when it was written again, else when it was bought.
+export const readAtOf = (o: Order, product: ProductId) => o.rewritten?.[product] ?? o.paidAt ?? o.createdAt;
 
 // Marks a paid order as a test payment (or a real one again), for the owner's dashboard.
 export async function markTestOrder(orderId: string, test: boolean): Promise<void> {

@@ -50,7 +50,9 @@ export async function POST(request: Request) {
   // point box. A report bought before the opening never is.
   // The owner's quick look with no order (app/reports/[id] asOwner) asks v9 to see what a buyer will get.
   const v9 = order ? Boolean(isV8(order) && (await renewNow())) : (body as { v?: string }).v === "9";
-  const job = await jobFor(req, v9 ? "v9" : undefined, false, at);
+  // Written again by the owner: read as of then, and only the new text counts (none of the older ways below).
+  const rewrittenAt = order?.rewritten?.[product.id as ProductId];
+  const job = await jobFor(req, v9 ? "v9" : undefined, false, at, rewrittenAt ?? at);
   if ("error" in job) return Response.json({ error: job.error }, { status: job.status });
   // A v8 text of such an order (read before the second pass) keeps its words and gets the point box beside them.
   // Each extra (the point box, a plain 한눈에 card) is asked once in the background, then kept and merged.
@@ -99,7 +101,7 @@ export async function POST(request: Request) {
   // The first of these already written opens (oldest way first), and is kept on the order from then on.
   // An opened-shop order written with v8 before the second pass (and never pinned) opens that, with its points.
   const asV8 = v9 ? await jobFor(req, "v8", false, at) : null;
-  const found = [legacy, oldGrades, beforeV7, beforeV8, asV8, job, asNow].filter((j): j is NonNullable<typeof j> & { key: string } => Boolean(j && !("error" in j)));
+  const found = (rewrittenAt ? [job] : [legacy, oldGrades, beforeV7, beforeV8, asV8, job, asNow]).filter((j): j is NonNullable<typeof j> & { key: string } => Boolean(j && !("error" in j)));
   for (const j of found) {
     const text = await getReportText(j.key);
     if (!text) continue;
