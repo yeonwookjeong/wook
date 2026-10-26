@@ -25,6 +25,8 @@ const CASES: [string, string, boolean, boolean][] = [
   ["ask", "반드시 부자가 됩니다.", true, true],
   ["ask", "두 사람 사이는 오래 못 가요.", true, true],
   ["ask", "단명할 상이에요.", true, true],
+  ["ask", "이 사람과는 미래가 없어요.", true, true],
+  ["ask", "돈 걱정할 미래는 없어요.", true, false],
   ["ask", "반드시 쉬어 가셔야 하옵니다.", true, false],
   ["ask", "반드시 건강검진을 받으셔야 하옵니다.", true, false],
   ["ask", "몸이 반드시 신호를 보내 옵니다.", true, false],
