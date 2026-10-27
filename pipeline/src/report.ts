@@ -85,8 +85,9 @@ export function channelStatus(): string {
   for (const cfg of loadChannels().values()) {
     const c = listContent({ channel: cfg.id as ChannelId });
     const count = (s: string) => c.filter((x) => x.meta.status === s).length;
+    const bank = ideas.filter((i) => i.channel === cfg.id && !i.usedBy && (!cfg.season || i.theme === cfg.season.id));
     lines.push(
-      `| ${cfg.name} | ${cfg.track} | ${ideas.filter((i) => i.channel === cfg.id && !i.usedBy).length} | ${count('draft')} | ${count('approved')} | ${count('published')} |`,
+      `| ${cfg.name} | ${cfg.track} | ${bank.length} | ${count('draft')} | ${count('approved')} | ${count('published')} |`,
     );
   }
   return lines.join('\n');
