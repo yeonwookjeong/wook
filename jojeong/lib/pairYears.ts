@@ -2,6 +2,7 @@ import { meetings } from "./deep";
 import { profileOf, type Person } from "./pairToken";
 import type { Relation } from "./relations";
 import { tieYear } from "./couple";
+import { isEngine3 } from "./patterns";
 import { pairYearsV1 } from "./pairYearsLegacy";
 import { SEAT_NAME, seatOf, type Rel } from "./rels";
 import { BRANCHES, STEMS } from "./saju";
@@ -12,7 +13,7 @@ import { yearRows, type Verdict } from "./yeonun";
 
 export const REL_OF: Record<Relation, Rel> = { lover: "연인", some: "연인", ex: "연인", work: "일", friend: "친구", family: "가족" };
 
-export type PairMark = "함께 좋은 해" | "정이 깊어지는 해" | "한쪽 흔들림" | "함께 조심" | "관계가 흔들리기 쉬운 해" | "한 사람 자리가 흔들리는 해" | "무난한 해";
+export type PairMark = "함께 좋은 해" | "정이 깊어지는 해" | "한쪽 흔들림" | "함께 조심" | "관계가 흔들리기 쉬운 해" | "한 사람 자리가 흔들리는 해" | "한 사람이 받쳐 주는 해" | "무난한 해";
 export type PairYear = { year: number; gz: string; me: Verdict; them: Verdict; mark: PairMark; why: string; now: boolean };
 // noDaeun: who was read without their ten-year 대운 (gender not given), so their grades are said more lightly.
 export type PairYears = { seat: string; rows: PairYear[]; noDaeun: string[] };
@@ -20,10 +21,10 @@ export type PairYears = { seat: string; rows: PairYear[]; noDaeun: string[] };
 const good = (v: Verdict) => v === "대길" || v === "길";
 const bad = (v: Verdict) => v === "조심" || v === "인내";
 
-export function pairYears(a: Person, b: Person, relation: Relation, from: number, n = 10): PairYears | null {
+export function pairYears(a: Person, b: Person, relation: Relation, from: number, n = 10, v3 = true): PairYears | null {
   const rel = REL_OF[relation];
-  const ya = yearRows(a.pillars, profileOf(a), from, from + n - 1, from);
-  const yb = yearRows(b.pillars, profileOf(b), from, from + n - 1, from);
+  const ya = yearRows(a.pillars, profileOf(a), from, from + n - 1, from, v3);
+  const yb = yearRows(b.pillars, profileOf(b), from, from + n - 1, from, v3);
   if (!ya || !yb) return null;
   const sa = seatOf(a.pillars, rel);
   const sb = seatOf(b.pillars, rel);
@@ -51,8 +52,11 @@ export function pairYears(a: Person, b: Person, relation: Relation, from: number
             : ["함께 좋은 해", "두 사람 모두 좋은 해"]
           : bad(me) && bad(them)
             ? ["함께 조심", "두 사람 모두 버거운 해"]
-            : bad(me) || bad(them)
-              ? ["한쪽 흔들림", `${bad(me) ? a.name : b.name}님에게 버거운 해`]
+            : // B+ (v3, 2026-10-26 강 어사): one only 조심 while the other has a good year is that one held up, not the bond shaken.
+              v3 && ((me === "조심" && good(them)) || (them === "조심" && good(me)))
+              ? ["한 사람이 받쳐 주는 해", `${good(me) ? a.name : b.name}님의 좋은 해가 ${good(me) ? b.name : a.name}님을 받쳐 줄 수 있어요`]
+              : bad(me) || bad(them)
+                ? ["한쪽 흔들림", `${bad(me) ? a.name : b.name}님에게 버거운 해`]
               : tie
                 ? ["정이 깊어지는 해", `두 사람의 ${seat}와 모두 합`]
                 : ["무난한 해", "크게 밀지도 막지도 않는 해"];
@@ -76,7 +80,7 @@ export const isGunghapV2 = (boughtAt: number | undefined) => boughtAt === undefi
 
 // The table as of the order (`boughtAt`; none: a free look, read the new way).
 export function pairYearsAt(a: Person, b: Person, relation: Relation, from: number, n: number, boughtAt: number | undefined): PairYears | null {
-  if (isGunghapV2(boughtAt)) return pairYears(a, b, relation, from, n);
+  if (isGunghapV2(boughtAt)) return pairYears(a, b, relation, from, n, isEngine3(boughtAt));
   const x = pairYearsV1(a, b, relation, from, n);
   return x && { ...x, noDaeun: [] };
 }

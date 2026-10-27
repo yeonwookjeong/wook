@@ -25,8 +25,8 @@ const bad = (v: Verdict) => v === "조심" || v === "인내";
 
 export function pairYearsV1(a: Person, b: Person, relation: Relation, from: number, n = 10): PairYears | null {
   const rel = REL_OF[relation];
-  const ya = yearRows(a.pillars, profileOf(a), from, from + n - 1, from);
-  const yb = yearRows(b.pillars, profileOf(b), from, from + n - 1, from);
+  const ya = yearRows(a.pillars, profileOf(a), from, from + n - 1, from, false);
+  const yb = yearRows(b.pillars, profileOf(b), from, from + n - 1, from, false);
   if (!ya || !yb) return null;
   const sa = seatOf(a.pillars, rel);
   const sb = seatOf(b.pillars, rel);

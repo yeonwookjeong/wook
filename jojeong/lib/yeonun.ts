@@ -37,6 +37,8 @@ export type YearScore = {
   daeun: { stem: number; branch: number; from: number; to: number } | null;
 };
 
+// The lowest score each floor allows (v3), just inside its verdict's band (verdictOf below).
+const FLOOR_SCORE: Record<Verdict, number> = { 인내: -Infinity, 조심: -2.9, 평: -0.5, 길: 1, 대길: 3.5 };
 export const verdictOf = (score: number): Verdict => (score >= 3.5 ? "대길" : score >= 1 ? "길" : score > -1 ? "평" : score > -3 ? "조심" : "인내");
 const EL = (e: number) => `${ELEMENT_KO[e]}(${ELEMENT_HANJA[e]})`;
 // A branch as 申(신), with the particle its Korean reading takes.
@@ -48,7 +50,10 @@ const ROLE = (r: Reading, e: number) =>
 // welcome), how its branch meets each natal branch (by seat: 일 1.5, 월 1, 연·시 0.5; a 삼합·방합 that gathers an
 // unwelcome element counts nothing), its stem against the natal stems, the 신살 it brings, and the decade it
 // falls in.
-export function yearScore(p: FullPillars, r: Reading, profile: Profile | null, y: number): YearScore {
+// v3 (ENGINE3_SINCE, lib/patterns.ts; 2026-10-26 결재 B안, 강 어사 기준): a year bringing the 용신 or 희신 in its
+// stem or branch is at least 평 (in both, at least 길), and only a year whose stem and branch are both the 기신 (or 구신) may
+// fall to 인내 — before it, everyone read about four years in ten as 조심·인내 (scratch count, 3,000 charts).
+export function yearScore(p: FullPillars, r: Reading, profile: Profile | null, y: number, v3 = true): YearScore {
   const { stem, branch } = yearPillar(y);
   const factors: YearFactor[] = [];
   let score = 0;
@@ -114,6 +119,20 @@ export function yearScore(p: FullPillars, r: Reading, profile: Profile | null, y
   }
 
   factors.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+  if (v3) {
+    // The floor lifts the score itself (with its reason among the factors), so the verdict, the five areas read from
+    // the score (lib/freePreview.ts) and what the writer is told all go one way.
+    const welcome = (e: number) => e === r.yong || e === r.hee;
+    // The 구신 (what feeds the 기신) weighs as the 기신 does: a year unwelcome above and below may still fall to 인내.
+    const unwelcome = (e: number) => e === r.gi || e === (r.gi + 4) % 5;
+    const floor: Verdict = welcome(se) && welcome(be) ? "길" : welcome(se) || welcome(be) ? "평" : unwelcome(se) && unwelcome(be) ? "인내" : "조심";
+    const least = FLOOR_SCORE[floor];
+    if (score < least) {
+      factors.push({ tag: floor === "조심" ? "천간·지지가 모두 버거운 기운인 해는 아니라 인내까지 내리지 않음" : `${floor === "길" ? "용신·희신이 천간·지지에 모두" : "용신·희신이"} 드는 해라 ${floor} 아래로 내리지 않음`, delta: least - score });
+      score = least;
+      factors.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+    }
+  }
   return { score, verdict: verdictOf(score), factors, meets, stemMeets, sals, daeun: d ? { stem: d.stem, branch: d.branch, from: d.from, to: d.to } : null };
 }
 
@@ -217,13 +236,13 @@ function reasonLine(r: Reading, s: YearScore, y: number): string {
   return parts.slice(0, 2).join(" · ");
 }
 
-export function yearRows(p: Pillars, profile: Profile | null, from: number, to: number, now: number): YearRow[] | null {
+export function yearRows(p: Pillars, profile: Profile | null, from: number, to: number, now: number, v3 = true): YearRow[] | null {
   const r = readChart(p);
   if (!r || !isFull(p)) return null;
   const by = profile?.birthYear ?? null;
   const rows: YearRow[] = [];
   for (let y = from; y <= to; y++) {
-    const s = yearScore(p, r, profile, y);
+    const s = yearScore(p, r, profile, y, v3);
     const { stem } = yearPillar(y);
     const g = GROUP_OF[tenGod(p.dayStem, stem)];
     const n = yearName(y);
@@ -328,10 +347,10 @@ const SAL_PLAIN: Record<string, string> = {
   공망: "공망이 드는 해라, 애쓴 만큼 손에 잡히지 않는 일이 있어요. 실속을 챙기세요.",
 };
 
-export function yearDetail(p: Pillars, profile: Profile | null, y: number, now: number): YearDetail | null {
+export function yearDetail(p: Pillars, profile: Profile | null, y: number, now: number, v3 = true): YearDetail | null {
   const r = readChart(p);
   if (!r || !isFull(p)) return null;
-  const s = yearScore(p, r, profile, y);
+  const s = yearScore(p, r, profile, y, v3);
   const { stem, branch } = yearPillar(y);
   const n = yearName(y);
   const g = GROUP_OF[tenGod(p.dayStem, stem)];
@@ -411,12 +430,12 @@ export function yearDetail(p: Pillars, profile: Profile | null, y: number, now: 
 }
 
 // For the writer: everything the free screen showed, and the evidence behind it.
-export function yeonunBrief(p: Pillars, profile: Profile | null, y: number, now: number): string {
-  const d = yearDetail(p, profile, y, now);
+export function yeonunBrief(p: Pillars, profile: Profile | null, y: number, now: number, v3 = true): string {
+  const d = yearDetail(p, profile, y, now, v3);
   if (!d) return "";
   const when =
     d.when === "past"
-      ? `이미 지난 해다(지금은 ${now}년). "그해에는 이런 일이 있었을 거예요"처럼 되짚어 확인하는 말투로 쓰고, 단정하지 말고 가능성으로 말한다. 그 경험이 지금에 남긴 것과, 같은 기운이 다시 올 때를 함께 짚는다.`
+      ? `이미 지난 해다(지금은 ${now}년). ${v3 ? '"그해 이런 일이 있었다면, 그건 ~ 때문이에요"처럼 읽는 사람이 확인하게 되짚고' : '"그해에는 이런 일이 있었을 거예요"처럼 되짚어 확인하는 말투로 쓰고'}, 단정하지 말고 가능성으로 말한다. 그 경험이 지금에 남긴 것과, 같은 기운이 다시 올 때를 함께 짚는다.`
       : d.when === "now"
         ? `올해다. 이미 지난 달은 되짚고, 남은 달은 할 일로 쓴다.`
         : `앞으로 올 해다(지금은 ${now}년). 미리 준비할 것과 그해에 붙잡을 것을 쓴다.`;

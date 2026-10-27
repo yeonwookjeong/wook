@@ -34,7 +34,7 @@ function lensOf(topic: string, gender: Person["gender"]): Lens {
       topic,
       group: gender === "f" ? "관성" : "재성",
       star: gender === "f" ? "남편·연인의 별" : gender === "m" ? "아내·연인의 별" : "연인의 별",
-      seat: { pos: "일", label: "배우자 자리", branchOnly: true },
+      seat: { pos: "일", label: "태어난 날 아래 글자", branchOnly: true },
     };
   if (topic === "일") return { topic, group: "관성", star: "일과 자리의 별", seat: { pos: "월", label: "일터 자리" } };
   if (topic === "돈") return { topic, group: "재성", star: "재물의 별", seat: null };
@@ -221,7 +221,7 @@ function clashOf(p: Person["pillars"], at: number): ClashFig | null {
 // 宮位: one seat close up — what the seat means, its characters and hidden stems with their ten gods, its stage and
 // 신살, and what this year does to it.
 const SEAT_MEANING: Record<Slot["pos"], [string, string]> = {
-  일: ["배우자 자리", "나와 가장 가까운 사람, 결혼 생활의 결, 내 속마음이 머무는 곳"],
+  일: ["나와 짝의 자리", "나 자신과 가장 가까운 사람, 그 사람과 맺는 관계의 결, 내 속마음이 머무는 곳"],
   월: ["일터 자리", "사회에서 맡는 자리, 일하는 방식, 부모와 형제의 그늘"],
   연: ["뿌리 자리", "집안과 어린 시절, 윗사람과 나라·회사 같은 큰 울타리"],
   시: ["말년 자리", "자녀와 아랫사람, 늘그막의 모습, 품고 있는 꿈"],

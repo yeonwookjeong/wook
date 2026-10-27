@@ -50,7 +50,12 @@ export function tieYear(year: number, a: number, b: number) {
 // spouse star: to a woman 정관 76 · 편관 66, to a man 정재 76 · 편재 70 (as high as 인성, not above: reading the
 // spouse star between day stems is a modern way ⚖️). The game (lib/court.ts) keeps matchPillars as it is.
 const BASE: Record<string, number> = { 인성: 76, 비겁: 70, 재성: 66, 식상: 64, 관성: 56 };
-export function gunghapScore(a: Person, b: Person, rel: Rel): number {
+// v3 (ENGINE3_SINCE): one score for the two, whoever reads it (the mean of both ways round), so two lovers who
+// each buy it see the same number (2026-10-26 강 어사). v2 read it from the reader's side only.
+export function gunghapScore(a: Person, b: Person, rel: Rel, v3 = true): number {
+  return v3 ? Math.round((oneWay(a, b, rel) + oneWay(b, a, rel)) / 2) : oneWay(a, b, rel);
+}
+function oneWay(a: Person, b: Person, rel: Rel): number {
   const f = matchPillars(a.pillars, b.pillars).facts;
   const god = tenGod(a.pillars.dayStem, b.pillars.dayStem);
   const lovers = rel === "연인" && a.gender && b.gender && a.gender !== b.gender;
@@ -92,7 +97,7 @@ export type Couple = {
 };
 
 // v2: the score as above (lib/patterns.ts ENGINE2_SINCE); false keeps the old one for a report bought before.
-export function coupleOf(a: Person, b: Person, from = sajuYear(), rel: Rel = "연인", v2 = true): Couple | null {
+export function coupleOf(a: Person, b: Person, from = sajuYear(), rel: Rel = "연인", v2 = true, v3 = true): Couple | null {
   const ra = readChart(a.pillars);
   const rb = readChart(b.pillars);
   if (!ra || !rb) return null;
@@ -125,7 +130,7 @@ export function coupleOf(a: Person, b: Person, from = sajuYear(), rel: Rel = "�
     else if (tieYear(yb, seatA, seatB)) years.push({ year: y, gz, mark: "함께 좋은 해", why: `두 사람의 ${name}와 모두 합` });
   }
   return {
-    score: v2 ? gunghapScore(a, b, rel) : matchPillars(a.pillars, b.pillars).score,
+    score: v2 ? gunghapScore(a, b, rel, v3) : matchPillars(a.pillars, b.pillars).score,
     avg: v2 ? gunghapAvg(a, b, rel) : 69,
     roles: [ROLE[rel][GROUP_OF[tenGod(a.pillars.dayStem, b.pillars.dayStem)]], ROLE[rel][GROUP_OF[tenGod(b.pillars.dayStem, a.pillars.dayStem)]]],
     lends,
@@ -139,8 +144,8 @@ export function coupleOf(a: Person, b: Person, from = sajuYear(), rel: Rel = "�
 
 // The pair's lines for the writer's brief. `from`: the year the brief is read for (the order's year). `years`: false
 // when the report has the ten-year table (궁합 v8+), so the years are told once, by that table.
-export function coupleBrief(a: Person, b: Person, from = sajuYear(), rel: Rel = "연인", years = true, v2 = true): string {
-  const c = coupleOf(a, b, from, rel, v2);
+export function coupleBrief(a: Person, b: Person, from = sajuYear(), rel: Rel = "연인", years = true, v2 = true, v3 = true): string {
+  const c = coupleOf(a, b, from, rel, v2, v3);
   if (!c) return "";
   const ra = readChart(a.pillars)!;
   const rb = readChart(b.pillars)!;

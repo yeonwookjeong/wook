@@ -1,5 +1,6 @@
 import "server-only";
 import { gunghapAvg, gunghapScore } from "./couple";
+import { riskyLines } from "./reportGuard";
 import { chartBrief, pairBrief } from "./brief";
 import { bondBrief, bondOf, REL_LABEL, relOf } from "./bond";
 import { decodePerson, profileOf, type Person } from "./pairToken";
@@ -7,9 +8,9 @@ import type { Usage } from "./aiCost";
 import { writeReport } from "./reportWriter";
 import { STEMS_KO, BRANCHES_KO } from "./saju";
 import { plainAnswer } from "./askText";
-import { askRoomIds, getAskRoomRaw, newAskRoomId, setAskRoomRaw } from "./store";
+import { askRoomIds, getAskRoomRaw, newAskRoomId, noteReportError, setAskRoomRaw } from "./store";
 import { thisYear, yeonunBrief } from "./yeonun";
-import { figureKit, figureMenu, verdictText } from "./askFigures";
+import { figureKit, figureMenu, topicOf, verdictText } from "./askFigures";
 
 // 정 훈도에게 묻기: a room per chart where 정 훈도 answers one question at a time and remembers the talk.
 // He remembers in three layers: the chart and this year's flow (computed when the room opens, recomputed each
@@ -165,6 +166,8 @@ const SYSTEM = `너는 '정 훈도'다. 조선 관상감 명과학의 막내 관
 - 메모에 없는 일을 있었던 것처럼 말하지 않는다.
 - 손님이 사람 목록에서 누군가를 지우거나 부르는 이름을 바꿔도 그 사람에 대한 기억은 지우지 않는다. 메모에는 지금 부르는 이름으로 이어 쓰고(예: "남자친구(전에 '그 사람')"), 지운 사람은 손님이 다시 꺼내면 알아본다. 먼저 꺼내지는 않는다.
 - 손님이 말하지 않은 고민·사건·관계(가족과의 갈등, 이별, 빚 등)를 "마음에 남아 계실" 것처럼 넘겨짚지 않는다. 사주에 그런 기운이 보여도 "~하기 쉬운 자리"라는 경향으로만 말한다.
+- 지나간 일을 "~했을 것이옵니다", "~셨을 거예요"처럼 단정하지 않는다. "~했다면, 그건 ~ 때문이옵니다"처럼 손님이 확인하게 말한다.
+- 관계 '연인·배우자'에는 썸·연애·부부가 다 들어 있다. 손님이 결혼·동거·함께 살기를 먼저 말하지 않았으면 그 이야기를 꺼내지 않는다.
 
 [하지 않는 것]
 - 건강 진단, 약, 법률 판단, 특정 투자 종목·코인·도박, 수익 장담: "그건 전문가께 여쭈시옵소서"라고 하고, 사주로 볼 수 있는 부분(성향, 때, 조심할 점)만 말한다.
@@ -220,7 +223,7 @@ function context(room: AskRoom, withId?: string): string | null {
     parts.push(
       `[이번 질문에 함께 보는 사람: ${chosen.label} (관계: ${REL_LABEL[relOf(chosen.rel, chosen.label)]})${chosen.aka?.length ? ` — 전에는 '${chosen.aka.join("', '")}'(이)라고 불렀다` : ""}. 이 사람은 늘 '${chosen.label}'(이)라고 부르고 실명은 쓰지 않는다]`,
       chartBrief(chosen.label, other.pillars, profileOf(other)),
-      // The same score the 궁합 report shows (lib/couple.ts gunghapScore), not the game's.
+      // The same score a 궁합 bought now shows (lib/couple.ts gunghapScore), not the game's.
       pairBrief(me.name, me.pillars, chosen.label, other.pillars, {
         score: gunghapScore(me, other, relOf(chosen.rel, chosen.label)),
         avg: gunghapAvg(me, other, relOf(chosen.rel, chosen.label)),
@@ -267,7 +270,10 @@ export async function ask(room: AskRoom, question: string, topic: Topic, chosen?
     })
     .join("\n");
   const name = personOfRoom(room)!.name;
-  const kit = figures ? figureKit(personOfRoom(room)!, withPerson ? decodePerson(withPerson.token) : null, withPerson?.label ?? "", withPerson?.rel, chosen ?? topic, `${chosen ?? ""} ${q}`, Date.now()) : null;
+  // A pick among offered topics is read for its own words (이직 → 일), not the whole two-topic question: a "연애:" it
+  // starts with first, then its words, and the topic the guest picked when it names none.
+  const picked = chosen ? (TOPICS.find((t) => t !== "기타" && chosen.startsWith(`${t}:`)) ?? topicOf("기타", chosen)) : topic;
+  const kit = figures ? figureKit(personOfRoom(room)!, withPerson ? decodePerson(withPerson.token) : null, withPerson?.label ?? "", withPerson?.rel, picked === "기타" ? topic : picked, chosen ?? q, Date.now()) : null;
   const prompt = [
     ctx,
     ...(kit ? [`[판정 카드 — 답서 맨 위에 이대로 보인다]\n${verdictText(kit)}`, `[그림 재료 — 답서에 넣을 수 있는 그림과 그 안의 값]\n${figureMenu(kit)}`] : []),
@@ -322,6 +328,9 @@ export async function ask(room: AskRoom, question: string, topic: Topic, chosen?
   } else {
     const [answer, memo] = text.split("[[메모]]");
     room.messages.push({ role: "hundo", text: answer.trim(), at: now, topic, usage });
+    // A word an answer must not carry is told to the owner (admin '보고서 위험 문구'), as for the reports.
+    const risky = riskyLines("ask", answer, [room.people?.find((x) => x.id === withId)?.label ?? ""]);
+    if (risky.length) await noteReportError(`묻기 (${room.id.slice(0, 8)}): ${risky.join(" / ")}`, "risk").catch(() => {});
     if (memo?.trim()) room.memo = memo.trim().slice(0, 1500);
     room.used += 1;
   }

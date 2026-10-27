@@ -439,6 +439,9 @@ const NEEDS_HOUR = new Set([...Object.keys(GROUP_NONE), "missing-two", "rootless
 export const ENGINE2_SINCE = Date.parse("2026-10-26T06:59:00Z");
 // A report bought before ENGINE2_SINCE keeps the old reading, so its pinned text and its page agree.
 export const isEngine2 = (boughtAt: number | undefined) => boughtAt === undefined || boughtAt >= ENGINE2_SINCE;
+// The year verdicts with the 용신 floor and one score for the two of a 궁합 (lib/yeonun.ts yearScore, lib/couple.ts).
+export const ENGINE3_SINCE = Date.parse("2026-10-27T00:00:00Z");
+export const isEngine3 = (boughtAt: number | undefined) => boughtAt === undefined || boughtAt >= ENGINE3_SINCE;
 
 export function rawOf(p: Pillars) {
   // The hour stem as the chart shows it (a 야자시 birth keeps its own, lib/saju.ts hourStemFor).
@@ -450,8 +453,42 @@ export function rawOf(p: Pillars) {
   };
 }
 
-// Every pattern the chart shows. v2: read the "없음" patterns as above (false: as before ENGINE2_SINCE).
-export function patternsOf(p: Pillars, gender: Gender | null, v2 = true): Pattern[] {
+// v3 (ENGINE3_SINCE): the guide lines that read as a verdict on someone's life, said as a leaning instead
+// (2026-10-26 엔진 점검 6번, 강 어사 확인). The old words stay for a report bought before it.
+const SOFTER: [string, string][] = [
+  ["옳은 말을 하고도 손해 본 경험이 있을 거예요.", "옳은 말을 하고도 손해 본 적이 있을 수 있어요."],
+  ["돈 계산에 무심해 손해 보는 일이 잦아요.", "돈 계산에 무심해 손해 보기 쉬워요."],
+  ["남자 인연은 늦게 오거나, 친구 같은 사람과 잘 맞아요.", "인연이 천천히 무르익는 편이고, 친구 같은 사람과 잘 맞아요."],
+  ["결혼은 서두를수록 흔들리고, 늦을수록 안정적이에요.", "결혼은 서두르기보다 충분히 알아 간 뒤에 할 때 안정되기 쉬워요."],
+  ["막다른 길에서 꼭 누군가 손을 내밀어요.", "막다른 길에서 누군가 손을 내밀어 주기 쉬워요."],
+  ["제 판을 잡으면 크게 잘돼요.", "제 판을 잡으면 크게 잘되기 쉬워요."],
+  ["사람 속에 있어도 문득 외로움을 느껴요.", "혼자 생각을 정리하는 시간이 꼭 필요한 사람이에요."],
+  ["이사·출장·해외·이직이 잦고,", "이사·출장·해외·이직이 잦기 쉽고,"],
+  ["추진력이 강한 만큼 사고·수술·다툼 같은 급한 일을 한 번쯤 겪기 쉬워요.", "추진력이 강한 만큼 서두르다 급한 일에 휘말리기 쉬워요."],
+  ["겉보기보다 속이 불안하고 주변 영향을 많이 받아요.", "겉보기보다 주변 영향을 많이 받는 편이에요."],
+  ["하고 싶은 말을 참기 어려워 구설이 생기기 쉬워요.", "하고 싶은 말을 참기 어려워 말이 앞서 오해를 사기 쉬워요."],
+  ["부모, 특히 어머니의 영향이나 간섭이 컸을 가능성이 커요.", "부모, 특히 어머니의 영향을 많이 받았을 수 있어요."],
+  // 2026-10-26 재검수(강 어사): the past said as an if, as the reports do (PAST_V6).
+  ["어린 시절 이사·전학·집안 사정의 변화가 있었을 가능성이 커요. 일찍 철든 사람이 많아요.", "어린 시절 이사·전학·집안 사정의 변화가 있었다면, 그 시기에 일찍 철들었을 수 있어요."],
+  ["부모·집안·직장 환경에 변동이 많았거나, 한곳에 오래 머물기 어려운 흐름이에요.", "부모·집안·직장 환경에 변동이 잦았다면, 그건 이 구조 때문일 수 있어요. 한곳에 오래 머물기보다 옮겨 다니며 풀리는 편이에요."],
+  ["누구 말을 따라야 할지 몰라 지치는 일이 많았을 거예요.", "누구 말을 따라야 할지 몰라 지친 적이 많았다면, 이 구조 때문일 수 있어요."],
+  ["늘 누군가의 기대와 규칙 속에서 살아온 느낌이 있어요.", "누군가의 기대와 규칙 속에서 살아왔다고 느낀다면, 이 구조 때문일 수 있어요."],
+  [
+    "어릴 때부터 스스로 알아서 해 온 사람이에요. 도움받는 걸 어색해하고,",
+    "어릴 때부터 스스로 알아서 해 왔다면, 이 구조 때문일 수 있어요. 도움받는 게 어색한 편이고,",
+  ],
+];
+const softer = (t: string) => SOFTER.reduce((x, [from, to]) => x.replace(from, to), t);
+// The short names shown on the free screen's chips: no '배우자 자리' (대표님 금지어, 2026-10-25).
+const PLAIN_SOFTER: [string, string][] = [
+  ["배우자 자리가 흔들리는 구조", "가까운 관계에서 부딪힘이 큰 구조"],
+  ["배우자 자리가 합으로 묶임", "가까운 사람과 정이 깊게 묶이는 구조"],
+];
+const plainer = (t: string) => PLAIN_SOFTER.reduce((x, [from, to]) => x.replace(from, to), t);
+
+// Every pattern the chart shows. v2: read the "없음" patterns as above (false: as before ENGINE2_SINCE). v3: the
+// guide lines said as a leaning (SOFTER).
+export function patternsOf(p: Pillars, gender: Gender | null, v2 = true, v3 = v2): Pattern[] {
   const c0 = contextOf(p, gender);
   if (!c0) return [];
   let c = c0;
@@ -462,7 +499,7 @@ export function patternsOf(p: Pillars, gender: Gender | null, v2 = true): Patter
     c = { ...c0, r: { ...c0.r, missing: c0.r.missing.filter((e) => !raw.els.has(e)) } };
     keep = (id) => (p.hourBranch !== null || !NEEDS_HOUR.has(id)) && !(GROUP_NONE[id] && raw.groups.has(GROUP_NONE[id]));
   }
-  return SPECS.filter((s) => keep(s.id) && s.test(c)).map((s) => ({ id: s.id, term: s.term, plain: s.plain(c), area: s.area, meaning: s.meaning(c) }));
+  return SPECS.filter((s) => keep(s.id) && s.test(c)).map((s) => ({ id: s.id, term: s.term, plain: v3 ? plainer(s.plain(c)) : s.plain(c), area: s.area, meaning: v3 ? softer(s.meaning(c)) : s.meaning(c) }));
 }
 
 export const PATTERN_IDS = SPECS.map((s) => s.id);
