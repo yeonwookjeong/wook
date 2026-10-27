@@ -95,6 +95,9 @@ export function cardsOf(h: Held): SinsalId[] {
   return out;
 }
 
+// One whole set of cards as a key, in book order ("" for none): lib/sinsalRarity.json counts births per key.
+export const comboKey = (ids: SinsalId[]) => CARDS.filter((c) => ids.includes(c.id)).map((c) => c.no).join(".");
+
 // Share of births (out of 100) holding each card, from scripts/sinsal.mts.
 export const per100 = (id: SinsalId) => (id === "musal" ? rarity.head.none : (rarity.held as Record<string, number>)[id]) / (rarity.total / 100);
 
@@ -116,12 +119,33 @@ export function sinsalOf(p: Pillars): Reading {
   return { head: ids.length ? BY_ID[ids[0]] : MUSAL, rest: ids.slice(1).map((id) => BY_ID[id]), held, kinds: ids.length, cells, summary: summaryOf(ids.length, Math.max(...counts)) };
 }
 
-// "100명 중 약 4명": whole numbers from 3 up, one decimal below (무살 1.5, 양인 둘 2.0 → 2).
-export function rareText(c: Card): string {
-  const n = per100(c.id);
+// "100명 중 약 4명" from a share out of 100: whole numbers from 3 up, one decimal from 1 (무살 1.5, 양인 둘 2.0 → 2),
+// then out of 1,000 and 10,000.
+export function rareOf(n: number): string {
   if (n >= 3) return `100명 중 약 ${Math.round(n)}명`;
   if (n >= 1) return `100명 중 약 ${n.toFixed(1).replace(/\.0$/, "")}명`;
-  return `1,000명 중 약 ${Math.max(1, Math.round(n * 10))}명`;
+  if (n >= 0.1) return `1,000명 중 약 ${Math.round(n * 10)}명`;
+  return `10,000명 중 약 ${Math.max(1, Math.round(n * 100))}명`;
+}
+export const rareText = (c: Card) => rareOf(per100(c.id));
+
+// Share of births (out of 100) holding exactly this set of cards; with the hour unknown, among the hour-less charts
+// (one a day). Null for a set never seen 1950–2008 (a birth outside those years can make one).
+export function comboPer100(ids: SinsalId[], noHour: boolean): number | null {
+  const k = comboKey(ids);
+  const n = (noHour ? rarity.comboNoHour : rarity.combo) as Record<string, number>;
+  return n[k] ? n[k] / ((noHour ? rarity.days : rarity.total) / 100) : null;
+}
+
+// How the 살 share the chart: each card's places (placesOf) over all of them, largest first, in whole percents
+// that add up to 100. Empty for 무살.
+export function makeupOf(p: Pillars, cards: Card[]): { card: Card; pct: number }[] {
+  const rows = cards.filter((c) => c.id !== "musal").map((card) => ({ card, n: Math.max(1, placesOf(p, card.id).length) }));
+  const sum = rows.reduce((a, r) => a + r.n, 0);
+  const out = rows.map((r) => ({ card: r.card, pct: Math.floor((r.n * 100) / sum), rem: (r.n * 100) % sum }));
+  let left = 100 - out.reduce((a, r) => a + r.pct, 0);
+  for (const r of [...out].sort((a, b) => b.rem - a.rem)) if (left-- > 0) r.pct++;
+  return out.sort((a, b) => b.pct - a.pct || per100(a.card.id) - per100(b.card.id)).map(({ card, pct }) => ({ card, pct }));
 }
 
 // Every card in the book, the empty chart's last.

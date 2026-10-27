@@ -52,7 +52,7 @@ export default function SinsalNote({ gift }: { gift: number }) {
       className="fixed inset-0 z-50 flex items-end justify-center bg-[#0b1118]/60 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-[2px] sm:items-center"
       role="dialog"
       aria-modal="true"
-      aria-label="새로 생긴 신살 도감"
+      aria-label="새로 생긴 신살 유형 테스트"
       onClick={close}
     >
       <div
@@ -69,17 +69,17 @@ export default function SinsalNote({ gift }: { gift: number }) {
           </button>
         </div>
         <div className="relative -mt-2 px-5 pb-4 text-center">
-          <p className="font-myeongjo text-[11px] font-bold tracking-[0.3em] text-[#d4af5f]">新 刊 · 神 煞 圖 鑑</p>
-          <h2 className="mt-1 font-myeongjo text-[21px] leading-snug font-extrabold">나는 무슨 살을 타고났을까</h2>
+          <p className="font-myeongjo text-[11px] font-bold tracking-[0.3em] text-[#d4af5f]">新 刊 · 신살 유형 테스트</p>
+          <h2 className="mt-1 font-myeongjo text-[21px] leading-snug font-extrabold">나는 어떤 살의 사람일까</h2>
           <p className="mt-2 text-[13px] leading-relaxed break-keep text-hanji/80">
-            도화·역마·화개·괴강… 스무 가지 살을 카드로 그렸어요. 내 카드를 펼치고 친구와 도감을 채워 보세요.
+            도화·역마·화개·괴강… 20가지 살 유형 중 내 유형과, 그 유형이 100명 중 몇 명인지 알려 드려요.
           </p>
           <Link
             href="/sinsal"
             onClick={close}
             className="mt-4 block rounded-2xl bg-[#d4af5f] py-3 font-myeongjo text-[16px] font-extrabold text-[#0f2236] shadow-[0_5px_0_#9c7a2e]"
           >
-            내 카드 펼치기
+            내 살 유형 보기
           </Link>
           {gift > 0 && (
             <AskLink from="pop" onClick={close} className="mt-3 block rounded-xl border border-[#d4af5f]/30 px-3 py-2 text-[12.5px] leading-snug text-hanji/85">
