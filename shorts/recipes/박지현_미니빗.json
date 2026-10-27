@@ -8,11 +8,11 @@
   "clip_subs": true,
   "blur": true,
   "google_voice": "ko-KR-Chirp3-HD-Kore",
-  "google_rate": 1.45,
+  "google_rate": 1.3,
   "broll_query": "박지현 화보 메이킹",
   "broll_offset": 1,
   "parts": [
-    {"type": "tts", "text": "붙임머리를 한 배우 박지현이 늘 가방에 넣고 다니는 첫 번째 아이템은?", "media": ["auto", {"at": "00:05"}]},
+    {"type": "tts", "text": "붙임머리를 한 배우 박지현이 늘 가방에 넣고 다니는 첫 번째 아이템은?", "media": ["auto"]},
     {"type": "clip", "from": "첫 번째로 빗입니다", "to": "항상 들고 다녀요"},
     {"type": "tts", "text": "엉킨 머리도 잘 빗긴다는 비결은"},
     {"type": "clip", "from": "돈모랑 나일론이", "to": "하나도 아프지 않더라고요"}

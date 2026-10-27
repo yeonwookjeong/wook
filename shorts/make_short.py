@@ -108,7 +108,21 @@ _TRIM = "silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.03"
 TTS_POLISH = (f"{_TRIM},areverse,{_TRIM},areverse,highpass=f=70,"
               "acompressor=threshold=-20dB:ratio=1.8:attack=10:release=150,loudnorm=I=-15:TP=-1.5:LRA=9")
 BG_DUCK = 0.07  # TTS 나오는 동안 원본 소리 크기 (1 = 원래 크기)
-XFADE = 0.22    # 구간 사이 전환 효과 길이(초)
+XFADE = 4 / 30  # 구간(장면) 사이 부드러운 디졸브 길이(초, 4프레임)
+HARD = 2 / 30   # 같은 장면 안에서 쉼을 잘라낸 곳: 사실상 컷(2프레임 겹침. 더 짧으면 ffmpeg가 끊김)
+
+
+def video_len(ff: str, path: Path) -> float:
+    """영상 스트림의 실제 길이(프레임 수 / FPS). 파일 정보의 길이는 소리 기준이라 미세하게 다름."""
+    p = subprocess.run([ff, "-hide_banner", "-i", str(path), "-map", "0:v", "-c", "copy", "-f", "null", "-"],
+                       stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8", errors="replace")
+    n = re.findall(r"frame=\s*(\d+)", p.stderr)
+    return int(n[-1]) / FPS if n else duration_of(ff, path)
+
+
+def frames(sec: float) -> float:
+    """길이를 프레임 단위로 딱 맞춤 (이어 붙일 때 어긋나서 멈추는 것 방지)."""
+    return max(round(sec * FPS), 3) / FPS
 # 돌아가며 쓰는 전환 효과 (ffmpeg xfade 이름)
 TRANSITIONS = ["zoomin", "slideleft", "fadewhite", "smoothup", "circleopen", "slideright"]
 PUNCH = 0.10    # 각 구간 시작 0.3초 동안 '툭' 당겼다 풀리는 줌 세기
@@ -1038,7 +1052,7 @@ def _blur(label: str, out: str, boxes: list, k: int) -> list[str]:
 
 
 def render(ff: str, items: list, dur: float, subs: list, tts: Path | None, out: Path,
-           zoom: tuple[float, float], crop_bottom: float, punch: float, blur: list):
+           zoom: tuple[float, float], crop_bottom: float, punch: float, blur: list, speed: float = 1.0):
     """한 구간을 영상 칸(+자막)만 렌더링. 제목·하단 글씨는 마지막에 한 번에 얹는다.
     items: [{"path", "t0", "dur", "image", "source"}] 화면 소스들(여러 개면 이어 붙임)
     subs: [(png, 시작, 끝)] (구간 기준 상대 시간). zoom: (처음 배율, 끝 배율)"""
@@ -1058,17 +1072,19 @@ def render(ff: str, items: list, dur: float, subs: list, tts: Path | None, out: 
     zw, zh = int(W * 1.5), int(VH * 1.5)  # 크게 키운 뒤 줌 → 떨림 없이 부드럽게
     fg = []
     for k, it in enumerate(items):
-        frames = max(int(it["dur"] * FPS), 1)
+        sp = speed if it["source"] and not it.get("mute") else 1.0  # 원본 말하는 구간만 살짝 빠르게
+        odur = it["dur"] / sp
+        frames = max(int(odur * FPS), 1)
         z0, z1 = (1.0, 1.12) if it["image"] else zoom   # 사진은 천천히 당기는 켄번스 효과
         zexpr = f"{z0}+({z1}-{z0})*on/{frames}+{punch}*max(0,1-on/{int(0.3 * FPS)})"
         if it["source"]:
             fg += _blur(f"{k}:v", f"bl{k}", blur, k)
-            pre = f"[bl{k}]crop=iw:ih*{1 - crop_bottom:.3f}:0:0,"  # 아래쪽(박힌 자막) 잘라내기
+            pre = f"[bl{k}]setpts=(PTS-STARTPTS)/{sp},crop=iw:ih*{1 - crop_bottom:.3f}:0:0,"  # 속도 + 아래쪽 자막 잘라내기
         else:
             pre = f"[{k}:v]"
         fg.append(f"{pre}scale={zw}:{zh}:force_original_aspect_ratio=increase,crop={zw}:{zh},setsar=1,"
                   f"fps={FPS},zoompan=z='{zexpr}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:"
-                  f"s={W}x{VH}:fps={FPS},trim=duration={it['dur']:.3f},setpts=PTS-STARTPTS[m{k}]")
+                  f"s={W}x{VH}:fps={FPS},trim=duration={odur:.3f},setpts=PTS-STARTPTS[m{k}]")
     if len(items) > 1:
         fg.append("".join(f"[m{k}]" for k in range(len(items))) + f"concat=n={len(items)}:v=1:a=0[vc]")
     else:
@@ -1078,7 +1094,8 @@ def render(ff: str, items: list, dur: float, subs: list, tts: Path | None, out: 
     for i, (_, a, b) in enumerate(subs):
         fg.append(f"[{last}][{si + i}:v]overlay=0:0:enable='between(t,{a:.2f},{b:.2f})'[s{i}]")
         last = f"s{i}"
-    fg.append(f"[{last}]format=yuv420p[vout]")
+    # 영상 길이를 정확히 dur로 맞춤(모자라면 마지막 장면 유지) → 이어 붙일 때 어긋나서 멈추지 않게
+    fg.append(f"[{last}]tpad=stop_mode=clone:stop_duration=0.5,trim=duration={dur:.3f},format=yuv420p[vout]")
 
     fade = f"afade=t=in:d=0.04,afade=t=out:st={max(dur - 0.06, 0):.3f}:d=0.06"
     # 원본 영상이면 그 소리를 바닥에 깔기 (도입부 자료 영상은 소리 안 씀)
@@ -1091,7 +1108,8 @@ def render(ff: str, items: list, dur: float, subs: list, tts: Path | None, out: 
         fg.append(f"[{ti}:a]aresample=44100,adelay=260|260[t]")
         fg.append(f"[bg][t]amix=inputs=2:duration=longest:normalize=0,apad,atrim=0:{dur:.3f},{fade}[aout]")
     elif base_audio:
-        fg.append(f"[0:a]aresample=44100,loudnorm=I=-14:TP=-1.5:LRA=11,apad,atrim=0:{dur:.3f},{fade}[aout]")
+        tempo = f"atempo={speed:.3f}," if abs(speed - 1) > 0.005 else ""
+        fg.append(f"[0:a]aresample=44100,{tempo}loudnorm=I=-14:TP=-1.5:LRA=11,apad,atrim=0:{dur:.3f},{fade}[aout]")
     else:
         fg.append(f"anullsrc=r=44100:cl=stereo,atrim=0:{dur:.3f}[aout]")
 
@@ -1102,6 +1120,7 @@ def render(ff: str, items: list, dur: float, subs: list, tts: Path | None, out: 
 
 
 _SOURCES = {}
+_USED = []  # 본문에 쓰는 원본 구간들 (도입부 장면이 겹치지 않게)
 
 
 _SEARCHES = {}
@@ -1143,10 +1162,15 @@ def media_items(p: dict, dur: float, src: Path, subs: "Subs", ff: str) -> list:
         media = ["auto"]  # 도입부인데 자료를 안 적었으면 자동 검색
     expanded = []
     for m in media or []:
-        if m == "auto":  # "auto" = 셀럽 이름으로 유튜브 검색 → 영상 3개에서 한 장면씩
-            q, k = p["part"].get("broll_query"), int(p["part"].get("broll_n", 0))
-            if q:
+        if m == "auto":
+            k = int(p["part"].get("broll_n", 0))
+            q = p["part"].get("broll_query")
+            if p["part"].get("broll_search") and q:
+                # 유튜브 검색(동명이인이 섞일 수 있어서 기본은 꺼둠)
                 expanded += [{"search": q, "video": v, "at": "auto", "n": k} for v in range(3)]
+            else:
+                # 기본: 같은 원본 영상에서, 쓰지 않은 구간 중 '예쁜 장면' 3개 (같은 사람 보장)
+                expanded += [{"self": True, "n": k * 3 + j} for j in range(3)]
         else:
             expanded.append(m)
     for m in expanded:
@@ -1158,6 +1182,13 @@ def media_items(p: dict, dur: float, src: Path, subs: "Subs", ff: str) -> list:
             out.append({"path": path, "t0": float(0), "image": path.suffix.lower() in IMAGE_EXT, "source": False})
         else:                   # 유튜브 영상의 특정 장면 {"at": "01:23"} 또는 {"src": "다른링크", "at": ...}
             vpath, vsubs = src, subs
+            if m.get("self"):
+                moments = [t for t in auto_moments(src, ff, 16)
+                           if all(not (a - 4 <= t <= b + 2) for a, b in _USED)] or auto_moments(src, ff, 16)
+                t = moments[int(m.get("n", 0)) % len(moments)]
+                print(f"      🎞️ 같은 영상의 예쁜 장면: {fmt(t)}")
+                out.append({"path": src, "t0": t, "image": False, "source": True, "mute": True})
+                continue
             if m.get("search"):  # 셀럽 이름 등으로 유튜브를 검색해서 k번째 영상을 자동으로 씀
                 try:
                     found = search_videos(m["search"], exclude=src.stem, cc_only=cc_only)
@@ -1195,6 +1226,39 @@ def media_items(p: dict, dur: float, src: Path, subs: "Subs", ff: str) -> list:
     for it in out:
         it["dur"] = dur / len(out)
     return out
+
+
+def speech_pieces(ff: str, src: Path, a: float, b: float, min_gap: float = 0.35, keep: float = 0.08) -> list:
+    """[a,b] 안에서 말 사이 긴 쉼(min_gap초 이상)을 잘라낸 조각들. 너무 짧은 조각은 붙여둠."""
+    p = subprocess.run([ff, "-hide_banner", "-ss", f"{a:.3f}", "-t", f"{b - a:.3f}", "-i", str(src), "-vn",
+                        "-af", f"silencedetect=n=-32dB:d={min_gap}", "-f", "null", "-"],
+                       stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8", errors="replace")
+    starts = [float(x) for x in re.findall(r"silence_start: ([\d.]+)", p.stderr)]
+    ends = [float(x) for x in re.findall(r"silence_end: ([\d.]+)", p.stderr)]
+    pieces, cur = [], 0.0
+    for st, en in zip(starts, ends):
+        if st <= 0.05 or en >= (b - a) - 0.05:  # 맨 앞뒤 쉼은 이미 컷 보정에서 처리
+            continue
+        if st + keep - cur >= 0.6:
+            pieces.append((a + cur, a + st + keep))
+            cur = max(en - keep, st + keep)
+    pieces.append((a + cur, b))
+    merged = []
+    for pa, pb in pieces:  # 0.6초보다 짧은 조각은 앞 조각에 붙이기
+        if merged and pb - pa < 0.6:
+            merged[-1] = (merged[-1][0], pb)
+        else:
+            merged.append((pa, pb))
+    return merged
+
+
+def speech_speed(subs: "Subs", a: float, b: float, target: float = 7.2, cap: float = 1.18) -> float:
+    """말이 느린 사람은 살짝 빠르게: 초당 음절이 target보다 느리면 최대 cap배까지."""
+    syl = sum(len(norm(t)) for s0, e0, t in subs.lines if s0 >= a - 0.3 and e0 <= b + 0.3)
+    if b - a <= 0 or syl == 0:
+        return 1.0
+    rate = syl / (b - a)
+    return round(min(max(target / rate, 1.0), cap), 3)
 
 
 def resolve(v, subs: Subs, after: float, edge: str) -> tuple[float, bool]:
@@ -1319,6 +1383,7 @@ def main():
         first_tts.setdefault("intro", True)
         first_tts.setdefault("broll_query", query)
         first_tts.setdefault("broll_n", recipe.get("broll_offset", 0))
+        first_tts.setdefault("broll_search", recipe.get("broll_search", False))
     for pp in recipe["parts"]:
         if pp.get("type") == "tts":
             pp.setdefault("broll_cc_only", recipe.get("broll_cc_only", False))
@@ -1329,6 +1394,7 @@ def main():
     use_layout(recipe.get("theme", "celebpick"))
 
     plan = plan_parts(recipe, subs, ff, src, args.check)
+    _USED[:] = [(pp["start"], pp["end"]) for pp in plan if pp["type"] == "clip"]
     src_len = duration_of(ff, src)
     for i, p in enumerate(plan, 1):
         if p["end"] > src_len + 0.5:
@@ -1361,46 +1427,57 @@ def main():
         return [(small, a, a + 0.07), (png, a + 0.07, b)]
 
     seg_files, clip_no = [], 0
+    tighten = recipe.get("tighten", True)          # 말 사이 쉼 잘라내기
+    speed_cfg = recipe.get("clip_speed", "auto")   # "auto" = 느린 말투만 살짝 빠르게, 숫자 = 고정 배속
     for i, p in enumerate(plan, 1):
         print(f"   [{i}/{len(plan)}] 렌더링 중…")
         dur = p["end"] - p["start"]
-        overlays = []
+        crop = max(crop_bottom, 0.2) if p["type"] == "tts" else crop_bottom
         if p["type"] == "tts":
-            # 내레이션 자막을 짧은 한 줄씩 끊어 말하는 속도에 맞춰 넘김 (참고 채널 방식)
+            dur = frames(max(dur, 1.4))  # 너무 짧은 TTS 장면은 '따닥' 넘어가 보여서 최소 1.4초 유지
+            overlays = []
             pieces = Subs([(0.26, dur - 0.1, p["part"]["text"])]).chunks(0, dur) \
                 if recipe.get("tts_chunks", True) else [(0, dur, p["part"]["text"])]
-            for j, (a, b, text) in enumerate(pieces):
+            for j, (a0, b0, text) in enumerate(pieces):
                 png = tmp / f"sub_{i}_{j}.png"
                 sub_png(text, "tts", png, sub_theme)
-                overlays += pop(png, text, "tts", 0 if j == 0 else a, dur if j == len(pieces) - 1 else b)
-            zoom = (1.15, 1.22)          # TTS: 확 당겨서 시선 집중
-        else:
-            mode = p["part"].get("sub", "auto" if clip_subs else "none")
+                overlays += pop(png, text, "tts", 0 if j == 0 else a0, dur if j == len(pieces) - 1 else b0)
+            seg = tmp / f"seg_{i:02d}.mp4"
+            items = media_items(p, dur, src, subs, ff)
+            render(ff, items, dur, overlays, p.get("tts"), seg, (1.0, 1.05), crop, 0.0, blur)
+            seg_files.append((seg, dur, "soft"))
+            continue
+
+        # 원본 구간: 쉼 잘라내기 + 말 빠르기 맞추기. 잘라낸 곳은 화면 크기를 번갈아 바꿔(줌 점프컷) 튀지 않게
+        speed = speech_speed(subs, p["start"], p["end"]) if speed_cfg == "auto" else float(speed_cfg)
+        pieces = speech_pieces(ff, src, p["start"], p["end"]) if tighten else [(p["start"], p["end"])]
+        mode = p["part"].get("sub", "auto" if clip_subs else "none")
+        for k, (pa, pb) in enumerate(pieces):
+            odur = frames((pb - pa) / speed)
+            overlays = []
             if mode == "auto":
-                for j, (s, e, text) in enumerate(subs.chunks(p["start"], p["end"])):
-                    png = tmp / f"sub_{i}_{j}.png"
+                for j, (s0, e0, text) in enumerate(subs.chunks(pa, pb)):
+                    png = tmp / f"sub_{i}_{k}_{j}.png"
                     sub_png(text, "celeb", png, sub_theme)
-                    overlays += pop(png, text, "celeb", s - p["start"], e - p["start"])
+                    overlays += pop(png, text, "celeb", (s0 - pa) / speed, (e0 - pa) / speed)
             elif mode and mode != "none":
                 png = tmp / f"sub_{i}.png"
                 sub_png(mode, "celeb", png, sub_theme)
-                overlays.append((png, 0, dur))
-            zoom = (1.0, 1.08) if clip_no % 2 == 0 else (1.08, 1.0)  # 줌인/줌아웃 번갈아
-            clip_no += 1
-        seg = tmp / f"seg_{i:02d}.mp4"
-        punch = PUNCH if recipe.get("punch_zoom", True) else 0.0
-        # TTS 구간은 원본 자막이 TTS 자막과 겹치지 않게 항상 아래쪽을 잘라냄
-        crop = max(crop_bottom, 0.2) if p["type"] == "tts" else crop_bottom
-        items = media_items(p, dur, src, subs, ff) if p["type"] == "tts" else \
-            [{"path": src, "t0": p["start"], "dur": dur, "image": False, "source": True}]
-        render(ff, items, dur, overlays, p.get("tts"), seg, zoom, crop, punch, blur)
-        seg_files.append((seg, dur))
+                overlays.append((png, 0, odur))
+            z = 1.0 if (clip_no + k) % 2 == 0 else 1.1
+            seg = tmp / f"seg_{i:02d}_{k:02d}.mp4"
+            render(ff, [{"path": src, "t0": pa, "dur": pb - pa, "image": False, "source": True}], odur,
+                   overlays, None, seg, (z, z + 0.02), crop, 0.0, blur, speed)
+            seg_files.append((seg, odur, "soft" if k == 0 else "hard"))
+        if speed > 1.0 or len(pieces) > 1:
+            print(f"      ✂️ 쉼 {len(pieces) - 1}곳 잘라냄, 말 속도 x{speed}")
+        clip_no += len(pieces)
 
     OUT.mkdir(exist_ok=True)
     final = OUT / f"쇼츠_{rpath.stem}{suffix}.mp4"
     print("   이어 붙이는 중…")
     assemble(ff, seg_files, layout, tmp, final,
-             transitions=recipe.get("transitions", True), sfx=recipe.get("sfx", True),
+             transitions=recipe.get("transitions", True), sfx=recipe.get("sfx", False),
              bgm=(HERE / recipe["bgm"]) if recipe.get("bgm") else None,
              bgm_volume=float(recipe.get("bgm_volume", 0.12)))
     caption = final.with_suffix(".txt")
@@ -1429,68 +1506,79 @@ def upload_text(recipe: dict) -> str:
             f"[고정 댓글]\n{DISCLOSURE}\n")
 
 
-def assemble(ff: str, segs: list, layout: Path, tmp: Path, final: Path, transitions: bool, sfx: bool,
+def assemble(ff: str, segs: list, layout: Path | None, tmp: Path, final: Path, transitions: bool, sfx: bool,
              bgm: Path | None = None, bgm_volume: float = 0.12):
-    """구간들을 전환 효과(xfade)로 잇고, 제목·하단 레이아웃을 얹고, 전환 때 '슉' 효과음을 넣는다."""
+    """구간들을 이어 붙이고(장면 사이는 짧은 디졸브, 쉼을 잘라낸 곳은 2프레임 컷), 제목·하단 레이아웃을 얹는다.
+    화면과 소리를 한 번에 처리하면 ffmpeg가 서로 기다리다 멈춰서, 화면 → 소리 → 합치기 3단계로 나눔."""
+    segs = [(seg, video_len(ff, seg), kind) for seg, _, kind in segs]  # 실제 영상 길이 기준
     n = len(segs)
-    cmd = [ff, "-y"]
-    for seg, _ in segs:
-        cmd += ["-i", str(seg)]
-    cmd += ["-loop", "1", "-i", str(layout)]
-    li = n
-    use_x = transitions and n > 1
-    T = XFADE if use_x else 0.0
-    fg, offsets = [], []
-    if use_x:
-        lv, la, acc = "0:v", "0:a", 0.0
-        for k in range(1, n):
-            acc += segs[k - 1][1] - T
+    joins, offsets, acc = [], [], 0.0
+    for k in range(1, n):
+        Tk = XFADE if (transitions and segs[k][2] == "soft") else HARD
+        acc += segs[k - 1][1] - Tk
+        joins.append((Tk, acc))
+        if segs[k][2] == "soft":
             offsets.append(acc)
-            tr = TRANSITIONS[(k - 1) % len(TRANSITIONS)]
-            fg.append(f"[{lv}][{k}:v]xfade=transition={tr}:duration={T}:offset={acc:.3f}[xv{k}]")
-            fg.append(f"[{la}][{k}:a]acrossfade=d={T}[xa{k}]")
-            lv, la = f"xv{k}", f"xa{k}"
+    total = sum(d for _, d, _ in segs) - sum(t for t, _ in joins)
+    ins = []
+    for seg, _, _ in segs:
+        ins += ["-i", str(seg)]
+
+    # 1) 화면
+    fv, lv = [], "0:v"
+    for k, (Tk, off) in enumerate(joins, 1):
+        fv.append(f"[{lv}][{k}:v]xfade=transition=fade:duration={Tk:.4f}:offset={off:.4f}[xv{k}]")
+        lv = f"xv{k}"
+    vcmd = [ff, "-y"] + ins
+    if layout:
+        vcmd += ["-loop", "1", "-i", str(layout)]
+        fv.append(f"[{lv}][{n}:v]overlay=0:0:shortest=1,format=yuv420p[vout]")
     else:
-        fg.append("".join(f"[{k}:v][{k}:a]" for k in range(n)) + f"concat=n={n}:v=1:a=1[xv][xa]")
-        lv, la = "xv", "xa"
-        acc = 0.0
-        for k in range(1, n):
-            acc += segs[k - 1][1]
-            offsets.append(acc)
-    total = sum(d for _, d in segs) - T * (n - 1)
-    fg.append(f"[{lv}][{li}:v]overlay=0:0:shortest=1,format=yuv420p[vout]")
+        fv.append(f"[{lv}]format=yuv420p[vout]")
+    vtmp = tmp / "_video.mp4"
+    run(vcmd + ["-filter_complex", ";".join(fv), "-map", "[vout]", "-an", "-t", f"{total:.3f}", "-r", str(FPS),
+                "-c:v", "libx264", "-preset", "veryfast", "-crf", "19", str(vtmp)], "화면 이어 붙이기")
+
+    # 2) 소리
+    fa, la = [], "0:a"
+    for k, (Tk, _) in enumerate(joins, 1):
+        fa.append(f"[{la}][{k}:a]acrossfade=d={Tk:.4f}[xa{k}]")
+        la = f"xa{k}"
+    acmd = [ff, "-y"] + ins
+    nin = n
     if sfx and offsets:
         whoosh = tmp / "whoosh.wav"
         run([ff, "-y", "-f", "lavfi", "-i", "anoisesrc=d=0.35:c=pink:a=0.6",
              "-af", "highpass=f=700,lowpass=f=7000,afade=t=in:d=0.2:curve=exp,"
                     "afade=t=out:st=0.2:d=0.15,volume=0.22", "-ar", "44100", "-ac", "2", str(whoosh)],
             "효과음 만들기")
-        cmd += ["-i", str(whoosh)]
-        wi = n + 1
-        m = len(offsets)
-        fg.append(f"[{wi}:a]asplit={m}" + "".join(f"[w{j}]" for j in range(m)) if m > 1 else f"[{wi}:a]anull[w0]")
+        acmd += ["-i", str(whoosh)]
+        wi, nin, m = nin, nin + 1, len(offsets)
+        fa.append(f"[{wi}:a]asplit={m}" + "".join(f"[w{j}]" for j in range(m)) if m > 1 else f"[{wi}:a]anull[w0]")
         for j, o in enumerate(offsets):
-            ms = max(int((o + T / 2 - 0.2) * 1000), 0)
-            fg.append(f"[w{j}]adelay={ms}|{ms}[wd{j}]")
-        fg.append(f"[{la}]" + "".join(f"[wd{j}]" for j in range(m)) +
+            ms = max(int((o - 0.15) * 1000), 0)
+            fa.append(f"[w{j}]adelay={ms}|{ms}[wd{j}]")
+        fa.append(f"[{la}]" + "".join(f"[wd{j}]" for j in range(m)) +
                   f"amix=inputs={m + 1}:duration=first:normalize=0[amain]")
     else:
-        fg.append(f"[{la}]anull[amain]")
+        fa.append(f"[{la}]anull[amain]")
     if bgm:
         # 배경음악: 영상 길이만큼 반복, 말소리가 나오면 자동으로 작아짐(사이드체인 덕킹), 끝에서 페이드아웃
-        bi = cmd.count("-i")  # 지금까지 넣은 입력 개수 = 배경음악 입력 번호
-        cmd += ["-stream_loop", "-1", "-i", str(bgm)]
-        fg.append("[amain]asplit=2[am1][am2]")
-        fg.append(f"[{bi}:a]aresample=44100,aformat=channel_layouts=stereo,volume={bgm_volume},"
+        acmd += ["-stream_loop", "-1", "-i", str(bgm)]
+        fa.append("[amain]asplit=2[am1][am2]")
+        fa.append(f"[{nin}:a]aresample=44100,aformat=channel_layouts=stereo,volume={bgm_volume},"
                   f"atrim=0:{total:.3f},afade=t=out:st={max(total - 1.2, 0):.3f}:d=1.2[bg0]")
-        fg.append("[bg0][am2]sidechaincompress=threshold=0.03:ratio=6:attack=15:release=350[bgd]")
-        fg.append("[am1][bgd]amix=inputs=2:duration=first:normalize=0[aout]")
+        fa.append("[bg0][am2]sidechaincompress=threshold=0.03:ratio=6:attack=15:release=350[bgd]")
+        fa.append("[am1][bgd]amix=inputs=2:duration=first:normalize=0[aout]")
     else:
-        fg.append("[amain]anull[aout]")
-    cmd += ["-filter_complex", ";".join(fg), "-map", "[vout]", "-map", "[aout]", "-t", f"{total:.3f}",
-            "-r", str(FPS), "-c:v", "libx264", "-preset", "veryfast", "-crf", "19",
-            "-c:a", "aac", "-b:a", "160k", "-ar", "44100", "-ac", "2", "-movflags", "+faststart", str(final)]
-    run(cmd, "이어 붙이기")
+        fa.append("[amain]anull[aout]")
+    atmp = tmp / "_audio.m4a"
+    run(acmd + ["-filter_complex", ";".join(fa), "-map", "[aout]", "-vn", "-t", f"{total:.3f}",
+                "-c:a", "aac", "-b:a", "160k", "-ar", "44100", "-ac", "2", str(atmp)], "소리 이어 붙이기")
+
+    # 3) 합치기
+    run([ff, "-y", "-i", str(vtmp), "-i", str(atmp), "-map", "0:v", "-map", "1:a", "-c", "copy",
+         "-t", f"{total:.3f}", "-movflags", "+faststart", str(final)], "화면·소리 합치기")
 
 
 if __name__ == "__main__":
