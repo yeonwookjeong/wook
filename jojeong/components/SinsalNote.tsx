@@ -7,11 +7,12 @@ import { useEffect, useState } from "react";
 import AskLink from "./AskLink";
 import { trackEvent } from "./VisitBeacon";
 
-// The one notice (it replaced the grand-opening note): the 신살 도감, once per browser, a moment after arriving. Never
+// The one notice (it replaced the grand-opening note): the 신살 유형 테스트, once per browser, a moment after arriving. Never
 // over paying, a bought report, the room, the owner's pages, a friend's link or a reading on screen, nor on the 도감
 // itself (seeing it counts as seen). `gift`: the questions a Kakao sign-up brings, shown under it to non-members.
 const QUIET = ["/ask", "/pay", "/admin", "/login", "/r/", "/my", "/leave", "/logout", "/e/", "/s/"];
-const SEEN = "sinsal1";
+// Bumped when the notice changes (2026-10-27: 신살 도감 → 신살 유형 테스트), so those who saw the old one see it once more.
+const SEEN = "sinsal2";
 const FACES = ["M05", "F18", "M14", "F07"];
 
 export default function SinsalNote({ gift }: { gift: number }) {
