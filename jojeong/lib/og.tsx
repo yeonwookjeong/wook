@@ -219,8 +219,8 @@ export function sinsalShareImage(name: string) {
           background: "linear-gradient(180deg, rgba(15,34,54,0), rgba(15,34,54,0.95) 45%)",
         }}
       >
-        <div style={{ fontSize: 58, fontWeight: 800, color: C.hanji }}>{`${name}님이 신살 도감을 보냈어요`}</div>
-        <div style={{ marginTop: 10, fontSize: 30, color: "#d4af5f", fontWeight: 800 }}>{`내 살 보고 겹치는 살도 보기 · ${SITE_NAME}`}</div>
+        <div style={{ fontSize: 58, fontWeight: 800, color: C.hanji }}>{`${name}님이 신살 유형 테스트를 보냈어요`}</div>
+        <div style={{ marginTop: 10, fontSize: 30, color: "#d4af5f", fontWeight: 800 }}>{`나는 어떤 살의 사람일까 · ${SITE_NAME}`}</div>
       </div>
     </div>,
     1200,

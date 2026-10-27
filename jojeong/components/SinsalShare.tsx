@@ -62,7 +62,7 @@ export default function SinsalShare({ name, path, text, cards }: { name: string;
       <p className="font-myeongjo text-xs font-extrabold tracking-[0.4em] text-[#d4af5f]">傳 達</p>
       <h2 className="mt-1 font-myeongjo text-lg font-extrabold">친구에게 보내기</h2>
       <p className="mt-2 text-[13px] leading-relaxed text-hanji/70">
-        친구에게는 {name}님 카드 대신 신살 도감 첫 화면이 가요. 친구가 자기 생일을 넣으면 친구 카드가 펼쳐지고, 친구 카드 아래에 {name}님과 겹치는 살이 나와요.
+        친구에게는 {name}님 결과 대신 유형 테스트 첫 화면이 가요. 친구가 자기 생일을 넣으면 친구 유형이 나오고, 그 아래에 {name}님과 겹치는 살이 나와요.
       </p>
       <button
         type="button"

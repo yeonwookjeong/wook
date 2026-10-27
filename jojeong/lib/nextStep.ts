@@ -20,7 +20,7 @@ export const STEP_LABEL: Record<StepFrom, string> = {
   today: "오늘의 운세",
   ilju: "60일주 사전",
   column: "사주 이야기 (칼럼)",
-  sinsal: "신살 도감",
+  sinsal: "신살 유형 테스트",
 };
 
 export type Step = { href: string; title: string; line?: string; seal?: string; kicker?: string; free?: boolean };

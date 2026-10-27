@@ -20,12 +20,12 @@ export default function SinsalShared({ sender, me, token }: { sender: Person; me
             {name}님이 보냈어요 · 내 살을 보면 {name}님과 겹치는 살도 보여요
           </p>
           <section className="pt-6 text-center">
-            <p className="font-myeongjo text-sm font-extrabold tracking-[0.4em] text-[#d4af5f]">神 煞 圖 鑑</p>
-            <h1 className="mt-2 font-myeongjo text-3xl font-extrabold">신살 도감</h1>
+            <p className="font-myeongjo text-sm font-extrabold tracking-[0.3em] text-[#d4af5f]">神 煞 · 신살 유형 테스트</p>
+            <h1 className="mt-2 font-myeongjo text-[28px] font-extrabold">나는 어떤 살의 사람일까</h1>
             <p className="mt-2 text-[15px] leading-relaxed text-hanji/85">{me.name}님의 사주가 이 기기에 저장돼 있어요</p>
           </section>
           <Link href={next} className="mt-5 block rounded-2xl bg-seal py-4 text-center font-myeongjo text-lg font-extrabold text-hanji shadow-[0_6px_0_#7d1a14]">
-            내 카드 펼치기
+            내 살 유형 보기
           </Link>
         </>
       ) : (
