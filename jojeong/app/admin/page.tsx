@@ -292,6 +292,19 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
                     {(o.bonus ?? 0) > 0 && ` · 질문 ${o.bonus} ${o.bonusGiven ? "지급됨" : "로그인 대기"}`}
                     {(o.credits ?? 0) > 0 && ` · 질문권 ${o.credits}${o.credited === false ? " 미지급" : ""}`}
                   </span>
+                  {/* Under the name, not beside it: a button in the row squeezed the title out of sight. */}
+                  {!o.set && (
+                    <form action={giftCopyAction} className="mt-0.5 flex items-center gap-1 text-[10.5px]">
+                      <input type="hidden" name="id" value={o.id} />
+                      <label className="flex items-center gap-0.5 text-ink-soft">
+                        <input type="checkbox" name="sure" value="1" />
+                        확인
+                      </label>
+                      <button className="text-seal underline" title="환불해도 보고서는 주고 싶을 때: 같은 보고서를 0원 선물 링크로 만들어요(위 '보고서 선물 링크' 목록에 생겨요)">
+                        선물로 복제
+                      </button>
+                    </form>
+                  )}
                 </span>
                 <span className={`shrink-0 font-bold ${o.status === "paid" && !o.test ? "" : "text-ink-soft line-through"}`}>{won(o.amount)}</span>
                 <form action={testOrderAction} className="shrink-0">
@@ -301,18 +314,6 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
                     {o.test ? "테스트" : "테스트?"}
                   </button>
                 </form>
-                {!o.set && (
-                  <form action={giftCopyAction} className="flex shrink-0 items-center gap-1 text-[10.5px]">
-                    <input type="hidden" name="id" value={o.id} />
-                    <label className="flex items-center gap-0.5 text-ink-soft">
-                      <input type="checkbox" name="sure" value="1" />
-                      확인
-                    </label>
-                    <button className="rounded-full border border-seal/40 px-2 py-0.5 font-bold text-seal" title="환불해도 보고서는 주고 싶을 때: 같은 보고서를 0원 선물 링크로 만들어요(위 '보고서 선물 링크' 목록에 생겨요)">
-                      선물로 복제
-                    </button>
-                  </form>
-                )}
                 <Link href={`/r/${o.id}`} className="shrink-0 text-seal">
                   →
                 </Link>
