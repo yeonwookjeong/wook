@@ -48,7 +48,10 @@
 - 매 화 콘티와 함께 견적(재사용 목록, 새로 만들 것, 예상 토큰)을 먼저 낸다. 등급: 가벼움 / 보통 / 무거움.
 - 1화는 '보통' 등급 추천(예: 4층 없는 엘리베이터, 치킨).
 - 작업 방: 이 대화방에서 계속(새 대화는 맥락이 끊겨서 안 씀). 길어지면 `/compact`.
-- 작업 장소(대표님 컴퓨터 / 클라우드), 프리미어 버전: 미정.
+- 작업 장소: 이 대화방(클라우드)에서 코드 작성 → GitHub 푸시 → 대표님 맥에서 렌더링 → 프리미어. 프리미어 버전 미정.
+- 맥 준비 완료(2026-10-28): Homebrew, node, git, gh 로그인, `~/Documents/wook` 클론. 시험 영상(`youtube/studio`, `npm run render:test`) 맥에서 재생 확인.
+- 렌더 명령: `cd ~/Documents/wook && git pull && cd youtube/studio && npm install && npm run render:test && open out/test.mp4`
+- 모션 템플릿 순서: 붓 획 한글 리빌 → 붓에서 네온 전환 → 조각보 전환 → 민화·K-팝 배경 각 1장 → 전기수·까치.
 - 도구: Remotion + 공식 Claude Code 플러그인(`claude plugin marketplace add remotion-dev/claude-code-plugin` → `claude plugin install remotion@remotion`). 무료 라이선스는 개인·직원 3명 이하 회사.
 - 쇼츠 먼저 시작(시즌 1 쇼츠 10편 제안, 1편 후보: 4층 없는 엘리베이터). 터진 주제만 롱폼으로.
 
