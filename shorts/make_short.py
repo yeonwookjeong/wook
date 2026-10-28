@@ -845,7 +845,9 @@ def _pick_fonts():
     import unicodedata  # 맥은 한글 파일 이름을 자모로 풀어 저장해서(NFD) 합쳐서 비교
     is_title = lambda p: any(k in unicodedata.normalize("NFC", p.stem).lower()
                              for k in ("title", "구미", "gumi", "nangman"))
-    title = next((p for p in mine if p.stem.lower() == "title"), None) or next(filter(is_title, mine), None)
+    bundled_title = HERE / "assets" / "fonts" / "GumiRomance-title.otf"  # 낭만있구미체(구미시 무료 배포, 상업 이용 가능)
+    title = next((p for p in mine if p.stem.lower() == "title"), None) or next(filter(is_title, mine), None) \
+        or (bundled_title if bundled_title.exists() else None)
     body = [p for p in mine if not is_title(p)]
     if body:
         b, r = _faces(body[0])
@@ -912,7 +914,7 @@ def title_line(img, text: str, cy: int, th: dict, size: int, italic: float):
 
 
 def _title_is_italic() -> bool:
-    """제목 전용 폰트(낭만있구미체 등)를 넣었으면 폰트 모양 그대로, 기본 폰트일 때만 살짝 기울임."""
+    """제목 전용 폰트(낭만있구미체 등)를 쓰는지."""
     font(20, "title")
     return _FONTS[2] != _FONTS[0]
 
@@ -983,7 +985,7 @@ def layout_png(recipe: dict, path: Path):
     d = ImageDraw.Draw(img)
     d.rectangle([0, 0, W, TOP], fill=th["bg"])
     d.rectangle([0, TOP + VH, W, H], fill=th["bg"])
-    italic = float(recipe.get("title_italic", 0.0 if _title_is_italic() else 0.2))
+    italic = float(recipe.get("title_italic", 0.14 if _title_is_italic() else 0.2))  # 기존 쇼츠처럼 살짝 기울임
     if recipe.get("title2"):
         title_line(img, recipe["title1"], 301, th, 104, italic)
         title_line(img, recipe["title2"], 420, th, 104, italic)
