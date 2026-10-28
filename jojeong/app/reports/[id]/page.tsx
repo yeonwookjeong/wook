@@ -521,6 +521,7 @@ async function OpenReport({
             }}
             card={<SinbunCard who={`${josa(name, "이/가")} 조선에 태어났다면`} rank={sinbun.rank} job={sinbun.job} line={sinbun.line} rise={sinbun.rise} yong={sinbun.yong}
                 tag={{ rank: sinbun.rank, job: sinbun.job, office: sinbun.office, born: bornOf(pillars.yearStem, pillars.yearBranch), issued: yearGanji() }}
+                rarity={sinbun.rarity}
               />}
           />
         )}

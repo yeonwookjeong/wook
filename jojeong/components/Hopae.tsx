@@ -6,7 +6,7 @@ import HopaeFace from "./HopaeFace";
 
 // The 신분 감정 result as a 호패 hanging on its cord (lib/hopae.ts draws it). A tap turns it over to the back:
 // the year of issue and the burnt brand.
-export default function Hopae({ tag, className = "" }: { tag: HopaeInput; className?: string }) {
+export default function Hopae({ tag, className = "", night = false }: { tag: HopaeInput; className?: string; night?: boolean }) {
   const id = useId().replace(/[^a-zA-Z0-9]/g, "");
   const [back, setBack] = useState(false);
   const m = MATERIAL[tag.rank];
@@ -16,7 +16,7 @@ export default function Hopae({ tag, className = "" }: { tag: HopaeInput; classN
         type="button"
         onClick={() => setBack((b) => !b)}
         aria-label={back ? "호패 앞면 보기" : "호패 뒷면 보기"}
-        className="w-[min(52vw,210px)] [perspective:900px]"
+        className="w-[min(60vw,240px)] [perspective:900px]"
       >
         <div className={`relative transition-transform duration-700 [transform-style:preserve-3d] motion-reduce:transition-none ${back ? "[transform:rotateY(180deg)]" : ""}`}>
           <div className="[backface-visibility:hidden]">
@@ -27,7 +27,7 @@ export default function Hopae({ tag, className = "" }: { tag: HopaeInput; classN
           </div>
         </div>
       </button>
-      <p className="mt-1 text-[11.5px] text-ink-soft">
+      <p className={`mt-1 text-[11.5px] ${night ? "text-hanji/55" : "text-ink-soft"}`}>
         {m.name}({m.hanja}) · {back ? "뒷면 · 발급한 해와 낙인" : "눌러서 뒷면 보기"}
       </p>
     </div>
