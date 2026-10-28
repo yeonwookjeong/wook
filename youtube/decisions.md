@@ -49,6 +49,8 @@
 - 1화는 '보통' 등급 추천(예: 4층 없는 엘리베이터, 치킨).
 - 작업 방: 이 대화방에서 계속(새 대화는 맥락이 끊겨서 안 씀). 길어지면 `/compact`.
 - 작업 장소(대표님 컴퓨터 / 클라우드), 프리미어 버전: 미정.
+- 도구: Remotion + 공식 Claude Code 플러그인(`claude plugin marketplace add remotion-dev/claude-code-plugin` → `claude plugin install remotion@remotion`). 무료 라이선스는 개인·직원 3명 이하 회사.
+- 쇼츠 먼저 시작(시즌 1 쇼츠 10편 제안, 1편 후보: 4층 없는 엘리베이터). 터진 주제만 롱폼으로.
 
 ## 한도
 - 요금제: Max 5x. 주간 한도는 훈도팀 작업 방들과 같이 쓴다. 공식 토큰 수치는 없음.
