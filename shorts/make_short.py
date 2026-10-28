@@ -1527,20 +1527,24 @@ DISCLOSURE = "이 게시물은 쿠팡 파트너스 활동의 일환으로, 이�
 
 
 def upload_text(recipe: dict) -> str:
-    """업로드할 때 복사해서 쓰는 제목·설명·해시태그·고지 문구."""
+    """업로드할 때 복사해서 쓰는 제목·캡션·해시태그·고지 문구.
+    캡션 틀: 한 줄 소개 + ✓ 포인트 2줄 + 프로필 링크 안내 + 해시태그 (레시피의 caption / points / hashtags)."""
     plain = lambda t: re.sub(r"\[\[|\]\]", "", t or "")
     title = f"{plain(recipe['title1'])} {plain(recipe.get('title2', ''))}".strip()
     names = re.findall(r"\[\[(.*?)\]\]", recipe["title1"] + recipe.get("title2", ""))
     tags = [f"#{n.replace(' ', '')}" for n in names]
-    tags += [f"#{t}" for t in recipe.get("hashtags", ["셀럽템", "연예인추천템", "쿠팡추천템", "꿀템", "추천템"])]
+    tags += [f"#{t.lstrip('#')}" for t in recipe.get("hashtags", ["셀럽템", "추천템"])]
+    tags = list(dict.fromkeys(tags))
     link = recipe.get("link_text", "프로필 링크")
+    head = recipe.get("caption", title)
+    points = "".join(f"✓ {pt}\n" for pt in recipe.get("points", []))
+    body = f"{head}\n{points}\n• 상품 정보는 {link}에서도 확인할 수 있어요!\n\n{' '.join(tags)}"
     credit = ""
     if _ORIGIN:  # 크리에이티브 커먼즈(CC BY)는 원작자·원본 링크 표기가 조건
         lic = "CC BY" if "creative commons" in _ORIGIN.get("license", "").lower() else _ORIGIN.get("license", "")
         credit = f"원본 영상: {_ORIGIN['channel']} - {_ORIGIN['title']}\n{_ORIGIN['url']} ({lic})\n\n"
     return (f"[제목]\n{title}\n\n"
-            f"[설명/캡션]\n{title}\n제품 정보는 {link}에서 확인하세요 👆\n\n{' '.join(tags)}\n\n"
-            f"{credit}{DISCLOSURE}\n\n"
+            f"[캡션]\n{body}\n\n{credit}{DISCLOSURE}\n\n"
             f"[고정 댓글]\n{DISCLOSURE}\n")
 
 
