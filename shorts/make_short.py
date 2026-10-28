@@ -307,34 +307,67 @@ class Subs:
             f"   리포트(out/리포트_*.md)의 자막에서 몇 글자만 그대로 복사해 넣어보세요.")
 
     def chunks(self, a: float, b: float):
-        """[a, b] 구간의 자막을 짧은 덩어리(한 줄)로 쪼개 시간 배분."""
-        out = []
+        """[a, b] 구간의 자막을 짧은 덩어리(한 줄)로 쪼개 시간 배분.
+        원본 자막 줄은 '두 / 개로'처럼 말 중간에서 끊겨 있어서, 줄을 이어 붙인 뒤 다시 자연스럽게 나눈다."""
+        words = []  # (시작, 끝, 단어, 문장끝?)
+        prev_end = None
         for s, e, text in self.lines:
-            if e <= a or s >= b:
+            if e <= a - 1 or s >= b + 1:
                 continue
-            pieces, cur = [], ""
-            for word in text.split(" "):
-                if cur and len(cur) + 1 + len(word) > CHUNK_CHARS:
-                    pieces.append(cur)
-                    cur = word
-                else:
-                    cur = f"{cur} {word}".strip()
-                if re.search(r"[.?!]$", cur):  # 문장 끝에서 끊기
-                    pieces.append(cur)
-                    cur = ""
-            if cur:
-                pieces.append(cur)
-            total = sum(len(norm(p)) or 1 for p in pieces)
+            ws = [w for w in text.split(" ") if w]
+            if not ws:
+                continue
+            if words and prev_end is not None and s - prev_end > 0.7:
+                words[-1] = words[-1][:3] + (True,)  # 오래 쉬면 문장 끝으로 봄
+            total = sum(len(norm(w)) or 1 for w in ws)
             t = s
-            for p in pieces:
-                d = (e - s) * (len(norm(p)) or 1) / total
-                mid = t + d / 2
-                if a <= mid <= b:
-                    shown = re.sub(r"[.,]+$", "", p).strip()
-                    if shown:
-                        out.append((max(t, a), min(t + d, b), shown))
+            for k, w in enumerate(ws):
+                d = (e - s) * (len(norm(w)) or 1) / total
+                end = bool(re.search(r"[.?!]$", w))
+                if k == len(ws) - 1:  # 줄 끝이 '~요/~다'로 끝나면 문장 끝
+                    end = end or bool(re.search(r"(요|다|죠|까|네|고)[.,?!~]*$", w))
+                words.append((t, t + d, w, end))
                 t += d
+            prev_end = e
+
+        groups, cur = [], []
+        n_chars = lambda ws: len(" ".join(x[2] for x in ws))
+        for i, w in enumerate(words):
+            if cur and n_chars(cur + [w]) > CHUNK_CHARS:
+                # '두 / 개로', '이렇게 / 생겼어요'처럼 뒤에 붙어야 하는 말로 끝나면 그 말은 다음 줄로
+                carry = []
+                while len(cur) > 1 and _GLUE.fullmatch(norm(cur[-1][2])) \
+                        and len(norm(" ".join(x[2] for x in cur[:-1]))) >= 5:
+                    carry.insert(0, cur.pop())
+                groups.append(cur)
+                cur = carry
+            cur.append(w)
+            if w[3] or w[2].endswith(","):
+                groups.append(cur)
+                cur = []
+        if cur:
+            groups.append(cur)
+        # 2~3글자만 덜렁 남은 줄은 앞이나 뒤 줄과 합치기
+        merged = []
+        for g in groups:
+            if merged and len(norm(" ".join(x[2] for x in g))) <= 3 and not merged[-1][-1][3] \
+                    and n_chars(merged[-1] + g) <= CHUNK_CHARS + 5:
+                merged[-1] = merged[-1] + g
+            else:
+                merged.append(g)
+
+        out = []
+        for g in merged:
+            t0, t1 = g[0][0], g[-1][1]
+            if a <= (t0 + t1) / 2 <= b:
+                shown = re.sub(r"[.,]+$", "", " ".join(x[2] for x in g)).strip()
+                if shown:
+                    out.append((max(t0, a), min(t1, b), shown))
         return out
+
+
+# 다음 단어와 떨어지면 어색한 말(수·지시어·꾸밈말)
+_GLUE = re.compile(r"(한|두|세|네|몇|이|그|저|이런|그런|저런|이렇게|그렇게|저렇게|좀|더|덜|안|못|제|내|우리|너무|진짜|정말|되게|완전|딱|막|요|또|다|이거|그거|저거|약간|살짝|엄청|아주|가장|제일|매일|항상|늘)")
 
 
 # ---------------------------------------------------------------- 원본 영상
