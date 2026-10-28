@@ -469,6 +469,10 @@ export async function setFeedbackRaw(key: string, raw: string, isNew: boolean) {
   await backend().set(`fb:${key}`, raw);
   if (isNew) await backend().push("feedbacks", key);
 }
+export async function deleteFeedbackRaw(key: string) {
+  await backend().set(`fb:${key}`, "");
+  await backend().remove("feedbacks", key);
+}
 export async function feedbackKeys(): Promise<string[]> {
   return backend().list("feedbacks");
 }

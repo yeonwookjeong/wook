@@ -10,7 +10,7 @@ import { lastReportError, listInquiries, memberViews, readingCount } from "@/lib
 import { listFeedback } from "@/lib/feedback";
 import { memberFixAction } from "./actions";
 import { allMembers, memberNo, VIA_LABEL, viaOf, type Member } from "@/lib/members";
-import { adminSignOut, creditEventCreateAction, creditEventToggleAction, giftCopyAction, giftRevokeAction, inquiryDeleteAction, inquiryDoneAction, rewriteReportAction, testOrderAction } from "./actions";
+import { adminSignOut, creditEventCreateAction, creditEventToggleAction, deleteDownFeedbackAction, giftCopyAction, giftRevokeAction, inquiryDeleteAction, inquiryDoneAction, rewriteReportAction, testOrderAction } from "./actions";
 import Dashboard, { rangeOf } from "./Dashboard";
 import { threadsPosts } from "@/lib/threads";
 import GiftForm from "./GiftForm";
@@ -730,7 +730,15 @@ async function FeedbackSection() {
           👍 {up} · 👎 {list.length - up} · 후기 동의 {list.filter((f) => f.share).length}
         </span>
       </h2>
-      <p className="mt-0.5 text-[11px] text-ink-soft">결제한 보고서 맨 아래에서 받아요. 후기로 쓸 수 있는 건 &lsquo;후기 동의&rsquo; 표시가 있는 것만이에요 (이름 없이).</p>
+      <p className="mt-0.5 text-[11px] text-ink-soft">결제한 보고서 맨 아래에서 받아요(10/28부터 좋았던 점만, 30자 이상이면 질문권 1개). 후기로 쓸 수 있는 건 &lsquo;후기 동의&rsquo; 표시가 있는 것만이에요 (이름 없이, 질문권을 받고 남긴 후기로 표시).</p>
+      {list.length > up && (
+        <form action={deleteDownFeedbackAction} className="mt-1.5 flex items-center gap-2 text-[11px]">
+          <label className="flex items-center gap-1 text-ink-soft">
+            <input type="checkbox" name="sure" value="1" /> 확인
+          </label>
+          <button className="rounded-full border border-seal/40 px-2 py-0.5 font-bold text-seal">👎 기록 {list.length - up}개 모두 지우기 (되돌릴 수 없어요)</button>
+        </form>
+      )}
       {list.length === 0 ? (
         <p className="mt-2 text-[12px] text-ink-soft">아직 없어요.</p>
       ) : (
@@ -739,6 +747,7 @@ async function FeedbackSection() {
             <li key={`${f.order}:${f.product}`} className="py-1.5">
               <span className="text-ink-soft">{day(f.at).slice(5)}</span> {f.up ? "👍" : "👎"} <b>{productById(f.product)?.title ?? f.product}</b>
               {f.share && <span className="ml-1 rounded bg-gold/20 px-1 text-[10.5px] font-bold">후기 동의</span>}
+              {f.rewarded && <span className="ml-1 rounded bg-seal/10 px-1 text-[10.5px] font-bold text-seal">질문권 지급</span>}
               {f.member && <span className="ml-1 font-mono text-[10px] text-ink-soft">{memberNo(f.member)}</span>}
               {f.text && <span className="block text-ink-soft">{f.text}</span>}
               {!f.up && <RewriteBox order={f.order} product={f.product} />}
