@@ -1,6 +1,7 @@
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
 import { loadFont as loadHahmlet } from "@remotion/google-fonts/Hahmlet";
 import { loadFont as loadNotoSans } from "@remotion/google-fonts/NotoSansKR";
+import { BrushReveal } from "./BrushReveal";
 
 const { fontFamily: serif } = loadHahmlet();
 const { fontFamily: sans } = loadNotoSans();
@@ -33,8 +34,7 @@ export const WordCard: React.FC<WordCardProps> = ({ word, romanization, lines, s
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
-  const wordIn = spring({ frame: frame - 10, fps, config: { damping: 12 } });
-  const romanIn = interpolate(frame, [40, 60], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
+  const romanIn = interpolate(frame, [58, 76], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   const sealIn = spring({ frame: frame - 120, fps, config: { damping: 9, stiffness: 180 } });
 
   return (
@@ -43,15 +43,13 @@ export const WordCard: React.FC<WordCardProps> = ({ word, romanization, lines, s
       <div style={{ position: "absolute", inset: 66, border: `2px solid ${C.ink}` }} />
 
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 24 }}>
-        <div style={{ fontFamily: serif, fontWeight: 900, fontSize: 520, lineHeight: 1, transform: `scale(${wordIn})` }}>
-          {word}
-        </div>
+        <BrushReveal text={word} start={8} duration={42} width={760} height={600} fontSize={900} bands={3} />
         <div style={{ fontFamily: serif, fontWeight: 600, fontSize: 110, opacity: romanIn, transform: `translateY(${(1 - romanIn) * 30}px)` }}>
           {romanization}
         </div>
         <div style={{ marginTop: 40, display: "flex", flexDirection: "column", alignItems: "center", gap: 18 }}>
           {lines.map((line, i) => {
-            const start = 75 + i * 20;
+            const start = 85 + i * 20;
             const o = interpolate(frame, [start, start + 15], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
             return (
               <div key={line} style={{ fontFamily: sans, fontWeight: 700, fontSize: 72, color: i === lines.length - 1 ? C.seal : C.ink, opacity: o }}>
