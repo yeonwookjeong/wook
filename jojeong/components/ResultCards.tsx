@@ -1,4 +1,5 @@
 import { ELEMENT_HANJA, ELEMENT_KO } from "@/lib/myeongri";
+import { hopaeSvg, type HopaeInput } from "@/lib/hopae";
 import type { Rank } from "@/lib/sinbun";
 import type { FreeReading } from "@/lib/freeReading";
 
@@ -34,28 +35,33 @@ function Frame({ no, say, children }: { no: string; say: string; children: React
   );
 }
 
-export function SinbunCard({ who, rank, job, line, rise, yong }: { who: string; rank: Rank; job: string; line: string; rise: number; yong: number }) {
+export function SinbunCard({ who, rank, job, line, rise, yong, tag }: { who: string; rank: Rank; job: string; line: string; rise: number; yong: number; tag?: HopaeInput }) {
   return (
     <Frame no="조선 신분 감정" say="너는 조선에서 뭐였을까?">
       <p className="text-[13px] text-ink-soft">{who}</p>
-      <span className="mt-2 border-2 px-3 py-0.5 font-myeongjo text-base font-extrabold" style={{ color: RANK_COLOR[rank], borderColor: RANK_COLOR[rank] }}>
-        {rank}
-      </span>
-      <p className="mt-2 font-myeongjo text-[26px] leading-tight font-extrabold">{job}</p>
-      <p className="mt-1.5 px-1 text-[12.5px] leading-snug text-ink-soft">{line}</p>
-      <div className="mt-auto grid w-full grid-cols-2 gap-1.5 text-[11px]">
-        <div className="border border-seal/25 py-1">
-          <span className="block text-ink-soft">출세 가능성</span>
-          <span className="text-sm tracking-tighter">
-            <span style={{ color: GOLD }}>{"★".repeat(rise)}</span>
-            <span className="text-ink/15">{"★".repeat(5 - rise)}</span>
+      <div className={`flex min-h-0 w-full flex-1 items-center gap-2 ${tag ? "mt-1" : "flex-col"}`}>
+        {tag && <div className="w-[42%] shrink-0" dangerouslySetInnerHTML={{ __html: hopaeSvg(tag, "card") }} />}
+        <div className={`flex flex-col items-center ${tag ? "min-w-0 flex-1" : "w-full"}`}>
+          <span className="mt-2 border-2 px-3 py-0.5 font-myeongjo text-base font-extrabold" style={{ color: RANK_COLOR[rank], borderColor: RANK_COLOR[rank] }}>
+            {rank}
           </span>
-        </div>
-        <div className="border border-seal/25 py-1">
-          <span className="block text-ink-soft">귀인의 기운</span>
-          <b className="font-myeongjo text-sm">
-            {ELEMENT_KO[yong]}({ELEMENT_HANJA[yong]})
-          </b>
+          <p className="mt-2 font-myeongjo text-[24px] leading-tight font-extrabold break-keep">{job}</p>
+          <p className="mt-1.5 px-1 text-[12px] leading-snug text-ink-soft break-keep">{line}</p>
+          <div className="mt-3 grid w-full grid-cols-1 gap-1.5 text-[11px]">
+            <div className="border border-seal/25 py-1">
+              <span className="block text-ink-soft">출세 가능성</span>
+              <span className="text-sm tracking-tighter">
+                <span style={{ color: GOLD }}>{"★".repeat(rise)}</span>
+                <span className="text-ink/15">{"★".repeat(5 - rise)}</span>
+              </span>
+            </div>
+            <div className="border border-seal/25 py-1">
+              <span className="block text-ink-soft">귀인의 기운</span>
+              <b className="font-myeongjo text-sm">
+                {ELEMENT_KO[yong]}({ELEMENT_HANJA[yong]})
+              </b>
+            </div>
+          </div>
         </div>
       </div>
     </Frame>

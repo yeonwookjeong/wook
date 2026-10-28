@@ -2,6 +2,8 @@ import Link from "next/link";
 import { ELEMENT_HANJA, ELEMENT_KO } from "@/lib/myeongri";
 import type { Pillars } from "@/lib/saju";
 import { sinbunStory } from "@/lib/sinbun";
+import { bornOf, yearGanji } from "@/lib/hopae";
+import Hopae from "./Hopae";
 import Keep from "./Keep";
 import RoyalDoc from "./RoyalDoc";
 
@@ -32,8 +34,9 @@ export default function SinbunReport({ pillars, gender, heading, query }: { pill
       <p className="text-center font-myeongjo text-sm font-extrabold tracking-[0.4em] text-seal">身 分 鑑 定</p>
       <h1 className="mt-2 text-center font-myeongjo text-xl font-extrabold">{heading}</h1>
 
-      <div className="mt-5 flex flex-col items-center text-center">
-        <span className={`border-2 px-3 py-0.5 font-myeongjo text-sm font-extrabold ${RANK_STYLE[s.rank]}`}>{s.rank}</span>
+      <div className="mt-4 flex flex-col items-center text-center">
+        <Hopae tag={{ rank: s.rank, job: s.job, office: s.office, born: bornOf(pillars.yearStem, pillars.yearBranch), issued: yearGanji() }} />
+        <span className={`mt-3 border-2 px-3 py-0.5 font-myeongjo text-sm font-extrabold ${RANK_STYLE[s.rank]}`}>{s.rank}</span>
         <p className="mt-2 font-myeongjo text-3xl font-extrabold">{s.job}</p>
         <p className="mt-1 text-sm text-ink-soft">{s.line}</p>
         {s.rarity && <p className="mt-2 inline-block rounded-full bg-gold/15 px-3 py-1 text-xs font-bold">100가지 삶 중 · {s.rarity}</p>}
