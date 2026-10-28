@@ -1261,6 +1261,39 @@ def speech_speed(subs: "Subs", a: float, b: float, target: float = 7.2, cap: flo
     return round(min(max(target / rate, 1.0), cap), 3)
 
 
+def save_snapshots(ff: str, src: Path, plan: list, name: str):
+    """원본 구간에서 1초 간격 장면을 크게 찍어 한 장으로 모음. 네이버 스마트렌즈·구글 렌즈로 제품 찾기용."""
+    WORK.mkdir(exist_ok=True)
+    OUT.mkdir(exist_ok=True)
+    shots = []
+    for p in plan:
+        if p["type"] != "clip":
+            continue
+        t = p["start"] + 0.3
+        while t < p["end"] and len(shots) < 12:
+            f = WORK / f"_snap_{len(shots):02d}.jpg"
+            subprocess.run([ff, "-y", "-v", "error", "-ss", f"{t:.2f}", "-i", str(src), "-frames:v", "1",
+                            "-vf", "scale=640:-2", str(f)])
+            if f.exists():
+                shots.append((t, f))
+            t += 1.2
+    if not shots:
+        die("찍을 원본 구간이 없어요.")
+    ims = [Image.open(f).convert("RGB") for _, f in shots]
+    w, h = ims[0].size
+    cols = 3
+    rows = (len(ims) + cols - 1) // cols
+    sheet = Image.new("RGB", (w * cols, (h + 40) * rows), (255, 255, 255))
+    d = ImageDraw.Draw(sheet)
+    for i, ((t, _), im) in enumerate(zip(shots, ims)):
+        x, y = (i % cols) * w, (i // cols) * (h + 40)
+        sheet.paste(im, (x, y + 40))
+        d.text((x + 10, y + 6), fmt(t), font=font(26), fill=(0, 0, 0))
+    out = OUT / f"제품사진_{name}.jpg"
+    sheet.save(out, quality=90)
+    print(f"\n📸 제품 장면 모음: {out}\n   제품이 잘 보이는 칸을 캡처해서 네이버 스마트렌즈나 구글 렌즈로 검색해 보세요.")
+
+
 def resolve(v, subs: Subs, after: float, edge: str) -> tuple[float, bool]:
     """(시간, 문구로찾았는지). 시간 문자열이면 그대로, 문구면 자막에서 찾은 시작/끝."""
     if isinstance(v, (int, float)) or TIME_RE.match(str(v).strip()):
@@ -1324,6 +1357,8 @@ def main():
     ap.add_argument("--check", action="store_true", help="영상은 만들지 않고 구간 시간만 확인")
     ap.add_argument("--voice-test", action="store_true", help="Gemini 목소리 샘플 만들기")
     ap.add_argument("--list-voices", action="store_true", help="ElevenLabs 내 목소리 목록 보기")
+    ap.add_argument("--snapshots", action="store_true",
+                    help="영상은 안 만들고 제품이 나오는 장면 사진만 out/제품사진_*.jpg로 저장 (제품 찾기용)")
     ap.add_argument("--voice", help="이번 실행만 구글 목소리 바꾸기 (예: Leda, Kore). 파일 이름 끝에 붙음")
     ap.add_argument("--video", help="(선택) 이미 받아둔 원본 영상 파일")
     ap.add_argument("--subs", help="(선택) --video와 함께 쓸 자막 파일(.vtt/.json3)")
@@ -1393,7 +1428,7 @@ def main():
     blur = DEFAULT_BLUR if blur is True else (blur or [])
     use_layout(recipe.get("theme", "celebpick"))
 
-    plan = plan_parts(recipe, subs, ff, src, args.check)
+    plan = plan_parts(recipe, subs, ff, src, args.check or args.snapshots)
     _USED[:] = [(pp["start"], pp["end"]) for pp in plan if pp["type"] == "clip"]
     src_len = duration_of(ff, src)
     for i, p in enumerate(plan, 1):
@@ -1408,6 +1443,9 @@ def main():
     print(f"   총 길이 약 {total:.0f}초" + ("  ⚠️ 60초가 넘어요" if total > 60 else ""))
     if args.check:
         print("\n✅ 확인만 했어요. 영상을 만들려면 --check 없이 다시 실행하세요.")
+        return
+    if args.snapshots:
+        save_snapshots(ff, src, plan, rpath.stem)
         return
 
     tmp = WORK / f"build_{rpath.stem}"
