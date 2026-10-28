@@ -4,7 +4,7 @@
 
 ## 채널 콘셉트
 - 채널 이름(가안, 2026-10-28): **Neon Hanok**. 핸들 후보 @neonhanok(영어), @neonhanok.es(스페인어). YouTube는 비어 있음 확인, 인스타는 대표님 확인 필요.
-- 한 줄 소개(가안): EN "Why Koreans do what they do, from Joseon to K-pop." / ES "¿Por qué los coreanos hacen lo que hacen? Desde Joseon hasta el K-pop."
+- 한 줄 소개(가안): EN "Why Koreans do what they do, from old Korea to K-pop." / ES "¿Por qué los coreanos hacen lo que hacen? De la Corea antigua al K-pop."
 - 대상: 외국인. 한국의 옛 문화부터 지금 문화, 한국어까지.
 - 형식: 단어·물건·풍습 하나로 과거와 현재를 잇는다.
 - 레퍼런스 캔버스: https://claude.ai/artifact/MztQEqHzC8rZ1X86KCF8Bh (1: 2026 유튜브 레퍼런스 12개, 2: 캐릭터 3안, 3: 스타일 프레임 초안)
