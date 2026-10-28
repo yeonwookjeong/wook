@@ -61,6 +61,8 @@
 - 도구: Remotion + 공식 Claude Code 플러그인(`claude plugin marketplace add remotion-dev/claude-code-plugin` → `claude plugin install remotion@remotion`). 무료 라이선스는 개인·직원 3명 이하 회사.
 - 쇼츠 먼저 시작(시즌 1 쇼츠 10편 제안, 1편 후보: 4층 없는 엘리베이터). 터진 주제만 롱폼으로.
 
+- 그림 생성: 당분간 대표님이 ChatGPT Plus에서 직접(1편에 약 15장). 1편을 끝까지 만들어 보고 되면 API 자동화 검토(추정 1편 약 1,000~4,000원).
+
 ## 한도
 - 요금제: Max 5x. 주간 한도는 훈도팀 작업 방들과 같이 쓴다. 공식 토큰 수치는 없음.
 - 2026-10-27 기준 주간 한도 경고 단계, 초기화 2026-10-29 00:00(한국 시간).
