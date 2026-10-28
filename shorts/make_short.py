@@ -842,7 +842,9 @@ def _pick_fonts():
     fdir = HERE / "fonts"
     mine = sorted(p for p in fdir.glob("*") if p.suffix.lower() in (".ttf", ".otf", ".ttc", ".woff")) \
         if fdir.exists() else []
-    is_title = lambda p: p.stem.lower() == "title" or any(k in p.stem.lower() for k in ("구미", "gumi", "nangman"))
+    import unicodedata  # 맥은 한글 파일 이름을 자모로 풀어 저장해서(NFD) 합쳐서 비교
+    is_title = lambda p: any(k in unicodedata.normalize("NFC", p.stem).lower()
+                             for k in ("title", "구미", "gumi", "nangman"))
     title = next((p for p in mine if p.stem.lower() == "title"), None) or next(filter(is_title, mine), None)
     body = [p for p in mine if not is_title(p)]
     if body:
