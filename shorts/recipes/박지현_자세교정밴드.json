@@ -1,7 +1,7 @@
 {
   "source": "https://youtu.be/NDyePWmIYeM",
-  "title1": "[[박지현]]이 촬영장마다 챙기는",
-  "title2": "자세 교정 밴드",
+  "title1": "촬영장에서도",
+  "title2": "자세 교정하는 [[박지현]]",
   "link_text": "프로필 링크 61번",
   "theme": "celebpick",
   "sub_theme": "story_green",
@@ -25,7 +25,7 @@
   "parts": [
     {
       "type": "tts",
-      "text": "자세 교정에 진심인 배우 박지현이 사람들이 이상하게 봐도 꼭 들고 다닌다는 이것",
+      "text": "배우 박지현이 남들이 이상하게 봐도 꼭 들고 다닌다는 이것",
       "media": [
         "auto"
       ]
@@ -43,10 +43,6 @@
       "type": "clip",
       "from": "저는 한쪽 발로 밟고요",
       "to": "이렇게 버티는 거예요"
-    },
-    {
-      "type": "tts",
-      "text": "효과는?"
     },
     {
       "type": "clip",

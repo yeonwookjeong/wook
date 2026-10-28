@@ -53,8 +53,8 @@ FPS = 30
 CHUNK_CHARS = 13        # 자막 한 덩어리 최대 글자 수(띄어쓰기 포함)
 
 THEMES = {
-    # celeb_pick 기존 스타일: 검정 배경, 흰 굵은 기울임 제목, [[이름]] 초록 강조, 하단 출처·링크
-    "celebpick": {"bg": (0, 0, 0), "title": (255, 255, 255), "hi": (0, 214, 0),
+    # celeb_pick 기존 스타일: 검정 배경, 흰 굵은 기울임 제목(전부 흰색), 하단 '출처 : 채널' + 프로필 링크
+    "celebpick": {"bg": (0, 0, 0), "title": (255, 255, 255), "hi": (255, 255, 255),
                   "credit": (150, 150, 150), "text": (255, 255, 255)},
     "white": {"bg": (255, 255, 255), "title": (17, 17, 17), "hi": (232, 23, 58),
               "credit": (110, 110, 110), "text": (17, 17, 17)},
@@ -356,9 +356,24 @@ class Subs:
             else:
                 merged.append(g)
 
-        out = []
+        # 시간 맞추기: 줄 자막은 글자 수로 나눈 대략값이라, 단어별 시간이 있는 자동자막에서 실제 말한 시각을 찾음
+        timed, after = [], (merged[0][0][0] - 2.0) if merged else 0.0
         for g in merged:
             t0, t1 = g[0][0], g[-1][1]
+            hit = self.by_word.find(" ".join(x[2] for x in g), after) if self.by_word else None
+            if hit and abs(hit[0] - t0) < 2.5 and hit[1] > hit[0]:
+                t0, t1 = hit
+                after = t1 - 0.3
+            timed.append((t0, t1, g))
+        # 줄 사이 짧은 빈틈은 앞 자막을 늘려 메움 (깜빡임 방지)
+        for k in range(len(timed) - 1):
+            t0, t1, g = timed[k]
+            nxt = timed[k + 1][0]
+            if 0 < nxt - t1 < 0.6:
+                timed[k] = (t0, nxt, g)
+
+        out = []
+        for t0, t1, g in timed:
             if a <= (t0 + t1) / 2 <= b:
                 shown = re.sub(r"[.,]+$", "", " ".join(x[2] for x in g)).strip()
                 if shown:
@@ -823,8 +838,9 @@ def _pick_fonts():
     우선순위: shorts/fonts 폴더(직접 넣은 폰트) → 함께 들어있는 Pretendard → 시스템 폰트.
     제목 전용은 fonts/title.ttf(또는 .otf)로 넣으면 됩니다."""
     fdir = HERE / "fonts"
-    mine = sorted(fdir.glob("*.[ot]t[fc]")) if fdir.exists() else []
-    title = next((p for p in mine if p.stem.lower() == "title"), None)
+    mine = sorted(p for p in fdir.glob("*") if p.suffix.lower() in (".ttf", ".otf", ".ttc", ".woff")) \
+        if fdir.exists() else []
+    title = next((p for p in mine if p.stem.lower() == "title"), None) or _get_title_font()
     body = [p for p in mine if p.stem.lower() != "title"]
     if body:
         b, r = _faces(body[0])
@@ -847,6 +863,31 @@ def _pick_fonts():
             else:
                 die("한글 폰트를 찾지 못했어요. shorts/fonts 폴더에 .ttf/.otf 폰트를 하나 넣어주세요.")
     return bold, regular, ((str(title), 0) if title else bold)
+
+
+# 제목 폰트: celeb_pick 기존 쇼츠 제목과 같은 굵은 기울임 손글씨체(티몬 몬소리체, 무료·상업 이용 가능).
+# 처음 한 번 인터넷에서 받아 assets/fonts에 저장. 다른 폰트를 쓰려면 fonts/title.ttf로 넣으면 그게 우선.
+TITLE_FONT_URLS = ["https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_two@1.0/TmonMonsori.woff",
+                   "https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_two@1.0/TmonMonsori.woff"]
+
+
+def _get_title_font() -> Path | None:
+    dst = HERE / "assets" / "fonts" / "TmonMonsori.woff"
+    if dst.exists():
+        return dst
+    import urllib.request
+    for url in TITLE_FONT_URLS:
+        try:
+            with urllib.request.urlopen(url, timeout=10) as r:
+                data = r.read()
+            dst.write_bytes(data)
+            ImageFont.truetype(str(dst), 20)  # 열리는지 확인
+            print("   제목 폰트(티몬 몬소리체) 받음")
+            return dst
+        except Exception:
+            dst.unlink(missing_ok=True)
+    print("   ⚠️ 제목 폰트를 못 받아서 기본 폰트로 써요 (fonts/title.ttf로 직접 넣을 수 있어요)")
+    return None
 
 
 def font(size: int, kind: str = "bold"):
@@ -888,6 +929,12 @@ def title_line(img, text: str, cy: int, th: dict, size: int, italic: float):
         layer = layer.transform(layer.size, Image.AFFINE, (1, italic, -italic * lh / 2, 0, 1, 0),
                                 resample=Image.BICUBIC)
     img.alpha_composite(layer, (0, int(cy - lh / 2)))
+
+
+def _title_is_italic() -> bool:
+    """몬소리체는 원래 기울어진 글씨라 따로 기울이지 않음."""
+    font(20, "title")
+    return "monsori" in _FONTS[2][0].lower()
 
 
 def strip_emoji(t: str) -> str:
@@ -956,13 +1003,15 @@ def layout_png(recipe: dict, path: Path):
     d = ImageDraw.Draw(img)
     d.rectangle([0, 0, W, TOP], fill=th["bg"])
     d.rectangle([0, TOP + VH, W, H], fill=th["bg"])
-    italic = float(recipe.get("title_italic", 0.2))
+    italic = float(recipe.get("title_italic", 0.0 if _title_is_italic() else 0.2))
     if recipe.get("title2"):
         title_line(img, recipe["title1"], 301, th, 104, italic)
         title_line(img, recipe["title2"], 420, th, 104, italic)
     else:
         title_line(img, recipe["title1"], 360, th, 104, italic)
     # 하단: 출처(회색) → (선택) DM 안내 → 프로필 링크
+    if "credit" not in recipe and _ORIGIN.get("channel"):
+        recipe = {**recipe, "credit": f"출처 : {_ORIGIN['channel']}"}
     y = TOP + VH + 52
     if recipe.get("credit"):
         d.text((W / 2, y), recipe["credit"], font=fit(d, recipe["credit"], W - 120, 30, kind="regular"),
@@ -1490,12 +1539,8 @@ def main():
 
     sub_theme = recipe.get("sub_theme", "premium")
     def pop(png: Path, text: str, role: str, a: float, b: float):
-        """자막이 살짝 작게 나왔다가 제 크기로 '팝' — 앞 0.07초만 작은 버전."""
-        if b - a < 0.25:
-            return [(png, a, b)]
-        small = png.with_name(png.stem + "_s.png")
-        sub_png(text, role, small, sub_theme, 0.86)
-        return [(small, a, a + 0.07), (png, a + 0.07, b)]
+        """자막은 움직임 없이 딱 나타났다 사라짐 (커졌다 작아지는 모션은 어색해서 뺌)."""
+        return [(png, a, b)]
 
     seg_files, clip_no = [], 0
     tighten = recipe.get("tighten", True)          # 말 사이 쉼 잘라내기
@@ -1508,7 +1553,7 @@ def main():
             dur = frames(max(dur, 1.4))  # 너무 짧은 TTS 장면은 '따닥' 넘어가 보여서 최소 1.4초 유지
             overlays = []
             pieces = Subs([(0.26, dur - 0.1, p["part"]["text"])]).chunks(0, dur) \
-                if recipe.get("tts_chunks", True) else [(0, dur, p["part"]["text"])]
+                if recipe.get("tts_chunks", False) else [(0, dur, p["part"]["text"])]
             for j, (a0, b0, text) in enumerate(pieces):
                 png = tmp / f"sub_{i}_{j}.png"
                 sub_png(text, "tts", png, sub_theme)
