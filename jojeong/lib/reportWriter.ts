@@ -237,7 +237,29 @@ export async function writeReport(job: ReportJob, onText: (t: string) => void, o
 
 let gemini: GoogleGenAI | null = null;
 
+// Why the last Gemini write came back empty (finishReason, e.g. MAX_TOKENS or SAFETY), for the owner's error note.
+export let lastFinishReason: string | undefined;
+
+// Gemini refuses now and then while it is busy (503 UNAVAILABLE, 429 RESOURCE_EXHAUSTED, 500) even with credit left.
+const transient = (e: unknown) => /\b(429|500|503)\b|UNAVAILABLE|RESOURCE_EXHAUSTED|overloaded|INTERNAL/i.test(e instanceof Error ? e.message : String(e));
+
 async function writeWithGemini(job: ReportJob, onText: (t: string) => void, onUsage?: (u: Usage) => void): Promise<string | null> {
+  // Tried again only while nothing has reached the reader, so the page never shows the start twice.
+  for (let attempt = 0; ; attempt++) {
+    let wrote = false;
+    try {
+      return await writeWithGeminiOnce(job, (t) => {
+        wrote = true;
+        onText(t);
+      }, onUsage);
+    } catch (e) {
+      if (wrote || attempt >= 2 || !transient(e)) throw e;
+      await new Promise((r) => setTimeout(r, 4000 * (attempt + 1)));
+    }
+  }
+}
+
+async function writeWithGeminiOnce(job: ReportJob, onText: (t: string) => void, onUsage?: (u: Usage) => void): Promise<string | null> {
   gemini ??= new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   const stream = await gemini.models.generateContentStream({
     model: REPORT_MODEL,
@@ -268,5 +290,6 @@ async function writeWithGemini(job: ReportJob, onText: (t: string) => void, onUs
       cacheRead: usage.cachedContentTokenCount ?? 0,
       cacheWrite: 0,
     });
+  lastFinishReason = `${finish ?? "끝 신호 없음"} · ${text.length}자`;
   return finish === "STOP" && text ? text : null;
 }
