@@ -114,7 +114,8 @@ HARD = 2 / 30   # 같은 장면 안에서 쉼을 잘라낸 곳: 사실상 컷(2�
 
 def video_len(ff: str, path: Path) -> float:
     """영상 스트림의 실제 길이(프레임 수 / FPS). 파일 정보의 길이는 소리 기준이라 미세하게 다름."""
-    p = subprocess.run([ff, "-hide_banner", "-i", str(path), "-map", "0:v", "-c", "copy", "-f", "null", "-"],
+    # 복사 모드(-c copy)는 ffmpeg 버전에 따라 frame= 를 안 찍어서, 영상만 실제로 풀어서 셈 (구간 영상이 짧아 금방 끝남)
+    p = subprocess.run([ff, "-hide_banner", "-i", str(path), "-map", "0:v", "-f", "null", "-"],
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8", errors="replace")
     n = re.findall(r"frame=\s*(\d+)", p.stderr)
     return int(n[-1]) / FPS if n else duration_of(ff, path)
@@ -836,12 +837,14 @@ def _faces(path: Path):
 def _pick_fonts():
     """(본문 굵게, 본문 보통, 제목) 폰트.
     우선순위: shorts/fonts 폴더(직접 넣은 폰트) → 함께 들어있는 Pretendard → 시스템 폰트.
-    제목 전용은 fonts/title.ttf(또는 .otf)로 넣으면 됩니다."""
+    제목 전용은 fonts/title.ttf(또는 .otf)로 넣거나, 낭만있구미체 파일을 fonts 폴더에 그대로 넣으면 됩니다
+    (celeb_pick 기존 쇼츠 제목 폰트)."""
     fdir = HERE / "fonts"
     mine = sorted(p for p in fdir.glob("*") if p.suffix.lower() in (".ttf", ".otf", ".ttc", ".woff")) \
         if fdir.exists() else []
-    title = next((p for p in mine if p.stem.lower() == "title"), None) or _get_title_font()
-    body = [p for p in mine if p.stem.lower() != "title"]
+    is_title = lambda p: p.stem.lower() == "title" or any(k in p.stem.lower() for k in ("구미", "gumi", "nangman"))
+    title = next((p for p in mine if p.stem.lower() == "title"), None) or next(filter(is_title, mine), None)
+    body = [p for p in mine if not is_title(p)]
     if body:
         b, r = _faces(body[0])
         bold, regular = (str(body[0]), b), (str(body[0]), r)
@@ -863,31 +866,6 @@ def _pick_fonts():
             else:
                 die("한글 폰트를 찾지 못했어요. shorts/fonts 폴더에 .ttf/.otf 폰트를 하나 넣어주세요.")
     return bold, regular, ((str(title), 0) if title else bold)
-
-
-# 제목 폰트: celeb_pick 기존 쇼츠 제목과 같은 굵은 기울임 손글씨체(티몬 몬소리체, 무료·상업 이용 가능).
-# 처음 한 번 인터넷에서 받아 assets/fonts에 저장. 다른 폰트를 쓰려면 fonts/title.ttf로 넣으면 그게 우선.
-TITLE_FONT_URLS = ["https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_two@1.0/TmonMonsori.woff",
-                   "https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_two@1.0/TmonMonsori.woff"]
-
-
-def _get_title_font() -> Path | None:
-    dst = HERE / "assets" / "fonts" / "TmonMonsori.woff"
-    if dst.exists():
-        return dst
-    import urllib.request
-    for url in TITLE_FONT_URLS:
-        try:
-            with urllib.request.urlopen(url, timeout=10) as r:
-                data = r.read()
-            dst.write_bytes(data)
-            ImageFont.truetype(str(dst), 20)  # 열리는지 확인
-            print("   제목 폰트(티몬 몬소리체) 받음")
-            return dst
-        except Exception:
-            dst.unlink(missing_ok=True)
-    print("   ⚠️ 제목 폰트를 못 받아서 기본 폰트로 써요 (fonts/title.ttf로 직접 넣을 수 있어요)")
-    return None
 
 
 def font(size: int, kind: str = "bold"):
@@ -932,9 +910,9 @@ def title_line(img, text: str, cy: int, th: dict, size: int, italic: float):
 
 
 def _title_is_italic() -> bool:
-    """몬소리체는 원래 기울어진 글씨라 따로 기울이지 않음."""
+    """제목 전용 폰트(낭만있구미체 등)를 넣었으면 폰트 모양 그대로, 기본 폰트일 때만 살짝 기울임."""
     font(20, "title")
-    return "monsori" in _FONTS[2][0].lower()
+    return _FONTS[2] != _FONTS[0]
 
 
 def strip_emoji(t: str) -> str:
@@ -1044,9 +1022,13 @@ def hi_words():
     return _HI_WORDS
 
 
+_RECIPE_HI: list = []  # 레시피 "highlight": 이 영상에서 색깔로 강조할 포인트 단어
+
+
 def is_hi(word: str) -> bool:
     n = norm(word)
-    return bool(re.search(r"\d", n)) or any(norm(k) in n for k in hi_words() if norm(k))
+    keys = _RECIPE_HI or hi_words()
+    return bool(re.search(r"\d", n)) or any(norm(k) in n for k in keys if norm(k))
 
 
 def sub_png(text: str, role: str, path: Path, theme: str = "premium", scale: float = 1.0):
@@ -1414,6 +1396,47 @@ def plan_parts(recipe, subs: Subs, ff: str, src: Path | None, check: bool):
     return plan
 
 
+def tts_chunks(ff: str, tts: Path | None, text: str, dur: float, delay: float = 0.26) -> list:
+    """TTS 자막을 한 줄씩 나눠, 목소리가 실제로 나오는 시간에 맞춰 배치.
+    TTS 파일의 숨 쉬는 틈(무음)을 찾아 말소리 구간에만 글자 수 비례로 시간을 나눔."""
+    groups = [t for _, _, t in Subs([(0, 1, text)]).chunks(0, 1)] or [text]
+    voiced = []
+    if tts and Path(tts).exists():
+        r = subprocess.run([ff, "-hide_banner", "-i", str(tts), "-af", "silencedetect=noise=-38dB:d=0.1",
+                            "-f", "null", "-"], capture_output=True, text=True, errors="replace")
+        length = duration_of(ff, Path(tts))
+        cur = 0.0
+        for m_ in re.finditer(r"silence_(start|end): ([\d.]+)", r.stderr):
+            t = float(m_.group(2))
+            if m_.group(1) == "start":
+                if t > cur:
+                    voiced.append((cur, t))
+            else:
+                cur = t
+        if length > cur:
+            voiced.append((cur, length))
+    if not voiced:
+        voiced = [(0.0, max(dur - delay - 0.1, 0.5))]
+    total_v = sum(b - a for a, b in voiced)
+
+    def at(frac: float) -> float:  # 말소리 시간의 frac 지점 → 실제 시각
+        left = frac * total_v
+        for a, b in voiced:
+            if left <= b - a:
+                return a + left + delay
+            left -= b - a
+        return voiced[-1][1] + delay
+
+    n = sum(len(norm(g)) or 1 for g in groups)
+    out, acc = [], 0
+    for j, g in enumerate(groups):
+        a = 0.0 if j == 0 else at(acc / n)
+        acc += len(norm(g)) or 1
+        b = dur if j == len(groups) - 1 else at(acc / n)
+        out.append((a, min(b, dur), g))
+    return out
+
+
 def voice_test(ff: str):
     """같은 문장을 여러 목소리로 만들어 out/목소리_*.wav로 저장."""
     OUT.mkdir(exist_ok=True)
@@ -1509,6 +1532,7 @@ def main():
     blur = recipe.get("blur", True)
     blur = DEFAULT_BLUR if blur is True else (blur or [])
     use_layout(recipe.get("theme", "celebpick"))
+    _RECIPE_HI[:] = recipe.get("highlight", [])
 
     plan = plan_parts(recipe, subs, ff, src, args.check or args.snapshots)
     _USED[:] = [(pp["start"], pp["end"]) for pp in plan if pp["type"] == "clip"]
@@ -1552,8 +1576,8 @@ def main():
         if p["type"] == "tts":
             dur = frames(max(dur, 1.4))  # 너무 짧은 TTS 장면은 '따닥' 넘어가 보여서 최소 1.4초 유지
             overlays = []
-            pieces = Subs([(0.26, dur - 0.1, p["part"]["text"])]).chunks(0, dur) \
-                if recipe.get("tts_chunks", False) else [(0, dur, p["part"]["text"])]
+            pieces = tts_chunks(ff, p.get("tts"), p["part"]["text"], dur) \
+                if recipe.get("tts_chunks", True) else [(0, dur, p["part"]["text"])]
             for j, (a0, b0, text) in enumerate(pieces):
                 png = tmp / f"sub_{i}_{j}.png"
                 sub_png(text, "tts", png, sub_theme)
