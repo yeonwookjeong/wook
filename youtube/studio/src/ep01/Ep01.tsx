@@ -43,7 +43,6 @@ const SHOTS: Shot[] = [
   { sec: 1.8, cam: { s0: 1, s1: 1, ox: 540, oy: 960 }, caps: [[{ text: "even" }, { text: "hospital", hl: true }], [{ text: "floors." }]], overlay: "missingG" },
   { img: "A", sec: 1.8, cam: { s0: 1.0, s1: 1.15, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "Next time" }], [{ text: "you see an" }, { text: "F,", hl: true }]] },
   { img: "A", sec: 2.2, cam: { s0: 1.6, s1: 1.9, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "you'll know" }], [{ text: "what it's" }, { text: "hiding.", hl: true }]], dark: 0.45 },
-  { sec: 2.6, cam: { s0: 1, s1: 1, ox: 540, oy: 960 }, caps: [], overlay: "endcard" },
 ];
 
 export const EP01_FRAMES = Math.round(SHOTS.reduce((a, s) => a + s.sec, 0) * FPS);
