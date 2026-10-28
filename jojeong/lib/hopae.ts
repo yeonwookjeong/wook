@@ -5,8 +5,8 @@ import type { Rank } from "./sinbun";
 // the high, horn (각패) below them, boxwood (황양목패) for 생원·진사, plain wood for the rest. The rank shows in the
 // material, never written on the tag. The front carries, as the real tags do, a line across the head (here the
 // office), the name column (here the job), the birth year (○○生) and a second small column (the year of this
-// 감정); the back the year it was issued and a burnt brand. Drawn as SVG (grain, stains and worn carving from
-// noise), so nothing is copied from a museum photograph.
+// 감정); the back the year it was issued and a burnt brand. The tags are pictures made for us (no museum photo);
+// the letters are carved over them in SVG.
 
 // Two characters across the head, from the base life's office (lib/sinbun.ts, lib/sinbunF.ts).
 export const OFFICE: Record<string, string> = {
@@ -60,13 +60,15 @@ export const OFFICE: Record<string, string> = {
   "수라간 나인": "水剌",
 };
 
-type Material = { name: string; hanja: string; base: [string, string, string]; ink: string; light: boolean; grain: number; grainA: number; stain: number; cord: "silk" | "rope" | "hemp" };
+// The four tags (public/hopae/*.webp, 510 × 1000, drawn for us, background cut). `face`: the flat front of the tag
+// in that picture (left, right, top, bottom), where the carving goes. The back is the same picture mirrored.
+type Material = { name: string; hanja: string; file: string; face: [number, number, number, number]; ink: string; shade: string; lit: string };
 
 export const MATERIAL: Record<Rank, Material> = {
-  양반: { name: "아패", hanja: "牙牌", base: ["#f4ecd6", "#e6d5ae", "#d5bf8f"], ink: "#a8261c", light: false, grain: 0.012, grainA: 0.1, stain: 0.18, cord: "silk" },
-  중인: { name: "각패", hanja: "角牌", base: ["#3a2d26", "#211813", "#2b201a"], ink: "#d9c8a4", light: true, grain: 0.02, grainA: 0.18, stain: 0.25, cord: "rope" },
-  상민: { name: "황양목패", hanja: "黃楊木牌", base: ["#e3b56f", "#cd9450", "#b77d3c"], ink: "#1d1006", light: false, grain: 0.006, grainA: 0.35, stain: 0.4, cord: "hemp" },
-  천민: { name: "목패", hanja: "木牌", base: ["#a8703f", "#8c562b", "#6f4320"], ink: "#190b03", light: false, grain: 0.005, grainA: 0.5, stain: 0.55, cord: "hemp" },
+  양반: { name: "아패", hanja: "牙牌", file: "/hopae/a.webp", face: [156, 352, 238, 941], ink: "#9a1a12", shade: "#2a1608", lit: "#fff6e0" },
+  중인: { name: "각패", hanja: "角牌", file: "/hopae/g.webp", face: [160, 346, 240, 928], ink: "#cfbd99", shade: "#000000", lit: "#5a4636" },
+  상민: { name: "황양목패", hanja: "黃楊木牌", file: "/hopae/y.webp", face: [148, 360, 232, 904], ink: "#3a2410", shade: "#2a1608", lit: "#fff1cf" },
+  천민: { name: "목패", hanja: "木牌", file: "/hopae/m.webp", face: [151, 362, 278, 943], ink: "#24140a", shade: "#1a0c04", lit: "#e8c99a" },
 };
 
 const ganji = (stem: number, branch: number) => STEMS[stem] + BRANCHES[branch];
@@ -78,110 +80,60 @@ export function yearGanji(now = new Date()): string {
 // The 띠 year of a chart: its year pillar, or the branch alone for a chart without the year stem.
 export const bornOf = (yearStem: number | undefined, yearBranch: number) => (yearStem === undefined ? BRANCHES[yearBranch] : ganji(yearStem, yearBranch)) + "生";
 
-// A small seeded random, so one life always draws the same tag.
-function rng(key: string) {
-  let s = 7;
-  for (const c of key) s = (s * 31 + c.charCodeAt(0)) % 2147483647;
-  if (s <= 0) s += 2147483646;
-  return () => {
-    s = (s * 16807) % 2147483647;
-    return (s - 1) / 2147483646;
-  };
-}
-
 export type HopaeInput = { rank: Rank; job: string; office?: string; born: string; issued: string };
 
-// One face of the tag as an SVG string (270 × 620). `id` keeps filter ids apart when several tags share a page.
-export function hopaeSvg(h: HopaeInput, id: string, back = false): string {
-  const o = MATERIAL[h.rank];
-  const R = rng(h.job + h.rank);
-  const W = 270,
-    H = 620,
-    pw = 124,
-    ph = 440,
-    x0 = (W - pw) / 2,
-    y0 = 150;
-  const ch = 10 + R() * 8;
-  const chip = () => +(R() * 2.2).toFixed(1);
-  const path = `M${x0 + ch},${y0} L${x0 + pw - ch},${y0} L${x0 + pw},${y0 + ch * 1.4} L${x0 + pw - chip()},${y0 + ph * 0.5} L${x0 + pw},${y0 + ph - 6} Q${x0 + pw},${y0 + ph} ${x0 + pw - 6},${y0 + ph} L${x0 + 6},${y0 + ph} Q${x0},${y0 + ph} ${x0},${y0 + ph - 6} L${(x0 + chip()).toFixed(1)},${y0 + ph * 0.45} L${x0},${y0 + ch * 1.4} Z`;
-  const n = (k: number) => `${id}${back ? "b" : "f"}${k}`;
-  const font = "font-family:var(--font-myeongjo),serif";
-  const T = (t: string, x: number, y: number, size: number, w = 800) =>
-    `<text x="${x}" y="${y}" style="${font}" font-weight="${w}" font-size="${size}" text-anchor="middle" fill="${o.ink}">${t}</text>`;
-  const hx = W / 2,
-    hy = y0 + 22;
+export const HOPAE_W = 510;
+export const HOPAE_H = 1000;
 
-  let s = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" style="overflow:visible;display:block;width:100%;height:auto">
-<defs>
-<linearGradient id="${n(1)}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${o.base[0]}"/><stop offset=".6" stop-color="${o.base[1]}"/><stop offset="1" stop-color="${o.base[2]}"/></linearGradient>
-<linearGradient id="${n(2)}" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".28"/><stop offset=".08" stop-color="#fff" stop-opacity=".12"/><stop offset=".2" stop-color="#000" stop-opacity="0"/><stop offset=".85" stop-color="#000" stop-opacity="0"/><stop offset=".94" stop-color="#000" stop-opacity=".18"/><stop offset="1" stop-color="#000" stop-opacity=".4"/></linearGradient>
-<filter id="${n(3)}" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="${o.grain * 6} ${o.grain * 60 + 0.2}" numOctaves="4" seed="3"/><feColorMatrix values="0 0 0 0 .2  0 0 0 0 .1  0 0 0 0 .03  0 0 0 ${o.grainA * 3} -${o.grainA}"/></filter>
-<filter id="${n(4)}" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="3" seed="${Math.floor(R() * 50)}"/><feColorMatrix values="0 0 0 0 .15  0 0 0 0 .07  0 0 0 0 .02  0 0 0 ${o.stain * 2.4} -${o.stain * 1.1}"/></filter>
-<filter id="${n(5)}" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="1" seed="9"/><feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 -1.6 1.05"/></filter>
-<filter id="${n(6)}"><feTurbulence type="fractalNoise" baseFrequency="1.4" numOctaves="1" seed="4" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="${h.rank === "양반" ? 1.2 : 2.4}"/></filter>
-<filter id="${n(7)}" x="-50%" y="-20%" width="200%" height="150%"><feGaussianBlur stdDeviation="10"/></filter>
-<clipPath id="${n(8)}"><path d="${path}"/></clipPath>
-</defs>
-<path d="${path}" transform="translate(10,16)" fill="#000" opacity=".5" filter="url(#${n(7)})"/>
-<g clip-path="url(#${n(8)})"><rect width="${W}" height="${H}" fill="url(#${n(1)})"/>
-<rect width="${W}" height="${H}" filter="url(#${n(3)})"/><rect width="${W}" height="${H}" filter="url(#${n(4)})"/>
-<rect width="${W}" height="${H}" filter="url(#${n(5)})" opacity="${o.light ? 0.05 : 0.08}"/>
-<rect x="${x0}" y="${y0}" width="${pw}" height="${ph}" fill="url(#${n(2)})"/><rect x="${x0}" y="${y0}" width="${pw}" height="2" fill="#fff" opacity=".25"/>
-<circle cx="${hx}" cy="${hy}" r="6.5" fill="#120c08"/>`;
+// The carving for one face, as an SVG laid over the picture (same 510 × 1000 box). Letters are cut in: a dark
+// wall on the upper left of each stroke, a lit wall on the lower right, the groove filled with ink (red 주사 on
+// ivory, pale on horn, 먹 on wood). `id` keeps filter ids apart when several tags share a page.
+export function carvingSvg(h: HopaeInput, id: string, back = false): string {
+  const m = MATERIAL[h.rank];
+  const [fl, fr, top, bottom] = m.face;
+  const [l, r] = back ? [HOPAE_W - fr, HOPAE_W - fl] : [fl, fr];
+  const cx = (l + r) / 2;
+  const w = r - l;
+  const f = `${id}${back ? "b" : "f"}`;
+  const T = (t: string, x: number, y: number, size: number) =>
+    `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" font-size="${size}" text-anchor="middle">${t}</text>`;
 
-  let ink = "";
+  let t = "";
   if (!back) {
     const [a, b] = [...(h.office ?? "訓導")];
-    ink += T(a, hx - 26, y0 + 30, 15, 700) + T(b, hx + 26, y0 + 30, 15, 700);
+    t += T(a, cx - w * 0.2, top + 30, 23) + T(b, cx + w * 0.2, top + 30, 23);
     const chars = [...h.job.replace(/\s/g, "")];
-    const big = chars.length > 6 ? 28 : chars.length > 5 ? 32 : 36;
-    const step = big + 6;
-    const sy = y0 + 44 + (ph - 44 - chars.length * step) / 2 + big * 0.85;
-    chars.forEach((c, k) => (ink += T(c, hx, sy + k * step, big, 900)));
+    const room = bottom - top - 90;
+    const big = Math.min(64, Math.floor(room / chars.length) - 10);
+    const step = big + 10;
+    const sy = top + 60 + (room - chars.length * step) / 2 + big * 0.85;
+    chars.forEach((c, k) => (t += T(c, cx, sy + k * step, big)));
     const side = [...h.born];
     const low = [...(h.issued + "鑑定")];
-    const sideY = sy + (chars.length - 1) * step - (low.length - 1) * 22;
-    side.forEach((c, k) => (ink += T(c, hx + 38, sideY + (low.length - side.length + k) * 22, 16, 700)));
-    low.forEach((c, k) => (ink += T(c, hx - 38, sideY + k * 22, 16, 700)));
+    const ly = sy + (chars.length - 1) * step - (low.length - 1) * 31;
+    side.forEach((c, k) => (t += T(c, cx + w * 0.33, ly + (low.length - side.length + k) * 31, 27)));
+    low.forEach((c, k) => (t += T(c, cx - w * 0.33, ly + k * 31, 27)));
   } else {
     const [a, b] = [...h.issued];
-    ink += T(a, hx, y0 + 110, 34, 900) + T(b, hx, y0 + 152, 34, 900);
+    t += T(a, cx, top + 120, 60) + T(b, cx, top + 190, 60);
+    // The burnt brand of the office that issued it.
+    const by = bottom - 190;
+    t += `<rect x="${cx - 48}" y="${by}" width="96" height="96" rx="4" fill="none" stroke="#000" stroke-width="8"/>` + T("訓導", cx, by + 43, 30) + T("之印", cx, by + 80, 30);
   }
-  s += `<g filter="url(#${n(6)})">${o.light ? `<g transform="translate(0,-1)" opacity=".6">${ink.replaceAll(o.ink, "#000")}</g>` : ""}${ink}</g>`;
-  s += `<rect width="${W}" height="${H}" filter="url(#${n(5)})" opacity=".1"/>`;
-  if (back) {
-    const bx = hx - 34,
-      by = y0 + ph - 150;
-    s += `<ellipse cx="${hx}" cy="${by + 34}" rx="52" ry="50" fill="#3a1906" opacity=".18" filter="url(#${n(7)})"/>
-<g opacity=".85" filter="url(#${n(6)})"><rect x="${bx}" y="${by}" width="68" height="68" fill="#2a1104" fill-opacity=".25" stroke="#1a0a02" stroke-width="5" rx="3"/>
-<text x="${hx}" y="${by + 31}" style="${font}" font-weight="900" font-size="22" text-anchor="middle" fill="#1a0a02">訓導</text><text x="${hx}" y="${by + 56}" style="${font}" font-weight="900" font-size="22" text-anchor="middle" fill="#1a0a02">之印</text></g>`;
-  }
-  s += `</g>`;
 
-  if (o.cord === "silk") {
-    // A silk loop through the hole, a wooden bead, and one small tassel hanging beside.
-    let t = "";
-    const cx = hx - 66,
-      top = y0 + 30;
-    for (let k = 0; k < 34; k++) {
-      const dx = (k - 16.5) * 0.62;
-      t += `<path d="M${cx + dx * 0.5},${top} L${(cx + dx + (R() - 0.5) * 1.2).toFixed(1)},${(top + 96 + R() * 6).toFixed(1)}" stroke="${["#9d9670", "#b8b28b", "#857f5b"][k % 3]}" stroke-width="1.1"/>`;
-    }
-    s += `<path d="M${hx - 6},${hy} C${hx - 40},${y0 - 60} ${hx - 20},${y0 - 130} ${hx},${y0 - 140} C${hx + 20},${y0 - 130} ${hx + 40},${y0 - 60} ${hx + 6},${hy}" stroke="#b8b088" stroke-width="3.2" fill="none"/>
-<path d="M${hx - 10},${y0 - 30} C${hx - 40},${y0 - 20} ${hx - 62},${y0 - 6} ${cx},${y0 + 14}" stroke="#a69f78" stroke-width="2.4" fill="none"/>
-<path d="M${cx - 6},${y0 + 12} q6,-6 12,0 l1,18 h-14 z" fill="#8f875f"/>${t}<rect x="${cx - 8}" y="${top - 4}" width="16" height="8" rx="2" fill="#6e2a1f"/>
-<ellipse cx="${hx}" cy="${y0 - 36}" rx="17" ry="15" fill="#3b2216"/><ellipse cx="${hx - 5}" cy="${y0 - 41}" rx="6" ry="4" fill="#fff" opacity=".18"/>`;
-  } else {
-    const col = o.cord === "rope" ? ["#c9b48e", "#a38d68"] : ["#9d7d55", "#7a5c38"];
-    const top = y0 - 150,
-      len = 150;
-    s += `<rect x="${hx - 4.5}" y="${top}" width="9" height="${len - 8}" rx="4" fill="${col[1]}"/>`;
-    for (let k = 0; k < 26; k++) {
-      const yy = top + (k * len) / 26;
-      s += `<path d="M${hx - 4},${yy} C${hx - 1},${yy + 2} ${hx + 2},${yy + 5} ${hx + 4},${yy + 7}" stroke="${col[k % 2]}" stroke-width="4.2" stroke-linecap="round" fill="none"/>`;
-    }
-    s += `<path d="M${hx - 5},${y0 - 6} q-8,-14 0,-22 q12,-6 14,8 q-2,14 -9,14" stroke="${col[0]}" stroke-width="7" fill="none" stroke-linecap="round"/>
-<path d="M${hx + 4},${y0 - 4} l9,26 M${hx + 2},${y0 - 2} l15,20" stroke="${col[1]}" stroke-width="2" opacity=".8"/><path d="M${hx - 3},${y0 + 2} L${hx - 3},${hy - 4}" stroke="${col[0]}" stroke-width="5"/>`;
-  }
-  return s + `</svg>`;
+  const ink = back ? "#2a1104" : m.ink;
+  return `<svg viewBox="0 0 ${HOPAE_W} ${HOPAE_H}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%">
+<defs><filter id="${f}" x="0" y="0" width="100%" height="100%">
+<feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" seed="3" result="nz"/>
+<feMorphology in="SourceAlpha" operator="dilate" radius=".55" result="D"/><feDisplacementMap in="D" in2="nz" scale="${back ? 2.5 : 0.9}" result="A"/>
+<feOffset in="A" dx="1.6" dy="1.8" result="Ao"/><feComposite in="A" in2="Ao" operator="out" result="e1"/><feGaussianBlur in="e1" stdDeviation=".7" result="e1b"/>
+<feFlood flood-color="${m.shade}" flood-opacity=".85"/><feComposite in2="e1b" operator="in" result="shade"/>
+<feOffset in="A" dx="-1.2" dy="-1.2" result="Ai"/><feComposite in="A" in2="Ai" operator="out" result="e2"/><feGaussianBlur in="e2" stdDeviation=".6" result="e2b"/>
+<feFlood flood-color="${m.lit}" flood-opacity=".55"/><feComposite in2="e2b" operator="in" result="lit"/>
+<feFlood flood-color="${ink}" flood-opacity="${back ? 0.8 : 1}"/><feComposite in2="A" operator="in" result="fill"/>
+<feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="1" seed="7" result="wn"/><feColorMatrix in="wn" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -.7 1.25" result="wear"/>
+<feComposite in="fill" in2="wear" operator="in" result="fw"/>
+<feMerge><feMergeNode in="fw"/><feMergeNode in="shade"/><feMergeNode in="lit"/></feMerge>
+</filter></defs>
+<g filter="url(#${f})" style="font-family:var(--font-myeongjo),serif;font-weight:900">${t}</g></svg>`;
 }

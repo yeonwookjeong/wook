@@ -1,5 +1,6 @@
 import { ELEMENT_HANJA, ELEMENT_KO } from "@/lib/myeongri";
-import { hopaeSvg, type HopaeInput } from "@/lib/hopae";
+import type { HopaeInput } from "@/lib/hopae";
+import HopaeFace from "./HopaeFace";
 import type { Rank } from "@/lib/sinbun";
 import type { FreeReading } from "@/lib/freeReading";
 
@@ -40,7 +41,11 @@ export function SinbunCard({ who, rank, job, line, rise, yong, tag }: { who: str
     <Frame no="조선 신분 감정" say="너는 조선에서 뭐였을까?">
       <p className="text-[13px] text-ink-soft">{who}</p>
       <div className={`flex min-h-0 w-full flex-1 items-center gap-2 ${tag ? "mt-1" : "flex-col"}`}>
-        {tag && <div className="w-[42%] shrink-0" dangerouslySetInnerHTML={{ __html: hopaeSvg(tag, "card") }} />}
+        {tag && (
+          <div className="w-[46%] shrink-0">
+            <HopaeFace tag={tag} id="card" />
+          </div>
+        )}
         <div className={`flex flex-col items-center ${tag ? "min-w-0 flex-1" : "w-full"}`}>
           <span className="mt-2 border-2 px-3 py-0.5 font-myeongjo text-base font-extrabold" style={{ color: RANK_COLOR[rank], borderColor: RANK_COLOR[rank] }}>
             {rank}
