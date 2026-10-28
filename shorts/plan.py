@@ -6,7 +6,7 @@ recipes/*.json 을 모아서, 같은 영상·같은 출연자가 붙지 않게 �
 
 규칙
   - 한 원본 영상에서 최대 3개 (넘으면 경고 후 앞 3개만 사용)
-  - 같은 원본 영상은 최소 --gap 일 간격 (기본 2일)
+  - 같은 원본 영상은 되도록 --gap 일 간격 (기본 2일). 소스가 모자라면 빈 날 없이 채움 (--strict 면 비움)
   - 같은 출연자는 하루 1개까지
   - 하루 --per-day 개 (기본 1개)
 
@@ -64,15 +64,19 @@ def load() -> list[dict]:
     return kept
 
 
-def schedule(items: list[dict], start: date, per_day: int, gap: int) -> list[tuple]:
+def schedule(items: list[dict], start: date, per_day: int, gap: int, strict: bool = False) -> list[tuple]:
     left = list(items)
     last_vid: dict[str, int] = {}
     rows, day = [], 0
     while left:
         today_celebs = set()
         for slot in range(per_day):
-            ok = [x for x in left if x["celeb"] not in today_celebs
-                  and day - last_vid.get(x["vid"], -999) >= gap]
+            free = [x for x in left if x["celeb"] not in today_celebs]
+            # 간격 지키는 것 → 안 되면 어제와 다른 영상 → 그래도 없으면 아무거나 (빈 날 없이)
+            ok = [x for x in free if day - last_vid.get(x["vid"], -999) >= gap]
+            if not ok and not strict:
+                ok = ([x for x in free if day - last_vid.get(x["vid"], -999) >= 2]
+                      or [x for x in free if day - last_vid.get(x["vid"], -999) >= 1])
             if not ok:
                 break
             # 남은 개수가 많은 영상 우선, 오래 안 나온 영상 우선 → 골고루 섞임
@@ -104,7 +108,8 @@ def main():
     ap = argparse.ArgumentParser(description="업로드 일정표 만들기")
     ap.add_argument("--start", help="시작 날짜 YYYY-MM-DD (기본: 내일)")
     ap.add_argument("--per-day", type=int, default=1, help="하루 업로드 개수 (기본 1)")
-    ap.add_argument("--gap", type=int, default=2, help="같은 원본 영상 최소 간격(일) (기본 2)")
+    ap.add_argument("--gap", type=int, default=2, help="같은 원본 영상 권장 간격(일) (기본 2)")
+    ap.add_argument("--strict", action="store_true", help="간격을 못 지키면 그날은 비우기 (기본: 빈 날 없이 채움)")
     ap.add_argument("--times", help="업로드 시각들, 쉼표 구분 (기본: 1개면 19:30, 2개면 12:30,19:30)")
     ap.add_argument("--make", action="store_true", help="아직 없는 영상을 먼저 만들기")
     a = ap.parse_args()
@@ -118,7 +123,7 @@ def main():
     start = date.fromisoformat(a.start) if a.start else date.today() + timedelta(days=1)
     default = "19:30" if a.per_day <= 1 else "12:30,19:30,22:00"
     times = sorted(t.strip() for t in (a.times or default).split(",") if t.strip()) or ["19:30"]
-    rows = schedule(items, start, max(1, a.per_day), max(0, a.gap))
+    rows = schedule(items, start, max(1, a.per_day), max(0, a.gap), a.strict)
 
     OUT.mkdir(exist_ok=True)
     dst = OUT / "업로드_일정.csv"
@@ -136,7 +141,7 @@ def main():
         print(f"  {d} ({week[d.weekday()]}) {times[slot % len(times)]}  {x['celeb']:<6} {x['stem']}")
     vids = {x["vid"] for x in items}
     if len(vids) < 3:
-        print(f"\n💡 원본 영상이 {len(vids)}개뿐이라 빈 날이 생겨요. CC 영상 3~4개를 쌓아두면 매일 채워져요.")
+        print(f"\n💡 원본 영상이 {len(vids)}개뿐이라 같은 영상이 붙어 나와요. CC 영상 3~4개를 쌓아두면 골고루 섞여요.")
 
 
 if __name__ == "__main__":
