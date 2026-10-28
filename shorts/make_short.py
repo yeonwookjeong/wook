@@ -1570,7 +1570,7 @@ def main():
         """자막은 움직임 없이 딱 나타났다 사라짐 (커졌다 작아지는 모션은 어색해서 뺌)."""
         return [(png, a, b)]
 
-    seg_files, clip_no = [], 0
+    seg_files, clip_no, is_tts = [], 0, []
     tighten = recipe.get("tighten", True)          # 말 사이 쉼 잘라내기
     speed_cfg = recipe.get("clip_speed", "auto")   # "auto" = 느린 말투만 살짝 빠르게, 숫자 = 고정 배속
     for i, p in enumerate(plan, 1):
@@ -1590,11 +1590,14 @@ def main():
             items = media_items(p, dur, src, subs, ff)
             render(ff, items, dur, overlays, p.get("tts"), seg, (1.0, 1.05), crop, 0.0, blur)
             seg_files.append((seg, dur, "soft"))
+            is_tts.append(True)
             continue
 
         # 원본 구간: 쉼 잘라내기 + 말 빠르기 맞추기. 잘라낸 곳은 화면 크기를 번갈아 바꿔(줌 점프컷) 튀지 않게
         speed = speech_speed(subs, p["start"], p["end"]) if speed_cfg == "auto" else float(speed_cfg)
         pieces = speech_pieces(ff, src, p["start"], p["end"]) if tighten else [(p["start"], p["end"])]
+        if i == len(plan):  # 마지막 말 뒤에 여운을 조금 남겨서 뚝 끊기지 않게
+            pieces[-1] = (pieces[-1][0], min(pieces[-1][1] + 0.6, src_len - 0.05))
         mode = p["part"].get("sub", "auto" if clip_subs else "none")
         for k, (pa, pb) in enumerate(pieces):
             odur = frames((pb - pa) / speed)
@@ -1613,6 +1616,7 @@ def main():
             render(ff, [{"path": src, "t0": pa, "dur": pb - pa, "image": False, "source": True}], odur,
                    overlays, None, seg, (z, z + 0.02), crop, 0.0, blur, speed)
             seg_files.append((seg, odur, "soft" if k == 0 else "hard"))
+            is_tts.append(False)
         if speed > 1.0 or len(pieces) > 1:
             print(f"      ✂️ 쉼 {len(pieces) - 1}곳 잘라냄, 말 속도 x{speed}")
         clip_no += len(pieces)
@@ -1623,7 +1627,8 @@ def main():
     assemble(ff, seg_files, layout, tmp, final,
              transitions=recipe.get("transitions", True), sfx=recipe.get("sfx", False),
              bgm=pick_bgm(recipe, rpath.stem),
-             bgm_volume=float(recipe.get("bgm_volume", 0.12)))
+             bgm_volume=float(recipe.get("bgm_volume", 0.12)),
+             bgm_on=is_tts, bgm_clip_level=float(recipe.get("bgm_under_clips", 0.0)))
     caption = final.with_suffix(".txt")
     caption.write_text(upload_text(recipe), encoding="utf-8")
     print(f"\n✅ 완성: {final}\n   업로드용 문구: {caption}")
@@ -1681,7 +1686,8 @@ def upload_text(recipe: dict) -> str:
 
 
 def assemble(ff: str, segs: list, layout: Path | None, tmp: Path, final: Path, transitions: bool, sfx: bool,
-             bgm: Path | None = None, bgm_volume: float = 0.12):
+             bgm: Path | None = None, bgm_volume: float = 0.12, bgm_on: list | None = None,
+             bgm_clip_level: float = 0.0):
     """구간들을 이어 붙이고(장면 사이는 짧은 디졸브, 쉼을 잘라낸 곳은 2프레임 컷), 제목·하단 레이아웃을 얹는다.
     화면과 소리를 한 번에 처리하면 ffmpeg가 서로 기다리다 멈춰서, 화면 → 소리 → 합치기 3단계로 나눔."""
     segs = [(seg, video_len(ff, seg), kind) for seg, _, kind in segs]  # 실제 영상 길이 기준
@@ -1740,12 +1746,26 @@ def assemble(ff: str, segs: list, layout: Path | None, tmp: Path, final: Path, t
         # 배경음악: 영상 길이만큼 반복, 말소리가 나오면 자동으로 작아짐(사이드체인 덕킹), 끝에서 페이드아웃
         acmd += ["-stream_loop", "-1", "-i", str(bgm)]
         fa.append("[amain]asplit=2[am1][am2]")
+        # 원본 구간에는 원본 배경음악이 이미 있어서 두 곡이 섞이지 않게, 우리 음악은 TTS 구간에만 깔고
+        # 원본으로 넘어갈 때 부드럽게 빠짐 (bgm_under_clips로 원본 구간에도 조금 남길 수 있음)
+        gain = ""
+        if bgm_on and len(bgm_on) == n:
+            starts = [0.0] + [off for _, off in joins]
+            wins = [f"clip((t-{a - 0.15:.3f})/0.3,0,1)*clip(({a + d + 0.5:.3f}-t)/0.6,0,1)"
+                    for (a, (_, d, _)), on in zip(zip(starts, segs), bgm_on) if on]
+            if wins:
+                expr = wins[0]
+                for w_ in wins[1:]:
+                    expr = f"max({expr},{w_})"
+                gain = f"volume='{bgm_clip_level:.3f}+(1-{bgm_clip_level:.3f})*{expr}':eval=frame,"
         fa.append(f"[{nin}:a]aresample=44100,aformat=channel_layouts=stereo,volume={bgm_volume},"
-                  f"atrim=0:{total:.3f},afade=t=out:st={max(total - 1.2, 0):.3f}:d=1.2[bg0]")
+                  f"atrim=0:{total:.3f},asetpts=PTS-STARTPTS,{gain}"
+                  f"afade=t=out:st={max(total - 1.2, 0):.3f}:d=1.2[bg0]")
         fa.append("[bg0][am2]sidechaincompress=threshold=0.03:ratio=6:attack=15:release=350[bgd]")
-        fa.append("[am1][bgd]amix=inputs=2:duration=first:normalize=0[aout]")
+        fa.append("[am1][bgd]amix=inputs=2:duration=first:normalize=0[amix]")
     else:
-        fa.append("[amain]anull[aout]")
+        fa.append("[amain]anull[amix]")
+    fa.append(f"[amix]afade=t=out:st={max(total - 0.5, 0):.3f}:d=0.5[aout]")  # 끝에서 소리가 뚝 끊기지 않게
     atmp = tmp / "_audio.m4a"
     run(acmd + ["-filter_complex", ";".join(fa), "-map", "[aout]", "-vn", "-t", f"{total:.3f}",
                 "-c:a", "aac", "-b:a", "160k", "-ar", "44100", "-ac", "2", str(atmp)], "소리 이어 붙이기")
