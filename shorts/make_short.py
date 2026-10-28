@@ -1622,11 +1622,26 @@ def main():
     print("   이어 붙이는 중…")
     assemble(ff, seg_files, layout, tmp, final,
              transitions=recipe.get("transitions", True), sfx=recipe.get("sfx", False),
-             bgm=(HERE / recipe["bgm"]) if recipe.get("bgm") else None,
+             bgm=pick_bgm(recipe, rpath.stem),
              bgm_volume=float(recipe.get("bgm_volume", 0.12)))
     caption = final.with_suffix(".txt")
     caption.write_text(upload_text(recipe), encoding="utf-8")
     print(f"\n✅ 완성: {final}\n   업로드용 문구: {caption}")
+
+
+def pick_bgm(recipe: dict, name: str) -> Path | None:
+    """배경음악: 레시피에 "bgm"이 있으면 그 파일, "bgm": false면 없음,
+    안 적었으면 bgm 폴더의 음악 중 하나를 영상 이름에 따라 골라 돌려가며 씀(영상마다 같은 곡만 나오지 않게)."""
+    if recipe.get("bgm") is False:
+        return None
+    if recipe.get("bgm"):
+        return HERE / recipe["bgm"]
+    songs = sorted(p for p in (HERE / "bgm").glob("*") if p.suffix.lower() in (".mp3", ".wav", ".m4a", ".aac"))
+    if not songs:
+        return None
+    song = songs[int(hashlib.md5(name.encode()).hexdigest(), 16) % len(songs)]
+    print(f"   🎵 배경음악: {song.name}")
+    return song
 
 
 DISCLOSURE = "이 게시물은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다."
