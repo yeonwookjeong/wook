@@ -583,6 +583,8 @@ export type SinbunStory = Sinbun & {
   strength: Strength | null;
   // Why this life: the calling and the 그릇, in 정 훈도's words.
   basis: string[];
+  // What the neighbours said of this calling, one line (the head of the result reads it before the chapters).
+  said: string;
 };
 
 export function sinbunStory(p: Pillars, gender?: Gender): SinbunStory {
@@ -601,6 +603,7 @@ export function sinbunStory(p: Pillars, gender?: Gender): SinbunStory {
     gi,
     strength: chart?.strength ?? null,
     basis,
+    said: GROUP_TALK[group].split(". ").slice(1).join(". ") || GROUP_TALK[group],
     chapters: [
       { title: "태어난 집", paras: [s.origin] },
       { title: `${s.job}의 하루`, paras: [...s.day], labels: ["새벽", "낮", "밤"] },

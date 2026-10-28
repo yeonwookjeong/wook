@@ -62,13 +62,13 @@ export const OFFICE: Record<string, string> = {
 
 // The four tags (public/hopae/*.webp, 510 × 1000, drawn for us, background cut). `face`: the flat front of the tag
 // in that picture (left, right, top, bottom), where the carving goes. The back is the same picture mirrored.
-type Material = { name: string; hanja: string; file: string; face: [number, number, number, number]; ink: string; shade: string; lit: string };
+type Material = { name: string; hanja: string; what: string; file: string; face: [number, number, number, number]; ink: string; shade: string; lit: string };
 
 export const MATERIAL: Record<Rank, Material> = {
-  양반: { name: "아패", hanja: "牙牌", file: "/hopae/a.webp", face: [156, 352, 238, 941], ink: "#9a1a12", shade: "#2a1608", lit: "#fff6e0" },
-  중인: { name: "각패", hanja: "角牌", file: "/hopae/g.webp", face: [160, 346, 240, 928], ink: "#cfbd99", shade: "#000000", lit: "#5a4636" },
-  상민: { name: "황양목패", hanja: "黃楊木牌", file: "/hopae/y.webp", face: [148, 360, 232, 904], ink: "#3a2410", shade: "#2a1608", lit: "#fff1cf" },
-  천민: { name: "목패", hanja: "木牌", file: "/hopae/m.webp", face: [151, 362, 278, 943], ink: "#24140a", shade: "#1a0c04", lit: "#e8c99a" },
+  양반: { name: "아패", hanja: "牙牌", what: "상아", file: "/hopae/a.webp", face: [156, 352, 238, 941], ink: "#9a1a12", shade: "#2a1608", lit: "#fff6e0" },
+  중인: { name: "각패", hanja: "角牌", what: "검은 뿔", file: "/hopae/g.webp", face: [160, 346, 240, 928], ink: "#cfbd99", shade: "#000000", lit: "#5a4636" },
+  상민: { name: "황양목패", hanja: "黃楊木牌", what: "회양목", file: "/hopae/y.webp", face: [148, 360, 232, 904], ink: "#3a2410", shade: "#2a1608", lit: "#fff1cf" },
+  천민: { name: "목패", hanja: "木牌", what: "막 깎은 나무", file: "/hopae/m.webp", face: [151, 362, 278, 943], ink: "#24140a", shade: "#1a0c04", lit: "#e8c99a" },
 };
 
 const ganji = (stem: number, branch: number) => STEMS[stem] + BRANCHES[branch];

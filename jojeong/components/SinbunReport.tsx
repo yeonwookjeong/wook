@@ -9,6 +9,9 @@ import SinsalNight, { NIGHT_GOLD, NIGHT_PANEL } from "./SinsalNight";
 import RoyalDoc from "./RoyalDoc";
 
 const HANJA_NUM = "一二三四五六七";
+const RANKS = ["양반", "중인", "상민", "천민"] as const;
+// The first sentence of a passage, for the one-glance rows.
+const firstLine = (t: string) => t.split(/(?<=\.)\s/)[0];
 
 // The free 조선 신분 감정 report: a whole Joseon life in seven chapters, laid out like the 가상 실록.
 // Ends with a bridge to the paid present-day 직업·적성 report.
@@ -96,21 +99,72 @@ export default function SinbunReport({
           </div>
         </section>
 
-        {s.basis.length > 0 && (
-          <section className={`${NIGHT_PANEL} mt-4 px-4 py-4`}>
-            <h2 className="text-center font-myeongjo text-[17px] font-extrabold">
-              정 훈도가 이렇게 본 까닭
-            </h2>
-            <ul className="mt-2 flex flex-col gap-1 text-[13px] leading-relaxed text-hanji/85">
-              {s.basis.map((b) => (
-                <li key={b} className="flex gap-2">
-                  <span className={NIGHT_GOLD}>·</span>
-                  <span>{b}</span>
+        <section className={`${NIGHT_PANEL} mt-4 px-4 py-4`}>
+          <h2 className="text-center font-myeongjo text-[17px] font-extrabold">
+            한눈에 보는 그대의 한평생
+          </h2>
+          <dl className="mt-3 flex flex-col gap-1.5 text-[13.5px] leading-relaxed text-hanji/90">
+            {(
+              [
+                ["사람들 눈에", s.said],
+                ["출세", firstLine(s.riseText)],
+                ["말년", firstLine(s.ending)],
+                ["지금이라면", s.now.replace(/^지금으로 치면\s*/, "")],
+              ] as const
+            ).map(([label, text]) => (
+              <div key={label} className="flex gap-2">
+                <dt className={`w-[4.6rem] shrink-0 font-bold ${NIGHT_GOLD}`}>
+                  {label}
+                </dt>
+                <dd className="min-w-0 flex-1">{text}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+
+        {/* What the four tags mean: 『호패사목』(1677) set the material by standing. */}
+        <section className={`${NIGHT_PANEL} mt-4 px-3 py-4`}>
+          <h2 className="text-center font-myeongjo text-[17px] font-extrabold">
+            호패는 신분마다 재질이 달랐어요
+          </h2>
+          <ul className="mt-3 grid grid-cols-4 gap-1.5 text-center">
+            {RANKS.map((r) => {
+              const t = MATERIAL[r];
+              const mine = r === s.rank;
+              return (
+                <li
+                  key={r}
+                  className={`flex flex-col items-center rounded-xl px-1 pt-1.5 pb-2 ${mine ? "bg-[#d4af5f]/15 ring-1 ring-[#d4af5f]" : ""}`}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={t.file}
+                    alt=""
+                    className="h-[92px] w-auto object-contain"
+                  />
+                  <b
+                    className={`mt-1 font-myeongjo text-[13px] ${mine ? NIGHT_GOLD : ""}`}
+                  >
+                    {t.name}
+                  </b>
+                  <span className="text-[10.5px] text-hanji/60">{t.hanja}</span>
+                  <span className="mt-0.5 text-[11px] leading-tight text-hanji/85">
+                    {t.what}
+                  </span>
+                  <span
+                    className={`mt-1 rounded-full px-1.5 text-[10.5px] font-bold ${mine ? "bg-[#d4af5f] text-[#0f2236]" : "text-hanji/70"}`}
+                  >
+                    {mine ? `그대 · ${r}` : r}
+                  </span>
                 </li>
-              ))}
-            </ul>
-          </section>
-        )}
+              );
+            })}
+          </ul>
+          <p className="mt-3 text-center text-[11px] leading-relaxed text-hanji/50">
+            1677년 『호패사목』은 2품 이상은 상아, 3품 이하는 뿔, 생원·진사는
+            회양목으로 정했어요. 여기서는 감정한 신분에 맞춰 골랐어요.
+          </p>
+        </section>
       </SinsalNight>
 
       <RoyalDoc className="mt-5" paperClassName="px-5">
@@ -173,6 +227,18 @@ export default function SinbunReport({
         <p className="mt-5 text-right font-myeongjo text-sm text-ink-soft">
           — 관상감 명과학 훈도 정가, 삼가 적음
         </p>
+        {s.basis.length > 0 && (
+          <details className="mt-4 text-[12px] text-ink-soft">
+            <summary className="cursor-pointer text-center">
+              어떻게 셈했는지 보기
+            </summary>
+            <ul className="mt-2 flex flex-col gap-1 bg-ink/5 px-3 py-2 leading-relaxed">
+              {s.basis.map((b) => (
+                <li key={b}>· {b}</li>
+              ))}
+            </ul>
+          </details>
+        )}
         <p className="mt-2 text-center text-[11px] text-ink-soft/80">
           사주로 지어 올린 가상의 한평생이옵니다.
         </p>
