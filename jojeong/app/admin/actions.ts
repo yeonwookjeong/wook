@@ -94,6 +94,17 @@ export async function testOrderAction(formData: FormData) {
   refresh();
 }
 
+// A paid order copied into a gift (2026-10-28 대표님: a report that failed, refunded in full, still given): a
+// refund closes the bought link (lib/pay.ts syncPayment), so the buyer is sent the gift's /r/ link instead. The
+// same request opens the same written text. Owner only, and only when asked twice (the box must be ticked).
+export async function giftCopyAction(formData: FormData) {
+  if (!(await isAdmin()) || formData.get("sure") !== "1") return;
+  const o = await getOrder(String(formData.get("id") ?? ""));
+  if (!o || o.set) return;
+  await createGiftOrder(o.product, o.req, `${o.who} · 환불 뒤 선물`, o.shop);
+  refresh();
+}
+
 // A bought report written again under today's reading (a 👎 put right, 2026-10-26 대표님 결재): the next opening
 // writes it anew; the buyer keeps the same link. Owner only, and only when asked twice (the box must be ticked).
 export async function rewriteReportAction(formData: FormData) {

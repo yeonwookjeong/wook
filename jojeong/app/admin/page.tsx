@@ -10,7 +10,7 @@ import { lastReportError, listInquiries, memberViews, readingCount } from "@/lib
 import { listFeedback } from "@/lib/feedback";
 import { memberFixAction } from "./actions";
 import { allMembers, memberNo, VIA_LABEL, viaOf, type Member } from "@/lib/members";
-import { adminSignOut, creditEventCreateAction, creditEventToggleAction, giftRevokeAction, inquiryDeleteAction, inquiryDoneAction, rewriteReportAction, testOrderAction } from "./actions";
+import { adminSignOut, creditEventCreateAction, creditEventToggleAction, giftCopyAction, giftRevokeAction, inquiryDeleteAction, inquiryDoneAction, rewriteReportAction, testOrderAction } from "./actions";
 import Dashboard, { rangeOf } from "./Dashboard";
 import { threadsPosts } from "@/lib/threads";
 import GiftForm from "./GiftForm";
@@ -301,6 +301,18 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
                     {o.test ? "테스트" : "테스트?"}
                   </button>
                 </form>
+                {!o.set && (
+                  <form action={giftCopyAction} className="flex shrink-0 items-center gap-1 text-[10.5px]">
+                    <input type="hidden" name="id" value={o.id} />
+                    <label className="flex items-center gap-0.5 text-ink-soft">
+                      <input type="checkbox" name="sure" value="1" />
+                      확인
+                    </label>
+                    <button className="rounded-full border border-seal/40 px-2 py-0.5 font-bold text-seal" title="환불해도 보고서는 주고 싶을 때: 같은 보고서를 0원 선물 링크로 만들어요(위 '보고서 선물 링크' 목록에 생겨요)">
+                      선물로 복제
+                    </button>
+                  </form>
+                )}
                 <Link href={`/r/${o.id}`} className="shrink-0 text-seal">
                   →
                 </Link>
