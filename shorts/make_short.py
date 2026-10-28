@@ -1629,18 +1629,29 @@ def main():
     print(f"\n✅ 완성: {final}\n   업로드용 문구: {caption}")
 
 
+BGM_MOODS = ["기본", "귀여운", "세련된", "상쾌한"]  # bgm 폴더 안 분위기별 하위 폴더
+
+
 def pick_bgm(recipe: dict, name: str) -> Path | None:
-    """배경음악: 레시피에 "bgm"이 있으면 그 파일, "bgm": false면 없음,
-    안 적었으면 bgm 폴더의 음악 중 하나를 영상 이름에 따라 골라 돌려가며 씀(영상마다 같은 곡만 나오지 않게)."""
+    """배경음악: 레시피에 "bgm"이 있으면 그 파일, "bgm": false면 없음.
+    아니면 "bgm_mood"(기본/귀여운/세련된/상쾌한) 폴더의 곡 중 하나를 영상 이름에 따라 돌려가며 고름.
+    그 분위기 폴더가 비었으면 기본 → bgm 폴더 전체 순으로 찾음."""
     if recipe.get("bgm") is False:
         return None
     if recipe.get("bgm"):
         return HERE / recipe["bgm"]
-    songs = sorted(p for p in (HERE / "bgm").glob("*") if p.suffix.lower() in (".mp3", ".wav", ".m4a", ".aac"))
+    root = HERE / "bgm"
+    songs_in = lambda d: sorted(p for p in d.rglob("*") if p.suffix.lower() in (".mp3", ".wav", ".m4a", ".aac")) \
+        if d.exists() else []
+    import unicodedata  # 맥 한글 폴더 이름(NFD) 대비
+    mood = recipe.get("bgm_mood", "기본")
+    dirs = {unicodedata.normalize("NFC", d.name): d for d in root.iterdir() if d.is_dir()} if root.exists() else {}
+    songs = songs_in(dirs[mood]) if mood in dirs else []
+    songs = songs or (songs_in(dirs["기본"]) if "기본" in dirs else []) or songs_in(root)
     if not songs:
         return None
     song = songs[int(hashlib.md5(name.encode()).hexdigest(), 16) % len(songs)]
-    print(f"   🎵 배경음악: {song.name}")
+    print(f"   🎵 배경음악({mood}): {song.name}")
     return song
 
 

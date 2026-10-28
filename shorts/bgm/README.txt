@@ -1,5 +1,7 @@
-배경음악 넣는 법
-- 상업적 사용이 허용된 음악(엔바토, 유튜브 오디오 보관함 등) mp3/wav를 이 폴더에 넣으면 끝.
-- 여러 곡을 넣으면 영상마다 돌아가며 자동으로 골라 깔아요 (TTS 나올 때는 자동으로 줄어듦).
-- 특정 곡을 쓰려면 레시피에 "bgm": "bgm/파일이름.mp3", 끄려면 "bgm": false
-- 크기 조절: 레시피에 "bgm_volume": 0.12 (기본, 숫자가 클수록 큼)
+배경음악 넣는 법 — 분위기별 폴더에 상업 이용 가능한 음악(엔바토 등) mp3/wav를 넣으면 끝.
+  기본/    fashion vlog, beauty upbeat (대부분의 셀럽템)
+  귀여운/  cute pop, kawaii, playful pizzicato (간식, 젤리, 말랑이, 귀여운 소품)
+  세련된/  lofi chill, chill hop, trendy minimal (화장품, 향수, 패션, 헤어)
+  상쾌한/  summer happy, ukulele bright (생활템, 운동템, 건강 습관)
+레시피 "bgm_mood"에 맞는 폴더에서 영상마다 돌아가며 골라요. 비어 있으면 기본 폴더 → 전체에서.
+특정 곡: "bgm": "bgm/기본/파일.mp3" / 끄기: "bgm": false / 크기: "bgm_volume": 0.12
