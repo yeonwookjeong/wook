@@ -1,0 +1,22 @@
+{
+  "name": "korea-word-studio",
+  "private": true,
+  "version": "0.1.0",
+  "description": "외국인 대상 한국 지식 쇼츠 영상 렌더링 프로젝트 (Remotion)",
+  "scripts": {
+    "studio": "remotion studio",
+    "render:test": "remotion render src/index.ts Test out/test.mp4",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.535",
+    "@remotion/google-fonts": "4.0.535",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "remotion": "4.0.535"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.18",
+    "typescript": "5.9.3"
+  }
+}
