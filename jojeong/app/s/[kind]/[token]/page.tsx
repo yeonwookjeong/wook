@@ -6,19 +6,21 @@ import ChartIntro from "@/components/ChartIntro";
 import FreeReading from "@/components/FreeReading";
 import Hundo from "@/components/Hundo";
 import MeForm from "@/components/MeForm";
+import HopaePair, { sideOf } from "@/components/HopaePair";
 import SinbunReport from "@/components/SinbunReport";
 import SinsalShared from "@/components/SinsalShared";
 import YearReport from "@/components/YearReport";
 import { freeReadingOf } from "@/lib/freeReading";
 import { josa } from "@/lib/josa";
 import { readMe } from "@/lib/me";
-import { profileOf } from "@/lib/pairToken";
+import { profileOf, samePerson } from "@/lib/pairToken";
 import { distinctOf } from "@/lib/rarity";
 import { iljuFacts } from "@/lib/cards";
 import { ReadingCard, SinbunCard } from "@/components/ResultCards";
 import { isShareKind, openCard, openPerson, type ReadingSummary, type SinbunSummary } from "@/lib/shareToken";
 import { track } from "@/lib/stats";
 import { yearReading } from "@/lib/yearly";
+import { yearGanji } from "@/lib/hopae";
 
 // What a friend opens from "친구에게 보내기". Two kinds of link, both signed (lib/shareToken.ts), nothing stored:
 //   the whole free result as the sender saw it, with the form for their own at the top and the foot; or
@@ -74,6 +76,13 @@ export default async function SharedPage({ params }: PageProps<"/s/[kind]/[token
   const distinct = reading && pillars ? distinctOf(pillars, person!.gender) : null;
   const free = reading && pillars ? freeReadingOf(pillars, profile) : null;
 
+  // 신분 감정: once the friend's own chart is on this device, the two 호패 side by side at the top.
+  const sinbunCard = kind === "sinbun" && card ? (card as SinbunSummary) : null;
+  const them = kind === "sinbun" ? (person ? sideOf(name, person.pillars, person.gender) : sinbunCard ? sideOf(sinbunCard.n, null, null, { rank: sinbunCard.r, job: sinbunCard.j, line: sinbunCard.l }) : null) : null;
+  const meSide = kind === "sinbun" && me && !(person && samePerson(person, me.person)) && !(sinbunCard && sinbunCard.n === me.person.name) ? sideOf(me.person.name, me.person.pillars, me.person.gender) : null;
+  // Back here after the form, so the pair shows.
+  const next = kind === "sinbun" ? `/s/sinbun/${token}` : NEXT[kind];
+
   // The friend's own: the form, or (a chart already kept on this device) straight to their result.
   const mine = (
     <section id="mine" className="doc-paper mt-6 scroll-mt-4 px-5 pt-6 pb-6">
@@ -91,7 +100,7 @@ export default async function SharedPage({ params }: PageProps<"/s/[kind]/[token
             생년월일만 넣으면 <b>무료</b>로 바로 보여 드려요
           </p>
           <div className="mt-4">
-            <MeForm next={NEXT[kind]} submit="내 결과 보기" />
+            <MeForm next={next} submit={kind === "sinbun" ? "내 호패 보고 나란히 놓기" : "내 결과 보기"} />
           </div>
         </>
       )}
@@ -104,10 +113,18 @@ export default async function SharedPage({ params }: PageProps<"/s/[kind]/[token
         <p className="font-myeongjo text-sm font-extrabold tracking-[0.4em] text-seal">傳 達</p>
         <h1 className="mt-2 font-myeongjo text-2xl font-extrabold">{josa(name, "이/가")} 보내왔어요</h1>
         <p className="mt-1 text-xs text-ink-soft">{kind === "sinbun" ? "조선에 태어났다면 무엇이었을까" : "무료 사주 풀이"}</p>
-        <a href="#mine" className="mt-3 inline-block rounded-full border-2 border-seal bg-white/70 px-5 py-2 font-myeongjo text-sm font-extrabold text-seal">
-          나도 내 결과 보기 ↓
-        </a>
+        {!(them && meSide) && (
+          <a href="#mine" className="mt-3 inline-block rounded-full border-2 border-seal bg-white/70 px-5 py-2 font-myeongjo text-sm font-extrabold text-seal">
+            나도 내 결과 보기 ↓
+          </a>
+        )}
       </section>
+
+      {them && meSide && (
+        <div className="mt-5">
+          <HopaePair me={meSide} them={them} />
+        </div>
+      )}
 
       {card && (
         <section className="mt-5">
@@ -115,7 +132,7 @@ export default async function SharedPage({ params }: PageProps<"/s/[kind]/[token
           {kind === "sinbun" ? (
             (() => {
               const d = card as SinbunSummary;
-              return <SinbunCard who={`${josa(d.n, "이/가")} 조선에 태어났다면`} rank={d.r} job={d.j} line={d.l} rise={d.w} yong={d.y} />;
+              return <SinbunCard who={`${josa(d.n, "이/가")} 조선에 태어났다면`} rank={d.r} job={d.j} line={d.l} rise={d.w} yong={d.y} tag={{ rank: d.r, job: d.j, born: "", issued: yearGanji() }} />;
             })()
           ) : (
             (() => {
