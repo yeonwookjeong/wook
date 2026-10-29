@@ -16,6 +16,32 @@ export const CH_FROM = ["free", "report"] as const;
 export type ChFrom = (typeof CH_FROM)[number];
 export const CH_FROM_LABEL: Record<ChFrom, string> = { free: "무료 사주 끝", report: "보고서 끝" };
 export type ClientEvent = (typeof CLIENT_EVENTS)[number];
+// The free pages whose result is counted once a day per browser (components/FreeSeen.tsx, `fv:<page>`), and where a
+// birth date was first entered (`fe:<page>`, app/actions.ts saveMeAction): the form is one and the same everywhere.
+export const FREE_VIEW = ["gukjeong", "sinbun", "sinsal", "minister", "court", "dwitjosa", "gwangye", "insa", "samjae", "ranking", "ilju"] as const;
+export type FreeView = (typeof FREE_VIEW)[number];
+export const FREE_VIEW_LABEL: Record<FreeView, string> = {
+  gukjeong: "내 사주 무료 풀이",
+  sinbun: "조선 신분 감정 (호패)",
+  sinsal: "신살 유형 테스트",
+  minister: "신하 결과",
+  court: "조정 화면",
+  dwitjosa: "뒷조사",
+  gwangye: "관계도",
+  insa: "인사기록",
+  samjae: "삼재",
+  ranking: "일주 랭킹",
+  ilju: "60일주 사전",
+};
+export const isFreeView = (v: unknown): v is FreeView => FREE_VIEW.includes(v as FreeView);
+// The page a birth-date form was sent from, by where it leads (MeForm's `next`).
+export function freeOfNext(next: string): string {
+  if (next.startsWith("/s/")) return "friend";
+  if (next.startsWith("/sinsal")) return "sinsal";
+  const m = /^\/reports\/([a-z]+)/.exec(next);
+  if (m) return isFreeView(m[1]) ? m[1] : "paid";
+  return next.startsWith("/#today") ? "today" : "home";
+}
 // me_try: the free reading form sent; me_err: it came back with an input error; me_same: the chart already
 // saved in this browser was sent again (not a new reading).
 export type StatEvent = ClientEvent | "pv" | "king" | "join" | "appoint" | "reading" | "me_try" | "me_err" | "me_same";
@@ -48,7 +74,9 @@ export async function track(
     | `sl:${string}`
     | `cv:${string}`
     | `ask:${string}`
-    | `ch:${string}`,
+    | `ch:${string}`
+    | `fv:${string}`
+    | `fe:${string}`,
 ) {
   await bumpCounters([dayKey(event, kstDay()), allKey(event)]);
 }
