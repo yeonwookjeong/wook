@@ -24,6 +24,7 @@ import ChannelCard from "@/components/ChannelCard";
 import { ReadingCard, SinbunCard } from "@/components/ResultCards";
 import { iljuFacts } from "@/lib/cards";
 import { sinbunStory } from "@/lib/sinbun";
+import { bornOf, yearGanji } from "@/lib/hopae";
 import { sealCard, sealPerson } from "@/lib/shareToken";
 import NextStep from "@/components/NextStep";
 import TrackLink from "@/components/TrackLink";
@@ -518,7 +519,10 @@ async function OpenReport({
               summary: `조선에 태어났다면 나는 '${sinbun.job}' · 너는 뭐였을지 봐 봐 (훈도사주)`,
               full: `조선에 태어났다면 나는 '${sinbun.job}' · 너는 뭐였을지 봐 봐 (훈도사주)`,
             }}
-            card={<SinbunCard who={`${josa(name, "이/가")} 조선에 태어났다면`} rank={sinbun.rank} job={sinbun.job} line={sinbun.line} rise={sinbun.rise} yong={sinbun.yong} />}
+            card={<SinbunCard who={`${josa(name, "이/가")} 조선에 태어났다면`} rank={sinbun.rank} job={sinbun.job} line={sinbun.line} rise={sinbun.rise} yong={sinbun.yong}
+                tag={{ rank: sinbun.rank, job: sinbun.job, office: sinbun.office, born: bornOf(pillars.yearStem, pillars.yearBranch), issued: yearGanji() }}
+                rarity={sinbun.rarity}
+              />}
           />
         )}
         {self && <NextStep from="sinbun" steps={STEPS.sinbun(query)} />}

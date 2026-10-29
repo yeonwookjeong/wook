@@ -4,6 +4,7 @@ import { josa } from "./josa";
 import { hourStemFor, type Pillars } from "./saju";
 import { JOBS_F } from "./sinbunF";
 import { VARIANT_TOTAL, VARIANTS } from "./sinbunVariants";
+import { OFFICE } from "./hopae";
 
 // 조선 신분 감정 (free): what someone would have been in Joseon. The calling comes from the chart's heaviest
 // ten-god group (hidden stems included); the rank from how well the chart is built (its 그릇): balance, whether
@@ -26,6 +27,8 @@ export type Sinbun = {
   now: string;
   // 100명 중 몇 명이 이 삶으로 나오는지 (one of the 100 lives; empty for four-character charts).
   rarity?: string;
+  // Two characters across the head of the 호패 (lib/hopae.ts), from the base life's office.
+  office?: string;
 };
 
 const JOBS: Record<`${Calling}-${Rank}`, Sinbun> = {
@@ -518,10 +521,11 @@ function keyOf(p: Pillars): { key: `${Calling}-${Rank}`; group: Calling; sub: st
 // The base life for the gender, with the job and line of its variant and how rare that is.
 function lifeOf(key: `${Calling}-${Rank}`, sub: string | null, gender: Gender): Sinbun {
   const base = gender === "f" ? JOBS_F[key] : JOBS[key];
+  const office = OFFICE[base.job];
   const v = sub ? VARIANTS[`${key}|${sub}`] : undefined;
-  if (!v) return base;
+  if (!v) return { ...base, office };
   const [job, line] = gender === "f" ? v.f : v.m;
-  return { ...base, job, line, rarity: rarityText(v.n) };
+  return { ...base, job, line, rarity: rarityText(v.n), office };
 }
 
 export function sinbunOf(p: Pillars, gender?: Gender): Sinbun {
@@ -579,6 +583,8 @@ export type SinbunStory = Sinbun & {
   strength: Strength | null;
   // Why this life: the calling and the 그릇, in 정 훈도's words.
   basis: string[];
+  // What the neighbours said of this calling, one line (the head of the result reads it before the chapters).
+  said: string;
 };
 
 export function sinbunStory(p: Pillars, gender?: Gender): SinbunStory {
@@ -597,6 +603,7 @@ export function sinbunStory(p: Pillars, gender?: Gender): SinbunStory {
     gi,
     strength: chart?.strength ?? null,
     basis,
+    said: GROUP_TALK[group].split(". ").slice(1).join(". ") || GROUP_TALK[group],
     chapters: [
       { title: "태어난 집", paras: [s.origin] },
       { title: `${s.job}의 하루`, paras: [...s.day], labels: ["새벽", "낮", "밤"] },
