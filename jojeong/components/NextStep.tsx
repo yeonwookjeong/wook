@@ -1,4 +1,5 @@
 import type { StepFrom, Steps } from "@/lib/nextStep";
+import FreeSeen from "./FreeSeen";
 import TrackLink from "./TrackLink";
 
 // The one step out of a free page (lib/nextStep.ts): the question the page leaves, a card that answers it, and
@@ -6,6 +7,8 @@ import TrackLink from "./TrackLink";
 export default function NextStep({ from, steps: { ask, main, more = [] } }: { from: StepFrom; steps: Steps }) {
   return (
     <section className="mt-5">
+      {/* Shown under a free result, so it marks that result seen (the 칼럼 and 오늘 steps are not results). */}
+      {from !== "column" && from !== "today" && from !== "reading" && from !== "king" && <FreeSeen k={from} />}
       {ask && <p className="text-center text-[12px] font-bold text-ink-soft">{ask}</p>}
       <TrackLink event="to_saju" from={from} href={main.href} className="doc-paper mt-2 flex items-center gap-4 px-5 py-4">
         {main.seal && (

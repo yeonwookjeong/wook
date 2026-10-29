@@ -35,6 +35,7 @@ import Keep from "@/components/Keep";
 import RoyalDoc from "@/components/RoyalDoc";
 import SajuChart from "@/components/SajuChart";
 import SinbunReport from "@/components/SinbunReport";
+import FreeSeen from "@/components/FreeSeen";
 import YearReport from "@/components/YearReport";
 import { YearList, YearTop } from "@/components/Yeonun";
 import YearGlance from "@/components/YearGlance";
@@ -424,6 +425,7 @@ async function OpenReport({
         );
       return (
         <>
+          <FreeSeen k="dwitjosa" />
           <Header product={product} subjectName={`${court.kingName} 전하와 ${target.name}`} />
           <AiReport request={{ product: product.id, court: court.id, t: target.id }} chapters={chaptersOf(product.id)} />
         </>
@@ -434,6 +436,7 @@ async function OpenReport({
       if (!mine) return (<><Header product={product} /><Notice>입궐한 신하 본인만 여실 수 있사옵니다. 받으신 교지에서 이 보고서를 여시옵소서.</Notice></>);
       return (
         <>
+          <FreeSeen k="insa" />
           <Header product={product} subjectName={mine.name} />
           <AiReport request={{ product: product.id, court: court.id }} chapters={chaptersOf(product.id)} />
         </>
@@ -443,6 +446,7 @@ async function OpenReport({
       return (<><Header product={product} /><Notice href={`/court/${court.id}`} cta="조정으로 가기 →">모임 관계도는 신하가 두 명 이상 모이면 열리옵니다.</Notice></>);
     return (
       <>
+        <FreeSeen k="gwangye" />
         <Header product={product} subjectName={`${court.kingName} 전하의 조정 ${ministers.length + 1}명`} />
         <AiReport request={{ product: product.id, court: court.id }} chapters={chaptersOf(product.id)} />
       </>
@@ -669,6 +673,7 @@ async function OpenReport({
   if (product.id === "gukjeong" && draft && self && fullIntro)
     return (
       <>
+        <FreeSeen k="gukjeong" />
         <RoyalDoc className="mt-3" paperClassName="px-5">
           <p className="text-center font-myeongjo text-sm font-extrabold tracking-[0.4em] text-seal">命 盤</p>
           <h1 className="mt-2 text-center font-myeongjo text-2xl font-extrabold">{name}님의 사주</h1>
@@ -691,6 +696,7 @@ async function OpenReport({
   if (product.id === "gukjeong")
     return (
       <>
+        <FreeSeen k="gukjeong" />
         <YearReport
           reading={reading}
           heading={`${name}님의 2026년 운세`}
