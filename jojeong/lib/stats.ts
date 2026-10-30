@@ -67,6 +67,7 @@ export async function track(
     | `view:${string}`
     | `co:${string}`
     | `to:${string}`
+    | `tp:${string}`
     | `src:${string}`
     | `dx:${string}`
     | `sh:${string}`

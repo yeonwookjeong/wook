@@ -11,7 +11,7 @@ import { ASK_FROM, CH_FROM, CLIENT_EVENTS, isFreeView, track, trackVisit, type A
 // or `view:<sale>` for a paid report's page (lib/sales.ts), or `cv:<slug>` for a column read (lib/columns.ts).
 // The owner's own browsing is not counted.
 export async function POST(request: Request) {
-  const body = (await request.json().catch(() => null)) as { v?: Record<string, unknown>; e?: string; from?: string; src?: string; dx?: string } | null;
+  const body = (await request.json().catch(() => null)) as { v?: Record<string, unknown>; e?: string; from?: string; to?: string; src?: string; dx?: string } | null;
   if (!body || (await isAdmin()) || isBotUa(request.headers.get("user-agent") ?? "")) return new Response(null, { status: 204 });
   if (body.v) {
     const v = body.v;
@@ -24,6 +24,8 @@ export async function POST(request: Request) {
     await track(body.e as ClientEvent);
     // A step out of a free page also counts for that page.
     if (body.e === "to_saju" && isStepFrom(body.from)) await track(`to:${body.from}`);
+    // …and, when it led to a paid report, as a step to the money from that page.
+    if (body.e === "to_saju" && isStepFrom(body.from) && body.to === "paid") await track(`tp:${body.from}`);
     // A share or a saved card also counts for the page it was made on.
     if (body.e === "share_result" && isStepFrom(body.from)) await track(`sh:${body.from}`);
     if (body.e === "save_image" && isStepFrom(body.from)) await track(`sv:${body.from}`);
