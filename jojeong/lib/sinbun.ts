@@ -585,6 +585,8 @@ export type SinbunStory = Sinbun & {
   basis: string[];
   // What the neighbours said of this calling, one line (the head of the result reads it before the chapters).
   said: string;
+  // The calling the chart fell into (the heaviest ten-god group, or 고른), for the report it leads to.
+  group: string;
 };
 
 export function sinbunStory(p: Pillars, gender?: Gender): SinbunStory {
@@ -603,6 +605,7 @@ export function sinbunStory(p: Pillars, gender?: Gender): SinbunStory {
     gi,
     strength: chart?.strength ?? null,
     basis,
+    group,
     said: GROUP_TALK[group].split(". ").slice(1).join(". ") || GROUP_TALK[group],
     chapters: [
       { title: "태어난 집", paras: [s.origin] },
