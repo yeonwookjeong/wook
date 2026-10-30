@@ -101,7 +101,7 @@ def schedule_by_link(items: list[dict], start: date, per_day: int) -> list[tuple
     """프로필 링크 번호 순서대로 하루 per_day개씩. (인포크 번호와 업로드 순서를 맞추기 위함)"""
     order = sorted(items, key=link_no)
     rows = [(start + timedelta(days=k // per_day), k % per_day, x) for k, x in enumerate(order)]
-    for (_, _, a), (_, _, b) in zip(order, order[1:]):
+    for a, b in zip(order, order[1:]):
         if a["vid"] == b["vid"]:
             print(f"⚠️ {link_no(a)}번·{link_no(b)}번이 같은 원본 영상이라 연달아 올라가요. 번호를 띄워 주세요.")
     return rows
