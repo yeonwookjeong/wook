@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import AdSlot from "@/components/AdSlot";
 import NextStep from "@/components/NextStep";
+import SinsalUpsell from "@/components/SinsalUpsell";
+import AskCard from "@/components/AskCard";
 import SinsalList from "@/components/SinsalList";
 import SinsalStart from "@/components/SinsalStart";
 import SinsalType from "@/components/SinsalType";
@@ -54,6 +56,7 @@ export default async function SinsalPage({ searchParams }: PageProps<"/sinsal">)
         <TrackOnce e="sinsal_view" />
         {fromFriend && <TrackOnce e="sinsal_friend_view" />}
         <SinsalType name={name} head={head} rest={rest} pillars={p} />
+        <SinsalUpsell head={head} />
 
         <h2 className="mt-6 text-center font-myeongjo text-lg font-extrabold">내 카드 {kinds || 1}장</h2>
         <SinsalCards cards={cards} places={cards.map((c) => placesOf(p, c.id))} gender={gender} />
@@ -71,6 +74,8 @@ export default async function SinsalPage({ searchParams }: PageProps<"/sinsal">)
             story: <SinsalCardB name={name} head={head} rest={rest} count={count} gender={gender} />,
           }}
         />
+
+        <AskCard from="free" lead="내 살 이야기, 정 훈도에게 묻기" />
 
         <section className="mt-5 px-1 text-[12.5px] leading-relaxed text-hanji/60">
           <p>
