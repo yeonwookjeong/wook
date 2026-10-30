@@ -1,8 +1,8 @@
 """
 업로드 일정표 만들기 (+ 한꺼번에 영상 만들기)
 
-recipes/*.json 을 모아서, 같은 영상·같은 출연자가 붙지 않게 순서를 섞고
-날짜별 업로드 일정을 out/업로드_일정.csv 로 저장합니다.
+recipes/*.json 을 모아서 프로필 링크 번호 순서대로 날짜별 업로드 일정을 out/업로드_일정.csv 로 저장합니다.
+(번호를 띄엄띄엄 매겨서 같은 출연자가 붙지 않게 하는 방식. --mix 면 예전처럼 출연자를 섞는 순서)
 
 규칙
   - 한 원본 영상에서 최대 3개 (넘으면 경고 후 앞 3개만 사용)
@@ -92,6 +92,21 @@ def schedule(items: list[dict], start: date, per_day: int, gap: int, strict: boo
     return rows
 
 
+def link_no(x: dict) -> int:
+    m = re.search(r"(\d+)", x.get("link", ""))
+    return int(m.group(1)) if m else 10**6
+
+
+def schedule_by_link(items: list[dict], start: date, per_day: int) -> list[tuple]:
+    """프로필 링크 번호 순서대로 하루 per_day개씩. (인포크 번호와 업로드 순서를 맞추기 위함)"""
+    order = sorted(items, key=link_no)
+    rows = [(start + timedelta(days=k // per_day), k % per_day, x) for k, x in enumerate(order)]
+    for (_, _, a), (_, _, b) in zip(order, order[1:]):
+        if a["vid"] == b["vid"]:
+            print(f"⚠️ {link_no(a)}번·{link_no(b)}번이 같은 원본 영상이라 연달아 올라가요. 번호를 띄워 주세요.")
+    return rows
+
+
 def make_missing(items: list[dict]) -> None:
     todo = [x for x in items if not (OUT / f"쇼츠_{x['stem']}.mp4").exists()]
     print(f"🎬 만들 영상 {len(todo)}개")
@@ -112,6 +127,7 @@ def main():
     ap.add_argument("--strict", action="store_true", help="간격을 못 지키면 그날은 비우기 (기본: 빈 날 없이 채움)")
     ap.add_argument("--times", help="업로드 시각들, 쉼표 구분 (기본: 1개면 19:30, 2개면 12:30,19:30)")
     ap.add_argument("--make", action="store_true", help="아직 없는 영상을 먼저 만들기")
+    ap.add_argument("--mix", action="store_true", help="링크 번호 대신 출연자를 섞는 순서로 (예전 방식)")
     a = ap.parse_args()
 
     items = load()
@@ -123,7 +139,8 @@ def main():
     start = date.fromisoformat(a.start) if a.start else date.today() + timedelta(days=1)
     default = "19:30" if a.per_day <= 1 else "12:30,19:30,22:00"
     times = sorted(t.strip() for t in (a.times or default).split(",") if t.strip()) or ["19:30"]
-    rows = schedule(items, start, max(1, a.per_day), max(0, a.gap), a.strict)
+    rows = schedule(items, start, max(1, a.per_day), max(0, a.gap), a.strict) if a.mix \
+        else schedule_by_link(items, start, max(1, a.per_day))
 
     OUT.mkdir(exist_ok=True)
     dst = OUT / "업로드_일정.csv"
