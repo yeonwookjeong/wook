@@ -5,6 +5,57 @@ import { shortShareAction } from "@/app/actions";
 import { keepPng, makePng } from "@/lib/cardExport";
 import { trackEvent } from "./VisitBeacon";
 
+// Sends the friend link with its line (the share sheet, else the clipboard). True when it was copied, for the
+// button to say so.
+async function sendLink(path: string, text: string): Promise<boolean> {
+  trackEvent("share_result", "sinsal");
+  let short = path;
+  try {
+    short = (await shortShareAction(path)) ?? path;
+  } catch {}
+  const url = new URL(short, window.location.origin).toString();
+  // One message, the line and the link together: sent apart, a chat app shows two bubbles and no preview.
+  const message = `${text}\n${url}`;
+  if (navigator.share) {
+    try {
+      await navigator.share({ text: message });
+      return false;
+    } catch (e) {
+      if ((e as Error).name === "AbortError") return false;
+    }
+  }
+  try {
+    await navigator.clipboard.writeText(message);
+    return true;
+  } catch {
+    window.prompt("이 링크를 복사해 주세요", url);
+    return false;
+  }
+}
+
+// Right under the type, where the wish to show a friend is strongest: the same link as the foot, in one button.
+export function SinsalShareQuick({ path, text }: { path: string; text: string }) {
+  const [copied, setCopied] = useState(false);
+  async function send() {
+    if (await sendLink(path, text)) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    }
+  }
+  return (
+    <div className="mt-4 text-center">
+      <button
+        type="button"
+        onClick={send}
+        className="w-full rounded-2xl bg-seal py-3.5 font-myeongjo text-[17px] font-extrabold text-hanji shadow-[0_5px_0_#7d1a14] transition active:translate-y-1 active:shadow-[0_2px_0_#7d1a14]"
+      >
+        {copied ? "링크를 복사했어요" : "친구랑 겹치는 살 보기"}
+      </button>
+      <p className="mt-2 text-[12px] leading-relaxed text-hanji/60">링크를 받은 친구가 생일을 넣으면, 두 사람에게 함께 있는 살이 나와요.</p>
+    </div>
+  );
+}
+
 // The foot of the 신살 도감: send a friend the link (they get the 도감's first screen, then their own cards and the
 // 살 the two share, app/s/[kind]/[token]), or keep a card as an image: 4:5 for a feed or chat, 9:16 for a story.
 export default function SinsalShare({ name, path, text, cards }: { name: string; path: string; text: string; cards: { feed: React.ReactNode; story: React.ReactNode } }) {
@@ -14,28 +65,9 @@ export default function SinsalShare({ name, path, text, cards }: { name: string;
   const box = useRef<HTMLDivElement>(null);
 
   async function send() {
-    trackEvent("share_result", "sinsal");
-    let short = path;
-    try {
-      short = (await shortShareAction(path)) ?? path;
-    } catch {}
-    const url = new URL(short, window.location.origin).toString();
-    // One message, the line and the link together: sent apart, a chat app shows two bubbles and no preview.
-    const message = `${text}\n${url}`;
-    if (navigator.share) {
-      try {
-        await navigator.share({ text: message });
-        return;
-      } catch (e) {
-        if ((e as Error).name === "AbortError") return;
-      }
-    }
-    try {
-      await navigator.clipboard.writeText(message);
+    if (await sendLink(path, text)) {
       setState("copied");
       setTimeout(() => setState("idle"), 2500);
-    } catch {
-      window.prompt("이 링크를 복사해 주세요", url);
     }
   }
 

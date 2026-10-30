@@ -83,7 +83,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
     ...["uv", "pv", "reading", "me_try", "me_err", "me_same", "king", "join", "appoint", "share_court", "share_result", "save_image", "own_court", "to_saju", "ask_pop", "to_ask", "to_channel", "sinsal_pop", "sinsal_open", "sinsal_view", "sinsal_friend_open", "sinsal_friend_view", "askflow_join", "askflow_sent", "askflow_buy"],
     ...CH_FROM.map((f) => `ch:${f}`),
     ...ASK_FROM.map((f) => `ask:${f}`),
-    ...STEP_FROM.map((f) => `to:${f}`),
+    ...STEP_FROM.flatMap((f) => [`to:${f}`, `tp:${f}`]),
     ...SHARE_FROM.flatMap((f) => [`sh:${f}`, `sv:${f}`]),
     ...["reading", "sinbun", "sinsal"].map((k) => `sl:${k}`),
     ...SOURCES.map((s) => `src:${s}`),
@@ -996,7 +996,7 @@ function FreeTable({ stats, period }: { stats: Record<string, Record<Period, num
   const n = (x: number) => (x ? x.toLocaleString("ko-KR") : "–");
   const step = (f: string) => (STEP_FROM as readonly string[]).includes(f);
   const share = (f: string) => (SHARE_FROM as readonly string[]).includes(f);
-  const rows = FREE_VIEW.map((f) => ({ f, seen: v(`fv:${f}`), first: v(`fe:${f}`), next: step(f) ? v(`to:${f}`) : 0, sent: share(f) ? v(`sh:${f}`) : 0, saved: share(f) ? v(`sv:${f}`) : 0 })).sort(
+  const rows = FREE_VIEW.map((f) => ({ f, seen: v(`fv:${f}`), first: v(`fe:${f}`), next: step(f) ? v(`to:${f}`) : 0, paid: step(f) ? v(`tp:${f}`) : 0, sent: share(f) ? v(`sh:${f}`) : 0, saved: share(f) ? v(`sv:${f}`) : 0 })).sort(
     (a, b) => b.seen - a.seen || b.first - a.first,
   );
   const max = Math.max(1, ...rows.map((r) => r.seen));
@@ -1009,7 +1009,7 @@ function FreeTable({ stats, period }: { stats: Record<string, Record<Period, num
     <section className="doc-paper mt-4 px-3 py-4">
       <h2 className="px-1 font-myeongjo font-extrabold">무료 놀이별</h2>
       <p className="mt-0.5 px-1 text-[11px] text-ink-soft">
-        결과 본 수는 한 브라우저가 하루 한 번만 세요. 처음 입력은 그 화면에서 생일을 처음 넣은 수(=새 손님을 데려온 화면). 왕이 될 사주 즉위는 {n(v("king"))}건.
+        결과 본 수는 한 브라우저가 하루 한 번만 세요. 처음 입력은 그 화면에서 생일을 처음 넣은 수(=새 손님을 데려온 화면). 유료로는 다음 걸음 가운데 유료 보고서로 간 수예요(10/30 저녁부터 셈). 왕이 될 사주 즉위는 {n(v("king"))}건.
       </p>
       <div className="mt-2 overflow-x-auto">
         <table className="w-full text-right text-[12px] tabular-nums">
@@ -1019,6 +1019,7 @@ function FreeTable({ stats, period }: { stats: Record<string, Record<Period, num
               <th className="px-1 font-normal">결과 본 수</th>
               <th className="px-1 font-normal">처음 입력</th>
               <th className="px-1 font-normal">다음 걸음</th>
+              <th className="px-1 font-normal">유료로</th>
               <th className="px-1 font-normal">보내기</th>
               <th className="px-1 font-normal">저장</th>
             </tr>
@@ -1033,6 +1034,7 @@ function FreeTable({ stats, period }: { stats: Record<string, Record<Period, num
                 <td className="px-1 font-bold">{n(r.seen)}</td>
                 <td className="px-1">{n(r.first)}</td>
                 <td className="px-1">{n(r.next)}</td>
+                <td className="px-1">{n(r.paid)}</td>
                 <td className="px-1">{n(r.sent)}</td>
                 <td className="px-1">{n(r.saved)}</td>
               </tr>
@@ -1042,7 +1044,7 @@ function FreeTable({ stats, period }: { stats: Record<string, Record<Period, num
                 <td className="py-1 text-left">처음 입력 · {label}</td>
                 <td className="px-1">–</td>
                 <td className="px-1">{n(x)}</td>
-                <td colSpan={3} />
+                <td colSpan={4} />
               </tr>
             ))}
           </tbody>

@@ -10,7 +10,7 @@ import SinsalWithFriend from "@/components/SinsalWithFriend";
 import SinsalCards from "@/components/SinsalCards";
 import SinsalNight from "@/components/SinsalNight";
 import { SinsalCardA, SinsalCardB } from "@/components/SinsalSaveCards";
-import SinsalShare from "@/components/SinsalShare";
+import SinsalShare, { SinsalShareQuick } from "@/components/SinsalShare";
 import TrackOnce from "@/components/TrackOnce";
 import { readMe } from "@/lib/me";
 import { samePerson } from "@/lib/pairToken";
@@ -49,6 +49,8 @@ export default async function SinsalPage({ searchParams }: PageProps<"/sinsal">)
   const count = kinds || 1;
   const name = me.person.name;
   const noHour = p.hourBranch === null;
+  const sharePath = `/s/sinsal/${sealPerson("sinsal", me.person)}`;
+  const shareText = `20가지 살 유형 중 나는 ${rareText(head)}만 있는 유형. 너는 뭐 나올까?`;
 
   return (
     <>
@@ -56,6 +58,7 @@ export default async function SinsalPage({ searchParams }: PageProps<"/sinsal">)
         <TrackOnce e="sinsal_view" />
         {fromFriend && <TrackOnce e="sinsal_friend_view" />}
         <SinsalType name={name} head={head} rest={rest} pillars={p} />
+        <SinsalShareQuick path={sharePath} text={shareText} />
         <SinsalUpsell head={head} />
 
         <h2 className="mt-6 text-center font-myeongjo text-lg font-extrabold">내 카드 {kinds || 1}장</h2>
@@ -67,8 +70,8 @@ export default async function SinsalPage({ searchParams }: PageProps<"/sinsal">)
 
         <SinsalShare
           name={name}
-          path={`/s/sinsal/${sealPerson("sinsal", me.person)}`}
-          text={`20가지 살 유형 중 나는 ${rareText(head)}만 있는 유형. 너는 뭐 나올까?`}
+          path={sharePath}
+          text={shareText}
           cards={{
             feed: <SinsalCardA name={name} head={head} rest={rest} count={count} gender={gender} />,
             story: <SinsalCardB name={name} head={head} rest={rest} count={count} gender={gender} />,
