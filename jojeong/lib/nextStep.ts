@@ -40,11 +40,11 @@ export const STEPS = {
     ],
   }),
   sinbun: (query?: string): Steps => ({
-    ask: "조선의 한평생 말고, 지금의 나는?",
-    main: { href: `/reports/pyeongsaeng${q(query)}`, seal: "命", kicker: "무료 사주 분석", title: "같은 여덟 글자로 보는 오늘의 나", line: "여덟 글자의 무게, 다섯 가지 힘, 10년 흐름까지", free: true },
+    ask: "조선의 나 다음엔, 내 살은?",
+    main: { href: "/sinsal", seal: "神煞", kicker: "무료", title: "나는 어떤 살의 사람일까, 신살 유형 테스트", line: "20가지 살 유형 중 내 유형과 100명 중 몇 명인지", free: true },
     more: [
-      { href: `/reports/gukjeong${q(query)}`, title: "2026 운세 (무료)" },
-      { href: "/reports/gunghap", title: "궁합" },
+      { href: `/reports/gukjeong${q(query)}`, title: "내 사주 무료 풀이" },
+      { href: `/reports/pyeongsaeng${q(query)}`, title: "평생 사주" },
     ],
   }),
   samjae: (year: number): Steps => ({

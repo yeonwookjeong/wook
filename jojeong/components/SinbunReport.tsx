@@ -4,6 +4,7 @@ import type { Pillars } from "@/lib/saju";
 import { sinbunStory } from "@/lib/sinbun";
 import { bornOf, MATERIAL, yearGanji } from "@/lib/hopae";
 import Hopae from "./Hopae";
+import SinbunUpsell, { SinbunMore } from "./SinbunUpsell";
 import Keep from "./Keep";
 import SinsalNight, { NIGHT_GOLD, NIGHT_PANEL } from "./SinsalNight";
 import RoyalDoc from "./RoyalDoc";
@@ -122,6 +123,8 @@ export default function SinbunReport({
           </dl>
         </section>
 
+        <SinbunUpsell group={s.group} job={s.job} rank={s.rank} />
+
         {/* What the four tags mean: 『호패사목』(1677) set the material by standing. */}
         <section className={`${NIGHT_PANEL} mt-4 px-3 py-4`}>
           <h2 className="text-center font-myeongjo text-[17px] font-extrabold">
@@ -165,6 +168,8 @@ export default function SinbunReport({
             회양목으로 정했어요. 여기서는 감정한 신분에 맞춰 골랐어요.
           </p>
         </section>
+
+        <SinbunMore group={s.group} job={s.job} />
       </SinsalNight>
 
       <RoyalDoc className="mt-5" paperClassName="px-5">
