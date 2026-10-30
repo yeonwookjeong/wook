@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import AdSlot from "@/components/AdSlot";
 import NextStep from "@/components/NextStep";
-import SinsalUpsell from "@/components/SinsalUpsell";
+import SinsalUpsell, { SinsalMore } from "@/components/SinsalUpsell";
 import AskCard from "@/components/AskCard";
 import SinsalList from "@/components/SinsalList";
 import SinsalStart from "@/components/SinsalStart";
@@ -75,6 +75,7 @@ export default async function SinsalPage({ searchParams }: PageProps<"/sinsal">)
           }}
         />
 
+        <SinsalMore head={head} rest={rest} />
         <AskCard from="free" lead="내 살 이야기, 정 훈도에게 묻기" />
 
         <section className="mt-5 px-1 text-[12.5px] leading-relaxed text-hanji/60">

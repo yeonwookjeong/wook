@@ -66,8 +66,8 @@ export const STEPS = {
   // 신살 are marks laid over the chart: the step is the chart itself.
   sinsal: (): Steps => ({
     ask: "살은 여덟 글자 위에 얹힌 표시예요",
-    main: { href: "/reports/pyeongsaeng", seal: "八字", kicker: "무료", title: "살 아래의 여덟 글자, 내 사주 전체 보기", line: "성향 지도, 돈·사랑·일 판정, 10년 흐름까지", free: true },
-    more: [{ href: "/reports/sinbun", title: "조선 신분 감정" }, { href: "/reports/gunghap", title: "궁합" }],
+    main: { href: "/reports/sinbun", seal: "身分", kicker: "무료", title: "조선에 태어났다면 나는? 내 호패 받기", line: "100가지 삶 가운데 하나, 양반·중인·상민 호패로", free: true },
+    more: [{ href: "/reports/gukjeong", title: "내 사주 무료 풀이" }, { href: "/reports/pyeongsaeng", title: "평생 사주" }],
   }),
   // A day pillar is two of the eight characters: the step is the other six.
   ilju: (name: string): Steps => ({

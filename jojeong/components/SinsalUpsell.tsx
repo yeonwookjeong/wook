@@ -18,8 +18,10 @@ const PICKS: Record<string, { href: string; seal: string; title: string; line: s
 };
 const DEFAULT = { href: "/reports/pyeongsaeng", seal: "命", title: "살 아래의 여덟 글자, 평생 사주로 깊이", line: "평생 사주 · 13장에 걸친 내 사주 전체" };
 
+export const pickFor = (c: Card) => PICKS[c.id.replace(/\d+$/, "")] ?? DEFAULT;
+
 export default function SinsalUpsell({ head }: { head: Card }) {
-  const p = PICKS[head.id.replace(/\d+$/, "")] ?? DEFAULT;
+  const p = pickFor(head);
   return (
     <TrackLink event="to_saju" from="sinsal" href={p.href} className={`${NIGHT_PANEL} mt-4 flex items-center gap-3 px-4 py-4`}>
       <span className="flex size-12 shrink-0 -rotate-3 items-center justify-center border-[3px] border-[#d4af5f] font-myeongjo text-xl font-extrabold text-[#d4af5f]">{p.seal}</span>
@@ -30,5 +32,37 @@ export default function SinsalUpsell({ head }: { head: Card }) {
       </span>
       <span className={`shrink-0 font-myeongjo text-sm font-extrabold ${NIGHT_GOLD}`}>보기 →</span>
     </TrackLink>
+  );
+}
+
+// The foot of the result, after sharing: the head's report again, one for another 살 on the chart that leads
+// somewhere else, and 궁합 (the friend comparison just above leads there). At most three, smaller than the head card.
+export function SinsalMore({ head, rest }: { head: Card; rest: Card[] }) {
+  const first = pickFor(head);
+  const other = rest.map(pickFor).find((p) => p.href !== first.href && p !== DEFAULT);
+  const items = [
+    { ...first, kicker: `${head.sal} 유형에게` },
+    ...(other ? [{ ...other, kicker: "함께 적힌 살로" }] : []),
+    { href: "/reports/gunghap", seal: "合", title: "살이 겹치는 사람과의 궁합", line: "궁합 보고서 · 두 사람 사주로 보는 끌림과 부딪힘", kicker: "친구와 함께" },
+  ];
+  return (
+    <section className={`${NIGHT_PANEL} mt-4 px-3 py-3`}>
+      <h2 className="px-1 text-center font-myeongjo text-[16px] font-extrabold">그대 살로 이어 보기</h2>
+      <ul className="mt-2 flex flex-col divide-y divide-white/10">
+        {items.map((p) => (
+          <li key={p.href + p.kicker}>
+            <TrackLink event="to_saju" from="sinsal" href={p.href} className="flex items-center gap-3 px-1 py-2.5">
+              <span className="flex size-9 shrink-0 -rotate-3 items-center justify-center border-2 border-[#d4af5f] font-myeongjo text-base font-extrabold text-[#d4af5f]">{p.seal}</span>
+              <span className="min-w-0 flex-1">
+                <span className={`block text-[10.5px] font-bold ${NIGHT_GOLD}`}>{p.kicker}</span>
+                <span className="block font-myeongjo text-[14.5px] leading-snug font-extrabold">{p.title}</span>
+                <span className="block text-[11.5px] leading-snug text-hanji/60">{p.line}</span>
+              </span>
+              <span className={`shrink-0 text-sm ${NIGHT_GOLD}`}>→</span>
+            </TrackLink>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
