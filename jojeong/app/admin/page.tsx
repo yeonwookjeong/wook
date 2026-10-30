@@ -10,7 +10,7 @@ import { lastReportError, listInquiries, memberViews, readingCount } from "@/lib
 import { listFeedback } from "@/lib/feedback";
 import { memberFixAction } from "./actions";
 import { allMembers, memberNo, VIA_LABEL, viaOf, type Member } from "@/lib/members";
-import { adminSignOut, creditEventCreateAction, creditEventToggleAction, deleteDownFeedbackAction, giftCopyAction, giftRevokeAction, inquiryDeleteAction, inquiryDoneAction, rewriteReportAction, testOrderAction } from "./actions";
+import { adminSignOut, creditEventCreateAction, creditEventToggleAction, deleteDownFeedbackAction, giftCopyAction, reportErrorClearAction, giftRevokeAction, inquiryDeleteAction, inquiryDoneAction, rewriteReportAction, testOrderAction } from "./actions";
 import Dashboard, { rangeOf } from "./Dashboard";
 import { threadsPosts } from "@/lib/threads";
 import GiftForm from "./GiftForm";
@@ -126,6 +126,10 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
           <p className="text-sm font-extrabold text-seal">보고서 쓰기 실패 · {when(writeError.at)}</p>
           <p className="mt-1 text-[12px] leading-relaxed break-all">{writeError.message}</p>
           <p className="mt-1 text-[11px] text-ink-soft">최근 이틀 안의 마지막 실패만 보여요. 고친 뒤 보고서를 다시 열면 새로 써요.</p>
+          <form action={reportErrorClearAction} className="mt-2 text-right">
+            <input type="hidden" name="kind" value="error" />
+            <button className="rounded-full border border-seal/40 bg-white/70 px-3 py-1 text-[12px] font-bold text-seal">처리했어요 · 지우기</button>
+          </form>
         </section>
       )}
       {writeRisk && (
@@ -133,6 +137,10 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
           <p className="text-sm font-extrabold text-seal">보고서 위험 문구 · {when(writeRisk.at)}</p>
           <p className="mt-1 text-[12px] leading-relaxed break-all">{writeRisk.message}</p>
           <p className="mt-1 text-[11px] text-ink-soft">손님에게 이미 보인 글이에요. 최근 이틀 안의 마지막 한 건만 보여요.</p>
+          <form action={reportErrorClearAction} className="mt-2 text-right">
+            <input type="hidden" name="kind" value="risk" />
+            <button className="rounded-full border border-seal/40 bg-white/70 px-3 py-1 text-[12px] font-bold text-seal">처리했어요 · 지우기</button>
+          </form>
         </section>
       )}
 

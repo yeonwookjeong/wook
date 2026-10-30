@@ -13,7 +13,7 @@ import { personOf } from "@/lib/personForm";
 import { productById } from "@/lib/products";
 import { jobFor, type JobRequest } from "@/lib/reportWriter";
 import { BirthInputError } from "@/lib/saju";
-import { deleteInquiry, setInquiryDone } from "@/lib/store";
+import { clearReportError, deleteInquiry, setInquiryDone } from "@/lib/store";
 import { createCreditEvent, setCreditEventOn } from "@/lib/creditEvents";
 
 export async function adminSignIn(_prev: { error: string | null }, formData: FormData): Promise<{ error: string | null }> {
@@ -30,6 +30,13 @@ export async function adminSignOut() {
 export async function inquiryDoneAction(formData: FormData) {
   if (!(await isAdmin())) return;
   await setInquiryDone(String(formData.get("id") ?? ""), formData.get("done") === "1");
+  refresh();
+}
+
+// The report-failure (or risk) banner on /admin, once the owner has dealt with it.
+export async function reportErrorClearAction(formData: FormData) {
+  if (!(await isAdmin())) return;
+  await clearReportError(formData.get("kind") === "risk" ? "risk" : "error");
   refresh();
 }
 
