@@ -51,14 +51,15 @@ export default function ContactForm({ initial }: { initial?: string }) {
         <textarea name="body" value={body} onChange={(e) => setBody(e.target.value)} rows={7} maxLength={2000} required className={field} />
       </label>
       <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-semibold text-ink-soft">답장받을 연락처{needsReply(topic) ? "" : " (선택)"}</span>
+        <span className="text-sm font-semibold text-ink-soft">답장받을 이메일{needsReply(topic) ? "" : " (선택)"}</span>
         <input
           name="email"
-          type="text"
+          type="email"
+          inputMode="email"
           autoComplete="email"
           maxLength={100}
           required={needsReply(topic)}
-          placeholder="이메일 또는 휴대폰 번호"
+          placeholder="example@gmail.com"
           className={field}
         />
       </label>
@@ -73,7 +74,7 @@ export default function ContactForm({ initial }: { initial?: string }) {
         {pending ? "보내는 중…" : "문의 보내기"}
       </button>
       <p className="text-[11px] leading-relaxed text-ink-soft">
-        적어 주신 내용과 연락처는 답변에만 쓰고, 지워 달라고 하시면 바로 지워요. 생년월일 같은 개인정보는 적지 않아도 돼요.
+        적어 주신 내용과 이메일은 답변에만 쓰고, 지워 달라고 하시면 바로 지워요. 생년월일 같은 개인정보는 적지 않아도 돼요.
       </p>
     </form>
   );
