@@ -120,8 +120,8 @@ def make_missing(items: list[dict]) -> None:
 
 
 def main():
-    ap = argparse.ArgumentParser(description="업로드 일정표 만들기")
-    ap.add_argument("--start", help="시작 날짜 YYYY-MM-DD (기본: 내일)")
+    ap = argparse.ArgumentParser(description="쌓아둔 쇼츠 목록(링크 번호순) / 영상 일괄 제작 / --start 주면 날짜 일정표")
+    ap.add_argument("--start", help="날짜 일정표가 필요할 때 시작 날짜 YYYY-MM-DD")
     ap.add_argument("--per-day", type=int, default=1, help="하루 업로드 개수 (기본 1)")
     ap.add_argument("--gap", type=int, default=2, help="같은 원본 영상 권장 간격(일) (기본 2)")
     ap.add_argument("--strict", action="store_true", help="간격을 못 지키면 그날은 비우기 (기본: 빈 날 없이 채움)")
@@ -135,6 +135,26 @@ def main():
         sys.exit("recipes 폴더에 레시피가 없어요.")
     if a.make:
         make_missing(items)
+
+    if not a.start and not a.mix:  # 기본: 날짜 없이 링크 번호순 재고 목록
+        OUT.mkdir(exist_ok=True)
+        dst = OUT / "쇼츠_목록.csv"
+        order = sorted(items, key=link_no)
+        with dst.open("w", newline="", encoding="utf-8-sig") as f:
+            w = csv.writer(f)
+            w.writerow(["링크번호", "출연자", "레시피", "영상", "캡션파일", "준비"])
+            for x in order:
+                mp4 = OUT / f"쇼츠_{x['stem']}.mp4"
+                w.writerow([x["link"], x["celeb"], x["stem"], mp4.name, mp4.with_suffix(".txt").name,
+                            "✅" if mp4.exists() else "❌ 영상 없음"])
+        print(f"\n📦 쌓아둔 쇼츠 {len(order)}개 (링크 번호순) → {dst}")
+        for x in order:
+            ok = "✅" if (OUT / f"쇼츠_{x['stem']}.mp4").exists() else "❌"
+            print(f"  {ok} {link_no(x):>4}번  {x['celeb']:<6} {x['stem']}")
+        for a_, b_ in zip(order, order[1:]):
+            if a_["vid"] == b_["vid"]:
+                print(f"  ⚠️ {link_no(a_)}번·{link_no(b_)}번이 같은 원본 영상이라 연달아 올라가요.")
+        return
 
     start = date.fromisoformat(a.start) if a.start else date.today() + timedelta(days=1)
     default = "19:30" if a.per_day <= 1 else "12:30,19:30,22:00"
@@ -157,7 +177,7 @@ def main():
     for d, slot, x in rows:
         print(f"  {d} ({week[d.weekday()]}) {times[slot % len(times)]}  {x['celeb']:<6} {x['stem']}")
     vids = {x["vid"] for x in items}
-    if len(vids) < 3:
+    if a.mix and len(vids) < 3:
         print(f"\n💡 원본 영상이 {len(vids)}개뿐이라 같은 영상이 붙어 나와요. CC 영상 3~4개를 쌓아두면 골고루 섞여요.")
 
 
