@@ -1,0 +1,63 @@
+{
+  "source": "https://youtu.be/X7bdKo0Thh8",
+  "title1": "운동 가방에",
+  "title2": "탈취제 챙기는 [[이현이]]",
+  "link_text": "프로필 링크 62번",
+  "theme": "celebpick",
+  "sub_theme": "story_green",
+  "clip_subs": true,
+  "blur": true,
+  "google_voice": "ko-KR-Chirp3-HD-Kore",
+  "google_rate": 1.3,
+  "broll_query": "이현이 화보",
+  "broll_offset": 2,
+  "caption": "모델 이현이가 운동 가방에 꼭 넣어 다니는 탈취제 🏃‍♀️",
+  "points": [
+    "운동 후 땀 냄새가 너무 싫어서 챙기기 시작했어요 💦",
+    "집에 가서 샤워하기 전까지 냄새 걱정 덜기 🚿"
+  ],
+  "hashtags": [
+    "탈취제",
+    "땀냄새",
+    "운동가방",
+    "운동템"
+  ],
+  "highlight": [
+    "탈취제",
+    "땀",
+    "냄새",
+    "샤워",
+    "예민"
+  ],
+  "bgm_mood": "상쾌한",
+  "sub_fix": {
+    "750mm": "750ml",
+    "1체형": "일체형",
+    "잘 안 고쳐": "잘 안 꽂혀",
+    "탈치즈": "탈취제",
+    "가죽 다녀": "갖고 다녀"
+  },
+  "parts": [
+    {
+      "type": "tts",
+      "text": "운동하는 모델 이현이가 가방에 꼭 챙긴다는 이것은?",
+      "media": [
+        "auto"
+      ]
+    },
+    {
+      "type": "clip",
+      "from": "제 운동 가방에는",
+      "to": "탈취제도 있고요"
+    },
+    {
+      "type": "tts",
+      "text": "탈취제까지 챙기는 이유는"
+    },
+    {
+      "type": "clip",
+      "from": "땀 냄새가 내 스스로에게",
+      "to": "유일하게 제가 예민한 거"
+    }
+  ]
+}

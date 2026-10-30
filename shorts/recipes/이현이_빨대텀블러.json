@@ -1,0 +1,63 @@
+{
+  "source": "https://youtu.be/X7bdKo0Thh8",
+  "title1": "750ml 텀블러를",
+  "title2": "맨날 들고 다니는 [[이현이]]",
+  "link_text": "프로필 링크 47번",
+  "theme": "celebpick",
+  "sub_theme": "story_green",
+  "clip_subs": true,
+  "blur": true,
+  "google_voice": "ko-KR-Chirp3-HD-Kore",
+  "google_rate": 1.3,
+  "broll_query": "이현이 화보",
+  "broll_offset": 0,
+  "caption": "모델 이현이가 맨날 들고 다니는 750ml 빨대 텀블러 🥤",
+  "points": [
+    "용량은 딱 적당한 750ml, 뚜껑에 빨대가 일체형이라 편하게 ✨",
+    "빨대가 쏙 뽑혀서 세척까지 간편해요 🫧"
+  ],
+  "hashtags": [
+    "텀블러",
+    "빨대텀블러",
+    "대용량텀블러",
+    "데일리템"
+  ],
+  "highlight": [
+    "750",
+    "빨대",
+    "일체형",
+    "세척",
+    "컵홀더"
+  ],
+  "bgm_mood": "상쾌한",
+  "sub_fix": {
+    "750mm": "750ml",
+    "1체형": "일체형",
+    "잘 안 고쳐": "잘 안 꽂혀",
+    "탈치즈": "탈취제",
+    "가죽 다녀": "갖고 다녀"
+  },
+  "parts": [
+    {
+      "type": "tts",
+      "text": "실용주의 모델 이현이가 맨날 들고 다니는 애착템은?",
+      "media": [
+        "auto"
+      ]
+    },
+    {
+      "type": "clip",
+      "from": "텀블러가 진짜 종류가 많잖아요",
+      "to": "빨대가 1체형이에요"
+    },
+    {
+      "type": "tts",
+      "text": "그런데 텀블러 살 때 제일 중요하다는 건"
+    },
+    {
+      "type": "clip",
+      "from": "그리고 세척도 너무 쉽고",
+      "to": "보통 일반적인 컵홀더보다 커요"
+    }
+  ]
+}

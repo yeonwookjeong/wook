@@ -201,6 +201,7 @@ def fmt(sec: float) -> str:
 
 def clean_text(text: str) -> str:
     text = re.sub(r"\[[^\]]*\]", " ", text)  # [음악] [비명] 같은 표시 제거
+    text = text.replace(">>", " ")  # 자동자막의 화자 바뀜 표시
     return re.sub(r"\s+", " ", text).strip()
 
 
@@ -1604,6 +1605,8 @@ def main():
             overlays = []
             if mode == "auto":
                 for j, (s0, e0, text) in enumerate(subs.chunks(pa, pb)):
+                    for wrong, right in recipe.get("sub_fix", {}).items():  # 자동자막 받아쓰기 오류 고치기
+                        text = text.replace(wrong, right)
                     png = tmp / f"sub_{i}_{k}_{j}.png"
                     sub_png(text, "celeb", png, sub_theme)
                     overlays += pop(png, text, "celeb", (s0 - pa) / speed, (e0 - pa) / speed)
