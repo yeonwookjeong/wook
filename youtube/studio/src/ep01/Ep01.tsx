@@ -1,6 +1,7 @@
 import { AbsoluteFill, Easing, Img, interpolate, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { loadFont as loadNotoSans } from "@remotion/google-fonts/NotoSansKR";
 import { loadFont as loadHahmlet } from "@remotion/google-fonts/Hahmlet";
+import { MapOpening, MAP_OPENING_FRAMES } from "../components/MapOpening";
 
 const { fontFamily: sans } = loadNotoSans();
 const { fontFamily: serif } = loadHahmlet();
@@ -30,10 +31,9 @@ type Shot = {
 };
 
 const SHOTS: Shot[] = [
-  { img: "A", sec: 2.0, cam: { s0: 1.25, s1: 1.0, ox: 540, oy: 960, snap: true }, caps: [[{ text: "No fourth" }], [{ text: "floor?", hl: true }]], overlay: "question" },
+  { img: "A", sec: 2.0, cam: { s0: 1.6, s1: 1.0, ox: 540, oy: 960, snap: true }, caps: [[{ text: "this elevator" }], [{ text: "is hiding" }, { text: "a floor.", hl: true }]] },
   { img: "A", sec: 1.6, cam: { s0: 1.0, s1: 2.4, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "Just an" }, { text: "F.", hl: true }]] },
-  { img: "0", sec: 1.6, cam: { s0: 1.12, s1: 1.12, ox: 540, oy: 960, dx: 60, dy: 0 }, caps: [[{ text: "In Korea," }]] },
-  { img: "C", sec: 1.6, cam: { s0: 1.0, s1: 1.12, ox: 640, oy: 700 }, caps: [[{ text: "the number" }, { text: "four", hl: true }]] },
+  { img: "C", sec: 1.6, cam: { s0: 1.0, s1: 1.12, ox: 640, oy: 700 }, caps: [[{ text: "The number" }, { text: "four", hl: true }]] },
   { img: "C", sec: 2.2, cam: { s0: 1.12, s1: 1.18, ox: 640, oy: 700 }, caps: [[{ text: "is read" }], [{ text: '"sa,"', hl: true }]], dark: 0.35, overlay: "sa" },
   { img: "D", sec: 1.6, cam: { s0: 1.0, s1: 1.08, ox: DEATH.x, oy: DEATH.y }, caps: [[{ text: "the same" }], [{ text: "sound as" }]], fadeIn: true },
   { img: "D", sec: 1.8, cam: { s0: 1.5, s1: 1.65, ox: DEATH.x, oy: DEATH.y, snap: true }, caps: [[{ text: "an old word" }], [{ text: "for" }, { text: "death.", hl: true }]], shake: true },
@@ -45,7 +45,7 @@ const SHOTS: Shot[] = [
   { img: "A", sec: 2.2, cam: { s0: 1.6, s1: 1.9, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "you'll know" }], [{ text: "what it's" }, { text: "hiding.", hl: true }]], dark: 0.45 },
 ];
 
-export const EP01_FRAMES = Math.round(SHOTS.reduce((a, s) => a + s.sec, 0) * FPS);
+export const EP01_FRAMES = MAP_OPENING_FRAMES + Math.round(SHOTS.reduce((a, s) => a + s.sec, 0) * FPS);
 
 // 자막: 흰 굵은 글씨 + 검은 테두리, 화면 가운데보다 조금 아래, 핵심만 노란색
 const Caption: React.FC<{ cap: Cap }> = ({ cap }) => {
@@ -176,9 +176,16 @@ const ShotView: React.FC<{ shot: Shot; dur: number }> = ({ shot, dur }) => {
 };
 
 export const Ep01: React.FC = () => {
-  let from = 0;
+  let from = MAP_OPENING_FRAMES;
   return (
     <AbsoluteFill style={{ backgroundColor: "#000" }}>
+      {/* 시그니처 오프닝: 지도에서 서울로 쑥 */}
+      <Sequence durationInFrames={MAP_OPENING_FRAMES}>
+        <MapOpening variant="modern" />
+        <Sequence from={8} durationInFrames={40} layout="none">
+          <Caption cap={[{ text: "In" }, { text: "Korea,", hl: true }]} />
+        </Sequence>
+      </Sequence>
       {SHOTS.map((shot, i) => {
         const dur = Math.round(shot.sec * FPS);
         const el = (
