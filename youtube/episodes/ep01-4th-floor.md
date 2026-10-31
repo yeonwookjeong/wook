@@ -10,9 +10,9 @@
 
 | # | 내레이션 (영어) | 그림 | 코드로 얹는 것 | 움직임 |
 |---|---|---|---|---|
-| 1 | No fourth floor? | A 전체 | 물음표 팝 | 스냅 줌 |
+| 0 | In Korea, | 시그니처 지도 오프닝(요즘) | 지도 → 서울로 쑥 | 줌 |
+| 1 | this elevator is hiding a floor. | A 전체 | — | 스냅 줌 |
 | 2 | Just an "F." | A 의 F 부분 | F 깜빡임 | 달리 인 |
-| 3 | In Korea, | B | — | 팬 |
 | 4 | the number four | C | — | 줌 |
 | 5 | is read "sa," | C | 한글 "사" + 로마자 | 타입온 |
 | 6 | the same sound as | D 전체 | — | 크로스 디졸브 |
