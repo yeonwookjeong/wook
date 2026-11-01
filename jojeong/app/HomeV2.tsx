@@ -45,7 +45,7 @@ const CHIPS: { href: string; hanja: string; label: string }[] = [
   { href: "/#today", hanja: "日", label: "오늘의 운세" },
   { href: "/ranking", hanja: "月", label: "이달 일주 랭킹" },
   { href: "/samjae", hanja: "三災", label: "2026·27 삼재" },
-  { href: "/king", hanja: "王", label: "왕이 될 사주" },
+  { href: "/king", hanja: "王", label: "어명이오" },
   { href: "/reports/sinbun", hanja: "身分", label: "조선 신분 감정" },
   { href: "/sinsal", hanja: "神煞", label: "신살 유형" },
 ];

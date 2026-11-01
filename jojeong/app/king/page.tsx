@@ -25,10 +25,10 @@ const EXAMPLE: BoardSeat[] = [
 
 export const metadata: Metadata = {
   title: { absolute: `${SERVICE_NAME} · ${TAGLINE}` },
-  description: "생년월일만 넣으면 전하가 됩니다. 친구를 부르면 사주가 영의정부터 간신까지 관직을 내려드립니다.",
+  description: "내가 왕이라면 어떤 왕이었을까. 생년월일로 즉위해 왕 유형과 가상 실록을 보고, 어명을 내려 친구를 부르면 사주로 영의정부터 간신까지 관직이 정해집니다.",
 };
 
-// 왕이 될 사주: the free Joseon game people share. The site's main page (/) is the present-day readings.
+// 어명이오 (formerly 왕이 될 사주): the free Joseon game people share. The site's main page (/) is the present-day readings.
 export default async function KingHome() {
   const [courts, count] = await Promise.all([ownedCourts(), courtCount()]);
 
@@ -37,38 +37,49 @@ export default async function KingHome() {
       <Hero />
 
       <section className="mt-6 text-center">
-        <h2 className="font-myeongjo text-[22px] leading-snug font-extrabold">
-          누가 영의정이고,
+        <h2 className="font-myeongjo text-[24px] leading-snug font-extrabold">
+          내가 왕이라면,
           <br />
-          누가 <span className="text-seal">간신</span>일까?
+          어떤 <span className="text-seal">왕</span>이었을까?
         </h2>
-        <p className="mt-2 text-[15px] leading-relaxed text-ink-soft">
-          생년월일로 즉위하고 친구들을 부르면,
+        <p className="mt-2 text-[15px] leading-relaxed text-ink-soft break-keep">
+          생년월일로 즉위하면 <b className="text-ink">전하의 왕 유형과 가상 실록</b>이 나오옵니다.
           <br />
-          <b className="text-ink">사주로 친구마다 관직</b>이 정해지옵니다.
+          어명을 내려 벗들을 부르면, <b className="text-ink">사주로 벗마다 관직</b>이 정해지옵니다.
         </p>
       </section>
 
-      <CourtBoard kingName="민준" seats={EXAMPLE} caption="예시 · 친구가 들어올 때마다 자리가 채워지옵니다" />
-
       <ol className="mt-5 grid grid-cols-3 gap-2 text-center text-xs text-ink-soft">
         {[
-          ["생년월일로", "즉위하기"],
-          ["단톡방에", "링크 올리기"],
-          ["친구마다", "관직 발표"],
-        ].map(([a, b], i) => (
-          <li key={a} className="flex flex-col items-center gap-1.5">
-            <span className="flex size-7 items-center justify-center border border-seal/50 font-myeongjo text-sm font-extrabold text-seal">
-              {"一二三"[i]}
-            </span>
-            <span>
-              {a}
-              <br />
-              <b className="text-ink">{b}</b>
-            </span>
+          ["卽位", "즉위", "내 왕 유형과 실록"],
+          ["御命", "어명", "단톡방에 링크 한 번"],
+          ["入闕", "입궐", "벗마다 관직 발표"],
+        ].map(([hanja, title, line]) => (
+          <li key={title} className="flex flex-col items-center gap-1 rounded-xl border border-seal/25 bg-white/40 px-1 py-2.5">
+            <span className="font-myeongjo text-[11px] font-extrabold tracking-[0.2em] text-seal">{hanja}</span>
+            <b className="font-myeongjo text-[15px] text-ink">{title}</b>
+            <span className="leading-snug">{line}</span>
           </li>
         ))}
       </ol>
+
+      <CourtBoard kingName="민준" seats={EXAMPLE} caption="예시: 벗이 입궐할 때마다 사주에 맞는 품계석 앞에 서옵니다" />
+
+      {/* What a friend receives: the 교지 with their post, so the landing shows the game's second half too. */}
+      <div className="relative mx-auto mt-4 max-w-[300px] rotate-[-1.5deg]">
+        <div className="doc-paper relative px-5 pt-6 pb-14 text-center shadow-[0_6px_16px_rgb(33_27_23/0.18)]">
+          <span className="absolute inset-x-5 top-2.5 h-1 rounded-full bg-[#9e2b25]" aria-hidden />
+          <p className="font-myeongjo text-xs font-extrabold tracking-[0.3em] text-seal">敎 旨</p>
+          <p className="mt-2 text-xs text-ink-soft">민준 전하께서</p>
+          <p className="font-myeongjo text-[15px] font-extrabold">서연을 영의정에 제수하노라</p>
+          <p className="mt-1 text-[11px] font-bold text-gold">정1품 의정부, 조정 서열 1위</p>
+          <span className="absolute right-3 bottom-2 flex size-10 rotate-[-8deg] items-center justify-center rounded-md border-2 border-seal font-myeongjo text-[10px] font-extrabold leading-tight text-seal">
+            御
+            <br />寶
+          </span>
+        </div>
+        <p className="mt-2 text-center text-[11px] text-ink-soft">예시: 벗이 받는 교지</p>
+      </div>
 
       {count > 0 && (
         <p className="mx-auto mt-5 w-fit border-y border-seal/30 px-3 py-1 text-center text-sm">
@@ -100,7 +111,7 @@ export default async function KingHome() {
         <BirthForm mode="king" />
       </section>
       <p className="mt-3 text-center text-[12px] leading-relaxed text-ink-soft">
-        내 왕 유형 · 가상 실록 · 친구들의 관직까지 <b className="text-ink">전부 무료</b>이옵니다
+        내 왕 유형, 가상 실록, 벗들의 관직까지 <b className="text-ink">모두 무료</b>이옵니다
       </p>
 
       <section className="mt-8 border-l-[3px] border-seal/60 py-1 pl-4">
@@ -116,7 +127,7 @@ export default async function KingHome() {
 
       <section className="mt-5">
         <Hundo>
-          관상감 막내, 명과학 훈도 정가이옵니다. 벗들을 부르시면 누가 영의정이고 누가 간신인지 사주로 가려 천거하겠사옵니다.
+          관상감 막내, 명과학 훈도 정가이옵니다. 먼저 전하께서 어떤 왕이신지 아뢰고, 벗들이 입궐하면 누가 영의정이고 누가 간신인지 사주로 가려 천거하겠사옵니다.
         </Hundo>
       </section>
 

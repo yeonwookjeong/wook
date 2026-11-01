@@ -59,7 +59,7 @@ export async function enthroneAction(_prev: FormState, formData: FormData): Prom
     console.error(e);
     return { error: "즉위식 준비 중 문제가 생겼사옵니다. 잠시 후 다시 시도해 주시옵소서." };
   }
-  redirect(`/court/${courtId}`);
+  redirect(`/court/${courtId}?new=1`);
 }
 
 export async function joinCourtAction(_prev: FormState, formData: FormData): Promise<FormState> {
@@ -81,7 +81,7 @@ export async function joinCourtAction(_prev: FormState, formData: FormData): Pro
     console.error(e);
     return { error: "입궐 중 문제가 생겼사옵니다. 잠시 후 다시 시도해 주시옵소서." };
   }
-  redirect(`/court/${courtId}/m/${ministerId}`);
+  redirect(`/court/${courtId}/m/${ministerId}?new=1`);
 }
 
 export async function dismissMinisterAction(formData: FormData) {
@@ -122,7 +122,7 @@ export async function appointMinisterAction(_prev: FormState, formData: FormData
     console.error(e);
     return { error: "등용 중 문제가 생겼사옵니다. 잠시 후 다시 시도해 주시옵소서." };
   }
-  redirect(`/court/${courtId}/m/${ministerId}`);
+  redirect(`/court/${courtId}/m/${ministerId}?new=1`);
 }
 
 // Adds 대운 and the palace chart to a reading made without them (no gender or hour at entry, or an older

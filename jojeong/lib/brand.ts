@@ -1,7 +1,9 @@
-// The site: 정 훈도's present-day readings. "왕이 될 사주" is its free, shareable Joseon game (/king).
+// The site: 정 훈도's present-day readings. "어명이오" (formerly 왕이 될 사주) is its free, shareable Joseon game (/king).
 export const SITE_NAME = "훈도사주";
 export const SITE_TAGLINE = "누구에게나 맞는 말 말고, 나한테만 맞는 말";
-export const SERVICE_NAME = "왕이 될 사주";
+export const SERVICE_NAME = "어명이오";
+// The game's whole idea in one line: be the king first, then find out what each friend would be in your court.
+export const SERVICE_SUB = "내가 왕이라면, 너는 어떤 신하일까";
 export const TAGLINE = "관상감 막내 정 훈도가 봐드리는 궁중 사주";
 export const CHARACTER_NAME = "관상감 막내 · 정 훈도";
 // What the site is, in one breath: for search engines (the JSON-LD in app/layout.tsx) and the about page.

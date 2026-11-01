@@ -104,7 +104,7 @@ function JoseonShelf() {
         className="mt-3"
         tiles={[
           ...joseon.map((p) => ({ href: `/reports/${p.id}`, hanja: p.hanja, title: p.title, line: "조선에 태어났다면 어떤 신분이었을까", tag: "혼자" })),
-          { href: "/king", hanja: "王", title: "왕이 될 사주", line: "친구를 불러 내 조정을 꾸리는 놀이", tag: "친구와" },
+          { href: "/king", hanja: "王", title: "어명이오", line: "내가 왕이라면, 친구는 어떤 신하일까", tag: "친구와" },
         ]}
       />
     </section>

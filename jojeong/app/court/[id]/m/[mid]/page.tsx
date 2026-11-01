@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import NextStep from "@/components/NextStep";
+import Enthrone from "@/components/Enthrone";
 import Hundo from "@/components/Hundo";
 import AdSlot from "@/components/AdSlot";
 import ReportShelf from "@/components/ReportShelf";
@@ -16,7 +17,6 @@ import { moodFor, ROLES } from "@/lib/roles";
 import { factLines, GANSIN_SIGNS, relationSentence, roleReasons, type Pillars } from "@/lib/saju";
 import { chartOf, GYEOK_NAME, readChart } from "@/lib/myeongri";
 import SajuChart from "@/components/SajuChart";
-import { sinbunOf } from "@/lib/sinbun";
 
 async function loadSeat(id: string, mid: string) {
   const { court, seats } = await loadCourt(id);
@@ -33,8 +33,9 @@ export async function generateMetadata({ params }: PageProps<"/court/[id]/m/[mid
   return { title, description, openGraph: { title, description }, twitter: { card: "summary_large_image" } };
 }
 
-export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/[mid]">) {
+export default async function MinisterPage({ params, searchParams }: PageProps<"/court/[id]/m/[mid]">) {
   const { id, mid } = await params;
+  const fresh = (await searchParams).new === "1";
   const { court, seat } = await loadSeat(id, mid);
   const { isOwner, myMinisterId } = await viewerOf(court.id, court.ownerToken);
   const isSelf = myMinisterId === seat.minister.id;
@@ -61,7 +62,17 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
         </Link>
       </nav>
 
+      {fresh && (
+        <Enthrone
+          variant="appoint"
+          kicker={`${court.kingName} 전하께서 ${seat.minister.name}에게`}
+          title={role.title}
+          line={`"${role.tagline}"`}
+        />
+      )}
       <RoyalDoc className="mt-5" paperClassName="pb-24 text-center">
+        {/* 관복 띠: 당상관의 붉은 관복, 간신과 유배는 품계 밖이라 먹빛 */}
+        <span className={`absolute inset-x-6 top-3 h-1.5 rounded-full ${danger ? "bg-ink/70" : "bg-[#9e2b25]"}`} aria-hidden />
         <p className="font-myeongjo text-sm font-extrabold tracking-[0.3em] text-seal">敎 旨</p>
         <p className="mt-5 text-sm text-ink-soft">{court.kingName} 전하께서</p>
         <p className="mt-1 font-myeongjo text-xl font-extrabold">{decreeLine(seat.minister.name, seat.role)}</p>
@@ -89,19 +100,20 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
       {/* The two moves that keep the game going, right under the announcement: show it off, or start one's own. */}
       {isSelf && (
         <section className="mt-4 flex flex-col gap-2">
+          {/* 3막 반격: the minister becomes the next king and calls their own friends. */}
+          <TrackLink
+            event="own_court"
+            href="/king#enthrone"
+            className="w-full rounded-2xl bg-seal py-4 text-center font-myeongjo text-lg font-extrabold text-hanji shadow-[0_6px_0_#7d1a14]"
+          >
+            그대가 왕이라면? 내 조정 열기
+          </TrackLink>
           <ShareLinkButton
             path={`/court/${court.id}/m/${seat.minister.id}`}
             text={bragLine(court.kingName, seat.role)}
             label="내 관직 자랑하기"
             event="share_result"
           />
-          <TrackLink
-            event="own_court"
-            href="/king"
-            className="w-full rounded-2xl border-2 border-ink py-3.5 text-center font-myeongjo font-extrabold"
-          >
-            나도 내 조정 만들기 · 친구들 관직 주기
-          </TrackLink>
         </section>
       )}
       {!isSelf && !isOwner && (
@@ -116,10 +128,10 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
           )}
           <TrackLink
             event="own_court"
-            href="/king"
+            href="/king#enthrone"
             className="w-full rounded-2xl bg-seal py-4 text-center font-myeongjo text-lg font-extrabold text-hanji shadow-[0_6px_0_#7d1a14]"
           >
-            나도 내 조정 만들기
+            그대가 왕이라면? 내 조정 열기
           </TrackLink>
         </section>
       )}
@@ -179,10 +191,9 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
       {isSelf && <NextStep from="minister" steps={ministerStep} />}
       {isSelf && (
         <ReportShelf
-          ids={["sinbun", "pyeongsaeng", "gunghap", "gukjeong"]}
+          ids={["gukjeong", "pyeongsaeng", "gunghap"]}
           query={`court=${court.id}&m=${seat.minister.id}`}
           highlights={{
-            sinbun: `조선에 태어났다면 ‘${sinbunOf(seat.minister.pillars).job}’`,
             gukjeong: "여덟 글자로 보는 성격·재능, 2027년 한눈에까지",
           }}
         />

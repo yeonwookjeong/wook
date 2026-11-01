@@ -13,7 +13,7 @@ const FREE = [
   { href: "/reports/gukjeong", title: "내 사주 풀이", line: "여덟 글자로 보는 성격·재능·돈·사랑·일, 2027년 한눈에" },
   { href: "/ranking", title: "이달의 일주 랭킹", line: "60일주 가운데 내 일주는 이번 달 몇 위" },
   { href: "/samjae", title: "삼재 띠 확인", line: "올해와 내년 삼재 띠" },
-  { href: "/king", title: "왕이 될 사주", line: "친구들과 하는 조선 조정 놀이" },
+  { href: "/king", title: "어명이오", line: "내가 왕이라면, 친구는 어떤 신하일까" },
 ];
 
 // What the site is, in plain words: the page search engines and AI summaries read for "훈도사주".

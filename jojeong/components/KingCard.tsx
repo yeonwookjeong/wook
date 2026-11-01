@@ -1,22 +1,58 @@
 import RoyalDoc from "./RoyalDoc";
 import { kingLinkText } from "@/lib/kings";
 import { KING_TYPES } from "@/lib/kingTypes";
-import type { Pillars } from "@/lib/saju";
-import Keep from "./Keep";
+import { sillok } from "@/lib/sillok";
+import { STEMS, STEMS_KO, type Pillars } from "@/lib/saju";
+
+// 어진(御眞) frame: the king's portrait hung in front of the 일월오봉도, with the 오조룡 roundel of the royal robe in
+// place of a face until the portrait art arrives. The roundel carries the day stem the whole reading hangs on.
+function Eojin({ stem }: { stem: number }) {
+  return (
+    <div className="relative mx-auto w-[220px] rounded-md border-[5px] border-[#b8862f] bg-[#1d2b3a] p-1 shadow-[0_8px_20px_rgb(0_0_0/0.35)]">
+      <div className="relative overflow-hidden rounded-sm border border-[#e2bc68]/60">
+        <svg viewBox="0 0 200 230" className="block w-full" aria-hidden>
+          <rect width="200" height="230" fill="#1d2b3a" />
+          <circle cx="40" cy="36" r="15" fill="#d23b2a" />
+          <circle cx="160" cy="36" r="15" fill="#f3ead0" />
+          <path d="M0 230 L0 150 L30 110 L60 140 L100 80 L140 140 L170 110 L200 150 L200 230 Z" fill="#2f6b5f" />
+          <path d="M0 230 L0 175 L30 140 L60 165 L100 115 L140 165 L170 140 L200 175 L200 230 Z" fill="#244f47" />
+          <path d="M0 205 Q25 195 50 205 T100 205 T150 205 T200 205 L200 230 L0 230 Z" fill="#3c6f8f" />
+        </svg>
+        {/* 곤룡포 가슴의 오조룡 보(補): gold roundel with the day stem */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="flex size-[104px] flex-col items-center justify-center rounded-full border-[3px] border-[#e2bc68] bg-[radial-gradient(circle_at_40%_35%,#c0392b,#7d1a14)] shadow-[0_0_0_4px_rgb(29_43_58),0_0_0_6px_#b8862f]">
+            <span className="font-myeongjo text-[44px] leading-none font-extrabold text-[#f7d58a]">{STEMS[stem]}</span>
+            <span className="mt-1 text-[11px] font-bold tracking-widest text-[#f7e3ad]/90">{STEMS_KO[stem]} 일간</span>
+          </div>
+        </div>
+      </div>
+      <p className="absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-sm border border-[#b8862f] bg-[#1c1712] px-3 py-0.5 font-myeongjo text-[11px] font-extrabold tracking-[0.3em] whitespace-nowrap text-[#f1cf7a]">
+        御 眞
+      </p>
+    </div>
+  );
+}
 
 export default function KingCard({ kingName, pillars }: { kingName: string; pillars: Pillars }) {
   const type = KING_TYPES[pillars.dayStem];
-  const { link, headline } = kingLinkText(pillars);
-  const shown = link.kind === "none" ? [] : link.kings.slice(0, 3);
-  const rest = link.kind === "none" ? 0 : link.kings.length - shown.length;
+  const s = sillok(pillars, { kingName });
+  const { link, short } = kingLinkText(pillars);
 
   return (
     <RoyalDoc paperClassName="px-5">
       <p className="text-center font-myeongjo text-sm font-extrabold tracking-[0.3em] text-seal">卽 位 敎 書</p>
-      <p className="mt-4 text-center text-sm text-ink-soft">{kingName} 전하는</p>
+      <div className="mt-5">
+        <Eojin stem={pillars.dayStem} />
+      </div>
+      <p className="mt-7 text-center text-sm text-ink-soft">{kingName} 전하는</p>
       <p className="mt-1 text-center font-myeongjo text-4xl font-extrabold">{type.title}</p>
-      <p className="mt-1.5 text-center text-xs font-bold text-gold">{type.symbol}</p>
-      <p className="mt-3 text-center text-[15px]">&ldquo;{type.tagline}&rdquo;</p>
+      {!s.deposed && (
+        <p className="mt-2 text-center text-sm">
+          훗날 올릴 존호 <b className="font-myeongjo text-base text-gold">{s.epithet}</b>
+        </p>
+      )}
+      <p className="mt-1 text-center text-xs font-bold text-gold">{type.symbol}</p>
+      <p className="mt-3 text-center text-[15px] break-keep">&ldquo;{type.tagline}&rdquo;</p>
       <p className="mt-4 text-[15px] leading-relaxed text-ink-soft">{type.style}</p>
 
       <dl className="mt-4 grid grid-cols-2 gap-2 text-sm">
@@ -33,25 +69,11 @@ export default function KingCard({ kingName, pillars }: { kingName: string; pill
         ))}
       </dl>
 
-      <div className="mt-4 border-y-[3px] border-double border-seal/40 px-1 py-3">
-        <p className="text-sm font-extrabold text-seal">{headline}</p>
-        {link.kind === "none" ? (
-          <p className="mt-1 text-sm leading-relaxed">전하께서 이 기운을 타고난 최초의 군주이옵니다.</p>
-        ) : (
-          <ul className="mt-2 flex flex-col gap-1.5">
-            {shown.map((k) => (
-              <li key={k.name} className="flex items-baseline gap-2 text-sm">
-                <b className="shrink-0 font-myeongjo text-base">{k.name}</b>
-                <span className="text-ink-soft">
-                  <Keep>{k.note}</Keep>
-                </span>
-              </li>
-            ))}
-            {rest > 0 && <li className="text-xs text-ink-soft">외 {rest}명</li>}
-          </ul>
-        )}
-      </div>
-      <p className="mt-2 text-center text-[11px] text-ink-soft/80">왕들의 사주는 실록에 남은 음력 탄일로 계산했사옵니다.</p>
+      {link.kind !== "none" && (
+        <p className="mt-4 border-t border-seal/20 pt-3 text-center text-[12px] leading-relaxed text-ink-soft">
+          실록 속 조선 왕 가운데 <b className="text-ink">{short}</b>
+        </p>
+      )}
     </RoyalDoc>
   );
 }

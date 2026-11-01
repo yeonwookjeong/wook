@@ -1,4 +1,4 @@
-import { CHARACTER, CHARACTER_NAME, SERVICE_NAME } from "@/lib/brand";
+import { CHARACTER, CHARACTER_NAME, SERVICE_NAME, SERVICE_SUB } from "@/lib/brand";
 
 // Landing hero: the 일월오봉도 that stood behind every Joseon throne, painted as a four-panel folding screen, with
 // the title hung on a palace signboard (현판). 정 훈도 only bows from the corner. The painting lives in
@@ -20,7 +20,7 @@ export default function Hero() {
             </div>
           </div>
           <p className="mt-2 font-myeongjo text-sm font-bold text-[#f3ead0] drop-shadow-[0_1px_3px_rgb(0_0_0/0.6)]">
-            옥좌의 주인을 찾사옵니다
+            {SERVICE_SUB}
           </p>
         </div>
 
@@ -28,7 +28,7 @@ export default function Hero() {
           href="#enthrone"
           className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full border-2 border-[#e2bc68] bg-seal px-5 py-2.5 font-myeongjo text-base font-extrabold whitespace-nowrap text-hanji shadow-[0_4px_0_#7d1a14]"
         >
-          내 조정 만들기 ↓
+          즉위하기 ↓
         </a>
 
         {/* 정 훈도: 구석에서 허리 숙인 신하 */}

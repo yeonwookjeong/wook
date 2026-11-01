@@ -19,19 +19,21 @@ import { getProfile } from "@/lib/store";
 import { KING_TYPES } from "@/lib/kingTypes";
 import { reignTier, TIERS } from "@/lib/reign";
 import { castOf } from "@/lib/sillok";
-import { sinbunOf } from "@/lib/sinbun";
+import Enthrone from "@/components/Enthrone";
+import { summonAll } from "@/lib/decree";
 
 
 export async function generateMetadata({ params }: PageProps<"/court/[id]">): Promise<Metadata> {
   const { id } = await params;
   const { court } = await loadCourt(id);
-  const title = `${court.kingName} 전하의 조정`;
-  const description = `${KING_TYPES[court.king.dayStem].title} ${court.kingName} 전하께서 그대를 조정에 부르셨사옵니다. 사주로 관직을 받아보시옵소서.`;
+  const title = `어명이오! ${court.kingName} 전하께서 그대를 부르셨소`;
+  const description = `${KING_TYPES[court.king.dayStem].title} ${court.kingName} 전하의 조정이옵니다. 생년월일을 올리면 그대가 어떤 신하인지 사주로 정해지옵니다.`;
   return { title, description, openGraph: { title, description }, twitter: { card: "summary_large_image" } };
 }
 
-export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
+export default async function CourtPage({ params, searchParams }: PageProps<"/court/[id]">) {
   const { id } = await params;
+  const fresh = (await searchParams).new === "1";
   const { court, seats } = await loadCourt(id);
   const { isOwner, myMinisterId } = await viewerOf(court.id, court.ownerToken);
   const joined = !!myMinisterId && seats.some((s) => s.minister.id === myMinisterId);
@@ -53,12 +55,12 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
         main: { ...chart, free: true },
         more: [
           { href: year.href, title: year.title },
-          { href: `/reports/sinbun?court=${court.id}`, title: "왕이 아니었다면, 조선 신분 감정" },
+          { href: "/sinsal", title: "전하의 사주에 적힌 살, 신살 유형 테스트" },
         ],
       }}
     />
   );
-  const inviteText = `${kingType.title} ${court.kingName} 전하께서 그대를 조정에 부르셨사옵니다. 입궐하시겠사옵니까?`;
+  const inviteText = summonAll(court.kingName, kingType.title);
 
   return (
     <>
@@ -88,28 +90,24 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
         <>
           {isOwner && seats.length === 0 ? (
             <>
-              {/* First thing after the accession: the empty court and the way to fill it (the game's loop). */}
-              <CourtBoard kingName={court.kingName} seats={[]} />
+              {fresh && <Enthrone kicker={`${court.kingName} 전하`} title={kingType.title} line={`"${kingType.tagline}"`} />}
+              {/* 1막 즉위: the king's own result comes first and stands alone, friends or not. */}
+              <KingCard kingName={court.kingName} pillars={court.king} />
+              <section className="mt-6">
+                <Hundo mood="bow">
+                  전하, 즉위를 경하드리옵니다. 이제 조정을 채우실 차례이옵니다. 어명을 내리시면 벗들의 사주를 전하의 사주와
+                  맞춰 소신이 관직을 정하겠사옵니다.
+                </Hundo>
+              </section>
+              {/* 2막 어명: the empty court and the call that fills it. */}
+              <CourtBoard kingName={court.kingName} seats={[]} caption="벗이 입궐할 때마다 사주에 맞는 자리에 서옵니다" />
               <div className="mt-3">
-                <ShareLinkButton path={`/court/${court.id}`} text={inviteText} label="친구 불러 자리 채우기" />
+                <ShareLinkButton path={`/court/${court.id}`} text={inviteText} label="어명 내리기 (친구 부르기)" />
               </div>
               <p className="mt-2 text-center text-[12px] leading-relaxed text-ink-soft">
-                단톡방에 올리면 여럿이 한 번에 들어오옵니다. 들어오는 친구마다 사주로 관직이 정해지옵니다.
+                단톡방에 올리면 여럿이 한 번에 입궐하옵니다. 누가 영의정이고 누가 간신일지는 사주가 정하옵니다.
               </p>
-              <section className="mt-6">
-                <Hundo mood="bow">전하, 즉위를 경하드리옵니다. 벗들을 기다리시는 동안 전하의 실록부터 올리옵니다.</Hundo>
-              </section>
               <Sillok kingName={court.kingName} pillars={court.king} cast={cast} />
-              {/* Folded like the chronicle's body, so inviting friends and the reports are a short scroll away. */}
-              <details className="group mt-3 rounded-2xl border border-ink/15 bg-white/40">
-                <summary className="cursor-pointer list-none py-3 text-center text-sm font-bold text-ink-soft [&::-webkit-details-marker]:hidden">
-                  즉위 교서 펼쳐 보기 · {KING_TYPES[court.king.dayStem].title}
-                  <span className="ml-1 inline-block transition group-open:rotate-180">▾</span>
-                </summary>
-                <div className="px-1 pb-3">
-                  <KingCard kingName={court.kingName} pillars={court.king} />
-                </div>
-              </details>
               {step}
             </>
           ) : (
@@ -200,10 +198,9 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
 
           {isOwner && (
             <ReportShelf
-              ids={["sinbun", "pyeongsaeng", "gunghap", "gukjeong", "yeonae"]}
+              ids={["gukjeong", "pyeongsaeng", "gunghap", "yeonae"]}
               query={`court=${court.id}`}
               highlights={{
-                sinbun: `왕이 아니었다면 ‘${sinbunOf(court.king).job}’`,
                 gukjeong: "여덟 글자로 보는 성격·재능, 2027년 한눈에까지",
               }}
             />
@@ -211,7 +208,7 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
 
           {isOwner && (
             <div className="sticky bottom-4 z-10 mt-6">
-              <ShareLinkButton path={`/court/${court.id}`} text={inviteText} label={seats.length > 0 ? "친구 더 부르기" : "친구 불러 자리 채우기"} />
+              <ShareLinkButton path={`/court/${court.id}`} text={inviteText} label={seats.length > 0 ? "어명 더 내리기 (친구 더 부르기)" : "어명 내리기 (친구 부르기)"} />
             </div>
           )}
 
@@ -231,7 +228,7 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
                 href="/king"
                 className="w-full rounded-2xl bg-seal py-4 text-center font-myeongjo text-lg font-extrabold text-hanji shadow-[0_6px_0_#7d1a14]"
               >
-                나도 내 조정 만들기
+                그대가 왕이라면? 내 조정 열기
               </TrackLink>
             </section>
           )}

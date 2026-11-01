@@ -15,7 +15,7 @@ export default function NotFound() {
         훈도사주 처음으로
       </Link>
       <Link href="/king" className="w-full rounded-2xl border-2 border-ink/30 py-3.5 text-center font-myeongjo font-extrabold text-ink-soft">
-        왕이 될 사주 하러 가기
+        어명이오 하러 가기
       </Link>
     </section>
   );

@@ -32,7 +32,7 @@ const q = (query?: string) => (query ? `?${query}` : "");
 export const STEPS = {
   king: (): Steps => ({
     ask: "명과학 훈도가 지금도 봐 드리는 것",
-    main: { href: "/reports/sinbun", seal: "身分", kicker: "무료", title: "조선 신분 감정", line: "조선에 태어났다면 나는 양반? 상민? 그 한평생", free: true },
+    main: { href: "/sinsal", seal: "神煞", kicker: "무료", title: "나는 어떤 살의 사람일까, 신살 유형 테스트", line: "20가지 살 유형 중 내 유형과 100명 중 몇 명인지", free: true },
     more: [
       { href: "/reports/pyeongsaeng", title: "평생 사주" },
       { href: "/reports/gunghap", title: "궁합" },
