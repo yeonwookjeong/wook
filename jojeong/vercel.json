@@ -1,6 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "regions": ["icn1"],
+  "regions": [
+    "icn1"
+  ],
   "crons": [
     {
       "path": "/api/cron/indexnow",
@@ -10,5 +12,6 @@
       "path": "/api/cron/threads",
       "schedule": "40 22 * * *"
     }
-  ]
+  ],
+  "ignoreCommand": "if [ \"$VERCEL_ENV\" != \"production\" ]; then echo \"skip: preview build\"; exit 0; fi; if git diff --quiet HEAD^ HEAD -- .; then echo \"skip: nothing under jojeong/ changed\"; exit 0; fi; exit 1"
 }

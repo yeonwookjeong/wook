@@ -40,7 +40,7 @@ export default function PersonFields({
   // The site's forms (modern) have no gender picked in advance: left alone, most people kept "밝히지 않음" and
   // lost the 10-year flow and the spouse star. The choice is required, "밝히지 않음" stays one of them.
   const pick = modern;
-  const label = genderLabel ?? (modern ? "성별 · 10년 흐름과 배우자 자리를 볼 때 쓰여요" : "성별 (선택 · 10년 대운 풀이에 쓰이옵니다)");
+  const label = genderLabel ?? (modern ? "성별 · 10년 흐름(대운)을 볼 때 쓰여요" : "성별 (선택 · 10년 대운 풀이에 쓰이옵니다)");
   const genders = binaryGender ? GENDERS.filter((g) => g.value) : GENDERS;
   const extras = (
     <>

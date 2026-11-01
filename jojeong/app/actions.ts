@@ -5,7 +5,7 @@ import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { computeProfile } from "@/lib/profile";
 import { BirthInputError, courtMessage, type Pillars } from "@/lib/saju";
-import { track } from "@/lib/stats";
+import { freeOfNext, track } from "@/lib/stats";
 import { addMinister, createCourt, CourtFullError, getCourt, getProfile, listMinisters, MAX_MINISTERS, noteReading, putShare, removeMinister, setProfile } from "@/lib/store";
 import { openCard, openPerson } from "@/lib/shareToken";
 import { OWNER_COOKIE, MINISTER_COOKIE } from "@/lib/cookies";
@@ -208,7 +208,7 @@ export async function saveMeAction(_prev: FormState, formData: FormData): Promis
     await rememberMe(person);
     // Counted once per chart: adding the hour or gender to the same birth date is not a new reading.
     if (!before || before.person.birthYear !== person.birthYear || before.person.pillars.dayStem !== person.pillars.dayStem || before.person.pillars.dayBranch !== person.pillars.dayBranch)
-      await noteReading();
+      await Promise.all([noteReading(), track(`fe:${freeOfNext(next)}`).catch(() => {})]);
     else await track("me_same").catch(() => {});
   } catch (e) {
     if (e instanceof BirthInputError) {
@@ -218,14 +218,20 @@ export async function saveMeAction(_prev: FormState, formData: FormData): Promis
     console.error(e);
     return { error: "사주를 준비하다 문제가 생겼어요. 잠시 후 다시 시도해 주세요." };
   }
-  redirect(/^\/reports\/[a-z]+(\?y=\d{4})?$/.test(next) ? next : next === "/#today" ? "/#today" : "/");
+  redirect(meNext(next));
+}
+
+// Where the form may send the reader back to: a report, the 신살 도감, a friend's 신살 link, or today's card.
+function meNext(next: string) {
+  if (/^\/reports\/[a-z]+(\?y=\d{4})?$/.test(next) || next === "/sinsal" || /^\/s\/(sinsal|sinbun)\/[\w.-]{20,2400}$/.test(next) || /^\/sinsal\?f=[\w.-]{20,2400}$/.test(next)) return next;
+  return next === "/#today" ? "/#today" : "/";
 }
 
 // "친구에게 보내기": the long signed address turned into a short one. Only an address this site signed is kept.
 export async function shortShareAction(path: string): Promise<string | null> {
-  const m = /^\/s\/(reading|sinbun)\/([\w.-]{20,2400})$/.exec(path);
+  const m = /^\/s\/(reading|sinbun|sinsal)\/([\w.-]{20,2400})$/.exec(path);
   if (!m) return null;
-  const kind = m[1] as "reading" | "sinbun";
+  const kind = m[1] as "reading" | "sinbun" | "sinsal";
   if (!openPerson(kind, m[2]) && !openCard(kind, m[2])) return null;
   try {
     return `/l/${await putShare(path)}`;

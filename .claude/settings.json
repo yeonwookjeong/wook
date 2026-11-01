@@ -1,5 +1,33 @@
 {
   "enabledPlugins": {
     "expo@claude-plugins-official": true
+  },
+  "permissions": {
+    "allow": [
+      "ArtifactData",
+      "ArtifactComments",
+      "Artifact",
+      "SendUserFile",
+      "Agent",
+      "WebSearch",
+      "WebFetch",
+      "mcp__github__create_pull_request",
+      "mcp__github__update_pull_request",
+      "mcp__github__pull_request_read",
+      "mcp__github__merge_pull_request",
+      "Bash(git push -u origin:*)",
+      "Bash(git push origin:*)",
+      "Bash(bash jojeong/scripts/team-inbox.sh:*)"
+    ],
+    "ask": [
+      "Bash(rm -rf:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)"
+    ],
+    "deny": [
+      "Read(**/.env)",
+      "Read(**/.env.local)",
+      "Read(**/.env.production)"
+    ]
   }
 }

@@ -65,7 +65,7 @@ export function AskForm({ room }: { room: string }) {
           {[...text].length}/{MAX}
         </span>
         <button type="submit" disabled={pending || !text.trim()} className="rounded-xl bg-seal px-5 py-2.5 text-sm font-extrabold text-hanji disabled:opacity-50">
-          {pending ? "정 훈도가 사주를 보는 중…" : "여쭙기"}
+          {pending ? "정 훈도가 사주를 보는 중…" : "묻기"}
         </button>
       </div>
       <ErrorLine error={state.error} />

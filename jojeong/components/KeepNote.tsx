@@ -14,7 +14,7 @@ export default async function KeepNote({ order, back }: { order: Order; back: st
       <p className="mt-4 rounded-xl border border-[#d4af5f]/50 bg-[#fbf6ea] px-4 py-3 text-center text-[13.5px] leading-relaxed">
         이 보고서와 함께 <b>정 훈도 질문 {order.bonus}개</b>를 넣어 드렸어요.{" "}
         <Link href="/ask" className="font-bold text-seal underline">
-          청심당에서 여쭙기 →
+          청심당에서 묻기 →
         </Link>
       </p>
     ) : null;

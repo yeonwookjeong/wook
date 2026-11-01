@@ -6,32 +6,35 @@ import ChartIntro from "@/components/ChartIntro";
 import FreeReading from "@/components/FreeReading";
 import Hundo from "@/components/Hundo";
 import MeForm from "@/components/MeForm";
+import HopaePair, { sideOf } from "@/components/HopaePair";
 import SinbunReport from "@/components/SinbunReport";
+import SinsalShared from "@/components/SinsalShared";
 import YearReport from "@/components/YearReport";
 import { freeReadingOf } from "@/lib/freeReading";
 import { josa } from "@/lib/josa";
 import { readMe } from "@/lib/me";
-import { profileOf } from "@/lib/pairToken";
+import { profileOf, samePerson } from "@/lib/pairToken";
 import { distinctOf } from "@/lib/rarity";
 import { iljuFacts } from "@/lib/cards";
 import { ReadingCard, SinbunCard } from "@/components/ResultCards";
 import { isShareKind, openCard, openPerson, type ReadingSummary, type SinbunSummary } from "@/lib/shareToken";
 import { track } from "@/lib/stats";
 import { yearReading } from "@/lib/yearly";
+import { yearGanji } from "@/lib/hopae";
 
 // What a friend opens from "친구에게 보내기". Two kinds of link, both signed (lib/shareToken.ts), nothing stored:
 //   the whole free result as the sender saw it, with the form for their own at the top and the foot; or
 //   the sender's summary card only (no chart), with the form below it.
 // Either leads to the same free page.
-const NEXT = { reading: "/reports/gukjeong", sinbun: "/reports/sinbun" } as const;
+const NEXT = { reading: "/reports/gukjeong", sinbun: "/reports/sinbun", sinsal: "/sinsal" } as const;
 
 async function load(params: PageProps<"/s/[kind]/[token]">["params"]) {
   const { kind, token } = await params;
   if (!isShareKind(kind)) return null;
   const person = openPerson(kind, token);
-  if (person) return { kind, person, card: null };
+  if (person) return { kind, token, person, card: null };
   const card = openCard(kind, token);
-  return card ? { kind, person: null, card } : null;
+  return card ? { kind, token, person: null, card } : null;
 }
 
 export async function generateMetadata({ params }: PageProps<"/s/[kind]/[token]">): Promise<Metadata> {
@@ -39,18 +42,32 @@ export async function generateMetadata({ params }: PageProps<"/s/[kind]/[token]"
   if (!got) return {};
   const { kind } = got;
   const who = got.person ? got.person.name : got.card!.n;
-  const title = kind === "reading" ? `${who}님의 사주 풀이` : `${josa(who, "이/가")} 조선에 태어났다면`;
-  const description = kind === "reading" ? "그대의 사주는 어떠하옵니까? 생년월일만 넣으면 무료로 바로 보여 드려요." : "그대는 조선에서 무엇이었을까요? 생년월일만 넣으면 무료로 바로 감정해 드려요.";
+  const title = kind === "reading" ? `${who}님의 사주 풀이` : kind === "sinsal" ? `${who}님이 보낸 신살 유형 테스트` : `${josa(who, "이/가")} 조선에 태어났다면`;
+  const description =
+    kind === "reading"
+      ? "그대의 사주는 어떠하옵니까? 생년월일만 넣으면 무료로 바로 보여 드려요."
+      : kind === "sinsal"
+        ? "나는 무슨 살을 타고났을까. 생일만 넣으면 내 살 카드가 바로 펼쳐져요."
+        : "그대는 조선에서 무엇이었을까요? 생년월일만 넣으면 무료로 바로 감정해 드려요.";
   return { title, description, robots: { index: false }, openGraph: { title, description } };
 }
 
 export default async function SharedPage({ params }: PageProps<"/s/[kind]/[token]">) {
   const got = await load(params);
   if (!got) notFound();
-  const { kind, person, card } = got;
+  const { kind, token, person, card } = got;
   const me = await readMe();
   // A friend's link opened: how many arrive this way (the owner's table).
   await track(`sl:${kind}`).catch(() => {});
+  if (kind === "sinsal") {
+    if (!person) notFound();
+    return (
+      <>
+        <SinsalShared sender={person} me={me?.person ?? null} token={token} />
+        <AdSlot />
+      </>
+    );
+  }
 
   const name = person ? person.name : (card as { n: string }).n;
   const profile = person ? profileOf(person) : null;
@@ -58,6 +75,13 @@ export default async function SharedPage({ params }: PageProps<"/s/[kind]/[token
   const reading = person && pillars && kind === "reading" ? yearReading(pillars, profile) : null;
   const distinct = reading && pillars ? distinctOf(pillars, person!.gender) : null;
   const free = reading && pillars ? freeReadingOf(pillars, profile) : null;
+
+  // 신분 감정: once the friend's own chart is on this device, the two 호패 side by side at the top.
+  const sinbunCard = kind === "sinbun" && card ? (card as SinbunSummary) : null;
+  const them = kind === "sinbun" ? (person ? sideOf(name, person.pillars, person.gender) : sinbunCard ? sideOf(sinbunCard.n, null, null, { rank: sinbunCard.r, job: sinbunCard.j, line: sinbunCard.l }) : null) : null;
+  const meSide = kind === "sinbun" && me && !(person && samePerson(person, me.person)) && !(sinbunCard && sinbunCard.n === me.person.name) ? sideOf(me.person.name, me.person.pillars, me.person.gender) : null;
+  // Back here after the form, so the pair shows.
+  const next = kind === "sinbun" ? `/s/sinbun/${token}` : NEXT[kind];
 
   // The friend's own: the form, or (a chart already kept on this device) straight to their result.
   const mine = (
@@ -76,7 +100,7 @@ export default async function SharedPage({ params }: PageProps<"/s/[kind]/[token
             생년월일만 넣으면 <b>무료</b>로 바로 보여 드려요
           </p>
           <div className="mt-4">
-            <MeForm next={NEXT[kind]} submit="내 결과 보기" />
+            <MeForm next={next} submit={kind === "sinbun" ? "내 호패 보고 나란히 놓기" : "내 결과 보기"} />
           </div>
         </>
       )}
@@ -89,10 +113,18 @@ export default async function SharedPage({ params }: PageProps<"/s/[kind]/[token
         <p className="font-myeongjo text-sm font-extrabold tracking-[0.4em] text-seal">傳 達</p>
         <h1 className="mt-2 font-myeongjo text-2xl font-extrabold">{josa(name, "이/가")} 보내왔어요</h1>
         <p className="mt-1 text-xs text-ink-soft">{kind === "sinbun" ? "조선에 태어났다면 무엇이었을까" : "무료 사주 풀이"}</p>
-        <a href="#mine" className="mt-3 inline-block rounded-full border-2 border-seal bg-white/70 px-5 py-2 font-myeongjo text-sm font-extrabold text-seal">
-          나도 내 결과 보기 ↓
-        </a>
+        {!(them && meSide) && (
+          <a href="#mine" className="mt-3 inline-block rounded-full border-2 border-seal bg-white/70 px-5 py-2 font-myeongjo text-sm font-extrabold text-seal">
+            나도 내 결과 보기 ↓
+          </a>
+        )}
       </section>
+
+      {them && meSide && (
+        <div className="mt-5">
+          <HopaePair me={meSide} them={them} />
+        </div>
+      )}
 
       {card && (
         <section className="mt-5">
@@ -100,7 +132,7 @@ export default async function SharedPage({ params }: PageProps<"/s/[kind]/[token
           {kind === "sinbun" ? (
             (() => {
               const d = card as SinbunSummary;
-              return <SinbunCard who={`${josa(d.n, "이/가")} 조선에 태어났다면`} rank={d.r} job={d.j} line={d.l} rise={d.w} yong={d.y} />;
+              return <SinbunCard who={`${josa(d.n, "이/가")} 조선에 태어났다면`} rank={d.r} job={d.j} line={d.l} rise={d.w} yong={d.y} tag={{ rank: d.r, job: d.j, born: "", issued: yearGanji() }} />;
             })()
           ) : (
             (() => {
@@ -122,7 +154,7 @@ export default async function SharedPage({ params }: PageProps<"/s/[kind]/[token
       )}
 
       {person && kind === "sinbun" && pillars ? (
-        <SinbunReport pillars={pillars} heading={`${josa(name, "이/가")} 조선에 태어났다면`} query="" />
+        <SinbunReport pillars={pillars} gender={person.gender} heading={`${josa(name, "이/가")} 조선에 태어났다면`} query="" />
       ) : reading ? (
         <YearReport
           reading={reading}

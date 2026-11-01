@@ -18,7 +18,7 @@ export default function TaekilForm({ savedName, months, initial = "wedding" }: {
   const [useSaved, setUseSaved] = useState(savedName !== null);
 
   return (
-    <form action={formAction} onSubmit={keepValues(formAction)} className="flex flex-col gap-4">
+    <form data-clarity-mask="true" action={formAction} onSubmit={keepValues(formAction)} className="flex flex-col gap-4">
       <fieldset className="flex flex-col gap-1.5">
         <legend className="mb-1.5 text-sm font-semibold text-ink-soft">무엇을 할 날인가요?</legend>
         <div className="flex flex-wrap gap-2">

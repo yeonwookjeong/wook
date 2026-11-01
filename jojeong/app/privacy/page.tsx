@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "개인정보처리방침" };
 
 export default function PrivacyPage() {
   return (
-    <LegalDoc title="개인정보처리방침" updated="2026년 10월 16일">
+    <LegalDoc title="개인정보처리방침" updated="2026년 10월 22일">
       <p>
         {biz("name", "상호")}(이하 &ldquo;회사&rdquo;)는 「개인정보 보호법」에 따라 이용자의 개인정보를 보호하고, 이와 관련한 고충을
         신속하게 처리하기 위해 다음과 같이 개인정보처리방침을 둡니다.
@@ -90,6 +90,10 @@ export default function PrivacyPage() {
         )}
         <li>결제 처리: 토스페이먼츠 주식회사 (대한민국) · 카드 등 결제 수단 정보는 토스페이먼츠가 직접 받아 처리합니다</li>
         <li>방문 통계: Vercel Inc.(Web Analytics) · 쿠키 없이 페이지 방문 수와 유입 경로 같은 집계 정보만 수집하며, 사주나 이름은 보내지 않습니다</li>
+        <li>
+          화면 이용 분석: Microsoft Corporation(Clarity, 미국) · 화면을 어디까지 내리고 어디를 눌렀는지 같은 이용 행태를 쿠키로 수집해 화면 개선에
+          씁니다. 입력한 생년월일·이름과 화면의 글자는 내용이 보이지 않게 가린 채로 수집하며, 관리자·결제·내 정보 화면에서 시작한 방문에는 켜지지 않습니다
+        </li>
         <li>
           자체 방문 집계: 방문자 수를 세기 위해 이 브라우저 저장소(localStorage)에 마지막으로 센 날짜만 기록하고, 서버에는 날짜별 숫자(방문·페이지뷰·버튼
           누름 횟수)만 남깁니다. 누가 방문했는지 알 수 있는 정보는 저장하지 않습니다

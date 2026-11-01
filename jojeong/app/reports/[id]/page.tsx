@@ -24,6 +24,7 @@ import ChannelCard from "@/components/ChannelCard";
 import { ReadingCard, SinbunCard } from "@/components/ResultCards";
 import { iljuFacts } from "@/lib/cards";
 import { sinbunStory } from "@/lib/sinbun";
+import { bornOf, yearGanji } from "@/lib/hopae";
 import { sealCard, sealPerson } from "@/lib/shareToken";
 import NextStep from "@/components/NextStep";
 import TrackLink from "@/components/TrackLink";
@@ -34,10 +35,11 @@ import Keep from "@/components/Keep";
 import RoyalDoc from "@/components/RoyalDoc";
 import SajuChart from "@/components/SajuChart";
 import SinbunReport from "@/components/SinbunReport";
+import FreeSeen from "@/components/FreeSeen";
 import YearReport from "@/components/YearReport";
 import { YearList, YearTop } from "@/components/Yeonun";
 import YearGlance from "@/components/YearGlance";
-import { newYearOf, newYearProduct, thisYear, yearDetail, yearOf, yearRange, yearRows } from "@/lib/yeonun";
+import { newYearOf, newYearProduct, sajuYear, thisYear, yearDetail, yearOf, yearRange, yearRows } from "@/lib/yeonun";
 import { josa } from "@/lib/josa";
 import { hanjaKo } from "@/lib/saju";
 import { ownedCourts } from "@/lib/load";
@@ -48,7 +50,8 @@ import CalendarButton from "@/components/CalendarButton";
 import { PairYearsFigure, YearsAheadFigure } from "@/components/PaidFigures";
 import { BondFigure, BondMonthsFigure } from "@/app/ask/Figures";
 import { bondOf } from "@/lib/bond";
-import { pairYears, REL_OF } from "@/lib/pairYears";
+import { isGunghapV2, pairYearsAt, REL_OF } from "@/lib/pairYears";
+import { isEngine2 } from "@/lib/patterns";
 import { askShown } from "@/lib/members";
 import { coupleOf, type Couple } from "@/lib/couple";
 import { intimacyOf } from "@/lib/intimacy";
@@ -60,7 +63,7 @@ import { decadeOf, domainCard, isDomain } from "@/lib/domains";
 import { distinctOf } from "@/lib/rarity";
 import { courtOfReader, subjectFor } from "@/lib/subject";
 import { getProfile } from "@/lib/store";
-import { covers, getOrder, ownedOrderFor, ownedOrders, type Order } from "@/lib/pay";
+import { covers, getOrder, ownedOrderFor, ownedOrders, readAtOf, type Order } from "@/lib/pay";
 import { isAdmin, isPreview } from "@/lib/admin";
 import { renewNow } from "@/lib/launch";
 import { ActionsFigure, AreaFigure, WhenFigure, SieveFigure, ChartTop, DecadeLayerFigure, ElementsFigure, FamilyFigure, FlowFigure, LendsFigure, MomentsFigure, MonthsStrip, NowFigure, PairCharts, PowersFigure, RareFigure } from "@/components/ReportFigures";
@@ -115,8 +118,10 @@ async function PairReport({ order, product, a, b, rel, couple, request }: { orde
   const at = paidAtOf(order);
   let figures: Record<number, React.ReactNode> | undefined;
   if (product.id === "gunghap" && isV8(order)) {
-    const years = pairYears(a, b, rel, thisYear(new Date(at)));
-    const bond = bondOf(a, b, b.name, REL_OF[rel], at);
+    // Bought before 궁합 1단계 (and not written again since): the pictures as its pinned text knew them.
+    const readAt = readAtOf(order, product.id);
+    const years = pairYearsAt(a, b, rel, thisYear(new Date(at)), 10, readAt);
+    const bond = bondOf(a, b, b.name, REL_OF[rel], at, isGunghapV2(readAt));
     figures = {
       ...(bond && { 1: <BondFigure b={bond} name={a.name} />, 8: <BondMonthsFigure b={bond} name={a.name} /> }),
       ...(years && { 7: <PairYearsFigure x={years} a={a.name} b={b.name} /> }),
@@ -168,6 +173,8 @@ async function extrasOf(o: Order, product: Product) {
   return {
     chapters: chaptersFor(product.id, v8),
     ask: v8 && (await askShown()) ? product.title : undefined,
+    // The chart the report reads (one person's, or the reader's of two): the chapter's question opens a room on it.
+    askChart: o.req.p ?? o.req.a,
     save: v8 ? `hundo-${product.id}` : undefined,
   };
 }
@@ -333,15 +340,21 @@ async function OpenReport({
     }
     if (ADULT_ONLY.includes(product.id) && !(isAdult(a.birthYear) && isAdult(b.birthYear)))
       return (<><Header product={product} /><Notice href={`/reports/${product.id}`} cta="다시 입력하기">만 19세 이상 두 사람만 볼 수 있는 보고서예요.</Notice></>);
-    const couple = product.id === "gunghap" ? coupleOf(a, b) : null;
-    const closeness = product.id === "sokgunghap" ? intimacyOf(a, b) : null;
-    const reunion = product.id === "jaehoe" ? reunionOf(a, b) : null;
     const req = { product: product.id, a: pair.a, b: pair.b, rel: FIXED_RELATION[product.id] ?? relationOf(pair.rel) };
     const unlock = paid ?? (locked ? await ownedOrderFor(product.id, req) : asOwner(req));
+    // A bought 궁합·재회운 shows the years as of its order (opened by its link or found as this buyer's), the same
+    // ones its pinned text was written with.
+    const boughtAt = unlock?.id ? (unlock.paidAt ?? unlock.createdAt) : undefined;
+    const readAt = unlock?.id ? readAtOf(unlock, product.id) : undefined;
+    const couple = product.id === "gunghap" ? coupleOf(a, b, boughtAt ? sajuYear(new Date(boughtAt)) : undefined, REL_OF[relationOf(pair.rel)], isEngine2(readAt)) : null;
+    // The free card's years are the first five rows of the bought report's ten-year table, so the two never disagree.
+    const coupleYears = couple ? (pairYearsAt(a, b, relationOf(pair.rel), thisYear(boughtAt ? new Date(boughtAt) : undefined), 5, readAt)?.rows ?? []) : [];
+    const closeness = product.id === "sokgunghap" ? intimacyOf(a, b) : null;
+    const reunion = product.id === "jaehoe" ? reunionOf(a, b, boughtAt ? sajuYear(new Date(boughtAt)) : undefined) : null;
     return (
       <>
         <Header product={product} subjectName={`${a.name}님과 ${b.name}님`} />
-        {couple && <PairIntro a={a} b={b} c={couple} blank={renew ? "모름" : undefined} bare={r2(unlock)} />}
+        {couple && <PairIntro a={a} b={b} c={couple} years={coupleYears} blank={renew ? "모름" : undefined} bare={r2(unlock)} />}
         {closeness && <IntimacyIntro a={a} b={b} x={closeness} />}
         {reunion && <ReunionIntro a={a} b={b} r={reunion} />}
         {locked && !unlock ? (
@@ -412,6 +425,7 @@ async function OpenReport({
         );
       return (
         <>
+          <FreeSeen k="dwitjosa" />
           <Header product={product} subjectName={`${court.kingName} 전하와 ${target.name}`} />
           <AiReport request={{ product: product.id, court: court.id, t: target.id }} chapters={chaptersOf(product.id)} />
         </>
@@ -422,6 +436,7 @@ async function OpenReport({
       if (!mine) return (<><Header product={product} /><Notice>입궐한 신하 본인만 여실 수 있사옵니다. 받으신 교지에서 이 보고서를 여시옵소서.</Notice></>);
       return (
         <>
+          <FreeSeen k="insa" />
           <Header product={product} subjectName={mine.name} />
           <AiReport request={{ product: product.id, court: court.id }} chapters={chaptersOf(product.id)} />
         </>
@@ -431,6 +446,7 @@ async function OpenReport({
       return (<><Header product={product} /><Notice href={`/court/${court.id}`} cta="조정으로 가기 →">모임 관계도는 신하가 두 명 이상 모이면 열리옵니다.</Notice></>);
     return (
       <>
+        <FreeSeen k="gwangye" />
         <Header product={product} subjectName={`${court.kingName} 전하의 조정 ${ministers.length + 1}명`} />
         <AiReport request={{ product: product.id, court: court.id }} chapters={chaptersOf(product.id)} />
       </>
@@ -483,11 +499,13 @@ async function OpenReport({
   );
 
   if (product.id === "sinbun") {
-    const sinbun = sinbunStory(pillars);
+    const gender = me ? me.person.gender : null;
+    const sinbun = sinbunStory(pillars, gender);
     return (
       <>
         <SinbunReport
           pillars={pillars}
+          gender={gender}
           heading={subject?.king ? `${name} 전하가 왕이 아니었다면` : `${josa(name, "이/가")} 조선에 태어났다면`}
           query={query}
         />
@@ -505,7 +523,10 @@ async function OpenReport({
               summary: `조선에 태어났다면 나는 '${sinbun.job}' · 너는 뭐였을지 봐 봐 (훈도사주)`,
               full: `조선에 태어났다면 나는 '${sinbun.job}' · 너는 뭐였을지 봐 봐 (훈도사주)`,
             }}
-            card={<SinbunCard who={`${josa(name, "이/가")} 조선에 태어났다면`} rank={sinbun.rank} job={sinbun.job} line={sinbun.line} rise={sinbun.rise} yong={sinbun.yong} />}
+            card={<SinbunCard who={`${josa(name, "이/가")} 조선에 태어났다면`} rank={sinbun.rank} job={sinbun.job} line={sinbun.line} rise={sinbun.rise} yong={sinbun.yong}
+                tag={{ rank: sinbun.rank, job: sinbun.job, office: sinbun.office, born: bornOf(pillars.yearStem, pillars.yearBranch), issued: yearGanji() }}
+                rarity={sinbun.rarity}
+              />}
           />
         )}
         {self && <NextStep from="sinbun" steps={STEPS.sinbun(query)} />}
@@ -532,7 +553,10 @@ async function OpenReport({
   const request: Record<string, string> = me
     ? { product: product.id, p: me.token }
     : { product: product.id, ...(courtId && { court: subject!.courtId }), ...(ministerId && { m: ministerId }) };
-  const distinct = self ? distinctOf(pillars, profile?.gender ?? null) : null;
+  // A report bought before ENGINE2_SINCE shows the features its pinned text was written with.
+  // The order it opens with: by its link, or this buyer's own for the same chart.
+  const owned = paid ?? (self ? await ownedOrderFor(product.id, { ...request, product: product.id }).catch(() => null) : null);
+  const distinct = self ? distinctOf(pillars, profile?.gender ?? null, isEngine2(owned ? readAtOf(owned, product.id) : undefined)) : null;
   const free = self ? freeReadingOf(pillars, profile) : null;
   // The free reading: the chart analysis, then the four computed blocks (powers, 신살, money·love·work, the
   // flow of life). Shown on the free year reading and on the life report before purchase.
@@ -649,6 +673,7 @@ async function OpenReport({
   if (product.id === "gukjeong" && draft && self && fullIntro)
     return (
       <>
+        <FreeSeen k="gukjeong" />
         <RoyalDoc className="mt-3" paperClassName="px-5">
           <p className="text-center font-myeongjo text-sm font-extrabold tracking-[0.4em] text-seal">命 盤</p>
           <h1 className="mt-2 text-center font-myeongjo text-2xl font-extrabold">{name}님의 사주</h1>
@@ -671,6 +696,7 @@ async function OpenReport({
   if (product.id === "gukjeong")
     return (
       <>
+        <FreeSeen k="gukjeong" />
         <YearReport
           reading={reading}
           heading={`${name}님의 2026년 운세`}
@@ -720,6 +746,8 @@ async function OpenReport({
     const { from, to } = yearRange(profile, now);
     const yreq = { product: product.id, p: token ?? "", y: String(y) };
     const unlock = paid ?? (locked && token ? await ownedOrderFor(product.id, yreq) : asOwner(yreq));
+    // A 연운 is found by its year too: its features as of the order it opens with (bought before ENGINE2_SINCE: old).
+    const yearDistinct = unlock?.id && self ? distinctOf(pillars, profile?.gender ?? null, isEngine2(readAtOf(unlock, product.id))) : distinct;
     const preview = yearPreviewOf(pillars, profile, y);
     const flowNow = freeReadingOf(pillars, profile)?.flow?.find((f) => f.from <= y && y <= f.to);
     const decadeNow = flowNow ? { from: flowNow.from, to: flowNow.to, mood: flowNow.young ? "성장기" : flowNow.mood, theme: flowNow.theme } : null;
@@ -762,7 +790,7 @@ async function OpenReport({
         {r2(unlock) && (
           <>
             <Jump gift={unlock!.gift} title={y === newYear ? `${y} 신년운세` : `${y}년 운세`} chapters={yearChapters.length} />
-            <ChartTop name={name} chart={reading.chart} weights={readChart(pillars)?.weights} distinct={distinct} year={{ y, hanja: d.hanja, gods: d.gods }} />
+            <ChartTop name={name} chart={reading.chart} weights={readChart(pillars)?.weights} distinct={yearDistinct} year={{ y, hanja: d.hanja, gods: d.gods }} />
           </>
         )}
         {r2(unlock) ? (

@@ -16,7 +16,7 @@ export default function BirthForm({ mode, courtId }: { mode: keyof typeof MODES;
   const [state, formAction, pending] = useActionState<FormState, FormData>(action, { error: null });
 
   return (
-    <form action={formAction} onSubmit={keepValues(formAction)} className="flex flex-col gap-4">
+    <form data-clarity-mask="true" action={formAction} onSubmit={keepValues(formAction)} className="flex flex-col gap-4">
       {courtId && <input type="hidden" name="courtId" value={courtId} />}
 
       <PersonFields nameLabel={nameLabel} unknownHour={unknownHour} foldExtras={mode !== "appoint"} />

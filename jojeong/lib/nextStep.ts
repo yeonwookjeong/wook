@@ -2,10 +2,10 @@
 // page first where there is one, the paid report after (무료 → 무료 → 유료). The pages and their steps live here,
 // so a new free page is one more line. Each click is counted as `to:<from>` as well as `to_saju`, for the
 // owner's dashboard (which page actually sends people on).
-export const STEP_FROM = ["king", "court", "minister", "sinbun", "reading", "gukjeong", "ranking", "samjae", "today", "ilju", "column"] as const;
+export const STEP_FROM = ["king", "court", "minister", "sinbun", "reading", "gukjeong", "ranking", "samjae", "today", "ilju", "column", "sinsal"] as const;
 export type StepFrom = (typeof STEP_FROM)[number];
 // The free pages that carry a result card to save or send (components/SaveCard.tsx), counted per page.
-export const SHARE_FROM: StepFrom[] = ["sinbun", "reading", "ilju"];
+export const SHARE_FROM: StepFrom[] = ["sinbun", "reading", "ilju", "sinsal"];
 export const isStepFrom = (v: unknown): v is StepFrom => STEP_FROM.includes(v as StepFrom);
 
 export const STEP_LABEL: Record<StepFrom, string> = {
@@ -20,6 +20,7 @@ export const STEP_LABEL: Record<StepFrom, string> = {
   today: "오늘의 운세",
   ilju: "60일주 사전",
   column: "사주 이야기 (칼럼)",
+  sinsal: "신살 유형 테스트",
 };
 
 export type Step = { href: string; title: string; line?: string; seal?: string; kicker?: string; free?: boolean };
@@ -39,11 +40,11 @@ export const STEPS = {
     ],
   }),
   sinbun: (query?: string): Steps => ({
-    ask: "조선의 한평생 말고, 지금의 나는?",
-    main: { href: `/reports/pyeongsaeng${q(query)}`, seal: "命", kicker: "무료 사주 분석", title: "같은 여덟 글자로 보는 오늘의 나", line: "여덟 글자의 무게, 다섯 가지 힘, 10년 흐름까지", free: true },
+    ask: "조선의 나 다음엔, 내 살은?",
+    main: { href: "/sinsal", seal: "神煞", kicker: "무료", title: "나는 어떤 살의 사람일까, 신살 유형 테스트", line: "20가지 살 유형 중 내 유형과 100명 중 몇 명인지", free: true },
     more: [
-      { href: `/reports/gukjeong${q(query)}`, title: "2026 운세 (무료)" },
-      { href: "/reports/gunghap", title: "궁합" },
+      { href: `/reports/gukjeong${q(query)}`, title: "내 사주 무료 풀이" },
+      { href: `/reports/pyeongsaeng${q(query)}`, title: "평생 사주" },
     ],
   }),
   samjae: (year: number): Steps => ({
@@ -62,6 +63,12 @@ export const STEPS = {
           ask: "내 일주를 모르겠다면",
           main: { href: "/reports/pyeongsaeng", seal: "日柱", kicker: "무료", title: "생년월일만 넣으면 바로 알려 드려요", line: "내 일주와 이번 달 순위, 사주 분석까지", free: true },
         },
+  // 신살 are marks laid over the chart: the step is the chart itself.
+  sinsal: (): Steps => ({
+    ask: "살은 여덟 글자 위에 얹힌 표시예요",
+    main: { href: "/reports/sinbun", seal: "身分", kicker: "무료", title: "조선에 태어났다면 나는? 내 호패 받기", line: "100가지 삶 가운데 하나, 양반·중인·상민 호패로", free: true },
+    more: [{ href: "/reports/gukjeong", title: "내 사주 무료 풀이" }, { href: "/reports/pyeongsaeng", title: "평생 사주" }],
+  }),
   // A day pillar is two of the eight characters: the step is the other six.
   ilju: (name: string): Steps => ({
     ask: `같은 ${name}라도 여덟 글자가 다르면 다른 사람이에요`,

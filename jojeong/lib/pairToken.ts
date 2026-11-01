@@ -65,3 +65,8 @@ export const profileOf = (x: Person): Profile => ({
   ...(x.daeun.length && { daeun: x.daeun }),
   ...(x.birthYear && { birthYear: x.birthYear }),
 });
+
+// The same eight characters and name: someone opening the link they sent themselves.
+export const samePerson = (a: Person, b: Person) =>
+  a.name === b.name &&
+  (["yearStem", "yearBranch", "monthStem", "monthBranch", "dayStem", "dayBranch", "hourBranch"] as const).every((k) => a.pillars[k] === b.pillars[k]);

@@ -63,7 +63,7 @@ export async function askAction(_prev: FormState, formData: FormData): Promise<F
   const own = await ownRoom(formData);
   if ("error" in own) return own;
   const { member, room } = own;
-  if (member.credits < 1) return { error: "남은 질문이 없사옵니다. 질문을 채우신 뒤 여쭈시옵소서." };
+  if (member.credits < 1) return { error: "남은 질문이 없사옵니다. 질문을 채우신 뒤 물으시옵소서." };
   const question = String(formData.get("question") ?? "");
   if ([...question.trim()].length > MAX_QUESTION) return { error: `질문은 ${MAX_QUESTION}자 안으로 적어 주시옵소서.` };
   const before = room.used;

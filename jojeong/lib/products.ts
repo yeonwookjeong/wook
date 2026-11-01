@@ -266,7 +266,8 @@ export const PRICE = 990;
 // (PRICING_A_LIVE); the owner's 시안 모드 sees and pays it already (lib/pricing.ts).
 export const PRICING_A_LIVE = OPEN;
 export type Pricing = "old" | "a";
-const A_PRICE: Partial<Record<ProductId, number>> = { pyeongsaeng: 2900, gunghap: 1900 };
+// 연애·결혼 1,900원 (2026-10-28 대표님): the most sought-after topic, with a question like the other 1,900s.
+const A_PRICE: Partial<Record<ProductId, number>> = { pyeongsaeng: 2900, gunghap: 1900, yeonae: 1900 };
 // `ny`: the coming year (lib/yeonun.ts newYearOf), whose 연운 is the 신년운세.
 export function basePrice(id: ProductId, pr: Pricing, y?: string | number, ny?: number | null): number {
   if (pr === "old") return PRICE;

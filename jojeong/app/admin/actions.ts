@@ -4,7 +4,8 @@ import { redirect } from "next/navigation";
 import { refresh } from "next/cache";
 import { isAdmin, setPreview, signIn, signOut } from "@/lib/admin";
 import { isGiftable, originNow } from "@/lib/gift";
-import { createGiftOrder, getOrder, giveBonus, markTestOrder, revokeGiftOrder } from "@/lib/pay";
+import { createGiftOrder, getOrder, giveBonus, markTestOrder, revokeGiftOrder, rewriteReport } from "@/lib/pay";
+import { deleteDownFeedback } from "@/lib/feedback";
 import { pricingNow } from "@/lib/pricing";
 import { addOrderToMember, changeCredits, getMember } from "@/lib/members";
 import { encodePerson } from "@/lib/pairToken";
@@ -12,7 +13,7 @@ import { personOf } from "@/lib/personForm";
 import { productById } from "@/lib/products";
 import { jobFor, type JobRequest } from "@/lib/reportWriter";
 import { BirthInputError } from "@/lib/saju";
-import { deleteInquiry, setInquiryDone } from "@/lib/store";
+import { clearReportError, deleteInquiry, setInquiryDone } from "@/lib/store";
 import { createCreditEvent, setCreditEventOn } from "@/lib/creditEvents";
 
 export async function adminSignIn(_prev: { error: string | null }, formData: FormData): Promise<{ error: string | null }> {
@@ -29,6 +30,13 @@ export async function adminSignOut() {
 export async function inquiryDoneAction(formData: FormData) {
   if (!(await isAdmin())) return;
   await setInquiryDone(String(formData.get("id") ?? ""), formData.get("done") === "1");
+  refresh();
+}
+
+// The report-failure (or risk) banner on /admin, once the owner has dealt with it.
+export async function reportErrorClearAction(formData: FormData) {
+  if (!(await isAdmin())) return;
+  await clearReportError(formData.get("kind") === "risk" ? "risk" : "error");
   refresh();
 }
 
@@ -91,6 +99,35 @@ export async function previewModeAction(formData: FormData) {
 export async function testOrderAction(formData: FormData) {
   if (!(await isAdmin())) return;
   await markTestOrder(String(formData.get("id") ?? ""), formData.get("test") === "1");
+  refresh();
+}
+
+// The old 👎 records removed for good (2026-10-28 대표님: what went wrong goes to 문의하기, not kept here).
+// Owner only, and only when asked twice (the box must be ticked).
+export async function deleteDownFeedbackAction(formData: FormData) {
+  if (!(await isAdmin()) || formData.get("sure") !== "1") return;
+  await deleteDownFeedback();
+  refresh();
+}
+
+// A paid order copied into a gift (2026-10-28 대표님: a report that failed, refunded in full, still given): a
+// refund closes the bought link (lib/pay.ts syncPayment), so the buyer is sent the gift's /r/ link instead. The
+// same request opens the same written text. Owner only, and only when asked twice (the box must be ticked).
+export async function giftCopyAction(formData: FormData) {
+  if (!(await isAdmin()) || formData.get("sure") !== "1") return;
+  const o = await getOrder(String(formData.get("id") ?? ""));
+  if (!o || o.set) return;
+  await createGiftOrder(o.product, o.req, `${o.who} · 환불 뒤 선물`, o.shop);
+  refresh();
+}
+
+// A bought report written again under today's reading (a 👎 put right, 2026-10-26 대표님 결재): the next opening
+// writes it anew; the buyer keeps the same link. Owner only, and only when asked twice (the box must be ticked).
+export async function rewriteReportAction(formData: FormData) {
+  if (!(await isAdmin()) || formData.get("sure") !== "1") return;
+  const product = productById(String(formData.get("product") ?? ""));
+  if (!product) return;
+  await rewriteReport(String(formData.get("order") ?? ""), product.id);
   refresh();
 }
 

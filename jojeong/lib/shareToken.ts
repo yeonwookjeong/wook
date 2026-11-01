@@ -9,8 +9,9 @@ import type { Rank } from "./sinbun";
 // did not compute from a chart.
 //   /s/reading/<token>   the free 사주 분석 (the year reading with the whole chart analysis)
 //   /s/sinbun/<token>    the 조선 신분 감정
-export type ShareKind = "reading" | "sinbun";
-export const isShareKind = (v: unknown): v is ShareKind => v === "reading" || v === "sinbun";
+//   /s/sinsal/<token>    the 신살 도감 (its cards hidden until the friend enters their own chart)
+export type ShareKind = "reading" | "sinbun" | "sinsal";
+export const isShareKind = (v: unknown): v is ShareKind => v === "reading" || v === "sinbun" || v === "sinsal";
 
 const secret = () => `hundosaju-share:${process.env.ADMIN_PASSWORD?.trim() || "dev"}`;
 const sign = (kind: string, body: string) => createHmac("sha256", secret()).update(`${kind}.${body}`).digest("base64url").slice(0, 16);

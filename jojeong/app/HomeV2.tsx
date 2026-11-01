@@ -20,6 +20,7 @@ import { profileOf } from "@/lib/pairToken";
 import { ownedByProduct, ownedOrders } from "@/lib/pay";
 import { productById, SETS, type ProductId } from "@/lib/products";
 import { readingCount } from "@/lib/store";
+import { pickAskSample } from "@/lib/askSamples";
 import { todayFor } from "@/lib/today";
 import { isPreview, newYearOf, newYearProduct, thisYear, yearDetail, yearName, yearNickname } from "@/lib/yeonun";
 
@@ -46,6 +47,7 @@ const CHIPS: { href: string; hanja: string; label: string }[] = [
   { href: "/samjae", hanja: "三災", label: "2026·27 삼재" },
   { href: "/king", hanja: "王", label: "왕이 될 사주" },
   { href: "/reports/sinbun", hanja: "身分", label: "조선 신분 감정" },
+  { href: "/sinsal", hanja: "神煞", label: "신살 유형" },
 ];
 
 const SHOW_COUNT_FROM = 100;
@@ -191,6 +193,7 @@ const PROMISES: [string, React.ReactNode][] = [
 ];
 
 function Sangdam({ credits }: { credits: number | null }) {
+  const sample = pickAskSample();
   return (
     <section className="mt-6">
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-b from-[#222d3b] to-[#1a232f] px-5 pt-5 pb-5 text-hanji shadow-[0_8px_22px_rgb(33_27_23/0.18),inset_0_0_0_1px_rgb(212_175_95/0.35)]">
@@ -221,10 +224,10 @@ function Sangdam({ credits }: { credits: number | null }) {
         <div className="relative mt-4 rounded-xl border border-[#e2bc68]/30 bg-[#f7efd9]/[0.06] px-3.5 py-3">
           <p className="font-myeongjo text-[14px] font-extrabold text-[#e2bc68]">자세히 들려주실수록 답이 깊어져요</p>
           <p className="mt-2 flex gap-2 text-[12.5px] text-hanji/45 line-through decoration-hanji/30">
-            <span className="no-underline">✕</span>이직해도 될까요?
+            <span className="no-underline">✕</span>{sample.short}
           </p>
           <p className="mt-1 flex gap-2 text-[12.5px] leading-relaxed text-hanji/90">
-            <span className="text-[#e2bc68]">◯</span>3년 다닌 회사에서 연봉이 오르는 제안을 받았어요. 이번 달 안에 답해야 하는데, 가도 될까요?
+            <span className="text-[#e2bc68]">◯</span>{sample.q}
           </p>
           <p className="mt-2 text-[11.5px] text-hanji/55">무슨 일인지 · 누구와 얽혀 있는지 · 언제까지 정해야 하는지</p>
         </div>
@@ -232,7 +235,7 @@ function Sangdam({ credits }: { credits: number | null }) {
           from="home"
           className="relative mt-4 block rounded-2xl bg-[#e2bc68] py-3.5 text-center font-myeongjo text-[16px] font-extrabold text-[#17304a] shadow-[0_5px_0_#9c7a2e]"
         >
-          {credits !== null ? `정 훈도에게 여쭈러 가기 · 남은 질문 ${credits}개` : "카카오로 로그인하고 첫 질문 받기"}
+          {credits !== null ? `정 훈도에게 묻기 · 남은 질문 ${credits}개` : "카카오로 로그인하고 첫 질문 받기"}
         </AskLink>
         {credits === null && <p className="relative mt-2 text-center text-[11.5px] text-hanji/60">카카오로 로그인하면 첫 질문 {JOIN_GIFT}개를 선물로 드려요</p>}
       </div>

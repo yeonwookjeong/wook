@@ -2,7 +2,8 @@
 // and written on the order, so the owner can tell which road the paying readers came by. One word, nothing about
 // the person. The road is read once, on the first visit: the page they landed on, then the app they opened it in
 // (Instagram, Threads and 카카오톡 name themselves in the browser's user agent), then the site that sent them.
-export const SOURCES = ["game", "instagram", "threads", "search", "kakao", "other", "direct"] as const;
+// "toss": bought in the Apps in Toss mini app (lib/tossApps.ts); written on its orders, never read from a visit.
+export const SOURCES = ["game", "instagram", "threads", "search", "kakao", "other", "direct", "toss"] as const;
 export type Source = (typeof SOURCES)[number];
 export const isSource = (v: unknown): v is Source => SOURCES.includes(v as Source);
 export const SOURCE_LABEL: Record<Source, string> = {
@@ -13,6 +14,7 @@ export const SOURCE_LABEL: Record<Source, string> = {
   kakao: "카카오톡",
   other: "다른 사이트",
   direct: "직접 · 알 수 없음",
+  toss: "토스 미니앱",
 };
 export const SRC_COOKIE = "jj_src";
 
@@ -56,12 +58,15 @@ export const DIRECT_KIND_LABEL: Record<DirectKind, string> = {
   band: "밴드",
   x: "X (트위터)",
   desktop: "PC",
-  bot: "검색 로봇·미리보기",
+  bot: "검색 로봇·미리보기 (10/19 밤부터 방문에서 뺌)",
   unknown: "알 수 없음",
 };
 export const isDirectKind = (v: unknown): v is DirectKind => DIRECT_KINDS.includes(v as DirectKind);
+// Robots and page-preview fetchers that run the page's script: not visitors at all.
+export const isBotUa = (ua: string) => /bot|crawl|spider|slurp|preview|HeadlessChrome|Lighthouse|facebookexternalhit|Yeti|Daumoa/i.test(ua);
+
 export function directKind(ua: string): DirectKind {
-  if (/bot|crawl|spider|preview|HeadlessChrome/i.test(ua)) return "bot";
+  if (isBotUa(ua)) return "bot";
   if (/FBAN|FBAV|FB_IAB|Messenger/i.test(ua)) return "facebook";
   if (/\bLine\//i.test(ua)) return "line";
   if (/BAND\//.test(ua)) return "band";

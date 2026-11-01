@@ -85,6 +85,16 @@ export class BirthInputError extends Error {
 }
 export const courtMessage = (e: BirthInputError) => e.court ?? e.message;
 
+// lunar-javascript reads every time as China time (UTC+8), so a moment is handed to it in that time.
+const solarAtInstant = (utcMs: number) => {
+  const at = new Date(utcMs + 8 * 3600000);
+  return Solar.fromYmdHms(at.getUTCFullYear(), at.getUTCMonth() + 1, at.getUTCDate(), at.getUTCHours(), at.getUTCMinutes(), 0);
+};
+// A Korean clock time (Asia/Seoul, with its UTC+8:30 years and summer time) as lunar-javascript's Solar: solar
+// terms then change at the right minute instead of an hour late.
+export const solarAtKoreanClock = (year: number, month: number, day: number, hour: number, minute: number) =>
+  solarAtInstant(correctBirth(year, month, day, hour, minute, { lon: 135, tz: "Asia/Seoul" }).utcMs);
+
 // A late-자시 birth becomes the next calendar day's 자시 (as a solar date, so lunar months roll over correctly).
 export function resolveLateZi(input: BirthInput): BirthInput {
   if (input.hourBranch !== LATE_ZI) return input;
@@ -150,14 +160,15 @@ export function computePillars(input: BirthInput): Pillars {
   const ec = solar.getLunar().getEightChar();
   // Year and month change at solar terms, which can fall on the birthday itself. With the exact instant they
   // are read at it (lunar-javascript keeps China time, UTC+8); with only an hour slot, at its middle.
-  const at = input.instant === undefined ? null : new Date(input.instant + 8 * 3600000);
-  const exact = at
-    ? Solar.fromYmdHms(at.getUTCFullYear(), at.getUTCMonth() + 1, at.getUTCDate(), at.getUTCHours(), at.getUTCMinutes(), 0)
-        .getLunar()
-        .getEightChar()
-    : hourBranch === null
-      ? ec
-      : Solar.fromYmdHms(solar.getYear(), solar.getMonth(), solar.getDay(), hourBranch * 2, 30, 0).getLunar().getEightChar();
+  // The hour slot's middle is a Korean clock time (a 야자시 birth is on its own day, at 23:30).
+  const exact =
+    input.instant !== undefined
+      ? solarAtInstant(input.instant).getLunar().getEightChar()
+      : hourBranch === null
+        ? ec
+        : solarAtKoreanClock(solar.getYear(), solar.getMonth(), solar.getDay(), input.yaja && hourBranch === 0 ? 23 : hourBranch * 2, 30)
+            .getLunar()
+            .getEightChar();
   const stem = (s: string) => STEMS.indexOf(s as (typeof STEMS)[number]);
   const branch = (b: string) => BRANCHES.indexOf(b as (typeof BRANCHES)[number]);
   const dayStem = stem(ec.getDayGan());

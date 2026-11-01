@@ -1,7 +1,7 @@
 import { iljuFacts } from "@/lib/cards";
 import { freeReadingOf } from "@/lib/freeReading";
 import { josa } from "@/lib/josa";
-import { shareImage } from "@/lib/og";
+import { shareImage, sinsalShareImage } from "@/lib/og";
 import { profileOf } from "@/lib/pairToken";
 import { distinctOf } from "@/lib/rarity";
 import { isShareKind, openCard, openPerson, type ReadingSummary, type SinbunSummary } from "@/lib/shareToken";
@@ -27,9 +27,10 @@ export default async function Image({ params }: { params: Promise<{ kind: string
     const top = [...d.p].sort((a, b) => b[2] - a[2])[0];
     return shareImage({ top: `${d.n}님의 사주 한 장`, badge: f.hanja, big: `${f.name}${f.image ? ` · ${f.image}` : ""}`, small: [`가장 큰 힘 ${top[1]} ${top[2]}%`, d.r].filter(Boolean).join(" · ") });
   }
+  if (kind === "sinsal") return person ? sinsalShareImage(person.name.slice(0, 10)) : shareImage({ top: "훈도사주", big: "신살 유형 테스트", small: "나는 어떤 살의 사람일까" });
   if (!person) return shareImage({ top: "훈도사주", big: "나한테만 맞는 말", small: "생년월일만 넣으면 무료로 바로" });
   if (kind === "sinbun") {
-    const s = sinbunStory(person.pillars);
+    const s = sinbunStory(person.pillars, person.gender);
     return shareImage({ top: `${josa(person.name, "이/가")} 조선에 태어났다면`, badge: s.rank, big: s.job, small: s.line });
   }
   const f = iljuFacts(person.pillars.dayStem, person.pillars.dayBranch);

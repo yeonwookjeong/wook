@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { keepPng, makePng } from "@/lib/cardExport";
 import { trackEvent } from "./VisitBeacon";
+import { startFlow } from "@/lib/askFlow";
 
 type Section = { label: string; headline: string; paras: string[]; why?: string; todo?: string };
 
@@ -55,10 +55,21 @@ function parse(text: string, chapters: string[] = []): { sections: Section[]; fa
     const m = bracketed ?? (asked ? [bare, asked, bare.slice(asked.length).replace(/^\s*[:\-–—]?\s*/, "")] : null);
     // v9's point lines (lib/reportPrompts.ts POINT_LINES), right under the headline: "이유: …" and "할 일: …".
     const point = (k: string) => rest.map((l) => new RegExp(`^${k}\\s*[:：]\\s*(.+)$`).exec(l.trim())?.[1]).find(Boolean);
-    const body = rest.filter((l) => !/^(이유|할 일)\s*[:：]/.test(l.trim()));
+    let body = rest.filter((l) => !/^(이유|할 일)\s*[:：]/.test(l.trim()));
+    let headline = (m ? m[2] : head).trim();
+    // A heading written with the chapter name alone ("## [결정적인 세 번의 때 …]"): the headline is the short line
+    // right under it, or, failing that, the chapter name itself, so no chapter shows an empty title.
+    if (!headline) {
+      const i = body.findIndex((l) => l.trim());
+      const first = i >= 0 ? body[i].replace(/\*\*/g, "").trim() : "";
+      if (first && first.length <= 60 && !/[.。]$/.test(first) && i + 1 < body.length && !body[i + 1].trim()) {
+        headline = first;
+        body = body.slice(i + 1);
+      } else headline = m ? m[1] : "";
+    }
     sections.push({
       label: m ? m[1] : "",
-      headline: (m ? m[2] : head).trim(),
+      headline,
       why: point("이유"),
       todo: point("할 일"),
       paras: body
@@ -83,6 +94,7 @@ export default function AiReport({
   modern = false,
   figures,
   ask,
+  askChart,
   save,
   plain = false,
 }: {
@@ -92,6 +104,8 @@ export default function AiReport({
   modern?: boolean;
   figures?: Record<number, React.ReactNode>;
   ask?: string;
+  // The report's chart (the order's token), so the chapter's question opens a room on it (app/ask/go/route.ts).
+  askChart?: string;
   save?: string;
   // The second pass (lib/open.ts RENEW2): a card written before it keeps its words, under the plainer row name.
   plain?: boolean;
@@ -266,15 +280,19 @@ export default function AiReport({
               </p>
             ))}
             {ask && (
-              <Link
-                href={`/ask?draft=${encodeURIComponent(`${ask} ${i + 1}장 '${s.headline}'에서 더 여쭙고 싶어요. `)}`}
-                onClick={() => trackEvent("to_ask", "chapter")}
+              // A plain link (not prefetched): /ask/go may open a room on the report's chart (app/ask/go/route.ts).
+              <a
+                href={`/ask/go?draft=${encodeURIComponent(`${ask} ${i + 1}장 '${s.headline}'에서 더 묻고 싶어요. `)}${askChart ? `&c=${encodeURIComponent(askChart)}` : ""}`}
+                onClick={() => {
+                  trackEvent("to_ask", "chapter");
+                  startFlow();
+                }}
                 className="mt-4 flex items-center gap-2 rounded-xl border border-[#d4af5f]/60 bg-[#fbf6ea] px-3.5 py-2.5 text-[13px]"
               >
                 <b className="font-myeongjo">이 장, 정 훈도에게 더 묻기</b>
                 <span className="text-[11.5px] text-ink-soft">내 상황을 적어 보내면 답서로</span>
                 <span className="ml-auto font-bold text-seal">→</span>
-              </Link>
+              </a>
             )}
           </div>
         </details>

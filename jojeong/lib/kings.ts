@@ -5,7 +5,8 @@ import { BRANCHES, ELEMENTS_KO, STEMS, STEMS_KO, type Pillars } from "./saju";
 // Lunar birthdays from the Annals, cross-checked against at least one published solar date each where available.
 const RAW: { name: string; lunar: [number, number, number]; note: string }[] = [
   { name: "태조", lunar: [1335, 10, 11], note: "조선을 세운 개국 군주" },
-  { name: "정종", lunar: [1357, 7, 18], note: "왕위를 동생 태종에게 넘긴 조선 2대 왕" },
+  // Jeongjong Sillok yr 1 & 2: birthday court on 7/1 (kba_10107001_001). The often-cited 7/18 is lunar 7/1 converted to Julian, not a lunar date.
+  { name: "정종", lunar: [1357, 7, 1], note: "왕위를 동생 태종에게 넘긴 조선 2대 왕" },
   { name: "태종", lunar: [1367, 5, 16], note: "왕권을 다진 조선 3대 왕 이방원" },
   { name: "세종", lunar: [1397, 4, 10], note: "훈민정음을 만든 조선 4대 왕" },
   { name: "문종", lunar: [1414, 10, 3], note: "측우기 제작에 힘쓴 조선 5대 왕" },

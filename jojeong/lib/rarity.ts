@@ -35,9 +35,10 @@ export const salRate = (name: string): number | null => {
   return n === undefined ? null : n / data.total;
 };
 
-export const patternRate = (id: string, gender: Gender | null) => {
-  const m = data.patterns.m[id as keyof typeof data.patterns.m] / data.n.m;
-  const f = data.patterns.f[id as keyof typeof data.patterns.f] / data.n.f;
+export const patternRate = (id: string, gender: Gender | null, v2 = true) => {
+  const t = v2 ? data.patterns2 : data.patterns;
+  const m = t.m[id as keyof typeof t.m] / data.n.m;
+  const f = t.f[id as keyof typeof t.f] / data.n.f;
   return gender === "m" ? m : gender === "f" ? f : (m + f) / 2;
 };
 
@@ -59,11 +60,12 @@ export type Distinct = {
   weights: { simple: number[]; weighted: number[] }; // the elements counted flat (8 characters) and by position
 };
 
-export function distinctOf(p: Pillars, gender: Gender | null): Distinct | null {
+// v2: the "없음" patterns read by what the chart truly holds (lib/patterns.ts ENGINE2_SINCE), with their own rates.
+export function distinctOf(p: Pillars, gender: Gender | null, v2 = true): Distinct | null {
   const r = readChart(p);
   if (!r) return null;
-  const patterns = patternsOf(p, gender)
-    .map((x) => ({ ...x, rate: patternRate(x.id, gender) }))
+  const patterns = patternsOf(p, gender, v2)
+    .map((x) => ({ ...x, rate: patternRate(x.id, gender, v2) }))
     .sort((a, b) => a.rate - b.rate);
   const gsum = Object.values(r.godWeights).reduce((a, b) => a + b, 0) || 1;
   const esum = r.weights.reduce((a, b) => a + b, 0);
@@ -72,7 +74,8 @@ export function distinctOf(p: Pillars, gender: Gender | null): Distinct | null {
     ...[0, 1, 2, 3, 4].map((e) => ({ label: `${ELEMENT_KO[e]}(${ELEMENT_HANJA[e]}) 기운`, value: r.weights[e] / esum, ...tail(`el:${e}` as Metric, r.weights[e] / esum) })),
   ]
     // Only a heavy share, or one all but absent, says something about the person.
-    .filter((x) => x.rate <= 0.1 && (x.side === "high" || x.value <= 0.03))
+    // Without the hour a quarter of the chart is unseen: no "all but absent" then (v2).
+    .filter((x) => x.rate <= 0.1 && (x.side === "high" || (x.value <= 0.03 && !(v2 && p.hourBranch === null))))
     .sort((a, b) => a.rate - b.rate);
   const groups: GodGroup[] = ["비겁", "식상", "재성", "관성", "인성"];
   const heavy = groups.reduce((a, b) => (r.godWeights[b] > r.godWeights[a] ? b : a));

@@ -1,6 +1,6 @@
 import { astro } from "iztro";
 import { Lunar, Solar } from "lunar-javascript";
-import { BRANCHES, STEMS, type BirthInput } from "./saju";
+import { BRANCHES, solarAtKoreanClock, STEMS, type BirthInput } from "./saju";
 
 // What a reading needs beyond the eight characters, worked out once from the birth date and kept instead of
 // it (the date itself is never stored):
@@ -36,7 +36,7 @@ export function computeProfile(input: BirthInput, gender: Gender | null): Profil
     profile.gender = gender;
     // A 야자시 birth is still on its own day, at 23:30.
     const hour = input.hourBranch === null ? 12 : input.yaja ? 23 : input.hourBranch * 2;
-    const ec = Solar.fromYmdHms(solar.getYear(), solar.getMonth(), solar.getDay(), hour, 30, 0).getLunar().getEightChar();
+    const ec = solarAtKoreanClock(solar.getYear(), solar.getMonth(), solar.getDay(), hour, 30).getLunar().getEightChar();
     profile.daeun = ec
       .getYun(gender === "m" ? 1 : 0)
       .getDaYun()

@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { classify, directKind, SRC_COOKIE } from "@/lib/source";
+import { classify, directKind, isBotUa, SRC_COOKIE } from "@/lib/source";
 
 // Reports each page view to /api/stat, and whether this browser is new today, this week, this month or at all.
 // The browser remembers only the dates it was last counted; nothing identifies it.
@@ -25,14 +25,16 @@ export function send(body: object) {
 }
 
 // For buttons: which step of the funnel was taken (lib/stats.ts CLIENT_EVENTS), and for a step out of a free
-// page, which page it was (lib/nextStep.ts).
-export const trackEvent = (e: string, from?: string) => send(from ? { e, from } : { e });
+// page, which page it was (lib/nextStep.ts) and whether it led to a paid report (`to: "paid"`).
+export const trackEvent = (e: string, from?: string, to?: "paid") => send({ e, ...(from && { from }), ...(to && { to }) });
 
 export default function VisitBeacon() {
   const path = usePathname();
   useEffect(() => {
     // The owner's pages and the social card renderer are not visits.
     if (path.startsWith("/admin")) return;
+    // Robots, link previews and automated browsers are not visitors.
+    if (isBotUa(navigator.userAgent) || navigator.webdriver) return;
     const now = Date.now();
     const seen = { d: "", w: "", m: "" };
     let ever = true;
@@ -51,6 +53,14 @@ export default function VisitBeacon() {
       src = classify({ path, referrer: document.referrer, ua: navigator.userAgent, query: location.search });
       document.cookie = `${SRC_COOKIE}=${src}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`;
     }
+    // The tag has done its work: off the address, so a link copied from here and shared on doesn't carry it.
+    try {
+      const url = new URL(location.href);
+      if (url.searchParams.has("utm_source")) {
+        [...url.searchParams.keys()].filter((k) => k.startsWith("utm_")).forEach((k) => url.searchParams.delete(k));
+        history.replaceState(history.state, "", url.pathname + url.search + url.hash);
+      }
+    } catch {}
     send({
       v: { day: seen.d !== cur.d, week: seen.w !== cur.w, month: seen.m !== cur.m, ever },
       ...(ever && src && { src }),
