@@ -3,6 +3,7 @@ import type { MetadataRoute } from "next";
 import { siteUrl } from "@/lib/brand";
 import { publishedColumns } from "@/lib/columns";
 import { SHELF } from "@/lib/products";
+import { ILJU_BOOK } from "@/lib/iljuBook";
 
 // Refreshed hourly: columns open on their dates.
 export const revalidate = 3600;
@@ -19,6 +20,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     page("/sinsal", 0.7),
     page("/ranking", 0.7),
     page("/column", 0.7),
+    page("/ilju", 0.7),
+    ...ILJU_BOOK.map((e) => page(`/ilju/${e.slug}`, 0.6)),
     page("/news", 0.4),
     ...(ASK_OPEN ? [page("/ask", 0.7)] : []),
     // Each column with its day, so a crawler knows which ones are new.

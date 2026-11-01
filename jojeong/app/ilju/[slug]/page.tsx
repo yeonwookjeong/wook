@@ -5,7 +5,7 @@ import AdSlot from "@/components/AdSlot";
 import Hundo from "@/components/Hundo";
 import NextStep from "@/components/NextStep";
 import SaveCard from "@/components/SaveCard";
-import { iljuBySlug, iljuHead, iljuMatches } from "@/lib/iljuBook";
+import { ILJU_BOOK, iljuBySlug, iljuHead, iljuMatches } from "@/lib/iljuBook";
 import { monthPillarNow, rankMonth } from "@/lib/iljuRank";
 import { readMe } from "@/lib/me";
 import { ELEMENT_HANJA } from "@/lib/myeongri";
@@ -19,15 +19,20 @@ import { STEPS } from "@/lib/nextStep";
 const EL_COLOR = ["#3d6656", "#b3261e", "#a87a22", "#7d8590", "#1f3d5c"];
 const EL_WORD = ["나무", "불", "흙", "쇠", "물"];
 
+// All sixty are built ahead; a slug outside them is a 404.
+export const dynamicParams = false;
+export function generateStaticParams() {
+  return ILJU_BOOK.map((e) => ({ slug: e.slug }));
+}
+
 export async function generateMetadata({ params }: PageProps<"/ilju/[slug]">): Promise<Metadata> {
   const e = iljuBySlug((await params).slug);
   if (!e) return {};
   const f = iljuHead(e);
   return {
-    title: `${f.name}(${f.hanja}) 성격 · 연애 · 궁합`,
-    description: `${f.name}, ${f.image}. ${e.heard[0]} 연애·일·돈 쓰는 법, 잘 맞는 일주와 이번 달 순위까지.`,
-    // A sample until the pages are reviewed: kept out of search for now.
-    robots: { index: false },
+    title: `${f.name}(${f.hanja}) 성격, 연애, 궁합: ${e.hook}`,
+    description: `${f.name}, ${e.hook}. ${e.heard[0]} 켜질 때와 꺼질 때, 다가가는 법, 연애와 일과 돈, 잘 맞는 일주와 이번 달 순위까지.`,
+    alternates: { canonical: `/ilju/${e.slug}` },
   };
 }
 
@@ -41,6 +46,17 @@ export default async function IljuPage({ params }: PageProps<"/ilju/[slug]">) {
   const me = await readMe();
   const mine = me && me.person.pillars.dayStem === e.stem && me.person.pillars.dayBranch === e.branch;
   const nn = String(f.no).padStart(2, "0");
+
+  const manual = [
+    { seal: "本", title: "이런 사람이에요", scenes: e.basic },
+    { seal: "燈", title: "켜질 때", scenes: e.on },
+    { seal: "滅", title: "꺼질 때", scenes: e.off },
+    { seal: "近", title: "다가가는 법", scenes: e.approach },
+    { seal: "充", title: e.charge === "alone" ? "충전법: 혼자일 때 차올라요" : "충전법: 사람 속에서 차올라요", scenes: e.chargeScenes },
+  ];
+  const at = ILJU_BOOK.findIndex((x) => x.slug === e.slug);
+  const prev = ILJU_BOOK[(at + 59) % 60];
+  const next = ILJU_BOOK[(at + 1) % 60];
 
   const reads = [
     { seal: "戀", title: "연애할 때", text: e.love },
@@ -111,6 +127,31 @@ export default async function IljuPage({ params }: PageProps<"/ilju/[slug]">) {
             </li>
           ))}
         </ul>
+      </section>
+
+      {/* 사용설명서: the person as scenes to picture, the same parts as the Instagram carousel. */}
+      <section className="mt-6">
+        <h2 className="text-center font-myeongjo text-lg font-extrabold">{f.name} 사용설명서</h2>
+        <p className="mt-1 text-center text-sm text-ink-soft">{e.hook}</p>
+        {manual.map((part) => (
+          <div key={part.title} className="doc-paper mt-3 px-4 py-4">
+            <h3 className="flex items-center gap-2 font-myeongjo font-extrabold">
+              <span className="grid size-7 place-items-center bg-seal text-[13px] text-hanji">{part.seal}</span>
+              {part.title}
+            </h3>
+            <ol className="mt-2 flex flex-col gap-2.5">
+              {part.scenes.map((sc, i) => (
+                <li key={sc.t} className="flex gap-2.5">
+                  <span className="mt-0.5 shrink-0 font-myeongjo text-sm font-extrabold text-seal">{"一二三"[i]}</span>
+                  <span className="min-w-0">
+                    <b className="block text-[15px]">{sc.t}</b>
+                    <span className="block text-[14.5px] leading-relaxed text-ink-soft">{sc.s}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        ))}
       </section>
 
       <section className="mt-6 flex flex-col gap-2">
@@ -189,6 +230,19 @@ export default async function IljuPage({ params }: PageProps<"/ilju/[slug]">) {
           ))}
         </ul>
       </details>
+
+      {/* The sixty read in order, and the whole book one tap away. */}
+      <nav className="mt-6 grid grid-cols-3 items-center gap-2 text-center text-sm font-bold">
+        <Link href={`/ilju/${prev.slug}`} className="doc-paper px-2 py-3">
+          ← {iljuHead(prev).name}
+        </Link>
+        <Link href="/ilju" className="doc-paper px-2 py-3 text-seal">
+          60일주 도감
+        </Link>
+        <Link href={`/ilju/${next.slug}`} className="doc-paper px-2 py-3">
+          {iljuHead(next).name} →
+        </Link>
+      </nav>
 
       <AdSlot />
     </>

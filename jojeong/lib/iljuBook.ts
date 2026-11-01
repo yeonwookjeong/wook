@@ -2,18 +2,30 @@ import { iljuFacts, jiaziNo } from "./cards";
 import { meetings, stemClash, stemCombine } from "./deep";
 import { ELEMENT_KO, stemEl, BRANCH_EL } from "./myeongri";
 import { BRANCHES, BRANCHES_KO, STEMS, STEMS_KO } from "./saju";
+import dogam from "./iljuDogam.json";
 
 // 60일주 사전: one page per day pillar, written to be read (what people say about you, love, work, money, the
 // moment it hurts, the moment it shines), with the reasons kept at the bottom. The words are written per pillar
 // from its own reading (the stem as a person, what sits under it, its stage); the matches and the month's rank
-// are computed. Pages open one by one as they are written and checked.
+// are computed. All sixty are open (lib/iljuDogam.json).
+
+type Scene = { t: string; s: string };
 
 export type IljuEntry = {
   slug: string;
   stem: number;
   branch: number;
+  // The pillar in one line: what it is like, said as a person.
+  hook: string;
   // 이런 말, 자주 듣지 않나요?
   heard: string[];
+  // 사용설명서: the person as scenes to picture, three per part (two for how they recharge).
+  basic: Scene[];
+  on: Scene[];
+  off: Scene[];
+  approach: Scene[];
+  charge: "alone" | "people";
+  chargeScenes: Scene[];
   love: string;
   work: string;
   money: string;
@@ -25,29 +37,13 @@ export type IljuEntry = {
   basis: string[];
 };
 
-export const ILJU_BOOK: IljuEntry[] = [
-  {
-    slug: "sinmyo",
-    stem: 7,
-    branch: 3,
-    heard: [
-      "“깔끔하다”와 “까다롭다”를 같이 들어요. 기준이 높을 뿐인데요.",
-      "괜찮은 척 넘겼는데, 사실 그 말 아직 기억하고 있어요.",
-      "필요한 걸 찾아내는 눈이 빨라요. 쇼핑도, 기회도.",
-    ],
-    love: "나를 알아봐 주는 사람에게 약해요. 대신 한번 실망하면 말없이 마음의 문을 닫아요.",
-    work: "남들이 못 본 숫자 하나, 마감 직전 오타 하나를 잡아내요. 정확함이 무기가 되는 일에서 빛나요.",
-    money: "아무거나 사지 않아요. 그런데 ‘이건 진짜다’ 싶으면 망설임 없이 써요.",
-    hurt: "공들여 다듬은 걸 대충 보고 넘길 때.",
-    shine: "흩어진 걸 딱 맞게 정리해 놓았을 때. 풀밭 속 보석처럼 눈에 띄어요.",
-    hundo: "풀밭에 떨어진 보석은 알아보는 이가 임자이옵니다. 그대를 알아보는 이 곁에 머무시옵소서.",
-    basis: [
-      "辛(신): 다듬어진 쇠, 보석. 섬세하고 기준이 높으며 자존심이 힘이 되는 일간이에요.",
-      "卯(묘): 봄 풀, 토끼. 辛에게 卯 속 乙은 편재(내가 다스리는 재물)라, 현실 감각과 기회를 잡는 눈이 있어요.",
-      "십이운성 절(絶): 끊고 새로 잇는 자리라 결단이 빠르고, 인생의 전환이 여러 번 와요.",
-    ],
-  },
-];
+// The sixty, written and checked one by one (lib/iljuDogam.json, in 육십갑자 order). A pillar's stem and branch
+// follow from its place: the n-th pair of the sixty is stem (n-1) mod 10 and branch (n-1) mod 12.
+export const ILJU_BOOK: IljuEntry[] = (dogam as (Omit<IljuEntry, "stem" | "branch"> & { no: number })[]).map(({ no, ...e }) => ({
+  ...e,
+  stem: (no - 1) % 10,
+  branch: (no - 1) % 12,
+}));
 
 export const iljuBySlug = (slug: string) => ILJU_BOOK.find((x) => x.slug === slug) ?? null;
 
