@@ -54,7 +54,7 @@ const PAL = {
   old: { paper: "#e9dcbf", land: "#f4ead3", ink: "#1b1714", seal: "#b3261e" },
 };
 
-export const MAP_OPENING_FRAMES = 60;
+export const MAP_OPENING_FRAMES = 45;
 
 // 이미지 모델에 줄 밑그림: 오프닝 지도와 같은 투영, 2:3 비율로 넓게(가로 2160 × 세로 3240 영역)
 export const MAP_REF_BOX = { x: -540, y: -660, w: 2160, h: 3240 };
@@ -72,19 +72,19 @@ export const MapRef: React.FC = () => (
 
 export const MapOpening: React.FC<{ variant: MapVariant }> = ({ variant }) => {
   const frame = useCurrentFrame();
-  // 0~10 중립 지도, 8~28 그림풍으로 바뀜, 0~44 서울로 다가감, 44~60 쑥 들어감
-  const style = interpolate(frame, [8, 28], [0, 1], clamp);
-  const approach = interpolate(frame, [0, 44], [0.55, 2.2], { ...clamp, easing: Easing.inOut(Easing.cubic) });
-  const plunge = interpolate(frame, [44, 60], [1, 14], { ...clamp, easing: Easing.in(Easing.exp) });
+  // 1.5초: 0~6 중립 지도, 6~21 그림풍으로 바뀜, 0~33 서울로 다가감, 33~45 쑥 들어감
+  const style = interpolate(frame, [6, 21], [0, 1], clamp);
+  const approach = interpolate(frame, [0, 33], [0.55, 2.2], { ...clamp, easing: Easing.inOut(Easing.cubic) });
+  const plunge = interpolate(frame, [33, 45], [1, 14], { ...clamp, easing: Easing.in(Easing.exp) });
   const scale = approach * plunge;
-  const blur = interpolate(frame, [48, 60], [0, 14], clamp);
-  const flash = interpolate(frame, [52, 60], [0, 1], clamp);
-  const bleedR = interpolate(frame, [6, 30], [0, 2600], { ...clamp, easing: Easing.in(Easing.quad) });
-  const pin = interpolate(frame, [22, 32], [0, 1], { ...clamp, easing: Easing.out(Easing.back(2)) });
+  const blur = interpolate(frame, [36, 45], [0, 14], clamp);
+  const flash = interpolate(frame, [39, 45], [0, 1], clamp);
+  const bleedR = interpolate(frame, [4, 22], [0, 2600], { ...clamp, easing: Easing.in(Easing.quad) });
+  const pin = interpolate(frame, [16, 24], [0, 1], { ...clamp, easing: Easing.out(Easing.back(2)) });
 
   // 서울을 화면 가운데로 끌어오면서 확대
-  const tx = (W / 2 - SX) * interpolate(frame, [0, 44], [0, 1], clamp);
-  const ty = (H * 0.45 - SY) * interpolate(frame, [0, 44], [0, 1], clamp);
+  const tx = (W / 2 - SX) * interpolate(frame, [0, 33], [0, 1], clamp);
+  const ty = (H * 0.45 - SY) * interpolate(frame, [0, 33], [0, 1], clamp);
   const camera = `translate(${tx}px, ${ty}px) scale(${scale})`;
 
   const m = PAL.modern;
@@ -223,7 +223,7 @@ export const MapOpening: React.FC<{ variant: MapVariant }> = ({ variant }) => {
         )}
       </svg>
       {variant === "old" && (
-        <AbsoluteFill style={{ opacity: style * interpolate(frame, [40, 50], [1, 0], clamp), background: "radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0) 55%, rgba(60,45,30,0.35) 100%)" }} />
+        <AbsoluteFill style={{ opacity: style * interpolate(frame, [30, 37], [1, 0], clamp), background: "radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0) 55%, rgba(60,45,30,0.35) 100%)" }} />
       )}
       {/* 쑥 들어갈 때 번쩍: 요즘 편은 네온빛, 옛 편은 한지빛 */}
       <AbsoluteFill style={{ backgroundColor: variant === "modern" ? "#ff3d8b" : "#f6ecd6", opacity: flash * 0.85 }} />

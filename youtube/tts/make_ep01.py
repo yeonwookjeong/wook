@@ -27,7 +27,7 @@ SENTENCES = [
 
 def main() -> None:
     voice = sys.argv[1] if len(sys.argv) > 1 else "af_heart"
-    speed = float(sys.argv[2]) if len(sys.argv) > 2 else 1.05
+    speed = float(sys.argv[2]) if len(sys.argv) > 2 else 1.15
     lang = "en-gb" if voice.startswith("b") else "en-us"
     for f in ("kokoro-v1.0.onnx", "voices-v1.0.bin"):
         if not (HERE / f).exists():
