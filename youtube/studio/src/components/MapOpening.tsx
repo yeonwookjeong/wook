@@ -1,4 +1,4 @@
-import { AbsoluteFill, Easing, interpolate, useCurrentFrame } from "remotion";
+import { AbsoluteFill, Easing, interpolate, staticFile, useCurrentFrame } from "remotion";
 import { geoBounds, geoGraticule10, geoMercator, geoPath } from "d3-geo";
 import { feature } from "topojson-client";
 import type { Topology, GeometryCollection } from "topojson-specification";
@@ -46,25 +46,6 @@ const BRUSH_D = path(LAND_BRUSH) ?? "";
 const GRID_D = path(geoGraticule10()) ?? "";
 const [SX, SY] = projection(SEOUL) as [number, number];
 
-type LL = [number, number];
-const proj = (pts: LL[]) => pts.map((p) => projection(p) as [number, number]);
-const toD = (pts: [number, number][]) => pts.map(([x, y], i) => `${i ? "L" : "M"} ${x.toFixed(1)} ${y.toFixed(1)}`).join(" ");
-
-// 옛 지도(수묵 붓 그림 느낌)용 큰 강. 좌표는 상징 표현용 근사치.
-const RIVERS = [
-  [[126.55, 37.73], [126.85, 37.58], [127.05, 37.53], [127.3, 37.55], [127.55, 37.6], [127.7, 37.45], [128.0, 37.25], [128.35, 37.2], [128.65, 37.35]],
-  [[128.95, 35.08], [128.75, 35.35], [128.45, 35.7], [128.35, 36.05], [128.3, 36.4], [128.55, 36.6], [128.75, 36.9], [129.0, 37.1]],
-  [[126.65, 36.0], [127.0, 36.25], [127.35, 36.45], [127.55, 36.2], [127.65, 35.95]],
-].map((r) => toD(proj(r as LL[])));
-
-const SEA_STROKES = [
-  [[124.2, 37.2], [124.9, 37.0], [125.5, 37.15]],
-  [[123.9, 36.1], [124.7, 35.95], [125.4, 36.05]],
-  [[124.5, 34.9], [125.2, 34.75], [125.8, 34.85]],
-  [[130.2, 37.9], [130.9, 37.75], [131.4, 37.85]],
-  [[129.9, 36.6], [130.6, 36.45], [131.2, 36.55]],
-  [[127.0, 33.9], [127.8, 33.75], [128.5, 33.85]],
-].map((r) => toD(proj(r as LL[])));
 const [KX, KY] = projection([127.6, 38.4]) as [number, number]; // 한반도 가운데(주변 땅을 흐리게 할 기준)
 
 const PAL = {
@@ -77,6 +58,9 @@ export const MAP_OPENING_FRAMES = 60;
 
 // 이미지 모델에 줄 밑그림: 오프닝 지도와 같은 투영, 2:3 비율로 넓게(가로 2160 × 세로 3240 영역)
 export const MAP_REF_BOX = { x: -540, y: -660, w: 2160, h: 3240 };
+// 받은 수묵 지도(old-map.png)를 밑그림에 맞춘 보정값. 자동 정합 결과: 배율 그대로, 아래로 6px(밑그림 1024폭 기준)
+const OLD_MAP_SHIFT = { x: 0, y: (6 * MAP_REF_BOX.w) / 1024 };
+
 export const MapRef: React.FC = () => (
   <AbsoluteFill style={{ backgroundColor: "#ffffff" }}>
     <svg width={1024} height={1536} viewBox={`${MAP_REF_BOX.x} ${MAP_REF_BOX.y} ${MAP_REF_BOX.w} ${MAP_REF_BOX.h}`}>
@@ -95,6 +79,7 @@ export const MapOpening: React.FC<{ variant: MapVariant }> = ({ variant }) => {
   const scale = approach * plunge;
   const blur = interpolate(frame, [48, 60], [0, 14], clamp);
   const flash = interpolate(frame, [52, 60], [0, 1], clamp);
+  const bleedR = interpolate(frame, [6, 30], [0, 2600], { ...clamp, easing: Easing.in(Easing.quad) });
   const pin = interpolate(frame, [22, 32], [0, 1], { ...clamp, easing: Easing.out(Easing.back(2)) });
 
   // 서울을 화면 가운데로 끌어오면서 확대
@@ -153,6 +138,15 @@ export const MapOpening: React.FC<{ variant: MapVariant }> = ({ variant }) => {
             </feComponentTransfer>
             <feComposite in="SourceGraphic" in2="gaps" operator="in" />
           </filter>
+          {/* 번짐 마스크: 가장자리가 울퉁불퉁한 원이 서울에서 커진다 */}
+          <filter id="mo-bleed-edge" x="-50%" y="-50%" width="200%" height="200%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves={3} seed={7} />
+            <feDisplacementMap in="SourceGraphic" scale={220} />
+            <feGaussianBlur stdDeviation="18" />
+          </filter>
+          <mask id="mo-bleed" maskUnits="userSpaceOnUse" x={-W * 2} y={-H * 2} width={W * 5} height={H * 5}>
+            <circle cx={SX} cy={SY} r={bleedR} fill="#fff" filter="url(#mo-bleed-edge)" />
+          </mask>
           <clipPath id="mo-landclip">
             <path d={BRUSH_D} />
           </clipPath>
@@ -195,40 +189,20 @@ export const MapOpening: React.FC<{ variant: MapVariant }> = ({ variant }) => {
             <path d={LAND_D} fill="none" stroke={m.line} strokeWidth={3} vectorEffect="non-scaling-stroke" />
           </g>
         ) : (
-          <g opacity={style}>
-            {/* 한지 바탕 */}
-            <rect x={-W} y={-H} width={W * 3} height={H * 3} fill={o.paper} />
-            <rect x={-W} y={-H} width={W * 3} height={H * 3} filter="url(#mo-fiber)" />
-            {/* 바다: 옅은 먹물을 물에 푼 듯한 띠 몇 개 */}
-            <g filter="url(#mo-seawash)" opacity={0.16}>
-              {SEA_STROKES.map((d, i) => (
-                <path key={i} d={d} fill="none" stroke={o.ink} strokeWidth={46 + (i % 3) * 14} strokeLinecap="round" />
-              ))}
+          <g>
+            {/* 서울에서 먹이 번지듯 수묵 지도가 드러난다 */}
+            <g mask="url(#mo-bleed)">
+              <rect x={-W} y={-H} width={W * 3} height={H * 3} fill={o.paper} />
+              <image
+                href={staticFile("maps/old-map.png")}
+                x={MAP_REF_BOX.x + OLD_MAP_SHIFT.x}
+                y={MAP_REF_BOX.y + OLD_MAP_SHIFT.y}
+                width={MAP_REF_BOX.w}
+                height={MAP_REF_BOX.h}
+                preserveAspectRatio="none"
+              />
+              <rect x={-W} y={-H} width={W * 3} height={H * 3} fill="url(#mo-focus)" opacity={0.6} />
             </g>
-            {/* 땅 */}
-            <path d={BRUSH_D} fill={o.land} />
-            {/* 땅 안쪽 먹 번짐: 해안에서 안으로 스며드는 옅은 먹 */}
-            <g clipPath="url(#mo-landclip)">
-              <path d={BRUSH_D} fill="none" stroke={o.ink} strokeWidth={70} opacity={0.14} filter="url(#mo-wash)" />
-            </g>
-            {/* 해안 붓선: 먹을 듬뿍 찍은 곳과 마른 곳이 번갈아 보이도록 */}
-            <g mask="url(#mo-pressure)">
-              <g filter="url(#mo-brush)">
-                <path d={BRUSH_D} fill="none" stroke={o.ink} strokeWidth={9} strokeLinejoin="round" />
-              </g>
-            </g>
-            <g filter="url(#mo-brush2)" opacity={0.8}>
-              <path d={BRUSH_D} fill="none" stroke={o.ink} strokeWidth={3} strokeLinejoin="round" />
-            </g>
-            {/* 강: 가늘고 옅은 붓선 */}
-            <g filter="url(#mo-brush2)" opacity={0.4}>
-              {RIVERS.map((d, i) => (
-                <path key={i} d={d} fill="none" stroke={o.ink} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
-              ))}
-            </g>
-            {/* 한반도 밖은 한지 속으로 흐리게 */}
-            <rect x={-W} y={-H} width={W * 3} height={H * 3} fill="url(#mo-focus)" />
-            <rect x={-W} y={-H} width={W * 3} height={H * 3} filter="url(#mo-stain)" opacity={0.35} />
           </g>
         )}
 
