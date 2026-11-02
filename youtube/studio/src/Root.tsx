@@ -2,7 +2,7 @@ import { Composition } from "remotion";
 import { WordCard, wordCardDefaults } from "./WordCard";
 import { WoodcutIrworobong } from "./scenes/WoodcutIrworobong";
 import { Ep01, EP01_FRAMES } from "./ep01/Ep01";
-import { MapOpening, MAP_OPENING_FRAMES } from "./components/MapOpening";
+import { MapOpening, MapRef, MAP_OPENING_FRAMES } from "./components/MapOpening";
 
 // 쇼츠 규격: 세로 1080×1920, 30fps
 export const RemotionRoot: React.FC = () => {
@@ -20,6 +20,7 @@ export const RemotionRoot: React.FC = () => {
       <Composition id="Ep01" component={Ep01} durationInFrames={EP01_FRAMES} fps={30} width={1080} height={1920} />
       <Composition id="MapOld" component={MapOpening} durationInFrames={MAP_OPENING_FRAMES} fps={30} width={1080} height={1920} defaultProps={{ variant: "old" as const }} />
       <Composition id="MapModern" component={MapOpening} durationInFrames={MAP_OPENING_FRAMES} fps={30} width={1080} height={1920} defaultProps={{ variant: "modern" as const }} />
+      <Composition id="MapRef" component={MapRef} durationInFrames={1} fps={30} width={1024} height={1536} />
       <Composition id="Woodcut" component={WoodcutIrworobong} durationInFrames={150} fps={30} width={1080} height={1920} />
     </>
   );

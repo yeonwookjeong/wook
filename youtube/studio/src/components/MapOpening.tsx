@@ -75,6 +75,17 @@ const PAL = {
 
 export const MAP_OPENING_FRAMES = 60;
 
+// 이미지 모델에 줄 밑그림: 오프닝 지도와 같은 투영, 2:3 비율로 넓게(가로 2160 × 세로 3240 영역)
+export const MAP_REF_BOX = { x: -540, y: -660, w: 2160, h: 3240 };
+export const MapRef: React.FC = () => (
+  <AbsoluteFill style={{ backgroundColor: "#ffffff" }}>
+    <svg width={1024} height={1536} viewBox={`${MAP_REF_BOX.x} ${MAP_REF_BOX.y} ${MAP_REF_BOX.w} ${MAP_REF_BOX.h}`}>
+      <path d={BRUSH_D} fill="#f2f2f2" stroke="#000" strokeWidth={5} strokeLinejoin="round" />
+      <circle cx={SX} cy={SY} r={12} fill="#d00" />
+    </svg>
+  </AbsoluteFill>
+);
+
 export const MapOpening: React.FC<{ variant: MapVariant }> = ({ variant }) => {
   const frame = useCurrentFrame();
   // 0~10 중립 지도, 8~28 그림풍으로 바뀜, 0~44 서울로 다가감, 44~60 쑥 들어감
