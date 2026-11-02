@@ -211,9 +211,6 @@ export const Ep01: React.FC = () => {
           <Caption cap={[{ text: "In" }, { text: "Korea,", hl: true }]} />
         </Sequence>
       </Sequence>
-      <Sequence from={30} durationInFrames={20} layout="none">
-        <Audio src={staticFile("sfx/whoosh.wav")} volume={0.45} />
-      </Sequence>
 
       {SHOTS.map((shot, i) => (
         <Sequence key={i} from={starts[i]} durationInFrames={SHOT_FRAMES[i]}>

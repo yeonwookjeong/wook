@@ -66,4 +66,15 @@ save("thud", thud)
 tt = t(0.18)
 save("pop", np.sin(2 * np.pi * (600 + 900 * tt / 0.18) * tt) * np.exp(-tt * 30))
 
+# 지도 확대 '스윽' 상승음: 낮은 바람 + 위로 올라가는 음, 끝으로 갈수록 커짐 (오프닝 처음부터)
+tt = t(1.3)
+noise = rng.standard_normal(len(tt))
+air = lowpass(noise, 0.01) * 3 + lowpass(noise, 0.06) * np.linspace(0.2, 1, len(tt))
+tone = np.sin(2 * np.pi * np.cumsum(220 * 2 ** (tt / 0.65)) / SR) * 0.35
+save("riser", (air + tone) * np.linspace(0.05, 1, len(tt)) ** 2)
+
+# 서울 표시가 찍힐 때 맑은 '팅'
+tt = t(0.6)
+save("chime", (np.sin(2 * np.pi * 1760 * tt) + 0.5 * np.sin(2 * np.pi * 2640 * tt)) * np.exp(-tt * 8))
+
 print("done:", sorted(p.name for p in OUT.glob("*.wav")))

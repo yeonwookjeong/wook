@@ -1,4 +1,4 @@
-import { AbsoluteFill, Easing, interpolate, staticFile, useCurrentFrame } from "remotion";
+import { AbsoluteFill, Audio, Easing, interpolate, Sequence, staticFile, useCurrentFrame } from "remotion";
 import { geoBounds, geoGraticule10, geoMercator, geoPath } from "d3-geo";
 import { feature } from "topojson-client";
 import type { Topology, GeometryCollection } from "topojson-specification";
@@ -225,6 +225,14 @@ export const MapOpening: React.FC<{ variant: MapVariant }> = ({ variant }) => {
       {variant === "old" && (
         <AbsoluteFill style={{ opacity: style * interpolate(frame, [30, 37], [1, 0], clamp), background: "radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0) 55%, rgba(60,45,30,0.35) 100%)" }} />
       )}
+      {/* 오프닝 소리: 확대되며 올라가는 상승음 → 서울 표시 '팅' → 쑥 들어가는 바람 (모든 편 공통) */}
+      <Audio src={staticFile("sfx/riser.wav")} volume={0.35} />
+      <Sequence from={16} layout="none">
+        <Audio src={staticFile("sfx/chime.wav")} volume={0.3} />
+      </Sequence>
+      <Sequence from={30} layout="none">
+        <Audio src={staticFile("sfx/whoosh.wav")} volume={0.45} />
+      </Sequence>
       {/* 쑥 들어갈 때 번쩍: 요즘 편은 네온빛, 옛 편은 한지빛 */}
       <AbsoluteFill style={{ backgroundColor: variant === "modern" ? "#ff3d8b" : "#f6ecd6", opacity: flash * 0.85 }} />
     </AbsoluteFill>
