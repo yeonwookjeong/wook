@@ -12,3 +12,10 @@ curl -L -O https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-f
 ```bash
 cd ~/Documents/wook/youtube/tts && source .venv/bin/activate && python make_samples.py && open samples
 ```
+
+EP01 내레이션 만들기 (목소리를 고른 뒤):
+```bash
+cd ~/Documents/wook/youtube/tts && source .venv/bin/activate && python make_ep01.py af_heart
+cd ../studio && npx remotion render src/index.ts Ep01 out/ep01.mp4 && open out/ep01.mp4
+```
+`af_heart` 자리에 고른 목소리 이름을 넣는다. 두 번째 숫자로 속도 조절 가능(예: `python make_ep01.py af_heart 1.1`).
