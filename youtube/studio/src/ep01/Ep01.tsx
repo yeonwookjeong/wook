@@ -17,6 +17,8 @@ const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 // 1080×1920 화면에서의 초점 위치 (그림 A의 F 버튼, 그림 D의 死)
 const F_BTN = { x: 619, y: 805 };
 const DEATH = { x: 540, y: 760 };
+const H_F = { x: 672, y: 809 }; // 그림 H에서 손가락이 누르는 F 버튼
+const G_GAP = { x: 861, y: 967 }; // 그림 G 안내판에서 3과 5 사이
 
 type Cam = { s0: number; s1: number; ox: number; oy: number; dx?: number; dy?: number; snap?: boolean };
 type Cap = { text: string; hl?: boolean }[];
@@ -28,9 +30,10 @@ type Shot = {
   dark?: number;
   fadeIn?: boolean;
   shake?: boolean;
-  overlay?: "sa" | "circleF" | "room304" | "missingG" | "endcard" | "question";
+  overlay?: "sa" | "circleF" | "room304" | "noFour" | "endcard" | "question";
   sent: number; // 내레이션 문장 번호 (youtube/tts/make_ep01.py 의 SENTENCES)
   sfx?: { name: string; at?: number; vol?: number };
+  sfx2?: { name: string; at?: number; vol?: number };
 };
 
 const SHOTS: Shot[] = [
@@ -39,13 +42,13 @@ const SHOTS: Shot[] = [
   { img: "C", sec: 1.6, cam: { s0: 1.0, s1: 1.12, ox: 640, oy: 700 }, caps: [[{ text: "The number" }, { text: "four", hl: true }]], sent: 3, sfx: { name: "buzz", vol: 0.25 } },
   { img: "C", sec: 2.2, cam: { s0: 1.12, s1: 1.18, ox: 640, oy: 700 }, caps: [[{ text: "is read" }], [{ text: '"sa,"', hl: true }]], dark: 0.35, overlay: "sa", sent: 3, sfx: { name: "pop", at: 0.1, vol: 0.4 } },
   { img: "D", sec: 1.6, cam: { s0: 1.0, s1: 1.08, ox: DEATH.x, oy: DEATH.y }, caps: [[{ text: "the same" }], [{ text: "sound as" }]], fadeIn: true, sent: 3 },
-  { img: "D", sec: 1.8, cam: { s0: 1.5, s1: 1.65, ox: DEATH.x, oy: DEATH.y, snap: true }, caps: [[{ text: "an old word" }], [{ text: "for" }, { text: "death.", hl: true }]], shake: true, sent: 3, sfx: { name: "thud", vol: 0.5 } },
+  { img: "D", sec: 1.8, cam: { s0: 1.5, s1: 1.65, ox: DEATH.x, oy: DEATH.y, snap: true }, caps: [[{ text: "an old word" }], [{ text: "for" }, { text: "death.", hl: true }]], shake: true, sent: 3, sfx: { name: "thud", vol: 0.5 }, sfx2: { name: "glitch", vol: 0.2 } },
   { img: "E", sec: 2.0, cam: { s0: 1.3, s1: 1.3, ox: 540, oy: 960, dy: -260 }, caps: [[{ text: "So many" }], [{ text: "buildings" }]], sent: 4 },
   { img: "A", sec: 1.8, cam: { s0: 2.2, s1: 2.3, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "swap it" }], [{ text: "for" }, { text: "F,", hl: true }]], overlay: "circleF", sent: 4, sfx: { name: "pop", at: 0.07, vol: 0.4 } },
   { img: "F", sec: 2.0, cam: { s0: 1.2, s1: 1.2, ox: 540, oy: 960, dx: 90 }, caps: [[{ text: "skip room" }], [{ text: "numbers,", hl: true }]], overlay: "room304", sent: 4, sfx: { name: "pop", at: 0.15, vol: 0.35 } },
-  { sec: 1.8, cam: { s0: 1, s1: 1, ox: 540, oy: 960 }, caps: [[{ text: "even" }, { text: "hospital", hl: true }], [{ text: "floors." }]], overlay: "missingG", sent: 4 },
-  { img: "A", sec: 1.8, cam: { s0: 1.0, s1: 1.15, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "Next time" }], [{ text: "you see an" }, { text: "F,", hl: true }]], sent: 5 },
-  { img: "A", sec: 2.2, cam: { s0: 1.6, s1: 1.9, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "you'll know" }], [{ text: "what it's" }, { text: "hiding.", hl: true }]], dark: 0.45, sent: 5 },
+  { img: "G", sec: 1.8, cam: { s0: 1.0, s1: 1.15, ox: G_GAP.x, oy: G_GAP.y }, caps: [[{ text: "even" }, { text: "hospital", hl: true }], [{ text: "floors." }]], overlay: "noFour", sent: 4, sfx: { name: "pop", at: 0.15, vol: 0.35 } },
+  { img: "H", sec: 1.8, cam: { s0: 1.0, s1: 1.3, ox: H_F.x, oy: H_F.y }, caps: [[{ text: "Next time" }], [{ text: "you see an" }, { text: "F,", hl: true }]], sent: 5, sfx: { name: "ding", at: 0.35, vol: 0.25 } },
+  { img: "A", sec: 2.2, cam: { s0: 1.6, s1: 1.9, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "you'll know" }], [{ text: "what it's" }, { text: "hiding.", hl: true }]], dark: 0.45, sent: 5, sfx: { name: "thud", at: 0.9, vol: 0.25 } },
 ];
 
 // 음성이 있으면 문장 길이를 그 문장에 속한 컷들에 글자 수 비율로 나눈다. 없으면 임시 길이(sec).
@@ -129,11 +132,13 @@ const Overlay: React.FC<{ kind: Shot["overlay"]; dur: number }> = ({ kind, dur }
         <span style={{ fontFamily: sans, fontWeight: 900, fontSize: 92, color: "#fff", textDecoration: "line-through", textDecorationColor: "#ff2a2a", textDecorationThickness: 12 }}>304</span>
       </div>
     );
-  if (kind === "missingG")
+  if (kind === "noFour")
     return (
-      <AbsoluteFill style={{ background: "#141f31", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ fontFamily: sans, fontWeight: 700, fontSize: 44, color: "#8fa3c2", border: "4px dashed #8fa3c2", padding: "30px 40px", marginBottom: 500 }}>G 그림 자리 (병원 안내판)</div>
-      </AbsoluteFill>
+      <div style={{ position: "absolute", left: G_GAP.x - 520, top: G_GAP.y - 95, display: "flex", alignItems: "center", gap: 14, transform: `scale(${pop})`, transformOrigin: "right center" }}>
+        <span style={{ fontFamily: sans, fontWeight: 900, fontSize: 150, color: "#fff", textDecoration: "line-through", textDecorationColor: "#ff2a2a", textDecorationThickness: 18, WebkitTextStroke: "14px #000", paintOrder: "stroke fill" }}>4</span>
+        <span style={{ fontFamily: sans, fontWeight: 900, fontSize: 84, color: YELLOW, WebkitTextStroke: "12px #000", paintOrder: "stroke fill" }}>no 4th</span>
+        <span style={{ width: 90, height: 0, borderTop: "10px dashed #ffd400" }} />
+      </div>
     );
   if (kind === "endcard") {
     const o = interpolate(frame, [0, 10], [0, 1], clamp);
@@ -213,10 +218,12 @@ export const Ep01: React.FC = () => {
       {SHOTS.map((shot, i) => (
         <Sequence key={i} from={starts[i]} durationInFrames={SHOT_FRAMES[i]}>
           <ShotView shot={shot} dur={SHOT_FRAMES[i]} />
-          {shot.sfx && (
-            <Sequence from={Math.round((shot.sfx.at ?? 0) * FPS)} layout="none">
-              <Audio src={staticFile(`sfx/${shot.sfx.name}.wav`)} volume={shot.sfx.vol ?? 0.4} />
-            </Sequence>
+          {[shot.sfx, shot.sfx2].map((fx, k) =>
+            fx ? (
+              <Sequence key={k} from={Math.round((fx.at ?? 0) * FPS)} layout="none">
+                <Audio src={staticFile(`sfx/${fx.name}.wav`)} volume={fx.vol ?? 0.4} />
+              </Sequence>
+            ) : null,
           )}
         </Sequence>
       ))}
