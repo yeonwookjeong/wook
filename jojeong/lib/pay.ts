@@ -3,11 +3,11 @@ import { randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { ORDERS_COOKIE } from "./cookies";
 import { isSource, SRC_COOKIE, type Source } from "./source";
-import { CREDIT_PACKS, type ProductId, type SetId } from "./products";
+import { CREDIT_PACKS, SETS, type ProductId, type SetId } from "./products";
 import type { JobRequest } from "./reportWriter";
 import { isAdmin } from "./admin";
 import { changeCredits, currentMember } from "./members";
-import { getOrderRaw, getOrdersRaw, giftOrderIds, noteGiftOrder, notePaidOrder, paidOrderIds, setOrderRaw } from "./store";
+import { getFeedbackRaw, getOrderRaw, getOrdersRaw, giftOrderIds, noteGiftOrder, notePaidOrder, paidOrderIds, setOrderRaw } from "./store";
 import { ENGINE2_SINCE } from "./patterns";
 
 // Paying for a report with 토스페이먼츠 (결제창, API 개별 연동 키).
@@ -232,6 +232,12 @@ export async function syncPayment(paymentKey: string): Promise<Order | null> {
     await setOrderRaw(order.id, JSON.stringify(canceled));
     // A refunded report takes back the questions it brought, as far as they are left.
     if (payment.status === "CANCELED" && order.bonus && order.bonusMember && order.bonusGiven) await changeCredits(order.bonusMember, -order.bonus, `환불 ${order.id}`);
+    // And the question a review of it brought (lib/feedback.ts), one per report reviewed.
+    if (payment.status === "CANCELED")
+      for (const product of order.set ? SETS[order.set].products : [order.product]) {
+        const f = JSON.parse((await getFeedbackRaw(`${order.id}:${product}`).catch(() => null)) || "null") as { rewarded?: boolean; member?: string } | null;
+        if (f?.rewarded && f.member) await changeCredits(f.member, -1, `환불 ${order.id} (후기)`);
+      }
     // A refunded 질문권 takes back the questions refunded. What Toss still holds pays for those kept, at the single
     // price (the refund rule, app/refund): a whole refund takes them all, a part one leaves the ones used.
     if (order.credits && order.member && order.credited) {

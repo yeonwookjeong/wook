@@ -10,13 +10,13 @@ import { lastReportError, listInquiries, memberViews, readingCount } from "@/lib
 import { listFeedback } from "@/lib/feedback";
 import { memberFixAction } from "./actions";
 import { allMembers, memberNo, VIA_LABEL, viaOf, type Member } from "@/lib/members";
-import { adminSignOut, creditEventCreateAction, creditEventToggleAction, giftRevokeAction, inquiryDeleteAction, inquiryDoneAction, rewriteReportAction, testOrderAction } from "./actions";
+import { adminSignOut, creditEventCreateAction, creditEventToggleAction, deleteDownFeedbackAction, giftCopyAction, reportErrorClearAction, giftRevokeAction, inquiryDeleteAction, inquiryDoneAction, rewriteReportAction, testOrderAction } from "./actions";
 import Dashboard, { rangeOf } from "./Dashboard";
 import { threadsPosts } from "@/lib/threads";
 import GiftForm from "./GiftForm";
 import SignInForm from "./SignInForm";
 import { isPreview, newYearOf, thisYear } from "@/lib/yeonun";
-import { ASK_FROM, ASK_FROM_LABEL, CH_FROM, CH_FROM_LABEL, inPeriods, PERIODS, readStats, type Period } from "@/lib/stats";
+import { ASK_FROM, ASK_FROM_LABEL, CH_FROM, CH_FROM_LABEL, FREE_VIEW, FREE_VIEW_LABEL, inPeriods, PERIODS, readStats, type Period } from "@/lib/stats";
 import { SHARE_FROM, STEP_FROM, STEP_LABEL } from "@/lib/nextStep";
 import { COLUMNS, publishedColumns, titleLines } from "@/lib/columns";
 import { SOURCE_LABEL, SOURCES } from "@/lib/source";
@@ -25,6 +25,17 @@ import { CREDIT_KINDS, ledgerOf, waitingBonus } from "@/lib/creditLedger";
 import { closedWhy, listCreditEvents } from "@/lib/creditEvents";
 
 export const metadata: Metadata = { title: "관리자", robots: { index: false } };
+
+// The page in tabs: what to look at first, the free pages, money, where people come from, the people, tools.
+const TABS = [
+  { key: "home", label: "한눈에" },
+  { key: "free", label: "무료 놀이" },
+  { key: "sales", label: "매출" },
+  { key: "traffic", label: "유입·SNS" },
+  { key: "people", label: "손님" },
+  { key: "tools", label: "도구" },
+] as const;
+type TabKey = (typeof TABS)[number]["key"];
 
 const day = (t: number) => new Date(t + 9 * 3600000).toISOString().slice(0, 10);
 // Today in Korea, read per request (the page is dynamic: it reads the admin cookie).
@@ -54,12 +65,13 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   const origin = await originNow();
   const paid = orders.filter((o) => o.status === "paid");
   const q = await searchParams;
-  const sp = String(q.sp ?? "all");
+  const sp = String(q.sp ?? "month");
   // The day-by-day span (?df=&dt=), the last seven days unless chosen.
   const isDay = (v: unknown): v is string => typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v));
   const dt = isDay(q.dt) ? q.dt : todayKst();
   const df = isDay(q.df) && q.df <= dt ? q.df : day(Date.parse(`${dt}T12:00:00+09:00`) - 6 * 86400000);
-  const period: Period = PERIODS.some((p) => p.key === sp) ? (sp as Period) : "all";
+  const period: Period = PERIODS.some((p) => p.key === sp) ? (sp as Period) : "month";
+  const tab: TabKey = TABS.some((x) => x.key === q.t) ? (q.t as TabKey) : "home";
   const won = (n: number) => `${n.toLocaleString("ko-KR")}원`;
   const ny = newYearOf();
   const inquiries = await listInquiries().catch(() => []);
@@ -71,12 +83,14 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
     ...["uv", "pv", "reading", "me_try", "me_err", "me_same", "king", "join", "appoint", "share_court", "share_result", "save_image", "own_court", "to_saju", "ask_pop", "to_ask", "to_channel", "sinsal_pop", "sinsal_open", "sinsal_view", "sinsal_friend_open", "sinsal_friend_view", "askflow_join", "askflow_sent", "askflow_buy"],
     ...CH_FROM.map((f) => `ch:${f}`),
     ...ASK_FROM.map((f) => `ask:${f}`),
-    ...STEP_FROM.map((f) => `to:${f}`),
+    ...STEP_FROM.flatMap((f) => [`to:${f}`, `tp:${f}`]),
     ...SHARE_FROM.flatMap((f) => [`sh:${f}`, `sv:${f}`]),
     ...["reading", "sinbun", "sinsal"].map((k) => `sl:${k}`),
     ...SOURCES.map((s) => `src:${s}`),
     ...SALE_KEYS.flatMap((k) => [`view:${k}`, `co:${k}`]),
     ...COLUMNS.map((c) => `cv:${c.slug}`),
+    ...FREE_VIEW.flatMap((f) => [`fv:${f}`, `fe:${f}`]),
+    ...["friend", "home", "today", "paid"].map((f) => `fe:${f}`),
   ]);
   // All columns read, the sum of each one's count.
   const readsIn = (p: Period) => COLUMNS.reduce((a, c) => a + (stats[`cv:${c.slug}`]?.[p] ?? 0), 0);
@@ -93,33 +107,29 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
     <>
       <section className="mt-6 text-center">
         <h1 className="font-myeongjo text-2xl font-extrabold">관리자</h1>
-        <p className="mt-1 text-sm text-ink-soft">
-          이 브라우저에서는 모든 보고서를 결제 없이 볼 수 있어요 · 무료 보고서는 AI 없이 계산만 보여 줘요
-        </p>
-        <Link href="/admin/sns" className="mt-3 inline-block rounded-full bg-seal px-5 py-2 text-sm font-bold text-white">
-          SNS 카드 · 콘텐츠 데스크 →
-        </Link>
-        <Link href="/admin/ask" className="mt-3 ml-2 inline-block rounded-full border-2 border-seal px-5 py-1.5 text-sm font-bold text-seal">
-          정 훈도에게 묻기 시험방 →
-        </Link>
-        <Link href="/admin/threads" className="mt-3 ml-2 inline-block rounded-full border-2 border-seal px-5 py-1.5 text-sm font-bold text-seal">
-          스레드 성적표 →
-        </Link>
-        <Link href="/admin/columns" className="mt-3 ml-2 inline-block rounded-full border-2 border-seal px-5 py-1.5 text-sm font-bold text-seal">
-          칼럼 미리보기 →
-        </Link>
-        <Link href="/admin/free-preview" className="mt-3 ml-2 inline-block rounded-full border-2 border-seal px-5 py-1.5 text-sm font-bold text-seal">
-          무료 화면 시안 →
-        </Link>
+        <p className="mt-1 text-[12px] text-ink-soft">이 브라우저에서는 모든 보고서를 결제 없이 볼 수 있어요</p>
       </section>
-
-      <Dashboard range={rangeOf(q.r)} orders={orders} {...await threadsPosts().then((t) => ({ threads: t.posts, synced: t.synced })).catch(() => ({ threads: [], synced: null }))} />
-
+      <nav className="sticky top-0 z-10 -mx-4 mt-3 flex gap-1 overflow-x-auto bg-hanji/95 px-4 py-2 backdrop-blur">
+        {TABS.map((x) => (
+          <Link
+            key={x.key}
+            href={`/admin?t=${x.key}`}
+            className={`shrink-0 rounded-full px-3.5 py-1.5 text-[13px] font-bold ${x.key === tab ? "bg-seal text-hanji" : "border border-seal/30 text-seal"}`}
+          >
+            {x.label}
+            {x.key === "people" && open.length > 0 && <span className="ml-1 rounded-full bg-hanji px-1.5 text-[11px] text-seal">{open.length}</span>}
+          </Link>
+        ))}
+      </nav>
       {writeError && (
         <section className="mt-4 rounded-xl border-2 border-seal bg-seal/10 px-4 py-3">
           <p className="text-sm font-extrabold text-seal">보고서 쓰기 실패 · {when(writeError.at)}</p>
           <p className="mt-1 text-[12px] leading-relaxed break-all">{writeError.message}</p>
           <p className="mt-1 text-[11px] text-ink-soft">최근 이틀 안의 마지막 실패만 보여요. 고친 뒤 보고서를 다시 열면 새로 써요.</p>
+          <form action={reportErrorClearAction} className="mt-2 text-right">
+            <input type="hidden" name="kind" value="error" />
+            <button className="rounded-full border border-seal/40 bg-white/70 px-3 py-1 text-[12px] font-bold text-seal">처리했어요 · 지우기</button>
+          </form>
         </section>
       )}
       {writeRisk && (
@@ -127,29 +137,151 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
           <p className="text-sm font-extrabold text-seal">보고서 위험 문구 · {when(writeRisk.at)}</p>
           <p className="mt-1 text-[12px] leading-relaxed break-all">{writeRisk.message}</p>
           <p className="mt-1 text-[11px] text-ink-soft">손님에게 이미 보인 글이에요. 최근 이틀 안의 마지막 한 건만 보여요.</p>
+          <form action={reportErrorClearAction} className="mt-2 text-right">
+            <input type="hidden" name="kind" value="risk" />
+            <button className="rounded-full border border-seal/40 bg-white/70 px-3 py-1 text-[12px] font-bold text-seal">처리했어요 · 지우기</button>
+          </form>
         </section>
       )}
+
+      {open.length > 0 && tab !== "people" && (
+        <Link href="/admin?t=people" className="mt-3 block rounded-xl border-2 border-seal/50 bg-white/70 px-4 py-2.5 text-center text-sm font-bold text-seal">
+          새 문의 {open.length}건이 기다려요 →
+        </Link>
+      )}
+      {tab === "home" && (
+        <>
+          <Dashboard range={rangeOf(q.r)} orders={orders} {...await threadsPosts().then((t) => ({ threads: t.posts, synced: t.synced })).catch(() => ({ threads: [], synced: null }))} />
 
       <p className="mt-3 text-center text-[13px]">
         지금까지 풀어 드린 사주 <b className="font-myeongjo text-seal">{(await readingCount()).toLocaleString("ko-KR")}</b>건
         <span className="block text-[11px] text-ink-soft">무료 분석 + 즉위 · 100건부터 홈에 표시돼요</span>
       </p>
 
-      <details className="mt-4">
-        <summary className="doc-paper cursor-pointer px-4 py-3 font-myeongjo font-extrabold">
-          자세한 표 (왕이 될 사주 · 페이지별 다음 걸음 · 기간별 표)
-        </summary>
-        <StatsTable stats={stats} paidBy={paidBy} />
-        <SourceTable stats={stats} paid={paid} />
-        <DailyTable from={df} to={dt} paid={paid} />
-      <SalesTable
+          <DailyTable from={df} to={dt} paid={paid} />
+        </>
+      )}
+      {tab === "free" && (
+        <>
+        <PeriodNav tab={tab} period={period} />
+          <FreeTable stats={stats} period={period} />
+          <StatsTable stats={stats} paidBy={paidBy} />
+        </>
+      )}
+      {tab === "sales" && (
+        <>
+        <PeriodNav tab={tab} period={period} />
+          <SalesInsights paid={paid.filter((o) => inPeriods(o.paidAt ?? o.createdAt).includes(period))} all={paid} period={period} />
+          <SalesTable
         period={period}
         stats={stats}
         paid={paid.filter((o) => inPeriods(o.paidAt ?? o.createdAt).includes(period))}
         refunds={orders.filter((o) => o.status === "canceled" && inPeriods(o.paidAt ?? o.createdAt).includes(period)).length}
       />
-      </details>
+      <section className="doc-paper mt-4 px-4 py-4">
+        <h2 className="font-myeongjo font-extrabold">최근 결제</h2>
+        <p className="mt-0.5 text-[11px] text-ink-soft">
+          내가 해 본 결제는 &lsquo;테스트?&rsquo;를 눌러 표시해 두면 위 통계에서 빠져요. 관리자로 로그인한 채 한 결제는 저절로 테스트로 남아요.
+        </p>
+        {orders.length === 0 ? (
+          <p className="mt-2 text-sm text-ink-soft">아직 결제가 없어요.</p>
+        ) : (
+          <ul className="mt-2 flex flex-col divide-y divide-seal/10 text-[13px]">
+            {orders.slice(0, 100).map((o) => (
+              <li key={o.id} className="flex items-center gap-2 py-2">
+                <span className="w-20 shrink-0 text-[11px] text-ink-soft">{day(o.paidAt ?? o.createdAt).slice(5)}</span>
+                <span className="min-w-0 flex-1">
+                  <b className="block truncate">{o.set ? SETS[o.set].title : productById(o.product)?.title}</b>
+                  <span className="block truncate text-[11px] text-ink-soft">
+                    {o.who}
+                    {(o.bonus ?? 0) > 0 && ` · 질문 ${o.bonus} ${o.bonusGiven ? "지급됨" : "로그인 대기"}`}
+                    {(o.credits ?? 0) > 0 && ` · 질문권 ${o.credits}${o.credited === false ? " 미지급" : ""}`}
+                  </span>
+                  {/* Under the name, not beside it: a button in the row squeezed the title out of sight. */}
+                  {!o.set && (
+                    <form action={giftCopyAction} className="mt-0.5 flex items-center gap-1 text-[10.5px]">
+                      <input type="hidden" name="id" value={o.id} />
+                      <label className="flex items-center gap-0.5 text-ink-soft">
+                        <input type="checkbox" name="sure" value="1" />
+                        확인
+                      </label>
+                      <button className="text-seal underline" title="환불해도 보고서는 주고 싶을 때: 같은 보고서를 0원 선물 링크로 만들어요(위 '보고서 선물 링크' 목록에 생겨요)">
+                        선물로 복제
+                      </button>
+                    </form>
+                  )}
+                </span>
+                <span className={`shrink-0 font-bold ${o.status === "paid" && !o.test ? "" : "text-ink-soft line-through"}`}>{won(o.amount)}</span>
+                <form action={testOrderAction} className="shrink-0">
+                  <input type="hidden" name="id" value={o.id} />
+                  <input type="hidden" name="test" value={o.test ? "0" : "1"} />
+                  <button className={`rounded-full px-2 py-0.5 text-[10.5px] font-bold ${o.test ? "bg-ink/70 text-hanji" : "border border-ink/20 text-ink-soft"}`}>
+                    {o.test ? "테스트" : "테스트?"}
+                  </button>
+                </form>
+                <Link href={`/r/${o.id}`} className="shrink-0 text-seal">
+                  →
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
+      <section className="doc-paper mt-4 px-4 py-4">
+        <h2 className="font-myeongjo font-extrabold">보고서 선물 링크</h2>
+        <p className="mt-1 text-[11px] leading-relaxed text-ink-soft">
+          친구의 생년월일과 열어 줄 보고서를 고르면 링크가 나와요. 받은 사람은 어느 기기에서든 결제 없이 열어요. <b>0원이라 매출에는 잡히지 않아요.</b> 유료
+          보고서는 실제 AI가 써서 한 편에 수십~수백 원이 들어요. 생년월일은 저장하지 않고, 이름과 사주 글자만 링크에 담겨요. 친구에게 미리 알려 주세요.
+        </p>
+        <GiftForm
+          products={GIFTABLE.map((id) => ({ id, title: productById(id)?.title ?? id }))}
+          years={Array.from({ length: 6 }, (_, i) => thisYear() - 2 + i)}
+          defaultYear={ny ?? thisYear()}
+        />
+        {gifts.length > 0 && (
+          <>
+            <h3 className="mt-5 text-sm font-bold">발급한 링크 ({gifts.length})</h3>
+            <ul className="mt-2 flex flex-col divide-y divide-seal/10 text-[13px]">
+              {gifts.map((o) => (
+                <li key={o.id} className="flex items-center gap-2 py-2">
+                  <span className="w-12 shrink-0 text-[11px] text-ink-soft">{day(o.createdAt).slice(5)}</span>
+                  <span className="min-w-0 flex-1">
+                    <b className="block truncate">{productById(o.product)?.title}</b>
+                    <span className="block truncate text-[11px] text-ink-soft">
+                      {o.who}
+                      {o.status !== "paid" && " · 회수됨"}
+                    </span>
+                  </span>
+                  {o.status === "paid" ? (
+                    <>
+                      <CopyButton text={`${origin}/r/${o.id}`} label="복사" />
+                      <form action={giftRevokeAction}>
+                        <input type="hidden" name="id" value={o.id} />
+                        <button className="shrink-0 rounded-lg border border-ink/15 px-2 py-1.5 text-[12px] text-ink-soft">회수</button>
+                      </form>
+                    </>
+                  ) : (
+                    <span className="shrink-0 text-[11px] text-ink-soft line-through">닫힘</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+      </section>
+
+        </>
+      )}
+      {tab === "traffic" && (
+        <>
+          <SourceTable stats={stats} paid={paid} />
+          <ColumnTable stats={stats} />
+          <Link href="/admin/threads" className="doc-paper mt-4 block px-4 py-3 text-sm font-bold text-seal">스레드 성적표 (글별 조회·클릭) →</Link>
+        </>
+      )}
+      {tab === "people" && (
+        <>
       <section className="doc-paper mt-4 px-4 py-4">
         <h2 className="flex items-baseline justify-between font-myeongjo font-extrabold">
           문의함
@@ -198,6 +330,46 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
         )}
       </section>
 
+      <CreditsSection period={period} orders={orders} origin={origin} />
+
+      <MembersSection find={typeof q.mq === "string" ? q.mq : ""} orders={orders} />
+
+      <FeedbackSection />
+
+        </>
+      )}
+      {tab === "tools" && (
+        <>
+      <section className="doc-paper mt-4 px-4 py-4">
+        <h2 className="font-myeongjo font-extrabold">바로 가기</h2>
+        <ul className="mt-3 grid grid-cols-2 gap-1.5 text-[13px]">
+          <li>
+            <Link href="/admin/sns" className="block rounded-lg border border-seal/20 bg-white/60 px-3 py-2 font-bold">
+              SNS 카드 · 콘텐츠 데스크 →
+            </Link>
+          </li>
+          <li>
+            <Link href="/admin/ask" className="block rounded-lg border border-seal/20 bg-white/60 px-3 py-2 font-bold">
+              정 훈도에게 묻기 시험방 →
+            </Link>
+          </li>
+          <li>
+            <Link href="/admin/threads" className="block rounded-lg border border-seal/20 bg-white/60 px-3 py-2 font-bold">
+              스레드 성적표 →
+            </Link>
+          </li>
+          <li>
+            <Link href="/admin/columns" className="block rounded-lg border border-seal/20 bg-white/60 px-3 py-2 font-bold">
+              칼럼 미리보기 →
+            </Link>
+          </li>
+          <li>
+            <Link href="/admin/free-preview" className="block rounded-lg border border-seal/20 bg-white/60 px-3 py-2 font-bold">
+              무료 화면 시안 →
+            </Link>
+          </li>
+        </ul>
+      </section>
       <section className="doc-paper mt-4 px-4 py-4">
         <h2 className="font-myeongjo font-extrabold">보고서 바로 확인</h2>
         <p className="mt-1 text-[11px] leading-relaxed text-ink-soft">
@@ -224,91 +396,8 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
         </ul>
       </section>
 
-      <section className="doc-paper mt-4 px-4 py-4">
-        <h2 className="font-myeongjo font-extrabold">보고서 선물 링크</h2>
-        <p className="mt-1 text-[11px] leading-relaxed text-ink-soft">
-          친구의 생년월일과 열어 줄 보고서를 고르면 링크가 나와요. 받은 사람은 어느 기기에서든 결제 없이 열어요. <b>0원이라 매출에는 잡히지 않아요.</b> 유료
-          보고서는 실제 AI가 써서 한 편에 수십~수백 원이 들어요. 생년월일은 저장하지 않고, 이름과 사주 글자만 링크에 담겨요. 친구에게 미리 알려 주세요.
-        </p>
-        <GiftForm
-          products={GIFTABLE.map((id) => ({ id, title: productById(id)?.title ?? id }))}
-          years={Array.from({ length: 6 }, (_, i) => thisYear() - 2 + i)}
-          defaultYear={ny ?? thisYear()}
-        />
-        {gifts.length > 0 && (
-          <>
-            <h3 className="mt-5 text-sm font-bold">발급한 링크 ({gifts.length})</h3>
-            <ul className="mt-2 flex flex-col divide-y divide-seal/10 text-[13px]">
-              {gifts.map((o) => (
-                <li key={o.id} className="flex items-center gap-2 py-2">
-                  <span className="w-12 shrink-0 text-[11px] text-ink-soft">{day(o.createdAt).slice(5)}</span>
-                  <span className="min-w-0 flex-1">
-                    <b className="block truncate">{productById(o.product)?.title}</b>
-                    <span className="block truncate text-[11px] text-ink-soft">
-                      {o.who}
-                      {o.status !== "paid" && " · 회수됨"}
-                    </span>
-                  </span>
-                  {o.status === "paid" ? (
-                    <>
-                      <CopyButton text={`${origin}/r/${o.id}`} label="복사" />
-                      <form action={giftRevokeAction}>
-                        <input type="hidden" name="id" value={o.id} />
-                        <button className="shrink-0 rounded-lg border border-ink/15 px-2 py-1.5 text-[12px] text-ink-soft">회수</button>
-                      </form>
-                    </>
-                  ) : (
-                    <span className="shrink-0 text-[11px] text-ink-soft line-through">닫힘</span>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-      </section>
-
-      <CreditsSection period={period} orders={orders} origin={origin} />
-
-      <MembersSection find={typeof q.mq === "string" ? q.mq : ""} orders={orders} />
-
-      <FeedbackSection />
-
-      <section className="doc-paper mt-4 px-4 py-4">
-        <h2 className="font-myeongjo font-extrabold">최근 결제</h2>
-        <p className="mt-0.5 text-[11px] text-ink-soft">
-          내가 해 본 결제는 &lsquo;테스트?&rsquo;를 눌러 표시해 두면 위 통계에서 빠져요. 관리자로 로그인한 채 한 결제는 저절로 테스트로 남아요.
-        </p>
-        {orders.length === 0 ? (
-          <p className="mt-2 text-sm text-ink-soft">아직 결제가 없어요.</p>
-        ) : (
-          <ul className="mt-2 flex flex-col divide-y divide-seal/10 text-[13px]">
-            {orders.slice(0, 100).map((o) => (
-              <li key={o.id} className="flex items-center gap-2 py-2">
-                <span className="w-20 shrink-0 text-[11px] text-ink-soft">{day(o.paidAt ?? o.createdAt).slice(5)}</span>
-                <span className="min-w-0 flex-1">
-                  <b className="block truncate">{o.set ? SETS[o.set].title : productById(o.product)?.title}</b>
-                  <span className="block truncate text-[11px] text-ink-soft">
-                    {o.who}
-                    {(o.bonus ?? 0) > 0 && ` · 질문 ${o.bonus} ${o.bonusGiven ? "지급됨" : "로그인 대기"}`}
-                    {(o.credits ?? 0) > 0 && ` · 질문권 ${o.credits}${o.credited === false ? " 미지급" : ""}`}
-                  </span>
-                </span>
-                <span className={`shrink-0 font-bold ${o.status === "paid" && !o.test ? "" : "text-ink-soft line-through"}`}>{won(o.amount)}</span>
-                <form action={testOrderAction} className="shrink-0">
-                  <input type="hidden" name="id" value={o.id} />
-                  <input type="hidden" name="test" value={o.test ? "0" : "1"} />
-                  <button className={`rounded-full px-2 py-0.5 text-[10.5px] font-bold ${o.test ? "bg-ink/70 text-hanji" : "border border-ink/20 text-ink-soft"}`}>
-                    {o.test ? "테스트" : "테스트?"}
-                  </button>
-                </form>
-                <Link href={`/r/${o.id}`} className="shrink-0 text-seal">
-                  →
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+        </>
+      )}
 
       <form action={adminSignOut} className="mt-6 text-center">
         <button className="text-xs text-ink-soft underline">관리자 로그아웃</button>
@@ -374,7 +463,7 @@ function StatsTable({ stats, paidBy }: { stats: Record<string, Record<Period, nu
   const m = (k: string) => stats[k]?.month ?? 0;
   return (
     <section className="doc-paper mt-4 px-3 py-4">
-      <h2 className="px-1 font-myeongjo font-extrabold">방문과 전환</h2>
+      <h2 className="px-1 font-myeongjo font-extrabold">세부 흐름 (기간별)</h2>
       <div className="mt-2 overflow-x-auto">
         <table className="w-full text-right text-[12px] tabular-nums">
           <thead>
@@ -388,7 +477,7 @@ function StatsTable({ stats, paidBy }: { stats: Record<string, Record<Period, nu
             </tr>
           </thead>
           <tbody>
-            {[...ROWS, ...columnRows()].map((r) => (
+            {ROWS.map((r) => (
               <tr key={r.key} className={r.group ? "border-t border-seal/20" : ""}>
                 <td className="py-1 text-left">
                   {r.group && <span className="block pt-1 text-[10px] font-extrabold text-seal">{r.group}</span>}
@@ -479,18 +568,6 @@ function SalesTable({ period, stats, paid, refunds }: { period: Period; stats: R
           CSV 받기
         </a>
       </h2>
-      <nav className="mt-2 flex flex-wrap gap-1.5 px-1">
-        {PERIODS.map((p) => (
-          <Link
-            key={p.key}
-            href={`/admin?sp=${p.key}`}
-            scroll={false}
-            className={`rounded-full border px-3 py-1 text-xs font-bold ${p.key === period ? "border-ink bg-ink text-hanji" : "border-ink/20 text-ink-soft"}`}
-          >
-            {p.label}
-          </Link>
-        ))}
-      </nav>
       {rows.length === 0 ? (
         <p className="mt-3 px-1 text-sm text-ink-soft">이 기간에는 아직 기록이 없어요.</p>
       ) : (
@@ -598,7 +675,7 @@ async function MembersSection({ find, orders }: { find: string; orders: Order[] 
       </h2>
       <p className="mt-0.5 text-[11px] text-ink-soft">
         {byVia} · 채널 추가 {members.filter((m) => m.channel).length}명 (
-        <a href="/admin?mq=%3Achannel#members" className="underline">
+        <a href="/admin?t=people&mq=%3Achannel#members" className="underline">
           명단
         </a>
         ) · 소식 받기 동의 {members.filter((m) => m.news?.on).length}명 (이메일 있음 {members.filter((m) => m.news?.on && m.email).length})
@@ -617,6 +694,7 @@ async function MembersSection({ find, orders }: { find: string; orders: Order[] 
         <dd>{tally(members.map((m) => m.age ?? "모름"))}</dd>
       </dl>
       <form action="/admin#members" className="mt-2 flex gap-1.5 text-[12px]">
+        <input type="hidden" name="t" value="people" />
         <input name="mq" defaultValue={find} placeholder="회원 번호(K-123456) · 별명 · 이메일" className="min-w-0 flex-1 rounded-lg border border-ink/15 bg-white/60 px-2 py-1.5" />
         <button className="shrink-0 rounded-full bg-ink px-3 font-bold text-hanji">찾기</button>
         {find && (
@@ -661,7 +739,7 @@ async function MembersSection({ find, orders }: { find: string; orders: Order[] 
           <ul className="mt-2 flex max-h-60 flex-col divide-y divide-seal/10 overflow-y-auto text-[12px]">
             {found.slice(0, 100).map((m) => (
               <li key={m.id}>
-                <a href={`/admin?mq=${encodeURIComponent(m.id)}#members`} className="flex items-center gap-2 py-1.5">
+                <a href={`/admin?t=people&mq=${encodeURIComponent(m.id)}#members`} className="flex items-center gap-2 py-1.5">
                   <span className="w-12 shrink-0 text-ink-soft">{day(m.createdAt).slice(5, 10)}</span>
                   <b className="min-w-0 flex-1 truncate">
                     {m.nick}
@@ -717,7 +795,15 @@ async function FeedbackSection() {
           👍 {up} · 👎 {list.length - up} · 후기 동의 {list.filter((f) => f.share).length}
         </span>
       </h2>
-      <p className="mt-0.5 text-[11px] text-ink-soft">결제한 보고서 맨 아래에서 받아요. 후기로 쓸 수 있는 건 &lsquo;후기 동의&rsquo; 표시가 있는 것만이에요 (이름 없이).</p>
+      <p className="mt-0.5 text-[11px] text-ink-soft">결제한 보고서 맨 아래에서 받아요(10/28부터 좋았던 점만, 30자 이상이면 질문권 1개). 후기로 쓸 수 있는 건 &lsquo;후기 동의&rsquo; 표시가 있는 것만이에요 (이름 없이, 질문권을 받고 남긴 후기로 표시).</p>
+      {list.length > up && (
+        <form action={deleteDownFeedbackAction} className="mt-1.5 flex items-center gap-2 text-[11px]">
+          <label className="flex items-center gap-1 text-ink-soft">
+            <input type="checkbox" name="sure" value="1" /> 확인
+          </label>
+          <button className="rounded-full border border-seal/40 px-2 py-0.5 font-bold text-seal">👎 기록 {list.length - up}개 모두 지우기 (되돌릴 수 없어요)</button>
+        </form>
+      )}
       {list.length === 0 ? (
         <p className="mt-2 text-[12px] text-ink-soft">아직 없어요.</p>
       ) : (
@@ -726,6 +812,7 @@ async function FeedbackSection() {
             <li key={`${f.order}:${f.product}`} className="py-1.5">
               <span className="text-ink-soft">{day(f.at).slice(5)}</span> {f.up ? "👍" : "👎"} <b>{productById(f.product)?.title ?? f.product}</b>
               {f.share && <span className="ml-1 rounded bg-gold/20 px-1 text-[10.5px] font-bold">후기 동의</span>}
+              {f.rewarded && <span className="ml-1 rounded bg-seal/10 px-1 text-[10.5px] font-bold text-seal">질문권 지급</span>}
               {f.member && <span className="ml-1 font-mono text-[10px] text-ink-soft">{memberNo(f.member)}</span>}
               {f.text && <span className="block text-ink-soft">{f.text}</span>}
               {!f.up && <RewriteBox order={f.order} product={f.product} />}
@@ -782,7 +869,7 @@ async function CreditsSection({ period, orders, origin }: { period: Period; orde
         {PERIODS.map((p) => (
           <a
             key={p.key}
-            href={`/admin?sp=${p.key}#credits`}
+            href={`/admin?t=people&sp=${p.key}#credits`}
             className={`rounded-full border px-3 py-1 text-xs font-bold ${p.key === period ? "border-ink bg-ink text-hanji" : "border-ink/20 text-ink-soft"}`}
           >
             {p.label}
@@ -881,6 +968,193 @@ async function CreditsSection({ period, orders, origin }: { period: Period; orde
           })}
         </ul>
       )}
+    </section>
+  );
+}
+
+// One period for the tab's tables (?sp), the tab kept.
+function PeriodNav({ tab, period }: { tab: TabKey; period: Period }) {
+  return (
+    <div className="mt-3 flex gap-1">
+      {PERIODS.map((p) => (
+        <Link
+          key={p.key}
+          href={`/admin?t=${tab}&sp=${p.key}`}
+          className={`flex-1 rounded-full py-1.5 text-center text-[12.5px] font-bold ${p.key === period ? "bg-ink text-hanji" : "border border-ink/20 text-ink-soft"}`}
+        >
+          {p.label}
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+// Each free page in one row: results seen (once a day per browser), the birth date first entered there, the
+// step out to the next page, and the cards sent or saved. Counting of the first two began with this table.
+function FreeTable({ stats, period }: { stats: Record<string, Record<Period, number>>; period: Period }) {
+  const v = (k: string) => stats[k]?.[period] ?? 0;
+  const n = (x: number) => (x ? x.toLocaleString("ko-KR") : "–");
+  const step = (f: string) => (STEP_FROM as readonly string[]).includes(f);
+  const share = (f: string) => (SHARE_FROM as readonly string[]).includes(f);
+  const rows = FREE_VIEW.map((f) => ({ f, seen: v(`fv:${f}`), first: v(`fe:${f}`), next: step(f) ? v(`to:${f}`) : 0, paid: step(f) ? v(`tp:${f}`) : 0, sent: share(f) ? v(`sh:${f}`) : 0, saved: share(f) ? v(`sv:${f}`) : 0 })).sort(
+    (a, b) => b.seen - a.seen || b.first - a.first,
+  );
+  const max = Math.max(1, ...rows.map((r) => r.seen));
+  const firstOther = [
+    ["친구 링크", v("fe:friend")],
+    ["홈", v("fe:home") + v("fe:today")],
+    ["유료 보고서 화면", v("fe:paid")],
+  ] as const;
+  return (
+    <section className="doc-paper mt-4 px-3 py-4">
+      <h2 className="px-1 font-myeongjo font-extrabold">무료 놀이별</h2>
+      <p className="mt-0.5 px-1 text-[11px] text-ink-soft">
+        결과 본 수는 한 브라우저가 하루 한 번만 세요. 처음 입력은 그 화면에서 생일을 처음 넣은 수(=새 손님을 데려온 화면). 유료로는 다음 걸음 가운데 유료 보고서로 간 수예요(10/30 저녁부터 셈). 왕이 될 사주 즉위는 {n(v("king"))}건.
+      </p>
+      <div className="mt-2 overflow-x-auto">
+        <table className="w-full text-right text-[12px] tabular-nums">
+          <thead>
+            <tr className="text-ink-soft">
+              <th className="py-1 text-left font-normal">화면</th>
+              <th className="px-1 font-normal">결과 본 수</th>
+              <th className="px-1 font-normal">처음 입력</th>
+              <th className="px-1 font-normal">다음 걸음</th>
+              <th className="px-1 font-normal">유료로</th>
+              <th className="px-1 font-normal">보내기</th>
+              <th className="px-1 font-normal">저장</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.f} className="border-t border-seal/10">
+                <td className="py-1.5 text-left">
+                  {FREE_VIEW_LABEL[r.f]}
+                  <span className="mt-0.5 block h-1 rounded-full bg-seal/70" style={{ width: `${Math.round((r.seen / max) * 100)}%` }} />
+                </td>
+                <td className="px-1 font-bold">{n(r.seen)}</td>
+                <td className="px-1">{n(r.first)}</td>
+                <td className="px-1">{n(r.next)}</td>
+                <td className="px-1">{n(r.paid)}</td>
+                <td className="px-1">{n(r.sent)}</td>
+                <td className="px-1">{n(r.saved)}</td>
+              </tr>
+            ))}
+            {firstOther.map(([label, x]) => (
+              <tr key={label} className="border-t border-seal/10 text-ink-soft">
+                <td className="py-1 text-left">처음 입력 · {label}</td>
+                <td className="px-1">–</td>
+                <td className="px-1">{n(x)}</td>
+                <td colSpan={4} />
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+// What the money says beyond the product table: the average sale, who came back to buy again (signed-in members),
+// and the hours and weekdays people pay at (to time posts by).
+function SalesInsights({ paid, all, period }: { paid: Order[]; all: Order[]; period: Period }) {
+  const real = paid.filter((o) => !o.test && o.amount > 0);
+  const won = real.reduce((a, o) => a + o.amount, 0);
+  const avg = real.length ? Math.round(won / real.length) : 0;
+  const byMember = new Map<string, number>();
+  for (const o of all.filter((o) => !o.test && o.amount > 0)) {
+    const m = o.member ?? o.bonusMember;
+    if (m) byMember.set(m, (byMember.get(m) ?? 0) + 1);
+  }
+  const buyers = byMember.size;
+  const again = [...byMember.values()].filter((c) => c >= 2).length;
+  const kst = (t: number) => new Date(t + 9 * 3600000);
+  const hours = Array.from({ length: 24 }, () => 0);
+  const days = Array.from({ length: 7 }, () => 0);
+  for (const o of all.filter((o) => !o.test && o.amount > 0)) {
+    const d = kst(o.paidAt ?? o.createdAt);
+    hours[d.getUTCHours()] += 1;
+    days[d.getUTCDay()] += 1;
+  }
+  const hMax = Math.max(1, ...hours);
+  const dMax = Math.max(1, ...days);
+  const label = PERIODS.find((p) => p.key === period)?.label;
+  return (
+    <section className="doc-paper mt-4 px-4 py-4">
+      <h2 className="font-myeongjo font-extrabold">매출 한눈에 · {label}</h2>
+      <ul className="mt-3 grid grid-cols-3 gap-1.5 text-center">
+        {[
+          ["결제", `${real.length.toLocaleString("ko-KR")}건`],
+          ["매출", `${won.toLocaleString("ko-KR")}원`],
+          ["객단가", `${avg.toLocaleString("ko-KR")}원`],
+        ].map(([k, v]) => (
+          <li key={k} className="rounded-lg bg-white/60 px-1 py-2">
+            <p className="text-[10.5px] text-ink-soft">{k}</p>
+            <p className="font-myeongjo font-extrabold">{v}</p>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-3 text-[12.5px]">
+        다시 산 회원 <b>{again}</b>명 / 결제한 회원 {buyers}명 {buyers ? `(${Math.round((again / buyers) * 100)}%)` : ""}
+        <span className="block text-[10.5px] text-ink-soft">로그인한 채 산 결제만 사람을 알 수 있어요. 전체 기간 기준.</span>
+      </p>
+      <h3 className="mt-4 text-[12px] font-bold">결제 시간대 (전체 기간 · 한국 시간)</h3>
+      <div className="mt-1 flex h-16 items-end gap-[2px]" role="img" aria-label="시간대별 결제 수">
+        {hours.map((c, h) => (
+          <span key={h} title={`${h}시 ${c}건`} className="flex-1 rounded-t-sm bg-seal/70" style={{ height: `${Math.max(2, (c / hMax) * 100)}%`, opacity: c ? 1 : 0.25 }} />
+        ))}
+      </div>
+      <div className="mt-0.5 flex justify-between text-[10px] text-ink-soft">
+        <span>0시</span>
+        <span>6시</span>
+        <span>12시</span>
+        <span>18시</span>
+        <span>23시</span>
+      </div>
+      <h3 className="mt-3 text-[12px] font-bold">요일</h3>
+      <ul className="mt-1 grid grid-cols-7 gap-1 text-center text-[11px]">
+        {["일", "월", "화", "수", "목", "금", "토"].map((w, i) => (
+          <li key={w}>
+            <span className="mx-auto block w-full rounded-sm bg-seal/70" style={{ height: `${Math.max(3, (days[i] / dMax) * 40)}px` }} />
+            {w} {days[i]}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+// Reads of the columns, per period.
+function ColumnTable({ stats }: { stats: Record<string, Record<Period, number>> }) {
+  const n = (v: number) => v.toLocaleString("ko-KR");
+  return (
+    <section className="doc-paper mt-4 px-3 py-4">
+      <h2 className="px-1 font-myeongjo font-extrabold">칼럼 조회</h2>
+      <div className="mt-2 overflow-x-auto">
+        <table className="w-full text-right text-[12px] tabular-nums">
+          <thead>
+            <tr className="text-ink-soft">
+              <th className="py-1 text-left font-normal"></th>
+              {PERIODS.map((p) => (
+                <th key={p.key} className="px-1 py-1 font-normal">
+                  {p.label}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {columnRows().map((r) => (
+              <tr key={r.key} className="border-t border-seal/10">
+                <td className="py-1 text-left">{r.label}</td>
+                {PERIODS.map((p) => (
+                  <td key={p.key} className="px-1 py-1">
+                    {n(stats[r.key]?.[p.key] ?? 0)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 }

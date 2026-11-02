@@ -5,7 +5,7 @@ import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { computeProfile } from "@/lib/profile";
 import { BirthInputError, courtMessage, type Pillars } from "@/lib/saju";
-import { track } from "@/lib/stats";
+import { freeOfNext, track } from "@/lib/stats";
 import { addMinister, createCourt, CourtFullError, getCourt, getProfile, listMinisters, MAX_MINISTERS, noteReading, putShare, removeMinister, setProfile } from "@/lib/store";
 import { openCard, openPerson } from "@/lib/shareToken";
 import { OWNER_COOKIE, MINISTER_COOKIE } from "@/lib/cookies";
@@ -208,7 +208,7 @@ export async function saveMeAction(_prev: FormState, formData: FormData): Promis
     await rememberMe(person);
     // Counted once per chart: adding the hour or gender to the same birth date is not a new reading.
     if (!before || before.person.birthYear !== person.birthYear || before.person.pillars.dayStem !== person.pillars.dayStem || before.person.pillars.dayBranch !== person.pillars.dayBranch)
-      await noteReading();
+      await Promise.all([noteReading(), track(`fe:${freeOfNext(next)}`).catch(() => {})]);
     else await track("me_same").catch(() => {});
   } catch (e) {
     if (e instanceof BirthInputError) {
@@ -223,7 +223,7 @@ export async function saveMeAction(_prev: FormState, formData: FormData): Promis
 
 // Where the form may send the reader back to: a report, the 신살 도감, a friend's 신살 link, or today's card.
 function meNext(next: string) {
-  if (/^\/reports\/[a-z]+(\?y=\d{4})?$/.test(next) || next === "/sinsal" || /^\/s\/sinsal\/[\w.-]{20,2400}$/.test(next) || /^\/sinsal\?f=[\w.-]{20,2400}$/.test(next)) return next;
+  if (/^\/reports\/[a-z]+(\?y=\d{4})?$/.test(next) || next === "/sinsal" || /^\/s\/(sinsal|sinbun)\/[\w.-]{20,2400}$/.test(next) || /^\/sinsal\?f=[\w.-]{20,2400}$/.test(next)) return next;
   return next === "/#today" ? "/#today" : "/";
 }
 

@@ -250,6 +250,10 @@ export async function setReportWriting(key: string, at: number) {
 export async function noteReportError(message: string, kind: "error" | "risk" = "error") {
   await backend().set(kind === "risk" ? "report:lastRisk" : "report:lastError", JSON.stringify({ at: Date.now(), message: message.slice(0, 500) }));
 }
+// The owner has seen it and dealt with it: the banner goes until the next failure.
+export async function clearReportError(kind: "error" | "risk" = "error") {
+  await backend().set(kind === "risk" ? "report:lastRisk" : "report:lastError", JSON.stringify({ at: 0, message: "" }));
+}
 // Only one from the last two days.
 export async function lastReportError(kind: "error" | "risk" = "error"): Promise<{ at: number; message: string } | null> {
   const raw = await backend().get(kind === "risk" ? "report:lastRisk" : "report:lastError").catch(() => null);
@@ -468,6 +472,10 @@ export async function getFeedbackRaw(key: string): Promise<string | null> {
 export async function setFeedbackRaw(key: string, raw: string, isNew: boolean) {
   await backend().set(`fb:${key}`, raw);
   if (isNew) await backend().push("feedbacks", key);
+}
+export async function deleteFeedbackRaw(key: string) {
+  await backend().set(`fb:${key}`, "");
+  await backend().remove("feedbacks", key);
 }
 export async function feedbackKeys(): Promise<string[]> {
   return backend().list("feedbacks");

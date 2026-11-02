@@ -20,6 +20,7 @@ import { profileOf } from "@/lib/pairToken";
 import { ownedByProduct, ownedOrders } from "@/lib/pay";
 import { productById, SETS, type ProductId } from "@/lib/products";
 import { readingCount } from "@/lib/store";
+import { pickAskSample } from "@/lib/askSamples";
 import { todayFor } from "@/lib/today";
 import { isPreview, newYearOf, newYearProduct, thisYear, yearDetail, yearName, yearNickname } from "@/lib/yeonun";
 
@@ -192,6 +193,7 @@ const PROMISES: [string, React.ReactNode][] = [
 ];
 
 function Sangdam({ credits }: { credits: number | null }) {
+  const sample = pickAskSample();
   return (
     <section className="mt-6">
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-b from-[#222d3b] to-[#1a232f] px-5 pt-5 pb-5 text-hanji shadow-[0_8px_22px_rgb(33_27_23/0.18),inset_0_0_0_1px_rgb(212_175_95/0.35)]">
@@ -222,10 +224,10 @@ function Sangdam({ credits }: { credits: number | null }) {
         <div className="relative mt-4 rounded-xl border border-[#e2bc68]/30 bg-[#f7efd9]/[0.06] px-3.5 py-3">
           <p className="font-myeongjo text-[14px] font-extrabold text-[#e2bc68]">자세히 들려주실수록 답이 깊어져요</p>
           <p className="mt-2 flex gap-2 text-[12.5px] text-hanji/45 line-through decoration-hanji/30">
-            <span className="no-underline">✕</span>이직해도 될까요?
+            <span className="no-underline">✕</span>{sample.short}
           </p>
           <p className="mt-1 flex gap-2 text-[12.5px] leading-relaxed text-hanji/90">
-            <span className="text-[#e2bc68]">◯</span>3년 다닌 회사에서 연봉이 오르는 제안을 받았어요. 이번 달 안에 답해야 하는데, 가도 될까요?
+            <span className="text-[#e2bc68]">◯</span>{sample.q}
           </p>
           <p className="mt-2 text-[11.5px] text-hanji/55">무슨 일인지 · 누구와 얽혀 있는지 · 언제까지 정해야 하는지</p>
         </div>

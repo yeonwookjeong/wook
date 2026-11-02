@@ -7,6 +7,7 @@ import { restorePending } from "./purchase";
 import { ReportView } from "./ReportView";
 import { ShopView } from "./ShopView";
 import { TodayView } from "./TodayView";
+import { TossBanner } from "./TossBanner";
 import { YearView } from "./YearView";
 
 type Tab = "today" | "year" | "shop" | "mine";
@@ -77,6 +78,8 @@ export default function App() {
             내 정보 다시 입력
           </button>
           <p className="quiet small center">사주 풀이는 재미와 참고를 위한 것이에요.</p>
+          {/* Last on the page, away from every button (the ad policy). */}
+          <TossBanner />
         </>
       )}
     </main>
