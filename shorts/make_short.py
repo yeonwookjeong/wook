@@ -1300,6 +1300,28 @@ def _naver_candidates(query: str) -> list:
              "source": "", "page": ""} for i in items]
 
 
+def _bing_candidates(query: str) -> list:
+    """빙 이미지 검색 (가입·키 필요 없음). 공식 API가 아니라 검색 결과 페이지를 읽는 방식이라 가끔 막힐 수 있음."""
+    import html
+    import urllib.parse
+    req = urllib.request.Request(
+        "https://www.bing.com/images/search?form=HDRSC2&first=1&q=" + urllib.parse.quote(query),
+        headers={"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 "
+                               "(KHTML, like Gecko) Version/17.0 Safari/605.1.15",
+                 "Accept-Language": "ko-KR,ko;q=0.9"})
+    with urllib.request.urlopen(req, timeout=20) as r:
+        page = r.read().decode("utf-8", "replace")
+    out = []
+    for m_ in re.finditer(r'\bm="(\{.*?\})"', page):
+        try:
+            meta = json.loads(html.unescape(m_.group(1)))
+        except ValueError:
+            continue
+        if meta.get("murl"):
+            out.append({"url": meta["murl"], "w": 0, "h": 0, "source": "", "page": meta.get("purl", "")})
+    return out
+
+
 def _wiki_candidates(name: str, hint: str) -> list:
     """위키미디어 공용(자유 라이선스). 위키데이터에서 직업까지 맞는 사람만 → 대표 사진 + 분류 + 영어 이름 검색."""
     import urllib.parse
@@ -1346,7 +1368,7 @@ def _wiki_candidates(name: str, hint: str) -> list:
 
 def auto_photos(name: str, hint: str = "", want: int = 9) -> list:
     """출연자 사진을 자동으로 찾아 broll/<이름>/auto_*.jpg로 저장 (한 번 받으면 재사용).
-    찾는 곳: 카카오(다음) 이미지 검색 → 네이버 이미지 검색 → 위키미디어 공용. 키가 있는 것만 씀.
+    찾는 곳: 카카오(다음) → 네이버(둘 다 키가 있을 때만) → 빙(키 없이 기본) → 위키미디어 공용.
     검색어는 '직업 + 이름'(예: 배우 박지현)으로 동명이인을 줄이고, 얼굴이 한 명만 또렷한 사진만 남김."""
     d = HERE / "broll" / name
     meta_f = d / "_출처.json"
@@ -1355,7 +1377,7 @@ def auto_photos(name: str, hint: str = "", want: int = 9) -> list:
     query = f"{hint} {name}".strip()
     cands, used = [], []
     for label, fn in (("카카오", lambda: _kakao_candidates(query)), ("네이버", lambda: _naver_candidates(query)),
-                      ("위키미디어", lambda: _wiki_candidates(name, hint))):
+                      ("빙", lambda: _bing_candidates(query)), ("위키미디어", lambda: _wiki_candidates(name, hint))):
         try:
             got = fn()
         except Exception as e:  # 한 곳이 막혀도 다음 곳으로
@@ -1368,7 +1390,7 @@ def auto_photos(name: str, hint: str = "", want: int = 9) -> list:
             break
     if not cands:
         print(f"      ⚠️ '{query}' 사진을 못 찾았어요 → 같은 영상 장면으로 대신해요"
-              + ("" if _key("kakao_key.txt") or _key("naver_key.txt") else " (kakao_key.txt를 넣으면 훨씬 잘 찾아요)"))
+              + ("" if _key("kakao_key.txt") or _key("naver_key.txt") else " (빙이 막혔으면 kakao_key.txt를 넣어보세요)"))
         return []
     print(f"      🔎 '{query}' 사진 후보: {', '.join(used)} — 얼굴 확인 중…")
     kept, seen = [], set()
