@@ -3,6 +3,7 @@
 마지막 갱신: 2026-10-28. 새로 정한 것은 위에서 고치고, 바뀐 결정은 지우지 말고 "바뀜"으로 남긴다.
 
 ## 채널 콘셉트
+- **채널 이름 확정(2026-11-03)**: **Konorama** (Korea의 Ko + panorama). 영어 @konoramatv, 스페인어 Konorama Español @konorama.es. 소개: EN "Konorama: a panorama of Korea, from old Korea to today's Korea." / ES "Konorama: un panorama de Corea, de la Corea antigua a la Corea de hoy."
 - **이름·소개에 쓰지 않을 단어(2026-11-03, 대표님 지시)**: 조선(Joseon), K-팝(K-pop). 옛 한국은 "old Korea"처럼 풀어 쓴다. (네온은 금지가 아님: 한국 대표성에 대한 질문이었음)
 - 채널 이름(가안, 2026-10-28): **Neon Hanok**. 핸들 후보 @neonhanok(영어), @neonhanok.es(스페인어). YouTube는 비어 있음 확인, 인스타는 대표님 확인 필요.
 - 한 줄 소개(가안): EN "Why Koreans do what they do, from old Korea to today's Korea." / ES "¿Por qué los coreanos hacen lo que hacen? De la Corea antigua a la Corea de hoy."
