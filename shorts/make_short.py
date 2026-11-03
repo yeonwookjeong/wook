@@ -1036,7 +1036,7 @@ def is_hi(word: str) -> bool:
     return bool(re.search(r"\d", n)) or any(norm(k) in n for k in keys if norm(k))
 
 
-def sub_png(text: str, role: str, path: Path, theme: str = "premium", scale: float = 1.0):
+def sub_png(text: str, role: str, path: Path, theme: str = "premium", scale: float = 1.0, lift: int = 0):
     """자막 한 장(투명 PNG). role: celeb / tts. scale<1이면 '팝' 등장용 작은 버전."""
     st = SUB_THEMES.get(theme, SUB_THEMES["premium"]).get(role) or SUB_THEMES["premium"]["celeb"]
     text = strip_emoji(text)
@@ -1058,7 +1058,7 @@ def sub_png(text: str, role: str, path: Path, theme: str = "premium", scale: flo
         while f.size > 40 and max(d.textlength(l, font=f) for l in lines) > max_w:
             f = font(f.size - 2)
     lh = int(f.size * 1.32)
-    y0 = SUB_Y - (len(lines) - 1) * lh
+    y0 = SUB_Y - lift - (len(lines) - 1) * lh
     cy = [y0 + i * lh + f.size / 2 for i in range(len(lines))]
     sw = max(int(st.get("sw", 0) * scale), 0)
 
@@ -1101,6 +1101,7 @@ def sub_png(text: str, role: str, path: Path, theme: str = "premium", scale: flo
 # ---------------------------------------------------------------- 렌더링
 
 DEFAULT_BLUR = [[0, 0, 0.26, 0.16], [0.74, 0, 0.26, 0.16]]  # 원본 좌상단·우상단 로고 자리(비율)
+SUB_BLUR_BOX = [0, 0.74, 1, 0.24, 14]  # 원본 자막 자리(아래쪽 띠). 5번째 값 = 흐림 정도(살짝)
 IMAGE_EXT = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
 
 
@@ -1111,9 +1112,12 @@ def _blur(label: str, out: str, boxes: list, k: int) -> list[str]:
     n = len(boxes)
     fg = [f"[{label}]split={n + 1}[bm{k}]" + "".join(f"[bp{k}_{j}]" for j in range(n))]
     last = f"bm{k}"
-    for j, (x, y, w, h) in enumerate(boxes):
+    for j, box in enumerate(boxes):
+        x, y, w, h = box[:4]
+        r = f"{int(box[4])}" if len(box) > 4 else "'min(w,h)/5'"  # 5번째 값이 있으면 그만큼만 흐리게
+        rc = f"{max(int(box[4]) // 2, 1)}" if len(box) > 4 else "'min(cw,ch)/5'"
         fg.append(f"[bp{k}_{j}]crop=iw*{w}:ih*{h}:iw*{x}:ih*{y},"
-                  f"boxblur=lr='min(w,h)/5':lp=3:cr='min(cw,ch)/5':cp=3[bb{k}_{j}]")
+                  f"boxblur=lr={r}:lp=2:cr={rc}:cp=2[bb{k}_{j}]")
         nxt = out if j == n - 1 else f"bo{k}_{j}"
         fg.append(f"[{last}][bb{k}_{j}]overlay=main_w*{x}:main_h*{y}[{nxt}]")
         last = nxt
@@ -1532,10 +1536,15 @@ def main():
     for pp in recipe["parts"]:
         if pp.get("type") == "tts":
             pp.setdefault("broll_cc_only", recipe.get("broll_cc_only", False))
-    crop_bottom = float(recipe.get("src_crop_bottom", 0.2 if clip_subs else 0.0))
+    # 원본에 박힌 자막: 기본은 잘라내지 않고 그 자리를 살짝 흐리게 한 뒤 우리 자막을 그 위에 올림(이질감 적음)
+    # "sub_cover": "crop"이면 예전처럼 아래를 잘라냄, "none"이면 그대로
+    cover = recipe.get("sub_cover", "blur" if clip_subs else "none")
+    crop_bottom = float(recipe.get("src_crop_bottom", 0.2 if cover == "crop" else 0.0))
     # 원본 좌상단·우상단(채널 로고 자리) 흐리게. false면 끔, 직접 [[x,y,w,h],...] 비율로도 지정 가능
     blur = recipe.get("blur", True)
-    blur = DEFAULT_BLUR if blur is True else (blur or [])
+    blur = list(DEFAULT_BLUR if blur is True else (blur or []))
+    if cover == "blur":
+        blur.append(recipe.get("sub_blur_box", SUB_BLUR_BOX))
     use_layout(recipe.get("theme", "celebpick"))
     _RECIPE_HI[:] = recipe.get("highlight", [])
 
@@ -1553,6 +1562,14 @@ def main():
         print(f"   {i}. {label} {fmt(p['start'])} ~ {fmt(p['end'])} ({p['end'] - p['start']:.1f}초) {extra}")
     print(f"   총 길이 약 {total:.0f}초" + ("  ⚠️ 60초가 넘어요" if total > 60 else ""))
     if args.check:
+        print("\n   대본 미리보기 (영상에 들어가는 말 그대로)")
+        for p in plan:
+            if p["type"] == "tts":
+                print(f"   🔊 TTS: {p['part']['text']}")
+            else:
+                for s0, e0, t in subs.lines:
+                    if e0 > p["start"] + 0.2 and s0 < p["end"] - 0.2:
+                        print(f"   🎬 [{fmt(s0)}] {t}")
         print("\n✅ 확인만 했어요. 영상을 만들려면 --check 없이 다시 실행하세요.")
         return
     if args.snapshots:
@@ -1577,7 +1594,7 @@ def main():
     for i, p in enumerate(plan, 1):
         print(f"   [{i}/{len(plan)}] 렌더링 중…")
         dur = p["end"] - p["start"]
-        crop = max(crop_bottom, 0.2) if p["type"] == "tts" else crop_bottom
+        crop = max(crop_bottom, 0.2) if (p["type"] == "tts" and cover == "crop") else crop_bottom
         if p["type"] == "tts":
             dur = frames(max(dur, 1.4))  # 너무 짧은 TTS 장면은 '따닥' 넘어가 보여서 최소 1.4초 유지
             overlays = []
@@ -1597,18 +1614,24 @@ def main():
         # 원본 구간: 쉼 잘라내기 + 말 빠르기 맞추기. 잘라낸 곳은 화면 크기를 번갈아 바꿔(줌 점프컷) 튀지 않게
         speed = speech_speed(subs, p["start"], p["end"]) if speed_cfg == "auto" else float(speed_cfg)
         pieces = speech_pieces(ff, src, p["start"], p["end"]) if tighten else [(p["start"], p["end"])]
-        if i == len(plan):  # 마지막 말 뒤에 여운을 조금 남겨서 뚝 끊기지 않게
-            pieces[-1] = (pieces[-1][0], min(pieces[-1][1] + 0.6, src_len - 0.05))
+        if i == len(plan):  # 마지막 말 뒤에 여운을 조금 남겨서 뚝 끊기지 않게 (다음 말이 시작되기 전까지만)
+            pb = pieces[-1][1]
+            nxt = min([s0 for s0, _, _ in subs.lines if s0 > pb + 0.05] or [src_len])
+            pieces[-1] = (pieces[-1][0], max(pb, min(pb + 0.6, nxt - 0.1, src_len - 0.05)))
         mode = p["part"].get("sub", "auto" if clip_subs else "none")
         for k, (pa, pb) in enumerate(pieces):
             odur = frames((pb - pa) / speed)
             overlays = []
             if mode == "auto":
+                prev_end = -1.0
                 for j, (s0, e0, text) in enumerate(subs.chunks(pa, pb)):
+                    # 앞 자막이 아직 떠 있는데 다음 말이 시작되면(대사가 겹치면) 한 줄 위에 따로 띄움
+                    lift = 100 if s0 < prev_end - 0.05 else 0
+                    prev_end = max(prev_end, e0) if lift else e0
                     for wrong, right in recipe.get("sub_fix", {}).items():  # 자동자막 받아쓰기 오류 고치기
                         text = text.replace(wrong, right)
                     png = tmp / f"sub_{i}_{k}_{j}.png"
-                    sub_png(text, "celeb", png, sub_theme)
+                    sub_png(text, "celeb", png, sub_theme, lift=lift)
                     overlays += pop(png, text, "celeb", (s0 - pa) / speed, (e0 - pa) / speed)
             elif mode and mode != "none":
                 png = tmp / f"sub_{i}.png"
