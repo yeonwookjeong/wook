@@ -1158,6 +1158,8 @@ def render(ff: str, items: list, dur: float, subs: list, tts: Path | None, out: 
     zw, zh = int(W * 1.5), int(VH * 1.5)  # 크게 키운 뒤 줌 → 떨림 없이 부드럽게
     fg = []
     for k, it in enumerate(items):
+        # 세로 사진(인스타 캡처 등)은 가운데가 아니라 위쪽 기준으로 잘라서 얼굴이 안 잘리게
+        cy = f":(iw-{zw})/2:(ih-{zh})*0.25" if it["image"] else ""
         sp = speed if it["source"] and not it.get("mute") else 1.0  # 원본 말하는 구간만 살짝 빠르게
         odur = it["dur"] / sp
         frames = max(int(odur * FPS), 1)
@@ -1168,7 +1170,7 @@ def render(ff: str, items: list, dur: float, subs: list, tts: Path | None, out: 
             pre = f"[bl{k}]setpts=(PTS-STARTPTS)/{sp},crop=iw:ih*{1 - crop_bottom:.3f}:0:0,"  # 속도 + 아래쪽 자막 잘라내기
         else:
             pre = f"[{k}:v]"
-        fg.append(f"{pre}scale={zw}:{zh}:force_original_aspect_ratio=increase,crop={zw}:{zh},setsar=1,"
+        fg.append(f"{pre}scale={zw}:{zh}:force_original_aspect_ratio=increase,crop={zw}:{zh}{cy},setsar=1,"
                   f"fps={FPS},zoompan=z='{zexpr}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:"
                   f"s={W}x{VH}:fps={FPS},trim=duration={odur:.3f},setpts=PTS-STARTPTS[m{k}]")
     if len(items) > 1:
@@ -1239,6 +1241,19 @@ def search_videos(query: str, exclude: str = "", limit: int = 10, cc_only: bool 
     return urls
 
 
+def _broll_files(name: str | None) -> list:
+    """broll/<이름>/ 폴더의 사진·영상 (이름순)."""
+    if not name:
+        return []
+    import unicodedata  # 맥 한글 폴더 이름(NFD) 대비
+    root = HERE / "broll"
+    for d in (root.iterdir() if root.exists() else []):
+        if d.is_dir() and unicodedata.normalize("NFC", d.name) == unicodedata.normalize("NFC", name):
+            return sorted(f for f in d.iterdir()
+                          if f.suffix.lower() in IMAGE_EXT | {".mp4", ".mov", ".m4v", ".webm"})
+    return []
+
+
 def media_items(p: dict, dur: float, src: Path, subs: "Subs", ff: str) -> list:
     """TTS 구간 화면: "media"에 적은 인스타 캡처·다른 영상들을 나눠 보여줌. 없으면 원본 그 장면."""
     out = []
@@ -1251,7 +1266,13 @@ def media_items(p: dict, dur: float, src: Path, subs: "Subs", ff: str) -> list:
         if m == "auto":
             k = int(p["part"].get("broll_n", 0))
             q = p["part"].get("broll_query")
-            if p["part"].get("broll_search") and q:
+            mine = _broll_files(p["part"].get("broll_dir"))
+            if mine:
+                # broll/<출연자 이름>/ 폴더에 넣어둔 사진·영상 (인스타 캡처 등). 같은 출연자 영상끼리 다른 사진이 나오게 돌려 씀
+                n_show = min(3, len(mine))
+                expanded += [str(mine[(k * n_show + j) % len(mine)]) for j in range(n_show)]
+                print(f"      🖼️ {p['part']['broll_dir']} 폴더 자료 {len(mine)}개 중 {n_show}개 사용")
+            elif p["part"].get("broll_search") and q:
                 # 유튜브 검색(동명이인이 섞일 수 있어서 기본은 꺼둠)
                 expanded += [{"search": q, "video": v, "at": "auto", "n": k} for v in range(3)]
             else:
@@ -1546,6 +1567,7 @@ def main():
         first_tts.setdefault("broll_query", query)
         first_tts.setdefault("broll_n", recipe.get("broll_offset", 0))
         first_tts.setdefault("broll_search", recipe.get("broll_search", False))
+        first_tts.setdefault("broll_dir", recipe.get("broll_dir") or (names[0] if names else None))
     for pp in recipe["parts"]:
         if pp.get("type") == "tts":
             pp.setdefault("broll_cc_only", recipe.get("broll_cc_only", False))
