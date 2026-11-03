@@ -390,13 +390,15 @@ class Subs:
 
         out = []
         for t0, t1, g in timed:
-            if a <= (t0 + t1) / 2 <= b:
+            ov = min(t1, b) - max(t0, a)  # 이 구간에 걸친 길이 (쉼을 잘라낸 경계에 걸친 자막도 빠지지 않게)
+            if ov > 0.05 and (ov >= 0.35 or ov >= 0.5 * (t1 - t0)):
                 shown = re.sub(r"[.,]+$", "", " ".join(x[2] for x in g)).strip()
-                if shown:
+                if shown and norm(shown) not in _FILLERS:  # '어', '음'만 덜렁 뜨는 자막은 안 띄움
                     out.append((max(t0, a), min(t1, b), shown, g[0][4]))
         return out
 
 
+_FILLERS = {"어", "음", "아", "그", "예", "오", "응", "흠", "에"}
 # 다음 단어와 떨어지면 어색한 말(수·지시어·꾸밈말)
 _GLUE = re.compile(r"(한|두|세|네|몇|이|그|저|이런|그런|저런|이렇게|그렇게|저렇게|좀|더|덜|안|못|제|내|우리|너무|진짜|정말|되게|완전|딱|막|요|또|다|이거|그거|저거|약간|살짝|엄청|아주|가장|제일|매일|항상|늘)")
 
@@ -1863,12 +1865,22 @@ def main():
             nxt = min([s0 for s0, _, _ in subs.lines if s0 > pb + 0.05] or [src_len])
             pieces[-1] = (pieces[-1][0], max(pb, min(pb + 0.6, nxt - 0.1, src_len - 0.05)))
         mode = p["part"].get("sub", "auto" if clip_subs else "none")
+        # 화면용 자막: 자동자막 받아쓰기 오류를 줄 단위로 먼저 고친 뒤 나눔 (구간 찾기는 원래 자막으로)
+        fixes = recipe.get("sub_fix", {})
+        dsubs = subs
+        if fixes:
+            def _fx(t):
+                for wrong, right in fixes.items():
+                    t = t.replace(wrong, right)
+                return t
+            dsubs = Subs([(s0, e0, _fx(t)) for s0, e0, t in subs.lines])
+            dsubs.by_word = subs.by_word
         for k, (pa, pb) in enumerate(pieces):
             odur = frames((pb - pa) / speed)
             overlays = []
             if mode == "auto":
                 low_end, low_spk = -1.0, None
-                for j, (s0, e0, text, spk) in enumerate(subs.chunks_spk(pa, pb)):
+                for j, (s0, e0, text, spk) in enumerate(dsubs.chunks_spk(pa, pb)):
                     # 다른 사람 말이 겹칠 때만(앞 사람 자막이 아직 떠 있을 때) 한 줄 위에 따로 띄움
                     lift = 100 if (s0 < low_end - 0.05 and spk != low_spk) else 0
                     if not lift:
