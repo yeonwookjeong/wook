@@ -1265,91 +1265,158 @@ def _faces_count(img) -> int:
     return len(_FACE.detectMultiScale(g, scaleFactor=1.15, minNeighbors=6, minSize=(60, 60)))
 
 
-def auto_photos(name: str, hint: str = "", want: int = 9) -> list:
-    """출연자 사진을 위키미디어 공용(자유 라이선스 사진 저장소)에서 자동으로 받아 broll/<이름>/에 저장.
-    위키데이터에서 '이름 + 직업(배우·모델 등)'이 맞는 사람만 골라서 동명이인을 피하고,
-    얼굴이 한 명만 또렷한 사진만 남김. 한 번 받으면 다시 안 받음(_출처.json)."""
+def _key(fname: str) -> str:
+    f = HERE / fname
+    return f.read_text(encoding="utf-8").strip() if f.exists() else ""
+
+
+def _kakao_candidates(query: str) -> list:
+    """다음(카카오) 이미지 검색. kakao_key.txt(REST API 키)가 있을 때만."""
+    key = _key("kakao_key.txt")
+    if not key:
+        return []
     import urllib.parse
-    import urllib.request
-    d = HERE / "broll" / name
-    meta_f = d / "_출처.json"
-    if meta_f.exists():
-        return _broll_files(name)
+    req = urllib.request.Request("https://dapi.kakao.com/v2/search/image?size=50&sort=accuracy&query="
+                                 + urllib.parse.quote(query), headers={"Authorization": f"KakaoAK {key}"})
+    with urllib.request.urlopen(req, timeout=20) as r:
+        docs = json.loads(r.read().decode("utf-8")).get("documents", [])
+    return [{"url": d_["image_url"], "w": d_.get("width", 0), "h": d_.get("height", 0),
+             "source": d_.get("display_sitename", ""), "page": d_.get("doc_url", "")} for d_ in docs]
+
+
+def _naver_candidates(query: str) -> list:
+    """네이버 이미지 검색. naver_key.txt(첫 줄 Client ID, 둘째 줄 Client Secret)가 있을 때만."""
+    lines = _key("naver_key.txt").splitlines()
+    if len(lines) < 2:
+        return []
+    import urllib.parse
+    req = urllib.request.Request("https://openapi.naver.com/v1/search/image?display=50&sort=sim&query="
+                                 + urllib.parse.quote(query),
+                                 headers={"X-Naver-Client-Id": lines[0].strip(),
+                                          "X-Naver-Client-Secret": lines[1].strip()})
+    with urllib.request.urlopen(req, timeout=20) as r:
+        items = json.loads(r.read().decode("utf-8")).get("items", [])
+    return [{"url": i["link"], "w": int(i.get("sizewidth") or 0), "h": int(i.get("sizeheight") or 0),
+             "source": "", "page": ""} for i in items]
+
+
+def _wiki_candidates(name: str, hint: str) -> list:
+    """위키미디어 공용(자유 라이선스). 위키데이터에서 직업까지 맞는 사람만 → 대표 사진 + 분류 + 영어 이름 검색."""
+    import urllib.parse
     api = "https://www.wikidata.org/w/api.php?format=json&"
     capi = "https://commons.wikimedia.org/w/api.php?format=json&"
-    try:
-        res = _wiki_json(api + "action=wbsearchentities&type=item&limit=10&language=ko&uselang=ko&search="
-                         + urllib.parse.quote(name)).get("search", [])
-        cands = [r for r in res if any(o in r.get("description", "") for o in OCCUPATIONS)]
-        cands.sort(key=lambda r: 0 if hint and hint in r.get("description", "") else 1)
-        titles, who = [], ""
-        for c in cands[:3]:
-            ent = _wiki_json(api + f"action=wbgetentities&props=claims&ids={c['id']}")["entities"][c["id"]]
-            cl = ent.get("claims", {})
-            if not any(x["mainsnak"].get("datavalue", {}).get("value", {}).get("id") == "Q5" for x in cl.get("P31", [])):
-                continue  # 사람이 아님
-            titles += ["File:" + x["mainsnak"]["datavalue"]["value"] for x in cl.get("P18", []) if "datavalue" in x["mainsnak"]]
-            for x in cl.get("P373", []):
-                cat = x["mainsnak"].get("datavalue", {}).get("value")
-                if cat:
-                    mem = _wiki_json(capi + "action=query&list=categorymembers&cmtype=file&cmlimit=80&cmtitle="
-                                     + urllib.parse.quote("Category:" + cat))
-                    titles += [m_["title"] for m_ in mem.get("query", {}).get("categorymembers", [])]
-            if titles:
-                who = c.get("description", "")
-                break
-        titles = list(dict.fromkeys(t for t in titles if re.search(r"\.(jpe?g|png)$", t, re.I)))
-        if not titles:
-            print(f"      ⚠️ '{name}' 자동 사진을 못 찾았어요 → 같은 영상 장면으로 대신해요")
-            return []
-        print(f"      🔎 위키미디어에서 '{name}'({who}) 사진 {len(titles)}장 확인 중…")
-        infos = []
-        for i in range(0, len(titles), 40):
-            q = _wiki_json(capi + "action=query&prop=imageinfo&iiprop=url|size|extmetadata&iiurlwidth=1080&titles="
-                           + urllib.parse.quote("|".join(titles[i:i + 40])))
-            infos += [pg for pg in q.get("query", {}).get("pages", {}).values() if pg.get("imageinfo")]
-        d.mkdir(parents=True, exist_ok=True)
-        kept, meta = [], []
-        for pg in infos:
+    res = _wiki_json(api + "action=wbsearchentities&type=item&limit=10&language=ko&uselang=ko&search="
+                     + urllib.parse.quote(name)).get("search", [])
+    cands = [r for r in res if any(o in r.get("description", "") for o in OCCUPATIONS)]
+    cands.sort(key=lambda r: 0 if hint and hint in r.get("description", "") else 1)
+    titles = []
+    for c in cands[:1]:  # 직업까지 맞는 첫 번째 사람만 (동명이인 섞임 방지)
+        ent = _wiki_json(api + f"action=wbgetentities&props=claims|labels&ids={c['id']}")["entities"][c["id"]]
+        cl = ent.get("claims", {})
+        if not any(x["mainsnak"].get("datavalue", {}).get("value", {}).get("id") == "Q5" for x in cl.get("P31", [])):
+            continue
+        titles += ["File:" + x["mainsnak"]["datavalue"]["value"] for x in cl.get("P18", []) if "datavalue" in x["mainsnak"]]
+        for x in cl.get("P373", []):
+            cat = x["mainsnak"].get("datavalue", {}).get("value")
+            if cat:
+                mem = _wiki_json(capi + "action=query&list=categorymembers&cmtype=file&cmlimit=80&cmtitle="
+                                 + urllib.parse.quote("Category:" + cat))
+                titles += [m_["title"] for m_ in mem.get("query", {}).get("categorymembers", [])]
+        en = ent.get("labels", {}).get("en", {}).get("value")
+        if en:  # 분류가 없어도 파일 이름에 영어 이름이 들어간 사진 찾기
+            q = _wiki_json(capi + "action=query&list=search&srnamespace=6&srlimit=50&srsearch="
+                           + urllib.parse.quote(f'intitle:"{en}"'))
+            titles += [x["title"] for x in q.get("query", {}).get("search", [])]
+    titles = list(dict.fromkeys(t for t in titles if re.search(r"\.(jpe?g|png)$", t, re.I)))
+    out = []
+    for i in range(0, len(titles), 40):
+        q = _wiki_json(capi + "action=query&prop=imageinfo&iiprop=url|size|extmetadata&iiurlwidth=1080&titles="
+                       + urllib.parse.quote("|".join(titles[i:i + 40])))
+        for pg in q.get("query", {}).get("pages", {}).values():
+            if not pg.get("imageinfo"):
+                continue
             ii = pg["imageinfo"][0]
-            if min(ii.get("width", 0), ii.get("height", 0)) < 500:
-                continue
-            try:
-                with urllib.request.urlopen(urllib.request.Request(ii.get("thumburl") or ii["url"],
-                                                                   headers=WIKI_HEADERS), timeout=30) as r:
-                    data = r.read()
-                img = Image.open(io.BytesIO(data))
-                img.load()
-            except Exception:
-                continue
-            nf = _faces_count(img)
-            if nf == 0 or nf > 1:  # 얼굴이 없거나 여러 명이면(단체 사진) 뺌
-                continue
             em = ii.get("extmetadata", {})
-            artist = re.sub(r"<[^>]+>", "", em.get("Artist", {}).get("value", "")).strip()
-            lic = em.get("LicenseShortName", {}).get("value", "")
-            kept.append((_face_area(img), data, pg["title"], artist, lic, ii.get("descriptionurl", "")))
-            if len(kept) >= want * 2:
-                break
-        kept.sort(key=lambda x: -x[0])
-        for k, (_, data, title, artist, lic, url) in enumerate(kept[:want], 1):
-            f = d / f"auto_{k:02d}.jpg"
-            Image.open(io.BytesIO(data)).convert("RGB").save(f, quality=92)
-            meta.append({"file": f.name, "title": title, "artist": artist, "license": lic, "url": url})
-        meta_f.write_text(json.dumps(meta, ensure_ascii=False, indent=1), encoding="utf-8")
-        print(f"      🖼️ '{name}' 사진 {len(meta)}장 자동 저장 → broll/{name}/")
+            out.append({"url": ii.get("thumburl") or ii["url"], "w": ii.get("width", 0), "h": ii.get("height", 0),
+                        "artist": re.sub(r"<[^>]+>", "", em.get("Artist", {}).get("value", "")).strip(),
+                        "license": em.get("LicenseShortName", {}).get("value", ""),
+                        "page": ii.get("descriptionurl", ""), "source": "Wikimedia Commons"})
+    return out
+
+
+def auto_photos(name: str, hint: str = "", want: int = 9) -> list:
+    """출연자 사진을 자동으로 찾아 broll/<이름>/auto_*.jpg로 저장 (한 번 받으면 재사용).
+    찾는 곳: 카카오(다음) 이미지 검색 → 네이버 이미지 검색 → 위키미디어 공용. 키가 있는 것만 씀.
+    검색어는 '직업 + 이름'(예: 배우 박지현)으로 동명이인을 줄이고, 얼굴이 한 명만 또렷한 사진만 남김."""
+    d = HERE / "broll" / name
+    meta_f = d / "_출처.json"
+    if meta_f.exists() and _broll_files(name):
         return _broll_files(name)
-    except Exception as e:  # 인터넷·사이트 문제여도 영상 만들기는 계속
-        print(f"      ⚠️ 자동 사진 받기 실패({type(e).__name__}) → 같은 영상 장면으로 대신해요")
+    query = f"{hint} {name}".strip()
+    cands, used = [], []
+    for label, fn in (("카카오", lambda: _kakao_candidates(query)), ("네이버", lambda: _naver_candidates(query)),
+                      ("위키미디어", lambda: _wiki_candidates(name, hint))):
+        try:
+            got = fn()
+        except Exception as e:  # 한 곳이 막혀도 다음 곳으로
+            print(f"      ⚠️ {label} 사진 검색 실패({type(e).__name__})")
+            got = []
+        if got:
+            used.append(f"{label} {len(got)}장")
+            cands += got
+        if len(cands) >= want * 4:
+            break
+    if not cands:
+        print(f"      ⚠️ '{query}' 사진을 못 찾았어요 → 같은 영상 장면으로 대신해요"
+              + ("" if _key("kakao_key.txt") or _key("naver_key.txt") else " (kakao_key.txt를 넣으면 훨씬 잘 찾아요)"))
         return []
+    print(f"      🔎 '{query}' 사진 후보: {', '.join(used)} — 얼굴 확인 중…")
+    kept, seen = [], set()
+    for c in cands:
+        if c["w"] and c["h"] and min(c["w"], c["h"]) < 500:
+            continue
+        try:
+            with urllib.request.urlopen(urllib.request.Request(c["url"], headers=WIKI_HEADERS), timeout=20) as r:
+                data = r.read()
+            img = Image.open(io.BytesIO(data))
+            img.load()
+        except Exception:
+            continue
+        if min(img.size) < 500:
+            continue
+        sig = img.convert("L").resize((8, 8)).tobytes()  # 같은 사진 중복 제거
+        if sig in seen:
+            continue
+        seen.add(sig)
+        nf = _faces_count(img)
+        if nf != 1 and nf != -1:  # 얼굴이 없거나 여러 명(단체 사진)이면 뺌
+            continue
+        kept.append((_face_area(img), img.convert("RGB"), c))
+        if len(kept) >= want * 2:
+            break
+    if not kept:
+        print(f"      ⚠️ '{query}' 쓸 만한 사진이 없어요 → 같은 영상 장면으로 대신해요")
+        return []
+    kept.sort(key=lambda x: -x[0])
+    d.mkdir(parents=True, exist_ok=True)
+    meta = []
+    for k, (_, img, c) in enumerate(kept[:want], 1):
+        f = d / f"auto_{k:02d}.jpg"
+        img.save(f, quality=92)
+        meta.append({"file": f.name, "url": c["url"], "page": c.get("page", ""), "source": c.get("source", ""),
+                     "artist": c.get("artist", ""), "license": c.get("license", "")})
+    meta_f.write_text(json.dumps(meta, ensure_ascii=False, indent=1), encoding="utf-8")
+    print(f"      🖼️ '{name}' 사진 {len(meta)}장 자동 저장 → broll/{name}/ (마음에 안 드는 건 지우면 돼요)")
+    return _broll_files(name)
 
 
 def _photo_credit(path: Path):
+    """위키미디어(자유 라이선스) 사진은 작가·라이선스 표기가 조건이라 캡션에 붙임."""
     meta_f = path.parent / "_출처.json"
     if meta_f.exists():
         for m_ in json.loads(meta_f.read_text(encoding="utf-8")):
-            if m_["file"] == path.name:
-                c = f"사진: {m_['artist'] or '작자 미상'} ({m_['license']}, Wikimedia Commons) {m_['url']}"
+            if m_["file"] == path.name and m_.get("license"):
+                c = f"사진: {m_.get('artist') or '작자 미상'} ({m_['license']}, Wikimedia Commons) {m_.get('page', '')}"
                 if c not in _PHOTO_CREDITS:
                     _PHOTO_CREDITS.append(c)
 

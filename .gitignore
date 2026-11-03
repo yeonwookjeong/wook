@@ -54,3 +54,5 @@ shorts/my_tts/*
 !shorts/my_tts/README.txt
 shorts/bgm/*
 !shorts/bgm/README.txt
+shorts/kakao_key.txt
+shorts/naver_key.txt
