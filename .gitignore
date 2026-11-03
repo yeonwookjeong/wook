@@ -39,3 +39,5 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+82sports/radar/out/
+82sports/radar/__pycache__/
