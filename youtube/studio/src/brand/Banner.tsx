@@ -20,7 +20,7 @@ export const Taegeuk: React.FC<{ size: number }> = ({ size }) => {
   );
 };
 
-export const Banner: React.FC<{ showSafe?: boolean; tagline?: string }> = ({ showSafe, tagline = "Why Koreans do what they do" }) => (
+export const Banner: React.FC<{ showSafe?: boolean; tagline?: string }> = ({ showSafe, tagline = "The stories behind Korea, old and new" }) => (
   <AbsoluteFill style={{ backgroundColor: "#000" }}>
     <Img src={staticFile("brand/banner-art.png")} style={{ width: W, height: H, objectFit: "cover" }} />
     {/* 이름·로고 없이 내용 한 줄만. 글자색도 그림처럼 왼쪽 먹빛 → 오른쪽 노을빛으로 물든다 */}
@@ -29,7 +29,7 @@ export const Banner: React.FC<{ showSafe?: boolean; tagline?: string }> = ({ sho
         style={{
           fontFamily: serif,
           fontWeight: 700,
-          fontSize: 88,
+          fontSize: 74,
           whiteSpace: "nowrap",
           letterSpacing: "0.01em",
           backgroundImage: "linear-gradient(90deg, #2b2420 0%, #2b2420 47%, #fffaf2 55%, #ffffff 100%)",
