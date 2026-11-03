@@ -3,6 +3,7 @@
 마지막 갱신: 2026-10-28. 새로 정한 것은 위에서 고치고, 바뀐 결정은 지우지 말고 "바뀜"으로 남긴다.
 
 ## 채널 콘셉트
+- **이름·소개 금지 단어(2026-11-03, 대표님 지시)**: 조선(Joseon), K-팝(K-pop), 네온(Neon). 옛 한국은 "old Korea"처럼 풀어 쓴다.
 - 채널 이름(가안, 2026-10-28): **Neon Hanok**. 핸들 후보 @neonhanok(영어), @neonhanok.es(스페인어). YouTube는 비어 있음 확인, 인스타는 대표님 확인 필요.
 - 한 줄 소개(가안): EN "Why Koreans do what they do, from old Korea to today's Korea." / ES "¿Por qué los coreanos hacen lo que hacen? De la Corea antigua a la Corea de hoy."
 - 대상: 외국인. 한국의 옛 문화부터 지금 문화, 한국어까지.
