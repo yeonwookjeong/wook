@@ -3,6 +3,7 @@ import { WordCard, wordCardDefaults } from "./WordCard";
 import { WoodcutIrworobong } from "./scenes/WoodcutIrworobong";
 import { Ep01, EP01_FRAMES } from "./ep01/Ep01";
 import { MapOpening, MapRef, MAP_OPENING_FRAMES } from "./components/MapOpening";
+import { Banner } from "./brand/Banner";
 
 // 쇼츠 규격: 세로 1080×1920, 30fps
 export const RemotionRoot: React.FC = () => {
@@ -21,6 +22,8 @@ export const RemotionRoot: React.FC = () => {
       <Composition id="MapOld" component={MapOpening} durationInFrames={MAP_OPENING_FRAMES} fps={30} width={1080} height={1920} defaultProps={{ variant: "old" as const }} />
       <Composition id="MapModern" component={MapOpening} durationInFrames={MAP_OPENING_FRAMES} fps={30} width={1080} height={1920} defaultProps={{ variant: "modern" as const }} />
       <Composition id="MapRef" component={MapRef} durationInFrames={1} fps={30} width={1024} height={1536} />
+      <Composition id="Banner" component={Banner} durationInFrames={1} fps={30} width={2560} height={1440} defaultProps={{ showSafe: false }} />
+      <Composition id="BannerSafe" component={Banner} durationInFrames={1} fps={30} width={2560} height={1440} defaultProps={{ showSafe: true }} />
       <Composition id="Woodcut" component={WoodcutIrworobong} durationInFrames={150} fps={30} width={1080} height={1920} />
     </>
   );
