@@ -21,6 +21,7 @@ import argparse
 import asyncio
 import base64
 import hashlib
+import io
 import json
 import os
 import re
@@ -1241,6 +1242,118 @@ def search_videos(query: str, exclude: str = "", limit: int = 10, cc_only: bool 
     return urls
 
 
+_PHOTO_CREDITS: list = []  # 이번 영상에 쓴 자동 사진의 출처(업로드 캡션에 붙임)
+WIKI_HEADERS = {"User-Agent": "celebpick-shorts/1.0 (personal short-video tool)"}
+OCCUPATIONS = ("배우", "모델", "가수", "방송인", "아이돌", "코미디언", "개그맨", "개그우먼", "MC", "아나운서",
+               "유튜버", "크리에이터", "인플루언서", "운동선수", "축구", "야구", "농구", "배구", "래퍼", "댄서")
+
+
+def _wiki_json(url: str):
+    import urllib.request
+    with urllib.request.urlopen(urllib.request.Request(url, headers=WIKI_HEADERS), timeout=20) as r:
+        return json.loads(r.read().decode("utf-8"))
+
+
+def _faces_count(img) -> int:
+    """사진 속 얼굴 수 (opencv 없으면 -1 = 모름)."""
+    _face_area(img)  # 얼굴 찾기 준비
+    if not _FACE:
+        return -1
+    import cv2
+    import numpy as np
+    g = cv2.cvtColor(np.array(img.convert("RGB")), cv2.COLOR_RGB2GRAY)
+    return len(_FACE.detectMultiScale(g, scaleFactor=1.15, minNeighbors=6, minSize=(60, 60)))
+
+
+def auto_photos(name: str, hint: str = "", want: int = 9) -> list:
+    """출연자 사진을 위키미디어 공용(자유 라이선스 사진 저장소)에서 자동으로 받아 broll/<이름>/에 저장.
+    위키데이터에서 '이름 + 직업(배우·모델 등)'이 맞는 사람만 골라서 동명이인을 피하고,
+    얼굴이 한 명만 또렷한 사진만 남김. 한 번 받으면 다시 안 받음(_출처.json)."""
+    import urllib.parse
+    import urllib.request
+    d = HERE / "broll" / name
+    meta_f = d / "_출처.json"
+    if meta_f.exists():
+        return _broll_files(name)
+    api = "https://www.wikidata.org/w/api.php?format=json&"
+    capi = "https://commons.wikimedia.org/w/api.php?format=json&"
+    try:
+        res = _wiki_json(api + "action=wbsearchentities&type=item&limit=10&language=ko&uselang=ko&search="
+                         + urllib.parse.quote(name)).get("search", [])
+        cands = [r for r in res if any(o in r.get("description", "") for o in OCCUPATIONS)]
+        cands.sort(key=lambda r: 0 if hint and hint in r.get("description", "") else 1)
+        titles, who = [], ""
+        for c in cands[:3]:
+            ent = _wiki_json(api + f"action=wbgetentities&props=claims&ids={c['id']}")["entities"][c["id"]]
+            cl = ent.get("claims", {})
+            if not any(x["mainsnak"].get("datavalue", {}).get("value", {}).get("id") == "Q5" for x in cl.get("P31", [])):
+                continue  # 사람이 아님
+            titles += ["File:" + x["mainsnak"]["datavalue"]["value"] for x in cl.get("P18", []) if "datavalue" in x["mainsnak"]]
+            for x in cl.get("P373", []):
+                cat = x["mainsnak"].get("datavalue", {}).get("value")
+                if cat:
+                    mem = _wiki_json(capi + "action=query&list=categorymembers&cmtype=file&cmlimit=80&cmtitle="
+                                     + urllib.parse.quote("Category:" + cat))
+                    titles += [m_["title"] for m_ in mem.get("query", {}).get("categorymembers", [])]
+            if titles:
+                who = c.get("description", "")
+                break
+        titles = list(dict.fromkeys(t for t in titles if re.search(r"\.(jpe?g|png)$", t, re.I)))
+        if not titles:
+            print(f"      ⚠️ '{name}' 자동 사진을 못 찾았어요 → 같은 영상 장면으로 대신해요")
+            return []
+        print(f"      🔎 위키미디어에서 '{name}'({who}) 사진 {len(titles)}장 확인 중…")
+        infos = []
+        for i in range(0, len(titles), 40):
+            q = _wiki_json(capi + "action=query&prop=imageinfo&iiprop=url|size|extmetadata&iiurlwidth=1080&titles="
+                           + urllib.parse.quote("|".join(titles[i:i + 40])))
+            infos += [pg for pg in q.get("query", {}).get("pages", {}).values() if pg.get("imageinfo")]
+        d.mkdir(parents=True, exist_ok=True)
+        kept, meta = [], []
+        for pg in infos:
+            ii = pg["imageinfo"][0]
+            if min(ii.get("width", 0), ii.get("height", 0)) < 500:
+                continue
+            try:
+                with urllib.request.urlopen(urllib.request.Request(ii.get("thumburl") or ii["url"],
+                                                                   headers=WIKI_HEADERS), timeout=30) as r:
+                    data = r.read()
+                img = Image.open(io.BytesIO(data))
+                img.load()
+            except Exception:
+                continue
+            nf = _faces_count(img)
+            if nf == 0 or nf > 1:  # 얼굴이 없거나 여러 명이면(단체 사진) 뺌
+                continue
+            em = ii.get("extmetadata", {})
+            artist = re.sub(r"<[^>]+>", "", em.get("Artist", {}).get("value", "")).strip()
+            lic = em.get("LicenseShortName", {}).get("value", "")
+            kept.append((_face_area(img), data, pg["title"], artist, lic, ii.get("descriptionurl", "")))
+            if len(kept) >= want * 2:
+                break
+        kept.sort(key=lambda x: -x[0])
+        for k, (_, data, title, artist, lic, url) in enumerate(kept[:want], 1):
+            f = d / f"auto_{k:02d}.jpg"
+            Image.open(io.BytesIO(data)).convert("RGB").save(f, quality=92)
+            meta.append({"file": f.name, "title": title, "artist": artist, "license": lic, "url": url})
+        meta_f.write_text(json.dumps(meta, ensure_ascii=False, indent=1), encoding="utf-8")
+        print(f"      🖼️ '{name}' 사진 {len(meta)}장 자동 저장 → broll/{name}/")
+        return _broll_files(name)
+    except Exception as e:  # 인터넷·사이트 문제여도 영상 만들기는 계속
+        print(f"      ⚠️ 자동 사진 받기 실패({type(e).__name__}) → 같은 영상 장면으로 대신해요")
+        return []
+
+
+def _photo_credit(path: Path):
+    meta_f = path.parent / "_출처.json"
+    if meta_f.exists():
+        for m_ in json.loads(meta_f.read_text(encoding="utf-8")):
+            if m_["file"] == path.name:
+                c = f"사진: {m_['artist'] or '작자 미상'} ({m_['license']}, Wikimedia Commons) {m_['url']}"
+                if c not in _PHOTO_CREDITS:
+                    _PHOTO_CREDITS.append(c)
+
+
 def _broll_files(name: str | None) -> list:
     """broll/<이름>/ 폴더의 사진·영상 (이름순)."""
     if not name:
@@ -1266,11 +1379,15 @@ def media_items(p: dict, dur: float, src: Path, subs: "Subs", ff: str) -> list:
         if m == "auto":
             k = int(p["part"].get("broll_n", 0))
             q = p["part"].get("broll_query")
-            mine = _broll_files(p["part"].get("broll_dir"))
+            bdir = p["part"].get("broll_dir")
+            mine = _broll_files(bdir) or (auto_photos(bdir, p["part"].get("broll_hint", ""))
+                                           if bdir and p["part"].get("auto_photos", True) else [])
             if mine:
                 # broll/<출연자 이름>/ 폴더에 넣어둔 사진·영상 (인스타 캡처 등). 같은 출연자 영상끼리 다른 사진이 나오게 돌려 씀
                 n_show = min(3, len(mine))
                 expanded += [str(mine[(k * n_show + j) % len(mine)]) for j in range(n_show)]
+                for j in range(n_show):
+                    _photo_credit(mine[(k * n_show + j) % len(mine)])
                 print(f"      🖼️ {p['part']['broll_dir']} 폴더 자료 {len(mine)}개 중 {n_show}개 사용")
             elif p["part"].get("broll_search") and q:
                 # 유튜브 검색(동명이인이 섞일 수 있어서 기본은 꺼둠)
@@ -1568,6 +1685,9 @@ def main():
         first_tts.setdefault("broll_n", recipe.get("broll_offset", 0))
         first_tts.setdefault("broll_search", recipe.get("broll_search", False))
         first_tts.setdefault("broll_dir", recipe.get("broll_dir") or (names[0] if names else None))
+        first_tts.setdefault("auto_photos", recipe.get("auto_photos", True))
+        job = (recipe.get("caption") or "").split(" ")[0]  # "배우 박지현이…" → 배우 (동명이인 구분용)
+        first_tts.setdefault("broll_hint", recipe.get("broll_hint") or (job if job in OCCUPATIONS else ""))
     for pp in recipe["parts"]:
         if pp.get("type") == "tts":
             pp.setdefault("broll_cc_only", recipe.get("broll_cc_only", False))
@@ -1742,6 +1862,8 @@ def upload_text(recipe: dict) -> str:
     if _ORIGIN:  # 크리에이티브 커먼즈(CC BY)는 원작자·원본 링크 표기가 조건
         lic = "CC BY" if "creative commons" in _ORIGIN.get("license", "").lower() else _ORIGIN.get("license", "")
         credit = f"원본 영상: {_ORIGIN['channel']} - {_ORIGIN['title']}\n{_ORIGIN['url']} ({lic})\n\n"
+    if _PHOTO_CREDITS:  # 자동으로 받은 자유 라이선스 사진은 작가·라이선스 표기가 조건
+        credit += "\n".join(_PHOTO_CREDITS) + "\n\n"
     return (f"[제목]\n{title}\n\n"
             f"[캡션]\n{body}\n\n{credit}{DISCLOSURE}\n\n"
             f"[고정 댓글]\n{DISCLOSURE}\n")
