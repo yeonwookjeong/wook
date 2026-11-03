@@ -1,9 +1,7 @@
 import { AbsoluteFill, Img, staticFile } from "remotion";
 import { loadFont as loadHahmlet } from "@remotion/google-fonts/Hahmlet";
-import { loadFont as loadNotoSans } from "@remotion/google-fonts/NotoSansKR";
 
 const { fontFamily: serif } = loadHahmlet();
-const { fontFamily: sans } = loadNotoSans();
 
 // 채널 배너 2560×1440. 휴대폰에서는 가운데 1546×423만 보이므로 이름·로고는 그 안에.
 const W = 2560;
@@ -22,17 +20,27 @@ export const Taegeuk: React.FC<{ size: number }> = ({ size }) => {
   );
 };
 
-export const Banner: React.FC<{ showSafe?: boolean; tagline?: string }> = ({ showSafe, tagline = "Why Koreans do what they do." }) => (
+export const Banner: React.FC<{ showSafe?: boolean; tagline?: string }> = ({ showSafe, tagline = "Why Koreans do what they do" }) => (
   <AbsoluteFill style={{ backgroundColor: "#000" }}>
     <Img src={staticFile("brand/banner-art.png")} style={{ width: W, height: H, objectFit: "cover" }} />
-    {/* 이름 아래를 살짝 어둡게 해서 글자가 그림에 묻히지 않게 */}
-    <div style={{ position: "absolute", left: 0, right: 0, top: SAFE.y + 200, height: 260, background: "linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.45) 45%, rgba(0,0,0,0) 100%)" }} />
-    <div style={{ position: "absolute", left: SAFE.x, width: SAFE.w, top: SAFE.y + 215, height: 190, display: "flex", alignItems: "center", justifyContent: "center", gap: 34 }}>
-      <Taegeuk size={118} />
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-        <span style={{ fontFamily: serif, fontWeight: 800, fontSize: 124, lineHeight: 1, letterSpacing: "0.06em", color: "#fff", textShadow: "0 4px 18px rgba(0,0,0,0.6)" }}>KONORAMA</span>
-        <span style={{ fontFamily: sans, fontWeight: 700, fontSize: 46, letterSpacing: "0.02em", color: "#fff", marginTop: 12, textShadow: "0 2px 10px rgba(0,0,0,0.7)" }}>{tagline}</span>
-      </div>
+    {/* 이름·로고 없이 내용 한 줄만. 글자색도 그림처럼 왼쪽 먹빛 → 오른쪽 노을빛으로 물든다 */}
+    <div style={{ position: "absolute", left: SAFE.x, width: SAFE.w, top: SAFE.y + 40, display: "flex", justifyContent: "center" }}>
+      <span
+        style={{
+          fontFamily: serif,
+          fontWeight: 700,
+          fontSize: 88,
+          whiteSpace: "nowrap",
+          letterSpacing: "0.01em",
+          backgroundImage: "linear-gradient(90deg, #2b2420 0%, #2b2420 47%, #fffaf2 55%, #ffffff 100%)",
+          WebkitBackgroundClip: "text",
+          backgroundClip: "text",
+          color: "transparent",
+          filter: "drop-shadow(0 2px 3px rgba(60,35,20,0.45)) drop-shadow(0 0 18px rgba(120,70,40,0.35))",
+        }}
+      >
+        {tagline}
+      </span>
     </div>
     {showSafe && <div style={{ position: "absolute", left: SAFE.x, top: SAFE.y, width: SAFE.w, height: SAFE.h, border: "6px dashed #ff2a2a" }} />}
   </AbsoluteFill>
