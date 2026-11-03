@@ -134,7 +134,12 @@ def main():
     if not items:
         sys.exit("recipes 폴더에 레시피가 없어요.")
     if a.make:
+        # 만들기 전에 대본 자동 검수 (흐지부지 끝남·자막 빔·오타 의심 등) → out/검수.md
+        subprocess.run([sys.executable, str(HERE / "review.py")] + [str(x["path"]) for x in items])
         make_missing(items)
+        # 만든 뒤 영상마다 1초 간격 장면 사진 → out/검수_*.jpg (자막·끝부분 훑어보기)
+        print("\n🖼️ 검수용 장면 사진 만드는 중…")
+        subprocess.run([sys.executable, str(HERE / "review.py"), "--sheet"])
 
     if not a.start and not a.mix:  # 기본: 날짜 없이 링크 번호순 재고 목록
         OUT.mkdir(exist_ok=True)
