@@ -50,7 +50,8 @@ const [KX, KY] = projection([127.6, 38.4]) as [number, number]; // 한반도 가
 
 const PAL = {
   neutral: { sea: "#e8e7e2", land: "#c7c6c0" },
-  modern: { sea: "#141f31", land: "#1c2a44", line: "#ff3d8b", grid: "#2de2e6" },
+  // 요즘 편: 배너 오른쪽 노을 톤 (2026-11-04, 네온 대신)
+  modern: { skyTop: "#a9b4e0", skyMid: "#e9b8c4", skyLow: "#f8cfa6", land: "#fbf1e4", line: "#d9775c", grid: "#ffffff" },
   old: { paper: "#e9dcbf", land: "#f4ead3", ink: "#1b1714", seal: "#b3261e" },
 };
 
@@ -101,6 +102,11 @@ export const MapOpening: React.FC<{ variant: MapVariant }> = ({ variant }) => {
             <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves={1} seed={3} />
             <feDisplacementMap in="SourceGraphic" scale={4} />
           </filter>
+          <linearGradient id="mo-sunset" gradientUnits="userSpaceOnUse" x1={0} y1={SY - 900} x2={0} y2={SY + 900}>
+            <stop offset="0" stopColor={PAL.modern.skyTop} />
+            <stop offset="0.5" stopColor={PAL.modern.skyMid} />
+            <stop offset="1" stopColor={PAL.modern.skyLow} />
+          </linearGradient>
           <radialGradient id="mo-focus" gradientUnits="userSpaceOnUse" cx={KX} cy={KY} r={760}>
             <stop offset="0.55" stopColor={PAL.old.paper} stopOpacity={0} />
             <stop offset="1" stopColor={PAL.old.paper} stopOpacity={0.88} />
@@ -182,11 +188,11 @@ export const MapOpening: React.FC<{ variant: MapVariant }> = ({ variant }) => {
 
         {variant === "modern" ? (
           <g opacity={style}>
-            <rect x={-W} y={-H} width={W * 3} height={H * 3} fill={m.sea} />
-            <path d={GRID_D} fill="none" stroke={m.grid} strokeWidth={1.5} opacity={0.25} vectorEffect="non-scaling-stroke" />
+            <rect x={-W} y={-H} width={W * 3} height={H * 3} fill="url(#mo-sunset)" />
+            <path d={GRID_D} fill="none" stroke={m.grid} strokeWidth={1.5} opacity={0.35} vectorEffect="non-scaling-stroke" />
             <path d={LAND_D} fill={m.land} />
-            <path d={LAND_D} fill="none" stroke={m.line} strokeWidth={10} opacity={0.7} filter="url(#mo-glow)" />
-            <path d={LAND_D} fill="none" stroke={m.line} strokeWidth={3} vectorEffect="non-scaling-stroke" />
+            <path d={LAND_D} fill="none" stroke="#ffd9b8" strokeWidth={14} opacity={0.8} filter="url(#mo-glow)" />
+            <path d={LAND_D} fill="none" stroke={m.line} strokeWidth={2.5} vectorEffect="non-scaling-stroke" />
           </g>
         ) : (
           <g>
@@ -209,7 +215,7 @@ export const MapOpening: React.FC<{ variant: MapVariant }> = ({ variant }) => {
         {/* 서울 표시 */}
         {variant === "modern" ? (
           <g transform={`translate(${SX} ${SY}) scale(${pin})`}>
-            <circle r={34} fill="none" stroke={m.grid} strokeWidth={4} opacity={0.9} />
+            <circle r={34} fill="none" stroke="#ffffff" strokeWidth={4} opacity={0.95} />
             <circle r={14} fill={m.line} />
           </g>
         ) : (
@@ -233,8 +239,8 @@ export const MapOpening: React.FC<{ variant: MapVariant }> = ({ variant }) => {
       <Sequence from={30} layout="none">
         <Audio src={staticFile("sfx/whoosh.wav")} volume={0.45} />
       </Sequence>
-      {/* 쑥 들어갈 때 번쩍: 요즘 편은 네온빛, 옛 편은 한지빛 */}
-      <AbsoluteFill style={{ backgroundColor: variant === "modern" ? "#ff3d8b" : "#f6ecd6", opacity: flash * 0.85 }} />
+      {/* 쑥 들어갈 때 번쩍: 요즘 편은 노을빛, 옛 편은 한지빛 */}
+      <AbsoluteFill style={{ backgroundColor: variant === "modern" ? "#ffe2c4" : "#f6ecd6", opacity: flash * 0.85 }} />
     </AbsoluteFill>
   );
 };

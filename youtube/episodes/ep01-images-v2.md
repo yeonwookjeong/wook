@@ -8,7 +8,7 @@
 - **C 숫자 4**: `A large metal house-number style sign of the number 4 on a pale apartment wall, soft late-afternoon light, a potted plant below.`
 - **D 한자 死**: `The Chinese character 死 brushed in black ink on a sheet of hanji paper pinned to a wooden wall, quiet and slightly eerie, soft shadow.`
 - **E 아파트**: `Low-angle view of a Korean apartment tower at sunset with a large block number 103 painted on its side, warm sky, trees in front.`
-- **F 복도 호실**: `A clean apartment corridor with door number plates 301, 302, 303, 305, 306 — no 304 — warm evening light at the far window.`
+- ~~**F 복도 호실**~~ (대본 v2에서 뺌, 안 뽑아도 됨): `A clean apartment corridor with door number plates 301, 302, 303, 305, 306 — no 304 — warm evening light at the far window.`
 - **G 병원 안내판**: `A Korean hospital elevator floor directory sign listing floors 1, 2, 3, 5, 6 — no 4th floor — bright calm hospital lobby in daylight.`
 - **H 손가락**: `A hand pressing the F button in an elevator, point-of-view, soft warm light reflected on the brushed metal panel.`
 - **0 서울(필요하면)**: `Seoul at sunset from across the Han River, apartment towers with block numbers, Namsan Seoul Tower on the hill, a bridge, calm water reflections.`

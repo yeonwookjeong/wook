@@ -7,7 +7,7 @@ import vo from "./vo.json";
 const { fontFamily: sans } = loadNotoSans();
 const { fontFamily: serif } = loadHahmlet();
 
-// EP01 러프컷 (youtube/episodes/ep01-4th-floor.md). 음성은 아직 없음: 자막 시간은 임시.
+// EP01 대본 v2 (youtube/episodes/ep01-4th-floor.md). vo.json이 비어 있으면 자막 시간은 임시(sec).
 // 문법: servokind 기준. 컷 1~2.5초, 자막 1~3단어, 핵심만 노란색.
 
 const FPS = 30;
@@ -39,16 +39,15 @@ type Shot = {
 const SHOTS: Shot[] = [
   { img: "A", sec: 1.4, cam: { s0: 1.6, s1: 1.0, ox: 540, oy: 960, snap: true }, caps: [[{ text: "this elevator" }], [{ text: "is hiding" }, { text: "a floor.", hl: true }]], sent: 1, sfx: { name: "ding", at: 0.1, vol: 0.35 } },
   { img: "A", sec: 1.1, cam: { s0: 1.0, s1: 2.4, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "Just an" }, { text: "F.", hl: true }]], sent: 2 },
-  { img: "C", sec: 1.1, cam: { s0: 1.0, s1: 1.12, ox: 640, oy: 700 }, caps: [[{ text: "The number" }, { text: "four", hl: true }]], sent: 3, sfx: { name: "buzz", vol: 0.25 } },
-  { img: "C", sec: 1.5, cam: { s0: 1.12, s1: 1.18, ox: 640, oy: 700 }, caps: [[{ text: "is read" }], [{ text: '"sa,"', hl: true }]], dark: 0.35, overlay: "sa", sent: 3, sfx: { name: "pop", at: 0.1, vol: 0.4 } },
+  { img: "C", sec: 1.1, cam: { s0: 1.0, s1: 1.12, ox: 540, oy: 760 }, caps: [[{ text: "The number" }, { text: "four", hl: true }]], sent: 3, sfx: { name: "buzz", vol: 0.2 } },
+  { img: "C", sec: 1.5, cam: { s0: 1.12, s1: 1.18, ox: 540, oy: 760 }, caps: [[{ text: "is read" }], [{ text: '"sa,"', hl: true }]], dark: 0.35, overlay: "sa", sent: 3, sfx: { name: "pop", at: 0.1, vol: 0.4 } },
   { img: "D", sec: 1.1, cam: { s0: 1.0, s1: 1.08, ox: DEATH.x, oy: DEATH.y }, caps: [[{ text: "the same" }], [{ text: "sound as" }]], fadeIn: true, sent: 3 },
-  { img: "D", sec: 1.3, cam: { s0: 1.5, s1: 1.65, ox: DEATH.x, oy: DEATH.y, snap: true }, caps: [[{ text: "an old word" }], [{ text: "for" }, { text: "death.", hl: true }]], shake: true, sent: 3, sfx: { name: "thud", vol: 0.5 }, sfx2: { name: "glitch", vol: 0.2 } },
+  { img: "D", sec: 1.5, cam: { s0: 1.5, s1: 1.65, ox: DEATH.x, oy: DEATH.y, snap: true }, caps: [[{ text: "the Chinese" }], [{ text: "character" }], [{ text: "for" }, { text: "death.", hl: true }]], shake: true, sent: 3, sfx: { name: "thud", vol: 0.5 } },
   { img: "E", sec: 1.4, cam: { s0: 1.3, s1: 1.3, ox: 540, oy: 960, dy: -260 }, caps: [[{ text: "So many" }], [{ text: "buildings" }]], sent: 4 },
-  { img: "A", sec: 1.3, cam: { s0: 2.2, s1: 2.3, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "swap it" }], [{ text: "for" }, { text: "F,", hl: true }]], overlay: "circleF", sent: 4, sfx: { name: "pop", at: 0.07, vol: 0.4 } },
-  { img: "F", sec: 1.4, cam: { s0: 1.2, s1: 1.2, ox: 540, oy: 960, dx: 90 }, caps: [[{ text: "skip room" }], [{ text: "numbers,", hl: true }]], overlay: "room304", sent: 4, sfx: { name: "pop", at: 0.15, vol: 0.35 } },
-  { img: "G", sec: 1.3, cam: { s0: 1.0, s1: 1.15, ox: G_GAP.x, oy: G_GAP.y }, caps: [[{ text: "even" }, { text: "hospital", hl: true }], [{ text: "floors." }]], overlay: "noFour", sent: 4, sfx: { name: "pop", at: 0.15, vol: 0.35 } },
-  { img: "H", sec: 1.3, cam: { s0: 1.0, s1: 1.3, ox: H_F.x, oy: H_F.y }, caps: [[{ text: "Next time" }], [{ text: "you see an" }, { text: "F,", hl: true }]], sent: 5, sfx: { name: "ding", at: 0.35, vol: 0.25 } },
-  { img: "A", sec: 1.5, cam: { s0: 1.6, s1: 1.9, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "you'll know" }], [{ text: "what it's" }, { text: "hiding.", hl: true }]], dark: 0.45, sent: 5, sfx: { name: "thud", at: 0.9, vol: 0.25 } },
+  { img: "A", sec: 1.4, cam: { s0: 2.2, s1: 2.3, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "write" }, { text: "F,", hl: true }], [{ text: 'for "four."' }]], overlay: "circleF", sent: 4, sfx: { name: "pop", at: 0.07, vol: 0.4 } },
+  { img: "G", sec: 1.8, cam: { s0: 1.0, s1: 1.15, ox: G_GAP.x, oy: G_GAP.y }, caps: [[{ text: "And many" }, { text: "hospitals", hl: true }], [{ text: "skip the 4th" }], [{ text: "entirely." }]], overlay: "noFour", sent: 5, sfx: { name: "pop", at: 0.5, vol: 0.35 } },
+  { img: "H", sec: 1.3, cam: { s0: 1.0, s1: 1.3, ox: H_F.x, oy: H_F.y }, caps: [[{ text: "Next time" }], [{ text: "you see an" }, { text: "F,", hl: true }]], sent: 6, sfx: { name: "ding", at: 0.35, vol: 0.25 } },
+  { img: "A", sec: 1.5, cam: { s0: 1.6, s1: 1.9, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "you'll know" }], [{ text: "what it's" }, { text: "hiding.", hl: true }]], dark: 0.45, sent: 6, sfx: { name: "thud", at: 0.9, vol: 0.25 } },
 ];
 
 // 음성이 있으면 문장 길이를 그 문장에 속한 컷들에 글자 수 비율로 나눈다. 없으면 임시 길이(sec).
