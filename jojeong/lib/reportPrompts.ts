@@ -1,4 +1,5 @@
 import { PRODUCTS, type Product, type ProductId } from "./products";
+import type { Rel } from "./rels";
 
 // How each written report reads. The chapters are the product's table of contents — the questions people
 // actually ask — and every chapter becomes one "## [question] headline" section on the page.
@@ -236,6 +237,22 @@ const POINTS_RULE = `- 장 머리 줄은 반드시 '## [' 로 시작하고, 장 
 - 그 아래 본문 3~5문단, 문단 사이는 빈 줄.
 - 본문도 해요체로 쓴다. '~습니다/~입니다'는 장마다 꼭 짚을 한 줄에만.
 - 사주 용어에 한자를 괄호로 붙이지 않는다(삼합(三合) ✕). 용어는 뜻으로 바꿔 말한다: '일지와 삼합' ✕ → '올해 기운이 배우자 자리와 손을 잡아요' ○.`;
+// 궁합 between friends, at work or in a family: chapter titles without love words, since the title is printed on the
+// report and a "끌림" there reads as romance however the chapter is written (2026-11-04). Orders paid before
+// REL_TITLES_SINCE keep the titles their reports were written with.
+export const REL_TITLES_SINCE = Date.parse("2026-11-04T04:00:00Z");
+const REL_TITLES: Record<"일" | "친구" | "가족", Record<string, string>> = {
+  친구: { "우리 둘, 첫인상과 끌림의 정체": "우리 둘, 첫인상과 서로를 알아본 이유", "싸울 때 우리는 어떻게 될까": "부딪힐 때 우리는 어떻게 될까" },
+  일: {
+    "우리 둘, 첫인상과 끌림의 정체": "우리 둘, 첫인상과 일로 맞는 지점",
+    "싸울 때 우리는 어떻게 될까": "부딪힐 때 우리는 어떻게 될까",
+    "돈과 생활, 잘 맞을까": "돈과 일, 잘 맞을까",
+  },
+  가족: { "우리 둘, 첫인상과 끌림의 정체": "우리 둘, 닮은 점과 다른 점", "싸울 때 우리는 어떻게 될까": "부딪힐 때 우리는 어떻게 될까" },
+};
+// `rel`: lib/pairYears.ts REL_OF of the order's relation. `at`: when it was paid (none: as of now).
+export const chaptersForRel = (chapters: string[], id: string, rel: Rel, at?: number): string[] =>
+  id !== "gunghap" || rel === "연인" || (at !== undefined && at < REL_TITLES_SINCE) ? chapters : chapters.map((c) => REL_TITLES[rel][c] ?? c);
 // The chapters shown for a bought report: as they were when it was bought.
 export const chaptersFor = (id: ProductId, v8: boolean) => (v8 ? SPECS.v8[id]?.chapters : SPECS.v7[id]?.chapters) ?? [];
 
