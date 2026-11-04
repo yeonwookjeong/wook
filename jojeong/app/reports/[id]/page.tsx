@@ -44,7 +44,7 @@ import { josa } from "@/lib/josa";
 import { hanjaKo } from "@/lib/saju";
 import { ownedCourts } from "@/lib/load";
 import { ADULT_ONLY, FIXED_RELATION, FREE_LOCK, isAdult, isOpen, isPair, PRICE, productById, saleLabel, saleNow, YEONUN_PAST_TOC, type Product, type ProductId } from "@/lib/products";
-import { chaptersFor, isV8, REPORT_SPECS, yearChaptersFor } from "@/lib/reportPrompts";
+import { chaptersFor, chaptersForRel, isV8, REPORT_SPECS, yearChaptersFor } from "@/lib/reportPrompts";
 import { pricingNow } from "@/lib/pricing";
 import CalendarButton from "@/components/CalendarButton";
 import { PairYearsFigure, YearsAheadFigure } from "@/components/PaidFigures";
@@ -171,7 +171,7 @@ const AREA_WHAT: Record<string, string> = { 돈: "돈과 재물", 일: "일과 �
 async function extrasOf(o: Order, product: Product) {
   const v8 = isV8(o);
   return {
-    chapters: chaptersFor(product.id, v8),
+    chapters: chaptersForRel(chaptersFor(product.id, v8), product.id, REL_OF[relationOf(o.req.rel)], o.rewritten?.[product.id] ?? o.paidAt ?? o.createdAt),
     ask: v8 && (await askShown()) ? product.title : undefined,
     // The chart the report reads (one person's, or the reader's of two): the chapter's question opens a room on it.
     askChart: o.req.p ?? o.req.a,
@@ -361,7 +361,7 @@ async function OpenReport({
           <Paywall
             product={product}
             request={req}
-            chapters={chaptersFor(product.id, (await pricingNow()) === "a")}
+            chapters={chaptersForRel(chaptersFor(product.id, (await pricingNow()) === "a"), product.id, REL_OF[req.rel])}
             note="두 사람의 태어난 시각을 알면 먼저 넣어 주세요. 결제한 뒤 입력을 바꾸면 다른 보고서로 봐요."
           />
         ) : (

@@ -6,7 +6,9 @@ import { moreOf } from "@/lib/sinsalMore";
 import { addToList, readList } from "@common/me";
 import { TossBanner } from "@common/TossBanner";
 import { useRewardedAd } from "@common/useRewardedAd";
+import { askReviewOnce } from "@common/review";
 import { pictureOf } from "./pictures";
+import { TodaySinsal } from "./TodaySinsal";
 
 const OPEN_KEY = "sinsal:opened";
 // Where the share link and the report button lead: the two mini apps' names in the Apps in Toss console.
@@ -50,6 +52,7 @@ export function Result({ me, onAgain }: { me: Person; onAgain: () => void }) {
   const unlock = () => {
     setOpen(true);
     void addToList(OPEN_KEY, chartKey, 20);
+    askReviewOnce();
   };
   const ad = useRewardedAd(unlock);
 
@@ -58,6 +61,7 @@ export function Result({ me, onAgain }: { me: Person; onAgain: () => void }) {
     try {
       const link = await Share.createLink({ path: SELF });
       await Share.sendMessage({ message: `${text}\n${link}` });
+      askReviewOnce();
     } catch {
       setShared("공유는 토스 앱 안에서 할 수 있어요.");
     }
@@ -96,6 +100,8 @@ export function Result({ me, onAgain }: { me: Person; onAgain: () => void }) {
         친구에게 내 살 자랑하기
       </button>
       {shared && <p className="quiet small center">{shared}</p>}
+
+      <TodaySinsal me={me} />
 
       {r.rest.length > 0 &&
         (open ? (
@@ -146,6 +152,7 @@ export function Result({ me, onAgain }: { me: Person; onAgain: () => void }) {
         다른 생일로 보기
       </button>
       <p className="quiet small center">사주 풀이는 재미와 참고를 위한 것이에요.</p>
+      <p className="quiet small center">궁금한 점은 오른쪽 위 ⋯ → 고객센터로 문의해 주세요.</p>
       {/* Last on the page, away from every button (the ad policy). */}
       <TossBanner />
     </section>

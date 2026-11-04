@@ -63,19 +63,21 @@ function partnerPost(path: string, body: unknown, headers: Record<string, string
 }
 
 // The order's state as Toss tells it. Toss's answer is read loosely (the status may sit at the top or under
-// `success`), and only a state that plainly means paid is taken as paid; anything else is refused and logged, so a
-// new wording is noticed rather than granted.
+// `success`), and only a state that plainly means paid (or refunded) is taken as such; anything else is refused and
+// logged, so a new wording is noticed rather than acted on.
 // The exact words are to be confirmed against the sandbox's first real answer (the refusal log shows it).
 const PAID = new Set(["PAYMENT_COMPLETED", "PURCHASED", "COMPLETED", "PAID", "DONE", "SUCCESS"]);
+const REFUNDED = new Set(["REFUNDED", "REFUND_COMPLETED", "CANCELED", "CANCELLED", "PAYMENT_CANCELED"]);
 
-export async function tossOrderPaid(orderId: string, sku: string): Promise<{ ok: true; amount: number | null } | { ok: false; message: string }> {
-  if (payMock()) return { ok: true, amount: null };
+type TossStatus = { http: number; status: string; sku: string | null; amount: number | null; raw: string };
+
+async function tossOrderStatus(orderId: string): Promise<TossStatus | null> {
   let res: { status: number; data: string };
   try {
     res = await partnerPost("/order/get-order-status", { orderId });
   } catch (e) {
     console.error("toss order status", e);
-    return { ok: false, message: "토스 결제를 확인하지 못했어요." };
+    return null;
   }
   let body: Record<string, unknown> = {};
   try {
@@ -84,14 +86,48 @@ export async function tossOrderPaid(orderId: string, sku: string): Promise<{ ok:
     // read below as unknown
   }
   const inner = (body.success && typeof body.success === "object" ? body.success : body) as Record<string, unknown>;
-  const status = String(inner.status ?? inner.orderStatus ?? "").toUpperCase();
-  const paidSku = typeof inner.sku === "string" ? inner.sku : null;
-  if (res.status !== 200 || !PAID.has(status) || (paidSku && paidSku !== sku)) {
-    console.error("toss order not paid", orderId, res.status, res.data.slice(0, 500));
+  const amount = Number(inner.amount ?? inner.price);
+  return {
+    http: res.status,
+    status: String(inner.status ?? inner.orderStatus ?? "").toUpperCase(),
+    sku: typeof inner.sku === "string" ? inner.sku : null,
+    amount: Number.isFinite(amount) && amount > 0 ? amount : null,
+    raw: res.data.slice(0, 500),
+  };
+}
+
+export async function tossOrderPaid(orderId: string, sku: string): Promise<{ ok: true; amount: number | null } | { ok: false; message: string }> {
+  if (payMock()) return { ok: true, amount: null };
+  const st = await tossOrderStatus(orderId);
+  if (!st) return { ok: false, message: "토스 결제를 확인하지 못했어요." };
+  if (st.http !== 200 || !PAID.has(st.status) || (st.sku && st.sku !== sku)) {
+    console.error("toss order not paid", orderId, st.http, st.raw);
     return { ok: false, message: "결제가 확인되지 않았어요." };
   }
-  const amount = Number(inner.amount ?? inner.price);
-  return { ok: true, amount: Number.isFinite(amount) && amount > 0 ? amount : null };
+  return { ok: true, amount: st.amount };
+}
+
+// A Toss order refunded (by Toss or in the console): the site order it became closes, as a refund made in the site's
+// own payments does (lib/pay.ts). Asked by the mini app when Toss lists the order as refunded, and checked with Toss
+// here, so no one can close someone else's report. Under the user-harm policy (2026-11-21) a refund must be honoured
+// within 7 business days; closing the report is the site's half of it.
+export async function refundTossOrder(orderId: string): Promise<{ ok: true; closed: boolean } | { ok: false; status: number; message: string }> {
+  if (!/^[\w-]{4,128}$/.test(orderId)) return { ok: false, status: 400, message: "알 수 없는 주문이에요." };
+  const id = await getTossGrant(orderId);
+  const raw = id ? await getOrderRaw(id) : null;
+  if (!raw) return { ok: true, closed: false };
+  const order = JSON.parse(raw) as Order;
+  if (order.status === "canceled") return { ok: true, closed: true };
+  if (!payMock()) {
+    const st = await tossOrderStatus(orderId);
+    if (!st) return { ok: false, status: 502, message: "토스 결제를 확인하지 못했어요." };
+    if (st.http !== 200 || !REFUNDED.has(st.status)) {
+      console.error("toss order not refunded", orderId, st.http, st.raw);
+      return { ok: true, closed: false };
+    }
+  }
+  await setOrderRaw(order.id, JSON.stringify({ ...order, status: "canceled" } satisfies Order));
+  return { ok: true, closed: true };
 }
 
 export type TossGrant = { ok: true; order: Order } | { ok: false; status: number; message: string };

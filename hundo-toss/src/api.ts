@@ -72,3 +72,19 @@ export async function readReport(order: string, product: string, onText: (text: 
     return { error: "인터넷 연결을 확인해 주세요." };
   }
 }
+
+// A Toss order that Toss lists as refunded: the server checks it with Toss and closes its report.
+export async function refundOrder(orderId: string): Promise<boolean> {
+  if (!API_BASE) return false;
+  try {
+    const res = await fetch(`${API_BASE}/api/toss/refund`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ orderId }),
+    });
+    const data = (await res.json().catch(() => ({}))) as { closed?: boolean };
+    return res.ok && data.closed === true;
+  } catch {
+    return false;
+  }
+}

@@ -78,3 +78,6 @@
   color: var(--seal);
   font-weight: 700;
 }
+.today h3 {
+  font-size: 16px;
+}
