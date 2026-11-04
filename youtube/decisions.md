@@ -72,6 +72,7 @@
 - 도구: Remotion + 공식 Claude Code 플러그인(`claude plugin marketplace add remotion-dev/claude-code-plugin` → `claude plugin install remotion@remotion`). 무료 라이선스는 개인·직원 3명 이하 회사.
 - 쇼츠 먼저 시작(시즌 1 쇼츠 10편 제안, 1편 후보: 4층 없는 엘리베이터). 터진 주제만 롱폼으로.
 
+- **도구 검토(2026-11-04)**: HyperFrames(HeyGen, Apache-2.0)로 갈아타지 않는다(Remotion 파이프라인이 이미 돌아감, 라이선스도 무료 조건). earshot(Leonxlnx, 코드로 만든 효과음 252개)은 EP01 뒤 효과음 교체 후보. whisper large-v3-turbo는 참고 영상 소리 분석·자막 단어 타이밍용(맥). 넷플릭스 자막 지침은 롱폼 CC 자막에만(쇼츠 화면 자막은 servokind식 1~3단어 유지).
 - 그림 생성: 당분간 대표님이 ChatGPT Plus에서 직접(1편에 약 15장). 1편을 끝까지 만들어 보고 되면 API 자동화 검토(추정 1편 약 1,000~4,000원).
 
 ## 한도
