@@ -50,8 +50,8 @@ const [KX, KY] = projection([127.6, 38.4]) as [number, number]; // 한반도 가
 
 const PAL = {
   neutral: { sea: "#e8e7e2", land: "#c7c6c0" },
-  // 요즘 편: 배너 오른쪽 노을 톤 (2026-11-04, 네온 대신)
-  modern: { skyTop: "#a9b4e0", skyMid: "#e9b8c4", skyLow: "#f8cfa6", land: "#fbf1e4", line: "#d9775c", grid: "#ffffff" },
+  // 요즘 편: 배너 오른쪽 하늘(파랑→라벤더→분홍) + 흰 땅. 옛 편(한지·먹)과 확실히 다르게 차갑고 맑게 (2026-11-04)
+  modern: { skyTop: "#5f86d8", skyMid: "#9aa8e4", skyLow: "#f0b3c3", land: "#ffffff", line: "#3d5aa8", grid: "#ffffff" },
   old: { paper: "#e9dcbf", land: "#f4ead3", ink: "#1b1714", seal: "#b3261e" },
 };
 
@@ -191,7 +191,7 @@ export const MapOpening: React.FC<{ variant: MapVariant }> = ({ variant }) => {
             <rect x={-W} y={-H} width={W * 3} height={H * 3} fill="url(#mo-sunset)" />
             <path d={GRID_D} fill="none" stroke={m.grid} strokeWidth={1.5} opacity={0.35} vectorEffect="non-scaling-stroke" />
             <path d={LAND_D} fill={m.land} />
-            <path d={LAND_D} fill="none" stroke="#ffd9b8" strokeWidth={14} opacity={0.8} filter="url(#mo-glow)" />
+            <path d={LAND_D} fill="none" stroke="#ffffff" strokeWidth={16} opacity={0.9} filter="url(#mo-glow)" />
             <path d={LAND_D} fill="none" stroke={m.line} strokeWidth={2.5} vectorEffect="non-scaling-stroke" />
           </g>
         ) : (
@@ -215,8 +215,8 @@ export const MapOpening: React.FC<{ variant: MapVariant }> = ({ variant }) => {
         {/* 서울 표시 */}
         {variant === "modern" ? (
           <g transform={`translate(${SX} ${SY}) scale(${pin})`}>
-            <circle r={34} fill="none" stroke="#ffffff" strokeWidth={4} opacity={0.95} />
-            <circle r={14} fill={m.line} />
+            <circle r={34} fill="none" stroke="#ff6b4a" strokeWidth={4} opacity={0.6} />
+            <circle r={14} fill="#ff6b4a" />
           </g>
         ) : (
           <g transform={`translate(${SX} ${SY}) scale(${pin})`}>
@@ -240,7 +240,7 @@ export const MapOpening: React.FC<{ variant: MapVariant }> = ({ variant }) => {
         <Audio src={staticFile("sfx/whoosh.wav")} volume={0.45} />
       </Sequence>
       {/* 쑥 들어갈 때 번쩍: 요즘 편은 노을빛, 옛 편은 한지빛 */}
-      <AbsoluteFill style={{ backgroundColor: variant === "modern" ? "#ffe2c4" : "#f6ecd6", opacity: flash * 0.85 }} />
+      <AbsoluteFill style={{ backgroundColor: variant === "modern" ? "#ffffff" : "#f6ecd6", opacity: flash * 0.85 }} />
     </AbsoluteFill>
   );
 };
