@@ -42,7 +42,10 @@ export function riskyLines(productId: string, text: string, them: string[] = [],
   const rules = RISKY[productId]?.(themOf(them.filter(Boolean)), lover);
   if (!rules) return [];
   const hits: string[] = [];
-  const clauses = text.split(/(?<=[.!?。])\s+|\n+|[,，]/);
+  // A chapter's headline ("## [질문] 헤드라인") opens on the chapter's own question, in brackets: the rules read what
+  // was written after it, not the question asked.
+  const writing = text.replace(/^(\s*#+\s*)\[[^\]\n]*\]/gm, "$1");
+  const clauses = writing.split(/(?<=[.!?。])\s+|\n+|[,，]/);
   clauses.forEach((clause, i) => {
     const soft = SOFT.test(clause) || QUOTED.test(clauses[i + 1] ?? "");
     for (const { re, why, hard } of rules) {
