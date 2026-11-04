@@ -50,8 +50,8 @@ const [KX, KY] = projection([127.6, 38.4]) as [number, number]; // 한반도 가
 
 const PAL = {
   neutral: { sea: "#e8e7e2", land: "#c7c6c0" },
-  // 요즘 편: 배너 오른쪽 하늘(파랑→라벤더→분홍) + 흰 땅. 옛 편(한지·먹)과 확실히 다르게 차갑고 맑게 (2026-11-04)
-  modern: { skyTop: "#5f86d8", skyMid: "#9aa8e4", skyLow: "#f0b3c3", land: "#ffffff", line: "#3d5aa8", grid: "#ffffff" },
+  // 요즘 편: 배너 오른쪽의 부드러운 일러스트 그림체로 그린 "요즘 지도"(지도 앱처럼 바다는 바다색, 땅은 밝게, 핀 마커). 2026-11-04
+  modern: { seaTop: "#6fb6e0", seaLow: "#9fd3ec", shallow: "#d3f0f5", land: "#f7f2e8", shade: "#7a9bb5", line: "#9cbfd3", pin: "#ff6b4a" },
   old: { paper: "#e9dcbf", land: "#f4ead3", ink: "#1b1714", seal: "#b3261e" },
 };
 
@@ -103,10 +103,13 @@ export const MapOpening: React.FC<{ variant: MapVariant }> = ({ variant }) => {
             <feDisplacementMap in="SourceGraphic" scale={4} />
           </filter>
           <linearGradient id="mo-sunset" gradientUnits="userSpaceOnUse" x1={0} y1={SY - 900} x2={0} y2={SY + 900}>
-            <stop offset="0" stopColor={PAL.modern.skyTop} />
-            <stop offset="0.5" stopColor={PAL.modern.skyMid} />
-            <stop offset="1" stopColor={PAL.modern.skyLow} />
+            <stop offset="0" stopColor={PAL.modern.seaTop} />
+            <stop offset="1" stopColor={PAL.modern.seaLow} />
           </linearGradient>
+          <radialGradient id="mo-sun" gradientUnits="userSpaceOnUse" cx={SX + 700} cy={SY - 900} r={1500}>
+            <stop offset="0" stopColor="#ffd6a8" stopOpacity={0.45} />
+            <stop offset="1" stopColor="#ffd6a8" stopOpacity={0} />
+          </radialGradient>
           <radialGradient id="mo-focus" gradientUnits="userSpaceOnUse" cx={KX} cy={KY} r={760}>
             <stop offset="0.55" stopColor={PAL.old.paper} stopOpacity={0} />
             <stop offset="1" stopColor={PAL.old.paper} stopOpacity={0.88} />
@@ -189,10 +192,14 @@ export const MapOpening: React.FC<{ variant: MapVariant }> = ({ variant }) => {
         {variant === "modern" ? (
           <g opacity={style}>
             <rect x={-W} y={-H} width={W * 3} height={H * 3} fill="url(#mo-sunset)" />
-            <path d={GRID_D} fill="none" stroke={m.grid} strokeWidth={1.5} opacity={0.35} vectorEffect="non-scaling-stroke" />
+            {/* 얕은 바다: 해안을 따라 밝은 물빛 */}
+            <path d={LAND_D} fill="none" stroke={m.shallow} strokeWidth={46} strokeLinejoin="round" opacity={0.85} filter="url(#mo-glow)" />
+            {/* 땅 그림자: 살짝 떠 보이게 */}
+            <path d={LAND_D} fill={m.shade} opacity={0.35} transform="translate(5 8)" filter="url(#mo-glow)" />
             <path d={LAND_D} fill={m.land} />
-            <path d={LAND_D} fill="none" stroke="#ffffff" strokeWidth={16} opacity={0.9} filter="url(#mo-glow)" />
-            <path d={LAND_D} fill="none" stroke={m.line} strokeWidth={2.5} vectorEffect="non-scaling-stroke" />
+            <path d={LAND_D} fill="none" stroke={m.line} strokeWidth={2} vectorEffect="non-scaling-stroke" />
+            {/* 배너처럼 오른쪽 위에서 들어오는 따뜻한 햇빛 */}
+            <rect x={-W} y={-H} width={W * 3} height={H * 3} fill="url(#mo-sun)" />
           </g>
         ) : (
           <g>
@@ -215,8 +222,10 @@ export const MapOpening: React.FC<{ variant: MapVariant }> = ({ variant }) => {
         {/* 서울 표시 */}
         {variant === "modern" ? (
           <g transform={`translate(${SX} ${SY}) scale(${pin})`}>
-            <circle r={34} fill="none" stroke="#ff6b4a" strokeWidth={4} opacity={0.6} />
-            <circle r={14} fill="#ff6b4a" />
+            {/* 지도 앱 핀: 끝이 서울을 찍는다 */}
+            <ellipse cx={0} cy={2} rx={10} ry={4} fill="#000" opacity={0.18} />
+            <path d="M0 0 C -6 -14 -22 -26 -22 -42 A 22 22 0 1 1 22 -42 C 22 -26 6 -14 0 0 Z" fill={m.pin} stroke="#ffffff" strokeWidth={3} />
+            <circle cx={0} cy={-42} r={8} fill="#ffffff" />
           </g>
         ) : (
           <g transform={`translate(${SX} ${SY}) scale(${pin})`}>
@@ -240,7 +249,7 @@ export const MapOpening: React.FC<{ variant: MapVariant }> = ({ variant }) => {
         <Audio src={staticFile("sfx/whoosh.wav")} volume={0.45} />
       </Sequence>
       {/* 쑥 들어갈 때 번쩍: 요즘 편은 노을빛, 옛 편은 한지빛 */}
-      <AbsoluteFill style={{ backgroundColor: variant === "modern" ? "#ffffff" : "#f6ecd6", opacity: flash * 0.85 }} />
+      <AbsoluteFill style={{ backgroundColor: variant === "modern" ? "#eaf7fc" : "#f6ecd6", opacity: flash * 0.85 }} />
     </AbsoluteFill>
   );
 };
