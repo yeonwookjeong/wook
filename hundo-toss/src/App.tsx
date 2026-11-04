@@ -3,7 +3,7 @@ import type { Person } from "@/lib/pairToken";
 import { BirthForm } from "./BirthForm";
 import { forgetMe, loadMe, saveMe } from "./me";
 import { MineView } from "./MineView";
-import { restorePending } from "./purchase";
+import { restorePending, syncRefunds } from "./purchase";
 import { ReportView } from "./ReportView";
 import { ShopView } from "./ShopView";
 import { TodayView } from "./TodayView";
@@ -29,8 +29,11 @@ export default function App() {
   }, []);
 
   // A payment whose report was never opened (the app closed midway) is granted as soon as the chart is known.
+  // And a refunded one closes (the user-harm policy, 2026-11-21).
   useEffect(() => {
-    if (me) restorePending(me).then(setRestored);
+    if (!me) return;
+    restorePending(me).then(setRestored);
+    void syncRefunds();
   }, [me]);
 
   if (me === undefined) return <main className="app" />;
@@ -78,6 +81,7 @@ export default function App() {
             내 정보 다시 입력
           </button>
           <p className="quiet small center">사주 풀이는 재미와 참고를 위한 것이에요.</p>
+          <p className="quiet small center">궁금한 점이나 환불은 오른쪽 위 ⋯ → 고객센터로 문의해 주세요.</p>
           {/* Last on the page, away from every button (the ad policy). */}
           <TossBanner />
         </>
