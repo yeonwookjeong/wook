@@ -165,10 +165,11 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
       ? { chapters: yearChaptersFor(true), focus: `${spec.focus}\n- 마지막 장 '${NEW_YEAR_CHAPTER}'은 입춘부터 석 달(2~4월)의 월운 판정을 근거로, 달마다 할 일 하나씩 구체적으로 쓴다(이 석 달은 화면에 달력으로 보인다).` }
       : spec;
   // 궁합 outside lovers: chapter titles without love words (lib/reportPrompts.ts chaptersForRel).
+  // As of when it is read (bought, or written again from the owner's page), so a report written again comes out new.
   const relNow = REL_OF[relationOf(req.rel)];
   const titled =
     product.id === "gunghap"
-      ? { chapters: chaptersForRel(asked.chapters, product.id, relNow, at), focus: focusForRel(asked.focus, product.id, relNow, at) }
+      ? { chapters: chaptersForRel(asked.chapters, product.id, relNow, readAt), focus: focusForRel(asked.focus, product.id, relNow, readAt) }
       : asked;
   const prompt = userPrompt(titled, subjectLine, briefs);
   const key = createHash("sha256").update([v, REPORT_MODEL, product.id, system, prompt].join("\n")).digest("base64url");
