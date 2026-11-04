@@ -6,24 +6,24 @@
 - 엔딩 카드 없음(2026-10-28 결정). 마지막 컷 "hiding."으로 끝낸다
 - 사실 확인 전 초안: 단정하지 않는 표현(many, some) 유지
 
-## 대본 v2 (영어 · 스페인어 · 한국어) — 2026-11-04 확정
+## 대본 v3 (영어 · 스페인어 · 한국어) — 2026-11-04 확정
 
-v1에서 바꾼 것: ① "an old word for death" → 死는 옛말이 아니라 지금도 쓰는 한자라서 "the Chinese character for death" ② 호실 번호는 근거가 약해서 뺌(그림 F 삭제) ③ 병원을 따로 한 문장으로 세워 마지막 반전으로.
-문장 번호는 음성 파일과 영상 컷을 묶는 번호다(`youtube/tts/make_ep01.py`, `Ep01.tsx`의 `sent`). 스페인어는 중남미 기준 초안이며 원어민 확인 전. 음성에서는 死를 읽지 않는다(화면에만).
+근거: `youtube/research/refs-analysis-2026-11.md` (14편 분석). Zack D. Films 흐름: 현상 → 이유 → 결과 → 확대 → **But 전환** → 한 줄 결론. 목표 약 28초, 초당 약 3단어, 0초에 말 시작.
+v2에서 바꾼 것: ② 시청자에게 묻는 문장 추가(한강 편 "~냐고요?" 방식), ⑥ "F도 사실 4층" 전환점 추가.
+문장 번호 = `youtube/tts/make_ep01.py`, `Ep01.tsx`의 `sent`. 스페인어는 중남미 기준 초안, 원어민 확인 전. 음성은 死를 읽지 않는다(화면에만).
 
-| # | 영어 (EN) | 스페인어 (ES) | 한국어 (뜻) | 그림 |
-|---|---|---|---|---|
-| 0 | In Korea, | En Corea, | 한국에서는, | 지도 오프닝(노을 톤) |
-| 1 | this elevator is hiding a floor. | este ascensor esconde un piso. | 이 엘리베이터는 층 하나를 숨기고 있어요. | A 버튼판 (스냅 줌, 띵) |
-| 2 | Just an "F." | Solo una "F". | 그냥 "F" 하나. | A 의 F로 확대 |
-| 3 | The number four is read "sa," the same sound as the Chinese character for **death** (死). | El cuatro se lee «sa», igual que el carácter chino de la **muerte** (死). | 숫자 4는 "사"라고 읽는데, 죽음을 뜻하는 한자 死와 소리가 같아요. | C 숫자 4 → "사" 글자 → D 死 (쿵) |
-| 4 | So many buildings write **F**, for "four," instead. | Por eso muchos edificios ponen una **F**, de *four*, cuatro en inglés. | 그래서 많은 건물이 4 대신 F(four)라고 써요. | E 아파트 → A 의 F에 동그라미 "F = Four" |
-| 5 | And many **hospitals** skip the fourth floor entirely. | Y muchos **hospitales** se saltan el cuarto piso por completo. | 병원은 아예 4층을 빼 버리기도 해요. | G 병원 안내판 + 취소선 4 |
-| 6 | Next time you see an F, you'll know what it's **hiding**. | La próxima vez que veas una F, sabrás lo que **esconde**. | 다음에 F를 보면, 무엇을 숨기는지 알게 될 거예요. | H 손가락이 F → A 어둡게 (첫 장면으로 루프) |
+| # | 역할 | 영어 (EN) | 스페인어 (ES) | 한국어 (뜻) | 그림 |
+|---|---|---|---|---|---|
+| 0 | — | In Korea, | En Corea, | 한국에서는, | 지도 오프닝 |
+| 1 | 현상 | this elevator is hiding a floor. | este ascensor esconde un piso. | 이 엘리베이터가 층 하나를 숨기고 있어요. | A 버튼판 |
+| 2 | 묻기 | Look: one, two, three… F. Where's four? | Mira: uno, dos, tres… F. ¿Y el cuatro? | 보세요. 1, 2, 3… F. 4는 어디 갔죠? | A → F로 확대 + "?" |
+| 3 | 이유 | In Korean, four is read "sa," the same sound as the Chinese character for **death**. | En coreano, el cuatro se lee «sa», igual que el carácter chino de la **muerte**. | 한국어로 4는 "사"라고 읽는데, 죽음을 뜻하는 한자 死와 소리가 같아요. | C 숫자 4 → "사" → D 死 |
+| 4 | 결과 | So many buildings swap it for an **F**, for "four." | Por eso muchos edificios lo cambian por una **F**, de *four*, cuatro en inglés. | 그래서 많은 건물이 4 대신 F(four)를 써요. | E 아파트 → A "F = Four" |
+| 5 | 확대 | **Hospitals** go further: many skip the fourth floor entirely. | Los **hospitales** van más lejos: muchos se saltan el cuarto piso. | 병원은 더해요. 4층을 아예 빼 버리는 곳이 많아요. | G 병원 안내판 + 취소선 4 |
+| 6 | But | But here's the thing: the F is still the fourth floor. Nobody just says it. | Pero ojo: la F sigue siendo el cuarto piso. Solo que nadie lo dice. | 그런데 사실 F도 4층이에요. 아무도 그렇게 부르지 않을 뿐이죠. | H 손가락 → A "F = 4th floor" |
+| 7 | 결론 | Next time you see an F, you'll know what it's **hiding**. | La próxima vez que veas una F, sabrás lo que **esconde**. | 다음에 F를 보면, 무엇을 숨기는지 알게 될 거예요. | A 어둡게 (첫 장면으로 루프) |
 
-**스페인어에서 주의**: F는 영어 *four*의 첫 글자라 스페인어로는 바로 이해되지 않는다. 그래서 4번 문장에 "de *four*, cuatro en inglés"를 넣었다.
-
-엔딩 카드 없음(2026-10-28). 그림풍: 배너 오른쪽(노을·부드러운 일러스트), 네온 없음.
+엔딩 카드 없음. 그림풍: 배너 오른쪽(노을·부드러운 일러스트), 네온 없음. 오프닝 지도 처리(0초 주제 노출)는 음성 넣은 뒤 다시 판단.
 
 ## 그림 목록 (v1, 폐기: 새 그림은 ep01-images-v2.md의 A·C·D·E·G·H 6장)
 

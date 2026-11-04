@@ -1,7 +1,7 @@
 """EP01 내레이션을 고른 목소리로 만들고, 영상이 읽는 타이밍 파일을 쓴다 (Kokoro).
 
 사용: python make_ep01.py af_heart        ← 고른 목소리 이름 (make_samples.py 결과 참고)
-결과: studio/public/ep01/vo/s0.wav … s6.wav, studio/src/ep01/vo.json
+결과: studio/public/ep01/vo/s0.wav … s7.wav, studio/src/ep01/vo.json
 """
 import json
 import sys
@@ -18,11 +18,12 @@ OUT = STUDIO / "public" / "ep01" / "vo"
 SENTENCES = [
     (0, "In Korea,"),
     (1, "this elevator is hiding a floor."),
-    (2, "Just an F."),
-    (3, "The number four is read sa, the same sound as the Chinese character for death."),
-    (4, "So many buildings write F, for four, instead."),
-    (5, "And many hospitals skip the fourth floor entirely."),
-    (6, "Next time you see an F, you'll know what it's hiding."),
+    (2, "Look: one, two, three... F. Where's four?"),
+    (3, "In Korean, four is read sa, the same sound as the Chinese character for death."),
+    (4, "So many buildings swap it for an F, for four."),
+    (5, "Hospitals go further: many skip the fourth floor entirely."),
+    (6, "But here's the thing: the F is still the fourth floor. Nobody just says it."),
+    (7, "Next time you see an F, you'll know what it's hiding."),
 ]
 
 
