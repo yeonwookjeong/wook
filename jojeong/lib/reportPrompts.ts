@@ -253,6 +253,17 @@ const REL_TITLES: Record<"일" | "친구" | "가족", Record<string, string>> = 
 // `rel`: lib/pairYears.ts REL_OF of the order's relation. `at`: when it was paid (none: as of now).
 export const chaptersForRel = (chapters: string[], id: string, rel: Rel, at?: number): string[] =>
   id !== "gunghap" || rel === "연인" || (at !== undefined && at < REL_TITLES_SINCE) ? chapters : chapters.map((c) => REL_TITLES[rel][c] ?? c);
+// …and the 궁합 brief told to the writer outside lovers: the focus asks "왜 끌리고" and lists 끌림 for lovers, and the
+// writer echoed 끌림 into a friend's report (2026-11-04 16:49). From REL_FOCUS_SINCE the focus says it plainly.
+export const REL_FOCUS_SINCE = Date.parse("2026-11-04T09:00:00Z");
+export const focusForRel = (focus: string, id: string, rel: Rel, at?: number): string =>
+  id !== "gunghap" || rel === "연인" || (at !== undefined && at < REL_FOCUS_SINCE)
+    ? focus
+    : `${focus
+        .replace("왜 끌리고 왜 부딪히나", "왜 통하고 왜 부딪히나")
+        .replace("연인·배우자면 끌림·연애·결혼·생활, ", "")
+        .replace(" 장 제목의 '끌림'이나 '싸움'도 관계에 맞는 뜻으로 읽는다.", "")}
+- 이 두 사람은 연인이 아니다. '끌림', '끌리다', '설렘', '연애', '결혼', '배우자'라는 말은 장 제목, 헤드라인, 본문 어디에도 한 번도 쓰지 않는다. 서로를 알아보는 이유는 '통한다', '손발이 맞는다'처럼 쓴다.`;
 // The chapters shown for a bought report: as they were when it was bought.
 export const chaptersFor = (id: ProductId, v8: boolean) => (v8 ? SPECS.v8[id]?.chapters : SPECS.v7[id]?.chapters) ?? [];
 
