@@ -3,6 +3,7 @@ import type { Person } from "@/lib/pairToken";
 import { BirthForm } from "./BirthForm";
 import { forgetMe, loadMe, saveMe } from "./me";
 import { MineView } from "./MineView";
+import { PlaceView } from "./PlaceView";
 import { restorePending, syncRefunds } from "./purchase";
 import { ReportView } from "./ReportView";
 import { ShopView } from "./ShopView";
@@ -10,9 +11,10 @@ import { TodayView } from "./TodayView";
 import { TossBanner } from "./TossBanner";
 import { YearView } from "./YearView";
 
-type Tab = "today" | "year" | "shop" | "mine";
+type Tab = "today" | "place" | "year" | "shop" | "mine";
 const TABS: { id: Tab; label: string }[] = [
   { id: "today", label: "오늘" },
+  { id: "place", label: "동네 지도" },
   { id: "year", label: "신년운세" },
   { id: "shop", label: "보고서" },
   { id: "mine", label: "내 보고서" },
@@ -68,6 +70,7 @@ export default function App() {
             </p>
           )}
           {tab === "today" && <TodayView me={me} />}
+          {tab === "place" && <PlaceView me={me} onBuy={() => setTab("shop")} />}
           {tab === "year" && <YearView me={me} onBuy={() => setTab("shop")} />}
           {tab === "shop" && <ShopView me={me} onOpen={(order, opens) => setReading({ order, opens })} />}
           {tab === "mine" && <MineView onOpen={(order, opens) => setReading({ order, opens })} />}

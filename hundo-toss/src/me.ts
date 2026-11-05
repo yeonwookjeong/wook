@@ -86,3 +86,7 @@ export async function addToList(key: string, value: string, max = 50) {
   const list = await readList(key);
   await write(key, JSON.stringify([value, ...list.filter((x) => x !== value)].slice(0, max)));
 }
+
+// Small values kept on this phone the same way (e.g. the 시군구 one lives in, for 동네 지도).
+export const readItem = read;
+export const writeItem = write;
