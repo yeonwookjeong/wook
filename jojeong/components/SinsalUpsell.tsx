@@ -20,10 +20,31 @@ const DEFAULT = { href: "/reports/pyeongsaeng", seal: "命", title: "살 아래�
 
 export const pickFor = (c: Card) => PICKS[c.id.replace(/\d+$/, "")] ?? DEFAULT;
 
+// 궁합 converts best of all the reports (4 of 39 views paid in the week of 11/2, against 1% or less elsewhere), so the
+// 신살 result leads with it: this 살 and the person one has in mind. The 살's own report follows.
+const GUNGHAP = { href: "/reports/gunghap", seal: "合", line: "궁합 보고서, 두 사람 사주를 나란히 놓고 보기" };
+
 export default function SinsalUpsell({ head }: { head: Card }) {
   const p = pickFor(head);
   return (
-    <TrackLink event="to_saju" from="sinsal" href={p.href} className={`${NIGHT_PANEL} mt-4 flex items-center gap-3 px-4 py-4`}>
+    <>
+      <TrackLink event="to_saju" from="sinsal" href={GUNGHAP.href} className={`${NIGHT_PANEL} mt-4 flex items-center gap-3 px-4 py-4 ring-2 ring-[#d4af5f]/70`}>
+        <span className="flex size-12 shrink-0 -rotate-3 items-center justify-center border-[3px] border-[#d4af5f] font-myeongjo text-xl font-extrabold text-[#d4af5f]">{GUNGHAP.seal}</span>
+        <span className="min-w-0 flex-1">
+          <span className={`block text-[11px] font-extrabold ${NIGHT_GOLD}`}>{head.sal} 유형에게</span>
+          <span className="block font-myeongjo text-[16px] leading-snug font-extrabold">이 살, 그 사람과는 어떨까?</span>
+          <span className="mt-0.5 block text-[12px] leading-snug text-hanji/70">{GUNGHAP.line}</span>
+        </span>
+        <span className={`shrink-0 font-myeongjo text-sm font-extrabold ${NIGHT_GOLD}`}>보기 →</span>
+      </TrackLink>
+      <PickLink head={head} p={p} />
+    </>
+  );
+}
+
+function PickLink({ head, p }: { head: Card; p: ReturnType<typeof pickFor> }) {
+  return (
+    <TrackLink event="to_saju" from="sinsal" href={p.href} className={`${NIGHT_PANEL} mt-2 flex items-center gap-3 px-4 py-3`}>
       <span className="flex size-12 shrink-0 -rotate-3 items-center justify-center border-[3px] border-[#d4af5f] font-myeongjo text-xl font-extrabold text-[#d4af5f]">{p.seal}</span>
       <span className="min-w-0 flex-1">
         <span className={`block text-[11px] font-extrabold ${NIGHT_GOLD}`}>{head.sal} 유형에게</span>
@@ -41,9 +62,9 @@ export function SinsalMore({ head, rest }: { head: Card; rest: Card[] }) {
   const first = pickFor(head);
   const other = rest.map(pickFor).find((p) => p.href !== first.href && p !== DEFAULT);
   const items = [
+    { href: "/reports/gunghap", seal: "合", title: "살이 겹치는 사람과의 궁합", line: "궁합 보고서 · 두 사람 사주로 보는 끌림과 부딪힘", kicker: "그 사람과 함께" },
     { ...first, kicker: `${head.sal} 유형에게` },
     ...(other ? [{ ...other, kicker: "함께 적힌 살로" }] : []),
-    { href: "/reports/gunghap", seal: "合", title: "살이 겹치는 사람과의 궁합", line: "궁합 보고서 · 두 사람 사주로 보는 끌림과 부딪힘", kicker: "친구와 함께" },
   ];
   return (
     <section className={`${NIGHT_PANEL} mt-4 px-3 py-3`}>

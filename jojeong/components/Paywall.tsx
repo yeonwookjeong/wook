@@ -1,5 +1,6 @@
 import Link from "next/link";
 import PayButton from "./PayButton";
+import StickyPay from "./StickyPay";
 import { hanjaNum } from "@/lib/hanjaNum";
 import { josa } from "@/lib/josa";
 import { currentMember, membersEnabled } from "@/lib/members";
@@ -12,7 +13,7 @@ import { newYearOf } from "@/lib/yeonun";
 // Where the written report would begin, before it is bought: its chapters, the price, and the payment.
 // Everything above it (the chart and how it was read) stays free.
 const FRONT_SET: Partial<Record<ProductId, SetId>> = { jaemul: "all", jikup: "all" };
-const FRONT_SET_A: Partial<Record<ProductId, SetId>> = { jaemul: "jeonseo", jikup: "jeonseo", yeonae: "jeonseo" };
+const FRONT_SET_A: Partial<Record<ProductId, SetId>> = { pyeongsaeng: "jeonseo", yeonun: "jeonseo", jaemul: "jeonseo", jikup: "jeonseo", yeonae: "jeonseo" };
 
 export default async function Paywall({
   product,
@@ -54,35 +55,44 @@ export default async function Paywall({
   const lead = (pr === "a" ? FRONT_SET_A : FRONT_SET)[product.id];
   const front = lead && sets.includes(lead) ? [lead] : sets;
   const folded = sets.filter((s) => !front.includes(s));
+  // 사주 전서 sold best of all (5 of 16 in the week of 11/2, against none of 평생 사주 alone): where it leads, it
+  // comes first, above the single report.
+  const setFirst = lead === "jeonseo" && front.includes("jeonseo");
+  const won = (n: number) => `${n.toLocaleString("ko-KR")}원`;
+  const jeonseo = setFirst ? offers.get("jeonseo")! : null;
+  const stickyMain = jeonseo ? `${SETS.jeonseo.title} ${SETS.jeonseo.products.length}종 ${won(jeonseo.price)}` : `${product.title.split(" · ")[0]} ${won(price)}`;
+  const stickySub = jeonseo ? `이것만 보기는 ${won(price)}` : `${chapters.length}장, 결제하면 바로 열려요`;
   // A set as shops show a bundle: its name and what is in it on the left, the price on the right with the discount
   // and the regular price struck through small, not spelled out in brackets. An upgrade shows no percentage (it is
   // the difference, not a sale), only what the missing reports would cost one by one.
   const setButton = (s: SetId) => {
     const o = offers.get(s)!;
-    const won = (n: number) => `${n.toLocaleString("ko-KR")}원`;
     const off = Math.round((1 - o.price / o.regular) * 100);
     const missing = SETS[s].products.filter((id) => !o.owned.includes(id));
+    // On the filled seal-red button (사주 전서 in front) the small print turns light.
+    const prim = setFirst && s === "jeonseo";
+    const soft = prim ? "text-hanji/80" : "text-ink-soft";
     const label = (
       <span className="flex items-center gap-3 px-4 text-left">
         <span className="min-w-0 flex-1">
           <span className="block font-myeongjo text-[16px] leading-snug">{o.owned.length ? `${SETS[s].title}로 올리기` : SETS[s].title}</span>
-          <span className="mt-0.5 block font-sans text-[11.5px] leading-snug font-medium text-ink-soft">
+          <span className={`mt-0.5 block font-sans text-[11.5px] leading-snug font-medium ${soft}`}>
             {o.owned.length ? `${missing.map(titleIn).join(" · ")} 더하기` : SETS[s].products.map(titleIn).join(" · ")}
             {o.bonus ? ` · 질문 ${o.bonus}개` : ""}
           </span>
         </span>
         <span className="shrink-0 text-right">
           <span className="flex items-baseline justify-end gap-1.5">
-            {off > 0 && !o.owned.length && <span className="font-sans text-[13px] font-extrabold text-[#e0452b]">{off}%</span>}
+            {off > 0 && !o.owned.length && <span className={`font-sans text-[13px] font-extrabold ${prim ? "text-[#ffd9a8]" : "text-[#e0452b]"}`}>{off}%</span>}
             <span className="font-myeongjo text-[18px]">{o.owned.length ? `+${won(o.price)}` : won(o.price)}</span>
           </span>
-          <s className="block font-sans text-[11.5px] font-medium text-ink-soft/80">{won(o.regular)}</s>
+          <s className={`block font-sans text-[11.5px] font-medium ${prim ? "text-hanji/70" : "text-ink-soft/80"}`}>{won(o.regular)}</s>
         </span>
       </span>
     );
     return (
       <div key={s}>
-        <PayButton secondary request={{ set: s, p: request.p, from: product.id }} label={label} />
+        <PayButton secondary={!(setFirst && s === "jeonseo")} request={{ set: s, p: request.p, from: product.id }} label={label} />
         {o.owned.length > 0 && (
           <p className="mt-1 text-[11px] text-ink-soft">
             {josa(o.owned.map(titleIn).join(" · "), "은/는")} 이미 있어서 {won(o.credit)} 빼 드려요
@@ -108,12 +118,14 @@ export default async function Paywall({
       </ol>
 
       <div className="mt-5 text-center">
-        {sale && <p className="text-xs font-extrabold text-seal">{saleLabel(sale)}</p>}
-        <p className="mt-1 flex items-baseline justify-center gap-2">
-          {sale && <s className="text-base text-ink-soft">{PRICE.toLocaleString("ko-KR")}원</s>}
-          <span className="font-myeongjo text-3xl font-extrabold text-seal">{price.toLocaleString("ko-KR")}원</span>
-        </p>
-        {bonus > 0 && (
+        {sale && !setFirst && <p className="text-xs font-extrabold text-seal">{saleLabel(sale)}</p>}
+        {!setFirst && (
+          <p className="mt-1 flex items-baseline justify-center gap-2">
+            {sale && <s className="text-base text-ink-soft">{PRICE.toLocaleString("ko-KR")}원</s>}
+            <span className="font-myeongjo text-3xl font-extrabold text-seal">{price.toLocaleString("ko-KR")}원</span>
+          </p>
+        )}
+        {bonus > 0 && !setFirst && (
           <p className="mt-1 text-[12.5px] font-bold text-[#9a7424]">
             정 훈도 질문 {bonus}개 포함{guest && <span className="font-normal"> · 카카오 로그인하면 바로 받아요</span>}
           </p>
@@ -121,8 +133,17 @@ export default async function Paywall({
         {note && <p className="mt-3 rounded-xl bg-gold/10 px-3 py-2 text-left text-[12px] leading-relaxed">{note}</p>}
         {payEnabled() ? (
           <>
-            <PayButton request={request} label={`${price.toLocaleString("ko-KR")}원 결제하고 보기`} />
-            {front.map(setButton)}
+            {setFirst ? (
+              <>
+                {setButton("jeonseo")}
+                <PayButton secondary request={request} label={`이것만 ${price.toLocaleString("ko-KR")}원에 보기`} />
+              </>
+            ) : (
+              <>
+                <PayButton request={request} label={`${price.toLocaleString("ko-KR")}원 결제하고 보기`} />
+                {front.map(setButton)}
+              </>
+            )}
             {folded.length > 0 && (
               <details className="mt-3 text-left">
                 <summary className="cursor-pointer text-center text-[12px] font-bold text-ink-soft">다른 세트 보기 ▾</summary>
@@ -136,6 +157,7 @@ export default async function Paywall({
           </button>
         )}
         <p className="mt-2 text-[11px] text-ink-soft">결제하면 바로 열려요 · 링크로 언제든 다시 볼 수 있어요</p>
+        {payEnabled() && <StickyPay main={stickyMain} sub={stickySub} />}
       </div>
       <p className="mt-4 text-left text-[11px] leading-relaxed text-ink-soft">
         보고서는 결제 즉시 열리는 디지털 콘텐츠라, 열람을 시작한 뒤에는 전자상거래법에 따라 청약철회가 제한돼요. 결제 전에 위의 목차와 풀이로 내용을 확인해
