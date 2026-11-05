@@ -19,3 +19,9 @@
 | 12 | ES | Hablo Coreano (1M) | [¿Cómo se dice "estoy enojado" en coreano?](https://youtube.com/shorts/UBt2D0Pv4FM) | 24초 | 4.3배 |
 | 13 | KO | 신비한 건축사전 (821K) | [한강이 강이 아니라 호수인 이유](https://youtube.com/shorts/uUN1Bw0elY8) | 97초 | 651만 회 |
 | 14 | KO | 신비한 건축사전 | [철옹성은 쇠로 지은 성이 아닙니다](https://youtube.com/shorts/0Yyi3Chg-kY) | 179초 | 7만 회(비교용) |
+
+## 같은 형식 소규모 채널 (기대치·경쟁 참고, 2026-11-05)
+- Route Logic (@RouteLogic2609, 구독 928): 지도 + "Why?" 쇼츠. 평소 1~3천 회.
+  - [Why Is South Korea Basically An Island? 🤯 You Can't Drive Out 👀](https://youtube.com/shorts/ESwfao0tOiU) **14.85만 회 (평소의 약 80배)** — 한국 주제 + 모순 한 줄.
+  - 제목 공식: `Why [모순]? 🤯 [짧은 힌트] 👀`. 한국 편: Dokdo, NLL, 도라산, 쓰시마, 판문점 도끼 사건(1976) — 우리 주제와 겹치지 않게.
+- Hanguk Culture (@HangukCulture, 구독 2.3만): 실사 촬영. "NEVER do these 3 things in Korea" 2,100만 회. 금지형·이유형 제목 + 🇰🇷.
