@@ -23,5 +23,5 @@
 ## 같은 형식 소규모 채널 (기대치·경쟁 참고, 2026-11-05)
 - Route Logic (@RouteLogic2609, 구독 928): 지도 + "Why?" 쇼츠. 평소 1~3천 회.
   - [Why Is South Korea Basically An Island? 🤯 You Can't Drive Out 👀](https://youtube.com/shorts/ESwfao0tOiU) **14.85만 회 (평소의 약 80배)** — 한국 주제 + 모순 한 줄.
-  - 제목 공식: `Why [모순]? 🤯 [짧은 힌트] 👀`. 한국 편: Dokdo, NLL, 도라산, 쓰시마, 판문점 도끼 사건(1976) — 우리 주제와 겹치지 않게.
+  - 제목 공식: `Why [모순]? 🤯 [짧은 힌트] 👀`. 한국 편: Dokdo, NLL, 도라산, 쓰시마, 판문점 도끼 사건(1976) (같은 주제라도 우리는 우리 이야기로 다룬다).
 - Hanguk Culture (@HangukCulture, 구독 2.3만): 실사 촬영. "NEVER do these 3 things in Korea" 2,100만 회. 금지형·이유형 제목 + 🇰🇷.
