@@ -82,7 +82,9 @@ def main() -> None:
     KO.mkdir(exist_ok=True)
     with tempfile.TemporaryDirectory() as td:
         ref = Path(td) / "ref.wav"  # 어떤 형식이든 모노 wav로 바꿔서 넘긴다
-        subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(find_ref()), "-ac", "1", "-ar", "24000", str(ref)], check=True)
+        # 앞뒤 빈 소리를 잘라 모델이 참고하는 앞쪽 10초가 전부 목소리가 되게 하고, 작은 녹음은 크기를 맞춘다
+        clean = "silenceremove=start_periods=1:start_threshold=-45dB,areverse,silenceremove=start_periods=1:start_threshold=-45dB,areverse,loudnorm=I=-18:TP=-2"
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(find_ref()), "-af", clean, "-ac", "1", "-ar", "24000", str(ref)], check=True)
         ref_sec = ta.info(str(ref)).num_frames / 24000
         print(f"원본 녹음 {ref_sec:.1f}초 (모델은 앞쪽 약 10초를 참고합니다)", flush=True)
         print(f"모델 불러오는 중 ({device})...", flush=True)
