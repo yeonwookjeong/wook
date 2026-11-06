@@ -20,30 +20,48 @@ export const Taegeuk: React.FC<{ size: number }> = ({ size }) => {
   );
 };
 
-// 한 줄 소개를 배너의 그림풍 경계(가운데)에서 띄어쓰기로 나눈다: 왼쪽은 먹빛(옛), 오른쪽은 노을빛 흰색(요즘)
-const SPLIT_X = W / 2;
-const GAP = 22;
+// 2026-11-06 배치 변경: 모든 기기에서 보이는 띠(1546×423) 안에 한옥 전체가 들어오도록 그림을 키우고 올린다.
+// 한옥(원본 그림 기준 x 694~975, y 453~664)을 띠 가운데에 두고, 한 줄 소개는 한옥 양옆에 두 줄씩 놓는다.
+// 왼쪽(옛, 수묵) = 먹빛 "The stories / behind", 오른쪽(요즘, 노을) = 흰색 "Korea, / old and new"
+const ZOOM = 1.24;
+const ORIGIN = { x: 1280, y: 855 }; // 확대 기준점 = 한옥 중심(배너 좌표)
+const SHIFT_Y = SAFE.y + SAFE.h / 2 - ORIGIN.y; // 한옥 중심을 띠 가운데로
+const HANOK = { left: 1012, right: 1545 }; // 확대 후 한옥 좌우 끝(배너 좌표)
+const PAD = 34;
 
-export const Banner: React.FC<{ showSafe?: boolean; left?: string; right?: string }> = ({
-  showSafe,
-  left = "The stories behind",
-  right = "Korea, old and new",
-}) => {
-  const font = { fontFamily: serif, fontWeight: 700, fontSize: 70, whiteSpace: "nowrap" as const, position: "absolute" as const, top: SAFE.y + 40 };
+export const Banner: React.FC<{ showSafe?: boolean }> = ({ showSafe }) => {
+  const font = {
+    fontFamily: serif,
+    fontWeight: 700,
+    fontSize: 66,
+    lineHeight: 1.12,
+    whiteSpace: "nowrap" as const,
+    position: "absolute" as const,
+    top: SAFE.y + SAFE.h / 2,
+    transform: "translateY(-50%)",
+  };
   return (
-    <AbsoluteFill style={{ backgroundColor: "#000" }}>
-      <Img src={staticFile("brand/banner-art.png")} style={{ width: W, height: H, objectFit: "cover" }} />
-      <span style={{ ...font, right: W - SPLIT_X + GAP, color: "#2b2420", textShadow: "0 0 14px rgba(255,246,230,0.85)" }}>{left}</span>
-      <span
+    <AbsoluteFill style={{ backgroundColor: "#000", overflow: "hidden" }}>
+      <Img
+        src={staticFile("brand/banner-art.png")}
         style={{
-          ...font,
-          left: SPLIT_X + GAP,
-          color: "#ffffff",
-          textShadow: "0 2px 4px rgba(70,35,25,0.55), 0 0 20px rgba(110,55,40,0.45)",
+          width: W,
+          height: H,
+          objectFit: "cover",
+          transformOrigin: `${ORIGIN.x}px ${ORIGIN.y}px`,
+          transform: `translateY(${SHIFT_Y}px) scale(${ZOOM})`,
         }}
-      >
-        {right}
-      </span>
+      />
+      <div style={{ ...font, right: W - HANOK.left + PAD, textAlign: "right", color: "#2b2420", textShadow: "0 0 16px rgba(255,246,230,0.95), 0 0 4px rgba(255,246,230,0.9)" }}>
+        The stories
+        <br />
+        behind
+      </div>
+      <div style={{ ...font, left: HANOK.right + PAD, textAlign: "left", color: "#ffffff", textShadow: "0 2px 5px rgba(70,35,25,0.6), 0 0 22px rgba(110,55,40,0.5)" }}>
+        Korea,
+        <br />
+        old and new
+      </div>
       {showSafe && <div style={{ position: "absolute", left: SAFE.x, top: SAFE.y, width: SAFE.w, height: SAFE.h, border: "6px dashed #ff2a2a" }} />}
     </AbsoluteFill>
   );
