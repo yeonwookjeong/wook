@@ -1637,7 +1637,11 @@ def plan_parts(recipe, subs: Subs, ff: str, src: Path | None, check: bool):
             b, fb = resolve(part["to"], subs, a, "end")
             if src and not check:
                 a = snap(ff, src, a, "start") if fa else a
+                b0 = b
                 b = snap(ff, src, b, "end") if fb else b
+                nxt = [s0 for s0, _, _ in subs.lines if s0 > b0 + 0.05]
+                if nxt:  # 소리 끊기는 곳을 찾느라 다음 사람 말까지 넘어가지 않게
+                    b = min(b, max(b0, nxt[0] - 0.05))
             a += float(part.get("pad_start", 0))
             b += float(part.get("pad_end", 0))
             if b <= a:
