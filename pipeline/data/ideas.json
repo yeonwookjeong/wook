@@ -1,5 +1,140 @@
 [
   {
+    "id": "toryvel-20261106-01",
+    "channel": "toryvel",
+    "title": "몬자야키는 원래 아이들 간식이었다",
+    "angle": "어른들 술안주가 된 츠키시마 몬자의 시작이 5엔짜리 막과자집 간식이라는 반전",
+    "facts": [
+      {
+        "claim": "에도 말기~메이지 초기 아이들이 철판에 반죽으로 글자를 쓰며 놀던 '모지야키(文字焼き)'가 기원이라는 설명이 많다",
+        "source": "https://thegate12.com/jp/article/262",
+        "confidence": "medium"
+      },
+      {
+        "claim": "'몬자'라는 이름은 '모지야키'가 변한 것이라는 설이 유력하다",
+        "source": "https://thegate12.com/jp/article/262",
+        "confidence": "medium"
+      },
+      {
+        "claim": "츠키시마의 한 막과자집 주인이 1950년 무렵 동네 아이들에게 5엔에 구워 판 것이 지금 형태의 시작이라는 설명이 있다",
+        "source": "https://tabi.jtb.or.jp/res/130217-",
+        "confidence": "medium"
+      },
+      {
+        "claim": "쇼와 30년대(1955~64)에는 4곳 정도였던 가게가 헤이세이 들어 급증했다",
+        "source": "https://tabi.jtb.or.jp/res/130217-",
+        "confidence": "medium"
+      },
+      {
+        "claim": "1997년 28개 가게로 진흥회가 발족했고, 지금은 비가맹점 포함 80곳 안팎으로 소개된다 (집계마다 다름)",
+        "source": "https://tabi.jtb.or.jp/res/130217-",
+        "confidence": "low"
+      },
+      {
+        "claim": "몬자 스트리트는 니시나카도리의 약 500m 상점가다",
+        "source": "https://www.ana.co.jp/ja/jp/japan-travel-planner/tokyo/0000004.html",
+        "confidence": "medium"
+      }
+    ],
+    "place": {
+      "name": "月島もんじゃストリート",
+      "district": "주오구 츠키시마"
+    },
+    "japan_related": false,
+    "theme": "tokyo-area",
+    "createdAt": "2026-11-06T00:00:00.000Z"
+  },
+  {
+    "id": "toryvel-20261106-02",
+    "channel": "toryvel",
+    "title": "진보초가 헌책방 거리가 된 건 대학과 큰불 때문이다",
+    "angle": "세계적인 헌책방 거리가 계획이 아니라 학생 교과서 순환과 1913년 화재로 만들어졌다는 인과",
+    "facts": [
+      {
+        "claim": "1880년대 간다 일대에 법률학교가 잇달아 생기면서, 학생을 노린 법률서 서점이 줄줄이 문을 열었다",
+        "source": "https://ja.wikipedia.org/wiki/神田古書店街",
+        "confidence": "high"
+      },
+      {
+        "claim": "선배가 쓴 교과서를 팔고 후배가 사는 순환이 헌책방을 키웠다는 설명이 많다",
+        "source": "https://www.nippon.com/ja/japan-topics/b11002/",
+        "confidence": "medium"
+      },
+      {
+        "claim": "1913년(다이쇼 2년) 근처 간다 미사키초에서 난 큰불로 진보초가 큰 피해를 입었고, 이후 길가에 헌책방이 늘어섰다",
+        "source": "https://ja.wikipedia.org/wiki/神田古書店街",
+        "confidence": "high"
+      },
+      {
+        "claim": "불탄 학교들이 도서관 장서를 다시 갖추느라 헌책방에 주문이 몰렸다는 설명이 있다",
+        "source": "https://ja.wikipedia.org/wiki/神田古書店街",
+        "confidence": "medium"
+      },
+      {
+        "claim": "이와나미쇼텐 창업자가 큰불 뒤 헌책방을 열어 성공했다는 이야기가 있으나 학술적 확인은 못 했다",
+        "source": "https://www.ax8.co.jp/blog/entry-201711/",
+        "confidence": "low"
+      },
+      {
+        "claim": "헌책방 수는 130~180곳 등 집계마다 다르다",
+        "source": "https://ja.wikipedia.org/wiki/神田古書店街",
+        "confidence": "medium"
+      }
+    ],
+    "place": {
+      "name": "神田古書店街",
+      "district": "지요다구 진보초"
+    },
+    "japan_related": false,
+    "theme": "tokyo-area",
+    "createdAt": "2026-11-06T00:00:00.000Z"
+  },
+  {
+    "id": "toryvel-20261106-03",
+    "channel": "toryvel",
+    "title": "시모키타자와 연극의 거리는 배우 한 명이 만들었다",
+    "angle": "배우를 포기 못 한 바 주인이 극장을 세워 동네 정체성을 바꿨다는 사람 이야기",
+    "facts": [
+      {
+        "claim": "혼다 극장은 1982년 개관해 도쿄 소극장 연극의 중심이 됐다",
+        "source": "https://ja.wikipedia.org/wiki/本多劇場",
+        "confidence": "high"
+      },
+      {
+        "claim": "창업자 혼다 가즈오는 신토호 소속 배우였다가 시모키타자와에서 바를 열었고, 연극을 포기하지 못해 극장을 세웠다",
+        "source": "https://san-tatsu.jp/towns/510561/",
+        "confidence": "medium"
+      },
+      {
+        "claim": "1981년 '더 스즈나리', 1982년 '혼다 극장'을 열었다",
+        "source": "https://san-tatsu.jp/towns/510561/",
+        "confidence": "medium"
+      },
+      {
+        "claim": "1970년대 시모키타자와는 값싼 하숙이 많아 배우 지망생이 많이 살았다는 설명이 있다",
+        "source": "https://allabout.co.jp/gm/gc/421407/",
+        "confidence": "low"
+      },
+      {
+        "claim": "종전 직후 역 앞에 암시장이 있었다",
+        "source": "https://sengoku-his.com/2159",
+        "confidence": "medium"
+      },
+      {
+        "claim": "헌옷 거리가 된 계기는 자료마다 다르다 (90년대설, 2004년 도요햐카텐 개업설)",
+        "source": "https://san-tatsu.jp/towns/510561/",
+        "confidence": "low"
+      }
+    ],
+    "place": {
+      "name": "本多劇場 / 下北沢",
+      "district": "세타가야구"
+    },
+    "japan_related": false,
+    "theme": "tokyo-area",
+    "createdAt": "2026-11-06T00:00:00.000Z"
+  },
+  {
     "id": "toryvel-20261023-01",
     "channel": "toryvel",
     "title": "도쿄역 3층은 67년 동안 없었다",
