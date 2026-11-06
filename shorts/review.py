@@ -54,9 +54,9 @@ def review(rpath: Path, subs: "ms.Subs") -> tuple[list, list]:
     clip_total = sum(p["end"] - p["start"] for p in plan if p["type"] == "clip") / 1.15  # 말 빠르게 감안
     est = clip_total + sum(p["end"] - p["start"] for p in plan if p["type"] == "tts")
     if est < 15:
-        warn.append(f"너무 짧아요 (약 {est:.0f}초)")
+        warn.append(f"💡 너무 짧아요 (약 {est:.0f}초)")
     if est > 42:
-        warn.append(f"길어요 (약 {est:.0f}초) — 클립을 좁히는 게 좋아요")
+        warn.append(f"💡 길어요 (약 {est:.0f}초) — 클립을 좁히는 게 좋아요")
 
     clips = [p for p in plan if p["type"] == "clip"]
     for n, p in enumerate(plan):
@@ -87,7 +87,7 @@ def review(rpath: Path, subs: "ms.Subs") -> tuple[list, list]:
         if ch:
             gaps = [(a1, b0) for (_, a1, _), (b0, _, _) in zip(ch, ch[1:]) if b0 - a1 > 1.2]
             for a1, b0 in gaps:
-                warn.append(f"[{ms.fmt(a1)}~{ms.fmt(b0)}] {b0 - a1:.1f}초 동안 자막이 없어요")
+                warn.append(f"💡 [{ms.fmt(a1)}~{ms.fmt(b0)}] {b0 - a1:.1f}초 동안 자막이 없어요")
         # 오타 의심 (자동자막)
         for s, e, t in lines:
             t2 = _fix(t, fixes)
@@ -99,7 +99,7 @@ def review(rpath: Path, subs: "ms.Subs") -> tuple[list, list]:
             if re.search(r"\d[가-힣]체|[가-힣]{2}이\s?[가-힣]{2}에\b", t2):
                 sus.append("받아쓰기 오류 의심")
             if sus:
-                warn.append(f"[{ms.fmt(s)}] 오타 의심({', '.join(sus)}): '{t2.strip()[:30]}'")
+                warn.append(f"💡 [{ms.fmt(s)}] 오타 의심({', '.join(sus)}): '{t2.strip()[:30]}'")
         # 마지막이 흐지부지인지
         if p is clips[-1]:
             last = _fix(lines[-1][2], fixes).strip()
@@ -171,20 +171,21 @@ def main():
             warn, script = review(rp, load_subs(recipe))
         except SystemExit as e:
             warn, script = [f"대본 확인 실패: {e}"], []
-        mark = "✅" if not warn else "⚠️"
-        bad += bool(warn)
-        if warn:
+        block = [w_ for w_ in warn if not w_.startswith("💡")]  # 💡는 참고용(만들긴 함), 나머지는 안 만듦
+        mark = "✅" if not block else "⛔"
+        bad += bool(block)
+        if block:
             failed.append(rp.stem)
         print(f"\n{mark} {rp.stem}  {recipe.get('link_text', '')}")
         for w_ in warn:
-            print(f"   ⚠️ {w_}")
+            print(f"   {'' if w_.startswith('💡') else '⛔ '}{w_}")
         report.append(f"## {mark} {rp.stem} ({recipe.get('link_text', '')})\n")
-        report += [f"- ⚠️ {w_}" for w_ in warn] + [""] + [f"    {s}" for s in script] + [""]
+        report += [f"- {'' if w_.startswith('💡') else '⛔ '}{w_}" for w_ in warn] + [""] + [f"    {s}" for s in script] + [""]
     ms.OUT.mkdir(exist_ok=True)
     (ms.OUT / "검수.md").write_text("\n".join(report), encoding="utf-8")
     # 검수에 걸린 레시피 목록 (plan.py --make는 이것들은 만들지 않음)
     (ms.OUT / "검수_실패.txt").write_text("\n".join(failed), encoding="utf-8")
-    print(f"\n{'✅ 전부 통과' if not bad else f'⚠️ {bad}개 확인 필요'} → {ms.OUT / '검수.md'}")
+    print(f"\n{'✅ 전부 통과' if not bad else f'⛔ {bad}개는 고쳐야 해요'} → {ms.OUT / '검수.md'}")
 
 
 if __name__ == "__main__":
