@@ -308,6 +308,12 @@ class Subs:
         # 자동자막은 받아쓰기가 틀릴 수 있어서, 줄 자막과 2.5초 넘게 어긋나면 줄 자막을 믿음
         if w and line and abs(w[0] - line[0]) > 2.5:
             return line
+        if w and line:
+            # 자동자막 단어 시각은 마지막 단어가 다음 말이 나올 때까지 늘어져 있어서,
+            # 그 문장이 들어 있는 줄이 끝나는 시각(= 다음 줄 시작)을 넘지 않게 자름
+            own = [e for s0, e, _ in self.lines if s0 < line[1] - 0.01 <= e]
+            end = min(w[1], min(own)) if own else w[1]
+            return (w[0], max(end, w[0] + 0.3))
         if w or line:
             return w or line
         die(f"자막에서 '{phrase}' 문구를 못 찾았어요.\n"

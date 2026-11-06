@@ -74,11 +74,14 @@ def review(rpath: Path, subs: "ms.Subs") -> tuple[list, list]:
         first_word = p["part"].get("from", "").split(" ")[0]
         pos = raw.find(first_word) if first_word else -1
         before = raw[:pos].replace(">>", " ").strip() if pos > 0 else ""
-        if pos > 0 and ">>" not in raw[:pos]:  # 줄 중간에서 시작: 그 앞이 문장 끝이면 OK
-            bad_start = bool(before) and not re.search(r"([.?!]|요|다|죠)\s*\S{0,4}$", before)
-        else:  # 줄 처음에서 시작: 바로 앞 줄이 문장 끝인지
+        if pos > 0:  # 줄 중간에서 시작: 단어 시각으로 그 자리에서 정확히 자르므로 앞 말이 이어지는 경우만 경고
+            last_w = before.split()[-1] if before.split() else ""
+            # '그리고/근데' 같은 이음말 뒤에서 자르는 건 OK, '맛있는 / 빗'처럼 꾸밈말 뒤에서 자르면 경고
+            bad_start = bool(re.search(r"(는|은|을|를|의|한|던)$", last_w)) and last_w not in ("이거는", "저는", "제가는")
+        else:  # 줄 처음에서 시작: 바로 앞 줄이 문장 끝인지 (앞 줄이 '예', '어' 같은 추임새면 OK)
             prev = [x for x in subs.lines if x[1] <= lines[0][0] + 0.05]
             bad_start = bool(prev) and not raw.lstrip().startswith(">>") \
+                and ms.norm(prev[-1][2]) not in ms._FILLERS and len(ms.norm(prev[-1][2])) > 2 \
                 and not re.search(r"([.?!]|요|다|죠|더라고|거든|잖아|네|지)$", prev[-1][2].strip()) and lines[0][0] - prev[-1][1] < 0.3
         if bad_start:
             warn.append(f"[{ms.fmt(lines[0][0])}] 앞 문장 꼬리로 시작하는 것 같아요: '{raw.strip()[:24]}'")
