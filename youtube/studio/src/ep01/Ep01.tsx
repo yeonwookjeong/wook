@@ -1,7 +1,6 @@
-import { AbsoluteFill, Audio, Easing, Img, interpolate, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, Audio, Easing, getStaticFiles, Img, interpolate, Sequence, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { loadFont as loadNotoSans } from "@remotion/google-fonts/NotoSansKR";
 import { loadFont as loadHahmlet } from "@remotion/google-fonts/Hahmlet";
-import { MapOpening, MAP_OPENING_FRAMES } from "../components/MapOpening";
 import vo from "./vo.json";
 
 const { fontFamily: sans } = loadNotoSans();
@@ -19,6 +18,13 @@ const F_BTN = { x: 619, y: 805 };
 const DEATH = { x: 540, y: 760 };
 const H_F = { x: 672, y: 809 }; // 그림 H에서 손가락이 누르는 F 버튼
 const G_GAP = { x: 861, y: 967 }; // 그림 G 안내판에서 3과 5 사이
+const I_F = { x: 540, y: 700 }; // 그림 I 층수 표시의 F (새 그림 받으면 다시 잰다)
+const A_TOP = { x: 619, y: 420 }; // 그림 A 버튼판 위쪽(1번 버튼 근처, 새 그림 받으면 다시 잰다)
+
+// 아직 없는 그림은 비슷한 그림으로 대신 보여 준다 (미리보기용). 파일이 생기면 자동으로 새 그림을 쓴다.
+const FALLBACK: Record<string, string> = { I: "A", J: "G", K: "H" };
+const HAVE = new Set(getStaticFiles().map((f) => f.name));
+const imgSrc = (img: string) => staticFile(`ep01/${HAVE.has(`ep01/${img}.webp`) ? img : FALLBACK[img] ?? img}.webp`);
 
 type Cam = { s0: number; s1: number; ox: number; oy: number; dx?: number; dy?: number; snap?: boolean };
 type Cap = { text: string; hl?: boolean }[];
@@ -31,24 +37,32 @@ type Shot = {
   fadeIn?: boolean;
   shake?: boolean;
   overlay?: "sa" | "circleF" | "fIs4" | "room304" | "noFour" | "endcard" | "question";
+  at?: { x: number; y: number }; // circleF·fIs4 동그라미 중심 (기본: 그림 A의 F 버튼)
   sent: number; // 내레이션 문장 번호 (youtube/tts/make_ep01.py 의 SENTENCES)
   sfx?: { name: string; at?: number; vol?: number };
   sfx2?: { name: string; at?: number; vol?: number };
 };
 
 const SHOTS: Shot[] = [
-  { img: "A", sec: 1.4, cam: { s0: 1.6, s1: 1.0, ox: 540, oy: 960, snap: true }, caps: [[{ text: "this elevator" }], [{ text: "is hiding" }, { text: "a floor.", hl: true }]], sent: 1, sfx: { name: "ding", at: 0.1, vol: 0.35 } },
-  { img: "A", sec: 2.2, cam: { s0: 1.0, s1: 2.2, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "Look:" }], [{ text: "1, 2, 3…" }], [{ text: "F.", hl: true }], [{ text: "Where's" }, { text: "4?", hl: true }]], overlay: "question", sent: 2, sfx: { name: "pop", at: 1.6, vol: 0.35 } },
-  { img: "C", sec: 1.1, cam: { s0: 1.0, s1: 1.12, ox: 540, oy: 760 }, caps: [[{ text: "In Korean," }], [{ text: "four", hl: true }]], sent: 3, sfx: { name: "buzz", vol: 0.2 } },
-  { img: "C", sec: 1.3, cam: { s0: 1.12, s1: 1.18, ox: 540, oy: 760 }, caps: [[{ text: "is read" }], [{ text: '"sa,"', hl: true }]], dark: 0.35, overlay: "sa", sent: 3, sfx: { name: "pop", at: 0.1, vol: 0.4 } },
+  // 0초부터 주제: 지도 오프닝 없이 버튼판에서 시작 (2026-11-06, 레퍼런스 14편 모두 0초에 주제)
+  { img: "A", sec: 0.7, cam: { s0: 1.6, s1: 1.15, ox: 540, oy: 960, snap: true }, caps: [[{ text: "In" }, { text: "Korea,", hl: true }]], sent: 0, sfx: { name: "ding", at: 0.05, vol: 0.35 } },
+  { img: "A", sec: 1.9, cam: { s0: 1.15, s1: 1.0, ox: 540, oy: 960 }, caps: [[{ text: "this elevator" }], [{ text: "is hiding" }, { text: "a floor.", hl: true }]], sent: 1 },
+  { img: "A", sec: 1.2, cam: { s0: 1.9, s1: 1.9, ox: A_TOP.x, oy: A_TOP.y, dy: (F_BTN.y - A_TOP.y) * -1.9 }, caps: [[{ text: "Look:" }], [{ text: "1, 2, 3…" }]], sent: 2 },
+  { img: "A", sec: 1.1, cam: { s0: 1.9, s1: 2.4, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "F.", hl: true }], [{ text: "Where's" }, { text: "4?", hl: true }]], overlay: "question", sent: 2, sfx: { name: "pop", at: 0.5, vol: 0.35 } },
+  { img: "C", sec: 1.2, cam: { s0: 1.0, s1: 1.12, ox: 540, oy: 760 }, caps: [[{ text: "In Korean," }], [{ text: "four", hl: true }]], sent: 3, sfx: { name: "buzz", vol: 0.2 } },
+  { img: "C", sec: 1.2, cam: { s0: 1.12, s1: 1.18, ox: 540, oy: 760 }, caps: [[{ text: "is read" }], [{ text: '"sa,"', hl: true }]], dark: 0.35, overlay: "sa", sent: 3, sfx: { name: "pop", at: 0.1, vol: 0.4 } },
   { img: "D", sec: 1.1, cam: { s0: 1.0, s1: 1.08, ox: DEATH.x, oy: DEATH.y }, caps: [[{ text: "the same" }], [{ text: "sound as" }]], fadeIn: true, sent: 3 },
-  { img: "D", sec: 1.5, cam: { s0: 1.5, s1: 1.65, ox: DEATH.x, oy: DEATH.y, snap: true }, caps: [[{ text: "the Chinese" }], [{ text: "character" }], [{ text: "for" }, { text: "death.", hl: true }]], shake: true, sent: 3, sfx: { name: "thud", vol: 0.5 } },
-  { img: "E", sec: 1.3, cam: { s0: 1.3, s1: 1.3, ox: 540, oy: 960, dy: -260 }, caps: [[{ text: "So many" }], [{ text: "buildings" }]], sent: 4 },
-  { img: "A", sec: 1.4, cam: { s0: 2.2, s1: 2.3, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "swap it" }], [{ text: "for an" }, { text: "F,", hl: true }], [{ text: 'for "four."' }]], overlay: "circleF", sent: 4, sfx: { name: "pop", at: 0.07, vol: 0.4 } },
-  { img: "G", sec: 2.2, cam: { s0: 1.0, s1: 1.15, ox: G_GAP.x, oy: G_GAP.y }, caps: [[{ text: "Hospitals", hl: true }], [{ text: "go further:" }], [{ text: "many skip" }], [{ text: "the 4th floor" }], [{ text: "entirely." }]], overlay: "noFour", sent: 5, sfx: { name: "pop", at: 0.9, vol: 0.35 } },
-  { img: "H", sec: 1.2, cam: { s0: 1.0, s1: 1.3, ox: H_F.x, oy: H_F.y }, caps: [[{ text: "But" }, { text: "here's the thing:", hl: true }]], sent: 6, sfx: { name: "ding", at: 0.3, vol: 0.25 } },
-  { img: "A", sec: 2.0, cam: { s0: 2.0, s1: 2.2, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "the F" }], [{ text: "is still" }], [{ text: "the 4th floor.", hl: true }], [{ text: "Nobody" }, { text: "just says it." }]], overlay: "fIs4", sent: 6, sfx: { name: "pop", at: 0.6, vol: 0.35 } },
-  { img: "A", sec: 2.0, cam: { s0: 1.3, s1: 1.9, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "Next time" }], [{ text: "you see an" }, { text: "F,", hl: true }], [{ text: "you'll know" }], [{ text: "what it's" }, { text: "hiding.", hl: true }]], dark: 0.45, sent: 7, sfx: { name: "thud", at: 1.7, vol: 0.25 } },
+  { img: "D", sec: 1.4, cam: { s0: 1.5, s1: 1.65, ox: DEATH.x, oy: DEATH.y, snap: true }, caps: [[{ text: "the Chinese" }], [{ text: "character" }], [{ text: "for" }, { text: "death.", hl: true }]], shake: true, sent: 3, sfx: { name: "thud", vol: 0.5 } },
+  { img: "E", sec: 1.2, cam: { s0: 1.3, s1: 1.3, ox: 540, oy: 960, dy: -260 }, caps: [[{ text: "So many" }], [{ text: "buildings" }]], sent: 4 },
+  { img: "I", sec: 1.4, cam: { s0: 1.2, s1: 1.3, ox: I_F.x, oy: I_F.y }, caps: [[{ text: "swap it" }], [{ text: "for an" }, { text: "F,", hl: true }], [{ text: 'for "four."' }]], overlay: "circleF", at: I_F, sent: 4, sfx: { name: "pop", at: 0.1, vol: 0.4 } },
+  { img: "J", sec: 1.4, cam: { s0: 1.0, s1: 1.1, ox: 540, oy: 900 }, caps: [[{ text: "Hospitals", hl: true }], [{ text: "go further:" }]], sent: 5 },
+  { img: "G", sec: 2.1, cam: { s0: 1.0, s1: 1.15, ox: G_GAP.x, oy: G_GAP.y }, caps: [[{ text: "many skip" }], [{ text: "the 4th floor" }], [{ text: "entirely." }]], overlay: "noFour", sent: 5, sfx: { name: "pop", at: 0.3, vol: 0.35 } },
+  { img: "H", sec: 1.6, cam: { s0: 1.0, s1: 1.3, ox: H_F.x, oy: H_F.y }, caps: [[{ text: "But" }], [{ text: "here's the thing:", hl: true }]], sent: 6, sfx: { name: "ding", at: 0.3, vol: 0.25 } },
+  { img: "A", sec: 1.2, cam: { s0: 2.0, s1: 2.2, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "the F is still" }], [{ text: "the 4th floor.", hl: true }]], overlay: "fIs4", sent: 6, sfx: { name: "pop", at: 0.2, vol: 0.35 } },
+  { img: "K", sec: 1.3, cam: { s0: 1.0, s1: 1.1, ox: 540, oy: 900 }, caps: [[{ text: "Nobody" }], [{ text: "just says it." }]], sent: 6 },
+  { img: "A", sec: 1.2, cam: { s0: 2.2, s1: 1.8, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "Next time" }], [{ text: "you see an" }, { text: "F,", hl: true }]], sent: 7 },
+  // 마지막 = 2번 컷과 같은 구도(어둡게) → 반복 재생 때 첫 장면으로 자연스럽게 이어진다
+  { img: "A", sec: 1.3, cam: { s0: 1.05, s1: 1.0, ox: 540, oy: 960 }, caps: [[{ text: "you'll know" }], [{ text: "what it's" }, { text: "hiding.", hl: true }]], dark: 0.45, sent: 7, sfx: { name: "thud", at: 1.0, vol: 0.25 } },
 ];
 
 // 음성이 있으면 문장 길이를 그 문장에 속한 컷들에 글자 수 비율로 나눈다. 없으면 임시 길이(sec).
@@ -67,7 +81,7 @@ const shotSec = (i: number): number => {
 };
 const SHOT_FRAMES = SHOTS.map((_, i) => Math.round(shotSec(i) * FPS));
 
-export const EP01_FRAMES = MAP_OPENING_FRAMES + SHOT_FRAMES.reduce((a, f) => a + f, 0);
+export const EP01_FRAMES = SHOT_FRAMES.reduce((a, f) => a + f, 0);
 
 // 자막: 흰 굵은 글씨 + 검은 테두리, 화면 가운데보다 조금 아래, 핵심만 노란색
 const Caption: React.FC<{ cap: Cap }> = ({ cap }) => {
@@ -97,7 +111,7 @@ const Caption: React.FC<{ cap: Cap }> = ({ cap }) => {
   );
 };
 
-const Overlay: React.FC<{ kind: Shot["overlay"]; dur: number }> = ({ kind, dur }) => {
+const Overlay: React.FC<{ kind: Shot["overlay"]; dur: number; at?: { x: number; y: number } }> = ({ kind, dur, at }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const pop = spring({ frame: frame - 4, fps, config: { damping: 9, stiffness: 220 } });
@@ -114,13 +128,14 @@ const Overlay: React.FC<{ kind: Shot["overlay"]; dur: number }> = ({ kind, dur }
       </div>
     );
   if (kind === "circleF" || kind === "fIs4") {
+    const P = at ?? F_BTN;
     // 확대된 화면 기준 F 버튼 위치는 화면 중앙 근처
     const r = 195;
     const draw = interpolate(frame, [2, 16], [0, 1], clamp);
     return (
       <svg width={1080} height={1920} style={{ position: "absolute", inset: 0 }}>
-        <circle cx={F_BTN.x} cy={F_BTN.y} r={r} fill="none" stroke="#ff2a2a" strokeWidth={18} strokeLinecap="round" pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - draw} transform={`rotate(-90 ${F_BTN.x} ${F_BTN.y})`} />
-        <text x={F_BTN.x} y={F_BTN.y + r + 120} textAnchor="middle" fontFamily={sans} fontWeight={900} fontSize={80} fill={YELLOW} stroke="#000" strokeWidth={12} paintOrder="stroke" opacity={draw}>
+        <circle cx={P.x} cy={P.y} r={r} fill="none" stroke="#ff2a2a" strokeWidth={18} strokeLinecap="round" pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - draw} transform={`rotate(-90 ${P.x} ${P.y})`} />
+        <text x={P.x} y={P.y + r + 120} textAnchor="middle" fontFamily={sans} fontWeight={900} fontSize={80} fill={YELLOW} stroke="#000" strokeWidth={12} paintOrder="stroke" opacity={draw}>
           {kind === "fIs4" ? "F = 4th floor" : "F = Four"}
         </text>
       </svg>
@@ -177,7 +192,7 @@ const ShotView: React.FC<{ shot: Shot; dur: number }> = ({ shot, dur }) => {
       {shot.img && (
         <AbsoluteFill style={{ opacity: fade }}>
           <Img
-            src={staticFile(`ep01/${shot.img}.webp`)}
+            src={imgSrc(shot.img)}
             style={{
               width: "100%",
               height: "100%",
@@ -189,7 +204,7 @@ const ShotView: React.FC<{ shot: Shot; dur: number }> = ({ shot, dur }) => {
         </AbsoluteFill>
       )}
       {shot.dark ? <AbsoluteFill style={{ background: `radial-gradient(circle at 50% 45%, rgba(0,0,0,0) 30%, rgba(0,0,0,${shot.dark}) 100%)` }} /> : null}
-      {shot.overlay && <Overlay kind={shot.overlay} dur={dur} />}
+      {shot.overlay && <Overlay kind={shot.overlay} dur={dur} at={shot.at} />}
       {shot.caps.map((c, i) => (
         <Sequence key={i} from={Math.round(i * per)} durationInFrames={Math.round(per)} layout="none">
           <Caption cap={c} />
@@ -200,18 +215,10 @@ const ShotView: React.FC<{ shot: Shot; dur: number }> = ({ shot, dur }) => {
 };
 
 export const Ep01: React.FC = () => {
-  const starts = SHOT_FRAMES.map((_, i) => MAP_OPENING_FRAMES + SHOT_FRAMES.slice(0, i).reduce((a, f) => a + f, 0));
+  const starts = SHOT_FRAMES.map((_, i) => SHOT_FRAMES.slice(0, i).reduce((a, f) => a + f, 0));
   const firstOfSent = (id: number) => SHOTS.findIndex((x) => x.sent === id);
   return (
     <AbsoluteFill style={{ backgroundColor: "#000" }}>
-      {/* 시그니처 오프닝: 지도에서 서울로 쑥 */}
-      <Sequence durationInFrames={MAP_OPENING_FRAMES}>
-        <MapOpening variant="modern" />
-        <Sequence from={6} durationInFrames={32} layout="none">
-          <Caption cap={[{ text: "In" }, { text: "Korea,", hl: true }]} />
-        </Sequence>
-      </Sequence>
-
       {SHOTS.map((shot, i) => (
         <Sequence key={i} from={starts[i]} durationInFrames={SHOT_FRAMES[i]}>
           <ShotView shot={shot} dur={SHOT_FRAMES[i]} />
@@ -225,9 +232,9 @@ export const Ep01: React.FC = () => {
         </Sequence>
       ))}
 
-      {/* 내레이션: 0번 문장은 지도 위, 나머지는 그 문장의 첫 컷에서 시작 */}
+      {/* 내레이션: 각 문장은 그 문장의 첫 컷에서 시작 (0번도 0초부터) */}
       {VO.sentences.map((v) => (
-        <Sequence key={v.id} from={v.id === 0 ? 6 : starts[firstOfSent(v.id)]} layout="none">
+        <Sequence key={v.id} from={starts[firstOfSent(v.id)]} layout="none">
           <Audio src={staticFile(v.file)} />
         </Sequence>
       ))}
