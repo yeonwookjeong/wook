@@ -106,6 +106,8 @@ def review(rpath: Path, subs: "ms.Subs") -> tuple[list, list]:
             tail = last.split(">>")[-1].strip()
             if ">>" in lines[-1][2] and lines[-1][2].strip().index(">>") > 0:
                 warn.append(f"마지막 줄에 다른 사람 말이 섞여 있어요: '{last[:30]}'")
+            if re.search(r"단점|불편|별로|아쉬|안 좋|싫더라", " ".join(_fix(x[2], fixes) for x in lines[-2:])):
+                warn.append("마지막에 단점·부정적인 말이 들어가요 (사고 싶게 끝나야 해요)")
             if not tail or norm_start(tail) in ms._FILLERS:
                 warn.append("추임새로 끝나요")
             elif DANGLE.search(tail) or not CONCLUDE.search(tail):
@@ -162,7 +164,7 @@ def main():
             sheet(mp4)
         return
     paths = [Path(p) for p in a.recipes] or sorted((HERE / "recipes").glob("*.json"))
-    report, bad = ["# 검수 결과\n"], 0
+    report, bad, failed = ["# 검수 결과\n"], 0, []
     for rp in paths:
         recipe = json.loads(rp.read_text(encoding="utf-8"))
         try:
@@ -171,6 +173,8 @@ def main():
             warn, script = [f"대본 확인 실패: {e}"], []
         mark = "✅" if not warn else "⚠️"
         bad += bool(warn)
+        if warn:
+            failed.append(rp.stem)
         print(f"\n{mark} {rp.stem}  {recipe.get('link_text', '')}")
         for w_ in warn:
             print(f"   ⚠️ {w_}")
@@ -178,6 +182,8 @@ def main():
         report += [f"- ⚠️ {w_}" for w_ in warn] + [""] + [f"    {s}" for s in script] + [""]
     ms.OUT.mkdir(exist_ok=True)
     (ms.OUT / "검수.md").write_text("\n".join(report), encoding="utf-8")
+    # 검수에 걸린 레시피 목록 (plan.py --make는 이것들은 만들지 않음)
+    (ms.OUT / "검수_실패.txt").write_text("\n".join(failed), encoding="utf-8")
     print(f"\n{'✅ 전부 통과' if not bad else f'⚠️ {bad}개 확인 필요'} → {ms.OUT / '검수.md'}")
 
 

@@ -291,7 +291,11 @@ class Timeline:
 
 class Subs:
     def __init__(self, lines, words=None):
-        self.lines = sorted(lines)
+        lines = sorted(lines)
+        # 유튜브 자동자막은 줄이 겹쳐서(앞 줄이 다음 줄이 나온 뒤에도 몇 초 더 떠 있음) 끝 시각이 늦게 잡힘.
+        # 그대로 쓰면 '여기서 끝'이라고 정한 문장 뒤의 말까지 딸려 들어가서, 다음 줄 시작에서 끊어줌.
+        self.lines = [(s, min(e, lines[k + 1][0]) if k + 1 < len(lines) and lines[k + 1][0] > s else e, t)
+                      for k, (s, e, t) in enumerate(lines)]
         self.by_line = Timeline(self.lines)
         self.by_word = Timeline(words) if words else None
 

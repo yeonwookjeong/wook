@@ -126,7 +126,8 @@ def main():
     ap.add_argument("--gap", type=int, default=2, help="같은 원본 영상 권장 간격(일) (기본 2)")
     ap.add_argument("--strict", action="store_true", help="간격을 못 지키면 그날은 비우기 (기본: 빈 날 없이 채움)")
     ap.add_argument("--times", help="업로드 시각들, 쉼표 구분 (기본: 1개면 19:30, 2개면 12:30,19:30)")
-    ap.add_argument("--make", action="store_true", help="아직 없는 영상을 먼저 만들기")
+    ap.add_argument("--make", action="store_true", help="아직 없는 영상을 먼저 만들기 (검수 통과한 것만)")
+    ap.add_argument("--force", action="store_true", help="검수에 걸려도 만들기")
     ap.add_argument("--mix", action="store_true", help="링크 번호 대신 출연자를 섞는 순서로 (예전 방식)")
     a = ap.parse_args()
 
@@ -136,7 +137,15 @@ def main():
     if a.make:
         # 만들기 전에 대본 자동 검수 (흐지부지 끝남·자막 빔·오타 의심 등) → out/검수.md
         subprocess.run([sys.executable, str(HERE / "review.py")] + [str(x["path"]) for x in items])
-        make_missing(items)
+        failed_f = OUT / "검수_실패.txt"
+        failed = set(failed_f.read_text(encoding="utf-8").split()) if failed_f.exists() else set()
+        if failed and not a.force:  # 검수에 걸린 건 안 만듦 → 정상인 것만 쌓임
+            print(f"\n⛔ 검수에 걸린 {len(failed)}개는 만들지 않아요: {', '.join(sorted(failed))}"
+                  "\n   (out/검수.md 확인. 그래도 만들려면 --force)")
+            for x in items:
+                if x["stem"] in failed:
+                    (OUT / f"쇼츠_{x['stem']}.mp4").unlink(missing_ok=True)
+        make_missing([x for x in items if a.force or x["stem"] not in failed])
         # 만든 뒤 영상마다 1초 간격 장면 사진 → out/검수_*.jpg (자막·끝부분 훑어보기)
         print("\n🖼️ 검수용 장면 사진 만드는 중…")
         subprocess.run([sys.executable, str(HERE / "review.py"), "--sheet"])
