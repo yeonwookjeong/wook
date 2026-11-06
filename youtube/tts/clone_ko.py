@@ -30,6 +30,32 @@ def find_ref() -> Path:
     sys.exit("녹음이 없습니다: youtube/tts/ko/ref.m4a (10~30초) 를 먼저 넣어 주세요.")
 
 
+def fix_watermarker() -> None:
+    """Chatterbox의 워터마크 부품(perth)이 불러와지지 않으면 원인을 보여 주고, 워터마크 없이 진행한다.
+
+    perth.PerthImplicitWatermarker 가 None 이면 모델 생성이 'NoneType is not callable'로 멈춘다(맥에서 알려진 문제).
+    이 경우 워터마크만 빠지고 음성은 똑같이 만들어진다. YouTube 업로드 때 '합성 콘텐츠' 표시는 그대로 한다.
+    """
+    import perth
+
+    if getattr(perth, "PerthImplicitWatermarker", None) is not None:
+        return
+    try:  # 진짜 원인 한 줄 보여 주기
+        from perth.perth_net.perth_net_implicit.perth_watermarker import PerthImplicitWatermarker  # noqa: F401
+    except Exception as e:
+        print(f"(워터마크 부품을 불러오지 못함: {type(e).__name__}: {e})")
+
+    class _NoWatermark:
+        def apply_watermark(self, wav, sample_rate=None, **_):
+            return wav
+
+        def get_watermark(self, wav, sample_rate=None, **_):
+            return 0.0
+
+    perth.PerthImplicitWatermarker = getattr(perth, "DummyWatermarker", None) or _NoWatermark
+    print("(워터마크 없이 진행합니다. 음성 품질에는 영향 없음)")
+
+
 def main() -> None:
     if len(sys.argv) < 3:
         sys.exit('사용: python clone_ko.py "읽을 문장" 저장이름 [언어코드=ko]')
@@ -44,6 +70,7 @@ def main() -> None:
     except ImportError as e:
         sys.exit(f"설치가 덜 됐습니다 ({e}). .venv-clone 을 켜고 pip install chatterbox-tts")
 
+    fix_watermarker()
     device = "mps" if torch.backends.mps.is_available() else "cpu"
     with tempfile.TemporaryDirectory() as td:
         ref = Path(td) / "ref.wav"  # 어떤 형식이든 모노 wav로 바꿔서 넘긴다
