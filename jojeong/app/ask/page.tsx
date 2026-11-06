@@ -187,12 +187,7 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
         </Floor>
 
         <Floor className="border-t border-[#e2bc68]/15 pb-10">
-          <Eyebrow hanja="問紙">질문</Eyebrow>
-          <p className="mt-1 text-center text-[12px] text-hanji/60">답서 한 통에 질문 하나가 쓰여요</p>
-          <div className="mt-6">
-            <CreditSlips buy={false} />
-          </div>
-          <Link href={loginHref} className={`mt-6 ${GOLD_BUTTON}`}>
+          <Link href={loginHref} className={GOLD_BUTTON}>
             {login}
           </Link>
         </Floor>

@@ -238,7 +238,7 @@ async function ShelfA({ owned }: { owned: ReturnType<typeof ownedByProduct> }) {
             <span className="font-myeongjo text-[12px] font-bold tracking-[0.3em] text-[#e2bc68]">聽心堂 · 청심당</span>
             <b className="mt-1 block font-myeongjo text-[18px]">정 훈도에게 묻기</b>
             <span className="mt-0.5 block text-[12.5px] text-hanji/75">보고서는 사주를 읽고, 사랑방은 그대의 고민을 읽어요</span>
-            <span className="mt-2 block text-right font-myeongjo font-extrabold text-[#e2bc68]">질문 990원부터 →</span>
+            <span className="mt-2 block text-right font-myeongjo font-extrabold text-[#e2bc68]">고민 묻기 →</span>
           </Link>
           <p className="mt-4 text-[13px] font-bold text-ink-soft">이런 고민, 한 통으로 답해 드려요</p>
           <WorryCards />
