@@ -2,7 +2,7 @@
 id: toryvel-shorts-01-tokyo-tower
 channel: toryvel
 format: shorts
-status: draft-v2
+status: draft-v2 (가설 기준으로 고친 초안)
 title: 도쿄타워 윗부분은 원래 전차였다
 length_sec: 40
 ---

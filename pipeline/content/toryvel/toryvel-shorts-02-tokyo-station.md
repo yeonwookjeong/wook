@@ -2,7 +2,7 @@
 id: toryvel-shorts-02-tokyo-station
 channel: toryvel
 format: shorts
-status: draft-v2
+status: draft-v2 (가설 기준으로 고친 초안)
 title: 도쿄역은 하늘을 팔아서 다시 태어났다
 length_sec: 40
 ---
