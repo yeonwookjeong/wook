@@ -10,9 +10,9 @@
   - 자동자막 오타 의심 (mm 단위, 같은 말 반복, 숫자+한글 붙음 등)
 
 사용
-  python3 review.py                 # recipes/*.json 전부 → out/검수.md
+  python3 review.py                 # recipes/*.json 전부 → out/검수/검수결과.md
   python3 review.py recipes/X.json  # 하나만
-  python3 review.py --sheet         # 이미 만든 영상(out/쇼츠_*.mp4)마다 1초 간격 장면 사진 → out/검수_*.jpg
+  python3 review.py --sheet         # 이미 만든 영상(out/쇼츠_*.mp4)마다 1초 간격 장면 사진 → out/검수/장면_*.jpg
 """
 import argparse
 import json
@@ -149,7 +149,8 @@ def sheet(mp4: Path):
         x, y = (i % cols) * w, (i // cols) * (h + 22)
         out.paste(Image.open(f), (x, y + 22))
         d.text((x + 6, y + 4), f"{i}s", fill=(0, 0, 0))
-    dst = ms.OUT / f"검수_{mp4.stem.replace('쇼츠_', '')}.jpg"
+    (ms.OUT / "검수").mkdir(parents=True, exist_ok=True)
+    dst = ms.OUT / "검수" / f"장면_{mp4.stem.replace('쇼츠_', '')}.jpg"
     out.save(dst, quality=85)
     for f in frames:
         f.unlink()
@@ -184,11 +185,11 @@ def main():
             print(f"   {'' if w_.startswith('💡') else '⛔ '}{w_}")
         report.append(f"## {mark} {rp.stem} ({recipe.get('link_text', '')})\n")
         report += [f"- {'' if w_.startswith('💡') else '⛔ '}{w_}" for w_ in warn] + [""] + [f"    {s}" for s in script] + [""]
-    ms.OUT.mkdir(exist_ok=True)
-    (ms.OUT / "검수.md").write_text("\n".join(report), encoding="utf-8")
+    (ms.OUT / "검수").mkdir(parents=True, exist_ok=True)
+    (ms.OUT / "검수" / "검수결과.md").write_text("\n".join(report), encoding="utf-8")
     # 검수에 걸린 레시피 목록 (plan.py --make는 이것들은 만들지 않음)
-    (ms.OUT / "검수_실패.txt").write_text("\n".join(failed), encoding="utf-8")
-    print(f"\n{'✅ 전부 통과' if not bad else f'⛔ {bad}개는 고쳐야 해요'} → {ms.OUT / '검수.md'}")
+    (ms.OUT / "검수" / "실패목록.txt").write_text("\n".join(failed), encoding="utf-8")
+    print(f"\n{'✅ 전부 통과' if not bad else f'⛔ {bad}개는 고쳐야 해요'} → {ms.OUT / '검수' / '검수결과.md'}")
 
 
 if __name__ == "__main__":

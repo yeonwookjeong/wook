@@ -209,7 +209,7 @@ python3 plan.py --per-day 2           # 하루 2개 (12:30, 19:30)
 ## 검수 (review.py)
 
 ```bash
-python3 review.py            # 대본 자동 검수 → out/검수.md (흐지부지 끝·자막 빔·오타 의심·TTS 개수·길이)
-python3 review.py --sheet    # 만든 영상마다 1초 간격 장면 사진 → out/검수_*.jpg
+python3 review.py            # 대본 자동 검수 → out/검수/검수결과.md (흐지부지 끝·자막 빔·오타 의심·TTS 개수·길이)
+python3 review.py --sheet    # 만든 영상마다 1초 간격 장면 사진 → out/검수/장면_*.jpg
 ```
 `python3 plan.py --make` 를 돌리면 만들기 전 검수 + 만든 뒤 장면 사진까지 자동으로 해요.

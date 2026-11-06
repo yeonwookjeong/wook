@@ -135,18 +135,18 @@ def main():
     if not items:
         sys.exit("recipes 폴더에 레시피가 없어요.")
     if a.make:
-        # 만들기 전에 대본 자동 검수 (흐지부지 끝남·자막 빔·오타 의심 등) → out/검수.md
+        # 만들기 전에 대본 자동 검수 (흐지부지 끝남·자막 빔·오타 의심 등) → out/검수/검수결과.md
         subprocess.run([sys.executable, str(HERE / "review.py")] + [str(x["path"]) for x in items])
-        failed_f = OUT / "검수_실패.txt"
+        failed_f = OUT / "검수" / "실패목록.txt"
         failed = set(failed_f.read_text(encoding="utf-8").split()) if failed_f.exists() else set()
         if failed and not a.force:  # 검수에 걸린 건 안 만듦 → 정상인 것만 쌓임
             print(f"\n⛔ 검수에 걸린 {len(failed)}개는 만들지 않아요: {', '.join(sorted(failed))}"
-                  "\n   (out/검수.md 확인. 그래도 만들려면 --force)")
+                  "\n   (out/검수/검수결과.md 확인. 그래도 만들려면 --force)")
             for x in items:
                 if x["stem"] in failed:
                     (OUT / f"쇼츠_{x['stem']}.mp4").unlink(missing_ok=True)
         make_missing([x for x in items if a.force or x["stem"] not in failed])
-        # 만든 뒤 영상마다 1초 간격 장면 사진 → out/검수_*.jpg (자막·끝부분 훑어보기)
+        # 만든 뒤 영상마다 1초 간격 장면 사진 → out/검수/장면_*.jpg (자막·끝부분 훑어보기)
         print("\n🖼️ 검수용 장면 사진 만드는 중…")
         subprocess.run([sys.executable, str(HERE / "review.py"), "--sheet"])
 
