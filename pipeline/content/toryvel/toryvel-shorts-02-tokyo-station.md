@@ -1,5 +1,5 @@
 ---
-id: toryvel-shorts-01-tokyo-station
+id: toryvel-shorts-02-tokyo-station
 channel: toryvel
 format: shorts
 status: draft
@@ -7,7 +7,7 @@ title: 도쿄역은 67년 동안 3층이 없었다
 length_sec: 75
 ---
 
-# 토리블 쇼츠 #1 · 도쿄역
+# 토리블 쇼츠 #2 · 도쿄역
 
 화면 표기: [2.5D] 실사 사진 깊이 효과 / [지도] 라벨·화살표 / [플로우] 구글 플로우 생성 / [카드] 키워드 카드
 
