@@ -5,6 +5,7 @@
 ## 채널 콘셉트
 - **채널 이름 확정(2026-11-03)**: **Konorama** (Korea의 Ko + panorama). 영어 @TheKonorama, 스페인어 Konorama Español @TheKonorama_es (2026-11-05 변경: @konorama는 남이 사용 중, ".es"는 핸들로 거부. Kurzgesagt @kurzgesagt_es 방식으로 기본 핸들+_es. 둘 다 joyhunt.official 소유 브랜드 계정). 소개: EN "Konorama: a panorama of Korea, from old Korea to today's Korea." / ES "Konorama: un panorama de Corea, de la Corea antigua a la Corea de hoy."
 - **계정 구조(2026-11-05)**: 소유 계정 = 사업자 이름 조이헌트 Gmail(후보 joyhunt.official / joyhuntstudio / joyhunt.kr), 2단계 인증. Konorama(영어)·Konorama Español은 그 아래 브랜드 계정 채널. 대표님 개인 계정을 소유자로 추가. 공개 문의 메일은 필요하면 konoramatv@gmail.com 별도. 첫 영상 전 2~3일 채널별로 시청·좋아요·진짜 대화형 댓글(홍보·링크·복붙 금지), 거주 국가는 대한민국 사실대로, VPN 금지.
+- **채널 설명(2026-11-06)**: 첫 줄 = 배너 문구 "The stories behind Korea, old and new. 🇰🇷" + 다룰 질문 예시(4층, 빨간 글씨 이름) + "Each short takes one word, object or custom and shows how old Korea shaped the Korea you see today." + "Konorama = Korea + panorama." ("a panorama of Korea"만으로는 내용이 안 보여서 바꿈)
 - **이름·소개에 쓰지 않을 단어(2026-11-03, 대표님 지시)**: 조선(Joseon), K-팝(K-pop). 옛 한국은 "old Korea"처럼 풀어 쓴다. (네온은 금지가 아님: 한국 대표성에 대한 질문이었음)
 - 채널 이름(가안, 2026-10-28): **Neon Hanok**. 핸들 후보 @neonhanok(영어), @neonhanok.es(스페인어). YouTube는 비어 있음 확인, 인스타는 대표님 확인 필요.
 - 한 줄 소개(가안): EN "Why Koreans do what they do, from old Korea to today's Korea." / ES "¿Por qué los coreanos hacen lo que hacen? De la Corea antigua a la Corea de hoy."
