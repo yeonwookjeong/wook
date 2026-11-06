@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import WorryCards from "@/components/WorryCards";
 import { connection } from "next/server";
 import FreeTiles from "@/components/FreeTiles";
 import Keep from "@/components/Keep";
@@ -239,6 +240,8 @@ async function ShelfA({ owned }: { owned: ReturnType<typeof ownedByProduct> }) {
             <span className="mt-0.5 block text-[12.5px] text-hanji/75">보고서는 사주를 읽고, 사랑방은 그대의 고민을 읽어요</span>
             <span className="mt-2 block text-right font-myeongjo font-extrabold text-[#e2bc68]">질문 990원부터 →</span>
           </Link>
+          <p className="mt-4 text-[13px] font-bold text-ink-soft">이런 고민, 한 통으로 답해 드려요</p>
+          <WorryCards />
         </section>
       )}
     </>
