@@ -6,7 +6,7 @@
   녹음 10~30초를 ko/ref.m4a 로 저장 (조용한 방, 자연스럽게)
 
 사용:
-  python clone_ko.py "사." sa            → ko/sa.wav
+  python clone_ko.py "사." sa            → ko/sa_1.wav, sa_2.wav, sa_3.wav (골라서 ko/sa.wav 로 복사)
   python clone_ko.py "한국에서는 숫자 4를 사라고 읽어요." test
   python clone_ko.py "Hola, soy de Corea." hola es   ← 세 번째 값은 언어 코드(기본 ko)
 
@@ -57,10 +57,17 @@ def fix_watermarker() -> None:
 
 
 def main() -> None:
-    if len(sys.argv) < 3:
-        sys.exit('사용: python clone_ko.py "읽을 문장" 저장이름 [언어코드=ko]')
-    text, name = sys.argv[1], sys.argv[2]
-    lang = sys.argv[3] if len(sys.argv) > 3 else "ko"
+    import argparse
+
+    ap = argparse.ArgumentParser(description="대표님 목소리 복제로 문장 읽기")
+    ap.add_argument("text", help="읽을 문장")
+    ap.add_argument("name", help="저장 이름 (ko/이름.wav)")
+    ap.add_argument("lang", nargs="?", default="ko", help="언어 코드 (ko, en, es …)")
+    ap.add_argument("--takes", type=int, default=3, help="여러 번 만들어 고르기 (기본 3)")
+    ap.add_argument("--exag", type=float, default=0.5, help="감정 세기 0.25~1.0 (기본 0.5, 높을수록 과장)")
+    ap.add_argument("--cfg", type=float, default=0.5, help="원본 목소리 따라가기 0~1 (기본 0.5, 낮추면 느긋하고 자연스러움)")
+    args = ap.parse_args()
+
     if not shutil.which("ffmpeg"):
         sys.exit("ffmpeg가 없습니다: brew install ffmpeg")
     try:
@@ -72,16 +79,25 @@ def main() -> None:
 
     fix_watermarker()
     device = "mps" if torch.backends.mps.is_available() else "cpu"
+    KO.mkdir(exist_ok=True)
     with tempfile.TemporaryDirectory() as td:
         ref = Path(td) / "ref.wav"  # 어떤 형식이든 모노 wav로 바꿔서 넘긴다
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(find_ref()), "-ac", "1", "-ar", "24000", str(ref)], check=True)
-        print(f"모델 불러오는 중 ({device}). 처음엔 내려받느라 몇 분 걸립니다...", flush=True)
+        ref_sec = ta.info(str(ref)).num_frames / 24000
+        print(f"원본 녹음 {ref_sec:.1f}초 (모델은 앞쪽 약 10초를 참고합니다)", flush=True)
+        print(f"모델 불러오는 중 ({device})...", flush=True)
         model = ChatterboxMultilingualTTS.from_pretrained(device=device)
-        wav = model.generate(text, language_id=lang, audio_prompt_path=str(ref))
-    KO.mkdir(exist_ok=True)
-    out = KO / f"{name}.wav"
-    ta.save(str(out), wav.cpu(), model.sr)
-    print(f"저장: {out}  ({wav.shape[-1] / model.sr:.2f}초)")
+        for k in range(1, args.takes + 1):
+            torch.manual_seed(k)
+            try:
+                wav = model.generate(args.text, language_id=args.lang, audio_prompt_path=str(ref),
+                                     exaggeration=args.exag, cfg_weight=args.cfg)
+            except TypeError:  # 옛 버전은 설정값을 받지 않는다
+                wav = model.generate(args.text, language_id=args.lang, audio_prompt_path=str(ref))
+            out = KO / f"{args.name}_{k}.wav"
+            ta.save(str(out), wav.cpu(), model.sr)
+            print(f"저장: {out}  ({wav.shape[-1] / model.sr:.2f}초)", flush=True)
+    print(f"들어 보고 마음에 드는 번호를 {args.name}.wav 로 복사하세요. 예: cp ko/{args.name}_2.wav ko/{args.name}.wav")
 
 
 if __name__ == "__main__":
