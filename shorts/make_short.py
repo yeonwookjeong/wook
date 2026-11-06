@@ -1553,6 +1553,20 @@ def media_items(p: dict, dur: float, src: Path, subs: "Subs", ff: str) -> list:
     return out
 
 
+def has_music(ff: str, src: Path, a: float, b: float) -> tuple[bool, float]:
+    """원본 구간에 배경음악이 깔려 있는지. 말과 말 사이 조용한 순간의 소리 크기를 봄:
+    음악이 없으면 그 순간이 거의 무음(-45dB 아래), 음악이 있으면 -38dB 위로 계속 소리가 남."""
+    r = subprocess.run([ff, "-hide_banner", "-ss", f"{a:.2f}", "-t", f"{max(b - a, 0.5):.2f}", "-i", str(src),
+                        "-vn", "-af", "aresample=8000,asetnsamples=800,astats=metadata=1:reset=1,"
+                        "ametadata=print:key=lavfi.astats.Overall.RMS_level:file=-", "-f", "null", "-"],
+                       capture_output=True, text=True, errors="replace")
+    vals = sorted(float(v) for v in re.findall(r"RMS_level=(-?[\d.]+)", r.stdout) if v not in ("-inf",))
+    if len(vals) < 5:
+        return False, -99.0
+    floor = vals[int(len(vals) * 0.12)]  # 조용한 순간(하위 12%)의 크기
+    return floor > -38.0, floor
+
+
 def speech_pieces(ff: str, src: Path, a: float, b: float, min_gap: float = 0.35, keep: float = 0.08) -> list:
     """[a,b] 안에서 말 사이 긴 쉼(min_gap초 이상)을 잘라낸 조각들. 너무 짧은 조각은 붙여둠."""
     p = subprocess.run([ff, "-hide_banner", "-ss", f"{a:.3f}", "-t", f"{b - a:.3f}", "-i", str(src), "-vn",
@@ -1868,12 +1882,20 @@ def main():
             items = media_items(p, dur, src, subs, ff)
             render(ff, items, dur, overlays, p.get("tts"), seg, (1.0, 1.05), crop, 0.0, blur)
             seg_files.append((seg, dur, "soft"))
-            is_tts.append(True)
+            is_tts.append(1.0)
             continue
 
         # 원본 구간: 쉼 잘라내기 + 말 빠르기 맞추기. 잘라낸 곳은 화면 크기를 번갈아 바꿔(줌 점프컷) 튀지 않게
         speed = speech_speed(subs, p["start"], p["end"]) if speed_cfg == "auto" else float(speed_cfg)
         pieces = speech_pieces(ff, src, p["start"], p["end"]) if tighten else [(p["start"], p["end"])]
+        # 우리 배경음악을 이 원본 구간에도 깔지: 원본에 음악이 있으면 두 곡이 섞이니 빼고, 없으면 낮게 깔기
+        if "bgm_under_clips" in recipe:
+            clip_bgm = float(recipe["bgm_under_clips"])
+        else:
+            music, floor = has_music(ff, src, p["start"], p["end"])
+            clip_bgm = 0.0 if music else float(recipe.get("bgm_quiet_clips", 0.55))
+            print(f"      🎵 원본 배경음악 {'있음 → 우리 음악 빼기' if music else '없음 → 우리 음악 낮게 깔기'}"
+                  f" (조용한 순간 {floor:.0f}dB)")
         if i == len(plan):  # 마지막 말 뒤에 여운을 조금 남겨서 뚝 끊기지 않게 (다음 말이 시작되기 전까지만)
             pb = pieces[-1][1]
             nxt = min([s0 for s0, _, _ in subs.lines if s0 > pb + 0.05] or [src_len])
@@ -1913,7 +1935,7 @@ def main():
             render(ff, [{"path": src, "t0": pa, "dur": pb - pa, "image": False, "source": True}], odur,
                    overlays, None, seg, (z, z + 0.02), crop, 0.0, blur, speed)
             seg_files.append((seg, odur, "soft" if k == 0 else "hard"))
-            is_tts.append(False)
+            is_tts.append(clip_bgm)
         if speed > 1.0 or len(pieces) > 1:
             print(f"      ✂️ 쉼 {len(pieces) - 1}곳 잘라냄, 말 속도 x{speed}")
         clip_no += len(pieces)
@@ -1925,7 +1947,7 @@ def main():
              transitions=recipe.get("transitions", True), sfx=recipe.get("sfx", False),
              bgm=pick_bgm(recipe, rpath.stem),
              bgm_volume=float(recipe.get("bgm_volume", 0.12)),
-             bgm_on=is_tts, bgm_clip_level=float(recipe.get("bgm_under_clips", 0.0)))
+             bgm_on=is_tts)
     caption = final.with_suffix(".txt")
     caption.write_text(upload_text(recipe), encoding="utf-8")
     print(f"\n✅ 완성: {final}\n   업로드용 문구: {caption}")
@@ -2050,8 +2072,9 @@ def assemble(ff: str, segs: list, layout: Path | None, tmp: Path, final: Path, t
         gain = ""
         if bgm_on and len(bgm_on) == n:
             starts = [0.0] + [off for _, off in joins]
-            wins = [f"clip((t-{a - 0.15:.3f})/0.3,0,1)*clip(({a + d + 0.5:.3f}-t)/0.6,0,1)"
-                    for (a, (_, d, _)), on in zip(zip(starts, segs), bgm_on) if on]
+            # 구간마다 음악 크기(TTS 1, 원본에 음악 없으면 0.55, 있으면 0) → 경계에서 부드럽게 바뀜
+            wins = [f"{float(on):.2f}*clip((t-{a - 0.15:.3f})/0.3,0,1)*clip(({a + d + 0.5:.3f}-t)/0.6,0,1)"
+                    for (a, (_, d, _)), on in zip(zip(starts, segs), bgm_on) if float(on) > 0]
             if wins:
                 expr = wins[0]
                 for w_ in wins[1:]:
