@@ -37,7 +37,8 @@ type Shot = {
   dark?: number;
   fadeIn?: boolean;
   shake?: boolean;
-  overlay?: "sa" | "circleF" | "fIs4" | "room304" | "noFour" | "endcard" | "question";
+  overlay?: "sa" | "circleF" | "fIs4" | "room304" | "noFour" | "endcard" | "question" | "show4" | "flip4" | "chain";
+  grade?: [number, number]; // 흑백·어둡게 정도(0~1) 컷 시작→끝 — 死 장면 분위기
   at?: { x: number; y: number }; // circleF·fIs4 동그라미 중심 (기본: 그림 A의 F 버튼)
   sent: number; // 내레이션 문장 번호 (youtube/tts/make_ep01.py 의 SENTENCES)
   sfx?: { name: string; at?: number; vol?: number };
@@ -46,24 +47,24 @@ type Shot = {
 
 const SHOTS: Shot[] = [
   // 0초부터 주제: 지도 오프닝 없이 버튼판에서 시작 (2026-11-06, 레퍼런스 14편 모두 0초에 주제)
-  { img: "A", sec: 0.7, cam: { s0: 1.6, s1: 1.15, ox: 540, oy: 960, snap: true }, caps: [[{ text: "In" }, { text: "Korea,", hl: true }]], sent: 0, sfx: { name: "ding", at: 0.05, vol: 0.35 } },
-  { img: "A", sec: 1.9, cam: { s0: 1.15, s1: 1.0, ox: 540, oy: 960 }, caps: [[{ text: "this elevator" }], [{ text: "is hiding" }, { text: "a floor.", hl: true }]], sent: 1 },
+  { img: "A", sec: 0.7, cam: { s0: 1.6, s1: 1.15, ox: F_BTN.x, oy: F_BTN.y, snap: true }, caps: [[{ text: "In" }, { text: "Korea,", hl: true }]], overlay: "show4", sent: 0, sfx: { name: "ding", at: 0.05, vol: 0.35 } },
+  { img: "A", sec: 1.9, cam: { s0: 1.15, s1: 1.0, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "this elevator" }], [{ text: "is hiding" }, { text: "a floor.", hl: true }]], overlay: "flip4", sent: 1, sfx: { name: "glitch", at: 0.15, vol: 0.25 } },
   { img: "A", sec: 1.2, cam: { s0: 1.4, s1: 1.4, ox: F_BTN.x, oy: F_BTN.y, panY: [(1 - 1.4) * (1920 - F_BTN.y), 0] }, caps: [[{ text: "Look:" }], [{ text: "1, 2, 3…" }]], sent: 2 },
   { img: "A", sec: 1.1, cam: { s0: 1.9, s1: 2.4, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "F.", hl: true }], [{ text: "Where's" }, { text: "4?", hl: true }]], overlay: "question", sent: 2, sfx: { name: "pop", at: 0.5, vol: 0.35 } },
   { img: "C", sec: 1.2, cam: { s0: 1.0, s1: 1.12, ox: C_4.x, oy: C_4.y }, caps: [[{ text: "In Korean," }], [{ text: "four", hl: true }]], sent: 3, sfx: { name: "buzz", vol: 0.2 } },
   { img: "C", sec: 1.2, cam: { s0: 1.12, s1: 1.18, ox: C_4.x, oy: C_4.y }, caps: [[{ text: "is read" }], [{ text: '"sa,"', hl: true }]], dark: 0.35, overlay: "sa", sent: 3, sfx: { name: "pop", at: 0.1, vol: 0.4 } },
-  { img: "D", sec: 1.1, cam: { s0: 1.0, s1: 1.08, ox: DEATH.x, oy: DEATH.y }, caps: [[{ text: "the same" }], [{ text: "sound as" }]], sent: 3 },
-  { img: "D", sec: 1.4, cam: { s0: 1.5, s1: 1.65, ox: DEATH.x, oy: DEATH.y, snap: true }, caps: [[{ text: "the Chinese" }], [{ text: "character" }], [{ text: "for" }, { text: "death.", hl: true }]], shake: true, sent: 3, sfx: { name: "thud", vol: 0.5 } },
+  { img: "D", sec: 1.1, cam: { s0: 1.0, s1: 1.08, ox: DEATH.x, oy: DEATH.y }, caps: [[{ text: "the same" }], [{ text: "sound as" }]], grade: [0.2, 0.7], sent: 3 },
+  { img: "D", sec: 1.4, cam: { s0: 1.5, s1: 1.65, ox: DEATH.x, oy: DEATH.y, snap: true }, caps: [[{ text: "the Chinese" }], [{ text: "character" }], [{ text: "for" }, { text: "death.", hl: true }]], shake: true, grade: [0.9, 1], overlay: "chain", sent: 3, sfx: { name: "thud", vol: 0.6 } },
   { img: "E", sec: 1.2, cam: { s0: 1.3, s1: 1.3, ox: 540, oy: 960, dy: -260 }, caps: [[{ text: "So many" }], [{ text: "buildings" }]], sent: 4 },
   { img: "I", sec: 1.4, cam: { s0: 1.2, s1: 1.3, ox: I_F.x, oy: I_F.y }, caps: [[{ text: "swap it" }], [{ text: "for an" }, { text: "F,", hl: true }], [{ text: 'for "four."' }]], overlay: "circleF", at: I_F, sent: 4, sfx: { name: "pop", at: 0.1, vol: 0.4 } },
   { img: "J", sec: 1.4, cam: { s0: 1.0, s1: 1.1, ox: 540, oy: 900 }, caps: [[{ text: "Hospitals", hl: true }], [{ text: "go further:" }]], sent: 5 },
   { img: "G", sec: 2.1, cam: { s0: 1.0, s1: 1.15, ox: G_GAP.x, oy: G_GAP.y }, caps: [[{ text: "many skip" }], [{ text: "the 4th floor" }], [{ text: "entirely." }]], overlay: "noFour", sent: 5, sfx: { name: "pop", at: 0.3, vol: 0.35 } },
   { img: "H", sec: 1.6, cam: { s0: 1.0, s1: 1.3, ox: H_F.x, oy: H_F.y }, caps: [[{ text: "But" }], [{ text: "here's the thing:", hl: true }]], sent: 6, sfx: { name: "ding", at: 0.3, vol: 0.25 } },
-  { img: "A", sec: 1.2, cam: { s0: 2.0, s1: 2.2, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "the F is still" }], [{ text: "the 4th floor.", hl: true }]], overlay: "fIs4", sent: 6, sfx: { name: "pop", at: 0.2, vol: 0.35 } },
+  { img: "I", sec: 1.2, cam: { s0: 1.3, s1: 1.4, ox: I_F.x, oy: I_F.y }, caps: [[{ text: "the F is still" }], [{ text: "the 4th floor.", hl: true }]], overlay: "fIs4", at: I_F, sent: 6, sfx: { name: "pop", at: 0.2, vol: 0.35 } },
   { img: "K", sec: 1.3, cam: { s0: 1.0, s1: 1.1, ox: 540, oy: 900 }, caps: [[{ text: "Nobody" }], [{ text: "just says it." }]], sent: 6 },
-  { img: "A", sec: 1.2, cam: { s0: 2.2, s1: 1.8, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "Next time" }], [{ text: "you see an" }, { text: "F,", hl: true }]], sent: 7 },
+  { img: "H", sec: 1.2, cam: { s0: 1.3, s1: 1.1, ox: H_F.x, oy: H_F.y }, caps: [[{ text: "Next time" }], [{ text: "you see an" }, { text: "F,", hl: true }]], sent: 7 },
   // 마지막 = 2번 컷과 같은 구도(어둡게) → 반복 재생 때 첫 장면으로 자연스럽게 이어진다
-  { img: "A", sec: 1.3, cam: { s0: 1.05, s1: 1.0, ox: 540, oy: 960 }, caps: [[{ text: "you'll know" }], [{ text: "what it's" }, { text: "hiding.", hl: true }]], dark: 0.45, sent: 7, sfx: { name: "thud", at: 1.0, vol: 0.25 } },
+  { img: "A", sec: 1.3, cam: { s0: 1.1, s1: 1.0, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "you'll know" }], [{ text: "what it's" }, { text: "hiding.", hl: true }]], dark: 0.45, sent: 7, sfx: { name: "thud", at: 1.0, vol: 0.25 } },
 ];
 
 // 음성이 있으면 문장 길이를 그 문장에 속한 컷들에 글자 수 비율로 나눈다. 없으면 임시 길이(sec).
@@ -148,6 +149,34 @@ const Overlay: React.FC<{ kind: Shot["overlay"]; dur: number; at?: { x: number; 
         <span style={{ fontFamily: sans, fontWeight: 900, fontSize: 92, color: "#fff", textDecoration: "line-through", textDecorationColor: "#ff2a2a", textDecorationThickness: 12 }}>304</span>
       </div>
     );
+  if (kind === "show4" || kind === "flip4") {
+    // F 버튼 자리에 "4"가 있었다가 F로 바뀐다 = 숨겨진 층. 버튼 모양을 그대로 덮는다.
+    const o = kind === "show4" ? 1 : interpolate(frame, [3, 13], [1, 0], clamp);
+    const flip = kind === "flip4" ? interpolate(frame, [3, 13], [1, 0], clamp) : 1; // 가로로 접히며 사라짐
+    return (
+      <svg width={1080} height={1920} style={{ position: "absolute", inset: 0, opacity: o }}>
+        <defs>
+          <radialGradient id="btn4" cx="50%" cy="45%" r="60%">
+            <stop offset="0" stopColor="#f3ece4" />
+            <stop offset="1" stopColor="#cbbfb3" />
+          </radialGradient>
+        </defs>
+        <g transform={`translate(${F_BTN.x} ${F_BTN.y}) scale(${flip} 1)`}>
+          <circle r={76} fill="url(#btn4)" stroke="#9c8f84" strokeWidth={5} />
+          <text y={30} textAnchor="middle" fontFamily={sans} fontWeight={700} fontSize={86} fill="#3d3530">4</text>
+        </g>
+      </svg>
+    );
+  }
+  if (kind === "chain")
+    // 4 = 사 = 死 : 이 편의 핵심을 한 줄 카드로
+    return (
+      <div style={{ position: "absolute", left: 0, right: 0, top: 260, display: "flex", justifyContent: "center", alignItems: "baseline", gap: 26, transform: `scale(${pop})` }}>
+        {[["4", "#fff"], ["=", YELLOW], ["사", "#fff"], ["=", YELLOW], ["死", "#ff4d4d"]].map(([t, c], i) => (
+          <span key={i} style={{ fontFamily: t === "사" || t === "死" ? serif : sans, fontWeight: 900, fontSize: t === "=" ? 90 : 140, color: c, WebkitTextStroke: "14px #000", paintOrder: "stroke fill" }}>{t}</span>
+        ))}
+      </div>
+    );
   if (kind === "noFour")
     // 안내판 위쪽 빈 곳에 "4̶ no 4th floor" (화면 밖으로 잘리지 않게 가운데 정렬)
     return (
@@ -184,6 +213,7 @@ const ShotView: React.FC<{ shot: Shot; dur: number }> = ({ shot, dur }) => {
   const dy = cam.panY ? cam.panY[0] + (cam.panY[1] - cam.panY[0]) * ease(t) : (cam.dy ?? 0) * (t - 0.5) * 2;
   const shake = shot.shake ? Math.sin(frame * 2.3) * 10 * interpolate(frame, [0, 10], [1, 0], clamp) : 0;
   const fade = shot.fadeIn ? interpolate(frame, [0, 8], [0, 1], clamp) : 1;
+  const g = shot.grade ? shot.grade[0] + (shot.grade[1] - shot.grade[0]) * t : 0;
 
   // 자막은 컷 길이를 묶음 수로 나눠서 차례로
   const per = shot.caps.length ? dur / shot.caps.length : dur;
@@ -200,11 +230,13 @@ const ShotView: React.FC<{ shot: Shot; dur: number }> = ({ shot, dur }) => {
               objectFit: "cover",
               transformOrigin: `${cam.ox}px ${cam.oy}px`,
               transform: `translate(${dx + shake}px, ${dy}px) scale(${s})`,
+              filter: g ? `grayscale(${g}) brightness(${1 - 0.45 * g}) contrast(${1 + 0.25 * g})` : undefined,
             }}
           />
         </AbsoluteFill>
       )}
       {shot.dark ? <AbsoluteFill style={{ background: `radial-gradient(circle at 50% 45%, rgba(0,0,0,0) 30%, rgba(0,0,0,${shot.dark}) 100%)` }} /> : null}
+      {g ? <AbsoluteFill style={{ background: `radial-gradient(circle at 50% 46%, rgba(0,0,0,0) 25%, rgba(0,0,0,${0.7 * g}) 100%)` }} /> : null}
       {shot.overlay && <Overlay kind={shot.overlay} dur={dur} at={shot.at} />}
       {shot.caps.map((c, i) => (
         <Sequence key={i} from={Math.round(i * per)} durationInFrames={Math.round(per)} layout="none">
