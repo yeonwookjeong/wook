@@ -55,6 +55,11 @@ principles:
     - "AI 재현 장면에 화면 표시는 하지 않는다. 대신 업로드할 때 플랫폼의 AI 생성 콘텐츠 표시 항목은 정책대로 체크한다."
     - "'그렇다고 전해진다' 수준의 이야기는 다룰 수 있다. 단정하지 않고, 캡션에 근거의 한계를 한 줄 적는다."
 
+voice:
+  provider: google-cloud-tts
+  name: ko-KR-Chirp3-HD-Sadaltager
+  speaking_rate: 1.1
+
 research:
   enabled: true
   query_hints:
