@@ -24,12 +24,13 @@ import datetime as dt
 import json
 import re
 import sys
+import time
 from pathlib import Path
 
 try:
     import yt_dlp
 except ImportError:
-    sys.exit("yt-dlp가 없습니다. 먼저 실행하세요:  pip install -U yt-dlp")
+    sys.exit("yt-dlp가 없습니다. 먼저 실행하세요:  python3 -m pip install -U yt-dlp")
 
 HERE = Path(__file__).resolve().parent
 OUT_DIR = HERE / "out"
@@ -194,6 +195,9 @@ def useful_comments(info: dict, keywords, limit: int = 10):
 
 # ---------------------------------------------------------------- 메인
 
+BROWSER = None  # --browser 로 정하면 그 브라우저의 유튜브 로그인 정보를 써서 429 차단을 피함
+
+
 def scan(url: str, keywords, excludes, with_comments: bool):
     opts = {
         "skip_download": True,
@@ -202,6 +206,8 @@ def scan(url: str, keywords, excludes, with_comments: bool):
         "getcomments": with_comments,
         "extractor_args": {"youtube": {"comment_sort": ["top"], "max_comments": ["300", "300", "0"]}},
     }
+    if BROWSER:
+        opts["cookiesfrombrowser"] = (BROWSER,)
     with yt_dlp.YoutubeDL(opts) as ydl:
         info = ydl.extract_info(url, download=False)
         if with_comments and not info.get("comments"):
@@ -309,7 +315,13 @@ def main():
     ap.add_argument("-k", "--keywords", default=str(HERE / "keywords.txt"), help="키워드 파일 경로")
     ap.add_argument("--no-comments", action="store_true", help="댓글 수집 생략")
     ap.add_argument("--full", action="store_true", help="자막 전체를 시간과 함께 out/자막_영상ID.txt로 저장")
+    ap.add_argument("--browser", help="이 브라우저의 유튜브 로그인 정보 사용 (chrome, safari, firefox, edge) — 429 차단 회피")
     args = ap.parse_args()
+    global BROWSER
+    bf = HERE / "browser.txt"
+    BROWSER = args.browser or (bf.read_text().strip() if bf.exists() else None)
+    if args.browser:  # 한 번 정하면 다음부터(영상 만들기 포함) 자동으로 씀
+        bf.write_text(args.browser)
 
     urls = list(args.urls)
     if args.file:
@@ -325,10 +337,26 @@ def main():
     results = []
     for i, url in enumerate(urls, 1):
         print(f"[{i}/{len(urls)}] 스캔 중: {url}")
-        try:
-            r = scan(url, keywords, excludes, not args.no_comments)
-        except Exception as e:  # 한 영상이 실패해도 나머지는 계속
-            print(f"   ⚠️ 실패: {e}\n   → 'pip install -U yt-dlp'로 업데이트 후 다시 시도해 보세요.")
+        r = None
+        # 429(유튜브가 잠깐 막음)면: 1분 쉬고 댓글 없이 → 2분 쉬고 한 번 더. 댓글 수집이 요청을 제일 많이 함
+        for attempt, (wait, comments) in enumerate([(0, not args.no_comments), (60, False), (120, False)]):
+            if wait:
+                print(f"   ⏳ 유튜브가 잠깐 막았어요(429). {wait}초 쉬고 다시 시도 ({attempt}/2, 댓글 없이)")
+                time.sleep(wait)
+            try:
+                r = scan(url, keywords, excludes, comments)
+                break
+            except Exception as e:  # 한 영상이 실패해도 나머지는 계속
+                if "429" in str(e) and attempt < 2:
+                    continue
+                print(f"   ⚠️ 실패: {e}")
+                if "429" in str(e):
+                    print("   → 유튜브가 이 컴퓨터의 요청을 잠깐 막았어요. 둘 중 하나:\n"
+                          "     1) 30분~1시간 뒤에 다시 실행\n"
+                          "     2) 크롬에서 유튜브에 로그인돼 있으면 끝에 --browser chrome 을 붙여 실행 (대부분 바로 풀림)")
+                else:
+                    print("   → 'python3 -m pip install -U yt-dlp'로 업데이트 후 다시 시도해 보세요.")
+        if r is None:
             continue
         results.append(r)
         lic = r["license"]

@@ -461,6 +461,9 @@ def fetch_source(url: str, ff: str, height: int = 1080, main: bool = True):
         "outtmpl": str(WORK / "%(id)s.%(ext)s"),
         "ffmpeg_location": ff,
     }
+    browser = (HERE / "browser.txt").read_text().strip() if (HERE / "browser.txt").exists() else ""
+    if browser:  # browser.txt에 chrome 등을 적어두면 그 브라우저의 유튜브 로그인 정보로 받음(429 차단 회피)
+        opts["cookiesfrombrowser"] = (browser,)
     with yt_dlp.YoutubeDL(opts) as ydl:
         try:
             info = ydl.extract_info(url, download=False)
