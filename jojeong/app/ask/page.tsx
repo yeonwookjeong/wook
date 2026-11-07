@@ -7,6 +7,7 @@ import { ASK_OPEN, CHANNEL_GIFT, CHANNEL_GIFT_ON, currentMember, JOIN_GIFT, KAKA
 import { OpenRoomForm } from "./AskForms";
 import DraftReturn from "./DraftReturn";
 import DraftCarry from "./DraftCarry";
+import WorryStart from "./WorryStart";
 import { openMyRoomAction } from "./actions";
 import { readMe } from "@/lib/me";
 import { AnswerLetter, Question } from "./Letter";
@@ -113,7 +114,7 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
   if (!member)
     return (
       <>
-      <DraftCarry join={{ href: loginHref, label: others ? "가입하고 질문 1개 받기" : "카카오로 가입하고 질문 1개 받기" }} />
+      {q.from === "chapter" && <DraftCarry join={{ href: loginHref, label: others ? "가입하고 질문 1개 받기" : "카카오로 가입하고 질문 1개 받기" }} />}
       <Hallway>
         <RoomArt caption="청심당, 마음을 듣는 방">
           <div className="text-center">
@@ -133,10 +134,7 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
               로그인이 끝나지 않았어요. 다시 해 주세요.
             </p>
           )}
-          <Link href={loginHref} className={`mt-6 ${GOLD_BUTTON}`}>
-            {login}
-          </Link>
-          <p className="mt-2.5 text-center text-[11.5px] leading-relaxed text-hanji/60">질문과 상담 기록을 계정에 보관해, 다음에 와도 이어서 이야기해요</p>
+          <WorryStart loginHref={loginHref} label={others ? "이 고민 보내기" : "카카오로 로그인하고 이 고민 보내기"} gift={JOIN_GIFT} />
         </RoomArt>
 
         <Floor>
@@ -183,12 +181,7 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
         </Floor>
 
         <Floor className="border-t border-[#e2bc68]/15 pb-10">
-          <Eyebrow hanja="問紙">질문</Eyebrow>
-          <p className="mt-1 text-center text-[12px] text-hanji/60">답서 한 통에 질문 하나가 쓰여요</p>
-          <div className="mt-6">
-            <CreditSlips buy={false} />
-          </div>
-          <Link href={loginHref} className={`mt-6 ${GOLD_BUTTON}`}>
+          <Link href={loginHref} className={GOLD_BUTTON}>
             {login}
           </Link>
         </Floor>
