@@ -173,8 +173,10 @@ def main():
         recipe = json.loads(rp.read_text(encoding="utf-8"))
         try:
             warn, script = review(rp, load_subs(recipe))
-        except SystemExit as e:
-            warn, script = [f"대본 확인 실패: {e}"], []
+        except SystemExit as e:  # 원본·자막을 못 받음(429 등) → 만들 때 다시 시도하도록 막지는 않음
+            warn, script = [f"💡 대본 확인 못 함 (원본·자막을 못 받음): {str(e).strip()[:120]}"], []
+        except Exception as e:  # 검수 도구 자체 오류로 영상 만들기가 막히지 않게
+            warn, script = [f"💡 검수 중 오류로 건너뜀: {type(e).__name__}: {str(e)[:120]}"], []
         block = [w_ for w_ in warn if not w_.startswith("💡")]  # 💡는 참고용(만들긴 함), 나머지는 안 만듦
         mark = "✅" if not block else "⛔"
         bad += bool(block)

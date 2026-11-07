@@ -110,13 +110,30 @@ def schedule_by_link(items: list[dict], start: date, per_day: int) -> list[tuple
 def make_missing(items: list[dict]) -> None:
     todo = [x for x in items if not (OUT / f"쇼츠_{x['stem']}.mp4").exists()]
     print(f"🎬 만들 영상 {len(todo)}개")
+    errors = []
     for i, x in enumerate(todo):
         print(f"\n[{i + 1}/{len(todo)}] {x['stem']}")
-        r = subprocess.run([sys.executable, str(HERE / "make_short.py"), str(x["path"])])
-        if r.returncode != 0:
+        # 화면에 그대로 보여주면서 마지막 몇 줄은 실패 이유로 기억
+        p = subprocess.Popen([sys.executable, "-u", str(HERE / "make_short.py"), str(x["path"])],
+                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, errors="replace")
+        tail = []
+        for line in p.stdout:
+            print(line, end="")
+            tail = (tail + [line.rstrip()])[-6:]
+        if p.wait() != 0:
+            why = next((l for l in reversed(tail) if "❌" in l or "Error" in l or "429" in l), tail[-1] if tail else "")
             print(f"⚠️ {x['stem']} 실패 → 건너뜀")
+            errors.append(f"{x['stem']}: {why.strip()}")
         if i < len(todo) - 1:
             time.sleep(20)  # 유튜브 429 방지
+    if errors:
+        (OUT / "검수").mkdir(parents=True, exist_ok=True)
+        (OUT / "검수" / "제작실패.txt").write_text("\n".join(errors), encoding="utf-8")
+        print("\n⛔ 못 만든 영상과 이유 (out/검수/제작실패.txt):")
+        for e in errors:
+            print(f"   {e}")
+        if any("429" in e for e in errors):
+            print("   → 429는 유튜브가 잠깐 막은 거예요. 30분 뒤 다시 하거나, echo chrome > browser.txt 후 다시 실행")
 
 
 def main():
