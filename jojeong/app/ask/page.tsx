@@ -311,11 +311,11 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
 
       <div className="mt-6 text-center text-[12px]">
         <span className="text-ink-soft">회원 번호 {memberNo(member.id)}</span>
-        <span className="mx-2 text-ink-soft/40">, </span>
+        <span className="mx-2 text-ink-soft/40">/</span>
         <a href="/logout" className="text-ink-soft underline">
           로그아웃
         </a>
-        <span className="mx-2 text-ink-soft/40">, </span>
+        <span className="mx-2 text-ink-soft/40">/</span>
         <Link href="/leave" className="text-ink-soft/70 underline">
           회원 탈퇴
         </Link>

@@ -375,7 +375,7 @@ export function NowFigure({ flow, y }: { flow: NonNullable<FreeReading["flow"]>;
         <b className="text-seal">
           {len}년 중 {k}년째
         </b>{" "}
-, {cur.to > y ? `남은 해 ${cur.to - y}년` : "올해가 이 10년의 마지막 해"}, {cur.theme}
+{cur.to > y ? `남은 해 ${cur.to - y}년` : "올해가 이 10년의 마지막 해"}, {cur.theme}
       </p>
       {next && (
         <p className="mt-2 rounded-lg bg-white/60 px-2.5 py-1.5 text-[12.5px] ring-1 ring-seal/10">

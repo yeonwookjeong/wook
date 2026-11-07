@@ -436,13 +436,13 @@ export function BondFigure({ b, name }: { b: Bond; name: string }) {
         {side(b.label, b.them, `나에게 ${b.roles[0]}`)}
       </div>
       <ul className="mt-3 flex flex-col gap-1 border-t border-seal/10 pt-2 text-[12px] leading-snug">
-        <li>, {b.seat.line ?? `${b.seat.name}끼리는 조용히 지나가요`}</li>
+        <li>{b.seat.line ?? `${b.seat.name}끼리는 조용히 지나가요`}</li>
         {b.lends.map((l) => (
-          <li key={l}>, {l}</li>
+          <li key={l}>{l}</li>
         ))}
         {b.years.slice(0, 3).map((y) => (
           <li key={y.year}>
-, <b>{y.year}</b> <span className="font-myeongjo">{y.gz}</span> {y.mark} <span className="text-ink-soft">({y.why})</span>
+<b>{y.year}</b> <span className="font-myeongjo">{y.gz}</span> {y.mark} <span className="text-ink-soft">({y.why})</span>
           </li>
         ))}
       </ul>

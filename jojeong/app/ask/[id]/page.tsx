@@ -134,7 +134,7 @@ export default async function MemberRoomPage({ params }: PageProps<"/ask/[id]">)
                   <p className="min-w-0 text-sm">
                     <b>{x.label}</b>{" "}
                     <span className="text-ink-soft">
-, {REL_LABEL[relOf(x.rel, x.label)].split(" ")[0]}, {x.p ? `${x.p.name}, ${iljuOf(x.p)}` : "?"}
+{REL_LABEL[relOf(x.rel, x.label)].split(" ")[0]}, {x.p ? `${x.p.name}, ${iljuOf(x.p)}` : "?"}
                     </span>
                   </p>
                   <RemovePersonButton room={room.id} person={x.id} label={x.label} />

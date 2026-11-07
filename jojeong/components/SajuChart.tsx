@@ -157,7 +157,7 @@ export default function SajuChart({
               용신 {ELEMENT_KO[yong]}({ELEMENT_HANJA[yong]})
             </dt>{" "}
             <dd className="inline">
-, 내 사주의 균형을 잡아 주는 기운이에요. {["목은", "화는", "토는", "금은", "수는"][yong]} {YONG_PLAIN[yong]}이에요. 이 기운이 드는 해, 사람, 환경이 나를 도와요.
+내 사주의 균형을 잡아 주는 기운이에요. {["목은", "화는", "토는", "금은", "수는"][yong]} {YONG_PLAIN[yong]}이에요. 이 기운이 드는 해, 사람, 환경이 나를 도와요.
             </dd>
           </div>
         </dl>

@@ -27,7 +27,7 @@ export function NewsToggle({ member }: { member: Member }) {
   const on = member.news.on;
   return (
     <form action={newsAction} className="inline">
-      <span className="mx-2 text-ink-soft/40">, </span>
+      <span className="mx-2 text-ink-soft/40">/</span>
       <span className="text-ink-soft">소식 {on ? "받는 중" : "안 받음"} </span>
       <button name="on" value={on ? "0" : "1"} className="text-ink-soft underline">
         {on ? "끄기" : "켜기"}
