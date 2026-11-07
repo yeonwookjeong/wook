@@ -41,13 +41,56 @@ length_sec: 40
 #토리블 #도쿄 #도쿄타워 #도쿄여행 #일본여행 #여행정보
 ```
 
-## 구글 플로우 프롬프트
-공통 스타일 (끝에 붙임): `photorealistic, cinematic, vertical 9:16, soft natural light, muted film color, 35mm lens, slow smooth camera movement, no text, no logos`
+## 구글 플로우 프롬프트 (v2 · 토리블 틀)
+레퍼런스(신비한 건축사전)처럼 화면 전체를 플로우로 만든다. 순서는 이미지 생성 → 마음에 드는 것 고르기 → 그 이미지로 영상 생성.
+토리블 틀: 장면마다 [첫 프레임부터 진행 중인 동작] + [시대·장소] + [카메라 1개] + [공통 스타일] + [고정할 것].
+편집에서는 클립 앞부분만 쓰므로 핵심 동작은 0초부터 이미 일어나고 있어야 한다.
 
-- **T0 (조선 특수):** `Early 1950s Japanese port. Cranes unloading crates and military trucks from cargo ships, workers on the dock, busy industrial harbor. Slow push-in. Overcast morning.`
-- **T1 (건설 중):** `Tokyo in the late 1950s. A tall red and white steel lattice tower under construction, its upper half still an open framework, workers on narrow beams, low city rooftops below. Slow upward tilt along the tower. Clear afternoon.`
-- **T2 (고철장 전차):** `A 1950s scrapyard in Tokyo. Rows of damaged and rusted olive green military tanks lined up for dismantling, some missing tracks and turrets. Overcast sky, no people in focus. Slow lateral dolly along the row.`
-- **T3 (해체와 쇳물):** `Inside a 1950s steel mill. Glowing molten steel pours from a large ladle, sparks flying, dark industrial interior lit orange. Slow push-in. Documentary tone.`
+공통 스타일 (이미지·영상 프롬프트 끝에 항상 붙임):
+`Photorealistic historical documentary footage, vertical 9:16, shot on 35mm film, muted desaturated 1950s color, natural soft light, subtle film grain, realistic scale and physics, one continuous shot, no text, no signs, no logos`
+현재 장면(A, B)은 1950s 대신: `Photorealistic travel documentary footage, vertical 9:16, 35mm lens, natural night color, one continuous shot, no text, no logos`
+
+| 클립 | 대사 줄 | 사용 길이 |
+|---|---|---|
+| A 지금의 도쿄타워 야경 | 1, 6 | 4.8초 + 3.5초 |
+| T0 일본 항구 (조선 특수) | 2 | 4.5초 |
+| T2 고철장 전차 | 3 | 2.9초 |
+| T1 건설 중인 탑 | 4 | 4.0초 |
+| T3 쇳물 | 5 | 2.3초 |
+| B 아래에서 올려다본 탑 | 7, 8 | 4.5초 + 3.5초 |
+
+### A · 지금의 도쿄타워 야경
+- 이미지: `Tokyo Tower at night in 2020s Tokyo, the red-orange lattice tower fully lit, seen from a quiet street in Shiba, city lights below, clear dark sky, the main observation deck clearly visible as a ring two thirds up the tower.`
+- 영상: `The camera is already gliding forward toward the tower and slowly tilting up toward its top. Light traffic moves on the street below. The tower stays perfectly still and its shape never changes.`
+
+### T0 · 일본 항구, 미군 주문 (조선 특수)
+대사 뜻: 일본이 미군 주문을 받아 만들고 실어 보냄 → 하역이 아니라 **선적**.
+- 이미지: `A Japanese port in 1951, Japanese dockworkers loading wooden crates and olive drab military trucks onto a large gray cargo ship bound for Korea, a steel cargo crane holding a crate mid-air, stacks of crates on the pier, overcast morning.`
+- 영상: `From the first frame the crane is already lifting a crate up toward the ship while workers guide it with ropes. The camera slowly pushes in along the pier. The ship and crane keep their shape.`
+
+### T2 · 고철장의 부서진 전차
+- 이미지: `A 1950s scrapyard in Japan, a long row of damaged, rusted olive drab M4 Sherman tanks lined up for dismantling, some missing tracks and hatches, piles of scrap metal, gray overcast sky, no people in focus.`
+- 영상: `The camera is already tracking slowly sideways at low height along the row of tanks. Dust drifts across the ground. The tanks never move and keep the same shape and number.`
+
+### T1 · 건설 중인 도쿄타워
+- 이미지: `Tokyo Tower under construction in 1958 in Shiba, Tokyo, the lower half of the red and white steel lattice already built, the upper part an open bare steel framework, tiny workers on the beams, low wooden rooftops of postwar Tokyo below, hazy afternoon.`
+- 영상: `The camera is already tilting slowly upward along the tower from the middle toward the unfinished top. Workers move carefully on the beams. The lattice structure stays geometrically consistent.`
+
+### T3 · 쇳물
+- 이미지: `Inside a 1950s Japanese steel mill, a large ladle pouring a bright stream of molten steel into a mold, sparks, dark industrial interior lit orange by the glow, a worker silhouette at a safe distance.`
+- 영상: `From the first frame molten steel is already pouring in a steady stream with sparks. The camera slowly pushes in. The ladle stays attached to its overhead hook.`
+
+### B · 아래에서 올려다본 도쿄타워
+- 이미지: `Looking straight up at Tokyo Tower at night from its base, the lit red-orange steel lattice rising into the dark sky, strong upward perspective, people small at the bottom edge.`
+- 영상: `The camera is already tilting slowly up the tower toward the top while drifting slightly sideways. The tower stays perfectly still.`
+
+### 편집에서 처리할 것 (플로우에 맡기지 않음)
+- 6번 줄 "윗부분 3분의 1" 강조: A 클립 위에 메인데크 위쪽 밝히기 + 라벨.
+- 카드 "90대", "도쿄타워": 코드로 얹음.
+
+### 확인 필요
+- 플로우 영상 한 클립 길이 선택지 (8초로 알고 있음, 확인 전).
+- 금지어 칸 유무. 있으면: `modern cranes, shipping containers, modern clothing, skyscrapers in 1950s scenes, distorted tank shapes, extra tower parts, cuts, text, watermark`
 
 ## 근거
 - 조선 특수: 1950년 한국전쟁 발발 후 미군·유엔군의 물자·수리·수송 발주가 일본에 몰림: https://kotobank.jp/word/%E6%9C%9D%E9%AE%AE%E7%89%B9%E9%9C%80-328171
