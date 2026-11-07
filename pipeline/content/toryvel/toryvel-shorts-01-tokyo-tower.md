@@ -84,6 +84,16 @@ length_sec: 40
 - 이미지: `Looking straight up at Tokyo Tower at night from its base, the lit red-orange steel lattice rising into the dark sky, strong upward perspective, people small at the bottom edge.`
 - 영상: `The camera is already tilting slowly up the tower toward the top while drifting slightly sideways. The tower stays perfectly still.`
 
+### 사진 넣는 클립 (플로우에 이미지 업로드)
+업로드 사진: Wikimedia Commons "Tokyo tower at night 2024.jpg" (Immanuelle, CC BY 4.0). 캡션에 출처 표기.
+- **A**: 이미지 생성 단계 생략. 사진을 첫 프레임으로 넣고 영상 프롬프트만:
+  `Animate this exact photo. The camera glides slowly forward toward Tokyo Tower and tilts up toward its top. People on the sidewalk walk naturally, light traffic on the road. The tower, buildings and signs keep their exact shape. Photorealistic, natural night color, one continuous shot.`
+- **T1**: 사진을 참고 이미지로 넣고 이미지 프롬프트:
+  `Use the reference photo only for the exact shape and proportions of Tokyo Tower. Show the same tower in 1958, under construction in Shiba, Tokyo, in daylight: the lower half built, the upper part above the main observation deck still an open bare steel framework, tiny workers on the beams, low postwar wooden rooftops below.` + 공통 스타일
+- **B**: 사진을 참고 이미지로 넣고 이미지 프롬프트:
+  `Same Tokyo Tower and night lighting as the reference photo, but seen from directly below at its base, the lit red-orange lattice rising into the dark sky, strong upward perspective.` + 현재 장면 스타일
+- T0, T2, T3: 권리 확인된 실제 사진을 찾기 전까지는 글 프롬프트만.
+
 ### 편집에서 처리할 것 (플로우에 맡기지 않음)
 - 6번 줄 "윗부분 3분의 1" 강조: A 클립 위에 메인데크 위쪽 밝히기 + 라벨.
 - 카드 "90대", "도쿄타워": 코드로 얹음.

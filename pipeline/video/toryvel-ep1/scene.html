@@ -15,8 +15,8 @@ canvas{position:absolute;left:0;top:0}
 .pin s{width:10px;height:10px;border-radius:50%;background:#d62828;border:2px solid #fff;text-decoration:none}
 .pin i{width:34px;height:2px;background:#fff}
 .pin b{background:#d62828;color:#fff;font-size:18px;padding:5px 10px;border:2px solid #fff;white-space:nowrap}
-#br{position:absolute;border:3px solid #fff;border-left:none;width:16px;opacity:0}
-#brl{position:absolute;opacity:0;transform:translate(0,-50%);background:#fff;color:#d62828;font-weight:700;font-size:19px;padding:4px 9px;white-space:nowrap}
+#br{position:absolute;border:2px solid rgba(255,255,255,.9);border-left:none;width:8px;opacity:0}
+#brl{position:absolute;opacity:0;transform:translate(0,-50%);color:#fff;font-weight:700;font-size:14px;padding:2px 6px;background:rgba(214,40,40,.9);white-space:nowrap}
 #credit{position:absolute;right:12px;bottom:10px;font-size:11px;color:rgba(255,255,255,.65);opacity:0}
 </style></head><body>
 <div id="ph"><div id="phbg"></div><div id="phgrain"></div><div id="phlab"><small id="phid"></small><div id="phtx"></div><em>플로우 클립 들어갈 자리</em></div></div>
@@ -81,8 +81,8 @@ window.renderAt=function(t){
     const z=1+0.04*ease(((i===0?0:lt))/(ld+GAP));document.getElementById('phbg').style.transform=`scale(${z})`;}
   // 라벨(6번 줄)
   const pe=document.getElementById('deck'),br=document.getElementById('br'),bl=document.getElementById('brl');
-  if(sc.m==='deck'){place(pe,w(TU+0.045,DECK_V));const y1=place(br,w(TU+0.06,TIP_V)),q=w(TU+0.06,DECK_V).project(cam),y2=(1-q.y)/2*H;br.style.height=(y2-y1)+'px';
-    bl.style.left=(parseFloat(br.style.left)+24)+'px';bl.style.top=((y1+y2)/2)+'px';}
+  if(sc.m==='deck'){place(pe,w(TU+0.045,DECK_V));const y1=place(br,w(TU+0.05,TIP_V)),q=w(TU+0.05,DECK_V).project(cam),y2=(1-q.y)/2*H;br.style.height=(y2-y1)+'px';
+    bl.style.left=(parseFloat(br.style.left)+14)+'px';bl.style.top=((y1+y2)/2)+'px';}
   const o1= sc.m==='deck'? ease((lt-ld*0.45)/0.35)*(1-ease((lt-ld)/0.3)):0; pe.style.opacity=o1;br.style.opacity=o1;bl.style.opacity=o1;
   document.getElementById('credit').style.opacity = sc.k==='real'?1:0;
   // 카드
