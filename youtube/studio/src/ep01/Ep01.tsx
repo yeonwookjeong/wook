@@ -15,10 +15,12 @@ const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 
 // 1080×1920 화면에서의 초점 위치 (그림 A의 F 버튼, 그림 D의 死)
 const F_BTN = { x: 752, y: 822 }; // 새 그림 A(배너 오른쪽 그림풍, 2026-11-07)에서 잰 F 버튼 중심
-const DEATH = { x: 540, y: 760 };
-const H_F = { x: 672, y: 809 }; // 그림 H에서 손가락이 누르는 F 버튼
-const G_GAP = { x: 861, y: 967 }; // 그림 G 안내판에서 3과 5 사이
-const I_F = { x: 540, y: 700 }; // 그림 I 층수 표시의 F (새 그림 받으면 다시 잰다)
+const DEATH = { x: 540, y: 885 }; // 새 그림 D의 死
+const H_F = { x: 705, y: 750 }; // 새 그림 H에서 손가락이 누르는 F 버튼
+const G_GAP = { x: 624, y: 891 }; // 새 그림 G 안내판에서 3과 5 사이
+const I_F = { x: 630, y: 480 }; // 새 그림 I 층수 표시의 F
+const C_4 = { x: 570, y: 705 }; // 새 그림 C의 숫자 4
+const E_103 = { x: 855, y: 630 }; // 새 그림 E의 103
 
 // 아직 없는 그림은 비슷한 그림으로 대신 보여 준다 (미리보기용). 파일이 생기면 자동으로 새 그림을 쓴다.
 const FALLBACK: Record<string, string> = { I: "A", J: "G", K: "H" };
@@ -48,8 +50,8 @@ const SHOTS: Shot[] = [
   { img: "A", sec: 1.9, cam: { s0: 1.15, s1: 1.0, ox: 540, oy: 960 }, caps: [[{ text: "this elevator" }], [{ text: "is hiding" }, { text: "a floor.", hl: true }]], sent: 1 },
   { img: "A", sec: 1.2, cam: { s0: 1.4, s1: 1.4, ox: F_BTN.x, oy: F_BTN.y, panY: [(1 - 1.4) * (1920 - F_BTN.y), 0] }, caps: [[{ text: "Look:" }], [{ text: "1, 2, 3…" }]], sent: 2 },
   { img: "A", sec: 1.1, cam: { s0: 1.9, s1: 2.4, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "F.", hl: true }], [{ text: "Where's" }, { text: "4?", hl: true }]], overlay: "question", sent: 2, sfx: { name: "pop", at: 0.5, vol: 0.35 } },
-  { img: "C", sec: 1.2, cam: { s0: 1.0, s1: 1.12, ox: 540, oy: 760 }, caps: [[{ text: "In Korean," }], [{ text: "four", hl: true }]], sent: 3, sfx: { name: "buzz", vol: 0.2 } },
-  { img: "C", sec: 1.2, cam: { s0: 1.12, s1: 1.18, ox: 540, oy: 760 }, caps: [[{ text: "is read" }], [{ text: '"sa,"', hl: true }]], dark: 0.35, overlay: "sa", sent: 3, sfx: { name: "pop", at: 0.1, vol: 0.4 } },
+  { img: "C", sec: 1.2, cam: { s0: 1.0, s1: 1.12, ox: C_4.x, oy: C_4.y }, caps: [[{ text: "In Korean," }], [{ text: "four", hl: true }]], sent: 3, sfx: { name: "buzz", vol: 0.2 } },
+  { img: "C", sec: 1.2, cam: { s0: 1.12, s1: 1.18, ox: C_4.x, oy: C_4.y }, caps: [[{ text: "is read" }], [{ text: '"sa,"', hl: true }]], dark: 0.35, overlay: "sa", sent: 3, sfx: { name: "pop", at: 0.1, vol: 0.4 } },
   { img: "D", sec: 1.1, cam: { s0: 1.0, s1: 1.08, ox: DEATH.x, oy: DEATH.y }, caps: [[{ text: "the same" }], [{ text: "sound as" }]], sent: 3 },
   { img: "D", sec: 1.4, cam: { s0: 1.5, s1: 1.65, ox: DEATH.x, oy: DEATH.y, snap: true }, caps: [[{ text: "the Chinese" }], [{ text: "character" }], [{ text: "for" }, { text: "death.", hl: true }]], shake: true, sent: 3, sfx: { name: "thud", vol: 0.5 } },
   { img: "E", sec: 1.2, cam: { s0: 1.3, s1: 1.3, ox: 540, oy: 960, dy: -260 }, caps: [[{ text: "So many" }], [{ text: "buildings" }]], sent: 4 },
@@ -147,11 +149,11 @@ const Overlay: React.FC<{ kind: Shot["overlay"]; dur: number; at?: { x: number; 
       </div>
     );
   if (kind === "noFour")
+    // 안내판 위쪽 빈 곳에 "4̶ no 4th floor" (화면 밖으로 잘리지 않게 가운데 정렬)
     return (
-      <div style={{ position: "absolute", left: G_GAP.x - 520, top: G_GAP.y - 95, display: "flex", alignItems: "center", gap: 14, transform: `scale(${pop})`, transformOrigin: "right center" }}>
+      <div style={{ position: "absolute", left: 0, right: 0, top: 230, display: "flex", justifyContent: "center", alignItems: "center", gap: 22, transform: `scale(${pop})` }}>
         <span style={{ fontFamily: sans, fontWeight: 900, fontSize: 150, color: "#fff", textDecoration: "line-through", textDecorationColor: "#ff2a2a", textDecorationThickness: 18, WebkitTextStroke: "14px #000", paintOrder: "stroke fill" }}>4</span>
-        <span style={{ fontFamily: sans, fontWeight: 900, fontSize: 84, color: YELLOW, WebkitTextStroke: "12px #000", paintOrder: "stroke fill" }}>no 4th</span>
-        <span style={{ width: 90, height: 0, borderTop: "10px dashed #ffd400" }} />
+        <span style={{ fontFamily: sans, fontWeight: 900, fontSize: 84, color: YELLOW, WebkitTextStroke: "12px #000", paintOrder: "stroke fill" }}>no 4th floor</span>
       </div>
     );
   if (kind === "endcard") {
