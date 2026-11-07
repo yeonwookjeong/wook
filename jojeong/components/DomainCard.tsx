@@ -39,7 +39,7 @@ export default function DomainCard({ name, domain, card, ranked = false }: { nam
           ),
         )}
       </ul>
-      {ranked && <p className="mt-2 text-[11px] text-ink-soft">상위, 하위와 &lsquo;100명 중&rsquo;은 1950~2008년에 태어날 수 있는 모든 날, 시의 사주와 견준 값이에요.</p>}
+      {ranked && <p className="mt-2 text-[11px] text-ink-soft">상위, 하위와 &lsquo;100명 중&rsquo;은 다른 모든 사주와 견준 값이에요.</p>}
     </section>
   );
 }
