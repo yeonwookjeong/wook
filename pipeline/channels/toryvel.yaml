@@ -58,7 +58,8 @@ principles:
 voice:
   provider: google-cloud-tts
   name: ko-KR-Chirp3-HD-Sadaltager
-  speaking_rate: 1.1
+  speaking_rate: 1.11
+  line_gap_sec: 0.3
 
 research:
   enabled: true
