@@ -1,0 +1,96 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+html,body{margin:0;width:540px;height:960px;overflow:hidden;background:#000;font-family:"WenQuanYi Zen Hei",sans-serif}
+canvas{position:absolute;left:0;top:0}
+#ph{position:absolute;inset:0;overflow:hidden}
+#phbg{position:absolute;inset:-40px;background:radial-gradient(ellipse at 50% 40%,#5a5247 0%,#2b2722 55%,#111 100%)}
+#phgrain{position:absolute;inset:0;opacity:.12;background:repeating-linear-gradient(0deg,#fff 0 1px,transparent 1px 3px)}
+#phlab{position:absolute;left:30px;right:30px;top:38%;text-align:center;color:#e9dcc3}
+#phlab small{display:block;font-size:15px;letter-spacing:2px;color:#b9a98c;margin-bottom:10px}
+#phlab div{font-size:24px;line-height:1.4;word-break:keep-all}
+#phlab em{display:block;margin-top:12px;font-style:normal;font-size:13px;color:#8d806b;border:1px dashed #8d806b;padding:6px 10px;display:inline-block}
+#cap{position:absolute;left:24px;right:24px;top:74%;text-align:center;font-weight:700;font-size:32px;color:#fff;line-height:1.35;word-break:keep-all;
+ text-shadow:0 0 6px rgba(0,0,0,.95),0 2px 3px rgba(0,0,0,.95)}
+#card{position:absolute;left:0;right:0;top:44%;text-align:center;font-weight:700;font-size:96px;color:#fff;opacity:0;text-shadow:0 4px 22px rgba(0,0,0,.6)}
+.pin{position:absolute;transform:translate(0,-50%);opacity:0;display:flex;align-items:center}
+.pin s{width:10px;height:10px;border-radius:50%;background:#d62828;border:2px solid #fff;text-decoration:none}
+.pin i{width:34px;height:2px;background:#fff}
+.pin b{background:#d62828;color:#fff;font-size:18px;padding:5px 10px;border:2px solid #fff;white-space:nowrap}
+#br{position:absolute;border:3px solid #fff;border-left:none;width:16px;opacity:0}
+#brl{position:absolute;opacity:0;transform:translate(0,-50%);background:#fff;color:#d62828;font-weight:700;font-size:19px;padding:4px 9px;white-space:nowrap}
+#credit{position:absolute;right:12px;bottom:10px;font-size:11px;color:rgba(255,255,255,.65);opacity:0}
+</style></head><body>
+<div id="ph"><div id="phbg"></div><div id="phgrain"></div><div id="phlab"><small id="phid"></small><div id="phtx"></div><em>플로우 클립 들어갈 자리</em></div></div>
+<div id="br"></div><div id="brl">윗부분 ⅓</div>
+<div class="pin" id="deck"><s></s><i></i><b>메인데크 150m</b></div>
+<div id="card"></div><div id="cap"></div><div id="credit">Photo: Immanuelle / CC BY 4.0</div>
+<script src="node_modules/three/build/three.min.js"></script>
+<script>
+const W=540,H=960,PW=1.5*1.08,PH=2*1.08,K=0.26,GAP=0.3;
+const D=[4.848000,4.464000,2.880000,3.960000,2.304000,3.456000,4.464000,3.456000];
+const LINES=[
+ ['도쿄의 상징, 도쿄타워.','그 꼭대기에는','한국전쟁이 녹아 있습니다.'],
+ ['1950년, 한반도에서 전쟁이 터지자','일본엔 미군 주문이 쏟아졌습니다.'],
+ ['전쟁이 끝나고 남은 건','부서진 미군 전차들.'],
+ ['마침 일본은 333m 탑을 세우는데','철이 모자랐죠.'],
+ ['그래서 그 전차를 녹였습니다.'],
+ ['그 철이 들어간 곳이','탑의 윗부분, 3분의 1.'],
+ ['한반도에서 싸우던 전차가','지금은 도쿄 야경 꼭대기에<br>서 있는 셈입니다.'],
+ ['다음에 도쿄타워를 보면','꼭대기를 한번 올려다보세요.']];
+// 장면: real = 실사 2.5D, 그 외 = 플로우 자리
+const SC=[{k:'real',m:'intro'},{k:'T0',t:'1950년대 일본 항구<br>미군 주문 물자 선적'},{k:'T2',t:'1950년대 고철장<br>부서진 M4 셔먼 전차 행렬'},
+ {k:'T1',t:'1958년 건설 중인 도쿄타워<br>윗부분은 아직 철골'},{k:'T3',t:'1950년대 제철소<br>쏟아지는 쇳물',card:'90대'},
+ {k:'real',m:'deck'},{k:'B',t:'아래에서 올려다본<br>지금의 도쿄타워 야경'},{k:'B',t:'아래에서 올려다본<br>지금의 도쿄타워 야경',card:'도쿄타워'}];
+const ST=[];{let s=0.15;for(let i=0;i<8;i++){ST.push(s);s+=D[i]+GAP;}}
+window.TOTAL=ST[7]+D[7]+0.6;
+const r=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});r.setSize(W,H);document.body.prepend(r.domElement);
+const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(40,W/H,0.01,50);
+const L=new THREE.TextureLoader();let ready=0;
+const photo=L.load('photo_s.jpg',()=>ready++),depth=L.load('depth_s.png',()=>ready++);
+const DECK_V=1-760/1707,TIP_V=1-215/1707,TU=630/1280;
+const mat=new THREE.ShaderMaterial({uniforms:{photo:{value:photo},depth:{value:depth},k:{value:K},dim:{value:0},deck:{value:DECK_V},tu:{value:TU}},
+ vertexShader:'uniform sampler2D depth;uniform float k;varying vec2 vUv;void main(){vUv=uv;vec3 p=position;p.z+=texture2D(depth,uv).r*k;gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.);}',
+ fragmentShader:`uniform sampler2D photo;uniform float dim,deck,tu;varying vec2 vUv;
+ void main(){vec3 c=texture2D(photo,vUv).rgb;float lum=dot(c,vec3(.299,.587,.114));
+  float up=smoothstep(deck-0.01,deck+0.01,vUv.y)*(1.-smoothstep(0.035,0.07,abs(vUv.x-tu)))*max(smoothstep(0.18,0.35,c.r-c.b),smoothstep(0.75,0.92,lum));
+  vec3 grey=mix(c,vec3(lum),0.7)*0.45;vec3 hot=c*1.15+vec3(0.18,0.02,0.0)*lum;
+  gl_FragColor=vec4(mix(c,mix(grey,hot,up),dim),1.);}`});
+scene.add(new THREE.Mesh(new THREE.PlaneGeometry(PW,PH,320,427),mat));
+const ease=t=>t<0?0:t>1?1:t*t*(3-2*t),lerp=(a,b,t)=>a+(b-a)*t;
+const w=(u,v)=>new THREE.Vector3((u-.5)*PW,(v-.5)*PH,0.05*K);
+function place(el,v3,dx=0){const p=v3.clone().project(cam);el.style.left=((p.x+1)/2*W+dx)+'px';el.style.top=((1-p.y)/2*H)+'px';return (1-p.y)/2*H;}
+window.isReady=()=>ready===2;
+function segAt(t){let i=0;for(let j=0;j<8;j++)if(t>=ST[j]-(j?GAP:0.15))i=j;return i;}
+window.renderAt=function(t){
+  const i=segAt(t),sc=SC[i],ls=ST[i],lt=t-ls,ld=D[i];
+  // 다음 장면이 실사→플로우로 넘어갈 때: 오른쪽에서 왼쪽으로 슥 닦아내기 (인트로 끝 0.5초)
+  const wipe = i===0 ? ease((lt-(ld-0.35))/0.6) : (i===1 && lt<0.25 ? 1 : 0);
+  const showReal = sc.k==='real' || (i===1 && lt<0);
+  // 3D
+  if(sc.k==='real'){
+    let dim=0;
+    if(sc.m==='intro'){const a=ease(lt/(ld+GAP));cam.position.set(lerp(0.05,0.01,a),lerp(-0.12,0.02,a),lerp(3.1,2.35,a));cam.lookAt(0,lerp(-0.02,0.12,a),0);}
+    else{const a=ease(lt/ld);cam.position.set(lerp(0.02,0.03,a),lerp(-0.05,0.14,a),lerp(2.7,1.75,a));cam.lookAt(0,lerp(0.05,0.30,a),0);dim=ease((lt-0.3)/0.6)*(1-ease((lt-ld)/0.3));}
+    mat.uniforms.dim.value=dim;r.render(scene,cam);
+  }
+  r.domElement.style.opacity = sc.k==='real'?1:0;
+  const ph=document.getElementById('ph');
+  ph.style.display = sc.k==='real' && i!==0 ? 'none':'block';
+  if(i===0){ph.style.clipPath=`inset(0 0 0 ${(1-wipe)*100}%)`; }else ph.style.clipPath='none';
+  const nx = i===0? SC[1] : sc;
+  if(nx.k!=='real'){document.getElementById('phid').textContent='FLOW '+nx.k;document.getElementById('phtx').innerHTML=nx.t;
+    const z=1+0.04*ease(((i===0?0:lt))/(ld+GAP));document.getElementById('phbg').style.transform=`scale(${z})`;}
+  // 라벨(6번 줄)
+  const pe=document.getElementById('deck'),br=document.getElementById('br'),bl=document.getElementById('brl');
+  if(sc.m==='deck'){place(pe,w(TU+0.045,DECK_V));const y1=place(br,w(TU+0.06,TIP_V)),q=w(TU+0.06,DECK_V).project(cam),y2=(1-q.y)/2*H;br.style.height=(y2-y1)+'px';
+    bl.style.left=(parseFloat(br.style.left)+24)+'px';bl.style.top=((y1+y2)/2)+'px';}
+  const o1= sc.m==='deck'? ease((lt-ld*0.45)/0.35)*(1-ease((lt-ld)/0.3)):0; pe.style.opacity=o1;br.style.opacity=o1;bl.style.opacity=o1;
+  document.getElementById('credit').style.opacity = sc.k==='real'?1:0;
+  // 카드
+  const cd=document.getElementById('card');cd.textContent=sc.card||'';cd.style.opacity= sc.card? ease((lt-0.15)/0.3)*(1-ease((lt-ld-0.1)/0.25)) :0;
+  cd.style.transform=`scale(${sc.card?lerp(1.12,1,ease((lt-0.15)/0.35)):1})`;
+  // 자막: 줄 안에서 글자 수 비례로 나눔
+  let cap='';if(lt>=0&&lt<ld+GAP){const parts=LINES[i],tot=parts.reduce((s,p)=>s+p.replace('<br>','').length,0);let acc=0;
+    for(const p of parts){acc+=p.replace('<br>','').length;if(lt<ld*acc/tot+0.05){cap=p;break;}cap=p;}}
+  document.getElementById('cap').innerHTML= t<window.TOTAL-0.4?cap:'';
+};
+</script></body></html>
