@@ -1896,7 +1896,7 @@ def main():
             clip_bgm = float(recipe["bgm_under_clips"])
         else:
             music, floor = has_music(ff, src, p["start"], p["end"])
-            clip_bgm = 0.0 if music else float(recipe.get("bgm_quiet_clips", 0.55))
+            clip_bgm = 0.0 if music else float(recipe.get("bgm_quiet_clips", 0.35))
             print(f"      🎵 원본 배경음악 {'있음 → 우리 음악 빼기' if music else '없음 → 우리 음악 낮게 깔기'}"
                   f" (조용한 순간 {floor:.0f}dB)")
         if i == len(plan):  # 마지막 말 뒤에 여운을 조금 남겨서 뚝 끊기지 않게 (다음 말이 시작되기 전까지만)
@@ -2084,10 +2084,13 @@ def assemble(ff: str, segs: list, layout: Path | None, tmp: Path, final: Path, t
                 for w_ in wins[1:]:
                     expr = f"max({expr},{w_})"
                 gain = f"volume='{bgm_clip_level:.3f}+(1-{bgm_clip_level:.3f})*{expr}':eval=frame,"
-        fa.append(f"[{nin}:a]aresample=44100,aformat=channel_layouts=stereo,volume={bgm_volume},"
+        # 곡마다 원래 음량이 달라서(엔바토 곡은 대부분 크게 마스터링됨) 먼저 같은 크기로 맞춘 뒤 줄임
+        fa.append(f"[{nin}:a]aresample=44100,aformat=channel_layouts=stereo,"
+                  f"loudnorm=I=-16:TP=-2:LRA=11,aresample=44100,volume={bgm_volume},"
                   f"atrim=0:{total:.3f},asetpts=PTS-STARTPTS,{gain}"
                   f"afade=t=out:st={max(total - 1.2, 0):.3f}:d=1.2[bg0]")
-        fa.append("[bg0][am2]sidechaincompress=threshold=0.03:ratio=6:attack=15:release=350[bgd]")
+        # 말소리(TTS·셀럽)가 나오면 음악을 더 확실히 눌러줌
+        fa.append("[bg0][am2]sidechaincompress=threshold=0.02:ratio=10:attack=10:release=400[bgd]")
         fa.append("[am1][bgd]amix=inputs=2:duration=first:normalize=0[amix]")
     else:
         fa.append("[amain]anull[amix]")
