@@ -133,7 +133,7 @@ export default function SajuChart({
         ))}
       </ul>
 
-      {shares && <p className="mt-1.5 text-[10.5px] text-ink-soft">겉 글자 수가 아니라, 땅 글자 속에 숨은 기운과 자리, 태어난 계절까지 따진 실제 비중이에요. 그래서 겉에 없는 기운도 %가 나올 수 있어요.{ranks ? " 상위, 하위는 1950~2008년에 태어날 수 있는 모든 날, 시의 사주와 견준 값이에요." : ""}</p>}
+      {shares && <p className="mt-1.5 text-[10.5px] text-ink-soft">겉 글자 수가 아니라, 땅 글자 속에 숨은 기운과 자리, 태어난 계절까지 따진 실제 비중이에요. 그래서 겉에 없는 기운도 %가 나올 수 있어요.{ranks ? " 상위, 하위는 다른 모든 사주와 견준 값이에요." : ""}</p>}
       <div className="mt-3 flex flex-wrap justify-center gap-1.5 text-xs">
         <span className="rounded-full bg-ink px-2.5 py-1 font-bold text-hanji">{strength}</span>
         {gyeok && <span className="rounded-full border border-ink/40 px-2.5 py-1 font-bold">{gyeok}</span>}

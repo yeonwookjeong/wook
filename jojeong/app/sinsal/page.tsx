@@ -86,7 +86,7 @@ export default async function SinsalPage({ searchParams }: PageProps<"/sinsal">)
             신살은 여덟 글자 위에 얹힌 양념 같은 표시예요. 같은 살도 다른 칸과 어떻게 어울리느냐에 따라 결이 달라져요.
             {noHour && " 태어난 시를 모르면 그 칸은 빼고 봤어요."}
           </p>
-          <p className="mt-2">드문 정도는 1950~2008년 모든 날의 열두 시를 다 넣은 사주 25만 8,600개를 세어 낸 숫자예요.</p>
+          <p className="mt-2">드문 정도는 100명 중 몇 명이 그 살을 지니는지로 나타냈어요.</p>
         </section>
       </SinsalNight>
 

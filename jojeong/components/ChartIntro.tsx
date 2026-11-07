@@ -136,7 +136,7 @@ export default function ChartIntro({
             </div>
           )}
           <p className="mt-3 text-[11px] leading-relaxed text-ink-soft">
-            숫자는 1950~2008년에 태어날 수 있는 모든 날, 시의 사주와 비교한 값이에요. 아래 보고서는 이 특징들을 바탕으로 썼어요.
+            숫자는 다른 모든 사주와 비교한 값이에요. 아래 보고서는 이 특징들을 바탕으로 썼어요.
           </p>
           {ask?.("드문 것")}
         </>

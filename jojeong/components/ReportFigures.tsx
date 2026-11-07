@@ -503,7 +503,7 @@ export function RareFigure({ name, d, areas, skipTop = false }: { name: string; 
   const ilju = areas ? null : d.ilju;
   if (!items.length && !ilju) return null;
   return (
-    <Frame title={`${name}님 사주에서 드문 것${areas ? `, ${areas.join(", ")}` : ""}`} sub="이 특징을 가진 사람이 100명 중 몇 명인지예요 (1950~2008년생의 모든 사주와 견줌)">
+    <Frame title={`${name}님 사주에서 드문 것${areas ? `, ${areas.join(", ")}` : ""}`} sub="이 특징을 가진 사람이 100명 중 몇 명인지예요 (다른 모든 사주와 견줌)">
       <ul className="flex flex-col gap-1.5 text-[12.5px]">
         {ilju && (
           <li className="flex items-baseline justify-between gap-2 rounded-lg bg-seal/8 px-2.5 py-1.5">

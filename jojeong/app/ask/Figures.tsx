@@ -43,7 +43,7 @@ function Lit({ on, children }: { on: boolean; children: React.ReactNode }) {
 export function RareFigure({ f, name }: { f: Figures; name: string }) {
   if (!f.rare.length) return null;
   return (
-    <Frame title="그대가 남다른 점" sub={`${name}님 사주에서 드물게 보이는 것`} note="1950~2008년에 태어날 수 있는 모든 날, 시의 사주와 견준 값이에요.">
+    <Frame title="그대가 남다른 점" sub={`${name}님 사주에서 드물게 보이는 것`} note="다른 모든 사주와 견준 값이에요.">
       <ul className="flex flex-col gap-2">
         {f.rare.map((x) => (
           <li key={x.term} className="rounded-lg bg-hanji/70 px-3 py-2">
