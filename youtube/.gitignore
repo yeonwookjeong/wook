@@ -1,2 +1,4 @@
 __pycache__/
 tts/ko/ref.*
+tts/compare/
+tts/*key*.txt
