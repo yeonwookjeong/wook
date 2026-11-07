@@ -14,7 +14,7 @@ const YELLOW = "#ffd400";
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 
 // 1080×1920 화면에서의 초점 위치 (그림 A의 F 버튼, 그림 D의 死)
-const F_BTN = { x: 619, y: 805 };
+const F_BTN = { x: 752, y: 822 }; // 새 그림 A(배너 오른쪽 그림풍, 2026-11-07)에서 잰 F 버튼 중심
 const DEATH = { x: 540, y: 760 };
 const H_F = { x: 672, y: 809 }; // 그림 H에서 손가락이 누르는 F 버튼
 const G_GAP = { x: 861, y: 967 }; // 그림 G 안내판에서 3과 5 사이
@@ -117,7 +117,7 @@ const Overlay: React.FC<{ kind: Shot["overlay"]; dur: number; at?: { x: number; 
 
   if (kind === "question")
     return (
-      <div style={{ position: "absolute", left: 760, top: 560, fontFamily: sans, fontWeight: 900, fontSize: 260, color: YELLOW, WebkitTextStroke: "14px #000", paintOrder: "stroke fill", transform: `scale(${pop}) rotate(12deg)` }}>?</div>
+      <div style={{ position: "absolute", left: 880, top: 470, fontFamily: sans, fontWeight: 900, fontSize: 260, color: YELLOW, WebkitTextStroke: "14px #000", paintOrder: "stroke fill", transform: `scale(${pop}) rotate(12deg)` }}>?</div>
     );
   if (kind === "sa")
     return (
