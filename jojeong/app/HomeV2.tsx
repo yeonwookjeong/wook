@@ -34,17 +34,17 @@ const TOPICS: { id: ProductId; name: string; ask: string }[] = [
   { id: "pyeongsaeng", name: "평생 사주", ask: "나는 어떤 사람이고 어떻게 살아갈까?" },
   { id: "yeonun", name: "연운", ask: "그해 나한테 무슨 일이? 지난해도, 앞으로의 해도" },
   { id: "jaemul", name: "재물운", ask: "돈이 왜 안 모일까, 언제 트일까?" },
-  { id: "yeonae", name: "연애·결혼", ask: "나랑 맞는 사람은 언제 올까?" },
-  { id: "jikup", name: "직업·적성", ask: "지금 일, 나랑 맞을까?" },
+  { id: "yeonae", name: "연애, 결혼", ask: "나랑 맞는 사람은 언제 올까?" },
+  { id: "jikup", name: "직업, 적성", ask: "지금 일, 나랑 맞을까?" },
   { id: "gunghap", name: "궁합", ask: "우리, 진짜 잘 맞을까?" },
-  { id: "taekil", name: "택일", ask: "결혼·이사·계약·면접, 언제 할까?" },
+  { id: "taekil", name: "택일", ask: "결혼, 이사, 계약, 면접, 언제 할까?" },
 ];
 
 const CHIPS: { href: string; hanja: string; label: string }[] = [
-  { href: "/reports/gukjeong", hanja: "命", label: "내 사주 · 2027" },
+  { href: "/reports/gukjeong", hanja: "命", label: "내 사주, 2027" },
   { href: "/#today", hanja: "日", label: "오늘의 운세" },
   { href: "/ranking", hanja: "月", label: "이달 일주 랭킹" },
-  { href: "/samjae", hanja: "三災", label: "2026·27 삼재" },
+  { href: "/samjae", hanja: "三災", label: "2026, 2027 삼재" },
   { href: "/king", hanja: "王", label: "왕이 될 사주" },
   { href: "/reports/sinbun", hanja: "身分", label: "조선 신분 감정" },
   { href: "/sinsal", hanja: "神煞", label: "신살 유형" },
@@ -133,7 +133,7 @@ function HeroMe({
         <p className="font-myeongjo text-[19px] leading-snug font-extrabold">
           <span className="block font-sans text-[12px] font-bold tracking-wide text-[#e2bc68]">
             {STEMS[stem]}
-            {BRANCHES[branch]} · {STEMS_KO[stem]}
+            {BRANCHES[branch]}, {STEMS_KO[stem]}
             {BRANCHES_KO[branch]}일주
           </span>
           {name}님, 다시 오셨사옵니까
@@ -143,7 +143,7 @@ function HeroMe({
         <Link href="#today" className="relative mt-4 flex items-center gap-3.5 rounded-2xl border border-[#e2bc68]/35 bg-[#f7efd9]/[0.07] px-4 py-3">
           <span className="shrink-0 font-myeongjo text-[40px] leading-none font-extrabold whitespace-nowrap text-[#e2bc68]">{today.score}</span>
           <span className="min-w-0 text-[13px] leading-snug">
-            <span className="block text-[11px] opacity-70">오늘의 점수 · {today.date}</span>
+            <span className="block text-[11px] opacity-70">{today.date} 오늘의 점수</span>
             {today.best && (
               <>
                 오늘 가장 좋은 것 <b>{today.best.label}</b>
@@ -162,7 +162,7 @@ function HeroMe({
       </Link>
       {ny && (
         <Link href="/reports/gukjeong" className="relative mt-2 block text-center text-[12.5px] text-[#f3ead0]/75 underline underline-offset-4">
-          내 사주 풀이 다시 보기 (성향·인생 흐름)
+          내 사주 풀이 다시 보기 (성향, 인생 흐름)
         </Link>
       )}
       {ask && (
@@ -172,7 +172,7 @@ function HeroMe({
           <span className="ml-auto font-extrabold text-[#e2bc68]">→</span>
         </AskLink>
       )}
-      <p className="relative mt-3 text-center text-[11px] opacity-55">命課學 訓導 · 훈도사주 · 나한테만 맞는 말</p>
+      <p className="relative mt-3 text-center text-[11px] opacity-55">命課學 訓導, 훈도사주, 나한테만 맞는 말</p>
     </header>
   );
 }
@@ -229,13 +229,13 @@ function Sangdam({ credits }: { credits: number | null }) {
           <p className="mt-1 flex gap-2 text-[12.5px] leading-relaxed text-hanji/90">
             <span className="text-[#e2bc68]">◯</span>{sample.q}
           </p>
-          <p className="mt-2 text-[11.5px] text-hanji/55">무슨 일인지 · 누구와 얽혀 있는지 · 언제까지 정해야 하는지</p>
+          <p className="mt-2 text-[11.5px] text-hanji/55">무슨 일인지, 누구와 얽혀 있는지, 언제까지 정해야 하는지</p>
         </div>
         <AskLink
           from="home"
           className="relative mt-4 block rounded-2xl bg-[#e2bc68] py-3.5 text-center font-myeongjo text-[16px] font-extrabold text-[#17304a] shadow-[0_5px_0_#9c7a2e]"
         >
-          {credits !== null ? `정 훈도에게 묻기 · 남은 질문 ${credits}개` : "카카오로 로그인하고 첫 질문 받기"}
+          {credits !== null ? `정 훈도에게 묻기, 남은 질문 ${credits}개` : "카카오로 로그인하고 첫 질문 받기"}
         </AskLink>
         {credits === null && <p className="relative mt-2 text-center text-[11.5px] text-hanji/60">카카오로 로그인하면 첫 질문 {JOIN_GIFT}개를 선물로 드려요</p>}
       </div>
@@ -307,7 +307,7 @@ export default async function HomeV2() {
           </span>
           <span className="min-w-0 flex-1 text-[13px] leading-snug">
             <span className="block text-[11px] text-ink-soft">
-              이달의 일주 랭킹 · {mp.label} {mp.term} {mp.from}~
+              이달의 일주 랭킹, {mp.label} {mp.term} {mp.from}~
             </span>
             <b className="font-myeongjo">
               1위 {ranks[0].name} <span className="text-seal">{ranks[0].hanja}</span>
@@ -315,7 +315,7 @@ export default async function HomeV2() {
             {myRank && (
               <span className="text-ink-soft">
                 {" "}
-                · {me!.person.name}님 {myRank.rank > 50 ? "대비하면 되는 달" : `${myRank.rank}위`}
+({me!.person.name}님 {myRank.rank > 50 ? "대비하면 되는 달" : `${myRank.rank}위`})
               </span>
             )}
           </span>
@@ -360,7 +360,7 @@ export default async function HomeV2() {
       {ny && nyProduct && (
         <section className="card mt-6 overflow-hidden">
           <div className="bg-jjok px-5 py-2 text-center text-[12px] font-extrabold tracking-wide text-[#e2bc68]">
-            {ny} {yearName(ny).ko.replace("년", "")}년({yearName(ny).hanja}年) · <span className="text-[#f0a39a]">{yearNickname(ny)}</span>
+            {ny} {yearName(ny).ko.replace("년", "")}년({yearName(ny).hanja}年), <span className="text-[#f0a39a]">{yearNickname(ny)}</span>
           </div>
           <div className="px-5 pt-4 pb-5">
             <div className="flex items-center gap-3">

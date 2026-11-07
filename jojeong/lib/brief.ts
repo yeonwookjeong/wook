@@ -12,7 +12,7 @@ import { sajuYear, yearDetail } from "./yeonun";
 
 const EL = (e: number) => `${ELEMENT_KO[e]}(${ELEMENT_HANJA[e]})`;
 const GZ = (s: number, b: number) => `${STEMS[s]}${BRANCHES[b]}`;
-const POS_NAME = { 연: "연주(뿌리·집안·어린 시절)", 월: "월주(부모·사회·일터)", 일: "일주(나 자신·배우자 자리)", 시: "시주(자녀·말년·계획)" };
+const POS_NAME = { 연: "연주(뿌리, 집안, 어린 시절)", 월: "월주(부모, 사회, 일터)", 일: "일주(나 자신, 배우자 자리)", 시: "시주(자녀, 말년, 계획)" };
 const posName = (pos: keyof typeof POS_NAME, lover: boolean) => (pos === "일" && !lover ? "일주(나 자신)" : POS_NAME[pos]);
 
 // 60-year cycle position → the most likely birth year for someone alive now (1936–2025).
@@ -47,16 +47,16 @@ export function chartBrief(name: string, p: Pillars, profile: Profile | null, y 
   );
   lines.push(...distinctLines(p, profile, lover, v2));
   const slots = chartOf(p);
-  lines.push("- 원국 (시·일·월·연):");
+  lines.push("- 원국 (시, 일, 월, 연):");
   for (const s of slots) {
     if (s.stem === null || s.branch === null) {
-      lines.push(`  · ${posName(s.pos, lover)}: 모름`);
+      lines.push(`, ${posName(s.pos, lover)}: 모름`);
       continue;
     }
     const stemGod = s.pos === "일" ? "일간(나)" : tenGod(p.dayStem, s.stem);
     const hidden = HIDDEN[s.branch].map(([h]) => `${STEMS[h]}(${tenGod(p.dayStem, h)})`).join(" ");
     lines.push(
-      `  · ${posName(s.pos, lover)}: ${GZ(s.stem, s.branch)} — 천간 ${STEMS[s.stem]}=${stemGod}, 지지 ${BRANCHES[s.branch]}=${tenGod(p.dayStem, HIDDEN[s.branch].at(-1)![0])}, 지장간 ${hidden}, 12운성 ${stageOf(p.dayStem, s.branch)}`,
+      `, ${posName(s.pos, lover)}: ${GZ(s.stem, s.branch)} — 천간 ${STEMS[s.stem]}=${stemGod}, 지지 ${BRANCHES[s.branch]}=${tenGod(p.dayStem, HIDDEN[s.branch].at(-1)![0])}, 지장간 ${hidden}, 12운성 ${stageOf(p.dayStem, s.branch)}`,
     );
   }
   const sum = r.weights.reduce((a, b) => a + b, 0);
@@ -65,7 +65,7 @@ export function chartBrief(name: string, p: Pillars, profile: Profile | null, y 
   const absent = [0, 1, 2, 3, 4].filter((e) => r.weights[e] === 0 && (!v2 || !raw.els.has(e)));
   // Without the hour (v2) what is not seen is not called missing.
   const absentLabel = v2 && p.hourBranch === null ? "세 기둥에서 보이지 않는 오행(시 모름)" : "없는 오행";
-  lines.push(`- 오행 비율(궁성·조후 보정): ${[0, 1, 2, 3, 4].map((e) => `${EL(e)} ${Math.round((100 * r.weights[e]) / sum)}%`).join(", ")}${absent.length ? ` / ${absentLabel}: ${absent.map(EL).join(", ")}` : ""}`);
+  lines.push(`- 오행 비율(궁성, 조후 보정): ${[0, 1, 2, 3, 4].map((e) => `${EL(e)} ${Math.round((100 * r.weights[e]) / sum)}%`).join(", ")}${absent.length ? ` / ${absentLabel}: ${absent.map(EL).join(", ")}` : ""}`);
   const gsum = Object.values(r.godWeights).reduce((a, b) => a + b, 0);
   lines.push(`- 십신 비중: ${Object.entries(r.godWeights).map(([g, w]) => `${g} ${Math.round((100 * w) / gsum)}%`).join(", ")}`);
   if (v2) {
@@ -104,7 +104,7 @@ export function chartBrief(name: string, p: Pillars, profile: Profile | null, y 
   for (let i = 0; i < br.length; i++)
     for (let j = i + 1; j < br.length; j++) {
       const m = meetings(br[i].branch!, br[j].branch!);
-      if (m.length) inner.push(`${br[i].pos}지${BRANCHES[br[i].branch!]}-${br[j].pos}지${BRANCHES[br[j].branch!]} ${m.join("·")}`);
+      if (m.length) inner.push(`${br[i].pos}지${BRANCHES[br[i].branch!]}-${br[j].pos}지${BRANCHES[br[j].branch!]} ${m.join(", ")}`);
     }
   const st = slots.filter((s) => s.stem !== null);
   for (let i = 0; i < st.length; i++)
@@ -128,7 +128,7 @@ export function chartBrief(name: string, p: Pillars, profile: Profile | null, y 
   const yr = y === 2026 ? yearReading(p, profile) : null;
   const yearMeet = br.flatMap((s) => {
     const m = meetings(YEAR.branch, s.branch!);
-    return m.length ? [`${s.pos}지${BRANCHES[s.branch!]}와 ${m.join("·")}`] : [];
+    return m.length ? [`${s.pos}지${BRANCHES[s.branch!]}와 ${m.join(", ")}`] : [];
   });
   if (y === 2026)
     lines.push(
@@ -154,11 +154,11 @@ export function chartBrief(name: string, p: Pillars, profile: Profile | null, y 
   // 명반 (interpretive aid only)
   if (profile?.palaces) {
     const self = selfStars(profile.palaces);
-    const pal = profile.palaces.map((x) => `${x.name}:${x.stars.join("·") || "공궁"}`).join(" / ");
+    const pal = profile.palaces.map((x) => `${x.name}:${x.stars.join(", ") || "공궁"}`).join(" / ");
     const natal = Object.entries(profile.natal ?? {})
       .map(([s, k]) => `${s}화${k}`)
       .join(", ");
-    lines.push(`- [참고 전용 · 본문에 용어 언급 금지] 명반: 명궁 주성 ${self.join("·") || "없음"}; ${pal}; 생년사화 ${natal}${y === 2026 ? "; 2026 丙년 사화 천동록·천기권·문창과·염정기" : ""}`);
+    lines.push(`- [참고 전용, 본문에 용어 언급 금지] 명반: 명궁 주성 ${self.join(", ") || "없음"}; ${pal}; 생년사화 ${natal}${y === 2026 ? "; 2026 丙년 사화 천동록, 천기권, 문창과, 염정기" : ""}`);
   }
   // Element flow of the year for balance
   if (y === 2026) lines.push(`- 참고: 2026년 화(火) 기운은 이 사람에게 ${FIRE_ROLE(r.yong, r.hee, r.gi)}`);
@@ -175,7 +175,7 @@ function strengthNoHour(p: Pillars, seen: string): string {
   const n = (v: string) => all.filter((x) => x === v).length;
   const sorted = [...new Set(all)].sort((x, y) => n(y) - n(x));
   // As many hours one way as the other: say it splits, not one of them.
-  if (sorted.length > 1 && n(sorted[0]) === n(sorted[1]) && strongSide(sorted[0]) !== strongSide(sorted[1])) return "신강·신약이 태어난 시에 따라 갈림";
+  if (sorted.length > 1 && n(sorted[0]) === n(sorted[1]) && strongSide(sorted[0]) !== strongSide(sorted[1])) return "신강, 신약이 태어난 시에 따라 갈림";
   const most = sorted[0];
   const i = STRENGTHS.indexOf(most as (typeof STRENGTHS)[number]);
   return i === 0 ? "신약" : i === 3 ? "신강" : most;
@@ -194,7 +194,7 @@ function distinctLines(p: Pillars, profile: Profile | null, lover = true, v2 = t
   if (!d) return [];
   const lines = ["- ★ 이 사람만의 특징 (드문 순. 보고서는 이것부터 풀 것. '가이드'는 방향일 뿐, 이 사람의 다른 글자와 엮어 구체적으로 쓸 것):"];
   d.patterns.filter((x) => lover || x.area !== "연애").forEach((x, i) =>
-    lines.push(`  ${i + 1}. [${x.term}] ${x.plain} — ${perHundred(x.rate)} · 영역 ${x.area} · 가이드: ${lover ? x.meaning : unlove(x.meaning)}`),
+    lines.push(`  ${i + 1}. [${x.term}] ${x.plain} — ${perHundred(x.rate)}, 영역 ${x.area}, 가이드: ${lover ? x.meaning : unlove(x.meaning)}`),
   );
   if (d.extremes.length)
     lines.push(
@@ -205,7 +205,7 @@ function distinctLines(p: Pillars, profile: Profile | null, lover = true, v2 = t
   if (d.ilju)
     lines.push(`- ★ 같은 일주 안에서: ${d.ilju.build} ${d.ilju.name}일주는 ${d.ilju.name}일주 가운데 약 ${Math.max(1, Math.round(d.ilju.rate * 100))}%`);
   const past = pastYears(p, profile).filter((x) => lover || !x.includes("배우자"));
-  if (past.length) lines.push(`- ★ 과거 확인용 연도 (이 가운데 2~3개를 골라 '이 무렵 이런 일이 있었을 가능성이 커요'로 짚을 것):\n${past.map((x) => `  · ${x}`).join("\n")}`);
+  if (past.length) lines.push(`- ★ 과거 확인용 연도 (이 가운데 2~3개를 골라 '이 무렵 이런 일이 있었을 가능성이 커요'로 짚을 것):\n${past.map((x) => `, ${x}`).join("\n")}`);
   return lines;
 }
 
@@ -225,11 +225,11 @@ function pastYears(p: Pillars, profile: Profile | null): string[] {
   const marks: [number, string][] = [];
   for (const d of profile?.daeun ?? [])
     if (d.from >= from && d.from <= to)
-      marks.push([d.from, `${d.from}년: 10년 대운이 ${GZ(d.stem, d.branch)}(${tenGod(p.dayStem, d.stem)}/${tenGod(p.dayStem, HIDDEN[d.branch].at(-1)![0])})로 바뀜. 일·관계·사는 곳 같은 삶의 판이 바뀌기 쉬운 해`]);
-  for (const y of years((p.dayBranch + 6) % 12).slice(-2)) marks.push([y, `${y}년 ${gz(y)}: 배우자 자리(일지)를 충. 연애·결혼·가까운 관계에 큰 변화`]);
+      marks.push([d.from, `${d.from}년: 10년 대운이 ${GZ(d.stem, d.branch)}(${tenGod(p.dayStem, d.stem)}/${tenGod(p.dayStem, HIDDEN[d.branch].at(-1)![0])})로 바뀜. 일, 관계, 사는 곳 같은 삶의 판이 바뀌기 쉬운 해`]);
+  for (const y of years((p.dayBranch + 6) % 12).slice(-2)) marks.push([y, `${y}년 ${gz(y)}: 배우자 자리(일지)를 충. 연애, 결혼, 가까운 관계에 큰 변화`]);
   for (const y of years((13 - p.dayBranch) % 12).slice(-1)) marks.push([y, `${y}년 ${gz(y)}: 배우자 자리와 육합. 인연이 들어오거나 관계가 깊어지기 쉬운 해`]);
   if (p.monthBranch !== undefined)
-    for (const y of years((p.monthBranch + 6) % 12).slice(-1)) marks.push([y, `${y}년 ${gz(y)}: 일터·집 자리(월지)를 충. 이직·이사·환경 변화`]);
+    for (const y of years((p.monthBranch + 6) % 12).slice(-1)) marks.push([y, `${y}년 ${gz(y)}: 일터, 집 자리(월지)를 충. 이직, 이사, 환경 변화`]);
   return marks.sort((a, b) => a[0] - b[0]).map(([, t]) => t + (by.certain ? "" : " (출생년 추정)"));
 }
 

@@ -148,7 +148,7 @@ function Jump({ gift, title, chapters }: { gift?: boolean; title: string; chapte
       <span>
         <b className="block text-[17px]">{gift ? "받은" : "결제한"} 보고서 바로 읽기</b>
         <span className="text-[12px] font-normal opacity-80">
-          {title} · {chapters}장
+          {title}, {chapters}장
         </span>
       </span>
       <span className="text-xl" aria-hidden>
@@ -259,14 +259,14 @@ async function OpenReport({
         {unlock?.id && <OrderLink id={unlock.id} />}
         {r2(unlock) && (
           <>
-            <Jump gift={unlock!.gift} title={`택일 · ${KINDS[found.kind].title}`} chapters={chaptersFor(product.id, true).length} />
+            <Jump gift={unlock!.gift} title={`택일, ${KINDS[found.kind].title}`} chapters={chaptersFor(product.id, true).length} />
             <PairCharts a={<MiniChart person={a} blank="모름" />} b={b ? <MiniChart person={b} blank="모름" /> : null} />
           </>
         )}
         <TaekilResult kind={found.kind} days={days} label={found.label} names={b ? `${a.name}님과 ${b.name}님` : `${a.name}님`} full={full} once={r2(unlock)} />
         {unlock && isV8(unlock) && (
           <CalendarButton
-            name={`정 훈도 택일 · ${KINDS[found.kind].title}`}
+            name={`정 훈도 택일, ${KINDS[found.kind].title}`}
             file={`hundo-taekil-${found.kind}`}
             events={bestDays(days, found.kind).map((d, i) => ({
               date: d.date,
@@ -288,7 +288,7 @@ async function OpenReport({
                   r2(unlock)
                     ? figuresFor(chaptersFor(product.id, true), [
                         // The chosen days, their reasons and hours are open above: here, how they were sieved.
-                        ["흔한 길일표", <SieveFigure key="s" days={days} names={(b ? [a, b] : [a]).map((x) => `${x.name}님`).join("·")} />],
+                        ["흔한 길일표", <SieveFigure key="s" days={days} names={(b ? [a, b] : [a]).map((x) => `${x.name}님`).join(", ")} />],
                       ])
                     : undefined
                 }
@@ -302,7 +302,7 @@ async function OpenReport({
             product={product}
             request={req}
             chapters={[
-              "가장 좋은 날 세 개와 한눈에 고르기 (가장 빠른 날·주말·평일)",
+              "가장 좋은 날 세 개와 한눈에 고르기 (가장 빠른 날, 주말, 평일)",
               "날짜마다 좋은 이유를 쉬운 말로",
               KINDS[found.kind].hours,
               "기간 전체 택일 달력과 써도 좋은 날 모두",
@@ -520,8 +520,8 @@ async function OpenReport({
             }}
             texts={{
               // The result itself goes with the link: a friend opens a line about someone, not an ad.
-              summary: `조선에 태어났다면 나는 '${sinbun.job}' · 너는 뭐였을지 봐 봐 (훈도사주)`,
-              full: `조선에 태어났다면 나는 '${sinbun.job}' · 너는 뭐였을지 봐 봐 (훈도사주)`,
+              summary: `조선에 태어났다면 나는 '${sinbun.job}', 너는 뭐였을지 봐 봐 (훈도사주)`,
+              full: `조선에 태어났다면 나는 '${sinbun.job}', 너는 뭐였을지 봐 봐 (훈도사주)`,
             }}
             card={<SinbunCard who={`${josa(name, "이/가")} 조선에 태어났다면`} rank={sinbun.rank} job={sinbun.job} line={sinbun.line} rise={sinbun.rise} yong={sinbun.yong}
                 tag={{ rank: sinbun.rank, job: sinbun.job, office: sinbun.office, born: bornOf(pillars.yearStem, pillars.yearBranch), issued: yearGanji() }}
@@ -574,7 +574,7 @@ async function OpenReport({
   // The card of this reading, for a story (the day pillar, the five powers, money·love·work, how rare the build is).
   const ilju = free ? iljuFacts(pillars.dayStem, pillars.dayBranch) : null;
   const topPower = free?.powers.reduce((a, b) => (b.pct > a.pct ? b : a));
-  const shareLine = ilju && topPower ? `내 사주는 ${ilju.name} · 가장 큰 힘은 ${topPower.name} ${topPower.pct}% · 너는 뭐야? (훈도사주)` : "훈도사주 · 조선 관상감 훈도가 풀어 주는 사주";
+  const shareLine = ilju && topPower ? `내 사주는 ${ilju.name}, 가장 큰 힘은 ${topPower.name} ${topPower.pct}%, 너는 뭐야? (훈도사주)` : "훈도사주, 조선 관상감 훈도가 풀어 주는 사주";
   const sameLine = distinct?.ilju ? `같은 ${hanjaKo(distinct.ilju.name)}일주 중 약 ${Math.max(1, Math.round(distinct.ilju.rate * 100))}%만 이 구조` : "";
   const kindsOf = free ? free.domains.map((d) => [d.domain === "jaemul" ? "돈" : d.domain === "yeonae" ? "사랑" : "일", d.card.type] as [string, string]) : [];
   // At the very end, once the reader has been through all of it: send it to a friend, or keep the card.
@@ -653,7 +653,7 @@ async function OpenReport({
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 [&::-webkit-details-marker]:hidden">
         <span>
           <b className="block font-myeongjo">
-            {noGender && noHour ? "성별·태어난 시각" : noGender ? "성별" : "태어난 시각"} 추가하기
+            {noGender && noHour ? "성별, 태어난 시각" : noGender ? "성별" : "태어난 시각"} 추가하기
           </b>
           <span className="text-[12px] text-ink-soft">
             {locked ? "결제 전에 넣으면 10년 대운까지 넣어 써 드려요" : "넣으면 10년 대운까지 넣어 다시 써 드려요"}
@@ -677,11 +677,11 @@ async function OpenReport({
         <RoyalDoc className="mt-3" paperClassName="px-5">
           <p className="text-center font-myeongjo text-sm font-extrabold tracking-[0.4em] text-seal">命 盤</p>
           <h1 className="mt-2 text-center font-myeongjo text-2xl font-extrabold">{name}님의 사주</h1>
-          <p className="mt-2 text-center text-sm leading-snug text-ink-soft">여덟 글자와 만세력, 100명 중 몇 명인지, 그리고 2027년까지 · 무료</p>
+          <p className="mt-2 text-center text-sm leading-snug text-ink-soft">여덟 글자와 만세력, 100명 중 몇 명인지, 그리고 2027년까지, 무료</p>
         </RoyalDoc>
         {fullIntro}
         <Link href={`/reports/pyeongsaeng${query ? `?${query}` : ""}`} className="doc-paper mt-4 block px-5 py-4">
-          <span className="block text-[12px] font-bold text-seal">命 書 · 평생 사주</span>
+          <span className="block text-[12px] font-bold text-seal">命 書, 평생 사주</span>
           <b className="mt-1 block font-myeongjo text-lg">잠긴 이유와 시기, 이 사주로 13장에 걸쳐 풀어 드려요</b>
           <span className="mt-1 block text-[13px] text-ink-soft">나는 어떤 사람인지부터 앞으로 10년, 꼭 잡아야 할 기회까지 →</span>
         </Link>
@@ -799,7 +799,7 @@ async function OpenReport({
             <summary className="doc-paper flex cursor-pointer list-none items-center justify-between px-5 py-4 [&::-webkit-details-marker]:hidden">
               <span>
                 <b className="block font-myeongjo">결제 전에 본 {y}년 무료 화면</b>
-                <span className="text-[12px] text-ink-soft">판정 · 이 해를 움직이는 것 · 달마다 흐름 (한눈에 칸은 1장에)</span>
+                <span className="text-[12px] text-ink-soft">판정, 이 해를 움직이는 것, 달마다 흐름 (한눈에 칸은 1장에)</span>
               </span>
               <span className="text-ink-soft transition group-open:rotate-180" aria-hidden="true">
                 ▾
@@ -828,7 +828,7 @@ async function OpenReport({
               <CalendarButton
                 name={`정 훈도 ${y}년 운세`}
                 file={`hundo-${y}`}
-                label={`${y}년 좋은 달·조심할 달 달력에 넣기`}
+                label={`${y}년 좋은 달, 조심할 달 달력에 넣기`}
                 events={[...d.best.map((i) => ({ i, good: true })), ...d.worst.map((i) => ({ i, good: false }))]
                   .sort((p, q) => p.i - q.i)
                   .map(({ i, good }) => {
@@ -854,8 +854,8 @@ async function OpenReport({
               heading={renew && y === newYear ? `${y} 신년운세 보고서` : `${y}년 운세 보고서`}
               sub={
                 renew && y === newYear
-                  ? `한 해 흐름에 신년운세만의 '새해 첫 석 달'까지 ${yearChaptersFor(true).length}장 · 정 훈도에게 묻는 질문 1개가 함께 와요`
-                  : `${d.when === "past" ? "그해 있었을 일과 그 이유" : "이 해에 벌어질 일과 할 일"}를 돈·일·사랑·몸, 달마다 흐름까지 ${product.toc.length}장에 풀어 드려요`
+                  ? `한 해 흐름에 신년운세만의 '새해 첫 석 달'까지 ${yearChaptersFor(true).length}장, 정 훈도에게 묻는 질문 1개가 함께 와요`
+                  : `${d.when === "past" ? "그해 있었을 일과 그 이유" : "이 해에 벌어질 일과 할 일"}를 돈, 일, 사랑, 몸, 달마다 흐름까지 ${product.toc.length}장에 풀어 드려요`
               }
             />
           </>
@@ -874,7 +874,7 @@ async function OpenReport({
   const chartFold = (
     <details className="group doc-paper mt-4 px-5 py-4">
       <summary className="flex cursor-pointer list-none items-center justify-between [&::-webkit-details-marker]:hidden">
-        <span className="font-myeongjo font-extrabold">사주 원국 · 여덟 글자 보기</span>
+        <span className="font-myeongjo font-extrabold">사주 원국, 여덟 글자 보기</span>
         <span className="text-ink-soft transition group-open:rotate-180" aria-hidden="true">
           ▾
         </span>
@@ -894,7 +894,7 @@ async function OpenReport({
             <summary className="doc-paper flex cursor-pointer list-none items-center justify-between px-5 py-4 [&::-webkit-details-marker]:hidden">
               <span>
                 <b className="block font-myeongjo">내 사주 전체 분석 보기</b>
-                <span className="text-[12px] text-ink-soft">여덟 글자의 무게, 드문 특징 · 평생 사주와 같은 무료 분석</span>
+                <span className="text-[12px] text-ink-soft">여덟 글자의 무게, 드문 특징, 평생 사주와 같은 무료 분석</span>
               </span>
               <span className="text-ink-soft transition group-open:rotate-180" aria-hidden="true">
                 ▾
@@ -1010,7 +1010,7 @@ async function OpenReport({
               <span>
                 <b className="block font-myeongjo">{r2(unlock) ? "결제 전에 본 무료 분석" : "내 사주 분석 다시 보기"}</b>
                 <span className="text-[12px] text-ink-soft">
-                  {r2(unlock) ? "성향 지도 · 사주 속 별 · 인생 흐름 · 2027년 미리 보기" : "사주팔자 · 성향 지도 · 사주 속 별 · 인생 흐름 · 결제 전에 본 무료 분석"}
+                  {r2(unlock) ? "성향 지도, 사주 속 별, 인생 흐름, 2027년 미리 보기" : "사주팔자, 성향 지도, 사주 속 별, 인생 흐름, 결제 전에 본 무료 분석"}
                 </span>
               </span>
               <span className="text-ink-soft transition group-open:rotate-180" aria-hidden="true">
@@ -1187,7 +1187,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
 
         {/* 맛보기: the first chapter, free */}
         <div className="mt-5 border-l-[3px] border-seal/60 py-1 pl-3">
-          <p className="text-xs font-extrabold text-seal">제一장 맛보기 · {product.toc[0]}</p>
+          <p className="text-xs font-extrabold text-seal">제一장 맛보기, {product.toc[0]}</p>
           <p className="mt-2 text-[15px] leading-relaxed">{product.teaser}</p>
         </div>
 

@@ -2,7 +2,7 @@
 // forms in the browser can list them without the chart engine.
 export const RELS = ["연인", "가족", "일", "친구"] as const;
 export type Rel = (typeof RELS)[number];
-export const REL_LABEL: Record<Rel, string> = { 연인: "연인·배우자", 가족: "가족", 일: "일 (동료·동업·상사)", 친구: "친구" };
+export const REL_LABEL: Record<Rel, string> = { 연인: "연인, 배우자", 가족: "가족", 일: "일 (동료, 동업, 상사)", 친구: "친구" };
 
 // The seat each relation lives in, named for the reader by where the letter sits (궁합, 2026-10-25 강 어사 기준):
 // only lovers have a '배우자 자리'; for the rest the line says whose letter it is, not what the seat means.

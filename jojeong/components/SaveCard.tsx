@@ -69,7 +69,7 @@ export default function SaveCard({
           disabled={state === "making"}
           className="rounded-2xl border-2 border-seal bg-white/70 py-3 font-myeongjo text-[15px] font-extrabold text-seal disabled:opacity-60"
         >
-          {state === "making" ? "만드는 중…" : "카드 저장 · 스토리"}
+          {state === "making" ? "만드는 중…" : "카드 저장, 스토리"}
         </button>
         <button type="button" onClick={send} className="rounded-2xl bg-seal py-3 font-myeongjo text-[15px] font-extrabold text-hanji shadow-[0_4px_0_#7d1a14] active:translate-y-0.5 active:shadow-[0_2px_0_#7d1a14]">
           {state === "copied" ? "링크를 복사했어요" : "친구에게 보내기"}

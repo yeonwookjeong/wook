@@ -297,6 +297,6 @@ async function writeWithGeminiOnce(job: ReportJob, onText: (t: string) => void, 
       cacheRead: usage.cachedContentTokenCount ?? 0,
       cacheWrite: 0,
     });
-  lastFinishReason = `${finish ?? "끝 신호 없음"} · ${text.length}자`;
+  lastFinishReason = `${finish ?? "끝 신호 없음"}, ${text.length}자`;
   return finish === "STOP" && text ? text : null;
 }

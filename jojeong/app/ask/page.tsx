@@ -115,7 +115,7 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
       <>
       <DraftCarry join={{ href: loginHref, label: others ? "가입하고 질문 1개 받기" : "카카오로 가입하고 질문 1개 받기" }} />
       <Hallway>
-        <RoomArt caption="청심당 · 마음을 듣는 방">
+        <RoomArt caption="청심당, 마음을 듣는 방">
           <div className="text-center">
             <h1 className="font-myeongjo text-[23px] leading-snug font-extrabold drop-shadow-[0_2px_6px_rgb(0_0_0/0.6)]">
               정 훈도가 그대의
@@ -156,9 +156,9 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
               </li>
             ))}
           </ul>
-          <p className="mt-7 text-center text-[12px] text-hanji/60">예시예요 · 실제 답서는 그대 사주와 그대 사정으로 새로 써요</p>
+          <p className="mt-7 text-center text-[12px] text-hanji/60">예시예요, 실제 답서는 그대 사주와 그대 사정으로 새로 써요</p>
           <div className="mt-3 flex flex-col gap-3 text-ink">
-            <Question slip text={sample.q} topic={`${sample.topic} · 예시`} at={Date.UTC(2026, 9, 12, 3)} />
+            <Question slip text={sample.q} topic={`${sample.topic}, 예시`} at={Date.UTC(2026, 9, 12, 3)} />
             <AnswerLetter name="예시 손님" text={sample.letter} at={Date.UTC(2026, 9, 12, 3)} />
           </div>
         </Floor>
@@ -199,7 +199,7 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
   return (
     <>
       <Hallway>
-        <RoomArt caption="청심당 · 마음을 듣는 방">
+        <RoomArt caption="청심당, 마음을 듣는 방">
           <div className="text-center">
             <h1 className="font-myeongjo text-[22px] leading-snug font-extrabold drop-shadow-[0_2px_6px_rgb(0_0_0/0.6)]">
               {member.nick}님, <span className="text-[#e2bc68]">어서 드시옵소서</span>
@@ -274,7 +274,7 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
                       <span className="min-w-0 flex-1">
                         <b className="block font-myeongjo text-[16px] text-[#f3e1b0]">{p?.name}님의 사랑방</b>
                         <span className="text-[12px] text-hanji/70">
-                          {p ? iljuOf(p) : ""} · 답서 {r!.used}통{r!.people?.length ? ` · 함께 ${r!.people.map((x) => x.label).join(", ")}` : ""}
+                          {p ? iljuOf(p) : ""}, 답서 {r!.used}통{r!.people?.length ? `, 함께 ${r!.people.map((x) => x.label).join(", ")}` : ""}
                         </span>
                       </span>
                       <span className="shrink-0 text-[#e2bc68]">→</span>
@@ -311,11 +311,11 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
 
       <div className="mt-6 text-center text-[12px]">
         <span className="text-ink-soft">회원 번호 {memberNo(member.id)}</span>
-        <span className="mx-2 text-ink-soft/40">·</span>
+        <span className="mx-2 text-ink-soft/40">/</span>
         <a href="/logout" className="text-ink-soft underline">
           로그아웃
         </a>
-        <span className="mx-2 text-ink-soft/40">·</span>
+        <span className="mx-2 text-ink-soft/40">/</span>
         <Link href="/leave" className="text-ink-soft/70 underline">
           회원 탈퇴
         </Link>

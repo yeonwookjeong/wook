@@ -63,7 +63,7 @@ export function kingLinkText(p: Pillars) {
   const link = kingLink(p);
   const stemLabel = `${STEMS_KO[p.dayStem]}${ELEMENTS_KO[Math.floor(p.dayStem / 2)]}`;
   const list = (ks: HistoricKing[]) =>
-    [...ks.slice(0, -1).map((k) => k.name), josa(ks.at(-1)!.name, "과/와")].join(" · ");
+    [...ks.slice(0, -1).map((k) => k.name), josa(ks.at(-1)!.name, "과/와")].join(", ");
   if (link.kind === "pillar") {
     const pillar = `${STEMS[p.dayStem]}${BRANCHES[p.dayBranch]}`;
     return {

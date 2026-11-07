@@ -59,7 +59,7 @@ export function reunionOf(a: Person, b: Person, from = sajuYear(), now = new Dat
     const rough = seat.includes("형") || seat.includes("파");
     ties.push(
       rough
-        ? { w: 1, line: `배우자 자리(일지)끼리 육합이면서 ${seat.filter((m) => m === "형" || m === "파").join("·")}이에요. 끌리면서도 자꾸 어긋나는 사이였을 거예요.` }
+        ? { w: 1, line: `배우자 자리(일지)끼리 육합이면서 ${seat.filter((m) => m === "형" || m === "파").join(", ")}이에요. 끌리면서도 자꾸 어긋나는 사이였을 거예요.` }
         : { w: 3, line: "배우자 자리(일지)끼리 육합이에요. 함께 있을 때의 편안함이 오래 남는 사이예요." },
     );
   } else if (seat.includes("삼합") && halfCombine(da, db)) ties.push({ w: 2, line: "배우자 자리(일지)끼리 반합이에요. 같은 곳을 바라보던 기억이 끈으로 남아 있어요." });
@@ -70,8 +70,8 @@ export function reunionOf(a: Person, b: Person, from = sajuYear(), now = new Dat
   if (seat.includes("충")) splits.push({ w: 3, line: "배우자 자리(일지)끼리 충이에요. 끌림만큼 부딪힘도 커서, 같은 문제로 다시 멀어지기 쉬워요." });
   if (seat.includes("원진")) splits.push({ w: 3, line: "배우자 자리(일지)끼리 원진이에요. 말하지 않은 서운함이 쌓여 멀어진 사이일 가능성이 커요." });
   if (seat.includes("형")) splits.push({ w: 2, line: "배우자 자리(일지)끼리 형이에요. 가까울수록 날이 서는 순간이 있었을 거예요." });
-  if (seat.includes("해") || seat.includes("파")) splits.push({ w: 1, line: "배우자 자리(일지)끼리 어긋나는 관계(해·파)예요. 작은 오해와 엇갈린 약속이 쌓이기 쉬웠어요." });
-  if (c.sharedLack.length) splits.push({ w: 1, line: `둘 다 ${c.sharedLack.map(EL).join("·")} 기운이 부족해요. 서로 채워 주지 못한 빈틈이 있었어요.` });
+  if (seat.includes("해") || seat.includes("파")) splits.push({ w: 1, line: "배우자 자리(일지)끼리 어긋나는 관계(해, 파)예요. 작은 오해와 엇갈린 약속이 쌓이기 쉬웠어요." });
+  if (c.sharedLack.length) splits.push({ w: 1, line: `둘 다 ${c.sharedLack.map(EL).join(", ")} 기운이 부족해요. 서로 채워 주지 못한 빈틈이 있었어요.` });
   const T = ties.reduce((s, x) => s + x.w, 0);
   const S = splits.reduce((s, x) => s + x.w, 0);
   const verdict: Reunion["verdict"] =
@@ -135,7 +135,7 @@ export function reunionBrief(a: Person, b: Person, from = sajuYear(), at = Date.
   const together = r.windows.filter((w) => w.kind === "together");
   const stir = r.windows.filter((w) => w.kind === "stir");
   return [
-    `■ ★ 재회 근거 (이 보고서의 뼈대. 엔진 판정: ${r.verdict}, 끈의 무게 ${r.tieWeight} · 멀어지게 한 것의 무게 ${r.splitWeight})`,
+    `■ ★ 재회 근거 (이 보고서의 뼈대. 엔진 판정: ${r.verdict}, 끈의 무게 ${r.tieWeight}, 멀어지게 한 것의 무게 ${r.splitWeight})`,
     `- 남아 있는 끈: ${r.ties.length ? r.ties.join(" ") : "뚜렷한 끈 없음"}`,
     `- 멀어지게 한 것: ${r.splits.length ? r.splits.join(" ") : "뚜렷한 구조 없음(사주보다 상황이 멀어지게 했을 가능성)"}`,
     `- 다시 닿기 좋은 해(${r.from}~${r.to}, 두 사람 배우자 자리에 함께 합이 들고 둘 다 버거운 해가 아닌 해만): ${together.length ? together.map(windowLine).join(", ") : "뚜렷한 해 없음"}`,

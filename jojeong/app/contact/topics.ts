@@ -2,7 +2,7 @@
 // needs the name on the report).
 export const INQUIRY_TOPICS = [
   {
-    key: "결제·환불",
+    key: "결제, 환불",
     desc: "결제가 됐는데 보고서가 안 열리거나, 환불을 원하실 때",
     body: ["결제일:", "결제 금액:", "보고서 이름:", "결제 수단(카드사 등):", "요청 내용:"],
   },
@@ -22,7 +22,7 @@ export const INQUIRY_TOPICS = [
     body: ["보고 싶은 풀이:", "궁금한 이유(선택):"],
   },
   {
-    key: "기타·제휴",
+    key: "기타, 제휴",
     desc: "그 밖의 문의, 제안, 제휴",
     body: ["문의 내용:"],
   },

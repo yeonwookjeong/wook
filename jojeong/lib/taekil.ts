@@ -47,7 +47,7 @@ const SPIRIT_WHY: Record<string, string> = {
   구진: "구진(勾陳)이 드는 흑도일이에요. 일이 얽히고 늦어지기 쉽다고 봐요.",
 };
 const OFFICER_WHY: Record<string, string> = {
-  成: "성일(成日)은 건제십이신에서 '일이 이루어지는 날'이에요. 결혼·개업·계약처럼 무언가를 맺는 일에 가장 좋은 날로 쳐요.",
+  成: "성일(成日)은 건제십이신에서 '일이 이루어지는 날'이에요. 결혼, 개업, 계약처럼 무언가를 맺는 일에 가장 좋은 날로 쳐요.",
   开: "개일(開日)은 '문이 열리는 날'이에요. 새 출발, 가게 문 열기, 새 집 들어가기에 좋은 날로 쳐요.",
   定: "정일(定日)은 '자리가 정해지는 날'이에요. 오래 갈 약속, 계약, 입주처럼 자리를 잡는 일에 좋아요.",
   除: "제일(除日)은 '묵은 것을 덜어 내는 날'이에요. 옛것을 정리하고 새로 시작하는 일과 잘 맞아요.",
@@ -164,7 +164,7 @@ export function pickDays(kind: Kind, people: Person[], from: { y: number; m: num
           tag: `${who}${seat}와 충`,
           why:
             couple
-              ? `${p.name}님의 배우자 자리와 정면으로 부딪히는(충) 날이에요. 관계를 맺는 ${kind === "wedding" ? "결혼" : "상견례·약혼"} 날로는 빼 두는 게 좋아요.`
+              ? `${p.name}님의 배우자 자리와 정면으로 부딪히는(충) 날이에요. 관계를 맺는 ${kind === "wedding" ? "결혼" : "상견례, 약혼"} 날로는 빼 두는 게 좋아요.`
               : `${p.name}님 사주의 중심 자리와 정면으로 부딪히는(충) 날이에요. 몸과 마음이 어수선해지기 쉬워 큰일은 피하는 편이 좋아요.`,
         });
       } else if (toSeat.includes("육합")) {
@@ -198,7 +198,7 @@ export function pickDays(kind: Kind, people: Person[], from: { y: number; m: num
           reasons.push({ tag: `${who}인정받는 기운(관성)`, why: `그날의 천간이 ${p.name}님에게 관성이에요. 관성은 나를 평가하고 뽑아 주는 자리의 기운이라, 면접관과 시험관의 눈에 드는 날로 봐요.` });
         } else if (g === "인성") {
           score += 1;
-          reasons.push({ tag: `${who}합격·문서의 기운(인성)`, why: `그날의 천간이 ${p.name}님에게 인성이에요. 인성은 공부와 문서, 자격의 기운이라 배운 것이 제대로 나오고 합격 문서를 받는 날로 봐요.` });
+          reasons.push({ tag: `${who}합격, 문서의 기운(인성)`, why: `그날의 천간이 ${p.name}님에게 인성이에요. 인성은 공부와 문서, 자격의 기운이라 배운 것이 제대로 나오고 합격 문서를 받는 날로 봐요.` });
         } else if (g === "재성" && r && (r.strength === "신약" || r.strength === "극신약")) {
           score -= 1;
           warns.push({ tag: `${who}흩어지는 기운(재성)`, why: `그날의 천간이 ${p.name}님에게 재성이에요. 힘이 약한 사주에는 집중이 흩어지기 쉬운 날이라, 시험보다는 다른 일에 어울려요.` });
@@ -232,7 +232,7 @@ export function pickDays(kind: Kind, people: Person[], from: { y: number; m: num
         } else acc.push({ from: x.from, to: x.to, spirits: [x.spirit] });
         return acc;
       }, [])
-      .map((x) => `${x.from}:00~${x.to}:00 ${x.spirits.join("·")}시`);
+      .map((x) => `${x.from}:00~${x.to}:00 ${x.spirits.join(", ")}시`);
     const noon = [...slots].sort((x, y) => Math.abs(x.from + 1 - 12.5) - Math.abs(y.from + 1 - 12.5))[0];
     const ceremony = couple && noon ? `${noon.from}:00~${noon.to}:00 (${noon.spirit}시)` : null;
     const son = kind === "move" ? SON[l.getDay() % 10] : null;
@@ -335,7 +335,7 @@ export function taekilBrief(kind: Kind, days: DayPick[], label: string): string 
   const dirs = kind === "move" ? [...new Map(firsts.map((d) => yearDirections(d)).map((x) => [x.year, x])).values()] : [];
   return [
     "■ ★ 택일 계산 결과 (이 보고서의 뼈대. 날짜와 판정은 이미 계산됐다. 새로 고르거나 순위를 바꾸지 말 것)",
-    ...(kind === "exam" ? ["- 면접·시험은 책력에 따로 정한 글자가 없어, 황도일·건제십이신 위에 사주(그날이 관성·인성인지, 문창귀인·천을귀인이 드는지)로 골랐다. 시험 날짜가 정해져 있다면 그 날의 시간과 마음가짐을, 면접처럼 고를 수 있다면 날짜를 권한다"] : []),
+    ...(kind === "exam" ? ["- 면접, 시험은 책력에 따로 정한 글자가 없어, 황도일, 건제십이신 위에 사주(그날이 관성, 인성인지, 문창귀인, 천을귀인이 드는지)로 골랐다. 시험 날짜가 정해져 있다면 그 날의 시간과 마음가짐을, 면접처럼 고를 수 있다면 날짜를 권한다"] : []),
     `- 무엇: ${KINDS[kind].title} / 기간: ${label} / 책력상 맞는 날 ${days.filter((d) => d.fit).length}일, ◎ ${days.filter((d) => d.grade === 2).length}일, ○ ${days.filter((d) => d.grade === 1).length}일, 사주와 부딪혀 뺀 날 ${out.length}일`,
     `- 가장 좋은 날(순위대로): ${bestDays(days, kind, 5).map((d, i) => `\n  ${i + 1}. ${line(d)}`).join("") || "없음"}`,
     `- 사정별로 고르기: ${picksOf(days, kind).map((x) => `${x.label} ${x.day.date.slice(0, 4)}년 ${x.day.label}`).join(" / ") || "없음"}`,

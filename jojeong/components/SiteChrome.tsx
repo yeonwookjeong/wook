@@ -54,22 +54,22 @@ export async function SiteHeader() {
                 (member ? (
                   <div className="mx-2 mb-1 rounded-lg bg-ink/5 px-3 py-2.5 font-normal">
                     <span className="block text-[13.5px] font-bold">
-                      {member.nick}님 <span className="text-[11px] font-normal text-ink-soft">· {VIA_LABEL[viaOf(member.id)]} 로그인 중</span>
+                      {member.nick}님 <span className="text-[11px] font-normal text-ink-soft">, {VIA_LABEL[viaOf(member.id)]} 로그인 중</span>
                     </span>
                     <span className="block text-[11.5px] text-ink-soft">
-                      회원 번호 {memberNo(member.id)} · 남은 질문 {member.credits}개
+                      회원 번호 {memberNo(member.id)}, 남은 질문 {member.credits}개
                     </span>
                   </div>
                 ) : (
                   <Link href="/login" className="mx-2 mb-1 rounded-lg bg-jjok px-3 py-2.5 text-center text-[13.5px] text-hanji">
-                    로그인 · 가입
+                    로그인, 가입
                     <span className="block text-[11px] font-normal opacity-75">산 보고서를 계정에 보관해요</span>
                   </Link>
                 ))}
               {[
-                ["/my", `내 보고서${bought ? ` · ${bought}` : ""}`],
+                ["/my", `내 보고서${bought ? `, ${bought}` : ""}`],
                 ["/reports", "전체 보고서"],
-                ...(ask ? [["/ask", member ? `정 훈도에게 묻기 · 남은 ${member.credits}` : "정 훈도에게 묻기"]] : []),
+                ...(ask ? [["/ask", member ? `정 훈도에게 묻기, 남은 ${member.credits}` : "정 훈도에게 묻기"]] : []),
                 ["/news", "새 소식"],
                 ["/contact", "문의하기"],
               ].map(([href, label]) => (

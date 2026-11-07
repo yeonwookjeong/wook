@@ -223,7 +223,7 @@ export function readChart(p: Pillars): Reading | null {
     if (branchUnits.some((o) => o !== x && o !== y && (Math.abs(o.char - x.char) === 6 || Math.abs(o.char - y.char) === 6))) continue;
     paired.add(x);
     paired.add(y);
-    const name = `${a}지 ${BRANCHES[x.char]}·${b}지 ${BRANCHES[y.char]} 육합`;
+    const name = `${a}지 ${BRANCHES[x.char]}, ${b}지 ${BRANCHES[y.char]} 육합`;
     if (el === monthEl) {
       become(x, el);
       become(y, el);
@@ -241,7 +241,7 @@ export function readChart(p: Pillars): Reading | null {
     if (!x || !y) continue;
     const el = stemHapEl(x.char, y.char);
     if (el === null) continue;
-    const name = `${a}간 ${STEMS[x.char]}·${b}간 ${STEMS[y.char]} 천간합`;
+    const name = `${a}간 ${STEMS[x.char]}, ${b}간 ${STEMS[y.char]} 천간합`;
     if (a === "일" || b === "일") bonds.push(`${name}: 일간과 정으로 묶임(유정), 힘은 그대로`);
     else if (el === monthEl) {
       become(x, el);

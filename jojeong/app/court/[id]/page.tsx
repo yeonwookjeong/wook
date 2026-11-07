@@ -64,14 +64,14 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
     <>
       <header className="animate-rise pt-6 text-center">
         <p className="text-sm font-bold text-gold">
-          {kingType.title} · <span className={tier.dark ? "text-seal" : ""}>{tier.label}</span>
+          {kingType.title}, <span className={tier.dark ? "text-seal" : ""}>{tier.label}</span>
         </p>
         <h1 className="mt-0.5 font-myeongjo text-3xl font-extrabold">{court.kingName} 전하의 조정</h1>
         <p className="mt-2 text-sm text-ink-soft">
           신하 <b className="text-ink">{seats.length}</b>명
           {seats.length > 0 && (
             <>
-              {" · "}간신 <b className="text-seal">{gansinCount}</b>명 적발
+              {", "}간신 <b className="text-seal">{gansinCount}</b>명 적발
             </>
           )}
         </p>
@@ -103,7 +103,7 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
               {/* Folded like the chronicle's body, so inviting friends and the reports are a short scroll away. */}
               <details className="group mt-3 rounded-2xl border border-ink/15 bg-white/40">
                 <summary className="cursor-pointer list-none py-3 text-center text-sm font-bold text-ink-soft [&::-webkit-details-marker]:hidden">
-                  즉위 교서 펼쳐 보기 · {KING_TYPES[court.king.dayStem].title}
+                  즉위 교서 펼쳐 보기, {KING_TYPES[court.king.dayStem].title}
                   <span className="ml-1 inline-block transition group-open:rotate-180">▾</span>
                 </summary>
                 <div className="px-1 pb-3">
@@ -133,7 +133,7 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
 
           {seats.length > 0 && <CourtBoard kingName={court.kingName} seats={seats.map((x) => ({ role: x.role, name: x.minister.name }))} />}
           {seats.length > 0 && (
-            <p className="mt-6 text-right text-[11px] text-ink-soft">오른쪽 숫자는 전하와의 궁합 점수 · 평균 68점</p>
+            <p className="mt-6 text-right text-[11px] text-ink-soft">오른쪽 숫자는 전하와의 궁합 점수, 평균 68점</p>
           )}
           {seats.length > 0 && (
             <ol className="mt-1.5 flex flex-col gap-2">
@@ -204,7 +204,7 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
               query={`court=${court.id}`}
               highlights={{
                 sinbun: `왕이 아니었다면 ‘${sinbunOf(court.king).job}’`,
-                gukjeong: "여덟 글자로 보는 성격·재능, 2027년 한눈에까지",
+                gukjeong: "여덟 글자로 보는 성격, 재능, 2027년 한눈에까지",
               }}
             />
           )}

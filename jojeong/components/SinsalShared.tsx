@@ -17,10 +17,10 @@ export default function SinsalShared({ sender, me, token }: { sender: Person; me
       {me && !self ? (
         <>
           <p className="mt-4 rounded-full border border-[#d4af5f]/50 bg-white/[0.06] px-4 py-2 text-center text-[13px] leading-snug text-hanji/90">
-            {name}님이 보냈어요 · 내 살을 보면 {name}님과 겹치는 살도 보여요
+            {name}님이 보냈어요, 내 살을 보면 {name}님과 겹치는 살도 보여요
           </p>
           <section className="pt-6 text-center">
-            <p className="font-myeongjo text-sm font-extrabold tracking-[0.3em] text-[#d4af5f]">神 煞 · 신살 유형 테스트</p>
+            <p className="font-myeongjo text-sm font-extrabold tracking-[0.3em] text-[#d4af5f]">神 煞, 신살 유형 테스트</p>
             <h1 className="mt-2 font-myeongjo text-[28px] font-extrabold">나는 어떤 살의 사람일까</h1>
             <p className="mt-2 text-[15px] leading-relaxed text-hanji/85">{me.name}님의 사주가 이 기기에 저장돼 있어요</p>
           </section>
@@ -31,7 +31,7 @@ export default function SinsalShared({ sender, me, token }: { sender: Person; me
       ) : (
         <SinsalStart
           next={next}
-          band={self ? <>친구에게는 이렇게 보여요</> : <>{name}님이 보냈어요 · 내 살을 보면 {name}님과 겹치는 살도 보여요</>}
+          band={self ? <>친구에게는 이렇게 보여요</> : <>{name}님이 보냈어요, 내 살을 보면 {name}님과 겹치는 살도 보여요</>}
         />
       )}
     </SinsalNight>

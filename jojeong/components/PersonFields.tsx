@@ -40,7 +40,7 @@ export default function PersonFields({
   // The site's forms (modern) have no gender picked in advance: left alone, most people kept "밝히지 않음" and
   // lost the 10-year flow and the spouse star. The choice is required, "밝히지 않음" stays one of them.
   const pick = modern;
-  const label = genderLabel ?? (modern ? "성별 · 10년 흐름(대운)을 볼 때 쓰여요" : "성별 (선택 · 10년 대운 풀이에 쓰이옵니다)");
+  const label = genderLabel ?? (modern ? "성별, 10년 흐름(대운)을 볼 때 쓰여요" : "성별 (선택, 10년 대운 풀이에 쓰이옵니다)");
   const genders = binaryGender ? GENDERS.filter((g) => g.value) : GENDERS;
   const extras = (
     <>
@@ -107,7 +107,7 @@ export default function PersonFields({
       {foldExtras ? (
         <details className="group rounded-xl border border-ink/15 bg-white/40">
           <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-ink-soft [&::-webkit-details-marker]:hidden">
-            태어난 시각 · 성별 (선택, 더 정확하게)
+            태어난 시각, 성별 (선택, 더 정확하게)
             <span className="ml-1 inline-block transition group-open:rotate-180">▾</span>
           </summary>
           <div className="flex flex-col gap-4 border-t border-ink/10 px-4 pt-4 pb-4">{extras}</div>

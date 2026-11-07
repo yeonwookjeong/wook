@@ -28,7 +28,7 @@ export default function Hopae({ tag, className = "", night = false }: { tag: Hop
         </div>
       </button>
       <p className={`mt-1 text-[11.5px] ${night ? "text-hanji/55" : "text-ink-soft"}`}>
-        {m.name}({m.hanja}) · {back ? "뒷면 · 발급한 해와 낙인" : "눌러서 뒷면 보기"}
+        {m.name}({m.hanja}), {back ? "뒷면, 발급한 해와 낙인" : "눌러서 뒷면 보기"}
       </p>
     </div>
   );
