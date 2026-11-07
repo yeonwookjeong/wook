@@ -213,3 +213,10 @@ python3 review.py            # 대본 자동 검수 → out/검수/검수결과.
 python3 review.py --sheet    # 만든 영상마다 1초 간격 장면 사진 → out/검수/장면_*.jpg
 ```
 `python3 plan.py --make` 를 돌리면 만들기 전 검수 + 만든 뒤 장면 사진까지 자동으로 해요.
+
+## 업데이트 (새 버전 받기)
+
+```bash
+python3 update.py          # 최신 코드·레시피만 받아서 덮어씀 (work·out·bgm·broll·키 파일은 그대로)
+python3 update.py --make   # 업데이트 후 바로 영상 만들기
+```
