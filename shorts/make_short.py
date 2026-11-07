@@ -2089,8 +2089,7 @@ def assemble(ff: str, segs: list, layout: Path | None, tmp: Path, final: Path, t
                   f"loudnorm=I=-16:TP=-2:LRA=11,aresample=44100,volume={bgm_volume},"
                   f"atrim=0:{total:.3f},asetpts=PTS-STARTPTS,{gain}"
                   f"afade=t=out:st={max(total - 1.2, 0):.3f}:d=1.2[bg0]")
-        # 말소리(TTS·셀럽)가 나오면 음악을 더 확실히 눌러줌
-        fa.append("[bg0][am2]sidechaincompress=threshold=0.02:ratio=10:attack=10:release=400[bgd]")
+        fa.append("[bg0][am2]sidechaincompress=threshold=0.03:ratio=6:attack=15:release=350[bgd]")
         fa.append("[am1][bgd]amix=inputs=2:duration=first:normalize=0[amix]")
     else:
         fa.append("[amain]anull[amix]")
