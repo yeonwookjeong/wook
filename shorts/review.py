@@ -82,7 +82,7 @@ def review(rpath: Path, subs: "ms.Subs") -> tuple[list, list]:
             prev = [x for x in subs.lines if x[1] <= lines[0][0] + 0.05]
             bad_start = bool(prev) and not raw.lstrip().startswith(">>") \
                 and ms.norm(prev[-1][2]) not in ms._FILLERS and len(ms.norm(prev[-1][2])) > 2 \
-                and not re.search(r"([.?!]|요|다|죠|더라고|거든|잖아|네|지)$", prev[-1][2].strip()) and lines[0][0] - prev[-1][1] < 0.3
+                and not re.search(r"([.?!]|요|용|다|죠|더라고|거든|잖아|네|지)$", prev[-1][2].strip()) and lines[0][0] - prev[-1][1] < 0.3
         if bad_start:
             warn.append(f"[{ms.fmt(lines[0][0])}] 앞 문장 꼬리로 시작하는 것 같아요: '{raw.strip()[:24]}'")
         # 자막 빈 구간 (화면 자막 기준)

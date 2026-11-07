@@ -1,0 +1,56 @@
+{
+  "source": "https://youtu.be/yG8evGGMrmw",
+  "title1": "향으로 출근을 들킨다는",
+  "title2": "[[설윤]]의 헤어 프라이머",
+  "link_text": "프로필 링크 69번",
+  "theme": "celebpick",
+  "sub_theme": "story_green",
+  "clip_subs": true,
+  "blur": true,
+  "google_voice": "ko-KR-Chirp3-HD-Kore",
+  "google_rate": 1.3,
+  "broll_hint": "엔믹스",
+  "broll_offset": 2,
+  "caption": "엔믹스 설윤이 머리 말릴 때마다 뿌리는 헤어 프라이머 💇‍♀️",
+  "points": [
+    "향이 좋아서 회사 직원분들이 출근한 걸 알아챌 정도 ✨",
+    "지속력도 좋고 겨울에 잘 어울리는 달콤한 향 🍯"
+  ],
+  "hashtags": [
+    "헤어프라이머",
+    "헤어미스트",
+    "헤어케어",
+    "엔믹스"
+  ],
+  "highlight": [
+    "향",
+    "지속력",
+    "프라이머",
+    "출근",
+    "달콤"
+  ],
+  "bgm_mood": "귀여운",
+  "parts": [
+    {
+      "type": "tts",
+      "text": "엔믹스 설윤이 샤워하고 나면 꼭 챙긴다는 이것은?",
+      "media": [
+        "auto"
+      ]
+    },
+    {
+      "type": "clip",
+      "from": "네 번째는요 헤어 프라이머인데요",
+      "to": "칙칙칙 뿌려주고 있는 헤어 프라이머인데요"
+    },
+    {
+      "type": "tts",
+      "text": "그런데 이 향 때문에 생긴 일이 있다는데"
+    },
+    {
+      "type": "clip",
+      "from": "제가 이걸 진짜 많이 뿌려 가지고",
+      "to": "한번 써보세요"
+    }
+  ]
+}

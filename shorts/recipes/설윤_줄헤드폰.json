@@ -1,0 +1,56 @@
+{
+  "source": "https://youtu.be/yG8evGGMrmw",
+  "title1": "스케줄마다 쓴다는",
+  "title2": "엔믹스 [[설윤]]의 헤드폰",
+  "link_text": "프로필 링크 50번",
+  "theme": "celebpick",
+  "sub_theme": "story_green",
+  "clip_subs": true,
+  "blur": true,
+  "google_voice": "ko-KR-Chirp3-HD-Kore",
+  "google_rate": 1.3,
+  "broll_hint": "엔믹스",
+  "broll_offset": 0,
+  "caption": "엔믹스 설윤이 스케줄마다 쓰는 줄 헤드폰 🎧",
+  "points": [
+    "헤메 받고 써도 가벼워서 헤어가 눌리지 않아요 ✨",
+    "줄로 된 헤드폰이라 잃어버릴 걱정도 적어요 🎒"
+  ],
+  "hashtags": [
+    "헤드폰",
+    "유선헤드폰",
+    "아이돌템",
+    "엔믹스"
+  ],
+  "highlight": [
+    "헤드폰",
+    "가벼워서",
+    "눌리지",
+    "잃어버릴",
+    "스케줄"
+  ],
+  "bgm_mood": "세련된",
+  "parts": [
+    {
+      "type": "tts",
+      "text": "엔믹스 설윤이 활동할 때마다 꼭 챙긴다는 이것은?",
+      "media": [
+        "auto"
+      ]
+    },
+    {
+      "type": "clip",
+      "from": "첫 번째 아이템은요",
+      "to": "줄로 된 헤드폰이어 가지고요"
+    },
+    {
+      "type": "tts",
+      "text": "그녀가 이 헤드폰만 고집하는 이유는"
+    },
+    {
+      "type": "clip",
+      "from": "이게 잃어버릴 위험도",
+      "to": "굉장히 많이 쓰는 헤드폰입니다"
+    }
+  ]
+}

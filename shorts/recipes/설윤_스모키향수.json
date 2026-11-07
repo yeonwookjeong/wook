@@ -1,0 +1,60 @@
+{
+  "source": "https://youtu.be/yG8evGGMrmw",
+  "title1": "4개 중에 바로 픽한",
+  "title2": "[[설윤]]의 스모키 향수",
+  "link_text": "프로필 링크 59번",
+  "theme": "celebpick",
+  "sub_theme": "story_green",
+  "clip_subs": true,
+  "blur": true,
+  "google_voice": "ko-KR-Chirp3-HD-Kore",
+  "google_rate": 1.3,
+  "broll_hint": "엔믹스",
+  "broll_offset": 1,
+  "caption": "엔믹스 설윤이 4개 중에 바로 픽한 오니츠카타이거 향수 🖤",
+  "points": [
+    "스모키하고 스파이시한 향이 부드럽게 펼쳐져요 ✨",
+    "새해 선물로 추천한 설윤 취향 저격 향수 🎁"
+  ],
+  "hashtags": [
+    "향수",
+    "오니츠카타이거",
+    "향수추천",
+    "선물추천"
+  ],
+  "highlight": [
+    "스모키",
+    "스파이시",
+    "취향",
+    "향수"
+  ],
+  "bgm_mood": "세련된",
+  "parts": [
+    {
+      "type": "tts",
+      "text": "엔믹스 설윤이 네 개를 맡아보고 바로 골랐다는 이것은?",
+      "media": [
+        "auto"
+      ]
+    },
+    {
+      "type": "clip",
+      "from": "그리고 세 번째 아이템은 향수인데요",
+      "to": "내 취향인데 하면서 픽한 향수고요"
+    },
+    {
+      "type": "tts",
+      "text": "과연 어떤 향이냐면"
+    },
+    {
+      "type": "clip",
+      "from": "되게 스모키하고 스파이시한",
+      "to": "그런 향인데요"
+    },
+    {
+      "type": "clip",
+      "from": "아무튼 제가 굉장히 제 취향이었던",
+      "to": "이렇게 소개해 드리고 싶습니다"
+    }
+  ]
+}
