@@ -1,45 +1,45 @@
 {
-  "voice": "af_bella",
+  "voice": "am_michael",
   "sentences": [
     {
       "id": 0,
       "file": "ep01/vo/s0.wav",
-      "sec": 0.64
+      "sec": 0.939
     },
     {
       "id": 1,
       "file": "ep01/vo/s1.wav",
-      "sec": 1.835
+      "sec": 2.027
     },
     {
       "id": 2,
       "file": "ep01/vo/s2.wav",
-      "sec": 2.197
+      "sec": 2.347
     },
     {
       "id": 3,
       "file": "ep01/vo/s3.wav",
-      "sec": 4.823
+      "sec": 5.143
     },
     {
       "id": 4,
       "file": "ep01/vo/s4.wav",
-      "sec": 2.496
+      "sec": 2.645
     },
     {
       "id": 5,
       "file": "ep01/vo/s5.wav",
-      "sec": 3.392
+      "sec": 3.541
     },
     {
       "id": 6,
       "file": "ep01/vo/s6.wav",
-      "sec": 3.989
+      "sec": 3.968
     },
     {
       "id": 7,
       "file": "ep01/vo/s7.wav",
-      "sec": 2.432
+      "sec": 2.816
     }
   ]
 }
