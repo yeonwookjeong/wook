@@ -17,7 +17,7 @@ const TOPICS = ["연애", "일", "돈", "사람", "기타"] as const;
 // Starters for an empty box: a situation half written, so the guest tells what is going on, which is where a
 // question beats a report.
 const STARTERS: { topic: (typeof TOPICS)[number]; label: string; text: string }[] = [
-  { topic: "일", label: "이직·제안", text: "요즘 이직(또는 새 제안)을 고민 중인데, " },
+  { topic: "일", label: "이직, 제안", text: "요즘 이직(또는 새 제안)을 고민 중인데, " },
   { topic: "연애", label: "그 사람", text: "요즘 마음 가는 사람이 있는데, " },
   { topic: "돈", label: "돈 결정", text: "돈이 들어가는 결정을 앞두고 있는데, " },
   { topic: "사람", label: "관계 고민", text: "가까운 사람과 사이가 어긋나서, " },
@@ -36,7 +36,7 @@ export function OpenRoomForm() {
   const [state, action, pending] = useActionState<FormState, FormData>(openRoomAction, { error: null });
   return (
     <form action={action} onSubmit={keepValues(action)} className="mt-3 flex flex-col gap-3">
-      <PersonFields nameLabel="이름" unknownHour="모름" modern binaryGender genderLabel="성별 · 배우자의 별과 10년 흐름을 볼 때 꼭 필요해요" />
+      <PersonFields nameLabel="이름" unknownHour="모름" modern binaryGender genderLabel="성별, 배우자의 별과 10년 흐름을 볼 때 꼭 필요해요" />
       <ErrorLine error={state.error} />
       <button type="submit" disabled={pending} className="rounded-xl bg-ink py-3 text-sm font-extrabold text-hanji disabled:opacity-60">
         {pending ? "방을 여는 중이에요…" : "내 사주로 사랑방 열기"}
@@ -285,7 +285,7 @@ export function AskForm({
         ) : (
           <button type="button" onClick={() => setOpen(true)} className="mb-1.5 flex max-w-full items-center gap-1 text-[12px] text-hanji/60">
             <span className="truncate">
-              <b className="text-[#e2bc68]">{whoLabel} 이야기</b> · {topic || "주제 고르기"}
+              <b className="text-[#e2bc68]">{whoLabel} 이야기</b>, {topic || "주제 고르기"}
             </span>
             <span aria-hidden>▴</span>
           </button>
@@ -313,7 +313,7 @@ export function AskForm({
         </div>
         {open && text && (
           <p className="mt-1 text-right text-[11px] text-hanji/55">
-            {[...text].length}/{MAX} · 무슨 일이 있는지, 언제까지 정해야 하는지 적어 주실수록 깊어져요
+            {[...text].length}/{MAX}, 무슨 일이 있는지, 언제까지 정해야 하는지 적어 주실수록 깊어져요
           </p>
         )}
         <ErrorLine error={state.error} />

@@ -24,12 +24,12 @@ const POWER: Record<GodGroup, { name: string; high: string; low: string }> = {
     low: "속으로 삼키는 게 많아요. 좋은 생각을 밖으로 꺼내는 게 숙제예요.",
   },
   재성: {
-    name: "돈·현실 감각",
+    name: "돈, 현실 감각",
     high: "손익을 빨리 따지고 현실 감각이 좋아요. 결과가 안 보이면 금방 흥미를 잃어요.",
     low: "돈보다 의미를 좇는 편이에요. 돈 관리는 규칙으로 정해 두는 게 좋아요.",
   },
   관성: {
-    name: "책임·규칙의 힘",
+    name: "책임, 규칙의 힘",
     high: "맡은 일은 끝까지 해내는 책임감이 강해요. 스스로를 너무 몰아붙이기 쉬워요.",
     low: "틀에 매이는 걸 못 견뎌요. 자유로운 자리에서 오히려 빛나요.",
   },
@@ -45,8 +45,8 @@ const GROUPS: GodGroup[] = ["비겁", "식상", "재성", "관성", "인성"];
 const SAL: Partial<Record<Sal | "괴강" | "백호", { plain: string; line: string }>> = {
   천을귀인: { plain: "위기 때 돕는 사람", line: "막다른 길에서 꼭 누군가 손을 내밀어요." },
   도화: { plain: "사람을 끄는 매력", line: "가만히 있어도 눈길을 끌고, 표현력과 센스가 무기가 돼요." },
-  역마: { plain: "움직여야 풀리는 기운", line: "이사·출장·해외·이직처럼 움직일 때 운이 트여요." },
-  화개: { plain: "혼자 깊이 파고드는 힘", line: "공부·예술·연구처럼 한 우물을 깊이 파는 일과 인연이 있어요." },
+  역마: { plain: "움직여야 풀리는 기운", line: "이사, 출장, 해외, 이직처럼 움직일 때 운이 트여요." },
+  화개: { plain: "혼자 깊이 파고드는 힘", line: "공부, 예술, 연구처럼 한 우물을 깊이 파는 일과 인연이 있어요." },
   문창귀인: { plain: "글과 공부의 재주", line: "글, 시험, 기획처럼 머리로 하는 일에서 빛나요." },
   양인: { plain: "칼 같은 결단력", line: "한번 정하면 밀어붙여요. 욱하는 순간만 조심하면 큰 무기예요." },
   괴강: { plain: "우두머리 기질", line: "판이 크고 남 밑에 오래 있기 힘들어요. 잘될 땐 크게 잘돼요." },
@@ -57,7 +57,7 @@ const SAL: Partial<Record<Sal | "괴강" | "백호", { plain: string; line: stri
 // branch brings, which carries the decade, in words for the age it falls in.
 type Stage = "young" | "adult" | "late";
 const DECADE_OF: Record<GodGroup, Record<Stage, string>> = {
-  비겁: { young: "친구·형제와 부대끼며 자란 시기", adult: "내 힘으로 서고 독립하는 10년", late: "내 뜻대로 사는 10년" },
+  비겁: { young: "친구, 형제와 부대끼며 자란 시기", adult: "내 힘으로 서고 독립하는 10년", late: "내 뜻대로 사는 10년" },
   식상: { young: "재주와 끼가 드러난 시기", adult: "재주를 펼치고 결과를 내는 10년", late: "쌓은 것을 나누는 10년" },
   재성: { young: "집안 형편과 환경이 크게 작용한 시기", adult: "돈과 기회를 잡는 10년", late: "모은 것을 지키고 굴리는 10년" },
   관성: { young: "규칙과 기대 속에서 자란 시기", adult: "자리와 책임이 커지는 10년", late: "이름과 자리를 지키는 10년" },
@@ -163,7 +163,7 @@ export function freeBrief(p: Pillars, profile: Profile | null, now = 2026, legac
     "■ ★ 무료 화면에서 읽는 사람이 이미 본 판정 (보고서는 반드시 이 판정과 같은 방향으로 쓴다. 되풀이하지 말고 이유와 장면으로 넓힌다. 어긋나는 말은 금지)",
     `- 성향 지도: ${r.powers.map((x) => `${x.name} ${x.pct}%${x.rank ? `(${x.rank})` : ""}`).join(", ")} / 가장 강한 힘 ${r.strong.name}, 가장 약한 힘 ${r.weak.name}`,
     `- 사주 속 별: ${r.sals.length ? r.sals.map((x) => `${x.name}(${x.plain})`).join(", ") : "두드러진 신살 없음"}`,
-    `- 돈·사랑·일 판정: ${r.domains.map((d) => `${d.domain === "jaemul" ? "돈" : d.domain === "yeonae" ? "사랑" : "일"} '${d.card.type}'`).join(", ")}`,
+    `- 돈, 사랑, 일 판정: ${r.domains.map((d) => `${d.domain === "jaemul" ? "돈" : d.domain === "yeonae" ? "사랑" : "일"} '${d.card.type}'`).join(", ")}`,
     ...(r.flow
       ? legacy
         ? [

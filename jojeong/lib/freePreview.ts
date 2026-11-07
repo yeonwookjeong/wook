@@ -45,7 +45,7 @@ export function salSeats(p: Pillars): Record<string, string> {
   }
   if (isGoegang(p)) out.괴강 = [`일주 ${STEMS[p.dayStem]}${BRANCHES[p.dayBranch]}`];
   if (isBaekho(p)) out.백호 = [`일주 ${STEMS[p.dayStem]}${BRANCHES[p.dayBranch]}`];
-  return Object.fromEntries(Object.entries(out).map(([k, v]) => [k, v.join(" · ")]));
+  return Object.fromEntries(Object.entries(out).map(([k, v]) => [k, v.join(", ")]));
 }
 
 // ⑧ A decade's characters against the chart, as bare tags: its branch with each natal branch (寅巳 형, 子未 원진),
@@ -132,7 +132,7 @@ export function yearPreviewOf(p: Pillars, profile: Profile | null, y: number): Y
               : "돈이 들어오는 기운이 찾아와요",
         )
       : 0) +
-    (gods.includes("겁재") ? add("돈", -0.6, "내 돈을 나눠 가져가려는 기운도 함께 와요. 빌려주기·동업은 한 번 더 생각하세요") : 0);
+    (gods.includes("겁재") ? add("돈", -0.6, "내 돈을 나눠 가져가려는 기운도 함께 와요. 빌려주기, 동업은 한 번 더 생각하세요") : 0);
   const work =
     base +
     (groups.has("관성")
@@ -147,11 +147,11 @@ export function yearPreviewOf(p: Pillars, profile: Profile | null, y: number): Y
         )
       : 0) +
     (gods.includes("상관") && r.gods.관성 > 0 ? add("일", -0.6, "윗사람과 부딪히기 쉬운 기운이 들어와요. 바른말도 한 박자 쉬고 하세요") : 0) +
-    add("일", hard(meetAt("월")), meetSaid(meetAt("월"), "일터가 흔들리는 해예요. 부서 이동·이직 이야기가 나오기 쉬워요", "일터에서 마음 쓸 일이 생기기 쉬워요"));
+    add("일", hard(meetAt("월")), meetSaid(meetAt("월"), "일터가 흔들리는 해예요. 부서 이동, 이직 이야기가 나오기 쉬워요", "일터에서 마음 쓸 일이 생기기 쉬워요"));
   const spouse: GodGroup | null = profile?.gender === "m" ? "재성" : profile?.gender === "f" ? "관성" : null;
   const love =
     base +
-    (spouse && groups.has(spouse) ? add("사랑", 0.8, "연인·배우자를 뜻하는 기운이 들어와요. 인연이 닿기 쉬운 해예요") : 0) +
+    (spouse && groups.has(spouse) ? add("사랑", 0.8, "연인, 배우자를 뜻하는 기운이 들어와요. 인연이 닿기 쉬운 해예요") : 0) +
     add(
       "사랑",
       soft(meetAt("일")) + hard(meetAt("일")),
@@ -165,10 +165,10 @@ export function yearPreviewOf(p: Pillars, profile: Profile | null, y: number): Y
       ? add("사람", 0.5 * Math.sign(welcome("인성")), welcome("인성") > 0 ? "나를 챙겨 주는 윗사람 복이 들어와요" : "도움을 받아도 간섭처럼 느껴지기 쉬워요")
       : 0) +
     (groups.has("비겁")
-      ? add("사람", 0.5 * Math.sign(welcome("비겁")), welcome("비겁") > 0 ? "함께하는 동료·친구가 힘이 돼 줘요" : "경쟁자가 생기기 쉬워요. 내 몫은 내가 챙기세요")
+      ? add("사람", 0.5 * Math.sign(welcome("비겁")), welcome("비겁") > 0 ? "함께하는 동료, 친구가 힘이 돼 줘요" : "경쟁자가 생기기 쉬워요. 내 몫은 내가 챙기세요")
       : 0) +
     (s.sals.includes("천을귀인") ? add("사람", 1, "어려울 때 손을 내밀어 주는 귀인이 드는 해예요") : 0) +
-    add("사람", hard(meetAt("연")), meetSaid(meetAt("연"), "바깥 사람·윗사람과 부딪히기 쉬워요", "바깥 관계에서 오해가 생기기 쉬워요"));
+    add("사람", hard(meetAt("연")), meetSaid(meetAt("연"), "바깥 사람, 윗사람과 부딪히기 쉬워요", "바깥 관계에서 오해가 생기기 쉬워요"));
   const bodyEl = elScore(r, BRANCH_EL[branch]) * 0.3;
   const body =
     0.5 +
@@ -188,7 +188,7 @@ export function yearPreviewOf(p: Pillars, profile: Profile | null, y: number): Y
   const areaMonths = {
     돈: monthsWhere((i) => good(i) && monthGroups[i].has("재성")),
     일: monthsWhere((i) => good(i) && monthGroups[i].has("관성")),
-    사랑: monthsWhere((i) => good(i) && (marks[i].tags.includes("인연·약속") || marks[i].tags.includes("합") || (!!spouse && monthGroups[i].has(spouse)))),
+    사랑: monthsWhere((i) => good(i) && (marks[i].tags.includes("인연, 약속") || marks[i].tags.includes("합") || (!!spouse && monthGroups[i].has(spouse)))),
     사람: monthsWhere((i) => good(i) && (marks[i].tags.includes("귀인") || monthGroups[i].has("인성"))),
     몸: monthsWhere((i) => marks[i].tags.includes("변동") || marks[i].rating === 0),
   };

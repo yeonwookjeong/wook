@@ -3,7 +3,7 @@ import { meetings, salsAt, stemClash, stemCombine } from "./deep";
 import { ILJU_IMAGE, meet, rankMonth } from "./iljuRank";
 import { ELEMENT_HANJA, ELEMENT_KO, BRANCH_EL, GROUP_OF, HIDDEN, elScore, readChart, stemEl, tenGod, type Reading, type TenGod } from "./myeongri";
 import type { Person } from "./pairToken";
-import { BRANCHES, BRANCHES_KO, hourStemOf, STEMS, STEMS_KO, type Pillars } from "./saju";
+import { ANIMALS, BRANCHES, BRANCHES_KO, hourStemOf, STEMS, STEMS_KO, type Pillars } from "./saju";
 
 // 오늘의 운세 for the main page. Rule-based, no writer involved: the same pieces the paid reports stand on
 // (용신·기신, 십신, 합·충, 신살), read for one day. Today's day pillar (Korean date) as an image and a line of
@@ -19,8 +19,30 @@ function advice(s: number, b: number): string {
   return "누르는 기운이 있는 날이에요. 무리하지 말고 하던 대로 가면 탈이 없어요.";
 }
 
+// The one thing to leave alone today, for everyone: the same five cases as advice().
+function dontFor(s: number, b: number): string {
+  if (s === b) return "고집으로 밀어붙이기. 힘이 센 날일수록 남의 말을 한 번 더 들으세요";
+  if ((s + 1) % 5 === b) return "지키지 못할 약속하기. 기운이 밖으로 새는 날이라 말이 앞서기 쉬워요";
+  if ((b + 1) % 5 === s) return "도움을 사양하기. 혼자 버티면 손해 보는 날이에요";
+  if ((s + 2) % 5 === b) return "충동적인 큰 지출. 셈이 빠른 날이라 오히려 지갑이 쉽게 열려요";
+  return "무리한 일정 잡기. 누르는 기운이 있어 몸과 마음이 먼저 지쳐요";
+}
+// With the reader's chart, from what the day's stem is to their day master.
+const DONT: Record<TenGod, string> = {
+  정재: "충동구매. 아낀 만큼 남는 날이에요",
+  편재: "검증 안 된 투자 권유에 바로 답하기",
+  식신: "과식과 과음. 즐기다 다음 날까지 무거워져요",
+  상관: "윗사람 앞에서 바른말을 끝까지 하기",
+  정관: "약속 시간 어기기. 작은 흠이 크게 보이는 날이에요",
+  편관: "혼자 다 떠맡기. 거절해도 되는 날이에요",
+  정인: "도움을 거절하기",
+  편인: "결정을 혼자 붙들고 미루기만 하기",
+  비견: "자존심 싸움. 이겨도 남는 게 없어요",
+  겁재: "돈 빌려주기. 오늘 나간 돈은 늦게 돌아와요",
+};
+
 // What an element looks like in a day: its color and its direction.
-const EL_COLOR = ["초록", "빨강", "노랑·베이지", "흰색·은색", "검정·남색"];
+const EL_COLOR = ["초록", "빨강", "노랑, 베이지", "흰색, 은색", "검정, 남색"];
 const EL_DIRECTION = ["동쪽", "남쪽", "가운데(집 근처)", "서쪽", "북쪽"];
 // Waking 시진, 辰 to 戌.
 const HOUR_LABEL: Record<number, string> = {
@@ -57,10 +79,10 @@ type Area = {
 };
 const AREA_LINE: Record<Area["key"], string[]> = {
   // Index = stars − 1.
-  money: ["지갑을 닫아 둘 날", "지출이 새기 쉬운 날", "쓰고 모으기 평소대로", "돈 셈이 잘 맞는 날", "들어오는 돈이 보이는 날"],
-  work: ["무리하지 말고 버틸 날", "말실수와 마찰을 조심", "하던 일을 이어 가면 되는 날", "일이 순서대로 풀리는 날", "인정받는 날, 나서 보세요"],
-  love: ["말 한마디를 고를 날", "서운함이 생기기 쉬운 날", "잔잔하게 흘러가는 날", "만남에 좋은 기운", "마음이 통하는 날, 먼저 연락해 보세요"],
-  health: ["쉬어 가야 할 날", "피로가 쌓이기 쉬운 날", "평소처럼 챙기면 되는 날", "컨디션이 무난한 날", "몸이 가벼운 날"],
+  money: ["돈이 새는 날. 큰 지출과 빌려주기는 오늘 하지 마세요", "지출이 새기 쉬운 날, 카드는 넣어 두세요", "큰 득도 손해도 없는 날", "돈 셈이 잘 맞는 날", "들어오는 돈이 보이는 날"],
+  work: ["일이 꼬이는 날. 새 일은 벌이지 말고 하던 것만 하세요", "말실수와 윗사람과의 마찰을 조심", "하던 일을 이어 가면 되는 날", "일이 순서대로 풀리는 날", "인정받는 날, 나서 보세요"],
+  love: ["말 한마디에 다투기 쉬운 날. 따지는 대화는 미루세요", "서운한 말이 오가기 쉬운 날", "잔잔하게 흘러가는 날", "만남에 좋은 기운", "마음이 통하는 날, 먼저 연락해 보세요"],
+  health: ["무리하면 바로 티가 나는 날. 일정을 줄이세요", "피로가 쌓이기 쉬운 날", "평소처럼 챙기면 되는 날", "컨디션이 무난한 날", "몸이 가벼운 날"],
 };
 
 export type Ilju = { hanja: string; name: string };
@@ -81,6 +103,12 @@ export type Today = {
   hour: { label: string; why: string } | null;
   lucky: { color: string; direction: string } | null;
   week: { day: string; date: number; mark: "◎" | "○" | "△"; today: boolean }[] | null;
+  // The day branch's opposite as a 띠: the animal sign that clashes with today, for everyone.
+  clash: { tti: string; branch: string };
+  // The one thing to leave alone today (for everyone, or from the reader's chart).
+  dont: string;
+  // The day's weakest area, said plainly (with the reader's chart, when one area is clearly behind).
+  weak: { label: string; line: string } | null;
   // A hard day (△): what to avoid, what to do instead, what still goes well, and the next good day.
   watch: { avoid: string; prep: string; bright: string; next: string | null } | null;
   hundo: string | null;
@@ -106,15 +134,15 @@ function dayScore(p: Pillars, r: Reading, stem: number, branch: number) {
   const el = elScore(r, stemEl(stem)) + elScore(r, BRANCH_EL[branch]);
   return clamp(Math.round(55 + (base + el * 0.8) * 4.5), 12, 98);
 }
-// Shown on screen: the order is kept, the lower half pressed together, so the hardest day reads about 35, not
-// 12 (a number in the teens reads as a ruined chart, not a day to be careful).
-const shown = (raw: number) => (raw >= 55 ? raw : Math.round(55 - (55 - raw) * 0.5));
+// Shown on screen: the order is kept, the lower half pressed a little, so the hardest day reads about 25, not
+// 12 (low enough to be taken seriously, not a number in the teens that reads as a ruined chart).
+const shown = (raw: number) => (raw >= 55 ? raw : Math.round(55 - (55 - raw) * 0.7));
 const markOf = (raw: number) => (raw >= 70 ? "◎" : raw >= 50 ? "○" : "△") as "◎" | "○" | "△";
 
 // For a hard day: the one thing to steer clear of and what to do instead, from its sharpest cause (the same
 // causes as the monthly ranking, worded for a day).
 const DAY_WATCH: Record<string, [avoid: string, prep: string]> = {
-  충: ["이사·퇴사 같은 큰 결정을 서두르기", "일정은 여유 있게, 중요한 일은 두 번 확인하기"],
+  충: ["이사나 퇴사 같은 큰 결정을 서두르기", "일정은 여유 있게, 중요한 일은 두 번 확인하기"],
   천간충: ["고집으로 밀어붙이기", "한발 물러서서 상대 말을 먼저 듣기"],
   형: ["감정 섞인 말과 서류 실수", "계약서와 약속은 꼼꼼히 확인하기"],
   편관: ["무리한 야근과 과로", "몸을 먼저 챙기고 일을 나누기"],
@@ -123,7 +151,20 @@ const DAY_WATCH: Record<string, [avoid: string, prep: string]> = {
   편인: ["혼자 끙끙 끌어안기", "주변에 먼저 도움 청하기"],
   기신: ["큰 결정과 큰 지출", "하던 일을 마무리하는 데 하루를 쓰기"],
 };
-const HUNDO_HARD: [string, string] = ["피할 것만 피하시면 무탈한 날이옵니다.", "오늘은 한 걸음 쉬어 가시옵소서. 좋은 날은 곧 오옵니다."];
+// 정 훈도 on a hard day: plain about what goes wrong, from the same cause.
+const HUNDO_HARD: Record<string, string> = {
+  충: "오늘은 움직임을 줄이시옵소서. 서두르면 부딪히는 날이옵니다.",
+  천간충: "오늘은 뜻을 한 번 굽히시옵소서. 맞서면 상처만 남는 날이옵니다.",
+  형: "서류와 말을 두 번 살피시옵소서. 작은 실수가 크게 번지는 날이옵니다.",
+  편관: "짐을 내려놓으시옵소서. 몸이 먼저 지치는 날이옵니다.",
+  겁재: "돈 이야기는 꺼내지 마시옵소서. 오늘 나간 돈은 더디게 돌아오옵니다.",
+  상관: "입을 무겁게 하시옵소서. 옳은 말도 화가 되는 날이옵니다.",
+  편인: "혼자 끌어안지 마시옵소서. 생각이 꼬이는 날이옵니다.",
+  기신: "큰일은 벌이지 마시옵소서. 기운이 받쳐 주지 않는 날이옵니다.",
+  "": "오늘은 한 걸음 쉬어 가시옵소서. 무리하면 탈이 나는 날이옵니다.",
+};
+// Subject particles for the area labels.
+const SUBJ: Record<Area["key"], string> = { money: "재물이", work: "일이", love: "연애가", health: "건강이" };
 
 // Four areas in one to five stars, from the ten gods the day brings and how its branch meets the chart.
 function areasOf(me: Person, r: Reading, stem: number, branch: number): Area[] {
@@ -138,19 +179,23 @@ function areasOf(me: Person, r: Reading, stem: number, branch: number): Area[] {
   const bond = m.includes("육합") || m.includes("삼합") || stemCombine(p.dayStem, stem);
   const welcome = elScore(r, stemEl(stem)) + elScore(r, BRANCH_EL[branch]);
 
-  let money = 3 + has("재성") * 1.5 + has("식상") * 0.6;
-  if (god === "겁재") money -= 1.2;
-  else if (bgod === "겁재") money -= 0.6;
-  let work = 3 + has("관성") * 1.2 + has("인성") * 0.8;
-  if (god === "상관") work -= 1.2;
-  if (god === "편관" || bgod === "편관") work -= 0.4;
+  // Whether the day brings what the chart needs (+) or the element it can't take (−) moves every area a little.
+  const w = clamp(welcome, -3, 3) * 0.3;
+  let money = 3 + w + has("재성") * 1.5 + has("식상") * 0.6;
+  if (god === "겁재") money -= 2;
+  else if (bgod === "겁재") money -= 1;
+  if (clash) money -= 0.5;
+  let work = 3 + w + has("관성") * 1.2 + has("인성") * 0.8;
+  if (god === "상관") work -= 1.6;
+  if (god === "편관" || bgod === "편관") work -= 0.7;
+  if (m.includes("형")) work -= 0.8;
   if (sals.includes("천을귀인")) work += 0.8;
   // The partner's star: 재성 for a man, 관성 for a woman.
-  let love = 3 + (bond ? 1.5 : 0) + (sals.includes("도화") ? 1 : 0);
+  let love = 3 + w * 0.5 + (bond ? 1.5 : 0) + (sals.includes("도화") ? 1 : 0);
   if (me.gender === "m") love += has("재성") * 0.6;
   if (me.gender === "f") love += has("관성") * 0.6;
-  if (clash) love -= 1.2;
-  if (m.includes("원진")) love -= 0.6;
+  if (clash) love -= 1.8;
+  if (m.includes("원진")) love -= 1;
   let health = 3.5 + (welcome > 0 ? 0.6 : welcome < 0 ? -0.6 : 0) + (bond ? 0.5 : 0);
   if (m.includes("충")) health -= 1.5;
   if (m.includes("형")) health -= 1;
@@ -163,8 +208,8 @@ function areasOf(me: Person, r: Reading, stem: number, branch: number): Area[] {
   };
   return [
     area("money", "재물", money, "/reports/jaemul", "재물운"),
-    area("work", "일", work, "/reports/jikup", "직업·적성"),
-    area("love", "연애", love, "/reports/yeonae", "연애·결혼"),
+    area("work", "일", work, "/reports/jikup", "직업, 적성"),
+    area("love", "연애", love, "/reports/yeonae", "연애, 결혼"),
     area("health", "건강", health, null, null),
   ];
 }
@@ -207,6 +252,9 @@ export function todayFor(me: Person | null, now = new Date()): Today {
     gz: `${STEMS[stem]}${BRANCHES[branch]}일`,
     image: ILJU_IMAGE[`${STEMS[stem]}${BRANCHES[branch]}`],
     advice: advice(s, b),
+    clash: { tti: `${ANIMALS[(branch + 6) % 12]}띠`, branch: `${BRANCHES[(branch + 6) % 12]}(${ANIMALS[(branch + 6) % 12]})` },
+    dont: dontFor(s, b),
+    weak: null,
     top: ranks.slice(0, 3).map((x) => ({ hanja: x.hanja, name: x.name })),
     personal: null,
     rating: null,
@@ -226,6 +274,9 @@ export function todayFor(me: Person | null, now = new Date()): Today {
 
   const p = me.pillars;
   const score = dayScore(p, r, stem, branch);
+  const areas = areasOf(me, r, stem, branch);
+  const best = areas.reduce((a, x) => (x.stars > a.stars ? x : a));
+  const worst = areas.reduce((a, x) => (x.stars < a.stars ? x : a));
   const hard = score < 50;
   const hit = [s, b].find((e) => e === r.yong);
   const bad = [s, b].find((e) => e === r.gi);
@@ -237,8 +288,10 @@ export function todayFor(me: Person | null, now = new Date()): Today {
         : score >= 70
           ? "오늘의 일진이 내 일주와 잘 맞물리는 날이에요."
           : hard
-            ? "오늘의 일진이 내 일주와 삐걱대는 날이에요. 아래 한 가지만 피하면 돼요."
-            : "기운이 어느 한쪽으로 크게 치우치지 않는 날이에요.";
+            ? "오늘의 일진이 내 일주와 부딪히는 날이에요. 아래 것만은 꼭 피하세요."
+            : best.stars > worst.stars
+              ? `오늘은 ${SUBJ[best.key]} 가장 낫고 ${SUBJ[worst.key]} 가장 약한 날이에요.`
+              : "좋은 쪽도 나쁜 쪽도 두드러지지 않는 날이에요. 미뤄 둔 정리를 하기 좋아요.";
   const mt = meetings(branch, p.dayBranch);
   if (mt.includes("충")) personal += " 가까운 사람과 부딪히기 쉬우니 말은 한 번 더 고르세요.";
   else if (mt.includes("육합")) personal += " 가까운 사람과 마음이 잘 통하는 날이에요.";
@@ -256,9 +309,8 @@ export function todayFor(me: Person | null, now = new Date()): Today {
     return { day: "월화수목금토일"[i], date: t.getUTCDate(), mark, today: i === dow };
   });
 
-  const areas = areasOf(me, r, stem, branch);
-  const best = areas.reduce((a, x) => (x.stars > a.stars ? x : a));
   let watch: Today["watch"] = null;
+  let hardCause = "";
   if (hard) {
     const mm = meet(p.dayStem, p.dayBranch, stem, branch);
     const god = tenGod(p.dayStem, stem);
@@ -275,6 +327,7 @@ export function todayFor(me: Person | null, now = new Date()): Today {
       if (mark === "◎") next = `${i === 1 ? "내일" : `${"일월화수목금토"[t.getUTCDay()]}요일`}(${t.getUTCMonth() + 1}/${t.getUTCDate()})`;
     }
     watch = { avoid, prep, bright: mm.bright, next };
+    hardCause = cause ?? "";
   }
 
   return {
@@ -290,6 +343,8 @@ export function todayFor(me: Person | null, now = new Date()): Today {
     lucky: { color: EL_COLOR[hour.el], direction: EL_DIRECTION[r.yong] },
     week,
     watch,
-    hundo: hard ? HUNDO_HARD[d % 2] : HUNDO[tenGod(p.dayStem, stem)][d % 2],
+    dont: DONT[tenGod(p.dayStem, stem)],
+    weak: worst.stars <= 2 && worst.stars < best.stars ? { label: worst.label, line: worst.line } : null,
+    hundo: hard ? (HUNDO_HARD[hardCause] ?? HUNDO_HARD[""]) : HUNDO[tenGod(p.dayStem, stem)][d % 2],
   };
 }

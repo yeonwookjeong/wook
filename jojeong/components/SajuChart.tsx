@@ -29,9 +29,9 @@ export function Cell({ value, el, blank = "?" }: { value: string | null; el: num
   return (
     <div className={`flex aspect-square flex-col items-center justify-center rounded-lg ${EL_STYLE[el]}`}>
       <span className="font-myeongjo text-xl leading-none font-extrabold">{value}</span>
-      {/* How it is read, then its element: 경 · 금. */}
+      {/* How it is read, then its element: 경, 금. */}
       <span className="mt-0.5 text-[11px] leading-none opacity-80">
-        {hanjaKo(value)} · {ELEMENT_KO[el]}
+        {hanjaKo(value)}, {ELEMENT_KO[el]}
       </span>
     </div>
   );
@@ -81,7 +81,7 @@ export default function SajuChart({
   const day = slots.find((s) => s.pos === "일")!.stem!;
   return (
     <div className="mt-4 border border-seal/25 px-4 py-3">
-      <p className="text-xs font-extrabold text-ink-soft">사주 원국 · 여덟 글자</p>
+      <p className="text-xs font-extrabold text-ink-soft">사주 원국, 여덟 글자</p>
       <div className="mt-2 grid grid-cols-4 gap-1.5 text-center">
         {slots.map((s) => (
           <div key={s.pos} className="flex flex-col gap-1">
@@ -133,7 +133,7 @@ export default function SajuChart({
         ))}
       </ul>
 
-      {shares && <p className="mt-1.5 text-[10.5px] text-ink-soft">겉 글자 수가 아니라, 땅 글자 속에 숨은 기운과 자리·태어난 계절까지 따진 실제 비중이에요. 그래서 겉에 없는 기운도 %가 나올 수 있어요.{ranks ? " 상위·하위는 1950~2008년에 태어날 수 있는 모든 날·시의 사주와 견준 값이에요." : ""}</p>}
+      {shares && <p className="mt-1.5 text-[10.5px] text-ink-soft">겉 글자 수가 아니라, 땅 글자 속에 숨은 기운과 자리, 태어난 계절까지 따진 실제 비중이에요. 그래서 겉에 없는 기운도 %가 나올 수 있어요.{ranks ? " 상위, 하위는 1950~2008년에 태어날 수 있는 모든 날, 시의 사주와 견준 값이에요." : ""}</p>}
       <div className="mt-3 flex flex-wrap justify-center gap-1.5 text-xs">
         <span className="rounded-full bg-ink px-2.5 py-1 font-bold text-hanji">{strength}</span>
         {gyeok && <span className="rounded-full border border-ink/40 px-2.5 py-1 font-bold">{gyeok}</span>}
@@ -144,12 +144,12 @@ export default function SajuChart({
       {explain && (
         <dl className="mt-3 flex flex-col gap-1.5 rounded-lg bg-white/60 px-3 py-2.5 text-[12px] leading-snug ring-1 ring-seal/10">
           <div>
-            <dt className="inline font-bold">{strength}</dt> <dd className="inline">· {STRENGTH_PLAIN[strength] ?? "한쪽 기운을 따라가는 특별한 사주예요. 그 기운을 거스르지 않을 때 잘 풀려요."}</dd>
+            <dt className="inline font-bold">{strength}</dt> <dd className="inline">, {STRENGTH_PLAIN[strength] ?? "한쪽 기운을 따라가는 특별한 사주예요. 그 기운을 거스르지 않을 때 잘 풀려요."}</dd>
           </div>
           {gyeok && GYEOK_GOD[gyeok] && (
             <div>
               <dt className="inline font-bold">{gyeok}</dt>{" "}
-              <dd className="inline">· 태어난 달이 정한 사주의 큰 틀이에요. {GYEOK_TEXT[GYEOK_GOD[gyeok]]}</dd>
+              <dd className="inline">, 태어난 달이 정한 사주의 큰 틀이에요. {GYEOK_TEXT[GYEOK_GOD[gyeok]]}</dd>
             </div>
           )}
           <div>
@@ -157,7 +157,7 @@ export default function SajuChart({
               용신 {ELEMENT_KO[yong]}({ELEMENT_HANJA[yong]})
             </dt>{" "}
             <dd className="inline">
-              · 내 사주의 균형을 잡아 주는 기운이에요. {["목은", "화는", "토는", "금은", "수는"][yong]} {YONG_PLAIN[yong]}이에요. 이 기운이 드는 해·사람·환경이 나를 도와요.
+, 내 사주의 균형을 잡아 주는 기운이에요. {["목은", "화는", "토는", "금은", "수는"][yong]} {YONG_PLAIN[yong]}이에요. 이 기운이 드는 해, 사람, 환경이 나를 도와요.
             </dd>
           </div>
         </dl>

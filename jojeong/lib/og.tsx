@@ -165,7 +165,7 @@ export function columnImage({ level, head, sub }: { level: string; head: string;
   return render(
     <div style={{ ...frame(1200, 630), justifyContent: "center", paddingBottom: 110 }}>
       <InnerRule width={1200} accent={C.seal} />
-      <div style={{ fontSize: 30, color: C.seal, fontWeight: 800, letterSpacing: 2 }}>{`훈도의 사주 이야기 · ${level}`}</div>
+      <div style={{ fontSize: 30, color: C.seal, fontWeight: 800, letterSpacing: 2 }}>{`훈도의 사주 이야기, ${level}`}</div>
       <div style={{ marginTop: 22, fontSize: head.length > 18 ? 60 : 72, fontWeight: 800, textAlign: "center", maxWidth: 1000 }}>{head}</div>
       {sub && <div style={{ marginTop: 18, fontSize: 36, color: C.soft, textAlign: "center", maxWidth: 960 }}>{sub}</div>}
       <div style={{ position: "absolute", left: 80, bottom: 56, display: "flex" }}>
@@ -220,7 +220,7 @@ export function sinsalShareImage(name: string) {
         }}
       >
         <div style={{ fontSize: 58, fontWeight: 800, color: C.hanji }}>{`${name}님이 신살 유형 테스트를 보냈어요`}</div>
-        <div style={{ marginTop: 10, fontSize: 30, color: "#d4af5f", fontWeight: 800 }}>{`나는 어떤 살의 사람일까 · ${SITE_NAME}`}</div>
+        <div style={{ marginTop: 10, fontSize: 30, color: "#d4af5f", fontWeight: 800 }}>{`나는 어떤 살의 사람일까, ${SITE_NAME}`}</div>
       </div>
     </div>,
     1200,
@@ -237,7 +237,7 @@ export function inviteImage(kingName: string, king: Pillars, ministerCount: numb
       <div style={{ marginTop: 6, fontSize: 76, fontWeight: 800 }}>{`${kingName} 전하께서`}</div>
       <div style={{ fontSize: 76, fontWeight: 800 }}>그대를 부르셨사옵니다</div>
       <div style={{ marginTop: 28, fontSize: 30, color: C.soft }}>
-        {ministerCount > 0 ? `이미 ${ministerCount}명이 입궐했사옵니다 · 사주로 관직 받기` : "사주로 관직을 받아보시옵소서"}
+        {ministerCount > 0 ? `이미 ${ministerCount}명이 입궐했사옵니다, 사주로 관직 받기` : "사주로 관직을 받아보시옵소서"}
       </div>
       <div style={{ position: "absolute", left: 96, bottom: 58, display: "flex" }}>
         <Portrait mood="decree" size={190} />
@@ -260,7 +260,7 @@ export function ministerImage(kingName: string, name: string, role: RoleKey, sco
       <div style={{ fontSize: 30, color: C.soft }}>{`${kingName} 전하께서`}</div>
       <div style={{ marginTop: 8, fontSize: 44, fontWeight: 800 }}>{decreeLine(name, role)}</div>
       <div style={{ marginTop: 20, fontSize: 150, fontWeight: 800, color: danger ? C.seal : C.ink }}>{r.title}</div>
-      <div style={{ marginTop: 8, fontSize: 32, color: C.gold, fontWeight: 800 }}>{`${r.rank} · 궁합 ${score}점`}</div>
+      <div style={{ marginTop: 8, fontSize: 32, color: C.gold, fontWeight: 800 }}>{`${r.rank}, 궁합 ${score}점`}</div>
       <div style={{ position: "absolute", left: 96, bottom: 58, display: "flex" }}>
         <Portrait mood={moodFor(role)} size={190} />
       </div>
@@ -327,7 +327,7 @@ export function courtStory(kingName: string, seats: Seat[]) {
       <InnerRule width={1080} accent={C.seal} />
       <div style={{ fontSize: 46, letterSpacing: 24, color: C.seal, fontWeight: 800 }}>朝 廷 圖</div>
       <div style={{ marginTop: 40, fontSize: 84, fontWeight: 800 }}>{`${kingName} 전하의 조정`}</div>
-      <div style={{ marginTop: 14, fontSize: 38, color: C.soft }}>{`신하 ${seats.length}명 · 간신 ${seats.filter((s) => s.role === "gansin").length}명 적발`}</div>
+      <div style={{ marginTop: 14, fontSize: 38, color: C.soft }}>{`신하 ${seats.length}명, 간신 ${seats.filter((s) => s.role === "gansin").length}명 적발`}</div>
       <div style={{ marginTop: 60, width: 880, display: "flex", flexDirection: "column" }}>
         {shown.map((s) => {
           const r = ROLES[s.role];
@@ -385,7 +385,7 @@ export function kingStory(kingName: string, king: Pillars) {
       <div style={{ marginTop: 30, fontSize: 150, fontWeight: 800 }}>{t.title}</div>
       <div style={{ marginTop: 20, fontSize: 44, color: C.gold, fontWeight: 800 }}>{t.symbol}</div>
       <div style={{ marginTop: 18, fontSize: 38, color: C.soft }}>
-        {`${record.tierLabel} · ${record.deposed ? `폐위되어 ${record.epithet}` : `존호 ${record.epithet}`} · 향년 ${record.death}세`}
+        {`${record.tierLabel}, ${record.deposed ? `폐위되어 ${record.epithet}` : `존호 ${record.epithet}`}, 향년 ${record.death}세`}
       </div>
       <div style={{ marginTop: 50, fontSize: 46, lineHeight: 1.5, display: "flex", flexDirection: "column", alignItems: "center" }}>
         {balancedLines(`“${t.tagline}”`, 18).map((line) => (
@@ -467,7 +467,7 @@ export function storeImage() {
         <div style={{ marginTop: 18, fontSize: 88, fontWeight: 800, color: "#1f1a14", whiteSpace: "nowrap" }}>{SITE_NAME}</div>
         <div style={{ marginTop: 8, fontSize: 38, fontWeight: 800, color: "#8a6d1f" }}>{SITE_TAGLINE}</div>
         <div style={{ marginTop: 34, fontSize: 30, color: "#5c5247", display: "flex", flexDirection: "column", lineHeight: 1.5 }}>
-          <div>평생 사주 · 궁합 · 2027 신년운세 · 연애 · 재물 · 직업</div>
+          <div>평생 사주, 궁합, 2027 신년운세, 연애, 재물, 직업</div>
           <div>같은 일주라도 다 다른, 나만의 여덟 글자</div>
         </div>
       </div>
@@ -563,7 +563,7 @@ export function sillokStory(kingName: string, king: Pillars, cast: Cast) {
       )}
       {s.chart && (
         <div style={{ marginTop: 12, fontSize: 28, color: C.soft }}>
-          {`${s.chart.strength} · 용신 ${"목화토금수"[s.chart.yong]}(${"木火土金水"[s.chart.yong]})`}
+          {`${s.chart.strength}, 용신 ${"목화토금수"[s.chart.yong]}(${"木火土金水"[s.chart.yong]})`}
         </div>
       )}
 

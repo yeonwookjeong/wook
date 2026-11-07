@@ -56,7 +56,7 @@ export const STEPS = {
     known
       ? {
           ask: "일주는 여덟 글자 중 두 글자예요",
-          main: { href: `/reports/yeonun?y=${year}`, seal: "年", kicker: "연운", title: `내 사주 전체로 보는 ${year}년, 달마다`, line: "한 해 판정과 좋은 달·조심할 달은 무료로 먼저", free: true },
+          main: { href: `/reports/yeonun?y=${year}`, seal: "年", kicker: "연운", title: `내 사주 전체로 보는 ${year}년, 달마다`, line: "한 해 판정과 좋은 달, 조심할 달은 무료로 먼저", free: true },
           more: [{ href: "/reports/pyeongsaeng", title: "무료 사주 분석" }],
         }
       : {
@@ -66,13 +66,13 @@ export const STEPS = {
   // 신살 are marks laid over the chart: the step is the chart itself.
   sinsal: (): Steps => ({
     ask: "살은 여덟 글자 위에 얹힌 표시예요",
-    main: { href: "/reports/sinbun", seal: "身分", kicker: "무료", title: "조선에 태어났다면 나는? 내 호패 받기", line: "100가지 삶 가운데 하나, 양반·중인·상민 호패로", free: true },
+    main: { href: "/reports/sinbun", seal: "身分", kicker: "무료", title: "조선에 태어났다면 나는? 내 호패 받기", line: "100가지 삶 가운데 하나, 양반, 중인, 상민 호패로", free: true },
     more: [{ href: "/reports/gukjeong", title: "내 사주 무료 풀이" }, { href: "/reports/pyeongsaeng", title: "평생 사주" }],
   }),
   // A day pillar is two of the eight characters: the step is the other six.
   ilju: (name: string): Steps => ({
     ask: `같은 ${name}라도 여덟 글자가 다르면 다른 사람이에요`,
-    main: { href: "/reports/pyeongsaeng", seal: "八字", kicker: "무료", title: "나머지 여섯 글자까지, 내 사주 전체 보기", line: "성향 지도, 돈·사랑·일 판정, 10년 흐름까지", free: true },
+    main: { href: "/reports/pyeongsaeng", seal: "八字", kicker: "무료", title: "나머지 여섯 글자까지, 내 사주 전체 보기", line: "성향 지도, 돈, 사랑, 일 판정, 10년 흐름까지", free: true },
     more: [{ href: "/reports/gunghap", title: "궁합" }, { href: "/ranking", title: "이달의 일주 랭킹" }],
   }),
 };

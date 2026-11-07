@@ -136,12 +136,12 @@ export function intimacyBrief(a: Person, b: Person): string {
   const x = intimacyOf(a, b);
   if (!x) return "";
   const line = (p: Person, s: Signs) =>
-    `- ${p.name}: 애정 온도 유형 '${TEMPERS[s.temper].name}'(${TEMPERS[s.temper].line}) / 도화 ${s.dohwa.length ? s.dohwa.join(", ") : "없음"} / 홍염 ${s.hong.length ? s.hong.join(", ") : "없음"} / 화(열기) ${s.fire}% · 수(촉촉함) ${s.water}% / 표현하는 힘(식상) ${s.express}% · 절제하는 힘(관성) ${s.restrain}% / 양 ${s.yang}:음 ${s.count - s.yang}`;
+    `- ${p.name}: 애정 온도 유형 '${TEMPERS[s.temper].name}'(${TEMPERS[s.temper].line}) / 도화 ${s.dohwa.length ? s.dohwa.join(", ") : "없음"} / 홍염 ${s.hong.length ? s.hong.join(", ") : "없음"} / 화(열기) ${s.fire}%, 수(촉촉함) ${s.water}% / 표현하는 힘(식상) ${s.express}%, 절제하는 힘(관성) ${s.restrain}% / 양 ${s.yang}:음 ${s.count - s.yang}`;
   return [
-    "■ ★ 속궁합 근거 (이 보고서의 뼈대. 친밀감·스킨십·애정 표현의 궁합. 노골적인 묘사 없이 분위기와 장면으로 쓸 것)",
+    "■ ★ 속궁합 근거 (이 보고서의 뼈대. 친밀감, 스킨십, 애정 표현의 궁합. 노골적인 묘사 없이 분위기와 장면으로 쓸 것)",
     line(a, x.a),
     line(b, x.b),
-    `- 일간끼리: ${STEMS[a.pillars.dayStem]}·${STEMS[b.pillars.dayStem]}${stemCombine(a.pillars.dayStem, b.pillars.dayStem) ? " 천간합(서로 끌어당기는 인연)" : ""} / 배우자 자리(일지)끼리: ${BRANCHES[a.pillars.dayBranch]}·${BRANCHES[b.pillars.dayBranch]}`,
+    `- 일간끼리: ${STEMS[a.pillars.dayStem]}, ${STEMS[b.pillars.dayStem]}${stemCombine(a.pillars.dayStem, b.pillars.dayStem) ? " 천간합(서로 끌어당기는 인연)" : ""} / 배우자 자리(일지)끼리: ${BRANCHES[a.pillars.dayBranch]}, ${BRANCHES[b.pillars.dayBranch]}`,
     `- 온도 차: ${x.gap}${x.warmer ? ` (${josa(x.warmer, "이/가")} 더 뜨거움)` : ""} / 먼저 표현하는 쪽: ${x.faster}`,
     `- 끌어당기는 표시: ${x.pulls.length ? x.pulls.join(" ") : "뚜렷한 표시 없음(끌림보다 함께 쌓는 친밀감의 사이)"}`,
     `- 엇갈리기 쉬운 표시: ${x.snags.length ? x.snags.join(" ") : "뚜렷한 표시 없음"}`,

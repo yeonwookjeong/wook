@@ -8,7 +8,7 @@ import LockedLine from "./LockedLine";
 // With the 만세력 rows, a narrow label column on the left, shared by the chart above so the columns line up.
 const MANSE_COLS = "grid-cols-[2.9rem_repeat(4,minmax(0,1fr))]";
 
-const POS_ROLE = { 시: "자녀·말년", 일: "나·배우자", 월: "부모·일터", 연: "뿌리·어린 시절" } as const;
+const POS_ROLE = { 시: "자녀, 말년", 일: "나, 배우자", 월: "부모, 일터", 연: "뿌리, 어린 시절" } as const;
 
 // Before the written report: the chart, and what sets it apart
 // from others with the same day pillar, in numbers the engine worked out (lib/rarity.ts).
@@ -45,7 +45,7 @@ export default function ChartIntro({
       <h2 className="mt-1 text-center font-myeongjo text-lg font-extrabold">{name}님의 사주를 이렇게 읽었어요</h2>
 
       <h3 className="mt-5 text-sm font-extrabold">{name}님의 사주팔자</h3>
-      {/* Laid out row by row, so a label that wraps (뿌리·어린 시절) moves its whole row down, never one column. */}
+      {/* Laid out row by row, so a label that wraps (뿌리, 어린 시절) moves its whole row down, never one column. */}
       <div className={`mt-2 grid ${manse ? MANSE_COLS : "grid-cols-4"} items-end gap-x-1.5 gap-y-1 text-center`}>
         {manse && <span aria-hidden="true" />}
         {slots.map((s) => (
@@ -116,7 +116,7 @@ export default function ChartIntro({
             <p className="mt-2 flex flex-wrap gap-1.5">
               {d.extremes.slice(0, 3).map((x) => (
                 <span key={x.label} className="rounded-full border border-seal/30 px-2.5 py-0.5 text-[11px] font-bold text-seal">
-                  {x.label.split("(")[0]} {Math.round(x.value * 100)}% · {x.side === "high" ? "상위" : "하위"} {Math.max(1, Math.round(x.rate * 100))}%
+                  {x.label.split("(")[0]} {Math.round(x.value * 100)}%, {x.side === "high" ? "상위" : "하위"} {Math.max(1, Math.round(x.rate * 100))}%
                 </span>
               ))}
             </p>
@@ -136,7 +136,7 @@ export default function ChartIntro({
             </div>
           )}
           <p className="mt-3 text-[11px] leading-relaxed text-ink-soft">
-            숫자는 1950~2008년에 태어날 수 있는 모든 날·시의 사주와 비교한 값이에요. 아래 보고서는 이 특징들을 바탕으로 썼어요.
+            숫자는 1950~2008년에 태어날 수 있는 모든 날, 시의 사주와 비교한 값이에요. 아래 보고서는 이 특징들을 바탕으로 썼어요.
           </p>
           {ask?.("드문 것")}
         </>
@@ -152,7 +152,7 @@ function ManseRows({ cols }: { cols: ManseCol[] }) {
     ["십성(아래)", (c) => c.branchGod],
     ["지장간", (c) => c.hidden && <span className="font-myeongjo">{c.hidden}</span>],
     ["12운성", (c) => c.stage],
-    ["신살", (c) => (c.sals.length ? c.sals.map((x) => <span key={x} className="block">{x}</span>) : "·")],
+    ["신살", (c) => (c.sals.length ? c.sals.map((x) => <span key={x} className="block">{x}</span>) : "-")],
   ];
   return (
     <div className={`mt-2 grid ${MANSE_COLS} gap-x-1.5 text-center text-[11px]`}>
