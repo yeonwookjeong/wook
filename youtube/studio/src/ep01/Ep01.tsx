@@ -2,6 +2,7 @@ import { AbsoluteFill, Audio, Easing, getStaticFiles, Img, interpolate, Sequence
 import { loadFont as loadNotoSans } from "@remotion/google-fonts/NotoSansKR";
 import { loadFont as loadHahmlet } from "@remotion/google-fonts/Hahmlet";
 import vo from "./vo.json";
+import voEs from "./vo_es.json";
 
 const { fontFamily: sans } = loadNotoSans();
 const { fontFamily: serif } = loadHahmlet();
@@ -67,23 +68,58 @@ const SHOTS: Shot[] = [
   { img: "A", sec: 1.3, cam: { s0: 1.1, s1: 1.0, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "you'll know" }], [{ text: "what it's" }, { text: "hiding.", hl: true }]], dark: 0.45, sent: 7, sfx: { name: "thud", at: 1.0, vol: 0.25 } },
 ];
 
+// 스페인어판(중남미): 컷·그림·효과음은 같고 자막과 화면 글자만 바뀐다. 컷 순서는 SHOTS와 같다.
+type Lang = "en" | "es";
+const h = (text: string) => ({ text, hl: true });
+const w = (text: string) => ({ text });
+const CAPS_ES: Cap[][] = [
+  [[w("En"), h("Corea,")]],
+  [[w("este ascensor")], [w("esconde"), h("un piso.")]],
+  [[w("Mira:")], [w("1, 2, 3…")]],
+  [[h("F.")], [w("¿Y el"), h("4?")]],
+  [[w("En coreano,")], [h("el cuatro")]],
+  [[w("se lee")], [h('"sa",')]],
+  [[w("igual que")], [w("el carácter")]],
+  [[w("chino de")], [h("la muerte.")]],
+  [[w("Por eso")], [w("muchos edificios")]],
+  [[w("lo cambian")], [w("por una"), h("F,")], [w('de "four".')]],
+  [[h("Los hospitales")], [w("van más lejos:")]],
+  [[w("muchos se saltan")], [w("el cuarto piso.")]],
+  [[w("Pero")], [h("ojo:")]],
+  [[w("la F sigue siendo")], [h("el cuarto piso.")]],
+  [[w("Solo que")], [w("nadie lo dice.")]],
+  [[w("La próxima vez")], [w("que veas una"), h("F,")]],
+  [[w("sabrás")], [w("lo que"), h("esconde.")]],
+];
+const LABEL: Record<Lang, { four: string; f4: string; no4: string }> = {
+  en: { four: "F = Four", f4: "F = 4th floor", no4: "no 4th floor" },
+  es: { four: "F = Four (4)", f4: "F = 4.º piso", no4: "sin 4.º piso" },
+};
+
 // 음성이 있으면 문장 길이를 그 문장에 속한 컷들에 글자 수 비율로 나눈다. 없으면 임시 길이(sec).
 type Vo = { voice: string | null; sentences: { id: number; file: string; sec: number }[] };
-const VO = vo as Vo;
 const TAIL = 0.1; // 문장 끝 숨 고르기 (짧게: 쇼츠 템포)
-const capLen = (sh: Shot) => sh.caps.flat().reduce((a, w) => a + w.text.length, 0);
-const shotSec = (i: number): number => {
-  const sh = SHOTS[i];
-  const v = VO.sentences.find((x) => x.id === sh.sent);
-  if (!v) return sh.sec;
-  const group = SHOTS.filter((x) => x.sent === sh.sent);
-  const total = group.reduce((a, x) => a + capLen(x), 0);
-  const isLast = group[group.length - 1] === sh;
-  return (v.sec * capLen(sh)) / total + (isLast ? TAIL : 0);
+const capLen = (sh: Shot) => sh.caps.flat().reduce((a, x) => a + x.text.length, 0);
+const build = (lang: Lang) => {
+  const shots = lang === "es" ? SHOTS.map((sh, i) => ({ ...sh, caps: CAPS_ES[i] })) : SHOTS;
+  const VO = (lang === "es" ? voEs : vo) as Vo;
+  const sec = (i: number): number => {
+    const sh = shots[i];
+    const v = VO.sentences.find((x) => x.id === sh.sent);
+    if (!v) return sh.sec;
+    const group = shots.filter((x) => x.sent === sh.sent);
+    const total = group.reduce((a, x) => a + capLen(x), 0);
+    const isLast = group[group.length - 1] === sh;
+    return (v.sec * capLen(sh)) / total + (isLast ? TAIL : 0);
+  };
+  const frames = shots.map((_, i) => Math.round(sec(i) * FPS));
+  return { shots, VO, frames, total: frames.reduce((a, f) => a + f, 0) };
 };
-const SHOT_FRAMES = SHOTS.map((_, i) => Math.round(shotSec(i) * FPS));
+const EN = build("en");
+const ES = build("es");
 
-export const EP01_FRAMES = SHOT_FRAMES.reduce((a, f) => a + f, 0);
+export const EP01_FRAMES = EN.total;
+export const EP01_ES_FRAMES = ES.total;
 
 // 자막: 흰 굵은 글씨 + 검은 테두리, 화면 가운데보다 조금 아래, 핵심만 노란색
 const Caption: React.FC<{ cap: Cap }> = ({ cap }) => {
@@ -113,7 +149,7 @@ const Caption: React.FC<{ cap: Cap }> = ({ cap }) => {
   );
 };
 
-const Overlay: React.FC<{ kind: Shot["overlay"]; dur: number; at?: { x: number; y: number } }> = ({ kind, dur, at }) => {
+const Overlay: React.FC<{ kind: Shot["overlay"]; dur: number; at?: { x: number; y: number }; lang: Lang }> = ({ kind, dur, at, lang }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const pop = spring({ frame: frame - 4, fps, config: { damping: 9, stiffness: 220 } });
@@ -138,7 +174,7 @@ const Overlay: React.FC<{ kind: Shot["overlay"]; dur: number; at?: { x: number; 
       <svg width={1080} height={1920} style={{ position: "absolute", inset: 0 }}>
         <circle cx={P.x} cy={P.y} r={r} fill="none" stroke="#ff2a2a" strokeWidth={18} strokeLinecap="round" pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - draw} transform={`rotate(-90 ${P.x} ${P.y})`} />
         <text x={P.x} y={P.y + r + 120} textAnchor="middle" fontFamily={sans} fontWeight={900} fontSize={80} fill={YELLOW} stroke="#000" strokeWidth={12} paintOrder="stroke" opacity={draw}>
-          {kind === "fIs4" ? "F = 4th floor" : "F = Four"}
+          {kind === "fIs4" ? LABEL[lang].f4 : LABEL[lang].four}
         </text>
       </svg>
     );
@@ -182,7 +218,7 @@ const Overlay: React.FC<{ kind: Shot["overlay"]; dur: number; at?: { x: number; 
     return (
       <div style={{ position: "absolute", left: 0, right: 0, top: 230, display: "flex", justifyContent: "center", alignItems: "center", gap: 22, transform: `scale(${pop})` }}>
         <span style={{ fontFamily: sans, fontWeight: 900, fontSize: 150, color: "#fff", textDecoration: "line-through", textDecorationColor: "#ff2a2a", textDecorationThickness: 18, WebkitTextStroke: "14px #000", paintOrder: "stroke fill" }}>4</span>
-        <span style={{ fontFamily: sans, fontWeight: 900, fontSize: 84, color: YELLOW, WebkitTextStroke: "12px #000", paintOrder: "stroke fill" }}>no 4th floor</span>
+        <span style={{ fontFamily: sans, fontWeight: 900, fontSize: 84, color: YELLOW, WebkitTextStroke: "12px #000", paintOrder: "stroke fill" }}>{LABEL[lang].no4}</span>
       </div>
     );
   if (kind === "endcard") {
@@ -201,7 +237,7 @@ const Overlay: React.FC<{ kind: Shot["overlay"]; dur: number; at?: { x: number; 
   return null;
 };
 
-const ShotView: React.FC<{ shot: Shot; dur: number }> = ({ shot, dur }) => {
+const ShotView: React.FC<{ shot: Shot; dur: number; lang: Lang }> = ({ shot, dur, lang }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const t = interpolate(frame, [0, dur], [0, 1], clamp);
@@ -237,7 +273,7 @@ const ShotView: React.FC<{ shot: Shot; dur: number }> = ({ shot, dur }) => {
       )}
       {shot.dark ? <AbsoluteFill style={{ background: `radial-gradient(circle at 50% 45%, rgba(0,0,0,0) 30%, rgba(0,0,0,${shot.dark}) 100%)` }} /> : null}
       {g ? <AbsoluteFill style={{ background: `radial-gradient(circle at 50% 46%, rgba(0,0,0,0) 25%, rgba(0,0,0,${0.7 * g}) 100%)` }} /> : null}
-      {shot.overlay && <Overlay kind={shot.overlay} dur={dur} at={shot.at} />}
+      {shot.overlay && <Overlay kind={shot.overlay} dur={dur} at={shot.at} lang={lang} />}
       {shot.caps.map((c, i) => (
         <Sequence key={i} from={Math.round(i * per)} durationInFrames={Math.round(per)} layout="none">
           <Caption cap={c} />
@@ -247,14 +283,15 @@ const ShotView: React.FC<{ shot: Shot; dur: number }> = ({ shot, dur }) => {
   );
 };
 
-export const Ep01: React.FC = () => {
+export const Ep01: React.FC<{ lang?: Lang }> = ({ lang = "en" }) => {
+  const { shots: SHOTS_L, VO, frames: SHOT_FRAMES } = lang === "es" ? ES : EN;
   const starts = SHOT_FRAMES.map((_, i) => SHOT_FRAMES.slice(0, i).reduce((a, f) => a + f, 0));
-  const firstOfSent = (id: number) => SHOTS.findIndex((x) => x.sent === id);
+  const firstOfSent = (id: number) => SHOTS_L.findIndex((x) => x.sent === id);
   return (
     <AbsoluteFill style={{ backgroundColor: "#000" }}>
-      {SHOTS.map((shot, i) => (
+      {SHOTS_L.map((shot, i) => (
         <Sequence key={i} from={starts[i]} durationInFrames={SHOT_FRAMES[i]}>
-          <ShotView shot={shot} dur={SHOT_FRAMES[i]} />
+          <ShotView shot={shot} dur={SHOT_FRAMES[i]} lang={lang} />
           {[shot.sfx, shot.sfx2].map((fx, k) =>
             fx ? (
               <Sequence key={k} from={Math.round((fx.at ?? 0) * FPS)} layout="none">

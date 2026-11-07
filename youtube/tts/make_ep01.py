@@ -1,6 +1,6 @@
 """EP01 내레이션을 고른 목소리로 만들고, 영상이 읽는 타이밍 파일을 쓴다 (Kokoro).
 
-사용: python make_ep01.py af_bella [속도=1.15]
+사용: python make_ep01.py af_bella [속도=1.15] [es]   ← es 를 붙이면 스페인어판 (vo_es)
 결과: studio/public/ep01/vo/s0.wav … s7.wav, studio/src/ep01/vo.json
 
 한국어 단어는 대표님 녹음으로 끼운다:
@@ -35,6 +35,17 @@ SENTENCES = [
     (6, "But here's the thing: the F is still the fourth floor. Nobody just says it."),
     (7, "Next time you see an F, you'll know what it's hiding."),
 ]
+# 스페인어판 (인스타·틱톡용). "four"는 스페인어 목소리가 제대로 읽도록 "for"로 적는다.
+SENTENCES_ES = [
+    (0, "En Corea,"),
+    (1, "este ascensor esconde un piso."),
+    (2, "Mira: uno, dos, tres... F. ¿Y el cuatro?"),
+    (3, ["En coreano, el cuatro se lee", "ko:sa", "igual que el carácter chino de la muerte."]),
+    (4, "Por eso muchos edificios lo cambian por una F, de for, cuatro en inglés."),
+    (5, "Los hospitales van más lejos: muchos se saltan el cuarto piso."),
+    (6, "Pero ojo: la F sigue siendo el cuarto piso. Solo que nadie lo dice."),
+    (7, "La próxima vez que veas una F, sabrás lo que esconde."),
+]
 GAP = 0.12  # 녹음 앞뒤 숨 (초)
 
 
@@ -61,14 +72,17 @@ def load_ko(name: str, sr: int):
 def main() -> None:
     voice = sys.argv[1] if len(sys.argv) > 1 else "af_bella"
     speed = float(sys.argv[2]) if len(sys.argv) > 2 else 1.15
-    lang = "en-gb" if voice.startswith("b") else "en-us"
+    es = len(sys.argv) > 3 and sys.argv[3] == "es"
+    lang = "es" if es else ("en-gb" if voice.startswith("b") else "en-us")
+    out_dir = OUT.parent / "vo_es" if es else OUT
+    folder = "ep01/vo_es" if es else "ep01/vo"
     for f in ("kokoro-v1.0.onnx", "voices-v1.0.bin"):
         if not (HERE / f).exists():
             sys.exit(f"모델 파일이 없습니다: {f} (README의 curl 명령으로 먼저 받으세요)")
-    OUT.mkdir(parents=True, exist_ok=True)
+    out_dir.mkdir(parents=True, exist_ok=True)
     kokoro = Kokoro(str(HERE / "kokoro-v1.0.onnx"), str(HERE / "voices-v1.0.bin"))
     items = []
-    for sid, text in SENTENCES:
+    for sid, text in (SENTENCES_ES if es else SENTENCES):
         parts = text if isinstance(text, list) else [text]
         ko_names = [p[3:] for p in parts if p.startswith("ko:")]
         ko_audio = {n: load_ko(n, 24000) for n in ko_names}
@@ -86,11 +100,11 @@ def main() -> None:
                 chunks.append(a.astype(np.float32))
         audio = np.concatenate(chunks)
         name = f"s{sid}.wav"
-        sf.write(OUT / name, audio, sr)
+        sf.write(out_dir / name, audio, sr)
         sec = round(len(audio) / sr, 3)
-        items.append({"id": sid, "file": f"ep01/vo/{name}", "sec": sec})
+        items.append({"id": sid, "file": f"{folder}/{name}", "sec": sec})
         print(f"s{sid} {sec:.2f}초  {' / '.join(parts)}")
-    (STUDIO / "src" / "ep01" / "vo.json").write_text(json.dumps({"voice": voice, "sentences": items}, indent=2) + "\n")
+    (STUDIO / "src" / "ep01" / ("vo_es.json" if es else "vo.json")).write_text(json.dumps({"voice": voice, "sentences": items}, indent=2) + "\n")
     print("vo.json 저장. 이제 studio에서 렌더링하면 컷 길이가 음성에 맞춰집니다.")
 
 
