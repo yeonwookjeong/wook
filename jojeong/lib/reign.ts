@@ -69,7 +69,7 @@ export function lifespan(p: Pillars) {
     else if (chart.support >= 0.3 && chart.support < 0.5)
       factors.push({ weight: 1, reason: "일간이 너무 강하지도 약하지도 않아 오래 버티옵니다" });
     if (chart.missing.length >= 2)
-      factors.push({ weight: -1, reason: `${chart.missing.map((e) => ELEMENT_KO[e]).join("·")} 기운이 비어 있어 한쪽이 늘 허하옵니다` });
+      factors.push({ weight: -1, reason: `${chart.missing.map((e) => ELEMENT_KO[e]).join(", ")} 기운이 비어 있어 한쪽이 늘 허하옵니다` });
   }
   const score = factors.reduce((s, f) => s + f.weight, 0);
   const jitter = (hashOf(p, 1) % 17) - 8;

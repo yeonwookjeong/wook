@@ -8,7 +8,7 @@ import WatchList from "./WatchList";
 import type { Today } from "@/lib/today";
 
 const RATING = [
-  { label: "대비", className: "bg-ink/10 text-ink" },
+  { label: "조심", className: "bg-ink text-hanji" },
   { label: "무난", className: "bg-gold/20 text-gold" },
   { label: "좋음", className: "bg-seal text-hanji" },
 ] as const;
@@ -27,6 +27,20 @@ const subscribe = (onChange: () => void) => {
   window.addEventListener("storage", onChange);
   return () => window.removeEventListener("storage", onChange);
 };
+
+// For everyone, with no chart: the 띠 that clashes with today and the one thing to leave alone.
+function DayForAll({ today }: { today: Today }) {
+  return (
+    <div className="mt-3 flex flex-col gap-1.5 rounded-xl border border-ink/15 bg-white/50 px-3 py-2.5 text-[13px] leading-snug">
+      <p>
+        <b className="text-seal">오늘 부딪히는 띠</b> <b>{today.clash.tti}</b>. 오늘 {today.gz}과 충이 들어요. 이 띠라면 말과 일정을 한 번 더 확인하세요.
+      </p>
+      <p>
+        <b className="text-seal">오늘 하지 말 것</b> {today.dont}
+      </p>
+    </div>
+  );
+}
 
 // `frame`: the box around it (the new home draws it as a plain card with the month's ranking joined below).
 export default function TodayCard({ today, name, frame = "doc-paper mt-5", revealed = false, quiet = false, children }: { today: Today; name: string | null; frame?: string; revealed?: boolean; quiet?: boolean; children?: React.ReactNode }) {
@@ -64,7 +78,7 @@ export default function TodayCard({ today, name, frame = "doc-paper mt-5", revea
           {!quiet && <span className="rounded-full bg-seal/10 px-2 py-0.5 text-[11px] font-extrabold text-seal">무료</span>}
         </span>
         <span className="text-ink-soft">
-          {today.date} · <b className="font-myeongjo text-ink">{today.gz}</b>
+          {today.date} <b className="font-myeongjo text-ink">{today.gz}</b>
         </span>
       </p>
 
@@ -73,7 +87,8 @@ export default function TodayCard({ today, name, frame = "doc-paper mt-5", revea
           <p className="mt-3 font-myeongjo text-lg leading-snug font-extrabold">
             {name ? `${name}님, 오늘은 몇 점일까요?` : "오늘, 나한테는 몇 점짜리 날일까요?"}
           </p>
-          <p className="mt-1 text-[13px] text-ink-soft">오늘의 점수 · 재물·일·연애·건강 별점 · 좋은 시간 · 이번 주 흐름</p>
+          <p className="mt-1 text-[13px] text-ink-soft">오늘의 점수, 재물 일 연애 건강 별점, 좋은 시간, 이번 주 흐름</p>
+          {!name && <DayForAll today={today} />}
           {!name && (
             <div className="mt-3 rounded-xl border border-seal/15 bg-white/50 px-3 py-2.5">
               <p className="text-[11px] font-bold text-ink-soft">오늘 기운이 좋은 일주 TOP 3</p>
@@ -112,6 +127,7 @@ export default function TodayCard({ today, name, frame = "doc-paper mt-5", revea
         <div className="animate-rise">
           <p className="mt-3 font-myeongjo text-lg leading-snug font-extrabold">{today.image}</p>
           <p className="mt-1 text-[14px] leading-relaxed text-ink-soft">{today.advice}</p>
+          <DayForAll today={today} />
           <details className="group mt-4">
             <summary className="block cursor-pointer list-none text-center text-[13px] font-bold text-seal underline group-open:hidden [&::-webkit-details-marker]:hidden">
               생년월일을 한 번 더 넣으면 점수와 별점까지 보여 드려요
@@ -157,6 +173,14 @@ export default function TodayCard({ today, name, frame = "doc-paper mt-5", revea
               {today.watch.next && <p className="mt-2 border-t border-seal/10 pt-1.5 font-bold">큰 일은 {today.watch.next}로 미뤄 보세요 ◎</p>}
             </div>
           )}
+          {today.weak && !today.watch && (
+            <p className="mt-2 rounded-xl border border-ink/15 bg-white/50 px-3 py-2 text-[13px] leading-snug">
+              <b>오늘 약한 곳 {today.weak.label}</b> {today.weak.line}
+            </p>
+          )}
+          <p className="mt-2 text-[13px] leading-snug">
+            <b className="text-seal">오늘 하지 말 것</b> {today.dont}
+          </p>
           {/* On a hard day the general line (read for everyone) would pull against the advice above. */}
           {!today.watch && (
             <p className="mt-2 text-[13px] leading-relaxed text-ink-soft">
@@ -214,7 +238,7 @@ export default function TodayCard({ today, name, frame = "doc-paper mt-5", revea
                   </li>
                 ))}
               </ol>
-              <p className="mt-1 text-right text-[11px] text-ink-soft">◎ 좋음 · ○ 무난 · △ 대비</p>
+              <p className="mt-1 text-right text-[11px] text-ink-soft">◎ 좋음 &nbsp;○ 무난 &nbsp;△ 조심</p>
             </div>
           )}
 
@@ -228,7 +252,7 @@ export default function TodayCard({ today, name, frame = "doc-paper mt-5", revea
             <Link href="/reports/yeonun" className="font-bold text-seal underline">
               연운
             </Link>
-            으로 봐요 · 내일 또 새로운 운세가 열려요
+            으로 봐요. 내일 또 새로운 운세가 열려요
           </p>
         </div>
       )}

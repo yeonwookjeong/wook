@@ -10,7 +10,7 @@ export const CREDIT_KINDS = [
   { key: "bundle", label: "보고서에 딸린 질문", give: true },
   { key: "buy", label: "질문권 결제", give: true },
   { key: "event", label: "이벤트", give: true },
-  { key: "admin", label: "관리자 지급·회수", give: true },
+  { key: "admin", label: "관리자 지급, 회수", give: true },
   { key: "use", label: "질문으로 씀", give: false },
   { key: "refund", label: "환불로 회수", give: false },
 ] as const;

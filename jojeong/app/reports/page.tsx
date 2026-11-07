@@ -66,7 +66,7 @@ function Row({ p, mine }: { p: Product; mine?: string }) {
 }
 
 // A set's reports as short chips (the full titles run long side by side).
-const SHORT: Partial<Record<ProductId, string>> = { pyeongsaeng: "평생 사주", yeonae: "연애·결혼", jaemul: "재물운", jikup: "직업·적성", yeonun: "연운" };
+const SHORT: Partial<Record<ProductId, string>> = { pyeongsaeng: "평생 사주", yeonae: "연애, 결혼", jaemul: "재물운", jikup: "직업, 적성", yeonun: "연운" };
 
 // Sets: a card each, unlike the report rows above: the reports as chips, and the price beside the sum of the
 // singles struck through. The 새해 set shows only in its season (September to February).
@@ -235,7 +235,7 @@ async function ShelfA({ owned }: { owned: ReturnType<typeof ownedByProduct> }) {
             href="/ask"
             className="mt-3 block rounded-2xl bg-gradient-to-b from-[#222d3b] to-[#1a232f] px-5 py-4 text-hanji shadow-[inset_0_0_0_1px_rgb(212_175_95/0.35)]"
           >
-            <span className="font-myeongjo text-[12px] font-bold tracking-[0.3em] text-[#e2bc68]">聽心堂 · 청심당</span>
+            <span className="font-myeongjo text-[12px] font-bold tracking-[0.3em] text-[#e2bc68]">聽心堂, 청심당</span>
             <b className="mt-1 block font-myeongjo text-[18px]">정 훈도에게 묻기</b>
             <span className="mt-0.5 block text-[12.5px] text-hanji/75">보고서는 사주를 읽고, 사랑방은 그대의 고민을 읽어요</span>
             <span className="mt-2 block text-right font-myeongjo font-extrabold text-[#e2bc68]">고민 묻기 →</span>
@@ -277,7 +277,7 @@ export default async function ReportsPage() {
             <b className="text-seal">{saleLabel(sale)}</b>
           ) : (
             <span className="text-ink-soft">
-              보고서 한 편 <b className="text-ink">{price.toLocaleString("ko-KR")}원</b> · 산 보고서는 &lsquo;내 보고서&rsquo;에서 언제든 다시 열려요
+              보고서 한 편 <b className="text-ink">{price.toLocaleString("ko-KR")}원</b>, 산 보고서는 &lsquo;내 보고서&rsquo;에서 언제든 다시 열려요
             </span>
           )}
         </p>

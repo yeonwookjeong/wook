@@ -35,7 +35,7 @@ export default function PairHighlights({ ministers }: { ministers: Minister[] })
           </>
         ) : (
           <PairCard
-            label={h.best.score >= 60 ? "두 신하의 궁합" : "두 신하의 궁합 · 앙숙 주의"}
+            label={h.best.score >= 60 ? "두 신하의 궁합" : "두 신하의 궁합, 앙숙 주의"}
             pair={h.best}
             reason={h.best.score >= 60 ? goodReason(h.best.facts) : badReason(h.best.facts)}
             tone={h.best.score >= 60 ? "gold" : "seal"}

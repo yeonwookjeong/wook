@@ -10,7 +10,7 @@ import { BRANCHES, STEMS } from "@/lib/saju";
 
 const EL_BAR = ["bg-[#3d6656]", "bg-seal", "bg-gold", "bg-[#bdb6a6]", "bg-[#1f3448]"];
 const MARK = ["✕", "△", "○", "◎"];
-const POS_ROLE = { 시: "자녀·말년", 일: "나·배우자", 월: "부모·일터", 연: "뿌리·어린 시절" } as const;
+const POS_ROLE = { 시: "자녀, 말년", 일: "나, 배우자", 월: "부모, 일터", 연: "뿌리, 어린 시절" } as const;
 const el = (e: number) => `${ELEMENT_KO[e]}(${ELEMENT_HANJA[e]})`;
 
 function Frame({ title, sub, note, children }: { title: string; sub?: string; note?: React.ReactNode; children: React.ReactNode }) {
@@ -43,7 +43,7 @@ function Lit({ on, children }: { on: boolean; children: React.ReactNode }) {
 export function RareFigure({ f, name }: { f: Figures; name: string }) {
   if (!f.rare.length) return null;
   return (
-    <Frame title="그대가 남다른 점" sub={`${name}님 사주에서 드물게 보이는 것`} note="1950~2008년에 태어날 수 있는 모든 날·시의 사주와 견준 값이에요.">
+    <Frame title="그대가 남다른 점" sub={`${name}님 사주에서 드물게 보이는 것`} note="1950~2008년에 태어날 수 있는 모든 날, 시의 사주와 견준 값이에요.">
       <ul className="flex flex-col gap-2">
         {f.rare.map((x) => (
           <li key={x.term} className="rounded-lg bg-hanji/70 px-3 py-2">
@@ -64,8 +64,8 @@ export function RareFigure({ f, name }: { f: Figures; name: string }) {
 // ② The chart as a 만세력: four pillars, their ten gods, hidden stems, 12운성 and 신살, the star marked.
 export function ChartFigure({ f }: { f: Figures }) {
   const rows: [string, (c: Figures["cols"][number]) => React.ReactNode][] = [
-    ["지장간", (c) => <span className={`font-myeongjo ${c.hiddenLit ? "font-bold text-[#b8902f]" : ""}`}>{c.hidden || "·"}</span>],
-    ["12운성", (c) => c.stage || "·"],
+    ["지장간", (c) => <span className={`font-myeongjo ${c.hiddenLit ? "font-bold text-[#b8902f]" : ""}`}>{c.hidden || "-"}</span>],
+    ["12운성", (c) => c.stage || "-"],
     [
       "신살",
       (c) =>
@@ -75,20 +75,20 @@ export function ChartFigure({ f }: { f: Figures }) {
                 {x}
               </span>
             ))
-          : "·",
+          : "-",
     ],
   ];
   return (
     <Frame
       title="그대의 여덟 글자"
-      sub={f.lens.group ? `이 질문이 닿는 곳 · ★ ${f.lens.star}` : "태어난 해·달·날·시의 여덟 글자"}
+      sub={f.lens.group ? `이 질문이 닿는 곳, ★ ${f.lens.star}` : "태어난 해, 달, 날, 시의 여덟 글자"}
       note={
         f.lens.group && f.starEl !== null ? (
           <>
-            <b className="text-ink">★ {f.lens.star}</b> = {f.gods} · {el(f.starEl)} 기운 · 겉으로 드러난 글자 <b className="text-ink">{f.lit}개</b>
-            {f.hiddenLit > 0 && <> · 지장간 속에 {f.hiddenLit}곳</>}
-            {f.lit === 0 && f.hiddenLit === 0 && " · 사주에 없어, 들어오는 해와 달에 크게 움직여요"}
-            {f.lens.seat && <> · 점선은 {f.lens.seat.label}</>}
+            <b className="text-ink">★ {f.lens.star}</b> = {f.gods}, {el(f.starEl)} 기운, 겉으로 드러난 글자 <b className="text-ink">{f.lit}개</b>
+            {f.hiddenLit > 0 && <>, 지장간 속에 {f.hiddenLit}곳</>}
+            {f.lit === 0 && f.hiddenLit === 0 && ", 사주에 없어, 들어오는 해와 달에 크게 움직여요"}
+            {f.lens.seat && <>, 점선은 {f.lens.seat.label}</>}
           </>
         ) : undefined
       }
@@ -103,7 +103,7 @@ export function ChartFigure({ f }: { f: Figures }) {
         <span className="self-center text-left text-[11px] font-bold text-ink-soft">십성</span>
         {f.cols.map((c) => (
           <span key={`g${c.pos}`} className={`text-[10.5px] font-bold ${c.stemLit ? "text-[#b8902f]" : "text-seal"}`}>
-            {c.pos === "일" ? "나" : c.stemGod || "·"}
+            {c.pos === "일" ? "나" : c.stemGod || "-"}
           </span>
         ))}
         <span className="self-center text-left text-[11px] font-bold text-ink-soft">천간</span>
@@ -152,7 +152,7 @@ export function ElementsFigure({ f }: { f: Figures }) {
   return (
     <Frame
       title="그대 안의 다섯 기운"
-      sub={`${f.strength} · 용신 ${el(f.yong)}`}
+      sub={`${f.strength}, 용신 ${el(f.yong)}`}
       note={
         <>
           비율은 보고서와 같은 방식으로, 태어난 달 글자를 무겁게 보고 합(合)으로 바뀌는 기운까지 셈한 값이에요. 괄호는 글자 수예요.
@@ -192,7 +192,7 @@ export function MonthsFigure({ f }: { f: Figures }) {
     <Frame
       title="다가올 여섯 달"
       sub={f.lens.group ? `★ ${f.lens.star}이 드는 달에 표시` : "달마다 그대에게 오는 기운"}
-      note={<>◎ 좋음 · ○ 무난 · △ 조심 · ✕ 버팀 · 날짜는 그 달이 시작되는 절기예요</>}
+      note={<>◎ 좋음, ○ 무난, △ 조심, ✕ 버팀, 날짜는 그 달이 시작되는 절기예요</>}
     >
       <ol className="grid grid-cols-6 items-start gap-1 text-center">
         {f.months.map((m) => (
@@ -229,13 +229,13 @@ export function ClashFigure({ c }: { c: NonNullable<FigureKit["clash"]> }) {
     <Frame
       title="지금 들어온 글자가 만나는 자리"
       sub="올해와 이달의 기운이 그대 사주 어디를 건드리는지"
-      note="금색은 합(끌어당겨 묶임), 붉은색은 충·형(부딪혀 움직임)이에요. 충은 나쁜 일이 아니라 바뀌는 자리예요."
+      note="금색은 합(끌어당겨 묶임), 붉은색은 충, 형(부딪혀 움직임)이에요. 충은 나쁜 일이 아니라 바뀌는 자리예요."
     >
       <div className="flex justify-center gap-3">
         {c.incoming.map((x) => (
           <div key={x.label} className="flex flex-col items-center gap-1">
             <span className="text-[10.5px] font-bold text-ink-soft">
-              {x.label} · {x.god}
+              {x.label}, {x.god}
             </span>
             <div className="grid w-28 grid-cols-2 gap-1">
               <Cell value={STEMS[x.stem]} el={stemEl(x.stem)} />
@@ -258,8 +258,8 @@ export function ClashFigure({ c }: { c: NonNullable<FigureKit["clash"]> }) {
               <span className="flex min-h-5 flex-col gap-0.5">
                 {col.touches.map((t, i) => (
                   <span key={i} className={`rounded-md border px-0.5 py-0.5 text-[10.5px] leading-tight font-bold ${t.good ? TOUCH_GOOD : TOUCH_BAD}`}>
-                    {t.from} {t.kind.split(" · ")[0]}
-                    <span className="block font-normal">{t.kind.split(" · ")[1]}</span>
+                    {t.from} {t.kind.split(", ")[0]}
+                    <span className="block font-normal">{t.kind.split(", ")[1]}</span>
                   </span>
                 ))}
               </span>
@@ -274,7 +274,7 @@ export function ClashFigure({ c }: { c: NonNullable<FigureKit["clash"]> }) {
 // ⑥ 宮位: one seat close up.
 export function SeatFigure({ s }: { s: NonNullable<FigureKit["seat"]> }) {
   return (
-    <Frame title="한 자리 들여다보기" sub={`${s.name} · ${s.pos}주`} note={s.meaning}>
+    <Frame title="한 자리 들여다보기" sub={`${s.name}, ${s.pos}주`} note={s.meaning}>
       <div className="flex items-start gap-3">
         <div className="flex w-[4.5rem] shrink-0 flex-col gap-1 text-center">
           <span className="text-[11px] font-bold text-seal">{s.stemGod}</span>
@@ -297,7 +297,7 @@ export function SeatFigure({ s }: { s: NonNullable<FigureKit["seat"]> }) {
           {s.sals.length > 0 && (
             <>
               <dt className="font-bold text-ink-soft">신살</dt>
-              <dd>{s.sals.join(" · ")}</dd>
+              <dd>{s.sals.join(", ")}</dd>
             </>
           )}
           <dt className="font-bold text-ink-soft">올해</dt>
@@ -328,7 +328,7 @@ export function DecadesFigure({ d }: { d: NonNullable<FigureKit["decades"]> }) {
     <Frame
       title="10년 흐름"
       sub="지금 그대가 서 있는 10년과 그다음"
-      note="◎ 크게 돕는 10년 · ○ 순한 10년 · △ 애쓰는 10년 · ✕ 버티는 10년 · 위의 말은 그 10년에 들어오는 별(십성)이에요"
+      note="◎ 크게 돕는 10년, ○ 순한 10년, △ 애쓰는 10년, ✕ 버티는 10년, 위의 말은 그 10년에 들어오는 별(십성)이에요"
     >
       <ol className="relative grid grid-cols-5 gap-1 text-center">
         <span aria-hidden className="absolute top-[3.15rem] right-2 left-2 h-0.5 bg-seal/20" />
@@ -361,7 +361,7 @@ export function YearsFigure({ y }: { y: NonNullable<FigureKit["years"]> }) {
     <Frame
       title="올해와 내년"
       sub={`${a.year} ${a.verdict} → ${b.year} ${b.verdict}`}
-      note="영역마다 좋음 · 보통 · 조심으로 견줬어요. 보고서의 한 해 판정과 같은 계산이에요."
+      note="영역마다 좋음, 보통, 조심으로 견줬어요. 보고서의 한 해 판정과 같은 계산이에요."
     >
       <div className="mb-1.5 flex justify-end gap-3 text-[10.5px] text-ink-soft">
         <span className="flex items-center gap-1">
@@ -404,7 +404,7 @@ export function SalsFigure({ s }: { s: NonNullable<FigureKit["sals"]> }) {
               {x.hanja.length > 2 ? x.hanja.slice(0, 2) : x.hanja}
             </span>
             <span className="min-w-0">
-              <b className="text-[13px]">{x.name}</b> <span className="text-[11px] text-ink-soft">{x.seats.join(" · ")}</span>
+              <b className="text-[13px]">{x.name}</b> <span className="text-[11px] text-ink-soft">{x.seats.join(", ")}</span>
               {x.line && <span className="mt-0.5 block text-[12px] leading-snug">{x.line}</span>}
             </span>
           </li>
@@ -429,20 +429,20 @@ export function BondFigure({ b, name }: { b: Bond; name: string }) {
     </div>
   );
   return (
-    <Frame title="두 사람" sub={`${name}님과 ${b.label} · ${REL_LABEL[b.rel]}`}>
+    <Frame title="두 사람" sub={`${name}님과 ${b.label}, ${REL_LABEL[b.rel]}`}>
       <div className="flex items-start gap-2">
         {side(`${name}님`, b.me, `${b.label}에게 ${b.roles[1]}`)}
         <span className="mt-6 shrink-0 text-[18px] text-[#b8902f]">⟷</span>
         {side(b.label, b.them, `나에게 ${b.roles[0]}`)}
       </div>
       <ul className="mt-3 flex flex-col gap-1 border-t border-seal/10 pt-2 text-[12px] leading-snug">
-        <li>· {b.seat.line ?? `${b.seat.name}끼리는 조용히 지나가요`}</li>
+        <li>{b.seat.line ?? `${b.seat.name}끼리는 조용히 지나가요`}</li>
         {b.lends.map((l) => (
-          <li key={l}>· {l}</li>
+          <li key={l}>{l}</li>
         ))}
         {b.years.slice(0, 3).map((y) => (
           <li key={y.year}>
-            · <b>{y.year}</b> <span className="font-myeongjo">{y.gz}</span> {y.mark} <span className="text-ink-soft">({y.why})</span>
+<b>{y.year}</b> <span className="font-myeongjo">{y.gz}</span> {y.mark} <span className="text-ink-soft">({y.why})</span>
           </li>
         ))}
       </ul>
@@ -462,7 +462,7 @@ export function BondMonthsFigure({ b, name }: { b: Bond; name: string }) {
     <Frame
       title="두 사람의 여섯 달"
       sub={`${name}님과 ${b.label}에게 함께 오는 달`}
-      note="칸 색: 진한 빨강 함께 좋음 · 옅은 빨강 무난 · 금색 한쪽 흔들림 · 회색 함께 조심"
+      note="칸 색: 진한 빨강 함께 좋음, 옅은 빨강 무난, 금색 한쪽 흔들림, 회색 함께 조심"
     >
       <div className="grid grid-cols-[2.6rem_repeat(6,minmax(0,1fr))] gap-1 text-center text-[11px]">
         <span />
@@ -504,7 +504,7 @@ export function VerdictCard({ v }: { v: FigureKit["verdict"] }) {
   if (!v.rows.length) return null;
   return (
     <section className="mt-4 rounded-xl border border-[#d4af5f]/60 bg-[#fbf6ea] px-4 pt-3 pb-3.5 font-sans">
-      <p className="text-[11px] font-extrabold tracking-[0.14em] text-[#9a7424]">判 定 · 한눈에</p>
+      <p className="text-[11px] font-extrabold tracking-[0.14em] text-[#9a7424]">判 定, 한눈에</p>
       <p className="mt-0.5 text-[13px] font-bold text-ink">{v.title}</p>
       <ul className="mt-2 flex flex-col gap-1.5">
         {v.rows.map((r) => (

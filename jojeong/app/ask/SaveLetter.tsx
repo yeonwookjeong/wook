@@ -22,7 +22,7 @@ export default function SaveLetter({ target, file, question }: { target: string;
     if (question) {
       const q = document.createElement("p");
       q.style.cssText = "margin:0 4px 12px;padding:10px 14px;border-radius:14px;background:#211b17;color:#f4ecdb;font-size:14px;line-height:1.5";
-      q.textContent = `물은 말 · ${question}`;
+      q.textContent = `물은 말, ${question}`;
       frame.appendChild(q);
     }
     const copy = letter.cloneNode(true) as HTMLElement;
@@ -30,7 +30,7 @@ export default function SaveLetter({ target, file, question }: { target: string;
     frame.appendChild(copy);
     const site = document.createElement("p");
     site.style.cssText = "margin:12px 0 0;text-align:center;font-size:12px;color:#62564c";
-    site.textContent = "정 훈도에게 묻기 · hundosaju.com";
+    site.textContent = "정 훈도에게 묻기, hundosaju.com";
     frame.appendChild(site);
     document.body.appendChild(holder);
     try {
@@ -51,7 +51,7 @@ export default function SaveLetter({ target, file, question }: { target: string;
       disabled={state === "making"}
       className="mt-2 w-full rounded-xl border border-[#e2bc68]/40 bg-transparent py-2.5 text-[13px] font-bold text-[#e2bc68] disabled:opacity-60"
     >
-      {state === "making" ? "답서를 그리는 중…" : state === "done" ? "저장했어요 · 사진첩(다운로드)을 확인해 주세요" : state === "error" ? "저장하지 못했어요 · 다시 눌러 주세요" : "답서 이미지로 저장"}
+      {state === "making" ? "답서를 그리는 중…" : state === "done" ? "저장했어요, 사진첩(다운로드)을 확인해 주세요" : state === "error" ? "저장하지 못했어요, 다시 눌러 주세요" : "답서 이미지로 저장"}
     </button>
   );
 }

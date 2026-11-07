@@ -19,7 +19,7 @@ import { openPerson, sealPerson } from "@/lib/shareToken";
 import { placesOf, rareText, sinsalOf } from "@/lib/sinsal";
 
 export const metadata: Metadata = {
-  title: "신살 유형 테스트 · 나는 어떤 살의 사람일까",
+  title: "신살 유형 테스트, 나는 어떤 살의 사람일까",
   description: "20가지 살 유형 중 나는 무엇일까. 천을귀인, 도화, 역마, 화개, 양인, 괴강, 백호, 귀문관, 홍염. 내 살 유형과 100명 중 몇 명인지, 내 살 구성까지 무료로 봐요.",
 };
 

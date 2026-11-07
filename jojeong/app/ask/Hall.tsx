@@ -4,7 +4,7 @@ import Image from "next/image";
 // warm glow, headed by its 현판. Shared by the home's card (app/HomeV2.tsx) and the hall's own page (app/ask).
 
 // The 현판: a wide dark board with the name carved in gold, held in a 단청 frame (red, green, gold).
-export function Plaque({ caption = "청심당 · 마음을 듣는 정 훈도의 사랑방" }: { caption?: string }) {
+export function Plaque({ caption = "청심당, 마음을 듣는 정 훈도의 사랑방" }: { caption?: string }) {
   return (
     <div className="relative mx-auto w-fit">
       <div className="rounded-[3px] bg-[#7a2a1f] p-[3px] shadow-[0_8px_16px_rgb(0_0_0/0.35)]">
