@@ -8,7 +8,6 @@ import { OpenRoomForm } from "./AskForms";
 import DraftReturn from "./DraftReturn";
 import DraftCarry from "./DraftCarry";
 import WorryStart from "./WorryStart";
-import WorryCards from "@/components/WorryCards";
 import { openMyRoomAction } from "./actions";
 import { readMe } from "@/lib/me";
 import { AnswerLetter, Question } from "./Letter";
@@ -137,11 +136,6 @@ export default async function AskPage({ searchParams }: PageProps<"/ask">) {
           )}
           <WorryStart loginHref={loginHref} label={others ? "이 고민 보내기" : "카카오로 로그인하고 이 고민 보내기"} gift={JOIN_GIFT} />
         </RoomArt>
-
-        <Floor className="border-t border-[#e2bc68]/15">
-          <Eyebrow hanja="苦悶">이런 고민도 물을 수 있어요</Eyebrow>
-          <WorryCards dark />
-        </Floor>
 
         <Floor>
           <Eyebrow hanja="答書">이런 답서를 받아요</Eyebrow>
