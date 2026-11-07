@@ -2001,7 +2001,8 @@ def upload_text(recipe: dict) -> str:
     credit = ""
     if _ORIGIN:  # 크리에이티브 커먼즈(CC BY)는 원작자·원본 링크 표기가 조건
         lic = "CC BY" if "creative commons" in _ORIGIN.get("license", "").lower() else _ORIGIN.get("license", "")
-        credit = f"원본 영상: {_ORIGIN['channel']} - {_ORIGIN['title']}\n{_ORIGIN['url']} ({lic})\n\n"
+        credit = f"원본 영상: {_ORIGIN['channel']} - {_ORIGIN['title']}\n{_ORIGIN['url']}" \
+                 + (" (CC BY)" if lic == "CC BY" else "") + "\n\n"
     if _PHOTO_CREDITS:  # 자동으로 받은 자유 라이선스 사진은 작가·라이선스 표기가 조건
         credit += "\n".join(_PHOTO_CREDITS) + "\n\n"
     return (f"[제목]\n{title}\n\n"
