@@ -32,8 +32,8 @@ const S2 = K(20, 16, 23, 0, 2.5, -4);
 const H1 = K(24, 9, 20, 13, 4.3, 3);
 const H2 = K(21, 6.5, 16, 13, 3.7, 3);
 const L1 = K(3.4, 3.1, 8.6, 0, 2.15, 0);
-const L2 = K(1.8, 2.55, 5.0, 0.5, 2.1, 0);
-const L3 = K(1.0, 2.35, 3.9, 1.4, 2.05, 0);
+const L2 = K(1.9, 2.6, 5.8, 0.7, 2.15, 0);
+const L3 = K(2.0, 2.45, 4.9, 1.7, 2.1, 0);
 const O1 = K(11, 9, 17, 0, 3.6, 0);
 const CAM: Record<WorldMode, [Key, Key]> = {
   aerial: [A0, A1], reveal: [A1, R1], ride1: [R1, RD1], ride2: [RD1, RD2],
@@ -465,8 +465,8 @@ const Scene: React.FC<{ mode: WorldMode; t: number; tag: string }> = ({ mode, t,
 
       <Block show={blockShow} spin={spin} death={death} />
       <Sprite tex={q} s={qS} pos={[0.55, 3 * H + 0.45, 1.3]} size={[0.7, 0.7]} rz={-0.12} />
-      <Sprite tex={tagT} s={tagS} pos={[0.55, 3 * H + 0.95, 1.2]} size={[1.3, 0.33]} />
-      <Sprite tex={bub} s={bubS} pos={[1.55, 3 * H + 0.75, 0.6]} size={[0.5, 0.34]} />
+      <Sprite tex={tagT} s={tagS} pos={[0.75, 3 * H + 0.95, 1.2]} size={[1.1, 0.28]} />
+      <Sprite tex={bub} s={bubS} pos={[1.7, 3 * H + 0.8, 0.6]} size={[0.5, 0.34]} />
     </>
   );
 };
