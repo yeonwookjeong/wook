@@ -7,6 +7,7 @@ import { Banner } from "./brand/Banner";
 import { Floor4_3D, FLOOR4_FRAMES } from "./samples/Floor4_3D";
 import { Complex3D, COMPLEX_FRAMES } from "./samples/Complex3D";
 import { PanelTest, PANEL_TEST_FRAMES } from "./three/Panel3D";
+import { ScenesTest, SCENES_TEST_FRAMES } from "./three/Scenes3D";
 
 // 쇼츠 규격: 세로 1080×1920, 30fps
 export const RemotionRoot: React.FC = () => {
@@ -31,6 +32,7 @@ export const RemotionRoot: React.FC = () => {
       <Composition id="Floor4" component={Floor4_3D} durationInFrames={FLOOR4_FRAMES} fps={30} width={1080} height={1920} />
       <Composition id="Complex3D" component={Complex3D} durationInFrames={COMPLEX_FRAMES} fps={30} width={1080} height={1920} />
       <Composition id="PanelTest" component={PanelTest} durationInFrames={PANEL_TEST_FRAMES} fps={30} width={1080} height={1920} />
+      <Composition id="ScenesTest" component={ScenesTest} durationInFrames={SCENES_TEST_FRAMES} fps={30} width={1080} height={1920} />
       <Composition id="Woodcut" component={WoodcutIrworobong} durationInFrames={150} fps={30} width={1080} height={1920} />
     </>
   );

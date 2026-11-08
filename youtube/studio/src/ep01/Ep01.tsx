@@ -4,6 +4,7 @@ import { loadFont as loadHahmlet } from "@remotion/google-fonts/Hahmlet";
 import vo from "./vo.json";
 import voEs from "./vo_es.json";
 import { Complex3D } from "../samples/Complex3D";
+import { Scene3D, Spec3D } from "../three/Scenes3D";
 
 const { fontFamily: sans } = loadNotoSans();
 const { fontFamily: serif } = loadHahmlet();
@@ -42,6 +43,7 @@ type Shot = {
   overlay?: "sa" | "circleF" | "fIs4" | "room304" | "noFour" | "endcard" | "question" | "show4" | "flip4" | "chain";
   grade?: [number, number]; // 흑백·어둡게 정도(0~1) 컷 시작→끝 — 死 장면 분위기
   at?: { x: number; y: number }; // circleF·fIs4 동그라미 중심 (기본: 그림 A의 F 버튼)
+  s3d?: Spec3D; // 3D 장면 (그림 대신)
   three?: "a" | "b"; // 3D 단지 장면(Complex3D): a = 다가가며 4층 강조, b = 4층 빠지고 F 들어옴. 두 컷이 이어진다
   sent: number; // 내레이션 문장 번호 (youtube/tts/make_ep01.py 의 SENTENCES)
   sfx?: { name: string; at?: number; vol?: number };
@@ -50,24 +52,24 @@ type Shot = {
 
 const SHOTS: Shot[] = [
   // 0초부터 주제: 지도 오프닝 없이 버튼판에서 시작 (2026-11-06, 레퍼런스 14편 모두 0초에 주제)
-  { img: "A", sec: 0.7, cam: { s0: 1.6, s1: 1.15, ox: F_BTN.x, oy: F_BTN.y, snap: true }, caps: [[{ text: "In" }, { text: "Korea,", hl: true }]], overlay: "show4", sent: 0, sfx: { name: "ding", at: 0.05, vol: 0.35 } },
-  { img: "A", sec: 1.9, cam: { s0: 1.15, s1: 1.0, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "this elevator" }], [{ text: "is hiding" }, { text: "a floor.", hl: true }]], overlay: "flip4", sent: 1, sfx: { name: "glitch", at: 0.15, vol: 0.25 } },
-  { img: "A", sec: 1.2, cam: { s0: 1.4, s1: 1.4, ox: F_BTN.x, oy: F_BTN.y, panY: [(1 - 1.4) * (1920 - F_BTN.y), 0] }, caps: [[{ text: "Look:" }], [{ text: "1, 2, 3…" }]], sent: 2 },
-  { img: "A", sec: 1.1, cam: { s0: 1.9, s1: 2.4, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "F.", hl: true }], [{ text: "Where's" }, { text: "4?", hl: true }]], overlay: "question", sent: 2, sfx: { name: "pop", at: 0.5, vol: 0.35 } },
-  { img: "C", sec: 1.2, cam: { s0: 1.0, s1: 1.12, ox: C_4.x, oy: C_4.y }, caps: [[{ text: "In Korean," }], [{ text: "four", hl: true }]], sent: 3, sfx: { name: "buzz", vol: 0.2 } },
-  { img: "C", sec: 1.2, cam: { s0: 1.12, s1: 1.18, ox: C_4.x, oy: C_4.y }, caps: [[{ text: "is read" }], [{ text: '"sa,"', hl: true }]], dark: 0.35, overlay: "sa", sent: 3, sfx: { name: "pop", at: 0.1, vol: 0.4 } },
-  { img: "D", sec: 1.1, cam: { s0: 1.0, s1: 1.08, ox: DEATH.x, oy: DEATH.y }, caps: [[{ text: "the same" }], [{ text: "sound as" }]], grade: [0.2, 0.7], sent: 3 },
-  { img: "D", sec: 1.4, cam: { s0: 1.5, s1: 1.65, ox: DEATH.x, oy: DEATH.y, snap: true }, caps: [[{ text: "the Chinese" }], [{ text: "character" }], [{ text: "for" }, { text: "death.", hl: true }]], shake: true, grade: [0.9, 1], overlay: "chain", sent: 3, sfx: { name: "thud", vol: 0.6 } },
+  { s3d: { k: "panel", m: "intro" }, sec: 0.7, cam: { s0: 1.6, s1: 1.15, ox: F_BTN.x, oy: F_BTN.y, snap: true }, caps: [[{ text: "In" }, { text: "Korea,", hl: true }]], sent: 0, sfx: { name: "ding", at: 0.05, vol: 0.35 } },
+  { s3d: { k: "panel", m: "flip" }, sec: 1.9, cam: { s0: 1.15, s1: 1.0, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "this elevator" }], [{ text: "is hiding" }, { text: "a floor.", hl: true }]], sent: 1, sfx: { name: "glitch", at: 0.15, vol: 0.25 } },
+  { s3d: { k: "panel", m: "pan" }, sec: 1.2, cam: { s0: 1.4, s1: 1.4, ox: F_BTN.x, oy: F_BTN.y, panY: [(1 - 1.4) * (1920 - F_BTN.y), 0] }, caps: [[{ text: "Look:" }], [{ text: "1, 2, 3…" }]], sent: 2 },
+  { s3d: { k: "panel", m: "close" }, sec: 1.1, cam: { s0: 1.9, s1: 2.4, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "F.", hl: true }], [{ text: "Where's" }, { text: "4?", hl: true }]], sent: 2, sfx: { name: "pop", at: 0.5, vol: 0.35 } },
+  { s3d: { k: "sign4", m: "in" }, sec: 1.2, cam: { s0: 1.0, s1: 1.12, ox: C_4.x, oy: C_4.y }, caps: [[{ text: "In Korean," }], [{ text: "four", hl: true }]], sent: 3, sfx: { name: "buzz", vol: 0.2 } },
+  { s3d: { k: "sign4", m: "sa" }, sec: 1.2, cam: { s0: 1.12, s1: 1.18, ox: C_4.x, oy: C_4.y }, caps: [[{ text: "is read" }], [{ text: '"sa,"', hl: true }]], dark: 0.35, overlay: "sa", sent: 3, sfx: { name: "pop", at: 0.1, vol: 0.4 } },
+  { s3d: { k: "death", m: "soft" }, sec: 1.1, cam: { s0: 1.0, s1: 1.08, ox: DEATH.x, oy: DEATH.y }, caps: [[{ text: "the same" }], [{ text: "sound as" }]], grade: [0.2, 0.7], sent: 3 },
+  { s3d: { k: "death", m: "snap" }, sec: 1.4, cam: { s0: 1.5, s1: 1.65, ox: DEATH.x, oy: DEATH.y, snap: true }, caps: [[{ text: "the Chinese" }], [{ text: "character" }], [{ text: "for" }, { text: "death.", hl: true }]], shake: true, grade: [0.9, 1], overlay: "chain", sent: 3, sfx: { name: "thud", vol: 0.6 } },
   { three: "a", sec: 1.2, cam: { s0: 1, s1: 1, ox: 540, oy: 960 }, caps: [[{ text: "So many" }], [{ text: "buildings" }]], sent: 4, sfx: { name: "buzz", at: 0.65, vol: 0.2 } },
   { three: "b", sec: 1.4, cam: { s0: 1, s1: 1, ox: 540, oy: 960 }, caps: [[{ text: "swap it" }], [{ text: "for an" }, { text: "F,", hl: true }], [{ text: 'for "four."' }]], sent: 4, sfx: { name: "pop", at: 0.95, vol: 0.4 } },
-  { img: "J", sec: 1.4, cam: { s0: 1.0, s1: 1.1, ox: 540, oy: 900 }, caps: [[{ text: "Hospitals", hl: true }], [{ text: "go further:" }]], sent: 5 },
-  { img: "G", sec: 2.1, cam: { s0: 1.0, s1: 1.15, ox: G_GAP.x, oy: G_GAP.y }, caps: [[{ text: "many skip" }], [{ text: "the 4th floor" }], [{ text: "entirely." }]], overlay: "noFour", sent: 5, sfx: { name: "pop", at: 0.3, vol: 0.35 } },
-  { img: "H", sec: 1.6, cam: { s0: 1.0, s1: 1.3, ox: H_F.x, oy: H_F.y }, caps: [[{ text: "But" }], [{ text: "here's the thing:", hl: true }]], sent: 6, sfx: { name: "ding", at: 0.3, vol: 0.25 } },
-  { img: "I", sec: 1.2, cam: { s0: 1.3, s1: 1.4, ox: I_F.x, oy: I_F.y }, caps: [[{ text: "the F is still" }], [{ text: "the 4th floor.", hl: true }]], overlay: "fIs4", at: I_F, sent: 6, sfx: { name: "pop", at: 0.2, vol: 0.35 } },
-  { img: "K", sec: 1.3, cam: { s0: 1.0, s1: 1.1, ox: 540, oy: 900 }, caps: [[{ text: "Nobody" }], [{ text: "just says it." }]], sent: 6 },
-  { img: "H", sec: 1.2, cam: { s0: 1.3, s1: 1.1, ox: H_F.x, oy: H_F.y }, caps: [[{ text: "Next time" }], [{ text: "you see an" }, { text: "F,", hl: true }]], sent: 7 },
+  { s3d: { k: "hospital" }, sec: 1.4, cam: { s0: 1.0, s1: 1.1, ox: 540, oy: 900 }, caps: [[{ text: "Hospitals", hl: true }], [{ text: "go further:" }]], sent: 5 },
+  { s3d: { k: "directory" }, sec: 2.1, cam: { s0: 1.0, s1: 1.15, ox: G_GAP.x, oy: G_GAP.y }, caps: [[{ text: "many skip" }], [{ text: "the 4th floor" }], [{ text: "entirely." }]], overlay: "noFour", sent: 5, sfx: { name: "pop", at: 0.3, vol: 0.35 } },
+  { s3d: { k: "lobby", m: "wait" }, sec: 1.6, cam: { s0: 1.0, s1: 1.3, ox: H_F.x, oy: H_F.y }, caps: [[{ text: "But" }], [{ text: "here's the thing:", hl: true }]], sent: 6, sfx: { name: "ding", at: 0.3, vol: 0.25 } },
+  { s3d: { k: "lobby", m: "display" }, sec: 1.2, cam: { s0: 1.3, s1: 1.4, ox: I_F.x, oy: I_F.y }, caps: [[{ text: "the F is still" }], [{ text: "the 4th floor.", hl: true }]], overlay: "fIs4", at: { x: 590, y: 650 }, sent: 6, sfx: { name: "pop", at: 0.2, vol: 0.35 } },
+  { s3d: { k: "panel", m: "press" }, sec: 1.3, cam: { s0: 1.0, s1: 1.1, ox: 540, oy: 900 }, caps: [[{ text: "Nobody" }], [{ text: "just says it." }]], sent: 6 },
+  { s3d: { k: "lobby", m: "next" }, sec: 1.2, cam: { s0: 1.3, s1: 1.1, ox: H_F.x, oy: H_F.y }, caps: [[{ text: "Next time" }], [{ text: "you see an" }, { text: "F,", hl: true }]], sent: 7 },
   // 마지막 = 2번 컷과 같은 구도(어둡게) → 반복 재생 때 첫 장면으로 자연스럽게 이어진다
-  { img: "A", sec: 1.3, cam: { s0: 1.1, s1: 1.0, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "you'll know" }], [{ text: "what it's" }, { text: "hiding.", hl: true }]], dark: 0.45, sent: 7, sfx: { name: "thud", at: 1.0, vol: 0.25 } },
+  { s3d: { k: "panel", m: "end" }, sec: 1.3, cam: { s0: 1.1, s1: 1.0, ox: F_BTN.x, oy: F_BTN.y }, caps: [[{ text: "you'll know" }], [{ text: "what it's" }, { text: "hiding.", hl: true }]], dark: 0.45, sent: 7, sfx: { name: "thud", at: 1.0, vol: 0.25 } },
 ];
 
 // 스페인어판(중남미): 컷·그림·효과음은 같고 자막과 화면 글자만 바뀐다. 컷 순서는 SHOTS와 같다.
@@ -271,6 +273,11 @@ const ShotView: React.FC<{ shot: Shot; dur: number; lang: Lang; split?: number }
               filter: g ? `grayscale(${g}) brightness(${1 - 0.45 * g}) contrast(${1 + 0.25 * g})` : undefined,
             }}
           />
+        </AbsoluteFill>
+      )}
+      {shot.s3d && (
+        <AbsoluteFill style={{ transform: `translate(${shake}px, 0)`, filter: g ? `grayscale(${g}) brightness(${1 - 0.45 * g}) contrast(${1 + 0.25 * g})` : undefined }}>
+          <Scene3D spec={shot.s3d} t={t} />
         </AbsoluteFill>
       )}
       {shot.three && <Complex3D split={split} p={shot.three === "a" ? t * split : split + t * (1 - split)} />}
