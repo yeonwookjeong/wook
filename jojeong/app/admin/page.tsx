@@ -6,7 +6,7 @@ import CopyButton from "@/components/CopyButton";
 import { GIFTABLE, originNow } from "@/lib/gift";
 import { SALE_KEYS, saleKey, saleLabel } from "@/lib/sales";
 import { productById, SETS, type ProductId } from "@/lib/products";
-import { lastReportError, listInquiries, memberViews, readingCount } from "@/lib/store";
+import { freshSiteErrors, lastReportError, listInquiries, listSiteErrors, memberViews, readingCount, type SiteError } from "@/lib/store";
 import { listFeedback } from "@/lib/feedback";
 import { memberFixAction } from "./actions";
 import { allMembers, memberNo, VIA_LABEL, viaOf, type Member } from "@/lib/members";
@@ -75,6 +75,8 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   const won = (n: number) => `${n.toLocaleString("ko-KR")}원`;
   const ny = newYearOf();
   const inquiries = await listInquiries().catch(() => []);
+  const siteErrors = await listSiteErrors().catch(() => [] as SiteError[]);
+  const freshErrors = freshSiteErrors(siteErrors);
   const writeError = await lastReportError();
   const writeRisk = await lastReportError("risk");
   const open = inquiries.filter((q) => !q.done);
@@ -147,6 +149,11 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
       {open.length > 0 && tab !== "people" && (
         <Link href="/admin?t=people" className="mt-3 block rounded-xl border-2 border-seal/50 bg-white/70 px-4 py-2.5 text-center text-sm font-bold text-seal">
           새 문의 {open.length}건이 기다려요 →
+        </Link>
+      )}
+      {tab === "home" && freshErrors.length > 0 && (
+        <Link href="/admin?t=people#errors" className="mt-4 block rounded-xl border border-seal bg-seal/10 px-4 py-3 text-sm font-bold text-seal">
+          지난 24시간 오류 {freshErrors.length}종, {freshErrors.reduce((a, e) => a + e.count, 0)}번 기록됨 → 오류 기록 보기
         </Link>
       )}
       {tab === "home" && (
@@ -300,6 +307,30 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
                   {q.done && <span className="ml-auto text-[11px] text-ink-soft">처리함</span>}
                 </p>
                 <p className="mt-1.5 text-left whitespace-pre-wrap">{q.body}</p>
+                {q.ctx && (
+                  <p className="mt-1.5 rounded-lg bg-ink/5 px-2 py-1.5 text-left text-[11.5px] leading-relaxed text-ink-soft">
+                    {[
+                      q.ctx.page && `화면 ${q.ctx.page}`,
+                      q.ctx.code && `오류 번호 ${q.ctx.code}`,
+                      q.ctx.device,
+                      q.ctx.member,
+                      q.ctx.orders?.length
+                        ? `이 브라우저 결제 ${q.ctx.orders
+                            .map((id) => {
+                              const o = orders.find((x) => x.id === id);
+                              return o ? `${o.set ? SETS[o.set].title : productById(o.product)?.title}(${when(o.paidAt ?? o.createdAt).slice(0, 5)})` : id;
+                            })
+                            .join(", ")}`
+                        : "이 브라우저 결제 없음",
+                    ]
+                      .filter(Boolean)
+                      .join(", ")}
+                    {(() => {
+                      const hit = q.ctx.code ? siteErrors.find((e) => e.digests.includes(q.ctx!.code!)) : undefined;
+                      return hit ? <span className="mt-1 block font-bold text-seal">오류 기록과 같은 오류: {hit.message}</span> : null;
+                    })()}
+                  </p>
+                )}
                 <div className="mt-2 flex flex-wrap items-center gap-2 text-[12px]">
                   {q.email ? (
                     <a
@@ -325,6 +356,36 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
                     <button className="rounded-full border border-ink/20 px-3 py-1 text-ink-soft">삭제</button>
                   </form>
                 </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section id="errors" className="doc-paper mt-4 scroll-mt-4 px-4 py-4">
+        <h2 className="flex items-baseline justify-between font-myeongjo font-extrabold">
+          오류 기록
+          <span className={`text-sm ${freshErrors.length ? "text-seal" : "text-ink-soft"}`}>최근 14일 {siteErrors.length}종</span>
+        </h2>
+        <p className="mt-1 text-[11px] text-ink-soft">신고가 없어도 저절로 쌓여요. 같은 오류는 한 줄로 묶고 몇 번 났는지 세요. 화면 주소만 남기고 손님이 넣은 내용은 남기지 않아요.</p>
+        {siteErrors.length === 0 ? (
+          <p className="mt-2 text-sm text-ink-soft">기록된 오류가 없어요.</p>
+        ) : (
+          <ul className="mt-2 flex flex-col gap-2">
+            {siteErrors.map((e) => (
+              <li key={e.sig} className={`rounded-xl border px-3 py-2.5 text-[12.5px] ${freshErrors.includes(e) ? "border-seal/40 bg-white/60" : "border-ink/10"}`}>
+                <p className="flex items-baseline gap-2">
+                  <b className="text-seal">{e.count}번</b>
+                  <span className="text-[11px] text-ink-soft">
+                    {e.kind === "server" ? "서버" : "브라우저"}, 처음 {when(e.first)}, 마지막 {when(e.last)}
+                  </span>
+                </p>
+                <p className="mt-1 break-all">{e.message}</p>
+                <p className="mt-1 text-[11px] break-all text-ink-soft">
+                  {e.route}
+                  {e.paths.length ? `, 화면 ${e.paths.join(", ")}` : ""}
+                  {e.digests.length ? `, 오류 번호 ${e.digests.join(", ")}` : ""}
+                </p>
               </li>
             ))}
           </ul>
