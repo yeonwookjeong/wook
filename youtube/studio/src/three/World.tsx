@@ -44,12 +44,20 @@ const CAM: Record<WorldMode, [Key, Key]> = {
   out1: [L3, O1], out2: [O1, A0],
 };
 
+// 카메라: 모든 컷의 기준점을 지나는 곡선 하나 (Catmull-Rom). 컷 경계에서 멈췄다 출발하지 않고 이어서 흐른다.
+const ORDER: WorldMode[] = ["aerial", "reveal", "ride1", "ride2", "four", "sa", "death1", "death2", "swapA", "swapB", "hosp1", "hosp2", "life1", "life2", "life3", "out1", "out2"];
+const PTS = [...ORDER.map((m) => CAM[m][0]), CAM.out2[1]];
+const POS = new THREE.CatmullRomCurve3(PTS.map((k) => k.p), false, "centripetal");
+const TGT = new THREE.CatmullRomCurve3(PTS.map((k) => k.t), false, "centripetal");
+
 const CameraRig: React.FC<{ mode: WorldMode; t: number }> = ({ mode, t }) => {
   const { camera } = useThree();
-  const [a, b] = CAM[mode];
-  const k = Easing.inOut(Easing.cubic)(t);
-  camera.position.copy(a.p.clone().lerp(b.p, k));
-  camera.lookAt(a.t.clone().lerp(b.t, k));
+  const idx = ORDER.indexOf(mode);
+  // 맨 처음만 천천히 출발, 맨 끝만 천천히 도착 (반복 재생 이음새)
+  const tt = idx === 0 ? Easing.in(Easing.quad)(t) * 0.5 + t * 0.5 : idx === ORDER.length - 1 ? Easing.out(Easing.quad)(t) * 0.5 + t * 0.5 : t;
+  const u = (idx + tt) / ORDER.length;
+  camera.position.copy(POS.getPoint(u));
+  camera.lookAt(TGT.getPoint(u));
   return null;
 };
 
@@ -235,9 +243,9 @@ const CutTower: React.FC<{ cab: number; litUpTo: number }> = ({ cab, litUpTo }) 
 // ---------- 떠 있는 판: ? , 4/사/死 블록, "F = 4th floor" 꼬리표, 말풍선 ----------
 const Sprite: React.FC<{ tex: THREE.Texture; s: number; pos: [number, number, number]; size: [number, number]; rz?: number }> = ({ tex, s, pos, size, rz = 0 }) =>
   s < 0.01 ? null : (
-    <mesh position={pos} scale={s} rotation={[0, 0.3, rz]}>
+    <mesh position={pos} scale={0.7 + 0.3 * s} rotation={[0, 0.3, rz]}>
       <planeGeometry args={size} />
-      <meshBasicMaterial map={tex} transparent depthTest={false} toneMapped={false} />
+      <meshBasicMaterial map={tex} transparent opacity={Math.min(1, s)} depthTest={false} toneMapped={false} />
     </mesh>
   );
 
@@ -300,16 +308,17 @@ const Block: React.FC<{ show: number; spin: number; death: boolean }> = ({ show,
   const tsi = useMemo(() => glyphTex("死", { bg: "#241414", fg: "#e8322b", size: 190, font: cjk }), []);
   if (show < 0.01) return null;
   const side = death ? "#3a1c1c" : "#ddd3c5";
+  const op = { transparent: show < 1, opacity: show };
   return (
-    <group position={[0, FLOORS * H + 0.3 + 1.6 * show, 0]} scale={show} rotation={[0, Math.PI * spin, 0]}>
+    <group position={[0, FLOORS * H + 0.6 + 1.3 * show, 0]} scale={0.8 + 0.2 * show} rotation={[0, Math.PI * spin, 0]}>
       <mesh castShadow>
         <boxGeometry args={[2.2, 2.2, 0.45]} />
-        <meshStandardMaterial attach="material-0" color={side} />
-        <meshStandardMaterial attach="material-1" color={side} />
-        <meshStandardMaterial attach="material-2" color={side} />
-        <meshStandardMaterial attach="material-3" color={side} />
-        <meshStandardMaterial attach="material-4" map={death ? tsi : t4} emissive={death ? "#5a0a0a" : "#000000"} emissiveIntensity={0.6} />
-        <meshStandardMaterial attach="material-5" map={tsa} />
+        <meshStandardMaterial attach="material-0" color={side} {...op} />
+        <meshStandardMaterial attach="material-1" color={side} {...op} />
+        <meshStandardMaterial attach="material-2" color={side} {...op} />
+        <meshStandardMaterial attach="material-3" color={side} {...op} />
+        <meshStandardMaterial attach="material-4" map={death ? tsi : t4} emissive={death ? "#5a0a0a" : "#000000"} emissiveIntensity={0.6} {...op} />
+        <meshStandardMaterial attach="material-5" map={tsa} {...op} />
       </mesh>
     </group>
   );
@@ -381,10 +390,10 @@ const Scene: React.FC<{ mode: WorldMode; t: number; tag: string }> = ({ mode, t,
     i("aerial") ? 0 : i("reveal") ? interpolate(t, [0.3, 0.85], [0, 1], { ...clamp, easing: ease }) : i("ride1") || i("ride2") ? 1 : i("four") ? interpolate(t, [0.1, 0.7], [1, 0], { ...clamp, easing: ease }) : i("life1") ? interpolate(t, [0, 0.3], [0, 1], { ...clamp, easing: ease }) : i("life2") || i("life3") ? 1 : i("out1") ? interpolate(t, [0.2, 0.8], [1, 0], { ...clamp, easing: ease }) : 0;
   const cab = i("ride1") ? interpolate(t, [0.05, 0.95], [0, 2], clamp) : i("ride2") ? interpolate(t, [0, 0.4], [2, 3], { ...clamp, easing: Easing.out(Easing.cubic) }) : i("life1") || i("life2") || i("life3") ? 3 : 0;
   const litUpTo = i("ride1") ? Math.floor(cab + 0.5) + 1 : i("ride2") ? (t > 0.38 ? 4 : 3) : i("reveal") ? (t > 0.85 ? 1 : 0) : i("life1") || i("life2") || i("life3") ? 4 : 0;
-  const qS = i("ride2") ? interpolate(t, [0.5, 0.68], [0, 1], { ...clamp, easing: Easing.out(Easing.back(2)) }) : 0;
+  const qS = i("ride2") ? interpolate(t, [0.45, 0.7], [0, 1], { ...clamp, easing: Easing.out(Easing.cubic) }) : 0;
   // 4 → 사 → 死 블록
-  const blockShow = i("four") ? interpolate(t, [0.35, 0.75], [0, 1], { ...clamp, easing: Easing.out(Easing.back(1.5)) }) : i("sa") || i("death1") || i("death2") ? 1 : i("swapA") ? interpolate(t, [0, 0.35], [1, 0], clamp) : 0;
-  const spin = i("sa") ? interpolate(t, [0.05, 0.4], [0, 1], { ...clamp, easing: Easing.out(Easing.back(1.4)) }) : i("death1") ? interpolate(t, [0.45, 0.8], [1, 2], { ...clamp, easing: Easing.out(Easing.back(1.4)) }) : i("death2") || i("swapA") ? 2 : 0;
+  const blockShow = i("four") ? interpolate(t, [0.3, 0.85], [0, 1], { ...clamp, easing: Easing.out(Easing.cubic) }) : i("sa") || i("death1") || i("death2") ? 1 : i("swapA") ? interpolate(t, [0, 0.45], [1, 0], { ...clamp, easing: Easing.in(Easing.quad) }) : 0;
+  const spin = i("sa") ? interpolate(t, [0.05, 0.5], [0, 1], { ...clamp, easing: Easing.inOut(Easing.cubic) }) : i("death1") ? interpolate(t, [0.4, 0.85], [1, 2], { ...clamp, easing: Easing.inOut(Easing.cubic) }) : i("death2") || i("swapA") ? 2 : 0;
   const death = i("death1") || i("death2") || i("swapA");
   // 하늘 어둡기 (死)
   const dark = i("death1") ? interpolate(t, [0.45, 0.9], [0, 1], clamp) : i("death2") ? 1 : i("swapA") ? interpolate(t, [0, 0.5], [1, 0], clamp) : 0;
@@ -394,10 +403,10 @@ const Scene: React.FC<{ mode: WorldMode; t: number; tag: string }> = ({ mode, t,
   // 병원
   const hGlow = i("hosp2") ? interpolate(t, [0.05, 0.2], [0, 1], clamp) : 0;
   const hOut = i("hosp2") ? interpolate(t, [0.25, 0.5], [0, 1], { ...clamp, easing: ease }) : 0;
-  const hDrop = i("hosp2") ? interpolate(t, [0.5, 0.75], [0, 1], { ...clamp, easing: Easing.out(Easing.bounce) }) : 0;
+  const hDrop = i("hosp2") ? interpolate(t, [0.45, 0.8], [0, 1], { ...clamp, easing: Easing.inOut(Easing.cubic) }) : 0;
   // F층 꼬리표, 말풍선
-  const tagS = i("life2") ? interpolate(t, [0.15, 0.35], [0, 1], { ...clamp, easing: Easing.out(Easing.back(1.8)) }) : 0;
-  const bubS = i("life3") ? interpolate(t, [0.2, 0.4], [0, 1], { ...clamp, easing: Easing.out(Easing.back(1.8)) }) : 0;
+  const tagS = i("life2") ? interpolate(t, [0.12, 0.4], [0, 1], { ...clamp, easing: Easing.out(Easing.cubic) }) : 0;
+  const bubS = i("life3") ? interpolate(t, [0.15, 0.45], [0, 1], { ...clamp, easing: Easing.out(Easing.cubic) }) : 0;
   // 마지막: F 판들이 은은하게
   const fGlowAll = i("out1") || i("out2") ? 0.5 : swapped ? 0.35 : 0;
 
