@@ -424,7 +424,7 @@ def _register(video: Path, meta: dict, url: str, main: bool):
     _INFOS[str(video)] = {"duration": meta.get("duration") or 0, "heatmap": meta.get("heatmap") or [],
                           "license": meta.get("license") or ""}
     if main and not _ORIGIN:
-        _ORIGIN.update({"title": meta.get("title", ""), "url": meta.get("url") or url,
+        _ORIGIN.update({"translated": bool(meta.get("translated")), "title": meta.get("title", ""), "url": meta.get("url") or url,
                         "channel": meta.get("channel", ""), "license": meta.get("license", "")})
     if main and "creative commons" not in (meta.get("license") or "").lower():
         print(f"   ⚠️ 이 영상은 크리에이티브 커먼즈가 아니에요: {meta.get('url') or url}")
@@ -486,7 +486,7 @@ def fetch_source(url: str, ff: str, height: int = 1080, main: bool = True):
         def get(url_):
             return ydl.urlopen(url_).read().decode("utf-8", "replace")
 
-        lines, words, kind = [], [], None
+        lines, words, kind, translated = [], [], None, False
         if main:  # 도입부 자료 영상은 자막 필요 없음
             sub, kind = pick_subtitle(info)
             if sub:
@@ -497,19 +497,23 @@ def fetch_source(url: str, ff: str, height: int = 1080, main: bool = True):
                     if "429" in str(e):
                         die("유튜브가 잠시 요청을 막았어요(429). 10~30분 뒤에 다시 실행해 주세요.")
                     raise
-            for f in (info.get("automatic_captions") or {}).get("ko", []):
+            # 한국어 자동자막이 다른 언어(예: 일본어)를 자동 번역한 것이면 단어 시각이 실제 말과 안 맞아서 안 씀
+            auto = info.get("automatic_captions") or {}
+            translated = kind == "자동 자막" and any(k.endswith("-orig") and not k.startswith("ko") for k in auto)
+            for f in ([] if translated else auto.get("ko", [])):
                 if f.get("ext") == "json3":
                     try:
                         words = parse_json3_words(get(f["url"]))
                     except Exception:
                         words = []
                     break
-            print(f"   자막: {kind or '없음'} {len(lines)}줄, 컷 정밀용 자동자막 단어 {len(words)}개")
+            print(f"   자막: {kind or '없음'} {len(lines)}줄, 컷 정밀용 자동자막 단어 {len(words)}개"
+                  + ("  ⚠️ 외국어를 자동 번역한 자막 → 문장 단위로만 맞춤" if translated else ""))
 
     meta = {"file": video.name, "duration": info.get("duration") or 0, "heatmap": info.get("heatmap") or [],
             "license": info.get("license") or "", "title": info.get("title", ""),
             "url": info.get("webpage_url") or url, "channel": info.get("channel") or info.get("uploader") or "",
-            "has_subs": bool(lines) or main, "lines": lines, "words": words}
+            "has_subs": bool(lines) or main, "lines": lines, "words": words, "translated": translated}
     (WORK / f"{info['id']}_info.json").write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8")
     _register(video, meta, url, main)
     return video, Subs(lines, words), meta["channel"]
@@ -1825,6 +1829,13 @@ def main():
     use_layout(recipe.get("theme", "celebpick"))
     _RECIPE_HI[:] = recipe.get("highlight", [])
 
+    # 외국어를 자동 번역한 자막: 단어 시각을 안 쓰고(문장 단위만), 쉼 자르기·말 빠르게도 끔 → 화면이 덜 튀고 자막이 덜 어긋남
+    translated = bool(recipe.get("translated_subs", _ORIGIN.get("translated")))
+    if translated:
+        subs.by_word = None
+        recipe.setdefault("tighten", False)
+        recipe.setdefault("clip_speed", 1.0)
+        print("   ⚠️ 자동 번역 자막이라 문장 단위로 자막을 맞추고, 쉼 자르기·배속은 꺼요")
     plan = plan_parts(recipe, subs, ff, src, args.check or args.snapshots)
     _USED[:] = [(pp["start"], pp["end"]) for pp in plan if pp["type"] == "clip"]
     src_len = duration_of(ff, src)

@@ -44,6 +44,8 @@ def review(rpath: Path, subs: "ms.Subs") -> tuple[list, list]:
     warn, script = [], []
     parts = recipe.get("parts", [])
     tts = [p for p in parts if p.get("type") == "tts"]
+    if recipe.get("translated_subs") or ms._ORIGIN.get("translated"):
+        warn.append("💡 외국어를 자동 번역한 자막 → 자막은 문장 단위로만 맞고, 쉼 자르기·배속은 꺼서 만들어요")
     if not parts or parts[0].get("type") != "tts":
         warn.append("TTS로 시작하지 않아요")
     if len(tts) > 2:
