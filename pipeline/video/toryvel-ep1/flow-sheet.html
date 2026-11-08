@@ -1,0 +1,134 @@
+<title>도쿄타워 1편 플로우 시트</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* 레이아웃: 휴대폰 한 손 스크롤용 한 줄 카드 목록. 대사 순서 = 촬영 순서 */
+:root{
+  --bg:#f6f4f1; --surface:#ffffff; --fg:#1d1a17; --muted:#6d655d; --line:#e4ded6;
+  --accent:#d9481c; --accent-soft:#fbe7df; --code:#f1ede8; --ok:#2f7a4f;
+  --sans:"IBM Plex Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#151311; --surface:#1f1c19; --fg:#efe9e2; --muted:#a59c92; --line:#34302b;
+  --accent:#ff7a45; --accent-soft:#3a2219; --code:#2a2622; --ok:#6cc38f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#151311; --surface:#1f1c19; --fg:#efe9e2; --muted:#a59c92; --line:#34302b;
+  --accent:#ff7a45; --accent-soft:#3a2219; --code:#2a2622; --ok:#6cc38f; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:15px;line-height:1.55}
+.wrap{max-width:720px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
+header h1{font-size:24px;line-height:1.25;margin:0 0 6px;text-wrap:balance}
+header p{margin:0;color:var(--muted)}
+.steps{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.steps h2{font-size:13px;letter-spacing:.06em;color:var(--muted);margin:0 0 4px;font-weight:600}
+.steps ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.style{display:flex;flex-direction:column;gap:8px}
+.clip{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.clip.first{border-color:var(--accent)}
+.head{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px}
+.id{font-family:var(--mono);font-weight:500;font-size:13px;background:var(--accent-soft);color:var(--accent);padding:2px 8px;border-radius:5px}
+.head h3{margin:0;font-size:17px}
+.tag{font-size:12px;color:var(--accent);font-weight:600}
+.line{margin:0;color:var(--muted);font-size:14px;border-left:2px solid var(--line);padding-left:10px}
+.photo{font-size:13px;margin:0;color:var(--fg)}
+.photo b{color:var(--accent)}
+.p{display:flex;flex-direction:column;gap:6px;min-width:0}
+.plabel{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.plabel span{font-size:12px;letter-spacing:.06em;color:var(--muted);font-weight:600}
+pre{margin:0;background:var(--code);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:12.5px;line-height:1.5;white-space:pre-wrap;word-break:break-word;overflow-x:auto}
+button.copy{font:600 13px var(--sans);color:var(--surface);background:var(--fg);border:0;border-radius:7px;padding:7px 12px;cursor:pointer;min-height:34px}
+button.copy:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.copy.done{background:var(--ok)}
+.skip{font-size:13px;color:var(--muted);margin:0}
+.edit{font-size:13px;color:var(--muted);background:var(--code);border-radius:8px;padding:10px 12px;margin:0}
+.report{background:var(--surface);border:1px dashed var(--accent);border-radius:10px;padding:14px 16px}
+.report h2{font-size:15px;margin:0 0 6px}
+.report ul{margin:0;padding-left:20px}
+</style>
+
+<div class="wrap">
+<header>
+  <h1>도쿄타워 1편 · 플로우 시트</h1>
+  <p>대본 v3 (48초) 기준 클립 8개. 프롬프트는 공통 스타일까지 붙어 있어서 복사해서 그대로 넣으면 됩니다.</p>
+</header>
+
+<section class="steps">
+  <h2>순서</h2>
+  <ol>
+    <li><b>A</b>와 <b>T2</b>부터 시험하기 (표시된 카드)</li>
+    <li>이미지 프롬프트로 이미지를 만들고, 마음에 드는 걸 하나 고르기</li>
+    <li>고른 이미지에 영상 프롬프트를 넣어 영상 만들기</li>
+    <li>사진이 필요한 클립은 앞서 채팅으로 보낸 도쿄타워 사진을 올리기</li>
+  </ol>
+</section>
+
+<div id="clips"></div>
+
+<section class="report">
+  <h2>시험 후 알려주세요</h2>
+  <ul>
+    <li>결과 이미지와 영상</li>
+    <li>클립 하나에 차감된 크레딧</li>
+    <li>영상 길이 선택지 (몇 초까지 되는지)</li>
+    <li>금지어(negative prompt) 칸이 따로 있는지</li>
+  </ul>
+</section>
+</div>
+
+<script>
+const PAST="Photorealistic historical documentary footage, vertical 9:16, shot on 35mm film, muted desaturated 1950s color, natural soft light, subtle film grain, realistic scale and physics, no text, no signs, no logos.";
+const NOW="Photorealistic travel documentary footage, vertical 9:16, 35mm lens, natural night color, no text, no logos.";
+const ONE=" One continuous shot.";
+const clips=[
+ {id:"A",title:"지금의 도쿄타워 야경",lines:"1 · 도쿄의 상징, 도쿄타워. 그 꼭대기는 원래 전차였습니다.",first:true,
+  photo:"<b>야경 사진</b>(福原邦展, CC BY 3.0)을 첫 프레임으로 올리기",
+  img:null,skip:"이미지 생성은 건너뜁니다. 사진을 그대로 첫 프레임으로 씁니다.",
+  vid:"Animate this exact photo. The camera slowly pushes in toward Tokyo Tower and tilts up toward its top. Distant city lights twinkle softly. The tower keeps its exact shape and lighting."+ONE+" "+NOW},
+ {id:"T1",title:"건설 중인 도쿄타워 (1958)",lines:"2–3 · 333미터 탑을 세우려 합니다 / 문제는 철이었습니다",
+  photo:"<b>낮 사진</b>(Guilhem Vellut, CC BY 2.0)을 참고 이미지로 올리기",
+  img:"Use the reference photo only for the exact shape and proportions of Tokyo Tower. Show the same tower in 1958, under construction in Shiba, Tokyo, in daylight: the lower half built, the upper part above the main observation deck still an open bare steel framework, tiny workers on the beams, low postwar wooden rooftops below. "+PAST,
+  vid:"From the first frame the camera is already tilting slowly upward from the finished lower half toward the bare unfinished steel framework at the top. Tiny workers move carefully on the beams. The lattice stays geometrically consistent."+ONE+" "+PAST},
+ {id:"N1",title:"고철 낙찰 (민간업자)",lines:"4 · 그때 한 민간업자가 고철을 낙찰받습니다.",
+  img:"A small Japanese office in the mid-1950s. A middle-aged Japanese businessman in a dark suit sits at a wooden desk signing a bid document with a fountain pen. Black-and-white photographs of damaged military tanks are spread across the desk beside stacks of papers. Desk lamp and soft window light. "+PAST,
+  vid:"From the first frame the man is already signing the document. The camera slowly pushes in toward the photographs of the tanks on the desk. His hands move naturally and the papers stay still."+ONE+" "+PAST},
+ {id:"T2",title:"고철장의 부서진 전차",lines:"5 · 한국전쟁에서 부서진 미군 전차, 약 90대였죠. (11번 줄에도 재사용)",first:true,
+  img:"A 1950s scrapyard in Japan, a long row of damaged, rusted olive drab M4 Sherman tanks lined up for dismantling, some missing tracks and hatches, piles of scrap metal, gray overcast sky, no people in focus. "+PAST,
+  vid:"The camera is already tracking slowly sideways at low height along the row of tanks. Dust drifts across the ground. The tanks never move and keep the same shape and number."+ONE+" "+PAST},
+ {id:"T2b",title:"전차 장갑판 클로즈업",lines:"6–7 · 전차로 탑을 짓는다고요? / 전차 철갑은 질 좋은 특수강이거든요.",
+  img:"Close-up of the thick armor plate of a rusted olive drab M4 Sherman tank in a 1950s Japanese scrapyard. A worker's gloved hand rests on the steel. Chipped paint reveals dense dark steel beneath. Overcast light. "+PAST,
+  vid:"From the first frame the camera is slowly sliding along the armor plate. The gloved hand knocks twice on the steel. The tank never moves."+ONE+" "+PAST},
+ {id:"T3",title:"녹여서 편 철골",lines:"8 · 녹이고 펴서 철골로 만든 뒤, 탑의 윗부분, 메인데크 위로 올렸습니다.",
+  img:"Inside a 1950s Japanese steel mill, a glowing red-hot steel beam sliding out of heavy iron rollers, sparks in the air, dark industrial interior lit orange by the glowing metal, a worker silhouette at a safe distance. "+PAST,
+  vid:"From the first frame the glowing beam is already sliding forward through the rollers toward the camera, sparks drifting. The camera slowly pushes in. The rollers and beam keep their shape."+ONE+" "+PAST,
+  edit:"끝부분은 편집에서 실사 사진의 메인데크 위 강조 장면으로 이어 붙입니다."},
+ {id:"N2",title:"1959년의 책",lines:"10 · 정작 탑을 세운 마에다 히사키치가 1959년에 쓴 책엔, 이 이야기가 한 줄도 없습니다.",
+  img:"An old Japanese hardcover book from 1959 lying open on a wooden desk, yellowed pages with dense vertical Japanese print too small to read, a black-and-white photograph of Tokyo Tower printed on one page, soft lamp light, shallow depth of field. "+PAST,
+  vid:"From the first frame a hand is slowly turning a page. The camera drifts slowly across the open pages. The paper moves naturally."+ONE+" "+PAST,
+  edit:"책 제목 『東京タワー物語』은 AI가 글자를 망치기 쉬워서 편집에서 얹습니다. 9번 줄 '반전은 따로 있습니다'는 직전 장면을 멈추고 어둡게 처리합니다."},
+ {id:"B",title:"아래에서 올려다본 탑",lines:"12–13 · 그래서 지금도 이렇게 말합니다 / 도쿄 야경 꼭대기엔, 한반도에서 싸우던 전차가 서 있다고.",
+  photo:"<b>야경 사진</b>을 참고 이미지로 올리기",
+  img:"Same Tokyo Tower and night lighting as the reference photo, but seen from directly below at its base, the lit red-orange lattice rising into the dark sky, strong upward perspective. "+NOW,
+  vid:"The camera is already tilting slowly up the tower toward the top while drifting slightly sideways. The tower stays perfectly still."+ONE+" "+NOW}
+];
+const box=document.getElementById('clips');box.style.cssText="display:flex;flex-direction:column;gap:14px";
+function block(label,text,key){
+  const d=document.createElement('div');d.className='p';
+  d.innerHTML=`<div class="plabel"><span>${label}</span><button class="copy" type="button" id="c-${key}">복사</button></div><pre id="t-${key}"></pre>`;
+  d.querySelector('pre').textContent=text;
+  d.querySelector('button').addEventListener('click',e=>{
+    const b=e.currentTarget,pre=d.querySelector('pre');
+    const ok=()=>{b.textContent='복사됨';b.classList.add('done');setTimeout(()=>{b.textContent='복사';b.classList.remove('done')},1600)};
+    const fallback=()=>{const r=document.createRange();r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='선택됨, 길게 눌러 복사'};
+    try{navigator.clipboard.writeText(text).then(ok,fallback)}catch(_){fallback()}
+  });
+  return d;
+}
+for(const c of clips){
+  const s=document.createElement('section');s.className='clip'+(c.first?' first':'');
+  s.innerHTML=`<div class="head"><span class="id">${c.id}</span><h3>${c.title}</h3>${c.first?'<span class="tag">먼저 시험</span>':''}</div><p class="line">${c.lines}</p>`+(c.photo?`<p class="photo">${c.photo}</p>`:'');
+  if(c.img) s.appendChild(block('① 이미지 프롬프트',c.img,c.id+'-i')); else{const p=document.createElement('p');p.className='skip';p.textContent=c.skip;s.appendChild(p)}
+  s.appendChild(block((c.img?'② ':'')+'영상 프롬프트',c.vid,c.id+'-v'));
+  if(c.edit){const p=document.createElement('p');p.className='edit';p.textContent='편집 메모: '+c.edit;s.appendChild(p)}
+  box.appendChild(s);
+}
+</script>
