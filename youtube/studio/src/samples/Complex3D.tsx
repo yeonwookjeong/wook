@@ -7,12 +7,12 @@ import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } fr
 import * as THREE from "three";
 
 export const COMPLEX_FRAMES = 180;
-const FLOORS = 15;
-const H = 0.62; // 층 높이
-const W = 5.2; // 건물 가로
-const D = 1.9; // 건물 깊이
-const RED = new THREE.Color("#e8322b");
-const WALL = "#f2ece3";
+export const FLOORS = 15;
+export const H = 0.62; // 층 높이
+export const W = 5.2; // 건물 가로
+export const D = 1.9; // 건물 깊이
+export const RED = new THREE.Color("#e8322b");
+export const WALL = "#f2ece3";
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 
 // ---------- 캔버스 무늬 ----------
@@ -91,7 +91,7 @@ const useDongTex = (n: string) =>
   );
 
 // ---------- 층 하나 ----------
-const Floor: React.FC<{ y: number; label?: string; glow?: number; offset?: THREE.Vector3; opacity?: number; redPlate?: boolean }> = ({ y, label, glow = 0, offset, opacity = 1, redPlate = false }) => {
+export const Floor: React.FC<{ y: number; label?: string; glow?: number; offset?: THREE.Vector3; opacity?: number; redPlate?: boolean }> = ({ y, label, glow = 0, offset, opacity = 1, redPlate = false }) => {
   const front = useFrontTex();
   const side = useSideTex(label ?? "", redPlate);
   const tint = new THREE.Color(WALL).lerp(RED, glow * 0.85);
@@ -143,7 +143,7 @@ const useAoTex = () =>
   );
 
 // ---------- 동 하나 (움직이지 않는 건물) ----------
-const Tower: React.FC<{ pos: [number, number, number]; dong: string; floors?: number; children?: React.ReactNode; skip?: number; labeled?: boolean }> = ({ pos, dong, floors = FLOORS, children, skip, labeled }) => {
+export const Tower: React.FC<{ pos: [number, number, number]; dong: string; floors?: number; children?: React.ReactNode; skip?: number; labeled?: boolean }> = ({ pos, dong, floors = FLOORS, children, skip, labeled }) => {
   const dongTex = useDongTex(dong);
   return (
     <group position={pos}>
@@ -171,7 +171,7 @@ const Tower: React.FC<{ pos: [number, number, number]; dong: string; floors?: nu
   );
 };
 
-const Tree: React.FC<{ p: [number, number]; s?: number }> = ({ p, s = 1 }) => (
+export const Tree: React.FC<{ p: [number, number]; s?: number }> = ({ p, s = 1 }) => (
   <group position={[p[0], 0, p[1]]} scale={s}>
     <mesh position={[0, 0.3, 0]} castShadow>
       <cylinderGeometry args={[0.06, 0.08, 0.6]} />
@@ -185,7 +185,7 @@ const Tree: React.FC<{ p: [number, number]; s?: number }> = ({ p, s = 1 }) => (
 );
 
 // 단지 바닥: 잔디, 도로, 주차선, 보도
-const Ground: React.FC = () => {
+export const Ground: React.FC = () => {
   const lot = useMemo(
     () =>
       canvasTex(1024, 1024, (g) => {
