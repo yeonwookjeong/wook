@@ -6,7 +6,7 @@ import { catLabel, COLUMN_CATS, columnDate, publishedColumns, type ColumnCat } f
 export const metadata: Metadata = {
   title: "훈도의 사주 이야기",
   description: "사주표 읽는 법부터 칸마다의 뜻, 절기와 띠, 궁합까지. 생일을 넣지 않아도 읽을 수 있는 사주 이야기를 모았어요.",
-  alternates: { canonical: "/column" },
+  alternates: { canonical: "/column", types: { "application/rss+xml": "/rss.xml" } },
 };
 
 // The list of 훈도의 사주 이야기, newest first, on one shelf (?c=) or all of them. Read per request (the shelf), so

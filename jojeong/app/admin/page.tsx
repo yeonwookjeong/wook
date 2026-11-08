@@ -20,7 +20,7 @@ import { ASK_FROM, ASK_FROM_LABEL, CH_FROM, CH_FROM_LABEL, FREE_VIEW, FREE_VIEW_
 import { SHARE_FROM, STEP_FROM, STEP_LABEL } from "@/lib/nextStep";
 import { COLUMNS, publishedColumns, titleLines } from "@/lib/columns";
 import { SOURCE_LABEL, SOURCES } from "@/lib/source";
-import { DailyTable, SourceTable } from "./Insights";
+import { DailyTable, SourceTable, WeeklyTrend } from "./Insights";
 import { CREDIT_KINDS, ledgerOf, waitingBonus } from "@/lib/creditLedger";
 import { closedWhy, listCreditEvents } from "@/lib/creditEvents";
 
@@ -275,6 +275,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
       )}
       {tab === "traffic" && (
         <>
+          <WeeklyTrend paid={paid} />
           <SourceTable stats={stats} paid={paid} />
           <ColumnTable stats={stats} />
           <Link href="/admin/threads" className="doc-paper mt-4 block px-4 py-3 text-sm font-bold text-seal">스레드 성적표 (글별 조회·클릭) →</Link>
