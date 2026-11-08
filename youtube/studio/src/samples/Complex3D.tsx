@@ -237,20 +237,21 @@ const CameraRig: React.FC<{ pos: THREE.Vector3; target: THREE.Vector3 }> = ({ po
   return null;
 };
 
-const Scene: React.FC = () => {
-  const f = useCurrentFrame();
-  // 카메라: 0~80 하늘에서 103동으로 내려옴, 이후 천천히 돈다
-  const k = interpolate(f, [0, 80], [0, 1], { ...clamp, easing: Easing.inOut(Easing.cubic) });
-  const drift = interpolate(f, [80, COMPLEX_FRAMES], [0, 1], clamp);
-  const start = new THREE.Vector3(30, 36, 38);
+// p: 장면 진행 0~1, split: 앞 컷(접근+빨간 강조)이 끝나는 지점. 에피소드에서 컷 둘에 걸쳐 이어 쓸 수 있게.
+const Scene: React.FC<{ p: number; split: number }> = ({ p, split }) => {
+  const a = p / split; // 앞 컷 진행
+  const b = (p - split) / (1 - split); // 뒤 컷 진행
+  const k = interpolate(a, [0, 0.62], [0, 1], { ...clamp, easing: Easing.inOut(Easing.cubic) });
+  const drift = interpolate(p, [split * 0.62, 1], [0, 1], clamp);
+  const start = new THREE.Vector3(24, 26, 30);
   const end = new THREE.Vector3(15 - drift * 2.4, 7.2 - drift * 0.6, 17 + drift * 0.8);
   const pos = start.clone().lerp(end, k);
-  const target = new THREE.Vector3(0, 6, -3).lerp(new THREE.Vector3(0.4, 3.4, 0), k);
+  const target = new THREE.Vector3(0, 5, -3).lerp(new THREE.Vector3(0.4, 0.9, 0), k);
 
-  const glow = interpolate(f, [86, 98, 106, 114], [0, 1, 0.7, 1], clamp);
-  const out = interpolate(f, [118, 140], [0, 1], { ...clamp, easing: Easing.inOut(Easing.cubic) });
-  const inn = interpolate(f, [146, 166], [0, 1], { ...clamp, easing: Easing.out(Easing.back(1.3)) });
-  const fGlow = interpolate(f, [162, 170, 180], [0, 0.8, 0.45], clamp);
+  const glow = interpolate(a, [0.6, 0.75, 0.87, 1], [0, 1, 0.7, 1], clamp);
+  const out = interpolate(b, [0.04, 0.34], [0, 1], { ...clamp, easing: Easing.inOut(Easing.cubic) });
+  const inn = interpolate(b, [0.42, 0.72], [0, 1], { ...clamp, easing: Easing.out(Easing.back(1.3)) });
+  const fGlow = interpolate(b, [0.66, 0.78, 1], [0, 0.8, 0.45], clamp);
   // 화면에서 옆으로 빠지는 방향 (카메라 시선과 수직)
   const dir = new THREE.Vector3(0.75, 0, -0.66);
   const y4 = 3 * H;
@@ -294,12 +295,14 @@ const Scene: React.FC = () => {
   );
 };
 
-export const Complex3D: React.FC = () => {
+export const Complex3D: React.FC<{ p?: number; split?: number }> = ({ p, split = 0.48 }) => {
   const { width, height } = useVideoConfig();
+  const f = useCurrentFrame();
+  const prog = p ?? f / (COMPLEX_FRAMES - 1);
   return (
     <AbsoluteFill style={{ background: "linear-gradient(#f3b98f 0%, #f8d7bd 40%, #fbeadb 75%)" }}>
       <ThreeCanvas width={width} height={height} shadows={{ type: THREE.PCFSoftShadowMap }} camera={{ fov: 34, near: 0.5, far: 200 }} gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.15 }}>
-        <Scene />
+        <Scene p={prog} split={split} />
       </ThreeCanvas>
     </AbsoluteFill>
   );

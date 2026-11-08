@@ -3,6 +3,7 @@ import { loadFont as loadNotoSans } from "@remotion/google-fonts/NotoSansKR";
 import { loadFont as loadHahmlet } from "@remotion/google-fonts/Hahmlet";
 import vo from "./vo.json";
 import voEs from "./vo_es.json";
+import { Complex3D } from "../samples/Complex3D";
 
 const { fontFamily: sans } = loadNotoSans();
 const { fontFamily: serif } = loadHahmlet();
@@ -41,6 +42,7 @@ type Shot = {
   overlay?: "sa" | "circleF" | "fIs4" | "room304" | "noFour" | "endcard" | "question" | "show4" | "flip4" | "chain";
   grade?: [number, number]; // 흑백·어둡게 정도(0~1) 컷 시작→끝 — 死 장면 분위기
   at?: { x: number; y: number }; // circleF·fIs4 동그라미 중심 (기본: 그림 A의 F 버튼)
+  three?: "a" | "b"; // 3D 단지 장면(Complex3D): a = 다가가며 4층 강조, b = 4층 빠지고 F 들어옴. 두 컷이 이어진다
   sent: number; // 내레이션 문장 번호 (youtube/tts/make_ep01.py 의 SENTENCES)
   sfx?: { name: string; at?: number; vol?: number };
   sfx2?: { name: string; at?: number; vol?: number };
@@ -56,8 +58,8 @@ const SHOTS: Shot[] = [
   { img: "C", sec: 1.2, cam: { s0: 1.12, s1: 1.18, ox: C_4.x, oy: C_4.y }, caps: [[{ text: "is read" }], [{ text: '"sa,"', hl: true }]], dark: 0.35, overlay: "sa", sent: 3, sfx: { name: "pop", at: 0.1, vol: 0.4 } },
   { img: "D", sec: 1.1, cam: { s0: 1.0, s1: 1.08, ox: DEATH.x, oy: DEATH.y }, caps: [[{ text: "the same" }], [{ text: "sound as" }]], grade: [0.2, 0.7], sent: 3 },
   { img: "D", sec: 1.4, cam: { s0: 1.5, s1: 1.65, ox: DEATH.x, oy: DEATH.y, snap: true }, caps: [[{ text: "the Chinese" }], [{ text: "character" }], [{ text: "for" }, { text: "death.", hl: true }]], shake: true, grade: [0.9, 1], overlay: "chain", sent: 3, sfx: { name: "thud", vol: 0.6 } },
-  { img: "E", sec: 1.2, cam: { s0: 1.3, s1: 1.3, ox: 540, oy: 960, dy: -260 }, caps: [[{ text: "So many" }], [{ text: "buildings" }]], sent: 4 },
-  { img: "I", sec: 1.4, cam: { s0: 1.2, s1: 1.3, ox: I_F.x, oy: I_F.y }, caps: [[{ text: "swap it" }], [{ text: "for an" }, { text: "F,", hl: true }], [{ text: 'for "four."' }]], overlay: "circleF", at: I_F, sent: 4, sfx: { name: "pop", at: 0.1, vol: 0.4 } },
+  { three: "a", sec: 1.2, cam: { s0: 1, s1: 1, ox: 540, oy: 960 }, caps: [[{ text: "So many" }], [{ text: "buildings" }]], sent: 4, sfx: { name: "buzz", at: 0.65, vol: 0.2 } },
+  { three: "b", sec: 1.4, cam: { s0: 1, s1: 1, ox: 540, oy: 960 }, caps: [[{ text: "swap it" }], [{ text: "for an" }, { text: "F,", hl: true }], [{ text: 'for "four."' }]], sent: 4, sfx: { name: "pop", at: 0.95, vol: 0.4 } },
   { img: "J", sec: 1.4, cam: { s0: 1.0, s1: 1.1, ox: 540, oy: 900 }, caps: [[{ text: "Hospitals", hl: true }], [{ text: "go further:" }]], sent: 5 },
   { img: "G", sec: 2.1, cam: { s0: 1.0, s1: 1.15, ox: G_GAP.x, oy: G_GAP.y }, caps: [[{ text: "many skip" }], [{ text: "the 4th floor" }], [{ text: "entirely." }]], overlay: "noFour", sent: 5, sfx: { name: "pop", at: 0.3, vol: 0.35 } },
   { img: "H", sec: 1.6, cam: { s0: 1.0, s1: 1.3, ox: H_F.x, oy: H_F.y }, caps: [[{ text: "But" }], [{ text: "here's the thing:", hl: true }]], sent: 6, sfx: { name: "ding", at: 0.3, vol: 0.25 } },
@@ -237,7 +239,7 @@ const Overlay: React.FC<{ kind: Shot["overlay"]; dur: number; at?: { x: number; 
   return null;
 };
 
-const ShotView: React.FC<{ shot: Shot; dur: number; lang: Lang }> = ({ shot, dur, lang }) => {
+const ShotView: React.FC<{ shot: Shot; dur: number; lang: Lang; split?: number }> = ({ shot, dur, lang, split = 0.4 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const t = interpolate(frame, [0, dur], [0, 1], clamp);
@@ -271,6 +273,7 @@ const ShotView: React.FC<{ shot: Shot; dur: number; lang: Lang }> = ({ shot, dur
           />
         </AbsoluteFill>
       )}
+      {shot.three && <Complex3D split={split} p={shot.three === "a" ? t * split : split + t * (1 - split)} />}
       {shot.dark ? <AbsoluteFill style={{ background: `radial-gradient(circle at 50% 45%, rgba(0,0,0,0) 30%, rgba(0,0,0,${shot.dark}) 100%)` }} /> : null}
       {g ? <AbsoluteFill style={{ background: `radial-gradient(circle at 50% 46%, rgba(0,0,0,0) 25%, rgba(0,0,0,${0.7 * g}) 100%)` }} /> : null}
       {shot.overlay && <Overlay kind={shot.overlay} dur={dur} at={shot.at} lang={lang} />}
@@ -287,11 +290,13 @@ export const Ep01: React.FC<{ lang?: Lang }> = ({ lang = "en" }) => {
   const { shots: SHOTS_L, VO, frames: SHOT_FRAMES } = lang === "es" ? ES : EN;
   const starts = SHOT_FRAMES.map((_, i) => SHOT_FRAMES.slice(0, i).reduce((a, f) => a + f, 0));
   const firstOfSent = (id: number) => SHOTS_L.findIndex((x) => x.sent === id);
+  const ia = SHOTS_L.findIndex((x) => x.three === "a");
+  const split = ia >= 0 ? SHOT_FRAMES[ia] / (SHOT_FRAMES[ia] + SHOT_FRAMES[ia + 1]) : 0.4;
   return (
     <AbsoluteFill style={{ backgroundColor: "#000" }}>
       {SHOTS_L.map((shot, i) => (
         <Sequence key={i} from={starts[i]} durationInFrames={SHOT_FRAMES[i]}>
-          <ShotView shot={shot} dur={SHOT_FRAMES[i]} lang={lang} />
+          <ShotView shot={shot} dur={SHOT_FRAMES[i]} lang={lang} split={split} />
           {[shot.sfx, shot.sfx2].map((fx, k) =>
             fx ? (
               <Sequence key={k} from={Math.round((fx.at ?? 0) * FPS)} layout="none">
