@@ -6,7 +6,7 @@
 
 사용
   python3 watch.py                      # 지금 확인
-  python3 watch.py add 채널링크          # 채널 등록 (채널 주소, @핸들, 또는 그 채널 영상 링크 아무거나)
+  python3 watch.py add 채널링크          # 채널 등록 (채널 주소, @핸들, 그 채널 영상 링크, 또는 "채널 이름")
   python3 watch.py list                 # 등록된 채널 보기
   python3 watch.py --install            # 매일 오전 10시·오후 6시에 자동 확인 (맥)
   python3 watch.py --uninstall          # 자동 확인 끄기
@@ -65,6 +65,22 @@ def resolve(url: str) -> tuple[str, str]:
     if not (cid or "").startswith("UC"):
         raise ValueError(f"채널을 못 찾았어요: {url}")
     return cid, name
+
+
+def resolve_name(name: str) -> tuple[str, str]:
+    """채널 이름으로 유튜브 '채널' 검색 → 첫 번째 결과 (채널 id, 채널 이름)."""
+    import urllib.parse
+    import yt_dlp
+    opts = ydl_opts()
+    opts["playlist_items"] = "1-3"
+    url = "https://www.youtube.com/results?sp=EgIQAg%3D%3D&search_query=" + urllib.parse.quote(name)
+    with yt_dlp.YoutubeDL(opts) as ydl:
+        info = ydl.extract_info(url, download=False)
+    for e in info.get("entries") or []:
+        cid = e.get("channel_id") or e.get("id") or ""
+        if cid.startswith("UC"):
+            return cid, e.get("channel") or e.get("title") or e.get("uploader") or name
+    raise ValueError(f"'{name}' 채널을 못 찾았어요")
 
 
 def feed(cid: str) -> list[dict]:
@@ -177,12 +193,13 @@ def main():
         chans = load(CHANNELS, {})
         for url in a[1:]:
             try:
-                cid, name = resolve(url)
+                # 링크·@핸들이면 바로, 그냥 이름이면 유튜브 채널 검색으로 찾기
+                cid, name = resolve(url) if re.match(r"(https?://|@)", url) else resolve_name(url)
             except Exception as e:
                 print(f"⚠️ 등록 실패: {url} ({e})")
                 continue
             chans[cid] = name
-            print(f"✅ 등록: {name}")
+            print(f"✅ 등록: {url} → {name}  (https://www.youtube.com/channel/{cid})")
         save(CHANNELS, chans)
     elif a[:1] == ["list"]:
         for cid, name in load(CHANNELS, {}).items():
