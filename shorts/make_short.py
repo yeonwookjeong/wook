@@ -428,7 +428,7 @@ def _register(video: Path, meta: dict, url: str, main: bool):
         _ORIGIN.update({"translated": bool(meta.get("translated")), "title": meta.get("title", ""), "url": meta.get("url") or url,
                         "channel": meta.get("channel", ""), "license": meta.get("license", "")})
     if main and "creative commons" not in (meta.get("license") or "").lower():
-        print(f"   ⚠️ 이 영상은 크리에이티브 커먼즈가 아니에요: {meta.get('url') or url}")
+        print(f"   ℹ️ CC가 아닌 영상이에요 (출처는 캡션에 표기돼요): {meta.get('url') or url}")
 
 
 def fetch_source(url: str, ff: str, height: int = 1080, main: bool = True):
