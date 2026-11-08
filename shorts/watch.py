@@ -153,7 +153,8 @@ def check():
     lines = [f"\n## {datetime.now():%Y-%m-%d %H:%M} 확인"]
     for name, v, when in sorted(found, key=lambda x: x[2], reverse=True):
         lic = license_of(v["id"])
-        cc = "✅ CC" if "creative commons" in lic.lower() else ("⛔ CC 아님" if lic and "실패" not in lic else f"❔ {lic}")
+        # 유튜브는 CC일 때만 라이선스를 적어줘서, 비어 있으면 표준 라이선스(CC 아님)
+        cc = "✅ CC" if "creative commons" in lic.lower() else (f"❔ {lic}" if "실패" in lic else "⛔ CC 아님")
         line = f"- {cc} | {name} | {v['title']} | https://youtu.be/{v['id']} ({when:%m/%d})"
         print(line)
         lines.append(line)
