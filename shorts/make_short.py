@@ -298,6 +298,7 @@ class Subs:
                       for k, (s, e, t) in enumerate(lines)]
         self.by_line = Timeline(self.lines)
         self.by_word = Timeline(words) if words else None
+        self.words = sorted(words or [])
 
     def find(self, phrase: str, after: float = 0.0):
         """문구가 나오는 (시작, 끝). 단어 단위 자동자막이 있으면 그걸로 더 정밀하게."""
@@ -1914,7 +1915,9 @@ def main():
                   f" (조용한 순간 {floor:.0f}dB)")
         if i == len(plan):  # 마지막 말 뒤에 여운을 조금 남겨서 뚝 끊기지 않게 (다음 말이 시작되기 전까지만)
             pb = pieces[-1][1]
-            nxt = min([s0 for s0, _, _ in subs.lines if s0 > pb + 0.05] or [src_len])
+            # 같은 줄 안에 다음 말('…입니다. 그리고')이 이어지면 그 말 시작 전까지만
+            nxt = min([s0 for s0, _, _ in subs.lines if s0 > pb + 0.05]
+                      + [w0 for w0, _, _ in (subs.words if subs.by_word else []) if w0 > pb + 0.05] or [src_len])
             pieces[-1] = (pieces[-1][0], max(pb, min(pb + 0.6, nxt - 0.1, src_len - 0.05)))
         mode = p["part"].get("sub", "auto" if clip_subs else "none")
         # 화면용 자막: 자동자막 받아쓰기 오류를 줄 단위로 먼저 고친 뒤 나눔 (구간 찾기는 원래 자막으로)

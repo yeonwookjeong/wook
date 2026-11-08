@@ -84,7 +84,7 @@ def review(rpath: Path, subs: "ms.Subs") -> tuple[list, list]:
             prev = [x for x in subs.lines if x[1] <= lines[0][0] + 0.05]
             bad_start = bool(prev) and not raw.lstrip().startswith(">>") \
                 and ms.norm(prev[-1][2]) not in ms._FILLERS and len(ms.norm(prev[-1][2])) > 2 \
-                and not re.search(r"([.?!]|요|용|다|죠|더라고|거든|잖아|네|지)$", prev[-1][2].strip()) and lines[0][0] - prev[-1][1] < 0.3
+                and not re.search(r"([.?!]|요|용|다|죠|더라고|거든|잖아|네|지|그리고|근데|그래서)$", prev[-1][2].strip()) and lines[0][0] - prev[-1][1] < 0.3
         if bad_start:
             warn.append(f"[{ms.fmt(lines[0][0])}] 앞 문장 꼬리로 시작하는 것 같아요: '{raw.strip()[:24]}'")
         # 자막 빈 구간 (화면 자막 기준)
@@ -108,6 +108,10 @@ def review(rpath: Path, subs: "ms.Subs") -> tuple[list, list]:
         # 마지막이 흐지부지인지
         if p is clips[-1]:
             last = _fix(lines[-1][2], fixes).strip()
+            # 끝 문구가 줄 중간에서 끝나면(단어 시각으로 거기서 자름) 그 뒤 말은 안 들어가니 잘라서 봄
+            to_last = _fix(p["part"].get("to", ""), fixes).split()[-1:] if p["part"].get("to") else []
+            if to_last and to_last[0] in last:
+                last = last[:last.rfind(to_last[0]) + len(to_last[0])]
             tail = last.split(">>")[-1].strip()
             if ">>" in lines[-1][2] and lines[-1][2].strip().index(">>") > 0:
                 warn.append(f"마지막 줄에 다른 사람 말이 섞여 있어요: '{last[:30]}'")
