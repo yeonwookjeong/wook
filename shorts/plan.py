@@ -51,7 +51,8 @@ def load() -> list[dict]:
             print(f"⚠️ {p.name} 읽기 실패: {e}")
             continue
         items.append({"stem": p.stem, "path": p, "vid": video_id(r.get("source", "")),
-                      "celeb": celeb(r, p.stem), "link": r.get("link_text", "")})
+                      "celeb": celeb(r, p.stem), "link": r.get("link_text", ""),
+                      "query": r.get("coupang_query", ""), "caption": r.get("caption", "")})
     groups: dict[str, list] = {}
     for it in items:
         groups.setdefault(it["vid"], []).append(it)
@@ -121,6 +122,24 @@ def migrate_names(items: list[dict]) -> None:
             old = OUT / f"쇼츠_{x['stem']}{ext}"
             if old.exists() and new.name[0].isdigit() and not new.with_suffix(ext).exists():
                 old.rename(new.with_suffix(ext))
+
+
+def write_coupang_page(order: list[dict]) -> None:
+    """쿠팡에 있는지 확인용: 번호순 쿠팡 검색 링크 모음 → out/쿠팡_확인.html (폰에서 열어도 됨)."""
+    import html
+    import urllib.parse
+    rows = []
+    for x in order:
+        q = x.get("query") or x["stem"].split("_", 1)[-1]
+        url = "https://www.coupang.com/np/search?q=" + urllib.parse.quote(q)
+        rows.append(f"<li><b>{link_no(x)}번</b> {html.escape(x['celeb'])} — {html.escape(x.get('caption', ''))}<br>"
+                    f"<a href='{url}'>🔎 쿠팡에서 '{html.escape(q)}' 검색</a></li>")
+    page = ("<!doctype html><meta charset='utf-8'><meta name='viewport' content='width=device-width'>"
+            "<title>쿠팡 확인</title><style>body{font-family:sans-serif;padding:16px;line-height:1.6}"
+            "li{margin-bottom:14px}a{font-size:1.1em}</style><h2>쿠팡에 있는지 확인 (링크 번호순)</h2>"
+            "<p>같은 제품이 없으면 비슷한 제품으로 등록하고, 캡션에 '같은 제품'이라고 쓰지 않기</p>"
+            f"<ol style='list-style:none;padding:0'>{''.join(rows)}</ol>")
+    (OUT / "쿠팡_확인.html").write_text(page, encoding="utf-8")
 
 
 def make_missing(items: list[dict]) -> None:
@@ -196,6 +215,7 @@ def main():
                 mp4 = out_mp4(x)
                 w.writerow([x["link"], x["celeb"], x["stem"], mp4.name, mp4.with_suffix(".txt").name,
                             "✅" if mp4.exists() else "❌ 영상 없음"])
+        write_coupang_page(order)
         print(f"\n📦 쌓아둔 쇼츠 {len(order)}개 (링크 번호순) → {dst}")
         for x in order:
             ok = "✅" if out_mp4(x).exists() else "❌"
