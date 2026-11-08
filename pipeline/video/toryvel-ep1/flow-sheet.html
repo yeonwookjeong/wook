@@ -49,14 +49,14 @@ button.copy.done{background:var(--ok)}
 <div class="wrap">
 <header>
   <h1>도쿄타워 1편 · 플로우 시트</h1>
-  <p>대본 v3 (48초). 장면이 끊기지 않고 이어지도록, 먼저 장면 그림(K)을 다 만들고 그 사이를 영상(V)으로 잇습니다. V마다 시작 프레임 = 앞 K, 끝 프레임 = 다음 K.</p>
+  <p>대본 v3 녹음 48.2초 → 8초 영상 6개로 이어 붙입니다. 장면 그림(K)을 먼저 만들고, 그 사이를 영상(V)으로 잇습니다. V마다 시작 프레임 = 앞 K, 끝 프레임 = 다음 K.</p>
 </header>
 
 <section class="steps">
   <h2>순서</h2>
   <ol>
     <li>설정: 세로 9:16, 한 번에 2개, 시험은 빠른 모델</li>
-    <li><b>1단계 · 장면 그림</b> K1~K6을 이미지로 만들고 하나씩 고르기 (K0, K5는 실제 사진)</li>
+    <li><b>1단계 · 장면 그림</b> K1, K2, K4, K6, K7을 이미지로 만들고 하나씩 고르기 (K0, K5는 실제 사진)</li>
     <li><b>2단계 · 이어 붙이기</b> Video → Frames에서 시작·끝 프레임에 K를 넣고 V 프롬프트로 생성</li>
     <li>먼저 <b>V1</b>(실사 → 1958년) 하나만 시험</li>
   </ol>
@@ -85,12 +85,8 @@ const keys=[
   img:"Use the reference photo only for the exact shape and proportions of Tokyo Tower. Show the same tower in 1958, under construction in Shiba, Tokyo, in daylight: the lower half built, the upper part above the main observation deck still an open bare steel framework, tiny workers on the beams, low postwar wooden rooftops below. "+PAST},
  {id:"K2",title:"고철 낙찰 서류와 전차 사진",
   img:"A small Japanese office in the mid-1950s. A middle-aged Japanese businessman in a dark suit sits at a wooden desk signing a bid document with a fountain pen. Black-and-white photographs of damaged military tanks are spread across the desk. Desk lamp and soft window light. "+PAST},
- {id:"K3",title:"고철장의 부서진 전차 행렬",
-  img:"A 1950s scrapyard in Japan, a long row of damaged, rusted olive drab M4 Sherman tanks lined up for dismantling, some missing tracks and hatches, piles of scrap metal, gray overcast sky, no people in focus. "+PAST},
  {id:"K4",title:"전차 장갑판 클로즈업",
   img:"Close-up of the thick armor plate of a rusted olive drab M4 Sherman tank in a 1950s Japanese scrapyard. A worker's gloved hand rests on the steel. Chipped paint reveals dense dark steel beneath. Overcast light. "+PAST},
- {id:"K4b",title:"롤러에서 나오는 붉은 철골",
-  img:"Inside a 1950s Japanese steel mill, a glowing red-hot steel beam sliding out of heavy iron rollers, sparks in the air, dark industrial interior lit orange by the glowing metal. "+PAST},
  {id:"K5",title:"지금의 탑 윗부분 (실제 사진)",photo:"<b>야경 사진</b> 그대로 사용. 편집에서 메인데크 위 강조"},
  {id:"K6",title:"1959년의 책",
   img:"An old Japanese hardcover book from 1959 lying open on a wooden desk, yellowed pages with dense vertical Japanese print too small to read, a black-and-white photograph of Tokyo Tower printed on one page, soft lamp light. "+PAST,
@@ -99,29 +95,24 @@ const keys=[
   img:"Same Tokyo Tower and night lighting as the reference photo, but seen from directly below at its base, the lit red-orange lattice rising into the dark sky, strong upward perspective. "+NOW}
 ];
 const clips=[
- {id:"V1",title:"실사 → 1958년으로 시간 되감기",first:true,from:"K0",to:"K1",lines:"1–3 · 그 꼭대기는 원래 전차였습니다 → 333미터 탑 → 문제는 철",
+ {id:"V1",title:"실사 → 1958년으로 시간 되감기",first:true,from:"K0",to:"K1",time:"0:00–0:08.4",lines:"1–2 · 그 꼭대기는 원래 전차였습니다 / 1950년대, 일본은 333미터 탑을 세우려 합니다",
   neg:"modern skyscrapers in 1958 scenes, modern cranes, Eiffel Tower shape, changing tower geometry, extra tower parts, multiple shots, hard cuts, text, captions, watermark, cartoon, CGI look, camera shake",
   vid:"The camera slowly pushes in toward the tower at night. Time rewinds: the night fades into 1958 daylight, the modern lights switch off, the city below turns into low wooden rooftops, and the upper part of the tower dissolves into bare steel framework with workers on the beams. The tower keeps the exact same position, silhouette and lattice structure throughout; only time of day, lighting and construction stage change. Smooth continuous transformation, no cuts. "+PAST},
- {id:"V2",title:"탑 → 사무실 책상",from:"K1",to:"K2",lines:"4 · 그때 한 민간업자가 고철을 낙찰받습니다.",
-  neg:"modern office equipment, computers, contemporary clothing, distorted hands, extra fingers, multiple shots, hard cuts, readable text, watermark, cartoon, camera shake",
-  vid:"The camera pulls back from the unfinished tower through an office window into a small 1950s office, ending on a businessman signing a bid document at his desk. The businessman's face, suit and the desk objects stay consistent once they appear. Smooth continuous move, no cuts. "+PAST},
- {id:"V3",title:"책상 위 사진 → 진짜 고철장",from:"K2",to:"K3",lines:"5 · 한국전쟁에서 부서진 미군 전차, 약 90대였죠. (11번 줄에 재사용)",
-  neg:"modern tanks, moving tanks, explosions, soldiers fighting, duplicated turrets, distorted tracks, incorrect tank silhouettes, multiple shots, hard cuts, text, watermark, cartoon",
-  vid:"The camera pushes into one black-and-white photograph of tanks on the desk. The photograph fills the frame, gains color and comes alive as a real scrapyard with a long row of rusted tanks, dust drifting. The tanks never move. The tanks stay stationary and keep the same shape and number throughout. Smooth continuous transformation, no cuts. "+PAST},
- {id:"V4",title:"전차 행렬 → 장갑판",from:"K3",to:"K4",lines:"6–7 · 전차로 탑을 짓는다고요? / 질 좋은 특수강이거든요.",
-  neg:"moving tanks, distorted hands, extra fingers, warped armor, modern equipment, multiple shots, hard cuts, text, watermark, cartoon, camera shake",
-  vid:"The camera glides low along the row of tanks and pushes in to a close-up of the thick armor plate, where a gloved hand rests on the steel. The tanks never move. The tank and the hand stay physically consistent; the hand has five fingers. Smooth continuous move, no cuts. "+PAST},
- {id:"V5",title:"장갑판이 달아올라 철골로",from:"K4",to:"K4b",lines:"8 앞부분 · 녹이고 펴서 철골로 만든 뒤",
-  neg:"modern automated factory, fantasy fire, explosions, excessive sparks, glowing machinery, melting hands, multiple shots, hard cuts, text, watermark, cartoon",
-  vid:"The armor plate begins to glow orange and red as if heated, sparks rise, and the scene transforms into a steel mill where a glowing red-hot beam slides out of heavy rollers. The heat glow spreads gradually and realistically; no flames or explosions. Smooth continuous transformation, no cuts. "+PAST},
- {id:"V6",title:"철골이 올라가 지금의 탑 꼭대기로",from:"K4b",to:"K5",lines:"8 뒷부분 · 탑의 윗부분, 메인데크 위로 올렸습니다.",
-  neg:"changing tower geometry, extra tower parts, Eiffel Tower shape, floating beams, fireworks, multiple shots, hard cuts, text, watermark, cartoon, CGI look",
-  vid:"The glowing beam rises upward out of the mill into the night sky and becomes part of the lit steel lattice at the top of Tokyo Tower, ending on the real present-day tower at night. The beam moves with realistic weight, and the final tower matches the reference photo exactly. Smooth continuous transformation, no cuts. "+NOW,
-  edit:"9번 줄 '반전은 따로 있습니다'는 이 클립 마지막 장면을 멈추고 어둡게 처리합니다."},
- {id:"V7",title:"탑 → 책 속 사진",from:"K5",to:"K6",lines:"10 · 마에다 히사키치가 1959년에 쓴 책엔, 이 이야기가 한 줄도 없습니다.",
-  neg:"readable text, modern book design, distorted hands, multiple shots, hard cuts, watermark, cartoon",
-  vid:"The camera pulls back from the tower and the scene turns into a black-and-white photograph printed on the page of an old open book on a wooden desk, lamp light. The tower's silhouette stays the same as it becomes the printed photograph. Smooth continuous transformation, no cuts. "+PAST},
- {id:"V8",title:"책 속 사진 → 지금의 탑을 올려다봄",from:"K6",to:"K7",lines:"12–13 · 도쿄 야경 꼭대기엔, 한반도에서 싸우던 전차가 서 있다고.",
+ {id:"V2",title:"빈 철골 → 사무실, 고철 낙찰",from:"K1",to:"K2",time:"0:08.4–0:16.9",lines:"3–4 · 문제는 철이었습니다 / 그때 한 민간업자가 고철을 낙찰받습니다",
+  neg:"modern office equipment, computers, contemporary clothing, distorted hands, extra fingers, changing tower geometry, multiple shots, hard cuts, readable text, watermark, cartoon, camera shake",
+  vid:"The camera lingers on the bare unfinished steel framework at the top of the tower, then pulls back through an office window into a small 1950s office, ending on a businessman signing a bid document at his desk beside photographs of tanks. The businessman's face, suit and the desk objects stay consistent once they appear. Smooth continuous move, no cuts. "+PAST},
+ {id:"V3",title:"전차 사진 → 고철장 → 장갑판",from:"K2",to:"K4",time:"0:16.9–0:25.3",lines:"5–7 · 미군 전차, 약 90대였죠 / 전차로 탑을 짓는다고요? / 질 좋은 특수강이거든요",
+  neg:"modern tanks, moving tanks, explosions, soldiers fighting, duplicated turrets, distorted tracks, incorrect tank silhouettes, distorted hands, extra fingers, multiple shots, hard cuts, text, watermark, cartoon",
+  vid:"The camera pushes into one black-and-white photograph of tanks on the desk. The photograph fills the frame, gains color and becomes a real 1950s scrapyard with a long row of rusted olive drab M4 Sherman tanks. The camera glides low along the row and ends on a close-up of thick armor plate with a gloved hand resting on the steel. The tanks stay stationary and keep the same shape throughout; the hand has five fingers. Smooth continuous transformation, no cuts. "+PAST},
+ {id:"V4",title:"장갑판이 달아올라 → 철골 → 지금의 탑 꼭대기",from:"K4",to:"K5",time:"0:25.3–0:31.8",lines:"8–9 · 녹이고 펴서 철골로, 메인데크 위로 올렸습니다 / 그런데 반전은 따로 있습니다",
+  neg:"modern automated factory, fantasy fire, explosions, excessive sparks, melting hands, changing tower geometry, extra tower parts, Eiffel Tower shape, floating beams, fireworks, multiple shots, hard cuts, text, watermark, cartoon",
+  vid:"The armor plate begins to glow orange and red as if heated, sparks rise, and the scene becomes a 1950s steel mill where a glowing red-hot beam slides out of heavy rollers. The beam rises upward into the night sky and becomes part of the lit steel lattice at the top of Tokyo Tower, ending on the real present-day tower at night. The heat glow spreads gradually with no flames, and the final tower matches the reference photo exactly. Smooth continuous transformation, no cuts. "+NOW,
+  edit:"9번 줄 '반전은 따로 있습니다'는 이 클립 마지막 장면을 멈추고 어둡게 처리합니다. 8번 줄 끝에 메인데크 위 강조."},
+ {id:"V5",title:"탑 → 1959년 책",from:"K5",to:"K6",time:"0:31.8–0:42.0",lines:"10–11 · 마에다 히사키치의 1959년 책엔 한 줄도 없습니다 / 해체를 맡았던 쪽에서 전해진 거죠",
+  neg:"readable text, modern book design, distorted hands, extra fingers, changing tower geometry, multiple shots, hard cuts, watermark, cartoon",
+  vid:"The camera pulls back from the tower and the scene turns into a black-and-white photograph printed on the page of an old open book on a wooden desk under lamp light. A hand slowly turns the page. The tower's silhouette stays the same as it becomes the printed photograph. Smooth continuous transformation, no cuts. "+PAST,
+  edit:"약 10초가 필요해서 클립 끝을 조금 늘리거나 천천히 재생합니다. 책 제목은 편집에서 얹습니다."},
+ {id:"V6",title:"책 속 사진 → 지금의 탑을 올려다봄",from:"K6",to:"K7",time:"0:42.0–0:48.2",lines:"12–13 · 그래서 지금도 이렇게 말합니다 / 도쿄 야경 꼭대기엔, 한반도에서 싸우던 전차가 서 있다고",
   neg:"changing tower geometry, extra tower parts, Eiffel Tower shape, people in focus, multiple shots, hard cuts, text, watermark, cartoon, camera shake",
   vid:"The camera pushes into the photograph of Tokyo Tower on the book page. It gains color and becomes the real tower at night seen from directly below, the lit lattice rising into the dark sky. The tower's silhouette stays the same as it becomes the real tower; the tower itself never moves. Smooth continuous transformation, no cuts. "+NOW}
 ];
@@ -150,7 +141,7 @@ for(const k of keys){
 const ch=document.createElement('h2');ch.textContent='2단계 · 이어 붙이기 (Video → Frames)';ch.style.cssText='font-size:18px;margin:6px 0 0';box.appendChild(ch);
 for(const c of clips){
   const s=document.createElement('section');s.className='clip'+(c.first?' first':'');
-  s.innerHTML=`<div class="head"><span class="id">${c.id}</span><h3>${c.title}</h3>${c.first?'<span class="tag">먼저 시험</span>':''}</div><p class="line">${c.lines}</p><p class="photo">시작 프레임 <b>${c.from}</b> → 끝 프레임 <b>${c.to}</b></p>`;
+  s.innerHTML=`<div class="head"><span class="id">${c.id}</span><h3>${c.title}</h3>${c.first?'<span class="tag">먼저 시험</span>':''}</div><p class="line">${c.lines}</p><p class="photo">${c.time} · 시작 프레임 <b>${c.from}</b> → 끝 프레임 <b>${c.to}</b></p>`;
   s.appendChild(block('영상 프롬프트',c.vid,c.id));
   if(c.neg) s.appendChild(block('금지어 (Negative 칸이 있을 때만)',c.neg,c.id+'-n'));
   if(c.edit){const p=document.createElement('p');p.className='edit';p.textContent='편집 메모: '+c.edit;s.appendChild(p)}
