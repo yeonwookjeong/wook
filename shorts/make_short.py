@@ -1944,7 +1944,7 @@ def main():
         clip_no += len(pieces)
 
     OUT.mkdir(exist_ok=True)
-    final = OUT / f"쇼츠_{rpath.stem}{suffix}.mp4"
+    final = OUT / f"{out_prefix(recipe)}{rpath.stem}{suffix}.mp4"
     print("   이어 붙이는 중…")
     assemble(ff, seg_files, layout, tmp, final,
              transitions=recipe.get("transitions", True), sfx=recipe.get("sfx", False),
@@ -1980,6 +1980,12 @@ def pick_bgm(recipe: dict, name: str) -> Path | None:
     song = songs[int(hashlib.md5(name.encode()).hexdigest(), 16) % len(songs)]
     print(f"   🎵 배경음악({mood}): {song.name}")
     return song
+
+
+def out_prefix(recipe: dict) -> str:
+    """만든 파일 이름 앞부분: 프로필 링크 번호가 있으면 '47번_', 없으면 '쇼츠_' (Finder에서 번호순 정렬)."""
+    m_ = re.search(r"(\d+)", recipe.get("link_text", ""))
+    return f"{m_.group(1)}번_" if m_ else "쇼츠_"
 
 
 DISCLOSURE = "이 게시물은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다."

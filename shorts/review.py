@@ -164,7 +164,7 @@ def main():
     ap.add_argument("--sheet", action="store_true", help="만든 영상마다 1초 간격 장면 사진")
     a = ap.parse_args()
     if a.sheet:
-        for mp4 in sorted(ms.OUT.glob("쇼츠_*.mp4")):
+        for mp4 in sorted(p for p in ms.OUT.glob("*.mp4") if re.match(r"(\d+번|쇼츠)_", p.name)):
             sheet(mp4)
         return
     paths = [Path(p) for p in a.recipes] or sorted((HERE / "recipes").glob("*.json"))

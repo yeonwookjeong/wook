@@ -107,8 +107,24 @@ def schedule_by_link(items: list[dict], start: date, per_day: int) -> list[tuple
     return rows
 
 
+def out_mp4(x: dict) -> Path:
+    """만든 영상 파일: '47번_이현이_빨대텀블러.mp4' (번호 없으면 '쇼츠_…')."""
+    n = link_no(x)
+    return OUT / (f"{n}번_{x['stem']}.mp4" if n < 10**6 else f"쇼츠_{x['stem']}.mp4")
+
+
+def migrate_names(items: list[dict]) -> None:
+    """예전 이름(쇼츠_…)으로 만든 파일을 번호 붙은 이름으로 바꿈."""
+    for x in items:
+        new = out_mp4(x)
+        for ext in (".mp4", ".txt"):
+            old = OUT / f"쇼츠_{x['stem']}{ext}"
+            if old.exists() and new.name[0].isdigit() and not new.with_suffix(ext).exists():
+                old.rename(new.with_suffix(ext))
+
+
 def make_missing(items: list[dict]) -> None:
-    todo = [x for x in items if not (OUT / f"쇼츠_{x['stem']}.mp4").exists()]
+    todo = [x for x in items if not out_mp4(x).exists()]
     print(f"🎬 만들 영상 {len(todo)}개")
     errors = []
     for i, x in enumerate(todo):
@@ -151,6 +167,8 @@ def main():
     items = load()
     if not items:
         sys.exit("recipes 폴더에 레시피가 없어요.")
+    OUT.mkdir(exist_ok=True)
+    migrate_names(items)
     if a.make:
         # 만들기 전에 대본 자동 검수 (흐지부지 끝남·자막 빔·오타 의심 등) → out/검수/검수결과.md
         subprocess.run([sys.executable, str(HERE / "review.py")] + [str(x["path"]) for x in items])
@@ -161,7 +179,7 @@ def main():
                   "\n   (out/검수/검수결과.md 확인. 그래도 만들려면 --force)")
             for x in items:
                 if x["stem"] in failed:
-                    (OUT / f"쇼츠_{x['stem']}.mp4").unlink(missing_ok=True)
+                    out_mp4(x).unlink(missing_ok=True)
         make_missing([x for x in items if a.force or x["stem"] not in failed])
         # 만든 뒤 영상마다 1초 간격 장면 사진 → out/검수/장면_*.jpg (자막·끝부분 훑어보기)
         print("\n🖼️ 검수용 장면 사진 만드는 중…")
@@ -175,12 +193,12 @@ def main():
             w = csv.writer(f)
             w.writerow(["링크번호", "출연자", "레시피", "영상", "캡션파일", "준비"])
             for x in order:
-                mp4 = OUT / f"쇼츠_{x['stem']}.mp4"
+                mp4 = out_mp4(x)
                 w.writerow([x["link"], x["celeb"], x["stem"], mp4.name, mp4.with_suffix(".txt").name,
                             "✅" if mp4.exists() else "❌ 영상 없음"])
         print(f"\n📦 쌓아둔 쇼츠 {len(order)}개 (링크 번호순) → {dst}")
         for x in order:
-            ok = "✅" if (OUT / f"쇼츠_{x['stem']}.mp4").exists() else "❌"
+            ok = "✅" if out_mp4(x).exists() else "❌"
             print(f"  {ok} {link_no(x):>4}번  {x['celeb']:<6} {x['stem']}")
         for a_, b_ in zip(order, order[1:]):
             if a_["vid"] == b_["vid"]:
@@ -200,7 +218,7 @@ def main():
         w = csv.writer(f)
         w.writerow(["날짜", "요일", "시각", "출연자", "레시피", "링크번호", "영상", "캡션파일", "준비"])
         for d, slot, x in rows:
-            mp4 = OUT / f"쇼츠_{x['stem']}.mp4"
+            mp4 = out_mp4(x)
             w.writerow([d.isoformat(), week[d.weekday()], times[slot % len(times)], x["celeb"],
                         x["stem"], x["link"], mp4.name, mp4.with_suffix(".txt").name,
                         "✅" if mp4.exists() else "❌ 영상 없음"])
