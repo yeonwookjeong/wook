@@ -29,11 +29,11 @@ const F3 = K(4.8, 10.6, 11.5, 0, 11.2, 0);
 const F4 = K(3.4, 11.2, 8.4, 0, 11.4, 0);
 const S1 = K(23, 21, 27, 0, 2.5, -4);
 const S2 = K(20, 16, 23, 0, 2.5, -4);
-const H1 = K(24, 9, 20, 13, 3.2, 3);
-const H2 = K(21, 6.5, 16, 13, 2.6, 3);
+const H1 = K(24, 9, 20, 13, 4.3, 3);
+const H2 = K(21, 6.5, 16, 13, 3.7, 3);
 const L1 = K(3.4, 3.1, 8.6, 0, 2.15, 0);
-const L2 = K(2.4, 2.7, 6.3, 0.3, 2.1, 0);
-const L3 = K(1.3, 2.45, 5.0, 1.2, 2.05, 0);
+const L2 = K(1.8, 2.55, 5.0, 0.5, 2.1, 0);
+const L3 = K(1.0, 2.35, 3.9, 1.4, 2.05, 0);
 const O1 = K(11, 9, 17, 0, 3.6, 0);
 const CAM: Record<WorldMode, [Key, Key]> = {
   aerial: [A0, A1], reveal: [A1, R1], ride1: [R1, RD1], ride2: [RD1, RD2],
@@ -209,9 +209,9 @@ const CutTower: React.FC<{ cab: number; litUpTo: number }> = ({ cab, litUpTo }) 
       ))}
       {/* F층(4층) 가족: 식탁에 둘, 소파 앞에 하나 */}
       <group position={[0, 3 * H + 0.06, 0]}>
-        <Person p={[1.45, 0, 0.1]} coat="#c86b5a" s={0.3} ry={0.8} sit />
-        <Person p={[1.95, 0, 0.1]} coat="#4a6a8a" s={0.3} ry={-0.8} sit />
-        <Person p={[-1.5, 0, 0.15]} coat="#e0b04a" s={0.24} ry={0.4} />
+        <Person p={[1.42, 0, 0.12]} coat="#c86b5a" s={0.4} ry={0.8} sit />
+        <Person p={[1.98, 0, 0.12]} coat="#4a6a8a" s={0.4} ry={-0.8} sit />
+        <Person p={[-1.5, 0, 0.15]} coat="#e0b04a" s={0.3} ry={0.4} />
       </group>
       {/* 다른 층 사람들 */}
       <Person p={[1.6, 0.06 + 6 * H, 0.15]} coat="#6f7d5c" s={0.3} ry={-0.5} />
@@ -378,7 +378,7 @@ const Scene: React.FC<{ mode: WorldMode; t: number; tag: string }> = ({ mode, t,
   const ease = Easing.inOut(Easing.cubic);
   // 103동 앞벽: 앞으로 빠짐(0=제자리, 1=빠져서 사라짐)
   const slide =
-    i("aerial") ? 0 : i("reveal") ? interpolate(t, [0.3, 0.85], [0, 1], { ...clamp, easing: ease }) : i("ride1") || i("ride2") ? 1 : i("four") ? interpolate(t, [0.1, 0.7], [1, 0], { ...clamp, easing: ease }) : i("life1") ? interpolate(t, [0.1, 0.6], [0, 1], { ...clamp, easing: ease }) : i("life2") || i("life3") ? 1 : i("out1") ? interpolate(t, [0.2, 0.8], [1, 0], { ...clamp, easing: ease }) : 0;
+    i("aerial") ? 0 : i("reveal") ? interpolate(t, [0.3, 0.85], [0, 1], { ...clamp, easing: ease }) : i("ride1") || i("ride2") ? 1 : i("four") ? interpolate(t, [0.1, 0.7], [1, 0], { ...clamp, easing: ease }) : i("life1") ? interpolate(t, [0, 0.3], [0, 1], { ...clamp, easing: ease }) : i("life2") || i("life3") ? 1 : i("out1") ? interpolate(t, [0.2, 0.8], [1, 0], { ...clamp, easing: ease }) : 0;
   const cab = i("ride1") ? interpolate(t, [0.05, 0.95], [0, 2], clamp) : i("ride2") ? interpolate(t, [0, 0.4], [2, 3], { ...clamp, easing: Easing.out(Easing.cubic) }) : i("life1") || i("life2") || i("life3") ? 3 : 0;
   const litUpTo = i("ride1") ? Math.floor(cab + 0.5) + 1 : i("ride2") ? (t > 0.38 ? 4 : 3) : i("reveal") ? (t > 0.85 ? 1 : 0) : i("life1") || i("life2") || i("life3") ? 4 : 0;
   const qS = i("ride2") ? interpolate(t, [0.5, 0.68], [0, 1], { ...clamp, easing: Easing.out(Easing.back(2)) }) : 0;
