@@ -24,7 +24,7 @@ const EXAMPLE: BoardSeat[] = [
 
 
 export const metadata: Metadata = {
-  title: { absolute: `${SERVICE_NAME} · ${TAGLINE}` },
+  title: { absolute: `${SERVICE_NAME}, ${TAGLINE}` },
   description: "생년월일만 넣으면 전하가 됩니다. 친구를 부르면 사주가 영의정부터 간신까지 관직을 내려드립니다.",
 };
 
@@ -49,7 +49,7 @@ export default async function KingHome() {
         </p>
       </section>
 
-      <CourtBoard kingName="민준" seats={EXAMPLE} caption="예시 · 친구가 들어올 때마다 자리가 채워지옵니다" />
+      <CourtBoard kingName="민준" seats={EXAMPLE} caption="예시, 친구가 들어올 때마다 자리가 채워지옵니다" />
 
       <ol className="mt-5 grid grid-cols-3 gap-2 text-center text-xs text-ink-soft">
         {[
@@ -100,7 +100,7 @@ export default async function KingHome() {
         <BirthForm mode="king" />
       </section>
       <p className="mt-3 text-center text-[12px] leading-relaxed text-ink-soft">
-        내 왕 유형 · 가상 실록 · 친구들의 관직까지 <b className="text-ink">전부 무료</b>이옵니다
+        내 왕 유형, 가상 실록, 친구들의 관직까지 <b className="text-ink">전부 무료</b>이옵니다
       </p>
 
       <section className="mt-8 border-l-[3px] border-seal/60 py-1 pl-4">

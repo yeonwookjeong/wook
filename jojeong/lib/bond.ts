@@ -82,7 +82,7 @@ export const ROLE: Record<Rel, Record<GodGroup, string>> = {
 // The heaviest group in a chart, read as what that person brings to this kind of bond.
 const BRINGS: Record<Rel, Record<GodGroup, string>> = {
   연인: { 비겁: "자기 주관", 식상: "표현과 다정함", 재성: "현실 감각", 관성: "책임감", 인성: "깊은 생각" },
-  일: { 비겁: "추진·영업", 식상: "아이디어·말", 재성: "셈·돈 관리", 관성: "관리·규칙", 인성: "기획·공부" },
+  일: { 비겁: "추진, 영업", 식상: "아이디어, 말", 재성: "셈, 돈 관리", 관성: "관리, 규칙", 인성: "기획, 공부" },
   가족: { 비겁: "고집", 식상: "살가움", 재성: "살림 감각", 관성: "책임감", 인성: "포용" },
   친구: { 비겁: "의리", 식상: "재미", 재성: "실속", 관성: "믿음직함", 인성: "들어 주는 귀" },
 };
@@ -245,7 +245,7 @@ export function bondOf(me: Person, them: Person, label: string, relIn: string | 
     const clashB = meetings(yb, seatB).includes("충");
     const joins = (s: number) => meetings(yb, s).some((m) => m === "육합" || m === "삼합");
     if (clashA || clashB)
-      years.push({ year: yy, gz, mark: "흔들리기 쉬운 해", why: `${[clashA && "나", clashB && label].filter(Boolean).join("·")}의 ${seatName}를 충` });
+      years.push({ year: yy, gz, mark: "흔들리기 쉬운 해", why: `${[clashA && "나", clashB && label].filter(Boolean).join(", ")}의 ${seatName}를 충` });
     else if (joins(seatA) && joins(seatB)) years.push({ year: yy, gz, mark: "함께 좋은 해", why: `두 사람의 ${seatName}와 모두 합` });
   }
 
@@ -260,7 +260,7 @@ export function bondOf(me: Person, them: Person, label: string, relIn: string | 
     "서로 채워 줌": "서로 다른 점을 인정하면",
     "가까운 때": "때를 기다리면",
   };
-  const kind = rel === "일" ? "동업·협업" : rel === "연인" ? "인연" : rel === "가족" ? "가족 사이" : "벗";
+  const kind = rel === "일" ? "동업, 협업" : rel === "연인" ? "인연" : rel === "가족" ? "가족 사이" : "벗";
   const verdict =
     bad.length === 0 && good >= 3
       ? `잘 맞는 ${josa(kind, "이에요/예요")}`
@@ -291,7 +291,7 @@ export function bondBrief(x: Bond): string {
     ...x.rows.map((r) => `- ${r.label} ${GRADE_MARK[r.grade]}: ${r.line}`),
     `- ${josa(x.label, "은/는")} 나에게 ${x.roles[0]} / 나는 ${x.label}에게 ${x.roles[1]}`,
     `- 내가 가져오는 것: ${x.me.brings} / ${josa(x.label, "이/가")} 가져오는 것: ${x.them.brings}`,
-    x.seat.line ? `- ${x.seat.line}` : `- ${x.seat.name}끼리 특별한 합·충은 없음`,
+    x.seat.line ? `- ${x.seat.line}` : `- ${x.seat.name}끼리 특별한 합, 충은 없음`,
     ...x.lends.map((l) => `- ${l}`),
     `- 두 사람의 여섯 달: ${x.months.map((m) => `${m.label} ${m.both}${m.meet ? `(${m.meet})` : ""}`).join(", ")}`,
     ...x.years.map((y) => `- ${y.year} ${y.gz}: ${y.mark} (${y.why})`),

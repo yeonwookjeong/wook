@@ -39,7 +39,7 @@ const has = (c: Ctx, ...gods: TenGod[]) => gods.some((g) => c.shownGods.includes
 const pairClash = (a: number | null, b: number | null) => a !== null && b !== null && meetings(a, b).includes("충");
 // What each element brings, for a chart that lacks it, and the fields a whole 국 of it points to.
 const LACK_MEANS = ["새로 시작하고 뻗어 나가는 힘", "드러내고 표현하는 열정", "버티고 중심을 잡는 힘", "끊고 결단하는 힘", "쉬어 가며 깊이 생각하는 힘"];
-const GUK_FIELD = ["교육·기획·성장시키는 일", "표현·방송·사람 앞에 서는 일", "중개·부동산·신뢰를 쌓는 일", "기술·법·결단이 필요한 일", "연구·유통·사람과 정보를 잇는 일"];
+const GUK_FIELD = ["교육, 기획, 성장시키는 일", "표현, 방송, 사람 앞에 서는 일", "중개, 부동산, 신뢰를 쌓는 일", "기술, 법, 결단이 필요한 일", "연구, 유통, 사람과 정보를 잇는 일"];
 const ELEMENT_TRAIT = [
   "끝없이 뻗어 가려는 성장욕과 고집",
   "열정과 조급함, 뜨거운 감정",
@@ -70,7 +70,7 @@ const SPECS: Spec[] = [
     term: "조열 (조후)",
     plain: txt("물이 바싹 마른 한여름 사주"),
     area: "건강",
-    meaning: txt("속에 열이 많아 급하고 뜨거워요. 결정이 빠른 대신 번아웃·불면·감정 폭발을 조심해야 하고, 차분한 물 같은 사람이 곁에 있어야 안정돼요."),
+    meaning: txt("속에 열이 많아 급하고 뜨거워요. 결정이 빠른 대신 번아웃, 불면, 감정 폭발을 조심해야 하고, 차분한 물 같은 사람이 곁에 있어야 안정돼요."),
     test: (c) => c.r.johu === 4,
   },
   {
@@ -78,7 +78,7 @@ const SPECS: Spec[] = [
     term: "한습 (조후)",
     plain: txt("불씨가 꺼진 한겨울 사주"),
     area: "건강",
-    meaning: txt("생각이 깊고 신중하지만 시작이 느려요. 무기력이나 우울감에 빠지기 쉬워서, 햇볕·운동·사람의 온기가 운을 틔워 줘요."),
+    meaning: txt("생각이 깊고 신중하지만 시작이 느려요. 무기력이나 우울감에 빠지기 쉬워서, 햇볕, 운동, 사람의 온기가 운을 틔워 줘요."),
     test: (c) => c.r.johu === 1,
   },
   {
@@ -103,7 +103,7 @@ const SPECS: Spec[] = [
   {
     id: "no-gwan",
     term: "무관",
-    plain: txt("규칙·조직의 기운이 거의 없음"),
+    plain: txt("규칙, 조직의 기운이 거의 없음"),
     area: "일",
     meaning: (c) =>
       `누가 시키는 일에는 힘이 안 나고, 스스로 정한 일에 몰입해요. 조직에 맞추기보다 자기 판을 만드는 쪽이에요.${
@@ -126,7 +126,7 @@ const SPECS: Spec[] = [
     area: "돈",
     meaning: (c) =>
       `돈 자체를 좇으면 잘 안 풀리고, 실력과 이름을 쌓으면 돈이 뒤따라오는 구조예요. 돈 계산에 무심해 손해 보는 일이 잦아요.${
-        c.gender === "m" ? " 연애·결혼 인연도 늦게 무르익는 편이에요." : ""
+        c.gender === "m" ? " 연애, 결혼 인연도 늦게 무르익는 편이에요." : ""
       }`,
     test: (c) => c.share.재성 < 0.04,
   },
@@ -135,7 +135,7 @@ const SPECS: Spec[] = [
     term: "식상생재",
     plain: txt("재주가 돈으로 이어지는 흐름"),
     area: "돈",
-    meaning: txt("좋아하는 걸 하다 보면 돈이 되는 구조예요. 월급 외에 부업·콘텐츠·판매처럼 내 손과 입에서 나온 것이 수입이 돼요."),
+    meaning: txt("좋아하는 걸 하다 보면 돈이 되는 구조예요. 월급 외에 부업, 콘텐츠, 판매처럼 내 손과 입에서 나온 것이 수입이 돼요."),
     test: (c) => c.share.식상 >= 0.15 && c.share.재성 >= 0.15 && !(c.share.재성 >= 0.35 && weak(c)),
   },
   {
@@ -162,7 +162,7 @@ const SPECS: Spec[] = [
     term: "관인상생",
     plain: txt("조직의 인정이 실력으로 이어짐"),
     area: "일",
-    meaning: txt("시험·자격·승진 운이 좋아요. 윗사람이 끌어 주고, 조직 안에서 차근차근 올라가는 길이 잘 맞아요."),
+    meaning: txt("시험, 자격, 승진 운이 좋아요. 윗사람이 끌어 주고, 조직 안에서 차근차근 올라가는 길이 잘 맞아요."),
     test: (c) => shows(c, "정관", "편관") && shows(c, "정인", "편인") && c.share.관성 >= 0.12 && c.share.인성 >= 0.12,
   },
   {
@@ -220,7 +220,7 @@ const SPECS: Spec[] = [
     area: "사람",
     meaning: (c) =>
       `고집과 자존심이 세고 경쟁심이 강해요.${
-        c.share.재성 >= 0.1 ? " 형제·친구와 돈이 얽히면 손해 보기 쉬우니 동업과 보증은 피해야 해요." : " 사람은 많아도 속을 다 보여 주는 사람은 적어요."
+        c.share.재성 >= 0.1 ? " 형제, 친구와 돈이 얽히면 손해 보기 쉬우니 동업과 보증은 피해야 해요." : " 사람은 많아도 속을 다 보여 주는 사람은 적어요."
       }`,
     test: (c) => c.share.비겁 >= 0.35,
   },
@@ -260,9 +260,9 @@ const SPECS: Spec[] = [
   {
     id: "month-clash",
     term: "월지 충",
-    plain: txt("부모·일터 자리가 흔들리는 구조"),
+    plain: txt("부모, 일터 자리가 흔들리는 구조"),
     area: "가족",
-    meaning: txt("부모·집안·직장 환경에 변동이 많았거나, 한곳에 오래 머물기 어려운 흐름이에요."),
+    meaning: txt("부모, 집안, 직장 환경에 변동이 많았거나, 한곳에 오래 머물기 어려운 흐름이에요."),
     test: (c) => pairClash(c.p.monthBranch, c.p.yearBranch) || pairClash(c.p.monthBranch, c.p.hourBranch),
   },
   {
@@ -270,13 +270,13 @@ const SPECS: Spec[] = [
     term: "연월 충",
     plain: txt("어린 시절 자리가 흔들림"),
     area: "가족",
-    meaning: txt("어린 시절 이사·전학·집안 사정의 변화가 있었을 가능성이 커요. 일찍 철든 사람이 많아요."),
+    meaning: txt("어린 시절 이사, 전학, 집안 사정의 변화가 있었을 가능성이 커요. 일찍 철든 사람이 많아요."),
     test: (c) => pairClash(c.p.yearBranch, c.p.monthBranch),
   },
   {
     id: "late-clash",
     term: "일시 충",
-    plain: txt("나와 자녀·말년 자리가 부딪힘"),
+    plain: txt("나와 자녀, 말년 자리가 부딪힘"),
     area: "가족",
     meaning: txt("자녀와 생각 차이가 크거나, 중년 이후 계획이 크게 바뀌기 쉬워요."),
     test: (c) => pairClash(c.p.dayBranch, c.p.hourBranch),
@@ -286,7 +286,7 @@ const SPECS: Spec[] = [
     term: "도화",
     plain: txt("사람을 끄는 매력"),
     area: "연애",
-    meaning: txt("가만히 있어도 눈길을 끌어요. 인기와 이성 인연이 많고, 외모·센스·표현력이 무기가 되는 일이 잘 맞아요."),
+    meaning: txt("가만히 있어도 눈길을 끌어요. 인기와 이성 인연이 많고, 외모, 센스, 표현력이 무기가 되는 일이 잘 맞아요."),
     test: (c) => c.sals.includes("도화"),
   },
   {
@@ -294,7 +294,7 @@ const SPECS: Spec[] = [
     term: "역마",
     plain: txt("움직여야 풀리는 기운"),
     area: "일",
-    meaning: txt("한곳에 오래 있으면 답답해요. 이사·출장·해외·이직이 잦고, 움직이는 일이 운을 틔워요."),
+    meaning: txt("한곳에 오래 있으면 답답해요. 이사, 출장, 해외, 이직이 잦고, 움직이는 일이 운을 틔워요."),
     test: (c) => c.sals.includes("역마"),
   },
   {
@@ -302,7 +302,7 @@ const SPECS: Spec[] = [
     term: "화개 중첩",
     plain: txt("혼자만의 깊은 세계"),
     area: "성격",
-    meaning: txt("사람 속에 있어도 문득 외로움을 느껴요. 예술·종교·철학·연구처럼 깊이 파고드는 일에 인연이 있어요."),
+    meaning: txt("사람 속에 있어도 문득 외로움을 느껴요. 예술, 종교, 철학, 연구처럼 깊이 파고드는 일에 인연이 있어요."),
     test: (c) => c.sals.filter((s) => s === "화개").length >= 2,
   },
   {
@@ -334,7 +334,7 @@ const SPECS: Spec[] = [
     term: "백호",
     plain: txt("강한 추진력"),
     area: "건강",
-    meaning: txt("추진력이 강한 만큼 사고·수술·다툼 같은 급한 일을 한 번쯤 겪기 쉬워요. 운전과 몸 쓰는 일에서 조심성이 필요해요."),
+    meaning: txt("추진력이 강한 만큼 사고, 수술, 다툼 같은 급한 일을 한 번쯤 겪기 쉬워요. 운전과 몸 쓰는 일에서 조심성이 필요해요."),
     test: (c) => isBaekho(c.p),
   },
   {
@@ -351,11 +351,11 @@ const SPECS: Spec[] = [
   {
     id: "missing-two",
     term: "오행 결핍",
-    plain: (c) => `${c.r.missing.map((e) => `${ELEMENT_KO[e]}(${ELEMENT_HANJA[e]})`).join("·")} 기운이 비어 있음`,
+    plain: (c) => `${c.r.missing.map((e) => `${ELEMENT_KO[e]}(${ELEMENT_HANJA[e]})`).join(", ")} 기운이 비어 있음`,
     area: "성격",
     meaning: (c) => {
       const m = c.r.missing;
-      const ko = m.map((e) => ELEMENT_KO[e]).join("·");
+      const ko = m.map((e) => ELEMENT_KO[e]).join(", ");
       const means = m.map((e) => LACK_MEANS[e]);
       return `여덟 글자에 ${ko}(${m.map((e) => ELEMENT_HANJA[e]).join("")}) 기운이 없어요. 그래서 ${josa(means.slice(0, -1).join(", "), "과/와")} ${josa(means.at(-1)!, "이/가")} 필요한 순간에 한 박자 늦기 쉬워요. ${ko} 기운이 강한 사람과 가까이 지내거나, 그 기운이 들어오는 해에 모자란 부분이 채워져요.`;
     },
@@ -371,15 +371,15 @@ const SPECS: Spec[] = [
   },
   {
     id: "self-seat",
-    term: "일지 건록·제왕",
+    term: "일지 건록, 제왕",
     plain: txt("자기 자리에 단단히 선 일주"),
     area: "연애",
-    meaning: txt("주관이 뚜렷하고 자립심이 강해요. 연인·배우자와도 주도권을 두고 부딪히기 쉬워서, 각자의 영역을 존중하는 관계가 맞아요."),
+    meaning: txt("주관이 뚜렷하고 자립심이 강해요. 연인, 배우자와도 주도권을 두고 부딪히기 쉬워서, 각자의 영역을 존중하는 관계가 맞아요."),
     test: (c) => ["건록", "제왕"].includes(stageOf(c.p.dayStem, c.p.dayBranch)),
   },
   {
     id: "guk",
-    term: "삼합·방합 국",
+    term: "삼합, 방합 국",
     plain: (c) => c.r.bonds.find((b) => b.includes("국"))!.split(":")[0],
     area: "일",
     meaning: (c) => {
@@ -399,7 +399,7 @@ const SPECS: Spec[] = [
   },
 ];
 
-const PARTNER_MEANS: Record<GodGroup, string> = { 비겁: "동료·형제", 식상: "재주·자녀", 재성: "돈·이성", 관성: "일·남자·명예", 인성: "공부·어머니" };
+const PARTNER_MEANS: Record<GodGroup, string> = { 비겁: "동료, 형제", 식상: "재주, 자녀", 재성: "돈, 이성", 관성: "일, 남자, 명예", 인성: "공부, 어머니" };
 function dayPartnerGod(c: Ctx): TenGod | null {
   const hourStem = chartOf(c.p)[0].stem;
   const partner = [c.p.monthStem, hourStem].find((s) => s !== null && Math.abs(s - c.p.dayStem) === 5);

@@ -45,7 +45,7 @@ export default async function ColumnListPage({ searchParams }: { searchParams: P
           <li key={x.slug}>
             <Link href={`/column/${x.slug}`} className="doc-paper block px-5 py-4">
               <span className="text-[11px] font-extrabold text-seal">
-                {catLabel(x.cat)} · {columnDate(x.date)}
+                {catLabel(x.cat)}, {columnDate(x.date)}
               </span>
               <b className="mt-1 block font-myeongjo text-[17px] leading-snug">
                 <ColumnTitle title={x.title} />

@@ -76,7 +76,7 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
           궁합 <b className="font-myeongjo text-lg">{seat.match.score}</b>점
         </div>
         <p className="mt-1.5 text-[11px] text-ink-soft">
-          <span className="inline-block">궁합 평균 68점 ·</span> <span className="inline-block">조정 1등(75점 이상)은 영의정 ·</span>{" "}
+          <span className="inline-block">궁합 평균 68점 , </span> <span className="inline-block">조정 1등(75점 이상)은 영의정 , </span>{" "}
           <span className="inline-block">80점 넘으면 좌의정</span>
         </p>
 
@@ -100,7 +100,7 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
             href="/king"
             className="w-full rounded-2xl border-2 border-ink py-3.5 text-center font-myeongjo font-extrabold"
           >
-            나도 내 조정 만들기 · 친구들 관직 주기
+            나도 내 조정 만들기, 친구들 관직 주기
           </TrackLink>
         </section>
       )}
@@ -147,7 +147,7 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
             <p className="text-xs font-extrabold text-seal">이런 간신은 이렇게 티가 나옵니다</p>
             <ul className="mt-1.5 flex flex-col gap-1 text-sm leading-relaxed">
               {GANSIN_SIGNS.map((line) => (
-                <li key={line}>· {line}</li>
+                <li key={line}>, {line}</li>
               ))}
             </ul>
           </div>
@@ -155,7 +155,7 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
       </section>
 
       <section className="mt-5 rounded-3xl border border-ink/10 bg-hanji-deep/60 p-5">
-        <h2 className="font-myeongjo text-lg font-extrabold">밀지(密旨) · 사주 풀이</h2>
+        <h2 className="font-myeongjo text-lg font-extrabold">밀지(密旨), 사주 풀이</h2>
         <p className="mt-3 text-[15px] leading-relaxed">
           {relationSentence(court.king, seat.minister.pillars, seat.match.facts, seat.minister.name)}
         </p>
@@ -183,7 +183,7 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
           query={`court=${court.id}&m=${seat.minister.id}`}
           highlights={{
             sinbun: `조선에 태어났다면 ‘${sinbunOf(seat.minister.pillars).job}’`,
-            gukjeong: "여덟 글자로 보는 성격·재능, 2027년 한눈에까지",
+            gukjeong: "여덟 글자로 보는 성격, 재능, 2027년 한눈에까지",
           }}
         />
       )}
@@ -269,7 +269,7 @@ function MyChartTeaser({ pillars, name }: { pillars: Pillars; name: string }) {
           href="/king#enthrone"
           className="mt-4 block w-full rounded-2xl bg-seal py-3.5 font-myeongjo text-lg font-extrabold text-hanji shadow-[0_5px_0_#7d1a14]"
         >
-          내 실록 열기 · 즉위하기
+          내 실록 열기, 즉위하기
         </TrackLink>
       </div>
     </section>

@@ -19,7 +19,7 @@ import { openPerson, sealPerson } from "@/lib/shareToken";
 import { placesOf, rareText, sinsalOf } from "@/lib/sinsal";
 
 export const metadata: Metadata = {
-  title: "신살 유형 테스트 · 나는 어떤 살의 사람일까",
+  title: "신살 유형 테스트, 나는 어떤 살의 사람일까",
   description: "20가지 살 유형 중 나는 무엇일까. 천을귀인, 도화, 역마, 화개, 양인, 괴강, 백호, 귀문관, 홍염. 내 살 유형과 100명 중 몇 명인지, 내 살 구성까지 무료로 봐요.",
 };
 
@@ -86,7 +86,7 @@ export default async function SinsalPage({ searchParams }: PageProps<"/sinsal">)
             신살은 여덟 글자 위에 얹힌 양념 같은 표시예요. 같은 살도 다른 칸과 어떻게 어울리느냐에 따라 결이 달라져요.
             {noHour && " 태어난 시를 모르면 그 칸은 빼고 봤어요."}
           </p>
-          <p className="mt-2">드문 정도는 1950~2008년 모든 날의 열두 시를 다 넣은 사주 25만 8,600개를 세어 낸 숫자예요.</p>
+          <p className="mt-2">드문 정도는 100명 중 몇 명이 그 살을 지니는지로 나타냈어요.</p>
         </section>
       </SinsalNight>
 

@@ -15,7 +15,9 @@ export default function ClarityTag() {
   const path = usePathname();
   if (!ID || !/^[a-z0-9]{6,20}$/.test(ID) || QUIET.some((q) => path.startsWith(q))) return null;
   return (
-    <Script id="clarity" strategy="afterInteractive">
+    // Not id="clarity": an element id becomes a window property, so window.clarity would be this script element
+    // and the tag would fail with "a[c] is not a function" (no data reached Clarity from 10/23 to 11/7).
+    <Script id="ms-clarity-init" strategy="afterInteractive">
       {`(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","${ID}");`}
     </Script>
   );

@@ -35,7 +35,7 @@ export default function TaekilCompare({ days }: { days: CompareDay[] }) {
     <section className="doc-paper mt-4 px-5 pt-6 pb-5">
       <h2 className="text-center font-myeongjo text-lg font-extrabold">내 후보 날짜 비교하기</h2>
       <p className="mt-1 text-center text-[12px] leading-relaxed text-ink-soft">
-        식장·업체 사정으로 날짜가 이미 좁혀졌다면, 후보를 넣어 보세요. 가장 나은 날부터 줄 세워 드려요. (최대 {MAX}개)
+        식장, 업체 사정으로 날짜가 이미 좁혀졌다면, 후보를 넣어 보세요. 가장 나은 날부터 줄 세워 드려요. (최대 {MAX}개)
       </p>
       <div className="mt-4 flex gap-2">
         <input
