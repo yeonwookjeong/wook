@@ -1,0 +1,43 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+html,body{margin:0;width:540px;height:960px;overflow:hidden;background:#000}
+#cap{position:absolute;left:24px;right:24px;top:74%;text-align:center;font:700 32px "WenQuanYi Zen Hei",sans-serif;color:#fff;line-height:1.35;word-break:keep-all;text-shadow:0 0 6px rgba(0,0,0,.95),0 2px 3px rgba(0,0,0,.95)}
+</style></head><body><div id="cap"></div>
+<script src="node_modules/three/build/three.min.js"></script>
+<script>
+const W=540,H=960,PH=2.0,PW=PH*768/1376,K=0.22;
+const r=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});r.setSize(W,H);document.body.prepend(r.domElement);
+const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(40,W/H,0.01,50);
+const L=new THREE.TextureLoader();let ready=0;const ld=f=>L.load(f,()=>ready++);
+const NOISE=`float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+1.),f.x),f.y);}
+float fbm(vec2 p){return .55*vn(p)+.3*vn(p*2.3)+.15*vn(p*5.1);}
+vec2 nuv(vec2 u){return vec2(0.575+(u.x-0.547)*0.558*1.014/0.664, 0.152+(u.y-0.128)*1.014);}
+float mask(vec2 u,float p){float e=mix(-0.25,1.25,p);return 1.-smoothstep(e-0.07,e+0.07,u.y+0.18*(fbm(u*6.)-.5));}`;
+const U={kt:{value:ld('k1.jpg')},kd:{value:ld('k1_ds.png')},nt:{value:ld('night_s.jpg')},nd:{value:ld('night_ds.png')},p:{value:0},k:{value:K},t:{value:0},dawn:{value:0}};
+const mat=new THREE.ShaderMaterial({uniforms:U,
+ vertexShader:NOISE+`uniform sampler2D kd,nd;uniform float p,k;varying vec2 vUv;
+ void main(){vUv=uv;float m=mask(uv,p);float d=mix(texture2D(nd,clamp(nuv(uv),0.,1.)).r,texture2D(kd,uv).r,m);
+ vec3 q=position;q.z+=d*k;gl_Position=projectionMatrix*modelViewMatrix*vec4(q,1.);}`,
+ fragmentShader:NOISE+`uniform sampler2D kt,nt;uniform float p,t,dawn;varying vec2 vUv;
+ void main(){vec2 nu=nuv(vUv);vec3 n=texture2D(nt,clamp(nu,0.,1.)).rgb; if(nu.y>1.||nu.y<0.)n=vec3(0.);
+  n=n*(1.+dawn*0.6)+vec3(0.10,0.09,0.12)*dawn;                      // 밤이 밝아지며 새벽빛
+  vec3 k=texture2D(kt,vUv).rgb;
+  float g=(h(vUv*vec2(540.,960.)+t*37.)-.5)*0.07; k+=g; k*=0.97+0.03*sin(t*47.); // 필름 입자·깜빡임
+  float m=mask(vUv,p);
+  float e=mix(-0.25,1.25,p);float edge=exp(-pow((vUv.y+0.18*(fbm(vUv*6.)-.5)-e)/0.018,2.))*step(0.001,p)*step(p,0.999);
+  vec3 c=mix(n,k,m)+vec3(1.0,0.75,0.45)*edge*0.45;                  // 경계선의 따뜻한 빛
+  float vig=smoothstep(1.1,0.35,length(vUv-.5)*1.3); c*=mix(1.,vig,0.35*m);
+  gl_FragColor=vec4(c,1.);}`});
+scene.add(new THREE.Mesh(new THREE.PlaneGeometry(PW,PH,280,500),mat));
+const ease=x=>x<0?0:x>1?1:x*x*(3-2*x),lerp=(a,b,x)=>a+(b-a)*x;
+const D1=4.0,D2=3.8,G=0.3,T=D1+G+D2+G;
+const caps=[[0.05,1.9,'도쿄의 상징, 도쿄타워.'],[1.9,D1+G,'그 꼭대기는 원래 전차였습니다.'],[D1+G,T,'1950년대, 일본은<br>333미터 탑을 세우려 합니다.']];
+window.TOTAL=T;window.isReady=()=>ready===4;
+window.renderAt=function(t){
+  const a=ease(t/T);
+  cam.position.set(lerp(0.0,0.0,a),lerp(-0.02,0.10,a),lerp(2.55,1.95,a));cam.lookAt(0,lerp(0.0,0.16,a),0);
+  U.t.value=t;U.dawn.value=ease((t-2.4)/1.4);U.p.value=ease((t-3.2)/1.9);
+  r.render(scene,cam);
+  const c=caps.find(([s,e])=>t>=s&&t<e);document.getElementById('cap').innerHTML=c?c[2]:'';
+};
+</script></body></html>
