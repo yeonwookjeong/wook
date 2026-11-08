@@ -499,8 +499,10 @@ def fetch_source(url: str, ff: str, height: int = 1080, main: bool = True):
                     raise
             # 한국어 자동자막이 다른 언어(예: 일본어)를 자동 번역한 것이면 단어 시각이 실제 말과 안 맞아서 안 씀
             auto = info.get("automatic_captions") or {}
-            translated = kind == "자동 자막" and any(k.endswith("-orig") and not k.startswith("ko") for k in auto)
-            for f in ([] if translated else auto.get("ko", [])):
+            # 실제 한국어 말소리 받아쓰기는 'ko-orig'. 그게 없고 다른 언어 원본만 있으면 'ko'는 번역본
+            translated = kind == "자동 자막" and "ko-orig" not in auto \
+                and any(k.endswith("-orig") and not k.startswith("ko") for k in auto)
+            for f in ([] if translated else (auto.get("ko-orig") or auto.get("ko", []))):
                 if f.get("ext") == "json3":
                     try:
                         words = parse_json3_words(get(f["url"]))

@@ -79,9 +79,17 @@ def squash(text: str) -> str:
 # ---------------------------------------------------------------- 자막 처리
 
 def pick_subtitle(info: dict):
-    """한국어 수동 자막 > 한국어 자동 자막 순으로 고른다. (자막정보, 종류) 반환."""
+    """한국어 수동 자막 > 한국어 자동 자막(실제 한국어 말소리 받아쓰기 'ko-orig') 순으로 고른다. (자막정보, 종류) 반환.
+    주의: 자동 자막의 'ko'는 영상에 영어 자막이 있으면 그걸 한국어로 '번역'한 것일 수 있어서,
+    실제 말을 받아쓴 'ko-orig'가 있으면 그걸 씀."""
+    auto = info.get("automatic_captions") or {}
+    if "ko-orig" in auto and not any(l == "ko" or l.startswith("ko-") for l in (info.get("subtitles") or {})):
+        for want in ("json3", "vtt"):
+            for f in auto["ko-orig"]:
+                if f.get("ext") == want and f.get("url"):
+                    return f, "자동 자막"
     for kind, pool in (("수동 자막", info.get("subtitles") or {}),
-                       ("자동 자막", info.get("automatic_captions") or {})):
+                       ("자동 자막", auto)):
         for lang in sorted(pool, key=lambda l: (l != "ko", l)):
             if lang == "ko" or lang.startswith("ko-"):
                 fmts = pool[lang]
