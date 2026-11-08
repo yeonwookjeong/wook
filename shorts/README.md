@@ -220,3 +220,11 @@ python3 review.py --sheet    # 만든 영상마다 1초 간격 장면 사진 →
 python3 update.py          # 최신 코드·레시피만 받아서 덮어씀 (work·out·bgm·broll·키 파일은 그대로)
 python3 update.py --make   # 업데이트 후 바로 영상 만들기
 ```
+
+## 채널 지켜보기 (watch.py)
+
+```bash
+python3 watch.py add https://youtu.be/NDyePWmIYeM   # 채널 등록 (그 채널 영상 링크·채널 주소·@핸들 아무거나)
+python3 watch.py                                    # 지금 확인 → 아이템 소개 영상만 골라 CC 여부와 함께 out/새영상.md
+python3 watch.py --install                          # 매일 10시·18시 자동 확인 + 맥 알림
+```

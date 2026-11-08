@@ -20,7 +20,7 @@ HERE = Path(__file__).resolve().parent
 ZIP_URL = "https://github.com/yeonwookjeong/wook/archive/refs/heads/claude/coupang-shorts-tts-k8qbz1.zip"
 KEEP_DIRS = {"work", "out", "bgm", "broll", "my_tts", "fonts", "__pycache__"}  # 사장님 자료: 건드리지 않음
 KEEP_FILES = {"google_tts_key.txt", "gemini_key.txt", "elevenlabs_key.txt", "kakao_key.txt", "naver_key.txt",
-              "browser.txt"}
+              "browser.txt", "channels.json"}
 
 
 def main():
