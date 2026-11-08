@@ -85,7 +85,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         {membersEnabled() && (CHANNEL_GIFT_ON || (await isPreview())) && (await currentMember().catch(() => null).then((m) => Boolean(m && m.id.startsWith("k") && !m.channel))) && (
           <ChannelNudge gift={CHANNEL_GIFT} />
         )}
-        {/* Page views and visitors, cookieless (Vercel Web Analytics; enable it in the Vercel project). */}
+        {/* Page views and visitors, cookieless (Vercel Web Analytics, turned on in the Vercel project 2026-11-08). */}
         <Analytics />
         {/* The same, counted for the owner's dashboard (/admin). */}
         <VisitBeacon />
