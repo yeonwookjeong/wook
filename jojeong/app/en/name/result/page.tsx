@@ -102,7 +102,14 @@ export default async function NameResult({ searchParams }: PageProps<"/en/name/r
           Your chart is {STRENGTH[chart.strength] ?? "balanced"}. What brings it into balance is <b>{need}</b>, fed by{" "}
           <b>{ELEMENTS[chart.hee]}</b>.{" "}
           {pick.chars
-            ? `So ${pick.chars.filter((c) => c.el >= 0).map((c) => `${c.ch} brings ${ELEMENTS[c.el]}`).join(" and ")}.`
+            ? (() => {
+                const helps = pick.chars.filter((c) => c.el === chart.yong || c.el === chart.hee);
+                const rest = pick.chars.filter((c) => c.el >= 0 && c.el !== chart.yong && c.el !== chart.hee);
+                return [
+                  helps.length ? `So ${helps.map((c) => `${c.ch} brings ${ELEMENTS[c.el]}`).join(" and ")}.` : "",
+                  rest.length ? `${rest.map((c) => `${c.ch} (${ELEMENTS[c.el]})`).join(" and ")} sits in between: it neither feeds nor drains your chart, and was chosen for the sound.` : "",
+                ].filter(Boolean).join(" ");
+              })()
             : `“${pick.pure!.en}” belongs to ${ELEMENTS[pick.pure!.el]}.`}
         </p>
         <ul className="mt-1 flex flex-wrap gap-1.5 text-[12px]">
