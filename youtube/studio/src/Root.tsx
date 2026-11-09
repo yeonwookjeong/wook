@@ -9,6 +9,7 @@ import { Complex3D, COMPLEX_FRAMES } from "./samples/Complex3D";
 import { PanelTest, PANEL_TEST_FRAMES } from "./three/Panel3D";
 import { ScenesTest, SCENES_TEST_FRAMES } from "./three/Scenes3D";
 import { WorldTest, WORLD_TEST_FRAMES } from "./three/World";
+import { Ep02, EP02 } from "./ep02/Ep02";
 
 // 쇼츠 규격: 세로 1080×1920, 30fps
 export const RemotionRoot: React.FC = () => {
@@ -25,6 +26,8 @@ export const RemotionRoot: React.FC = () => {
       />
       <Composition id="Ep01" component={Ep01} durationInFrames={EP01_FRAMES} fps={30} width={1080} height={1920} defaultProps={{ lang: "en" as const }} />
       <Composition id="Ep01Es" component={Ep01} durationInFrames={EP01_ES_FRAMES} fps={30} width={1080} height={1920} defaultProps={{ lang: "es" as const }} />
+      <Composition id="Ep02" component={Ep02} durationInFrames={EP02.en.total} fps={30} width={1080} height={1920} defaultProps={{ lang: "en" as const }} />
+      <Composition id="Ep02Es" component={Ep02} durationInFrames={EP02.es.total} fps={30} width={1080} height={1920} defaultProps={{ lang: "es" as const }} />
       <Composition id="MapOld" component={MapOpening} durationInFrames={MAP_OPENING_FRAMES} fps={30} width={1080} height={1920} defaultProps={{ variant: "old" as const }} />
       <Composition id="MapModern" component={MapOpening} durationInFrames={MAP_OPENING_FRAMES} fps={30} width={1080} height={1920} defaultProps={{ variant: "modern" as const }} />
       <Composition id="MapRef" component={MapRef} durationInFrames={1} fps={30} width={1024} height={1536} />

@@ -95,7 +95,7 @@ const Plate: React.FC<{ label: string; lit: boolean }> = ({ label, lit }) => {
 };
 
 // 인형 같은 사람 (얼굴 없음)
-const Person: React.FC<{ p: [number, number, number]; coat: string; s?: number; ry?: number; sit?: boolean }> = ({ p, coat, s = 0.32, ry = 0, sit }) => (
+export const Person: React.FC<{ p: [number, number, number]; coat: string; s?: number; ry?: number; sit?: boolean }> = ({ p, coat, s = 0.32, ry = 0, sit }) => (
   <group position={p} scale={s} rotation={[0, ry, 0]}>
     <mesh position={[0, sit ? 0.55 : 0.75, 0]} castShadow>
       <capsuleGeometry args={[0.2, sit ? 0.45 : 0.75, 6, 12]} />
