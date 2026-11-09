@@ -7,9 +7,10 @@
 #   - 마지막 0.6초는 줄여서 끝낸다 (반복 재생 이음새)
 set -euo pipefail
 in="$1"; music="$2"; out="$3"; a="$4"; b="$5"; bed="${6:--33}"  # 6번째 값: 배경음 크기(LUFS, 기본 -33)
+duck="${7:-0.1}"  # 7번째 값: 어두운 구간 배경음 비율. 구간이 길면(EP02: 11초) 0.5 정도로. 0.1이면 거의 꺼져 안 들린다(2026-11-09)
 dur=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$in")
 fo=$(python3 -c "print(max(0, $dur - 0.6))")
-vol="if(lt(t,$a-0.3),1,if(lt(t,$a),1-0.9*(t-($a-0.3))/0.3,if(lt(t,$b),0.1,if(lt(t,$b+0.4),0.1+0.9*(t-$b)/0.4,1))))"
+vol="if(lt(t,$a-0.3),1,if(lt(t,$a),1-(1-$duck)*(t-($a-0.3))/0.3,if(lt(t,$b),$duck,if(lt(t,$b+0.4),$duck+(1-$duck)*(t-$b)/0.4,1))))"
 ffmpeg -v error -y -i "$in" -i "$music" -filter_complex \
   "[1:a]atrim=0:$dur,asetpts=PTS-STARTPTS,aresample=48000,loudnorm=I=$bed:TP=-3:LRA=11,volume='$vol':eval=frame,afade=t=out:st=$fo:d=0.6[m];[0:a]aresample=48000[v];[v][m]amix=inputs=2:normalize=0:duration=first[aout]" \
   -map 0:v -map "[aout]" -c:v copy -c:a pcm_s16le "$out.tmp.mov"
