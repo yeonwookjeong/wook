@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { searchCities, type City } from "@/lib/cities";
+import { makeNameChart } from "@/app/en/name/actions";
 
 // The naming form: name, birth date, birth time (optional) with the city of birth, and the feel of the name.
 // Date and time are our own dropdowns, not the browser's pickers: those follow the phone's language (a Korean
@@ -67,14 +68,23 @@ export default function NameForm() {
     const typed = searchCities(query, 1)[0];
     const place = city ?? (typed && typed.en.toLowerCase() === query.trim().toLowerCase() ? typed : null);
     if (!noTime && !place) return setError("Pick the city you were born in from the list (or the nearest big city).");
-    const q = new URLSearchParams({ f: first.trim().slice(0, 40), d: `${y}-${pad(m)}-${pad(d)}`, g: feel, k: kind, sn: sound ? "1" : "0", ea: era });
-    if (last.trim()) q.set("l", last.trim().slice(0, 40));
-    if (!noTime) {
-      q.set("t", `${pad((Number(hour) % 12) + (pm ? 12 : 0))}:${pad(Number(minute))}`);
-      q.set("c", place!.id);
-    }
+    // The birth goes to the server once and comes back as a signed chart: the date never enters the address.
+    const time = noTime ? null : `${pad((Number(hour) % 12) + (pm ? 12 : 0))}:${pad(Number(minute))}`;
     setBusy(true);
-    router.push(`/en/name/result?${q}`);
+    setError("");
+    makeNameChart({ first: first.trim(), last: last.trim(), y, m, d, time, city: noTime ? null : place!.id })
+      .then((r) => {
+        if ("error" in r) {
+          setBusy(false);
+          return setError(r.error);
+        }
+        const q = new URLSearchParams({ r: r.token, g: feel, k: kind, sn: sound ? "1" : "0", ea: era });
+        router.push(`/en/name/result?${q}`);
+      })
+      .catch(() => {
+        setBusy(false);
+        setError("Something went wrong. Please try again.");
+      });
   }
 
   return (
@@ -177,7 +187,7 @@ export default function NameForm() {
 
       <div>
         <p className={label}>The name should feel</p>
-        <Choice value={feel} onChange={setFeel} options={[["f", "Feminine"], ["m", "Masculine"], ["n", "Either"]]} />
+        <Choice value={feel} onChange={setFeel} options={[["f", "Feminine"], ["m", "Masculine"], ["n", "For anyone"]]} />
       </div>
       <div>
         <p className={label}>Kind of name</p>

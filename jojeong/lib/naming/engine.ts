@@ -174,6 +174,8 @@ export function suggestNames(req: NameRequest): NameResult | null {
       const gap = Math.abs(["old", "mid", "new"].indexOf(nameEra) - ["old", "mid", "new"].indexOf(era));
       score += gap === 0 ? 2 : gap === 1 ? 0.3 : -1.5;
     } else if (nameEra === "old") score -= 0.5; // "any generation": lean away from names that sound dated
+    // "For anyone": a name Koreans use for both comes first; a clearly male or female name only if nothing else fits.
+    if (req.feel === "n") score += feel === "n" ? 3 : -2.5;
     if (jamo(s1).f && jamo(s2).c === 11) score -= 0.5; // 받침 then ㅇ: the sound slides (연음), harder to spell out
     return { ko, roman: romanize(ko), feel, era: nameEra, soundFlow, soundsLike, closeness, hard, score, blocked: marks.includes("avoid") || s1 === surname.ko };
   };
@@ -241,6 +243,11 @@ export function suggestNames(req: NameRequest): NameResult | null {
 
   // Best first, one spelling of each name, and no two names starting with the same syllable among the first three.
   picks.sort((a, b) => b.score - a.score);
+  // Asked for the sound: a name that really sounds like theirs leads, if one fits the chart at all.
+  if (prefs.sound) {
+    const i = picks.findIndex((p) => p.soundsLike);
+    if (i > 0) picks.unshift(...picks.splice(i, 1));
+  }
   const out: NamePick[] = [];
   for (const p of picks) {
     if (out.some((o) => o.ko === p.ko || o.ko[0] === p.ko[0])) continue;

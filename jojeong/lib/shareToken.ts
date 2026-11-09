@@ -60,3 +60,23 @@ export function openCard<K extends ShareKind>(kind: K, token: string): SummaryOf
     return null;
   }
 }
+
+// Any small signed record (the English name form's chart, for one): base64url JSON plus a signature, so the
+// result page can trust it without the birth date ever going into the address.
+export function sealData(scope: string, data: unknown): string {
+  const body = Buffer.from(JSON.stringify(data)).toString("base64url");
+  return `${body}.${sign(scope, body)}`;
+}
+
+export function openData<T>(scope: string, token: string | undefined): T | null {
+  if (!token || token.length > 2000) return null;
+  const [body, sig, ...rest] = token.split(".");
+  if (!body || !sig || rest.length) return null;
+  const want = sign(scope, body);
+  if (sig.length !== want.length || !timingSafeEqual(Buffer.from(sig), Buffer.from(want))) return null;
+  try {
+    return JSON.parse(Buffer.from(body, "base64url").toString()) as T;
+  } catch {
+    return null;
+  }
+}

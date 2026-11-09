@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { cityById } from "@/lib/cities";
-import { computePillars, resolveBirthTime, type BirthInput } from "@/lib/saju";
+import { openNameChart } from "@/lib/naming/chartToken";
 import { ELEMENTS, suggestNames, type Kind, type NamePick, type Prefs } from "@/lib/naming/engine";
 import { SURNAMES, type Feel } from "@/lib/naming/names";
 
 export const metadata: Metadata = { title: "Your Korean name" };
 
 // The free result: one name, whole (Hangul, Hanja, meanings, why it is yours, how it sounds to Koreans).
-// The answers come in the address (components/en/NameForm.tsx); nothing is stored.
+// The chart comes in the address as a signed token (app/en/name/actions.ts): no birth date, nothing stored.
 
 const STRENGTH: Record<string, string> = {
   극신강: "very strong in its own element",
@@ -38,30 +37,17 @@ function Problem({ text }: { text: string }) {
 export default async function NameResult({ searchParams }: PageProps<"/en/name/result">) {
   const sp = await searchParams;
   const one = (k: string) => (typeof sp[k] === "string" ? (sp[k] as string) : "");
-  const first = one("f").slice(0, 40) || "Friend";
-  const last = one("l").slice(0, 40);
-  const date = /^(\d{4})-(\d{2})-(\d{2})$/.exec(one("d"));
-  const time = /^(\d{2}):(\d{2})$/.exec(one("t"));
+  const chartIn = openNameChart(one("r"));
+  if (!chartIn) return <Problem text="That link didn't come through. Please fill in the form again." />;
+  const first = chartIn.first || "Friend";
+  const last = chartIn.last;
   const feel = (["m", "f", "n"].includes(one("g")) ? one("g") : "n") as Feel;
   const kind = (one("k") === "pure" ? "pure" : "hanja") as Kind;
   const prefs: Prefs = { sound: one("sn") !== "0", era: one("ea") === "young" ? "young" : one("ea") === "any" ? "any" : "age" };
-  if (!date) return <Problem text="That birth date didn't come through." />;
-
-  const base: BirthInput = { year: +date[1], month: +date[2], day: +date[3], calendar: "solar", hourBranch: null };
-  let input = base;
-  let place = "";
-  try {
-    if (time && one("c")) {
-      const city = cityById(one("c"));
-      place = city.en;
-      input = resolveBirthTime(base, { hour: +time[1], minute: +time[2] }, { lon: city.lon, tz: city.tz }).input;
-    }
-  } catch {
-    input = base;
-  }
+  const base = { year: chartIn.year };
   let result: ReturnType<typeof suggestNames> = null;
   try {
-    result = suggestNames({ first, last, birthYear: base.year, pillars: computePillars(input), feel, kind, surname: one("s") || undefined, prefs });
+    result = suggestNames({ first, last, birthYear: base.year, pillars: chartIn.pillars, feel, kind, surname: one("s") || undefined, prefs });
   } catch {
     result = null;
   }
@@ -80,8 +66,8 @@ export default async function NameResult({ searchParams }: PageProps<"/en/name/r
   return (
     <div className="flex flex-col gap-6 pt-6">
       <p className="text-center text-[13px] text-ink-soft">
-        {first}, born {base.year}-{date[2]}-{date[3]}
-        {time ? ` at ${time[1]}:${time[2]}${place ? `, ${place}` : ""}` : ", time unknown"}
+        {first}, born {base.year}
+        {chartIn.timeKnown ? ` in ${chartIn.place}` : ", time unknown"}
       </p>
 
       <section className="doc-paper px-5 py-7 text-center">
@@ -133,8 +119,8 @@ export default async function NameResult({ searchParams }: PageProps<"/en/name/r
           {prefs.sound && (
             <li>
               {pick.soundsLike ? "✓ " : "· "}
-              <b>{pick.soundsLike ? `Sounds like ${first}.` : `Not far from ${first}.`}</b> {first} in Korean letters is {theirSound}; your name is {pick.ko}.
-              {!pick.soundsLike && " No name close enough also fit your chart, so the chart came first."}
+              <b>{pick.soundsLike ? `Sounds like ${first}.` : pick.closeness >= 0.5 ? `A little like ${first}.` : `Not close to ${first}, honestly.`}</b> {first} in Korean letters is {theirSound}; your name is {pick.ko}.
+              {!pick.soundsLike && (soundAlt ? " The name closest to yours is below; your chart came first here." : " No Korean name close to that sound also fit your chart, so the chart came first.")}
             </li>
           )}
           {targetEra && pick.era === targetEra && (
