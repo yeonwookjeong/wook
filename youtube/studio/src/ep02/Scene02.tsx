@@ -14,6 +14,9 @@ export const ORDER02: Mode02[] = ["pen", "red", "curse", "dark", "banners", "tab
 export type Words02 = { stop: string; bank: string; contract: string; lang: "en" | "es" };
 
 const CJK = '"WenQuanYi Zen Hei", Arial';
+// 손글씨·붓글씨 (OFL, ~/.fonts 에 설치: youtube/studio/README-fonts.md)
+const PEN_KO = '"Nanum Pen", "WenQuanYi Zen Hei"';
+const BRUSH_HANJA = '"LXGW WenKai TC", "WenQuanYi Zen Hei"';
 const INK = "#d61f1f";
 
 // ---------- 장소 좌표 ----------
@@ -29,7 +32,7 @@ const SEAL = new THREE.Vector3(12.68, COUNTER_Y + 0.008, 3.3);
 // 장소가 바뀌는 컷(banners, bleed)은 Ep02.tsx 에서 겹쳐 흐리게 넘긴다.
 type Key = { p: THREE.Vector3; t: THREE.Vector3 };
 const K = (px: number, py: number, pz: number, tx: number, ty: number, tz: number): Key => ({ p: new THREE.Vector3(px, py, pz), t: new THREE.Vector3(tx, ty, tz) });
-const PT = { x: 0, y: 0.58, z: 1.58 };
+const PT = { x: -0.05, y: 0.58, z: 1.58 }; // 시험지 이름 칸 쪽으로 조금
 const paths = (lang: "en" | "es"): Record<Mode02, Key[]> => {
   const C1 = K(0.6, 1.35, 2.65, 0.45, 0.68, 1.7);
   const C2 = K(1.6, 1.75, 3.95, 0.6, 0.78, 1.4);
@@ -70,17 +73,20 @@ const Rig: React.FC<{ mode: Mode02; t: number; lang: "en" | "es" }> = ({ mode, t
 };
 
 // ---------- 무늬 ----------
-const vertTex = (chars: string[], o: { w: number; h: number; bg: string; fg: string; size: number; pad?: number }) =>
+const vertTex = (chars: string[], o: { w: number; h: number; bg: string; fg: string; size: number; pad?: number; font?: string; thick?: number }) =>
   canvasTex(o.w, o.h, (g) => {
     g.fillStyle = o.bg;
     g.fillRect(0, 0, o.w, o.h);
     g.fillStyle = o.fg;
-    g.font = `bold ${o.size}px ${CJK}`;
+    g.font = `bold ${o.size}px ${o.font ?? BRUSH_HANJA}`;
     g.textAlign = "center";
     g.textBaseline = "middle";
     const pad = o.pad ?? 0;
     const step = (o.h - pad * 2) / chars.length;
-    chars.forEach((c, k) => g.fillText(c, o.w / 2, pad + step * (k + 0.5)));
+    // thick: 펜 글씨를 조금 굵게 (살짝 어긋나게 여러 번 찍기)
+    const th = o.thick ?? 0;
+    const offs = th ? [[0, 0], [th, 0], [0, th], [th, th]] : [[0, 0]];
+    chars.forEach((c, k) => offs.forEach(([dx, dy]) => g.fillText(c, o.w / 2 + dx, pad + step * (k + 0.5) + dy)));
   });
 
 const bubbleTex = (text: string) =>
@@ -146,8 +152,10 @@ const Slab: React.FC<{ c: [number, number]; size: [number, number]; top: string;
 
 // ---------- 1. 교실 ----------
 const NAME = ["김", "민", "지"];
-const NAME_TOP = 0.15; // 시험지 중심에서 이름 칸 위쪽 끝까지
-const NAME_H = 0.33;
+// 시험지(0.34×0.46) 텍스처의 이름 칸: x 18~122 / 300px, y 50~380 / 410px
+const NAME_X = (70 / 300 - 0.5) * 0.34; // 칸 가운데 (시험지 중심 기준)
+const NAME_TOP = 0.23 - (54 / 410) * 0.46; // 시험지 중심에서 글씨 시작점(칸 위쪽 조금 아래)까지
+const NAME_H = (320 / 410) * 0.46;
 
 const Desk: React.FC<{ x: number; z: number; paper?: boolean; chair?: boolean }> = ({ x, z, paper = true, chair = true }) => (
   <group position={[x, 0, z]}>
@@ -183,7 +191,7 @@ const Classroom: React.FC<{ write: number; bleed: number; lights: number; stop: 
         g.lineWidth = 24;
         g.strokeRect(0, 0, 1024, 400);
         g.fillStyle = "rgba(255,255,255,0.88)";
-        g.font = `bold 120px ${CJK}`;
+        g.font = `140px ${PEN_KO}`;
         g.textAlign = "center";
         g.fillText("시험", 330, 200);
         g.font = "bold 70px Arial";
@@ -213,7 +221,7 @@ const Classroom: React.FC<{ write: number; bleed: number; lights: number; stop: 
       }),
     [],
   );
-  const name = useMemo(() => vertTex(NAME, { w: 200, h: 600, bg: "rgba(0,0,0,0)", fg: INK, size: 170 }), []);
+  const name = useMemo(() => vertTex(NAME, { w: 200, h: 600, bg: "rgba(0,0,0,0)", fg: INK, size: 210, font: PEN_KO, thick: 4, pad: 10 }), []);
   const p = Math.max(0.001, write);
   name.repeat.set(1, p);
   name.offset.set(0, 1 - p);
@@ -229,8 +237,7 @@ const Classroom: React.FC<{ write: number; bleed: number; lights: number; stop: 
       }),
     [],
   );
-  // 이름 칸은 시험지 왼쪽 (종이 텍스처 18~122px / 300px 폭)
-  const nameX = -0.14 + (70 / 300) * 0.34;
+  const nameX = NAME_X;
   const STUDENTS: { x: number; z: number; coat: string }[] = [
     { x: -1.2, z: -1.2, coat: "#4a6a8a" },
     { x: 0, z: -1.2, coat: "#c86b5a" },
@@ -245,7 +252,7 @@ const Classroom: React.FC<{ write: number; bleed: number; lights: number; stop: 
       <Slab c={[0, 0]} size={[6.6, 6]} top="#c8a77e" />
       {/* 마룻바닥 줄 */}
       {Array.from({ length: 11 }, (_, k) => (
-        <mesh key={k} position={[-3 + k * 0.6, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <mesh key={k} position={[-3 + k * 0.6, 0.009, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[0.012, 6]} />
           <meshBasicMaterial color="#a88a64" />
         </mesh>
@@ -300,7 +307,7 @@ const Classroom: React.FC<{ write: number; bleed: number; lights: number; stop: 
       )}
       {write > 0.001 && (
         <mesh position={[PAPER.x + nameX, PAPER.y + 0.002, PAPER.z - NAME_TOP + (NAME_H * p) / 2]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[0.1, NAME_H * p]} />
+          <planeGeometry args={[0.112, NAME_H * p]} />
           <meshBasicMaterial map={name} transparent toneMapped={false} />
         </mesh>
       )}
@@ -598,7 +605,7 @@ const Bank: React.FC<{ w: Words02; imprint: number }> = ({ w, imprint }) => {
         g.arc(128, 128, 112, 0, Math.PI * 2);
         g.stroke();
         g.fillStyle = INK;
-        g.font = `bold 62px ${CJK}`;
+        g.font = `bold 66px ${BRUSH_HANJA}`;
         g.textAlign = "center";
         g.textBaseline = "middle";
         NAME.forEach((c, k) => g.fillText(c, 128, 62 + k * 66));
@@ -610,7 +617,7 @@ const Bank: React.FC<{ w: Words02; imprint: number }> = ({ w, imprint }) => {
       <Slab c={[12.5, 4]} size={[8, 6.5]} top="#e4e1da" />
       {/* 바닥 타일 줄 */}
       {Array.from({ length: 9 }, (_, k) => (
-        <mesh key={k} position={[8.5 + k * 1, 0.005, 4]} rotation={[-Math.PI / 2, 0, 0]}>
+        <mesh key={k} position={[8.5 + k * 1, 0.009, 4]} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[0.01, 6.5]} />
           <meshBasicMaterial color="#c9c5bd" />
         </mesh>
@@ -625,7 +632,7 @@ const Bank: React.FC<{ w: Words02; imprint: number }> = ({ w, imprint }) => {
         <meshBasicMaterial map={ticket} toneMapped={false} />
       </mesh>
       {/* 창구 */}
-      <Box p={[12.5, COUNTER_Y / 2, 3.2]} s={[6, COUNTER_Y, 0.7]} c="#cfd8df" />
+      <Box p={[12.5, (COUNTER_Y - 0.04) / 2, 3.2]} s={[6, COUNTER_Y - 0.04, 0.7]} c="#cfd8df" />
       <Box p={[12.5, COUNTER_Y - 0.02, 3.2]} s={[6.1, 0.04, 0.8]} c="#9aa7b2" />
       {[10.5, 12.5, 14.5].map((x) => (
         <mesh key={x} position={[x - 1, COUNTER_Y + 0.35, 2.95]}>
@@ -716,7 +723,7 @@ const Scene: React.FC<{ mode: Mode02; t: number; words: Words02 }> = ({ mode, t,
   const stopT = useMemo(() => bubbleTex(words.stop), [words.stop]);
   const q = useMemo(() => qTex(), []);
   // 펜: 교실 장면에서는 시험지 위, 마지막에는 은행 창구 위 도장 옆
-  const nameX = PAPER.x - 0.14 + (70 / 300) * 0.34;
+  const nameX = PAPER.x + NAME_X;
   const bob = Math.sin(t * Math.PI * 2) * 0.006;
   const writing = mode === "red" || (mode === "curse" && t < 0.45);
   const penHover = new THREE.Vector3(nameX, PAPER.y + 0.03 + bob, PAPER.z - NAME_TOP + 0.03);
