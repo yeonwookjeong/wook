@@ -14,7 +14,7 @@ const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 type Lang = "en" | "es";
 type Cap = { text: string; hl?: boolean }[];
 type Fx = { name: string; at?: number; vol?: number };
-type Shot = { mode: Mode02; sent: number; weight?: number; sfx?: Fx[]; shake?: number };
+type Shot = { mode: Mode02; sent: number; weight?: number; sfx?: Fx[]; shake?: number; xfade?: number }; // xfade: 장소가 바뀌는 컷, 앞 컷 위로 겹쳐 흐리게 들어오는 프레임 수
 const h = (text: string) => ({ text, hl: true });
 const w = (text: string) => ({ text });
 
@@ -24,9 +24,9 @@ const SHOTS: Shot[] = [
   { mode: "red", sent: 1, weight: 16, sfx: [{ name: "whoosh", at: 0.05, vol: 0.3 }] },
   { mode: "curse", sent: 1, sfx: [{ name: "buzz", at: 0.6, vol: 0.25 }] },
   { mode: "dark", sent: 2, sfx: [{ name: "riser", at: 0.1, vol: 0.25 }] },
-  { mode: "banners", sent: 3, weight: 26, sfx: [{ name: "whoosh", at: 0.05, vol: 0.3 }] },
+  { mode: "banners", sent: 3, weight: 26, xfade: 9, sfx: [{ name: "whoosh", at: 0.05, vol: 0.3 }] },
   { mode: "tablets", sent: 3 },
-  { mode: "bleed", sent: 4, sfx: [{ name: "thud", at: 0.2, vol: 0.3 }] },
+  { mode: "bleed", sent: 4, xfade: 9, sfx: [{ name: "thud", at: 0.2, vol: 0.3 }] },
   { mode: "light", sent: 5, sfx: [{ name: "chime", at: 0.1, vol: 0.3 }] },
   { mode: "stamp", sent: 6, shake: 1, sfx: [{ name: "thud", at: 0.28, vol: 0.7 }] },
   { mode: "calm", sent: 6 },
@@ -63,8 +63,8 @@ const CAPS: Record<Lang, Cap[][]> = {
 };
 
 const WORDS: Record<Lang, Words02> = {
-  en: { stop: "STOP!", bank: "BANK", contract: "CONTRACT" },
-  es: { stop: "¡ALTO!", bank: "BANCO", contract: "CONTRATO" },
+  en: { stop: "STOP!", bank: "BANK", contract: "CONTRACT", lang: "en" },
+  es: { stop: "¡ALTO!", bank: "BANCO", contract: "CONTRATO", lang: "es" },
 };
 
 type Vo = { sentences: { id: number; file: string; sec: number }[] };
@@ -108,21 +108,23 @@ const Caption: React.FC<{ cap: Cap }> = ({ cap }) => {
   );
 };
 
-const ShotView: React.FC<{ shot: Shot; caps: Cap[]; dur: number; words: Words02 }> = ({ shot, caps, dur, words }) => {
-  const frame = useCurrentFrame();
+const ShotView: React.FC<{ shot: Shot; caps: Cap[]; dur: number; words: Words02; pre?: number }> = ({ shot, caps, dur, words, pre = 0 }) => {
+  const f0 = useCurrentFrame();
+  const frame = f0 - pre;
   const t = interpolate(frame, [0, dur], [0, 1], clamp);
+  const fadeIn = pre ? interpolate(f0, [0, pre], [0, 1], clamp) : 1;
   // 도장이 닿는 순간부터 흔들림
   const hit = shot.shake ? Math.round(state02(shot.mode, 0).slamAt * dur) : 0;
   const since = frame - hit;
   const shake = shot.shake && since >= 0 ? Math.sin(since * 2.3) * 14 * interpolate(since, [0, 10], [1, 0], clamp) : 0;
   const per = dur / caps.length;
   return (
-    <AbsoluteFill>
+    <AbsoluteFill style={{ opacity: fadeIn }}>
       <AbsoluteFill style={{ transform: `translate(${shake}px, ${shake * 0.4}px)` }}>
         <Scene02 mode={shot.mode} t={t} words={words} />
       </AbsoluteFill>
       {caps.map((c, i) => (
-        <Sequence key={i} from={Math.round(i * per)} durationInFrames={Math.round(per)} layout="none">
+        <Sequence key={i} from={pre + Math.round(i * per)} durationInFrames={Math.round(per)} layout="none">
           <Caption cap={c} />
         </Sequence>
       ))}
@@ -136,10 +138,10 @@ export const Ep02: React.FC<{ lang?: Lang }> = ({ lang = "en" }) => {
   return (
     <AbsoluteFill style={{ backgroundColor: "#000" }}>
       {SHOTS.map((shot, i) => (
-        <Sequence key={i} from={b.starts[i]} durationInFrames={b.frames[i]}>
-          <ShotView shot={shot} caps={b.caps[i]} dur={b.frames[i]} words={WORDS[lang]} />
+        <Sequence key={i} from={b.starts[i] - (shot.xfade ?? 0)} durationInFrames={b.frames[i] + (shot.xfade ?? 0)}>
+          <ShotView shot={shot} caps={b.caps[i]} dur={b.frames[i]} words={WORDS[lang]} pre={shot.xfade ?? 0} />
           {(shot.sfx ?? []).map((fx, k) => (
-            <Sequence key={k} from={Math.round((fx.at ?? 0) * FPS)} layout="none">
+            <Sequence key={k} from={(shot.xfade ?? 0) + Math.round((fx.at ?? 0) * FPS)} layout="none">
               <Audio src={staticFile(`sfx/${fx.name}.wav`)} volume={fx.vol ?? 0.4} />
             </Sequence>
           ))}
@@ -152,4 +154,12 @@ export const Ep02: React.FC<{ lang?: Lang }> = ({ lang = "en" }) => {
       ))}
     </AbsoluteFill>
   );
+};
+
+// 점검용: 컷마다 한 장면 (t=0.65)
+import { useCurrentFrame as useF } from "remotion";
+import { ORDER02 } from "./Scene02";
+export const Ep02Check: React.FC = () => {
+  const f = useF();
+  return <Scene02 mode={ORDER02[f % ORDER02.length]} t={f < ORDER02.length ? 0.15 : 0.85} words={WORDS.en} />;
 };
