@@ -29,11 +29,18 @@ const SHIFT_Y = SAFE.y + SAFE.h / 2 - ORIGIN.y; // 한옥 중심을 띠 가운�
 const HANOK = { left: 1012, right: 1545 }; // 확대 후 한옥 좌우 끝(배너 좌표)
 const PAD = 34;
 
-export const Banner: React.FC<{ showSafe?: boolean }> = ({ showSafe }) => {
+// 스페인어 채널(Konorama Español)은 같은 그림에 글자만 바꾼다. 문장이 길어 글자를 조금 줄인다.
+const TEXT = {
+  en: { left: ["The stories", "behind"], right: ["Korea,", "old and new"], size: 66 },
+  es: { left: ["Las historias", "detrás de"], right: ["Corea,", "antigua y actual"], size: 56 },
+};
+
+export const Banner: React.FC<{ showSafe?: boolean; lang?: "en" | "es" }> = ({ showSafe, lang = "en" }) => {
+  const T = TEXT[lang];
   const font = {
     fontFamily: serif,
     fontWeight: 700,
-    fontSize: 66,
+    fontSize: T.size,
     lineHeight: 1.12,
     whiteSpace: "nowrap" as const,
     position: "absolute" as const,
@@ -53,14 +60,14 @@ export const Banner: React.FC<{ showSafe?: boolean }> = ({ showSafe }) => {
         }}
       />
       <div style={{ ...font, right: W - HANOK.left + PAD, textAlign: "right", color: "#2b2420", textShadow: "0 0 16px rgba(255,246,230,0.95), 0 0 4px rgba(255,246,230,0.9)" }}>
-        The stories
+        {T.left[0]}
         <br />
-        behind
+        {T.left[1]}
       </div>
       <div style={{ ...font, left: HANOK.right + PAD, textAlign: "left", color: "#ffffff", textShadow: "0 2px 5px rgba(70,35,25,0.6), 0 0 22px rgba(110,55,40,0.5)" }}>
-        Korea,
+        {T.right[0]}
         <br />
-        old and new
+        {T.right[1]}
       </div>
       {showSafe && <div style={{ position: "absolute", left: SAFE.x, top: SAFE.y, width: SAFE.w, height: SAFE.h, border: "6px dashed #ff2a2a" }} />}
     </AbsoluteFill>
