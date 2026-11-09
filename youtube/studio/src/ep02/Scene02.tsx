@@ -792,9 +792,9 @@ export const Scene02: React.FC<{ mode: Mode02; t: number; words: Words02 }> = ({
     left: 0,
     right: 0,
     [side]: 0,
-    height: "40%",
-    backdropFilter: "blur(9px)",
-    WebkitBackdropFilter: "blur(9px)",
+    height: side === "top" ? "30%" : "36%", // 위쪽은 간판·하늘이 많아 조금 좁게 (2026-11-09 검수: BANK 간판이 흐려짐)
+    backdropFilter: "blur(7px)",
+    WebkitBackdropFilter: "blur(7px)",
     maskImage: `linear-gradient(to ${side === "top" ? "bottom" : "top"}, rgba(0,0,0,1) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0) 100%)`,
     WebkitMaskImage: `linear-gradient(to ${side === "top" ? "bottom" : "top"}, rgba(0,0,0,1) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0) 100%)`,
   });
