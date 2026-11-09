@@ -8,6 +8,7 @@ import { AbsoluteFill, Easing, interpolate, useVideoConfig } from "remotion";
 import * as THREE from "three";
 import { Person } from "../three/World";
 import { canvasTex, clamp } from "../three/kit";
+import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 
 export type Mode02 = "pen" | "red" | "curse" | "dark" | "banners" | "tablets" | "bleed" | "light" | "stamp" | "calm" | "end";
 export const ORDER02: Mode02[] = ["pen", "red", "curse", "dark", "banners", "tablets", "bleed", "light", "stamp", "calm", "end"];
@@ -32,6 +33,8 @@ const SEAL = new THREE.Vector3(12.68, COUNTER_Y + 0.008, 3.3);
 // 장소가 바뀌는 컷(banners, bleed)은 Ep02.tsx 에서 겹쳐 흐리게 넘긴다.
 type Key = { p: THREE.Vector3; t: THREE.Vector3 };
 const K = (px: number, py: number, pz: number, tx: number, ty: number, tz: number): Key => ({ p: new THREE.Vector3(px, py, pz), t: new THREE.Vector3(tx, ty, tz) });
+const FOV = 24;
+const TELE = Math.tan((34 / 2) * (Math.PI / 180)) / Math.tan((FOV / 2) * (Math.PI / 180));
 const PT = { x: -0.05, y: 0.58, z: 1.58 }; // 시험지 이름 칸 쪽으로 조금
 const paths = (lang: "en" | "es"): Record<Mode02, Key[]> => {
   const C1 = K(0.5, 1.75, 2.9, 0.5, 0.72, 1.75); // 높게: 낮으면 앞 의자 등받이가 화면을 가린다
@@ -67,8 +70,11 @@ const Rig: React.FC<{ mode: Mode02; t: number; lang: "en" | "es" }> = ({ mode, t
     return out;
   }, [lang]);
   const u = Easing.inOut(Easing.cubic)(Math.min(1, Math.max(0, t)));
-  camera.position.copy(curves[mode][0].getPoint(u));
-  camera.lookAt(curves[mode][1].getPoint(u));
+  const tgt = curves[mode][1].getPoint(u);
+  // 망원 느낌: 시야각 24°(원래 34°)에 맞춰 같은 화면 크기가 되도록 카메라를 시선 방향으로 뒤로 뺀다
+  const pos = curves[mode][0].getPoint(u).sub(tgt).multiplyScalar(TELE).add(tgt);
+  camera.position.copy(pos);
+  camera.lookAt(tgt);
   return null;
 };
 
@@ -132,12 +138,15 @@ const Sprite: React.FC<{ tex: THREE.Texture; s: number; pos: [number, number, nu
     </mesh>
   );
 
-const Box: React.FC<{ p: [number, number, number]; s: [number, number, number]; c: string; e?: string; ei?: number; shadow?: boolean }> = ({ p, s, c, e, ei = 0.4, shadow = true }) => (
-  <mesh position={p} castShadow={shadow} receiveShadow>
-    <boxGeometry args={s} />
+// 모서리를 살짝 깎은 상자: 모서리가 빛을 받아 장난감·모형처럼 보인다 (3dviz-pro-max toy-miniature)
+const Box: React.FC<{ p: [number, number, number]; s: [number, number, number]; c: string; e?: string; ei?: number; shadow?: boolean }> = ({ p, s, c, e, ei = 0.4, shadow = true }) => {
+  const geo = useMemo(() => new RoundedBoxGeometry(s[0], s[1], s[2], 2, Math.min(0.03, Math.min(...s) * 0.3)), [s[0], s[1], s[2]]);
+  return (
+  <mesh position={p} castShadow={shadow} receiveShadow geometry={geo}>
     <meshStandardMaterial color={c} emissive={e ?? "#000000"} emissiveIntensity={e ? ei : 0} />
   </mesh>
-);
+  );
+};
 
 // 디오라마 판: 장소마다 하나 (모형 느낌)
 const Slab: React.FC<{ c: [number, number]; size: [number, number]; top: string; side?: string }> = ({ c, size, top, side = "#8c7a64" }) => (
@@ -745,14 +754,14 @@ const Scene: React.FC<{ mode: Mode02; t: number; words: Words02 }> = ({ mode, t,
   const stampHome = new THREE.Vector3(SEAL.x, s.stampY, SEAL.z);
   const stamp = mode === "end" ? stampHome.clone().lerp(new THREE.Vector3(12.78, COUNTER_Y + 0.005, 3.42), s.fly) : stampHome;
   const lights = 1 - s.dark;
-  const sun = 2.3 * (1 - 0.7 * s.dark);
+  const sun = 3.1 * (1 - 0.7 * s.dark); // 높은 해, 짧고 또렷한 그림자 (탁자 위 모형 조명)
   return (
     <>
       <Rig mode={mode} t={t} lang={words.lang} />
-      <hemisphereLight args={[new THREE.Color("#f4f7ff").lerp(new THREE.Color("#5a4a72"), s.dark), "#d9c6ab", 1.15 * (1 - 0.5 * s.dark)]} />
-      <directionalLight position={[10, 18, 12]} intensity={sun} color={new THREE.Color("#fff4e2").lerp(new THREE.Color("#ff9a6a"), s.dark)} castShadow shadow-mapSize={[2048, 2048]} shadow-bias={-0.0004} shadow-normalBias={0.02} shadow-camera-left={-30} shadow-camera-right={30} shadow-camera-top={30} shadow-camera-bottom={-30} shadow-camera-far={90} />
-      <directionalLight position={[3, 5, 14]} intensity={1.2 * (1 - 0.5 * s.dark)} color="#ffeedd" />
-      <ambientLight intensity={0.25} />
+      <hemisphereLight args={[new THREE.Color("#bcd4ea").lerp(new THREE.Color("#5a4a72"), s.dark), "#8a7a64", 0.85 * (1 - 0.45 * s.dark)]} />
+      <directionalLight position={[9, 21, 10]} intensity={sun} color={new THREE.Color("#fff4e2").lerp(new THREE.Color("#ff9a6a"), s.dark)} castShadow shadow-mapSize={[2048, 2048]} shadow-bias={-0.0004} shadow-normalBias={0.02} shadow-camera-left={-30} shadow-camera-right={30} shadow-camera-top={30} shadow-camera-bottom={-30} shadow-camera-far={90} />
+      <directionalLight position={[3, 5, 14]} intensity={0.55 * (1 - 0.5 * s.dark)} color="#ffeedd" />
+      <ambientLight intensity={0.15} />
       {s.dark > 0 && <pointLight position={[PAPER.x, PAPER.y + 0.5, PAPER.z]} color="#ff2a1f" intensity={2.2 * s.dark * (0.5 + 0.5 * s.bleed)} distance={2.5} />}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.32, 0]} receiveShadow>
         <planeGeometry args={[140, 140]} />
@@ -776,12 +785,30 @@ const SKY_DUSK = "linear-gradient(#2b1d3a 0%, #5a3150 45%, #c46a4e 85%)";
 export const Scene02: React.FC<{ mode: Mode02; t: number; words: Words02 }> = ({ mode, t, words }) => {
   const { width, height } = useVideoConfig();
   const { dark } = state02(mode, t);
+  // 틸트시프트(가짜 미니어처, 3dviz-pro-max style-tilt-shift-diorama): 가운데 띠만 선명, 위아래로 갈수록 흐리게.
+  // 색은 채도 +18%, 대비 +10% (칠한 모형 표면처럼)
+  const band = (side: "top" | "bottom"): React.CSSProperties => ({
+    position: "absolute",
+    left: 0,
+    right: 0,
+    [side]: 0,
+    height: "40%",
+    backdropFilter: "blur(9px)",
+    WebkitBackdropFilter: "blur(9px)",
+    maskImage: `linear-gradient(to ${side === "top" ? "bottom" : "top"}, rgba(0,0,0,1) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0) 100%)`,
+    WebkitMaskImage: `linear-gradient(to ${side === "top" ? "bottom" : "top"}, rgba(0,0,0,1) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0) 100%)`,
+  });
   return (
     <AbsoluteFill style={{ background: SKY_DAY }}>
       <AbsoluteFill style={{ background: SKY_DUSK, opacity: dark }} />
-      <ThreeCanvas width={width} height={height} shadows={{ type: THREE.PCFSoftShadowMap }} camera={{ fov: 34, near: 0.05, far: 200 }} gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.1 }}>
-        <Scene mode={mode} t={t} words={words} />
-      </ThreeCanvas>
+      <AbsoluteFill style={{ filter: "saturate(1.18) contrast(1.1)" }}>
+        <ThreeCanvas width={width} height={height} shadows={{ type: THREE.PCFSoftShadowMap }} camera={{ fov: FOV, near: 0.05, far: 260 }} gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.1 }}>
+          <Scene mode={mode} t={t} words={words} />
+        </ThreeCanvas>
+      </AbsoluteFill>
+      <div style={band("top")} />
+      <div style={band("bottom")} />
+      <AbsoluteFill style={{ background: "radial-gradient(ellipse at 50% 48%, rgba(0,0,0,0) 55%, rgba(20,10,20,0.28) 100%)" }} />
     </AbsoluteFill>
   );
 };
