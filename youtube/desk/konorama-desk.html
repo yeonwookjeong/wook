@@ -65,6 +65,9 @@ h2 { font-family: var(--display); font-weight: 400; font-size: 20px; margin: 0; 
 button.copy { font: inherit; font-size: 11px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); border-radius: 6px; padding: 2px 8px; cursor: pointer; }
 button.copy.did { border-color: var(--ok); color: var(--ok); }
 .tip { font-size: 12px; color: var(--warn); }
+.acct { display: block; font-weight: 500; font-size: 12px; color: var(--muted); font-family: var(--mono); }
+a.go { display: inline-flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; font-weight: 700; font-size: 13px; color: var(--paper); background: var(--seal); border-radius: 8px; padding: 8px 12px; }
+a.go:hover { filter: brightness(1.08); }
 label.chk { display: flex; gap: 8px; align-items: center; font-size: 13px; font-weight: 700; cursor: pointer; }
 label.chk input { width: 18px; height: 18px; accent-color: var(--ok); }
 details.guide { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; }
@@ -116,9 +119,13 @@ details.guide summary { cursor: pointer; font-weight: 700; }
 
 <script>
 (() => {
+  // 예약하러 가는 링크. 계정 전환은 각 사이트에서 직접 (링크로는 계정을 고를 수 없음)
+  const YT = { href: "https://studio.youtube.com", label: "유튜브 스튜디오", how: "업로드 → 공개 설정 → 예약" };
+  const IG = { href: "https://business.facebook.com/latest/content_calendar", label: "메타 비즈니스 플래너", how: "PC에서 예약하거나, 인스타 앱 → 고급 설정 → 예약" };
+  const TT = { href: "https://www.tiktok.com/tiktokstudio/upload", label: "틱톡 스튜디오", how: "PC 웹 → 게시 시간 예약 (10일 이내)" };
   const PLATS = [
-    { key: "yt_en", lang: "en", name: "유튜브 쇼츠" }, { key: "ig_en", lang: "en", name: "인스타 릴스" }, { key: "tt_en", lang: "en", name: "틱톡" },
-    { key: "yt_es", lang: "es", name: "유튜브 쇼츠" }, { key: "ig_es", lang: "es", name: "인스타 릴스" }, { key: "tt_es", lang: "es", name: "틱톡" },
+    { key: "yt_en", lang: "en", name: "유튜브 쇼츠", acct: "@TheKonorama", go: YT }, { key: "ig_en", lang: "en", name: "인스타 릴스", acct: "영어 계정", go: IG }, { key: "tt_en", lang: "en", name: "틱톡", acct: "영어 계정", go: TT },
+    { key: "yt_es", lang: "es", name: "유튜브 쇼츠", acct: "@TheKonorama_es", go: YT }, { key: "ig_es", lang: "es", name: "인스타 릴스", acct: "스페인어 계정", go: IG }, { key: "tt_es", lang: "es", name: "틱톡", acct: "스페인어 계정", go: TT },
   ];
   const LANG = { en: { flag: "🇺🇸", name: "영어", tz: "America/New_York", city: "뉴욕" }, es: { flag: "🇲🇽", name: "스페인어", tz: "America/Mexico_City", city: "멕시코시티" } };
   let episodes = [];
@@ -195,7 +202,8 @@ details.guide summary { cursor: pointer; font-weight: 700; }
         const post = e.posts?.[p.key] || {};
         const t = post.time || (lg === "es" && p.key !== "yt_es" ? "10:00" : "08:00");
         html += `<article class="card ${post.done ? "done" : ""}">
-          <div class="ctop"><span class="plat">${p.name}</span><span class="time">한국 ${esc(kst(e.date, t))}<br>${L.city} ${esc(local(e.date, t, L.tz))}</span></div>
+          <div class="ctop"><span class="plat">${p.name}<span class="acct">${esc(p.acct)}</span></span><span class="time">한국 ${esc(kst(e.date, t))}<br>${L.city} ${esc(local(e.date, t, L.tz))}</span></div>
+          <a class="go" href="${p.go.href}" target="_blank" rel="noopener">${p.go.label} 열기 ↗</a><span class="note">${p.go.how}</span>
           ${post.caption ? "" : `<div class="note">문구 준비 중</div>`}
           ${field("제목", post.title, p.key.startsWith("yt") ? "제목 칸에 날짜가 아닌 이 제목이 들어갔는지 확인" : "")}
           ${field("설명 · 캡션", post.caption)}
