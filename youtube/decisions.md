@@ -148,3 +148,8 @@
   - 마지막 문장은 질문으로 끝낸다.
 - 짧은 주제는 억지로 늘리지 않는다.
 - 첫 1분 편은 EP05(한국 나이)와 EP11(수능)이다.
+
+## 업로드 데스크 (2026-11-09)
+- 주소: https://claude.ai/artifact/JMxCq2MGxXDLsGn9jZiCnr (나만 볼 수 있음). 원본은 youtube/desk/konorama-desk.html.
+- 편마다 6곳(유튜브·인스타·틱톡 × EN·ES)의 시각, 제목, 캡션, 고정 댓글, 대체 텍스트, 커버를 복사 버튼과 함께 보여 주고, "예약 완료"를 체크하는 페이지다.
+- 데이터는 페이지 저장소의 episodes/epNN 문서에 있다. 새 편은 Claude가 ArtifactData로 채운다.

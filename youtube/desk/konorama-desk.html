@@ -1,0 +1,251 @@
+<title>Konorama 업로드 데스크</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* 레이아웃: 위에 "다음 예약" 한 장, 아래에 편 목록(가로 칩) → 고른 편의 6곳 게시 카드(언어별 두 줄). 도장 빨강 하나만 강조색. */
+:root {
+  --bg: #eef0ee;
+  --paper: #fbfcfb;
+  --ink: #1d2422;
+  --muted: #5d6965;
+  --line: #d5dbd8;
+  --seal: #c8231f;
+  --seal-soft: #f6dedc;
+  --ok: #1f7a4d;
+  --ok-soft: #dcefe4;
+  --warn: #9a6400;
+  --warn-soft: #f6ebd3;
+  --display: "Black Han Sans", "IBM Plex Sans KR", system-ui, sans-serif;
+  --body: "IBM Plex Sans KR", system-ui, -apple-system, "Apple SD Gothic Neo", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #151918; --paper: #1d2321; --ink: #e8ece9; --muted: #9aa6a1; --line: #2f3734;
+  --seal: #ef5a52; --seal-soft: #3a1f1d; --ok: #5cc48d; --ok-soft: #173126; --warn: #e2b04f; --warn-soft: #362c16; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #151918; --paper: #1d2321; --ink: #e8ece9; --muted: #9aa6a1; --line: #2f3734;
+  --seal: #ef5a52; --seal-soft: #3a1f1d; --ok: #5cc48d; --ok-soft: #173126; --warn: #e2b04f; --warn-soft: #362c16; color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 980px; margin: 0 auto; padding-block: 20px 60px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 22px; }
+header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+h1 { font-family: var(--display); font-weight: 400; font-size: clamp(26px, 6vw, 36px); margin: 0; letter-spacing: 0.01em; }
+h1 .stamp { color: var(--seal); }
+.sub { color: var(--muted); font-size: 13px; }
+h2 { font-family: var(--display); font-weight: 400; font-size: 20px; margin: 0; text-wrap: balance; }
+.label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.next { background: var(--paper); border: 1px solid var(--line); border-left: 6px solid var(--seal); border-radius: 10px; padding: 16px 18px; display: grid; gap: 8px; }
+.next .row { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: baseline; }
+.next .when { font-family: var(--mono); font-size: 13px; color: var(--muted); }
+.meter { height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; }
+.meter i { display: block; height: 100%; background: var(--ok); }
+.eps { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+.ep { flex: 0 0 auto; border: 1px solid var(--line); background: var(--paper); color: var(--ink); border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 13px; cursor: pointer; display: flex; gap: 6px; align-items: center; }
+.ep[aria-pressed="true"] { border-color: var(--seal); box-shadow: inset 0 0 0 1px var(--seal); }
+.ep b { font-family: var(--mono); font-weight: 500; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+.dot.ready { background: var(--warn); } .dot.done { background: var(--ok); } .dot.making { background: var(--seal); }
+.detail { display: grid; gap: 16px; }
+.dhead { display: grid; gap: 4px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-size: 12px; padding: 2px 8px; border-radius: 6px; background: var(--seal-soft); color: var(--seal); font-weight: 700; }
+.chip.ok { background: var(--ok-soft); color: var(--ok); } .chip.warn { background: var(--warn-soft); color: var(--warn); }
+.files { font-family: var(--mono); font-size: 12px; color: var(--muted); word-break: break-all; }
+.lang { display: grid; gap: 10px; }
+.lang h3 { margin: 0; font-size: 14px; display: flex; gap: 8px; align-items: center; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 10px; }
+.card { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 10px; min-width: 0; }
+.card.done { opacity: 0.62; }
+.ctop { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.plat { font-weight: 700; }
+.time { font-family: var(--mono); font-size: 12px; color: var(--muted); text-align: right; }
+.field { display: grid; gap: 4px; min-width: 0; }
+.field .k { font-size: 11px; color: var(--muted); font-weight: 700; letter-spacing: 0.04em; display: flex; justify-content: space-between; align-items: center; }
+.field pre { margin: 0; white-space: pre-wrap; word-break: break-word; font-family: var(--body); font-size: 13px; background: var(--bg); border-radius: 6px; padding: 8px 10px; max-height: 160px; overflow: auto; }
+button.copy { font: inherit; font-size: 11px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); border-radius: 6px; padding: 2px 8px; cursor: pointer; }
+button.copy.did { border-color: var(--ok); color: var(--ok); }
+.tip { font-size: 12px; color: var(--warn); }
+label.chk { display: flex; gap: 8px; align-items: center; font-size: 13px; font-weight: 700; cursor: pointer; }
+label.chk input { width: 18px; height: 18px; accent-color: var(--ok); }
+details.guide { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; }
+details.guide summary { cursor: pointer; font-weight: 700; }
+.gridg { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 10px; }
+.gridg ul { margin: 6px 0 0; padding-left: 18px; font-size: 13px; }
+.gridg h4 { margin: 0; font-size: 13px; }
+.empty { color: var(--muted); font-size: 14px; background: var(--paper); border: 1px dashed var(--line); border-radius: 10px; padding: 16px; }
+.note { font-size: 12px; color: var(--muted); }
+:focus-visible { outline: 2px solid var(--seal); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Konorama <span class="stamp">업로드 데스크</span></h1>
+    <span class="sub" id="sync">불러오는 중…</span>
+  </header>
+
+  <section class="next" id="next" aria-live="polite">
+    <span class="label">다음 예약</span>
+    <div class="empty" style="border:none;padding:0;background:none">편 정보를 불러오는 중입니다. Claude가 편을 추가하면 여기에 다음 예약이 나타납니다.</div>
+  </section>
+
+  <nav class="eps" id="eps" aria-label="편 목록"></nav>
+  <section class="detail" id="detail"></section>
+
+  <details class="guide" open>
+    <summary>올릴 때마다 지킬 것</summary>
+    <div class="gridg">
+      <div><h4>시각 (한국 시간)</h4><ul>
+        <li>08:00: 유튜브 EN·ES, 인스타 EN, 틱톡 EN (뉴욕 전날 18:00)</li>
+        <li>10:00: 인스타 ES, 틱톡 ES (멕시코시티 전날 19:00)</li>
+        <li>날짜가 정해진 편은 그 전날 밤까지 예약</li></ul></div>
+      <div><h4>플랫폼별</h4><ul>
+        <li>유튜브: 제목 칸에 날짜가 들어가지 않았는지 꼭 확인. 카테고리 교육</li>
+        <li>인스타: 고급 설정 → 대체 텍스트에 한 줄. 예약은 앱에서</li>
+        <li>틱톡: 예약은 PC 웹에서만, 최대 10일 뒤까지</li>
+        <li>올린 뒤: 질문 댓글 고정, 첫 댓글에 답글</li></ul></div>
+      <div><h4>영어 · 스페인어 차이</h4><ul>
+        <li>영어판과 스페인어판은 커버 장면을 서로 다르게</li>
+        <li>스페인어는 중남미 기준 말투 (tú, "Sígueme")</li>
+        <li>해시태그는 언어별로 따로 (#Korea / #Corea)</li>
+        <li>제목은 질문만, 답은 넣지 않기</li></ul></div>
+    </div>
+  </details>
+  <p class="note">체크 표시는 저장되어 Claude도 볼 수 있습니다. 새 편의 문구는 Claude가 채웁니다.</p>
+</div>
+
+<script>
+(() => {
+  const PLATS = [
+    { key: "yt_en", lang: "en", name: "유튜브 쇼츠" }, { key: "ig_en", lang: "en", name: "인스타 릴스" }, { key: "tt_en", lang: "en", name: "틱톡" },
+    { key: "yt_es", lang: "es", name: "유튜브 쇼츠" }, { key: "ig_es", lang: "es", name: "인스타 릴스" }, { key: "tt_es", lang: "es", name: "틱톡" },
+  ];
+  const LANG = { en: { flag: "🇺🇸", name: "영어", tz: "America/New_York", city: "뉴욕" }, es: { flag: "🇲🇽", name: "스페인어", tz: "America/Mexico_City", city: "멕시코시티" } };
+  let episodes = [];
+  let selected = null;
+  let db = null;
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+
+  // 한국 시각(YYYY-MM-DD, HH:MM) → 현지 시각 글자
+  function local(date, time, tz) {
+    if (!date || !time) return "";
+    const d = new Date(`${date}T${time}:00+09:00`);
+    try {
+      return new Intl.DateTimeFormat("ko-KR", { timeZone: tz, month: "numeric", day: "numeric", weekday: "short", hour: "2-digit", minute: "2-digit", hour12: false }).format(d);
+    } catch { return ""; }
+  }
+  const kst = (date, time) => {
+    if (!date) return "";
+    const d = new Date(`${date}T${time || "00:00"}:00+09:00`);
+    return new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", month: "numeric", day: "numeric", weekday: "short" }).format(d) + (time ? " " + time : "");
+  };
+  const doneCount = (e) => PLATS.filter((p) => e.posts?.[p.key]?.done).length;
+  const hasContent = (e) => PLATS.some((p) => e.posts?.[p.key]?.caption);
+
+  function renderNext() {
+    const box = $("next");
+    const up = episodes.filter((e) => doneCount(e) < 6).sort((a, b) => (a.date || "").localeCompare(b.date || ""))[0];
+    if (!up) { box.innerHTML = `<span class="label">다음 예약</span><div>예약할 편이 없습니다. 모두 끝났어요.</div>`; return; }
+    const n = doneCount(up);
+    box.innerHTML = `<span class="label">다음 예약</span>
+      <div class="row"><h2>EP${String(up.ep).padStart(2, "0")} ${esc(up.topic)}</h2><span class="when">${esc(kst(up.date, "08:00"))} 공개</span></div>
+      <div class="row"><span class="sub">${hasContent(up) ? `6곳 중 ${n}곳 예약 완료` : "문구 준비 중 (Claude가 채웁니다)"}</span></div>
+      <div class="meter" aria-hidden="true"><i style="width:${(n / 6) * 100}%"></i></div>`;
+  }
+
+  function renderEps() {
+    const nav = $("eps");
+    nav.innerHTML = "";
+    episodes.forEach((e) => {
+      const n = doneCount(e);
+      const st = n === 6 ? "done" : e.status === "making" ? "making" : hasContent(e) ? "ready" : "";
+      const b = document.createElement("button");
+      b.className = "ep";
+      b.type = "button";
+      b.setAttribute("aria-pressed", String(e.id === selected));
+      b.innerHTML = `<span class="dot ${st}"></span><b>EP${String(e.ep).padStart(2, "0")}</b> ${esc(kst(e.date))}`;
+      b.onclick = () => { selected = e.id; try { localStorage.setItem("desk.sel", e.id); } catch {} render(); };
+      nav.appendChild(b);
+    });
+  }
+
+  function field(k, text, tip) {
+    if (!text) return "";
+    return `<div class="field"><div class="k"><span>${k}</span><button class="copy" type="button" data-copy="${esc(text)}">복사</button></div><pre>${esc(text)}</pre>${tip ? `<span class="tip">${esc(tip)}</span>` : ""}</div>`;
+  }
+
+  function renderDetail() {
+    const box = $("detail");
+    const e = episodes.find((x) => x.id === selected);
+    if (!e) { box.innerHTML = episodes.length ? "" : `<div class="empty">아직 편이 없습니다. Claude에게 "데스크에 EP 추가해줘"라고 하면 이곳이 채워집니다.</div>`; return; }
+    const n = doneCount(e);
+    const chips = [
+      e.length ? `<span class="chip warn">${esc(e.length)}</span>` : "",
+      n === 6 ? `<span class="chip ok">6곳 예약 완료</span>` : `<span class="chip">${n}/6 예약</span>`,
+      e.fixedDate ? `<span class="chip warn">날짜 고정</span>` : "",
+    ].join("");
+    let html = `<div class="dhead"><span class="label">EP${String(e.ep).padStart(2, "0")} · ${esc(kst(e.date))}</span><h2>${esc(e.topic)}</h2><div class="chips">${chips}</div>
+      ${e.files ? `<div class="files">EN 파일: ${esc(e.files.en || "준비 중")}<br>ES 파일: ${esc(e.files.es || "준비 중")}</div>` : ""}
+      ${e.note ? `<div class="note">${esc(e.note)}</div>` : ""}</div>`;
+    ["en", "es"].forEach((lg) => {
+      const L = LANG[lg];
+      html += `<div class="lang"><h3>${L.flag} ${L.name}</h3><div class="cards">`;
+      PLATS.filter((p) => p.lang === lg).forEach((p) => {
+        const post = e.posts?.[p.key] || {};
+        const t = post.time || (lg === "es" && p.key !== "yt_es" ? "10:00" : "08:00");
+        html += `<article class="card ${post.done ? "done" : ""}">
+          <div class="ctop"><span class="plat">${p.name}</span><span class="time">한국 ${esc(kst(e.date, t))}<br>${L.city} ${esc(local(e.date, t, L.tz))}</span></div>
+          ${post.caption ? "" : `<div class="note">문구 준비 중</div>`}
+          ${field("제목", post.title, p.key.startsWith("yt") ? "제목 칸에 날짜가 아닌 이 제목이 들어갔는지 확인" : "")}
+          ${field("설명 · 캡션", post.caption)}
+          ${field("고정 댓글", post.pin)}
+          ${field("대체 텍스트", post.alt, "고급 설정 → 대체 텍스트")}
+          ${field("커버", post.cover)}
+          <label class="chk"><input type="checkbox" id="chk-${e.id}-${p.key}" data-ep="${esc(e.id)}" data-plat="${p.key}" ${post.done ? "checked" : ""} ${db ? "" : "disabled"}> 예약 완료</label>
+        </article>`;
+      });
+      html += `</div></div>`;
+    });
+    box.innerHTML = html;
+  }
+
+  function render() { renderNext(); renderEps(); renderDetail(); }
+
+  document.addEventListener("click", async (ev) => {
+    const b = ev.target.closest("button.copy");
+    if (!b) return;
+    const text = b.getAttribute("data-copy");
+    try { await navigator.clipboard.writeText(text); b.textContent = "복사됨"; b.classList.add("did"); }
+    catch { const pre = b.closest(".field").querySelector("pre"); const r = document.createRange(); r.selectNodeContents(pre); const s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = "길게 눌러 복사"; }
+    setTimeout(() => { b.textContent = "복사"; b.classList.remove("did"); }, 1600);
+  });
+
+  document.addEventListener("change", async (ev) => {
+    const c = ev.target;
+    if (!c.matches('input[type="checkbox"][data-ep]') || !db) return;
+    c.disabled = true;
+    try { await db.doc("episodes/" + c.dataset.ep).update({ posts: { [c.dataset.plat]: { done: c.checked } } }); }
+    catch (e) { c.checked = !c.checked; $("sync").textContent = "저장하지 못했습니다. 다시 눌러 주세요."; }
+    c.disabled = false;
+  });
+
+  try { selected = localStorage.getItem("desk.sel"); } catch {}
+  render();
+
+  (async () => {
+    db = window.claude?.use ? await window.claude.use("db") : null;
+    if (!db) { $("sync").textContent = "저장소에 연결할 수 없어 보기만 가능합니다."; return; }
+    const timer = setTimeout(() => { $("sync").textContent = "저장소 응답이 늦습니다. 잠시 후 다시 열어 주세요."; }, 10000);
+    db.collection("episodes").orderBy("ep").onSnapshot((snap) => {
+      if (!snap.metadata.fromCache) { clearTimeout(timer); $("sync").textContent = "저장됨 · 실시간 반영"; }
+      episodes = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      if (!episodes.find((e) => e.id === selected)) {
+        const up = episodes.filter((e) => doneCount(e) < 6).sort((a, b) => (a.date || "").localeCompare(b.date || ""))[0];
+        selected = (up || episodes[0] || {}).id ?? null;
+      }
+      render();
+    }, (e) => { clearTimeout(timer); $("sync").textContent = "저장소 연결이 끊겼습니다. 페이지를 다시 열어 주세요."; });
+  })();
+})();
+</script>
