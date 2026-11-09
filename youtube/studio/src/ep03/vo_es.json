@@ -1,0 +1,55 @@
+{
+  "voice": "em_alex",
+  "sentences": [
+    {
+      "id": 0,
+      "file": "ep03/vo_es/s0.wav",
+      "sec": 3.776
+    },
+    {
+      "id": 1,
+      "file": "ep03/vo_es/s1.wav",
+      "sec": 2.923
+    },
+    {
+      "id": 2,
+      "file": "ep03/vo_es/s2.wav",
+      "sec": 3.669
+    },
+    {
+      "id": 3,
+      "file": "ep03/vo_es/s3.wav",
+      "sec": 5.077
+    },
+    {
+      "id": 4,
+      "file": "ep03/vo_es/s4.wav",
+      "sec": 2.197
+    },
+    {
+      "id": 5,
+      "file": "ep03/vo_es/s5.wav",
+      "sec": 4.565
+    },
+    {
+      "id": 6,
+      "file": "ep03/vo_es/s6.wav",
+      "sec": 3.563
+    },
+    {
+      "id": 7,
+      "file": "ep03/vo_es/s7.wav",
+      "sec": 2.752
+    },
+    {
+      "id": 8,
+      "file": "ep03/vo_es/s8.wav",
+      "sec": 2.987
+    },
+    {
+      "id": 9,
+      "file": "ep03/vo_es/s9.wav",
+      "sec": 5.376
+    }
+  ]
+}
