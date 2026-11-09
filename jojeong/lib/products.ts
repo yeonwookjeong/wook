@@ -39,7 +39,7 @@ export const PRODUCTS: Product[] = [
     title: "평생 사주",
     hanja: "命書",
     for: "anyone",
-    tagline: "나는 어떤 사람이고 어떻게 살아갈까? 성격·돈·일·사랑·가족·건강, 인생 전체를 한 권에",
+    tagline: "나는 어떤 사람이고 어떻게 살아갈까? 성격, 돈, 일, 사랑, 가족, 건강, 인생 전체를 한 권에",
     toc: [
       "나는 어떤 사람일까",
       "남들이 보는 나, 진짜 나",
@@ -50,7 +50,7 @@ export const PRODUCTS: Product[] = [
       "부모님, 형제, 그리고 자녀",
       "사람 복: 나를 돕는 사람, 조심할 사람",
       "평생 챙겨야 할 몸",
-      "인생의 사계절: 초년·청년·중년·말년",
+      "인생의 사계절: 초년, 청년, 중년, 말년",
       "지금 나는 인생의 어디쯤일까",
       "앞으로 10년, 꼭 잡아야 할 기회",
       "정 훈도가 드리는 평생의 처방",
@@ -102,10 +102,10 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: "taekil",
-    title: "택일 · 좋은 날 받기",
+    title: "택일, 좋은 날 받기",
     hanja: "擇日",
     for: "anyone",
-    tagline: "결혼·상견례·이사·개업·계약·공사·여행·면접. 책력과 내 사주로 고른 좋은 날",
+    tagline: "결혼, 상견례, 이사, 개업, 계약, 공사, 여행, 면접. 책력과 내 사주로 고른 좋은 날",
     toc: ["정 훈도가 고른 날", "왜 하필 이 날일까", "그날, 몇 시에 무엇을", "흔한 길일표와 다른 점", "날짜가 사정에 안 맞을 때"],
     teaser: "관상감 명과학 훈도의 본업, 택일이에요. 책력이 권하는 날 가운데 내 사주와 부딪히지 않고 필요한 기운이 드는 날을 골라, 날짜마다 이유와 시간까지 풀어 드려요.",
     modern: true,
@@ -117,15 +117,15 @@ export const PRODUCTS: Product[] = [
     title: "내 사주 무료 풀이",
     hanja: "命盤",
     for: "anyone",
-    tagline: "나는 어떤 사람일까? 여덟 글자로 보는 성격·재능·돈·사랑·일, 그리고 10년마다 바뀌는 흐름까지",
-    toc: ["사주팔자와 만세력", "100명 중 몇 명꼴인 특징", "성향 지도: 다섯 가지 힘", "사주 속 별", "돈·사랑·일, 한 줄 판정", "인생 흐름: 10년마다", "2027년 한눈에"],
+    tagline: "나는 어떤 사람일까? 여덟 글자로 보는 성격, 재능, 돈, 사랑, 일, 그리고 10년마다 바뀌는 흐름까지",
+    toc: ["사주팔자와 만세력", "100명 중 몇 명꼴인 특징", "성향 지도: 다섯 가지 힘", "사주 속 별", "돈, 사랑, 일, 한 줄 판정", "인생 흐름: 10년마다", "2027년 한눈에"],
     teaser: "생년월일만 넣으면 내 사주 전체를 무료로 풀어 드려요.",
     free: true,
     modern: true,
   },
   {
     id: "yeonun",
-    title: "연운 · 그해 운세",
+    title: "연운, 그해 운세",
     hanja: "年運",
     for: "anyone",
     tagline: "그해 나에게 무슨 일이 있었을까, 있을까? 지난해도 앞으로의 해도 한 해씩 깊게",
@@ -148,7 +148,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: "yeonae",
-    title: "연애 · 결혼운",
+    title: "연애, 결혼운",
     hanja: "緣分",
     for: "anyone",
     tagline: "왜 늘 비슷한 사람에게 끌릴까? 나랑 진짜 맞는 사람, 결혼은 언제 누구와",
@@ -158,7 +158,7 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: "jaemul",
-    title: "재물운 · 돈 버는 법",
+    title: "재물운, 돈 버는 법",
     hanja: "財物",
     for: "anyone",
     tagline: "돈이 왜 안 모일까? 월급형인지 사업형인지, 투자해도 되는지, 돈이 트이는 때",
@@ -168,11 +168,11 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: "jikup",
-    title: "직업 · 적성",
+    title: "직업, 적성",
     hanja: "適性",
     for: "anyone",
     tagline: "지금 일이 나랑 맞을까? 어울리는 직업 세\u00a0가지, 회사형인지 독립형인지, 옮길 때",
-    toc: ["나는 어떤 일을 할 때 빛날까", "지금 일이 버겁게 느껴진다면", "어울리는 일 세 가지", "회사형일까, 독립형일까", "이직·창업, 언제가 좋을까", "일이 술술 풀리는 습관"],
+    toc: ["나는 어떤 일을 할 때 빛날까", "지금 일이 버겁게 느껴진다면", "어울리는 일 세 가지", "회사형일까, 독립형일까", "이직, 창업, 언제가 좋을까", "일이 술술 풀리는 습관"],
     teaser: "조선이었다면 어떤 일을 했을지는 무료로 보셨죠? 이번에는 지금 이 시대의 일을 봐 드려요.",
     modern: true,
   },
@@ -313,4 +313,4 @@ export function saleNow(now = new Date()): Sale | null {
 }
 export const priceNow = (now = new Date()) => saleNow(now)?.price ?? PRICE;
 // "설날 행사 · 2월 9일까지"
-export const saleLabel = (s: Sale) => `${s.name} · ${Number(s.to.slice(5, 7))}월 ${Number(s.to.slice(8))}일까지`;
+export const saleLabel = (s: Sale) => `${s.name}, ${Number(s.to.slice(5, 7))}월 ${Number(s.to.slice(8))}일까지`;

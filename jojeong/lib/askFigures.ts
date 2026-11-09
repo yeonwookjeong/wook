@@ -15,7 +15,7 @@ import { monthMarks, monthsOf, yearName, yearPillar } from "./yeonun";
 // reads the same chart and month verdicts (lib/ask.ts context), so the pictures and the letter agree.
 
 const GROUPS: GodGroup[] = ["비겁", "식상", "재성", "관성", "인성"];
-const GROUP_GODS: Record<GodGroup, string> = { 비겁: "비견·겁재", 식상: "식신·상관", 재성: "편재·정재", 관성: "편관·정관", 인성: "편인·정인" };
+const GROUP_GODS: Record<GodGroup, string> = { 비겁: "비견, 겁재", 식상: "식신, 상관", 재성: "편재, 정재", 관성: "편관, 정관", 인성: "편인, 정인" };
 
 type Lens = { topic: string; group: GodGroup | null; star: string; seat: { pos: Slot["pos"]; label: string; branchOnly?: boolean } | null };
 
@@ -33,7 +33,7 @@ function lensOf(topic: string, gender: Person["gender"]): Lens {
     return {
       topic,
       group: gender === "f" ? "관성" : "재성",
-      star: gender === "f" ? "남편·연인의 별" : gender === "m" ? "아내·연인의 별" : "연인의 별",
+      star: gender === "f" ? "남편, 연인의 별" : gender === "m" ? "아내, 연인의 별" : "연인의 별",
       seat: { pos: "일", label: "배우자 자리", branchOnly: true },
     };
   if (topic === "일") return { topic, group: "관성", star: "일과 자리의 별", seat: { pos: "월", label: "일터 자리" } };
@@ -173,11 +173,11 @@ export type ClashFig = {
   cols: { pos: Slot["pos"]; stem: number | null; branch: number | null; touches: Touch[] }[];
 };
 const MEET_WORD: Partial<Record<Meeting, [string, boolean]>> = {
-  육합: ["육합 · 끌어당김", true],
-  삼합: ["삼합 · 힘을 모음", true],
-  충: ["충 · 부딪혀 움직임", false],
-  형: ["형 · 날이 섬", false],
-  원진: ["원진 · 서운함", false],
+  육합: ["육합, 끌어당김", true],
+  삼합: ["삼합, 힘을 모음", true],
+  충: ["충, 부딪혀 움직임", false],
+  형: ["형, 날이 섬", false],
+  원진: ["원진, 서운함", false],
 };
 
 function clashOf(p: Person["pillars"], at: number): ClashFig | null {
@@ -203,10 +203,10 @@ function clashOf(p: Person["pillars"], at: number): ClashFig | null {
   const cols = chartOf(p).map((s) => {
     const touches: Touch[] = [];
     for (const x of incoming) {
-      if (s.stem !== null && s.pos !== "일" && stemCombine(x.stem, s.stem)) touches.push({ from: x.label, part: "천간", kind: "천간합 · 묶임", good: true });
-      if (s.stem !== null && stemClash(x.stem, s.stem)) touches.push({ from: x.label, part: "천간", kind: "천간충 · 흔들림", good: false });
+      if (s.stem !== null && s.pos !== "일" && stemCombine(x.stem, s.stem)) touches.push({ from: x.label, part: "천간", kind: "천간합, 묶임", good: true });
+      if (s.stem !== null && stemClash(x.stem, s.stem)) touches.push({ from: x.label, part: "천간", kind: "천간충, 흔들림", good: false });
       if (s.pos === "일" && s.stem !== null && stemCombine(x.stem, s.stem))
-        touches.push({ from: x.label, part: "천간", kind: "나와 합 · 마음이 묶임", good: true });
+        touches.push({ from: x.label, part: "천간", kind: "나와 합, 마음이 묶임", good: true });
       if (s.branch !== null)
         for (const mt of meetings(x.branch, s.branch)) {
           const w = MEET_WORD[mt];
@@ -223,7 +223,7 @@ function clashOf(p: Person["pillars"], at: number): ClashFig | null {
 const SEAT_MEANING: Record<Slot["pos"], [string, string]> = {
   일: ["배우자 자리", "나와 가장 가까운 사람, 결혼 생활의 결, 내 속마음이 머무는 곳"],
   월: ["일터 자리", "사회에서 맡는 자리, 일하는 방식, 부모와 형제의 그늘"],
-  연: ["뿌리 자리", "집안과 어린 시절, 윗사람과 나라·회사 같은 큰 울타리"],
+  연: ["뿌리 자리", "집안과 어린 시절, 윗사람과 나라, 회사 같은 큰 울타리"],
   시: ["말년 자리", "자녀와 아랫사람, 늘그막의 모습, 품고 있는 꿈"],
 };
 export type SeatFig = {
@@ -332,7 +332,7 @@ const GRADE_OF: Record<string, Grade> = { 좋음: 2, 보통: 1, 조심: 0 };
 function verdictOf(base: Figures, years: YearsFig | null, bond: Bond | null, name: string): Verdict {
   if (bond)
     return {
-      title: `${josa(bond.label, "과/와")} ${name}님 · ${REL_LABEL[bond.rel].split(" ")[0]}`,
+      title: `${josa(bond.label, "과/와")} ${name}님, ${REL_LABEL[bond.rel].split(" ")[0]}`,
       rows: bond.rows,
       line: bond.verdict,
     };
@@ -343,7 +343,7 @@ function verdictOf(base: Figures, years: YearsFig | null, bond: Bond | null, nam
       const ar = area ? y.areas.find((x) => x.area === area) : null;
       rows.push(
         ar
-          ? { label: `${y.year} ${area}`, grade: GRADE_OF[ar.grade], line: `${y.name} · 한 해 ${y.verdict}` }
+          ? { label: `${y.year} ${area}`, grade: GRADE_OF[ar.grade], line: `${y.name}, 한 해 ${y.verdict}` }
           : { label: `${y.year} 한 해`, grade: y.verdict === "대길" || y.verdict === "길" ? 2 : y.verdict === "평" ? 1 : 0, line: y.name },
       );
     }
@@ -353,16 +353,16 @@ function verdictOf(base: Figures, years: YearsFig | null, bond: Bond | null, nam
       label: base.lens.star,
       grade: base.lit >= 2 ? 2 : base.lit === 1 || base.hiddenLit ? 1 : 0,
       line: base.lit
-        ? `사주에 ${base.lit}개 · ${base.gods}`
+        ? `사주에 ${base.lit}개, ${base.gods}`
         : base.hiddenLit
-          ? `속 글자에만 ${base.hiddenLit}곳 · 때가 오면 드러나요`
+          ? `속 글자에만 ${base.hiddenLit}곳, 때가 오면 드러나요`
           : "사주에 없어 들어오는 해와 달에 움직여요",
     });
   const best = base.months.find((m) => m.rating === 3) ?? base.months.find((m) => m.rating === 2);
   rows.push({
     label: "가까운 때",
     grade: best?.rating === 3 ? 2 : best ? 1 : 0,
-    line: best ? `${best.label}(${best.from}~)${best.tags.length ? ` · ${best.tags.join("·")}` : ""}` : "여섯 달 안에는 숨 고르기",
+    line: best ? `${best.label}(${best.from}~)${best.tags.length ? `, ${best.tags.join(", ")}` : ""}` : "여섯 달 안에는 숨 고르기",
   });
   const now = rows[0];
   const line = now
@@ -421,22 +421,22 @@ export function figureMenu(kit: FigureKit): string {
   const b = kit.base;
   const MARK = ["✕", "△", "○", "◎"];
   const lines: Partial<Record<FigureKey, string>> = {
-    命盤: `여덟 글자 표(십성·지장간·12운성·신살)${b.lens.group ? `. 질문의 별 '${b.lens.star}'(${b.gods}) 겉 ${b.lit}개${b.hiddenLit ? `, 지장간 속 ${b.hiddenLit}곳` : ""}${b.lens.seat ? `, ${b.lens.seat.label} 표시` : ""}` : ""}`,
-    五行: `오행 비율 ${b.share.map((v, e) => `${ELEMENT_KO[e]} ${v}%`).join(" ")} · ${b.strength} · 용신 ${el(b.yong)}`,
+    命盤: `여덟 글자 표(십성, 지장간, 12운성, 신살)${b.lens.group ? `. 질문의 별 '${b.lens.star}'(${b.gods}) 겉 ${b.lit}개${b.hiddenLit ? `, 지장간 속 ${b.hiddenLit}곳` : ""}${b.lens.seat ? `, ${b.lens.seat.label} 표시` : ""}` : ""}`,
+    五行: `오행 비율 ${b.share.map((v, e) => `${ELEMENT_KO[e]} ${v}%`).join(" ")}, ${b.strength}, 용신 ${el(b.yong)}`,
     月運: kit.bond
       ? `두 사람의 여섯 달 ${kit.bond.months.map((m) => `${m.label} ${m.both}${m.meet ? `(${m.meet})` : ""}`).join(", ")}`
-      : `여섯 달 ${b.months.map((m) => `${m.label}${MARK[m.rating]}${m.tags.length ? `(${m.tags.join("·")})` : ""}${m.star ? "★" : ""}`).join(" ")}`,
+      : `여섯 달 ${b.months.map((m) => `${m.label}${MARK[m.rating]}${m.tags.length ? `(${m.tags.join(", ")})` : ""}${m.star ? "★" : ""}`).join(" ")}`,
     稀貴: b.rare.map((x) => `${x.plain}(${x.term}, ${x.rate})`).join(" / "),
     合沖: kit.clash
-      ? `올해 ${kit.clash.incoming[0].gz}·이달 ${kit.clash.incoming[1].gz}가 만나는 자리: ${
+      ? `올해 ${kit.clash.incoming[0].gz}, 이달 ${kit.clash.incoming[1].gz}가 만나는 자리: ${
           kit.clash.cols
             .filter((c) => c.touches.length)
-            .map((c) => `${c.pos}주(${c.touches.map((t) => `${t.from} ${t.part} ${t.kind.split(" · ")[0]}`).join(", ")})`)
+            .map((c) => `${c.pos}주(${c.touches.map((t) => `${t.from} ${t.part} ${t.kind.split(", ")[0]}`).join(", ")})`)
             .join(" / ") || "없음"
         }`
       : "",
     宮位: kit.seat
-      ? `${kit.seat.name}(${kit.seat.pos}주) ${kit.seat.stem !== null ? STEMS[kit.seat.stem] : ""}${BRANCHES[kit.seat.branch]} · 지장간 ${kit.seat.hidden.map((h) => `${STEMS[h.stem]}${h.god}`).join(" ")} · ${kit.seat.stage}${kit.seat.sals.length ? ` · ${kit.seat.sals.join("·")}` : ""} · 올해 ${kit.seat.year.gz}와 ${kit.seat.year.kinds.join(", ") || "만남 없음"}`
+      ? `${kit.seat.name}(${kit.seat.pos}주) ${kit.seat.stem !== null ? STEMS[kit.seat.stem] : ""}${BRANCHES[kit.seat.branch]}, 지장간 ${kit.seat.hidden.map((h) => `${STEMS[h.stem]}${h.god}`).join(" ")}, ${kit.seat.stage}${kit.seat.sals.length ? `, ${kit.seat.sals.join(", ")}` : ""}, 올해 ${kit.seat.year.gz}와 ${kit.seat.year.kinds.join(", ") || "만남 없음"}`
       : "",
     大運:
       kit.decades && kit.decades.nowIndex >= 0
@@ -446,9 +446,9 @@ export function figureMenu(kit: FigureKit): string {
             .join(" / ")
         : "",
     年比: kit.years ? kit.years.years.map((y) => `${y.year} ${y.verdict}: ${y.areas.map((a) => `${a.area} ${a.grade}`).join(" ")}`).join(" / ") : "",
-    神殺: kit.sals ? kit.sals.map((s) => `${s.name}(${s.seats.join("·")})`).join(", ") : "",
+    神殺: kit.sals ? kit.sals.map((s) => `${s.name}(${s.seats.join(", ")})`).join(", ") : "",
     兩人: kit.bond
-      ? `나 ${kit.bond.me.ilju}(${kit.bond.me.brings}) · ${kit.bond.label} ${kit.bond.them.ilju}(${kit.bond.them.brings}) · ${josa(kit.bond.label, "은/는")} 나에게 ${kit.bond.roles[0]}${kit.bond.seat.line ? ` · ${kit.bond.seat.line}` : ""}`
+      ? `나 ${kit.bond.me.ilju}(${kit.bond.me.brings}), ${kit.bond.label} ${kit.bond.them.ilju}(${kit.bond.them.brings}), ${josa(kit.bond.label, "은/는")} 나에게 ${kit.bond.roles[0]}${kit.bond.seat.line ? `, ${kit.bond.seat.line}` : ""}`
       : "",
   };
   return FIGURE_KEYS.filter((k) => hasFigure(kit, k) && lines[k])

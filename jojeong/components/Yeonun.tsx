@@ -29,7 +29,7 @@ function Row({ r, href, owned }: { r: YearRow; href: string; owned: boolean }) {
           <b className="block font-myeongjo text-[15px] leading-tight">{r.year}</b>
           <span className="block text-[11px] text-ink-soft">
             {r.ko.replace("년", "")}
-            {r.age !== null && r.age >= 0 ? ` · ${r.age}세` : ""}
+            {r.age !== null && r.age >= 0 ? `, ${r.age}세` : ""}
           </span>
         </span>
         <span className="min-w-0 flex-1">
@@ -112,7 +112,7 @@ function DecadeStrip({ name, decades, near = false }: { name: string; decades: D
             <span className="w-14 shrink-0 text-ink-soft">{d.age}</span>
             <span className="min-w-0 flex-1">
               {d.young ? "자라는 시기" : MOOD_WORD[d.mood]}
-              {d.now ? " · 지금" : ""}
+              {d.now ? ", 지금" : ""}
             </span>
           </li>
         ))}
@@ -182,7 +182,7 @@ export function YearList({
         </>
       )}
       <p className="mt-4 text-[11px] leading-relaxed text-ink-soft">
-        대길 · 길 · 평 · 조심 · 인내 순이에요. 해는 1월 1일이 아니라 입춘(2월 4일 무렵)에 바뀌어요. 나이는 그해 생일이 지난 뒤의 만 나이예요.
+        대길, 길, 평, 조심, 인내 순이에요. 해는 1월 1일이 아니라 입춘(2월 4일 무렵)에 바뀌어요. 나이는 그해 생일이 지난 뒤의 만 나이예요.
       </p>
     </section>
   );
@@ -219,8 +219,8 @@ export function YearTop({ d, name, prev, next, list, care, listLabel = "연도 �
         </h2>
         <p className="mt-1 text-[12px] text-ink-soft">
           {d.ko}
-          {d.age !== null && d.age >= 0 ? ` · ${d.age}세 무렵` : ""}
-          {d.when === "past" ? " · 지나온 해" : d.when === "now" ? " · 올해" : " · 앞으로 올 해"}
+          {d.age !== null && d.age >= 0 ? `, ${d.age}세 무렵` : ""}
+          {d.when === "past" ? ", 지나온 해" : d.when === "now" ? ", 올해" : ", 앞으로 올 해"}
         </p>
         <p className="mt-4">
           <span className={`rounded-lg px-3 py-1 font-myeongjo text-lg font-extrabold ${VERDICT_STYLE[d.verdict]}`}>{d.verdict}</span>
@@ -235,14 +235,14 @@ export function YearTop({ d, name, prev, next, list, care, listLabel = "연도 �
         <ul className="mt-3 flex flex-col gap-3 text-[15px] leading-[1.8]">
           {d.points.map((x) => (
             <li key={x} className="flex gap-2">
-              <span className="text-seal">·</span>
+              <span className="text-seal">, </span>
               <span>{x}</span>
             </li>
           ))}
           {/* The area the year's glance marks 조심, said here too, so the two never read against each other. */}
           {care && (
             <li className="flex gap-2">
-              <span className="text-seal">·</span>
+              <span className="text-seal">, </span>
               <span>{care}</span>
             </li>
           )}
@@ -258,12 +258,12 @@ export function YearTop({ d, name, prev, next, list, care, listLabel = "연도 �
               <span className="block text-[12px] font-bold">{monthName(i)}</span>
               <span className="block text-[11px] text-ink-soft">{m.from}~</span>
               <span className={`mt-1 inline-block rounded-md px-1.5 text-xs font-extrabold ${RATING[m.rating].cls}`}>{RATING[m.rating].mark}</span>
-              {m.tags.length > 0 && <span className="mt-0.5 block text-[10.5px] leading-tight text-ink-soft">{m.tags.join("·")}</span>}
+              {m.tags.length > 0 && <span className="mt-0.5 block text-[10.5px] leading-tight text-ink-soft">{m.tags.join(", ")}</span>}
             </li>
           ))}
         </ul>
         <p className="mt-3 text-center text-[12px]">
-          가장 좋은 달 <b className="text-seal">{d.best.map(monthName).join("·")}</b> · 조심할 달 <b>{d.worst.map(monthName).join("·")}</b>
+          가장 좋은 달 <b className="text-seal">{d.best.map(monthName).join(", ")}</b>, 조심할 달 <b>{d.worst.map(monthName).join(", ")}</b>
         </p>
       </section>
     </>

@@ -55,7 +55,7 @@ export default function IntimacyIntro({ a, b, x }: { a: Person; b: Person; x: In
 
       <ul className="mt-4 flex flex-col gap-2 text-[14px] leading-snug">
         <li className="border-b border-seal/10 pb-2">
-          <b>온도 차 · {x.gap}</b> {gapLine}
+          <b>온도 차, {x.gap}</b> {gapLine}
         </li>
         <li className="border-b border-seal/10 pb-2">
           <b>먼저 다가가는 쪽</b> {x.faster}님이 먼저 표현하는 편이에요.

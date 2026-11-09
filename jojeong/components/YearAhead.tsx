@@ -43,7 +43,7 @@ export default function YearAhead({
         {name}님의 {y.year} {y.ko}
       </h2>
       <p className="mt-1 text-center text-[12px] text-ink-soft">
-        {yearNickname(y.year)} · 천간 {y.gods[0]} · 지지 {y.gods[1]} · 한 해{" "}
+        {yearNickname(y.year)}, 천간 {y.gods[0]}, 지지 {y.gods[1]}, 한 해{" "}
         <b className="text-ink">{y.verdict}</b>
       </p>
       <div className="mt-4 rounded-2xl border-l-[3px] border-seal bg-seal/5 px-4 py-3">
@@ -103,9 +103,9 @@ export default function YearAhead({
         ))}
       </div>
       <p className="mt-3 text-[13px]">
-        <b className="text-seal">힘이 붙는 달</b> {d.best.map(at).join(" · ")}
+        <b className="text-seal">힘이 붙는 달</b> {d.best.map(at).join(", ")}
         부터 <span className="mx-1 text-ink-soft">|</span>
-        <b>조심할 달</b> {d.worst.map(at).join(" · ")}부터
+        <b>조심할 달</b> {d.worst.map(at).join(", ")}부터
       </p>
       <h3 className="mt-5 text-sm font-extrabold">
         {y.year}년이 {name}님 사주와 만나는 자리
@@ -141,7 +141,7 @@ function Tags({ tags }: { tags: string[] }) {
       ))}
     </span>
   ) : (
-    <span className="mt-1 block text-[11px] text-ink-soft">부딪힘·합 없음</span>
+    <span className="mt-1 block text-[11px] text-ink-soft">부딪힘, 합 없음</span>
   );
 }
 function Row({
@@ -181,7 +181,7 @@ function Stack({
   return (
     <>
       <h3 className="mt-5 text-sm font-extrabold">
-        겹쳐 보기 · 내 사주 위에 {y.year}년을 얹으면
+        겹쳐 보기, 내 사주 위에 {y.year}년을 얹으면
       </h3>
       <p className="mt-0.5 text-[11px] text-ink-soft">
         아래에서 위로 한 층씩 쌓여요. 아래층이 바탕, 위층이 그 위에 부는
@@ -206,7 +206,7 @@ function Stack({
         {layers.daeun ? (
           <Row
             step="2층"
-            label={`10년 대운 ${layers.daeun.gz} · ${layers.daeun.from}~${layers.daeun.to}${mood ? ` · ${mood}` : ""}`}
+            label={`10년 대운 ${layers.daeun.gz}, ${layers.daeun.from}~${layers.daeun.to}${mood ? `, ${mood}` : ""}`}
             tone="bg-gold/15"
           >
             <span className="block text-[11px] text-ink-soft">
@@ -217,7 +217,7 @@ function Stack({
         ) : (
           <Row
             step="2층"
-            label="10년 대운 · 성별을 넣으면 보여요"
+            label="10년 대운, 성별을 넣으면 보여요"
             tone="bg-gold/10"
           >
             {null}
@@ -225,7 +225,7 @@ function Stack({
         )}
         <Row
           step="3층"
-          label={`${y.year}년 세운 ${layers.year.gz} · ${y.verdict}`}
+          label={`${y.year}년 세운 ${layers.year.gz}, ${y.verdict}`}
           tone="bg-seal/10"
         >
           <span className="block text-[11px] text-ink-soft">원국과</span>
@@ -241,7 +241,7 @@ function Stack({
         </Row>
         <Row
           step="4층"
-          label="달마다 (월운) · 아래 12달 흐름"
+          label="달마다 (월운), 아래 12달 흐름"
           tone="border border-seal/30"
         >
           {null}
@@ -280,8 +280,8 @@ export function YearTeaser({ name, y, d, href }: { name: string; y: YearPreview;
         ))}
       </div>
       <p className="mt-3 text-[13px]">
-        <b className="text-seal">힘이 붙는 달</b> {d.best.map(at).join(" · ")}부터 <span className="mx-1 text-ink-soft">|</span>
-        <b>쉬어 갈 달</b> {d.worst.map(at).join(" · ")}부터
+        <b className="text-seal">힘이 붙는 달</b> {d.best.map(at).join(", ")}부터 <span className="mx-1 text-ink-soft">|</span>
+        <b>쉬어 갈 달</b> {d.worst.map(at).join(", ")}부터
       </p>
       <a href={href} className="mt-4 block rounded-full border-2 border-seal py-2.5 text-center text-[14px] font-bold text-seal">
         {y.year}년 달마다 할 일까지 전체 풀이 보기 →

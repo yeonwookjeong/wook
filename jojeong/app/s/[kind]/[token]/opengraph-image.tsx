@@ -25,7 +25,7 @@ export default async function Image({ params }: { params: Promise<{ kind: string
     const d = card as ReadingSummary;
     const f = iljuFacts(d.s, d.b);
     const top = [...d.p].sort((a, b) => b[2] - a[2])[0];
-    return shareImage({ top: `${d.n}님의 사주 한 장`, badge: f.hanja, big: `${f.name}${f.image ? ` · ${f.image}` : ""}`, small: [`가장 큰 힘 ${top[1]} ${top[2]}%`, d.r].filter(Boolean).join(" · ") });
+    return shareImage({ top: `${d.n}님의 사주 한 장`, badge: f.hanja, big: `${f.name}${f.image ? `, ${f.image}` : ""}`, small: [`가장 큰 힘 ${top[1]} ${top[2]}%`, d.r].filter(Boolean).join(", ") });
   }
   if (kind === "sinsal") return person ? sinsalShareImage(person.name.slice(0, 10)) : shareImage({ top: "훈도사주", big: "신살 유형 테스트", small: "나는 어떤 살의 사람일까" });
   if (!person) return shareImage({ top: "훈도사주", big: "나한테만 맞는 말", small: "생년월일만 넣으면 무료로 바로" });
@@ -40,7 +40,7 @@ export default async function Image({ params }: { params: Promise<{ kind: string
   return shareImage({
     top: `${person.name}님의 사주 풀이`,
     badge: f.hanja,
-    big: `${f.name}${f.image ? ` · ${f.image}` : ""}`,
-    small: [top && `가장 큰 힘 ${top.name} ${top.pct}%`, same && `같은 ${same.name}일주 중 약 ${Math.max(1, Math.round(same.rate * 100))}%만 이 구조`].filter(Boolean).join(" · "),
+    big: `${f.name}${f.image ? `, ${f.image}` : ""}`,
+    small: [top && `가장 큰 힘 ${top.name} ${top.pct}%`, same && `같은 ${same.name}일주 중 약 ${Math.max(1, Math.round(same.rate * 100))}%만 이 구조`].filter(Boolean).join(", "),
   });
 }

@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import AskLink from "./AskLink";
 import { trackEvent } from "./VisitBeacon";
 
-// The one notice (it replaced the grand-opening note): the 신살 유형 테스트, once per browser, a moment after arriving. Never
+// The one notice (it replaced the grand-opening note): the 신살 유형 테스트, once per browser, after the first screen has been read. Never
 // over paying, a bought report, the room, the owner's pages, a friend's link or a reading on screen, nor on the 도감
 // itself (seeing it counts as seen). `gift`: the questions a Kakao sign-up brings, shown under it to non-members.
 const QUIET = ["/ask", "/pay", "/admin", "/login", "/r/", "/my", "/leave", "/logout", "/e/", "/s/"];
@@ -29,7 +29,12 @@ export default function SinsalNote({ gift }: { gift: number }) {
     } catch {
       return;
     }
-    const t = setTimeout(() => {
+    // Not over the first screen: once the visitor has scrolled past most of it, or after 25 seconds on the page.
+    let done = false;
+    const pop = () => {
+      if (done) return;
+      done = true;
+      cleanup();
       // A reading is on screen: not now.
       if (path.startsWith("/reports/") && !document.querySelector('input[name="birth"]')) return;
       try {
@@ -37,8 +42,15 @@ export default function SinsalNote({ gift }: { gift: number }) {
       } catch {}
       setShow(true);
       trackEvent("sinsal_pop");
-    }, 1500);
-    return () => clearTimeout(t);
+    };
+    const onScroll = () => window.scrollY > window.innerHeight * 0.8 && pop();
+    const t = setTimeout(pop, 25000);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    const cleanup = () => {
+      clearTimeout(t);
+      window.removeEventListener("scroll", onScroll);
+    };
+    return cleanup;
   }, [path]);
   useEffect(() => {
     if (!show) return;
@@ -70,10 +82,10 @@ export default function SinsalNote({ gift }: { gift: number }) {
           </button>
         </div>
         <div className="relative -mt-2 px-5 pb-4 text-center">
-          <p className="font-myeongjo text-[11px] font-bold tracking-[0.3em] text-[#d4af5f]">新 刊 · 신살 유형 테스트</p>
+          <p className="font-myeongjo text-[11px] font-bold tracking-[0.3em] text-[#d4af5f]">新 刊, 신살 유형 테스트</p>
           <h2 className="mt-1 font-myeongjo text-[21px] leading-snug font-extrabold">나는 어떤 살의 사람일까</h2>
           <p className="mt-2 text-[13px] leading-relaxed break-keep text-hanji/80">
-            도화·역마·화개·괴강… 20가지 살 유형 중 내 유형과, 그 유형이 100명 중 몇 명인지 알려 드려요.
+            도화, 역마, 화개, 괴강… 20가지 살 유형 중 내 유형과, 그 유형이 100명 중 몇 명인지 알려 드려요.
           </p>
           <Link
             href="/sinsal"

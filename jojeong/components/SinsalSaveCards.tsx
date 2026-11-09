@@ -23,7 +23,7 @@ function With({ cards, gender, size }: { cards: Card[]; gender: "m" | "f" | null
     <div className="mt-2">
       <Others cards={cards} gender={gender} size={size} />
       <p className="mt-1 text-[11px] text-hanji/85">
-        함께 적힌 살 · {cards.slice(0, 4).map((c) => c.sal).join(", ")}
+        함께 적힌 살, {cards.slice(0, 4).map((c) => c.sal).join(", ")}
         {cards.length > 4 && ` 외 ${cards.length - 4}`}
       </p>
     </div>
@@ -40,7 +40,7 @@ export function SinsalCardA({ name, head, rest, count, gender }: { name: string;
           </span>
           훈도사주
         </span>
-        <span style={{ color: GOLD }}>신살 유형 · {count}가지 살</span>
+        <span style={{ color: GOLD }}>신살 유형, {count}가지 살</span>
       </div>
       {/* The picture fills the frame (it is near 4:5 itself, so little is cut); the words sit on its dark foot. */}
       <div className="relative mx-auto mt-2.5 min-h-0 w-full flex-1 overflow-hidden rounded-xl" style={{ boxShadow: `0 0 0 1.5px ${GOLD}99` }}>
@@ -50,7 +50,7 @@ export function SinsalCardA({ name, head, rest, count, gender }: { name: string;
           <p className="text-[10px] text-hanji/75">{name}님의 살 유형</p>
           <p className="font-myeongjo text-[21px] leading-tight font-extrabold">{head.nick}</p>
           <p className="text-[11px] font-bold" style={{ color: GOLD }}>
-            {head.sal} · {head.line}
+            {head.sal}, {head.line}
           </p>
           <p className="mt-1 flex flex-wrap items-center justify-center gap-x-1.5 text-[10px] text-hanji/85">
             <span className="rounded-full px-2 py-px font-extrabold text-[#0f2236]" style={{ background: GOLD }}>
@@ -58,7 +58,7 @@ export function SinsalCardA({ name, head, rest, count, gender }: { name: string;
             </span>
             {rest.length > 0 && (
               <span>
-                함께 적힌 살 · {rest.slice(0, 3).map((c) => c.sal).join(", ")}
+                함께 적힌 살, {rest.slice(0, 3).map((c) => c.sal).join(", ")}
                 {rest.length > 3 && ` 외 ${rest.length - 3}`}
               </span>
             )}
@@ -84,7 +84,7 @@ export function SinsalCardB({ name, head, rest, count, gender }: { name: string;
         <p className="text-[12px] opacity-85">{name}님의 살 유형</p>
         <p className="mt-1 font-myeongjo text-[32px] leading-tight font-extrabold">{head.nick}</p>
         <p className="font-myeongjo text-[15px] font-extrabold" style={{ color: GOLD }}>
-          {head.sal} · {head.line}
+          {head.sal}, {head.line}
         </p>
         <p className="mt-2.5">
           <span className="inline-block rounded-full px-3 py-1 text-[11px] font-extrabold text-[#0f2236]" style={{ background: GOLD }}>
@@ -92,9 +92,9 @@ export function SinsalCardB({ name, head, rest, count, gender }: { name: string;
           </span>
         </p>
         {rest.length > 0 && <With cards={rest} gender={gender} size={30} />}
-        <p className="mt-2 text-[13px] font-extrabold">20가지 살 유형 중 · {count}가지 살</p>
+        <p className="mt-2 text-[13px] font-extrabold">20가지 살 유형 중, {count}가지 살</p>
         <p className="mt-3 text-[11px] font-extrabold" style={{ color: GOLD }}>
-          훈도사주 · 신살 유형 테스트
+          훈도사주, 신살 유형 테스트
         </p>
       </div>
     </div>

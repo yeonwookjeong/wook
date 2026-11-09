@@ -66,7 +66,7 @@ export default function BirthTimeFields({ unknownLabel, prefix = "", modern = fa
 
   const clock = unknown ? null : parseClock(time);
   const results = searchCities(query);
-  const cityLabel = (c: City) => `${c.name} · ${c.region}`;
+  const cityLabel = (c: City) => `${c.name}, ${c.region}`;
   // The search box is left uncontrolled (so typing, including Korean composition, is never fought over);
   // it shows the chosen city when closed and clears for a new search on focus.
   const pick = (c: City) => {
@@ -180,7 +180,7 @@ export default function BirthTimeFields({ unknownLabel, prefix = "", modern = fa
                     >
                       <span className="font-bold">{c.name}</span>
                       <span className="truncate text-xs text-ink-soft">
-                        {c.region} · {c.en}
+                        {c.region}, {c.en}
                       </span>
                     </li>
                   ))

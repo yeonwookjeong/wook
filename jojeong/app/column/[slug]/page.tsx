@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: PageProps<"/column/[slug]">):
     ...(!isPublished(c) && { robots: { index: false } }),
     title: c.title,
     description: c.summary,
-    alternates: { canonical: `/column/${c.slug}` },
+    alternates: { canonical: `/column/${c.slug}`, types: { "application/rss+xml": "/rss.xml" } },
     openGraph: {
       type: "article",
       url: `/column/${c.slug}`,
@@ -145,12 +145,12 @@ export default async function ColumnPage({ params, searchParams }: PageProps<"/c
   const header = (
     <header>
       <p className="text-[12px] font-extrabold text-seal">
-        <Link href="/column">훈도의 사주 이야기</Link> · <Link href={`/column?c=${c.cat}`}>{catLabel(c.cat)}</Link>
+        <Link href="/column">훈도의 사주 이야기</Link>, <Link href={`/column?c=${c.cat}`}>{catLabel(c.cat)}</Link>
       </p>
       <h1 className="mt-2 font-myeongjo text-[26px] leading-tight font-extrabold">
         <ColumnTitle title={c.title} />
       </h1>
-      <p className="mt-2 text-[12px] text-ink-soft">{columnDate(c.date)} · 정 훈도</p>
+      <p className="mt-2 text-[12px] text-ink-soft">{columnDate(c.date)}, 정 훈도</p>
     </header>
   );
   const points = (

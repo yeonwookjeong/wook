@@ -1,11 +1,14 @@
 import { getAnonymousKey, IAP } from "@apps-in-toss/web-framework";
 import type { Person } from "@/lib/pairToken";
-import { grantOrder } from "./api";
-import { addToList, personToken } from "./me";
+import { grantOrder, refundOrder } from "./api";
+import { addToList, personToken, readList } from "./me";
 
 // A site order opened here, kept on the phone so "내 보고서" lists it even before the server answers.
 export const MINE_KEY = "hundo:orders";
-export type Bought = { order: string; product: string; sku: string; who: string; at: number };
+// `toss`: the Toss order it was paid with (kept from 2026-11; older entries have none).
+export type Bought = { order: string; product: string; sku: string; who: string; at: number; toss?: string };
+// Toss orders refunded and closed on the server.
+export const REFUNDED_KEY = "hundo:refunded";
 
 // The reader's Toss anonymous key: the same for this Toss account in this mini app, on any phone. The server files
 // orders under it, so bought reports open again after a phone change. Null outside Toss or on an old Toss app.
@@ -24,7 +27,7 @@ export async function anonKey(): Promise<string | null> {
 async function grant(orderId: string, sku: string, me: Person) {
   const g = await grantOrder({ orderId, sku, key: await anonKey(), p: personToken(me) });
   if (g.ok) {
-    const b: Bought = { order: g.order, product: g.product, sku, who: me.name, at: Date.now() };
+    const b: Bought = { order: g.order, product: g.product, sku, who: me.name, at: Date.now(), toss: orderId };
     await addToList(MINE_KEY, JSON.stringify(b));
   }
   return g;
@@ -80,4 +83,27 @@ export async function restorePending(me: Person): Promise<number> {
     // Tried again on the next visit.
   }
   return restored;
+}
+
+// Refunds: Toss lists this account's completed and refunded orders; each refunded one not closed yet is sent to the
+// server, which checks it with Toss and closes its report (the user-harm policy from 2026-11-21 asks refunds be
+// honoured within 7 business days). Run on every visit; a failure is tried again on the next.
+export async function syncRefunds(): Promise<number> {
+  if (!IAP.getCompletedOrRefundedOrders.isSupported()) return 0;
+  const done = new Set(await readList(REFUNDED_KEY));
+  let closed = 0;
+  try {
+    // SDK 3.8 reads the newest page only; a refund is seen on the visits right after it, while it is still there.
+    const r = await IAP.getCompletedOrRefundedOrders();
+    for (const o of r?.orders ?? []) {
+      if (o.status !== "REFUNDED" || done.has(o.orderId)) continue;
+      if (await refundOrder(o.orderId)) {
+        await addToList(REFUNDED_KEY, o.orderId, 200);
+        closed++;
+      }
+    }
+  } catch {
+    // Tried again on the next visit.
+  }
+  return closed;
 }

@@ -112,7 +112,7 @@ export function describeCorrection(c: Corrected, cityName: string): string {
   parts.push(`${cityName} 경도 ${lonShift >= 0 ? "+" : "−"}${Math.abs(lonShift)}분`);
   const hh = String(c.local.hour).padStart(2, "0");
   const mm = String(c.local.minute).padStart(2, "0");
-  return `${parts.join(" · ")} → 실제 ${hh}:${mm}, ${HOUR_NAMES[c.hourBranch]}`;
+  return `${parts.join(", ")} → 실제 ${hh}:${mm}, ${HOUR_NAMES[c.hourBranch]}`;
 }
 
 // Reads a birth time however it is typed: "0930", "930", "21:30", "9시 30분", "오후 9시반", "밤 11시",

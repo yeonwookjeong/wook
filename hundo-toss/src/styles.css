@@ -323,3 +323,8 @@ ul {
   color: var(--ink);
   width: 100%;
 }
+
+.banner {
+  margin-top: 24px;
+  min-height: 1px;
+}

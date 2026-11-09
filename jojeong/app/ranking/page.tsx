@@ -28,7 +28,8 @@ function Medal({ n }: { n: number }) {
   );
 }
 
-const stars = (r: IljuMonth) => 5 - Math.floor((r.rank - 1) / 12);
+// Five stars only for the top six, so the top of the list still reads apart: 1~6, 7~18, 19~42, 43~54, 55~60.
+const stars = (r: IljuMonth) => (r.rank <= 6 ? 5 : r.rank <= 18 ? 4 : r.rank <= 42 ? 3 : r.rank <= 54 ? 2 : 1);
 const Stars = ({ r }: { r: IljuMonth }) => (
   <span className="text-[11px] tracking-wider text-gold">{"★".repeat(stars(r)) + "☆".repeat(5 - stars(r))}</span>
 );
@@ -50,7 +51,7 @@ export default async function RankingPage() {
           {mp.term} {mp.from} ~ {mp.nextTerm} {mp.to}
         </p>
         <p className="mt-1 text-xs leading-relaxed text-ink-soft">
-          사주의 한 달은 1일이 아니라 절기로 바뀌어요 · 무료
+          사주의 한 달은 1일이 아니라 절기로 바뀌어요, 무료
         </p>
       </section>
 
@@ -124,7 +125,7 @@ export default async function RankingPage() {
             <li key={r.no} className={`doc-paper flex gap-4 px-5 py-4 ${mine?.no === r.no ? "ring-2 ring-gold" : ""}`}>
               <span className="w-12 shrink-0 text-center font-myeongjo text-2xl leading-8 text-seal">{r.hanja}</span>
               <span className="min-w-0 flex-1 text-[13px] leading-snug">
-                <b className="font-myeongjo text-base">{r.name}</b> <span className="text-[11px] text-ink-soft">{r.rank}위 · {r.short}</span>
+                <b className="font-myeongjo text-base">{r.name}</b> <span className="text-[11px] text-ink-soft">{r.rank}위, {r.short}</span>
                 <WatchList watch={r} className="mt-2 w-full" />
               </span>
             </li>

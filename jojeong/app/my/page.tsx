@@ -39,7 +39,7 @@ export default async function MyReportsPage({ searchParams }: { searchParams: Pr
               {(Object.keys(VIA_LABEL) as Via[])
                 .filter(viaEnabled)
                 .map((v) => VIA_LABEL[v])
-                .join(" · ")}
+                .join(", ")}
             </span>
           </Link>
         </section>
@@ -70,9 +70,9 @@ export default async function MyReportsPage({ searchParams }: { searchParams: Pr
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block font-myeongjo text-lg font-extrabold">{o.set ? SETS[o.set].title : p?.title}</span>
-                    {o.bundle && <span className="block text-[12px] text-seal">{o.bundle.map((id) => productById(id)?.title).join(" · ")}</span>}
+                    {o.bundle && <span className="block text-[12px] text-seal">{o.bundle.map((id) => productById(id)?.title).join(", ")}</span>}
                     <span className="block text-[13px] text-ink-soft">
-                      {o.who} · {new Date(o.paidAt ?? o.createdAt).toLocaleDateString("ko-KR", { timeZone: "Asia/Seoul" })}
+                      {o.who}, {new Date(o.paidAt ?? o.createdAt).toLocaleDateString("ko-KR", { timeZone: "Asia/Seoul" })}
                     </span>
                   </span>
                   <span className="text-seal">→</span>
