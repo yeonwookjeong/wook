@@ -27,7 +27,7 @@ const SHOTS: Shot[] = [
   { mode: "banners", sent: 3, weight: 26, xfade: 9, sfx: [{ name: "whoosh", at: 0.05, vol: 0.3 }] },
   { mode: "tablets", sent: 3 },
   { mode: "bleed", sent: 4, xfade: 9, sfx: [{ name: "thud", at: 0.2, vol: 0.3 }] },
-  { mode: "light", sent: 5, sfx: [{ name: "chime", at: 0.1, vol: 0.3 }] },
+  { mode: "light", sent: 5, xfade: 9, sfx: [{ name: "chime", at: 0.1, vol: 0.3 }] },
   { mode: "stamp", sent: 6, shake: 1, sfx: [{ name: "thud", at: 0.28, vol: 0.7 }] },
   { mode: "calm", sent: 6 },
   { mode: "end", sent: 7, sfx: [{ name: "pop", at: 0.75, vol: 0.4 }] },

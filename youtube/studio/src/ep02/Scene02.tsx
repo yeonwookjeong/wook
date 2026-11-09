@@ -34,8 +34,8 @@ type Key = { p: THREE.Vector3; t: THREE.Vector3 };
 const K = (px: number, py: number, pz: number, tx: number, ty: number, tz: number): Key => ({ p: new THREE.Vector3(px, py, pz), t: new THREE.Vector3(tx, ty, tz) });
 const PT = { x: -0.05, y: 0.58, z: 1.58 }; // 시험지 이름 칸 쪽으로 조금
 const paths = (lang: "en" | "es"): Record<Mode02, Key[]> => {
-  const C1 = K(0.6, 1.35, 2.65, 0.45, 0.68, 1.7);
-  const C2 = K(1.6, 1.75, 3.95, 0.6, 0.78, 1.4);
+  const C1 = K(0.5, 1.75, 2.9, 0.5, 0.72, 1.75); // 높게: 낮으면 앞 의자 등받이가 화면을 가린다
+  const C2 = K(1.3, 1.85, 4.0, 0.7, 0.85, 1.6);
   const D2 = K(1.2, 3.6, 6.8, 0, 0.7, 0);
   const B2 = K(-13.6, 2.6, -5.1, -17.6, 1.5, ROAD_Z);
   const S1 = K(12.98, 1.55, 4.15, 12.68, 1.0, 3.3);
@@ -49,7 +49,7 @@ const paths = (lang: "en" | "es"): Record<Mode02, Key[]> => {
     banners: [K(-12.4, 3.1, -3.6, -17, 1.4, ROAD_Z), B2],
     tablets: [K(-18, 1.65, -11.7, -18, 1.1, -15.3), K(-18, 1.35, -12.5, -18, 1.1, -15.3)],
     bleed: [K(0.32, 1.35, 2.42, PT.x, PT.y, PT.z), K(0.14, 1.08, 2.1, PT.x, PT.y, PT.z)],
-    light: [K(0.14, 1.08, 2.1, PT.x, PT.y, PT.z), K(6, 5.5, 9.5, 8, 1.5, 3), K(13.4, 1.95, 5.2, 12.66, 1.0, 3.3)],
+    light: [K(17, 4.2, 12, 12.4, 1.2, 3), K(15.2, 2.9, 8.6, 12.5, 1.1, 3.2), K(13.4, 1.95, 5.2, 12.66, 1.0, 3.3)], // 빈 들판을 날지 않고 은행에서 시작 (Ep02.tsx 에서 겹쳐 넘김)
     stamp: [K(13.4, 1.95, 5.2, 12.66, 1.0, 3.3), S1, S2],
     calm: [S2, W2],
     end: [W2, K(13.6, 2.0, 6.0, 12.6, 1.12, 3.35), K(12.74, 1.5, 4.5, 12.6, 1.12, 3.4)],
@@ -292,7 +292,7 @@ const Classroom: React.FC<{ write: number; bleed: number; lights: number; stop: 
       {/* 옆자리 학생: 이쪽을 돌아본다 */}
       <Desk x={1.2} z={1.6} />
       <Person p={[1.2, 0.18, 2.1]} coat="#d08a3a" s={0.5} ry={Math.PI + interpolate(stop, [0, 1], [0, -1.3], clamp)} sit />
-      <Sprite tex={stopTex} s={stop} pos={[1.05, 1.15, 2.05]} size={[0.55, 0.34]} ry={0.2} />
+      <Sprite tex={stopTex} s={stop} pos={[0.82, 1.2, 2.0]} size={[0.55, 0.34]} ry={0.15} />
       {/* 주인공 책상 + 시험지 + 빨간 이름 */}
       <Desk x={0} z={1.6} paper={false} chair={false} />
       <mesh position={PAPER} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
@@ -759,7 +759,7 @@ const Scene: React.FC<{ mode: Mode02; t: number; words: Words02 }> = ({ mode, t,
         <meshStandardMaterial color="#c9d6a8" />
       </mesh>
       {/* 보이는 장소만 그린다 (렌더 속도) */}
-      {["pen", "red", "curse", "dark", "bleed", "light"].includes(mode) && <Classroom write={s.write} bleed={s.bleed} lights={lights} stop={s.stop} stopTex={stopT} />}
+      {["pen", "red", "curse", "dark", "bleed"].includes(mode) && <Classroom write={s.write} bleed={s.bleed} lights={lights} stop={s.stop} stopTex={stopT} />}
       {["banners", "tablets"].includes(mode) && <Village move={s.move} raise={s.raise} candle={s.dark} />}
       {["light", "stamp", "calm", "end"].includes(mode) && <Bank w={words} imprint={s.imprint} />}
       <Pen pos={pen} rot={rot} drop={drop} />
