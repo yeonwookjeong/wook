@@ -65,6 +65,12 @@ h2 { font-family: var(--display); font-weight: 400; font-size: 20px; margin: 0; 
 button.copy { font: inherit; font-size: 11px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); border-radius: 6px; padding: 2px 8px; cursor: pointer; }
 button.copy.did { border-color: var(--ok); color: var(--ok); }
 .tip { font-size: 12px; color: var(--warn); }
+.hright { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.kotog { font-size: 13px; font-weight: 700; display: flex; gap: 6px; align-items: center; cursor: pointer; }
+.kotog input { width: 16px; height: 16px; accent-color: var(--seal); }
+.ko { font-size: 13px; line-height: 1.5; color: var(--ink); border-left: 3px solid var(--seal); padding: 4px 0 4px 10px; white-space: pre-wrap; }
+.ko .kol { display: block; font-size: 11px; font-weight: 700; color: var(--seal); letter-spacing: 0.04em; }
+body.noko .ko { display: none; }
 .acct { display: block; font-weight: 500; font-size: 12px; color: var(--muted); font-family: var(--mono); }
 a.go { display: inline-flex; align-items: center; justify-content: center; gap: 6px; text-decoration: none; font-weight: 700; font-size: 13px; color: var(--paper); background: var(--seal); border-radius: 8px; padding: 8px 12px; }
 a.go:hover { filter: brightness(1.08); }
@@ -91,7 +97,7 @@ details.guide summary { cursor: pointer; font-weight: 700; }
 <div class="wrap">
   <header>
     <h1>Konorama <span class="stamp">업로드 데스크</span></h1>
-    <span class="sub" id="sync">불러오는 중…</span>
+    <span class="hright"><label class="kotog"><input type="checkbox" id="kotoggle" checked> 한국어 뜻 같이 보기</label><span class="sub" id="sync">불러오는 중…</span></span>
   </header>
 
   <section class="next" id="next" aria-live="polite">
@@ -199,9 +205,9 @@ details.guide summary { cursor: pointer; font-weight: 700; }
     });
   }
 
-  function field(k, text, tip) {
+  function field(k, text, tip, ko) {
     if (!text) return "";
-    return `<div class="field"><div class="k"><span>${k}</span><button class="copy" type="button" data-copy="${esc(text)}">복사</button></div><pre>${esc(text)}</pre>${tip ? `<span class="tip">${esc(tip)}</span>` : ""}</div>`;
+    return `<div class="field"><div class="k"><span>${k}</span><button class="copy" type="button" data-copy="${esc(text)}">복사</button></div><pre>${esc(text)}</pre>${ko ? `<div class="ko"><span class="kol">한국어 뜻</span>${esc(ko)}</div>` : ""}${tip ? `<span class="tip">${esc(tip)}</span>` : ""}</div>`;
   }
 
   function renderDetail() {
@@ -227,10 +233,10 @@ details.guide summary { cursor: pointer; font-weight: 700; }
           <div class="ctop"><span class="plat">${p.name}<span class="acct">${esc(p.acct)}</span></span><span class="time">한국 ${esc(kst(e.date, t))}<br>${L.city} ${esc(local(e.date, t, L.tz))}</span></div>
           <a class="go" href="${p.go.href}" target="_blank" rel="noopener">${p.go.label} 열기 ↗</a><span class="note">${p.go.how}</span>
           ${post.caption ? "" : `<div class="note">문구 준비 중</div>`}
-          ${field("제목", post.title, p.key.startsWith("yt") ? "제목 칸에 날짜가 아닌 이 제목이 들어갔는지 확인" : "")}
-          ${field("설명 · 캡션", post.caption)}
-          ${field("고정 댓글", post.pin)}
-          ${field("대체 텍스트", post.alt, "고급 설정 → 대체 텍스트")}
+          ${field("제목", post.title, p.key.startsWith("yt") ? "제목 칸에 날짜가 아닌 이 제목이 들어갔는지 확인" : "", e.ko?.[lg]?.title)}
+          ${field("설명 · 캡션", post.caption, "", e.ko?.[lg]?.caption)}
+          ${field("고정 댓글", post.pin, "", e.ko?.[lg]?.pin)}
+          ${field("대체 텍스트", post.alt, "고급 설정 → 대체 텍스트", e.ko?.[lg]?.alt)}
           ${field("커버", post.cover)}
           <label class="chk"><input type="checkbox" id="chk-${e.id}-${p.key}" data-ep="${esc(e.id)}" data-plat="${p.key}" ${post.done ? "checked" : ""} ${db ? "" : "disabled"}> 예약 완료</label>
         </article>`;
@@ -241,6 +247,12 @@ details.guide summary { cursor: pointer; font-weight: 700; }
   }
 
   function render() { renderNext(); renderEps(); renderDetail(); }
+  // 한국어 뜻 보기: 이 기기에만 기억
+  const kt = $("kotoggle");
+  try { if (localStorage.getItem("desk.ko") === "0") kt.checked = false; } catch {}
+  const applyKo = () => document.body.classList.toggle("noko", !kt.checked);
+  kt.addEventListener("change", () => { applyKo(); try { localStorage.setItem("desk.ko", kt.checked ? "1" : "0"); } catch {} });
+  applyKo();
 
   document.addEventListener("click", async (ev) => {
     const b = ev.target.closest("button.copy");
