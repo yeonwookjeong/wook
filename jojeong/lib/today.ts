@@ -281,10 +281,18 @@ export function todayFor(me: Person | null, now = new Date()): Today {
   const hit = [s, b].find((e) => e === r.yong);
   const bad = [s, b].find((e) => e === r.gi);
   let personal =
+    // The element the chart needs (or can't take) comes in, said in step with the day's score: a needed element on
+    // a middling or hard day is not "do the important things today" (2026-11-09).
     hit !== undefined
-      ? `꼭 필요한 ${EL(hit)} 기운이 들어오는 날이에요. 중요한 일은 오늘 하세요.`
+      ? score >= 70
+        ? `꼭 필요한 ${EL(hit)} 기운이 들어오는 날이에요. 중요한 일은 오늘 하세요.`
+        : hard
+          ? `꼭 필요한 ${EL(hit)} 기운이 들어오지만 부딪히는 칸이 더 커요. 아래 것만은 꼭 피하세요.`
+          : `꼭 필요한 ${EL(hit)} 기운이 들어와요. 다만 부딪히는 칸도 있어 반반인 날이에요.`
       : bad !== undefined
-        ? `버거운 ${EL(bad)} 기운의 날이에요. 큰 결정은 하루 미루세요.`
+        ? score >= 70
+          ? `버거운 ${EL(bad)} 기운이 있지만 내 일주와는 잘 맞물려요. 큰 결정만 한 번 더 살피세요.`
+          : `버거운 ${EL(bad)} 기운의 날이에요. 큰 결정은 하루 미루세요.`
         : score >= 70
           ? "오늘의 일진이 내 일주와 잘 맞물리는 날이에요."
           : hard

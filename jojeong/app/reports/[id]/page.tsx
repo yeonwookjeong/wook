@@ -60,7 +60,10 @@ import { readMe } from "@/lib/me";
 import { decodePerson, profileOf, relationOf, type Person } from "@/lib/pairToken";
 import type { Relation } from "@/lib/relations";
 import { decadeOf, domainCard, isDomain } from "@/lib/domains";
-import { distinctOf } from "@/lib/rarity";
+import { distinctOf, perHundred } from "@/lib/rarity";
+import { pastHits } from "@/lib/pastHits";
+import IdentityCard from "@/components/IdentityCard";
+import PastCheck from "@/components/PastCheck";
 import { courtOfReader, subjectFor } from "@/lib/subject";
 import { getProfile } from "@/lib/store";
 import { covers, getOrder, ownedOrderFor, ownedOrders, readAtOf, type Order } from "@/lib/pay";
@@ -679,6 +682,24 @@ async function OpenReport({
           <h1 className="mt-2 text-center font-myeongjo text-2xl font-extrabold">{name}님의 사주</h1>
           <p className="mt-2 text-center text-sm leading-snug text-ink-soft">여덟 글자와 만세력, 100명 중 몇 명인지, 그리고 2027년까지, 무료</p>
         </RoyalDoc>
+        {ilju && topPower && free && (
+          <IdentityCard
+            name={name}
+            hanja={ilju.hanja}
+            ilju={ilju.name}
+            image={ilju.image ?? null}
+            chips={[
+              { label: "가장 큰 힘", value: topPower.name, note: `${topPower.pct}%` },
+              ...(distinct?.patterns[0] ? [{ label: "가장 드문 것", value: distinct.patterns[0].plain, note: perHundred(distinct.patterns[0].rate) }] : []),
+              ...(free.sals[0] ? [{ label: "타고난 별", value: free.sals[0].plain, note: free.sals[0].rate === null ? undefined : perHundred(free.sals[0].rate) }] : []),
+            ]}
+            kinds={kindsOf}
+          />
+        )}
+        {(() => {
+          const hits = pastHits(pillars, profile);
+          return hits.length >= 2 ? <PastCheck name={name} hits={hits} /> : null;
+        })()}
         {fullIntro}
         <Link href={`/reports/pyeongsaeng${query ? `?${query}` : ""}`} className="doc-paper mt-4 block px-5 py-4">
           <span className="block text-[12px] font-bold text-seal">命 書, 평생 사주</span>
