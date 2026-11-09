@@ -751,9 +751,10 @@ const Scene: React.FC<{ mode: Mode02; t: number; words: Words02 }> = ({ mode, t,
         <planeGeometry args={[140, 140]} />
         <meshStandardMaterial color="#c9d6a8" />
       </mesh>
-      <Classroom write={s.write} bleed={s.bleed} lights={lights} stop={s.stop} stopTex={stopT} />
-      <Village move={s.move} raise={s.raise} candle={s.dark} />
-      <Bank w={words} imprint={s.imprint} />
+      {/* 보이는 장소만 그린다 (렌더 속도) */}
+      {["pen", "red", "curse", "dark", "bleed", "light"].includes(mode) && <Classroom write={s.write} bleed={s.bleed} lights={lights} stop={s.stop} stopTex={stopT} />}
+      {["banners", "tablets"].includes(mode) && <Village move={s.move} raise={s.raise} candle={s.dark} />}
+      {["light", "stamp", "calm", "end"].includes(mode) && <Bank w={words} imprint={s.imprint} />}
       <Pen pos={pen} rot={rot} drop={drop} />
       <Stamp pos={stamp} />
       <Sprite tex={q} s={s.q} pos={[12.6, COUNTER_Y + 0.33, 3.42]} size={[0.16, 0.16]} rz={-0.1} />
