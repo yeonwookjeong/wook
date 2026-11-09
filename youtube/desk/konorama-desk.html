@@ -119,8 +119,9 @@ details.guide summary { cursor: pointer; font-weight: 700; }
     <summary>올릴 때마다 지킬 것</summary>
     <div class="gridg">
       <div><h4>시각 (한국 시간)</h4><ul>
-        <li>08:00: 유튜브 EN·ES, 인스타 EN, 틱톡 EN (뉴욕 전날 18:00)</li>
-        <li>10:00: 인스타 ES, 틱톡 ES (멕시코시티 전날 19:00)</li>
+        <li>08:00: 영어 3곳 먼저 (뉴욕 전날 18:00, LA 15:00)</li>
+        <li>11:00: 스페인어 3곳 (멕시코시티 전날 20:00, 보고타·리마 21:00)</li>
+        <li>스페인어판 올리기 전에 영어판 초반 반응을 한 번 보기</li>
         <li>날짜가 정해진 편은 그 전날 밤까지 예약</li></ul></div>
       <div><h4>플랫폼별</h4><ul>
         <li>유튜브: 제목 칸에 날짜가 들어가지 않았는지 꼭 확인. 카테고리 교육</li>
@@ -221,7 +222,7 @@ details.guide summary { cursor: pointer; font-weight: 700; }
       html += `<div class="lang"><h3>${L.flag} ${L.name}</h3><div class="cards">`;
       PLATS.filter((p) => p.lang === lg).forEach((p) => {
         const post = e.posts?.[p.key] || {};
-        const t = post.time || (lg === "es" && p.key !== "yt_es" ? "10:00" : "08:00");
+        const t = post.time || (lg === "es" ? "11:00" : "08:00");
         html += `<article class="card ${post.done ? "done" : ""}">
           <div class="ctop"><span class="plat">${p.name}<span class="acct">${esc(p.acct)}</span></span><span class="time">한국 ${esc(kst(e.date, t))}<br>${L.city} ${esc(local(e.date, t, L.tz))}</span></div>
           <a class="go" href="${p.go.href}" target="_blank" rel="noopener">${p.go.label} 열기 ↗</a><span class="note">${p.go.how}</span>

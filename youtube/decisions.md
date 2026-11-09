@@ -153,3 +153,6 @@
 - 주소: https://claude.ai/artifact/JMxCq2MGxXDLsGn9jZiCnr (나만 볼 수 있음). 원본은 youtube/desk/konorama-desk.html.
 - 편마다 6곳(유튜브·인스타·틱톡 × EN·ES)의 시각, 제목, 캡션, 고정 댓글, 대체 텍스트, 커버를 복사 버튼과 함께 보여 주고, "예약 완료"를 체크하는 페이지다.
 - 데이터는 페이지 저장소의 episodes/epNN 문서에 있다. 새 편은 Claude가 ArtifactData로 채운다.
+
+## 올리는 시각 변경 (2026-11-09)
+영어 3곳은 한국 08:00, 스페인어 3곳은 11:00에 올린다. 업로드 데스크와 schedule.md에 반영했다.
