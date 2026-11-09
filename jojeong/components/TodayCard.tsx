@@ -181,12 +181,6 @@ export default function TodayCard({ today, name, frame = "doc-paper mt-5", revea
           <p className="mt-2 text-[13px] leading-snug">
             <b className="text-seal">오늘 하지 말 것</b> {today.dont}
           </p>
-          {/* On a hard day the general line (read for everyone) would pull against the advice above. */}
-          {!today.watch && (
-            <p className="mt-2 text-[13px] leading-relaxed text-ink-soft">
-              <b>하루 전체로는</b> {today.advice}
-            </p>
-          )}
 
           {today.areas && (
             <ul className="mt-4 flex flex-col divide-y divide-seal/10 border-y border-seal/15">
