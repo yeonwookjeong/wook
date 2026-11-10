@@ -74,6 +74,8 @@ export function bearing(a: Region, b: Region): number | null {
 // women.
 export const GUA = ["", "坎", "坤", "震", "巽", "", "乾", "兌", "艮", "離"] as const;
 export type Gua = { n: number; name: string; east: boolean };
+const GUA_KO: Record<string, string> = { 坎: "감", 坤: "곤", 震: "진", 巽: "손", 乾: "건", 兌: "태", 艮: "간", 離: "리" };
+export const guaLabel = (g: Gua) => `${GUA_KO[g.name]}(${g.name})괘`;
 
 export function sajuYear(p: Person): number | null {
   if (p.birthYear === null) return null;
@@ -120,7 +122,7 @@ export const STAR_LINE: Record<Star, string> = {
 export const starAt = (g: Gua, dirIndex: number): Star => BAZHAI[g.n][dirIndex];
 export const goodStars = (g: Gua) => DIRS.map((d, i) => ({ dir: d.name, star: starAt(g, i) })).filter((x) => STAR_SCORE[x.star] >= 72);
 
-export type Land = { el: number; top: number; mt: number; rock: number; flat: number; sea: number; flow: number; ne: number; lat: number };
+export type Land = { el: number; top: number; mt: number; rock: number; flat: number; sea: number; flow: number; ne: number; res: number; dam: string[]; lat: number };
 const LAND = (landData as { regions: Record<string, Land> }).regions;
 
 // Each region's ground as five shares 0–1 (목 화 토 금 수), ranked against the whole country so each reads "how much
@@ -132,9 +134,16 @@ const pctOf = (vals: number[]) => {
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 const LANDS = MAP.regions.map((r) => LAND[r.code]).filter(Boolean);
 const pMt = pctOf(LANDS.map((l) => l.mt)), pTop = pctOf(LANDS.map((l) => l.top)), pRock = pctOf(LANDS.map((l) => l.rock)), pFlat = pctOf(LANDS.map((l) => l.flat));
-// Water: the sea at the border, or the biggest river through it (the DEM's drainage, or a big river Natural Earth
-// names, taken as 10,000 km²); 100 km² reads 0, 10,000 km² reads 1.
-const waterOf = (l: Land) => Math.max(clamp01(l.sea / 40), clamp01((Math.log10(Math.max(l.flow, l.ne > 0 ? 10000 : 0, 1)) - 2) / 2));
+// Water, the strongest of: the sea at the border; the biggest river through it (the DEM's drainage, or a big river
+// Natural Earth names, taken as 10,000 km²; 100 km² reads 0, 10,000 km² reads 1); a big dam lake (0.9); the farm
+// reservoirs' full surface (about 30 ha reads 0, 1,500 ha reads 1).
+const waterOf = (l: Land) =>
+  Math.max(
+    clamp01(l.sea / 40),
+    clamp01((Math.log10(Math.max(l.flow, l.ne > 0 ? 10000 : 0, 1)) - 2) / 2),
+    l.dam.length ? 0.9 : 0,
+    clamp01((Math.log10(l.res + 1) - 1.5) / 1.7),
+  );
 export function groundOf(code: string): number[] | null {
   const l = LAND[code];
   if (!l) return null;
@@ -218,6 +227,8 @@ export function rankOf(all: Scored[], code: string): { rank: number; of: number 
 // Why this place, in one or two plain lines: the side of the ground that gives this chart the most, then 배산임수 or
 // the next side.
 const GROUND_REASON = ["산이 깊어요", "따뜻한 남쪽이에요", "들이 넓어요", "바위산이 많아요", "물이 가까워요"];
+// The water named when the place has one: its dam lake.
+const waterReason = (r: Scored) => (LAND[r.code]?.dam.length ? `${LAND[r.code].dam.join(", ")}가 있어요` : GROUND_REASON[4]);
 export function whyOf(r: Scored, n: Need): string[] {
   if (!r.ground) return [];
   const g = r.ground;
@@ -225,10 +236,10 @@ export function whyOf(r: Scored, n: Need): string[] {
   const gives = [0, 1, 2, 3, 4].filter((e) => w[e] > 0 && g[e] >= 0.4).sort((a, b) => w[b] - w[a] || g[b] - g[a]);
   const out: string[] = [];
   const say = (e: number) =>
-    `${e === n.yong ? "가장 필요한" : e === n.hee ? "두 번째로 필요한" : "도움이 되는"} ${elName(e)} 기운이 넉넉한 땅이에요. ${GROUND_REASON[e]}`;
+    `${e === n.yong ? "가장 필요한" : e === n.hee ? "두 번째로 필요한" : "도움이 되는"} ${elName(e)} 기운이 넉넉한 땅이에요. ${e === 4 ? waterReason(r) : GROUND_REASON[e]}`;
   if (gives.length) out.push(say(gives[0]));
   else out.push(`필요한 ${elName(n.yong)} 기운이 조금 드는 무난한 땅이에요`);
-  if (r.baesan) out.push("산과 물이 함께 있는 배산임수 자리라 기운이 모여요");
+  if (r.baesan) out.push(LAND[r.code]?.dam.length ? `산과 ${LAND[r.code].dam.join(", ")}가 함께 있는 배산임수 자리라 기운이 모여요` : "산과 물이 함께 있는 배산임수 자리라 기운이 모여요");
   else if (gives[1] !== undefined) out.push(say(gives[1]));
   if (g[n.gi] >= 0.7) out.push(`다만 넘치면 버거운 ${elName(n.gi)} 기운도 센 곳이에요`);
   return out;

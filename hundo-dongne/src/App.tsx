@@ -6,7 +6,7 @@ import { BirthForm } from "./BirthForm";
 import { saveCard, shareMessage, type Card } from "./card";
 import { forgetAll, loadHome, loadMe, mateToken, readMate, saveHome, saveMe, type Mate } from "./me";
 import {
-  byCode, dirsOf, elName, guaFromNumber, guaOf, label, MAP, needOf, pairPlaces, PLACE_KIND, proj, rankOf, scoreAll, SIDOS, topPlaces,
+  byCode, dirsOf, elName, goodStars, guaFromNumber, guaLabel, guaOf, label, MAP, needOf, pairPlaces, PLACE_KIND, proj, rankOf, scoreAll, SIDOS, topPlaces,
   moveCheck, tagsOf, weekendPlan, whyOf, type Gua, type Need, type Region, type Scored,
 } from "./place";
 
@@ -173,7 +173,7 @@ function Result({ me, home, mate, onMove, onForget }: { me: Person; home: Region
       <div className="card">
         <p className="quiet small">
           {me.name}님 사주는 {elName(need.heavy)} 기운이 가장 많아요. 그래서 <strong className="seal">{elName(need.yong)}</strong> 기운이 넉넉한 땅이 가장 잘 맞고, 그다음은{" "}
-          <strong>{elName(need.hee)}</strong> 기운이에요. 사는 곳 <strong>{label(home)}</strong>
+          <strong>{elName(need.hee)}</strong> 기운이에요. <GuaLine gua={gua} /> 사는 곳 <strong>{label(home)}</strong>
           <button className="inline" onClick={onMove}>
             바꾸기
           </button>
@@ -315,6 +315,16 @@ function PairBox({ me, home, mate, pair, onSave, say }: { me: Person; home: Regi
         </button>
       </div>
     </div>
+  );
+}
+
+// 팔택 in one sentence: the reader's 명괘 and the four good ways to move, or why it is missing.
+function GuaLine({ gua }: { gua: Gua | null }) {
+  if (!gua) return <>성별을 넣으면 이사하기 좋은 방향(팔택)까지 같이 봐요.</>;
+  return (
+    <>
+      팔택으로는 {guaLabel(gua)}({gua.east ? "동사명" : "서사명"})라 이사는 <strong>{goodStars(gua).map((g) => `${g.dir}쪽`).join(", ")}</strong>이 길해요.
+    </>
   );
 }
 

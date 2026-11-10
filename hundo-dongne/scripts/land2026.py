@@ -1,12 +1,14 @@
 """시군구마다 땅의 모양(산, 평지, 바다, 큰 강, 호수) → src/data/land.json.
 
-사용: python3 -I scripts/land2026.py <HangJeongDong_ver20261001.geojson> <타일 폴더> <ne_10m_rivers_lake_centerlines_scale_rank.geojson> [출력]
+사용: python3 -I scripts/land2026.py <HangJeongDong_ver20261001.geojson> <타일 폴더> <ne_10m_rivers_lake_centerlines_scale_rank.geojson> <저수지.csv> [출력]
 (numpy, numba, pillow, shapely 필요)
 
 - 행정구역: vuski/admdongkor ver20261001 (scripts/regions2026.py와 같은 원본, 같은 시군구 코드).
 - 고도: AWS 공개 지형 타일(terrarium, 줌 10, 한 칸 약 150m). 타일은 x 866~884, y 392~412,
   https://elevation-tiles-prod.s3.amazonaws.com/terrarium/10/{x}/{y}.png 를 받아 10_{x}_{y}.png 로 둔다.
   고도 = R*256 + G + B/256 - 32768 (m, 바다는 음수).
+- 저수지: 공공데이터포털 "한국농어촌공사_농업기반시설 시설제원_저수지"(15044339, 3,402곳, UTF-8로 바꾼 CSV). 소재지의
+  시군구로 모아 만수면적(ha)을 더한다. 큰 댐 호수는 이 목록에 없어 아래 DAM_LAKES에 시군구로 적었다.
 - 물길: 고도에서 직접 계산한다(우선순위 채우기로 웅덩이를 메운 뒤 각 칸이 흘러가는 곳을 정하고, 위에서 모여드는
   넓이를 더한다). 그 시군구를 지나는 가장 큰 물길이 위쪽에서 모으는 넓이(km²)가 "물길 크기"다. 지도 범위 밖(북쪽
   38.7도 위)은 빠져 임진강, 북한강 상류는 실제보다 작게 나온다. 호수는 고도로 가릴 수 없어 넣지 않는다.
@@ -29,7 +31,7 @@ from shapely.ops import unary_union
 Z, X0, X1, Y0, Y1 = 10, 866, 884, 392, 412
 N = 256 * 2**Z
 
-adm, tiles, rivers_path = sys.argv[1:4]
+adm, tiles, rivers_path, reservoirs_path = sys.argv[1:5]
 
 # 고도 모자이크
 rows = []
@@ -172,8 +174,76 @@ upstream = drainage(z, elev < -8, cell_km2)
 
 src = json.load(open(adm))
 groups = defaultdict(list)
+names = {}
 for f in src["features"]:
-    groups[f["properties"]["sgg"]].append(shape(f["geometry"]).buffer(0))
+    p = f["properties"]
+    groups[p["sgg"]].append(shape(f["geometry"]).buffer(0))
+    names[p["sgg"]] = (p["sidonm"], p["sggnm"])
+
+# 시도 이름 맞추기: 옛 이름과 2026년 통합 이름을 같은 열쇠로.
+SIDO_KEY = {"서울특별시": "서울", "부산광역시": "부산", "대구광역시": "대구", "인천광역시": "인천", "광주광역시": "전남광주",
+            "대전광역시": "대전", "울산광역시": "울산", "세종특별자치시": "세종", "경기도": "경기", "강원도": "강원",
+            "강원특별자치도": "강원", "충청북도": "충북", "충청남도": "충남", "전라북도": "전북", "전북특별자치도": "전북",
+            "전라남도": "전남광주", "전남광주통합특별시": "전남광주", "경상북도": "경북", "경상남도": "경남",
+            "제주특별자치도": "제주", "제주도": "제주"}
+by_name = {(SIDO_KEY.get(sd, sd), sg): code for code, (sd, sg) in names.items()}
+
+
+def code_of(addr):
+    t = addr.split()
+    if len(t) < 2:
+        return None
+    sd = SIDO_KEY.get(t[0], t[0])
+    if len(t) > 2 and (sd, t[1] + t[2]) in by_name:
+        return by_name[(sd, t[1] + t[2])]
+    return by_name.get((sd, t[1]))
+
+
+import csv
+reservoir_ha = defaultdict(float)
+unmatched = 0
+for row in csv.DictReader(open(reservoirs_path, encoding="utf-8")):
+    c = code_of(row["소재지"])
+    try:
+        ha = float(row["만수면적"] or 0)
+    except ValueError:
+        ha = 0.0
+    if c:
+        reservoir_ha[c] += ha
+    else:
+        unmatched += 1
+print("저수지 시군구를 못 찾은 곳", unmatched)
+
+# 큰 댐 호수(다목적댐, 발전댐)가 걸친 시군구. 농어촌공사 저수지 목록에 없는 것만.
+DAM_LAKES = {
+    "소양호": [("강원", "춘천시"), ("강원", "양구군"), ("강원", "인제군")],
+    "파로호": [("강원", "화천군"), ("강원", "양구군")],
+    "춘천호, 의암호": [("강원", "춘천시")],
+    "청평호": [("경기", "가평군")],
+    "팔당호": [("경기", "남양주시"), ("경기", "하남시"), ("경기", "양평군"), ("경기", "광주시")],
+    "충주호": [("충북", "충주시"), ("충북", "제천시"), ("충북", "단양군")],
+    "대청호": [("대전", "대덕구"), ("대전", "동구"), ("충북", "청주시상당구"), ("충북", "보은군"), ("충북", "옥천군")],
+    "안동호": [("경북", "안동시")],
+    "임하호": [("경북", "안동시"), ("경북", "청송군")],
+    "횡성호": [("강원", "횡성군")],
+    "영주호": [("경북", "영주시")],
+    "합천호": [("경남", "합천군")],
+    "진양호": [("경남", "진주시")],
+    "밀양호": [("경남", "밀양시")],
+    "주암호": [("전남광주", "순천시"), ("전남광주", "보성군"), ("전남광주", "화순군")],
+    "탐진호": [("전남광주", "장흥군")],
+    "옥정호": [("전북", "임실군"), ("전북", "정읍시")],
+    "용담호": [("전북", "진안군")],
+    "부안호": [("전북", "부안군")],
+    "보령호": [("충남", "보령시")],
+}
+dam = defaultdict(list)
+for lake, places in DAM_LAKES.items():
+    for key in places:
+        if key in by_name:
+            dam[by_name[key]].append(lake)
+        else:
+            print("댐 호수 시군구를 못 찾음", lake, key)
 
 out = {}
 for code, geoms in sorted(groups.items()):
@@ -204,8 +274,10 @@ for code, geoms in sorted(groups.items()):
         "sea": round(sea * 100),  # 경계 밖 2km 띠의 바다 비율(%)
         "flow": round(flow),  # 지나는 가장 큰 물길이 모으는 넓이(km²)
         "ne": round(river_km),  # Natural Earth 강 길이(km), 확인용
+        "res": round(reservoir_ha.get(code, 0)),  # 농업용 저수지 만수면적 합(ha)
+        "dam": dam.get(code, []),  # 걸친 큰 댐 호수
         "lat": round(c.y, 3),
     }
 
-json.dump({"asOf": "2026-10-01", "regions": out}, open(sys.argv[4] if len(sys.argv) > 4 else "src/data/land.json", "w"), ensure_ascii=False, separators=(",", ":"))
+json.dump({"asOf": "2026-10-01", "regions": out}, open(sys.argv[5] if len(sys.argv) > 5 else "src/data/land.json", "w"), ensure_ascii=False, separators=(",", ":"))
 print(len(out), "시군구")
