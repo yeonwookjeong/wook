@@ -6,7 +6,7 @@ export const BUSINESS = {
   mailOrderNo: "2024-경기파주-0357", // 통신판매업 신고번호
   address: "경기도 파주시 교하로159번길 33, 304호 -C152", // 사업장 주소
   phone: "070-4578-4984", // 전화 (자동응답: 문의는 이메일로 안내)
-  email: "jyu1101@gmail.com", // 이메일
+  email: "joyhunt.official@gmail.com", // 이메일
   hosting: "Vercel Inc.", // 호스팅 서비스 제공자
 };
 
