@@ -29,13 +29,13 @@ const paths = (lang: "en" | "es"): Record<Mode03, Key[]> => ({
   calendar: [lang === "es" ? K(-6.0, 3.8, 11.5, 0, 1.4, 0.2) : K(6.0, 3.8, 12.0, 0, 1.4, 0.2), K(2.2, 2.7, 6.4, 0, 1.9, -1.2)],
   ones: [K(2.2, 2.7, 6.4, 0, 1.9, -1.2), K(1.0, 2.4, 4.0, 0, 2.15, -2.0)],
   give: [K(1.0, 2.4, 4.0, 0, 2.15, -2.0), K(1.0, 1.7, 5.4, -0.1, 0.75, 1.8), K(1.7, 1.45, 4.6, -0.1, 0.7, 1.8)],
-  school: [K(SCHOOL[0] + 4.5, 3.6, SCHOOL[1] + 7.5, SCHOOL[0], 1.1, SCHOOL[1] + 0.4), K(SCHOOL[0] + 2.6, 2.3, SCHOOL[1] + 4.8, SCHOOL[0] + 0.2, 0.95, SCHOOL[1] + 0.7)],
+  school: [K(SCHOOL[0] + 4.5, 3.6, SCHOOL[1] + 7.5, SCHOOL[0], 1.1, SCHOOL[1] + 0.4), K(SCHOOL[0] + 0.5, 1.5, SCHOOL[1] + 3.4, SCHOOL[0] - 0.8, 0.75, SCHOOL[1] + 0.4)],
   store: [K(STORE[0] + 3.5, 3.0, STORE[1] + 6.5, STORE[0], 1.3, STORE[1] - 1.6), K(STORE[0] + 1.4, 2.2, STORE[1] + 3.8, STORE[0], 1.5, STORE[1] - 2.2)],
-  kitchen: [K(KITCHEN[0] + 0.9, 1.85, KITCHEN[1] + 1.9, KITCHEN[0] - 0.4, 1.2, KITCHEN[1] - 1.2), K(KITCHEN[0] + 1.3, 1.75, KITCHEN[1] + 2.0, KITCHEN[0] + 0.25, 1.15, KITCHEN[1] - 1.2)],
-  bouquet: [K(-2.8, 2.6, 7.6, 0, 0.9, 1.5), K(2.6, 2.2, 7.0, 0.4, 0.9, 1.5)],
+  kitchen: [K(KITCHEN[0] + 0.2, 1.9, KITCHEN[1] + 2.0, KITCHEN[0] - 0.5, 1.15, KITCHEN[1] - 1.2), K(KITCHEN[0] + 1.3, 1.75, KITCHEN[1] + 2.0, KITCHEN[0] + 0.25, 1.15, KITCHEN[1] - 1.2)],
+  bouquet: [K(-1.6, 1.6, 4.7, -2.6, 0.8, 1.5), K(1.0, 1.6, 4.7, 0, 0.8, 1.5), K(3.6, 1.6, 4.7, 2.6, 0.8, 1.5)],
   farm: [K(FARM[0] + 9.5, 4.6, FARM[1] + 4.0, FARM[0] + 4.3, 0.9, FARM[1] - 2.8), K(FARM[0] + 8.6, 4.4, FARM[1] + 5.4, FARM[0] + 3.0, 1.1, FARM[1] - 1.8)],
   soil: [K(FARM[0] + 8.6, 4.4, FARM[1] + 5.4, FARM[0] + 3.0, 1.1, FARM[1] - 1.8), K(FARM[0] + 4.5, 3.4, FARM[1] + 5.4, FARM[0] + 0.6, 2.0, FARM[1]), K(FARM[0] + 2.4, 3.1, FARM[1] + 4.8, FARM[0], 2.2, FARM[1])],
-  end: [K(FARM[0] + 2.4, 3.1, FARM[1] + 4.8, FARM[0], 2.2, FARM[1]), K(FARM[0] + 1.2, 1.6, FARM[1] + 4.6, FARM[0] + 0.05, 0.95, FARM[1] + 2), K(FARM[0] + 0.9, 1.45, FARM[1] + 4.1, FARM[0] + 0.05, 0.95, FARM[1] + 2)],
+  end: [K(FARM[0] + 1.9, 2.2, FARM[1] + 5.8, FARM[0] + 0.05, 1.1, FARM[1] + 2), K(FARM[0] + 1.2, 1.6, FARM[1] + 4.6, FARM[0] + 0.05, 0.95, FARM[1] + 2), K(FARM[0] + 0.9, 1.45, FARM[1] + 4.1, FARM[0] + 0.05, 0.95, FARM[1] + 2)],
 });
 
 // ---------- 과자 ----------
@@ -157,17 +157,28 @@ const Plaza: React.FC<{ mode: Mode03; t: number; tag: string }> = ({ mode, t }) 
       }),
     [],
   );
+  const oneTex = useMemo(
+    () =>
+      canvasTex(128, 256, (g) => {
+        g.fillStyle = "#2a2a2a";
+        g.font = "900 250px Arial Black, Arial";
+        g.textAlign = "center";
+        g.textBaseline = "middle";
+        g.fillText("1", 64, 140);
+      }),
+    [],
+  );
   const band = useMemo(() => glyphTex("NOVEMBER", { bg: RED, fg: "#ffffff", size: 70, font: "Arial", w: 512, h: 120 }), []);
   const i = (m: Mode03) => mode === m;
   // 숫자 1 네 개 → 막대 과자
-  const lift = i("ones") ? r01(t, 0.1, 0.45, out) : i("give") ? 1 : 0;
+  const lift = i("ones") ? interpolate(t, [0.08, 0.7], [0, 1], clamp) : i("give") ? 1 : 0;
   const morph = i("ones") ? r01(t, 0.45, 0.62, pop) : i("give") ? 1 : 0;
   const XS = [-0.78, -0.48, 0.48, 0.78];
   // 선물 주고받기
   const pass = i("give") ? r01(t, 0.25, 0.55) : 0;
   const opn = i("give") ? r01(t, 0.6, 0.85, pop) : 0;
   // 꽃다발
-  const bq = (k: number) => (i("bouquet") ? r01(t, 0.08 + k * 0.25, 0.3 + k * 0.25, pop) : 0);
+  const bq = (k: number) => (i("bouquet") ? r01(t, 0.02 + k * 0.3, 0.2 + k * 0.3, pop) : 0);
   const QUEUE = [-2.9, -2.2, -1.5, -0.8, -0.1, 0.6];
   const coats = ["#4a6a8a", "#c86b5a", "#6f7d5c", "#8c5a8a", "#e0b04a", "#3d4a63"];
   return (
@@ -195,12 +206,18 @@ const Plaza: React.FC<{ mode: Mode03; t: number; tag: string }> = ({ mode, t }) 
           <meshBasicMaterial map={band} toneMapped={false} />
         </mesh>
         {XS.map((x, k) => {
-          const d = Math.max(0, Math.min(1, lift - k * 0.06));
-          const pos: [number, number, number] = [x * (1 + 0.15 * d), 2.0 + 0.25 * d, 0.12 + 0.9 * d];
-          return morph < 0.5 ? (
-            <Box key={k} p={pos} s={[0.13, 0.95, 0.08]} c="#2a2a2a" />
-          ) : (
-            <Stick key={k} p={[pos[0], pos[1] - 0.48, pos[2]]} s={0.6 + 0.4 * morph} r={[0, 0, (k - 1.5) * 0.08]} />
+          // 인쇄된 "1"이 종이에서 튀어나오며 초콜릿 과자로 바뀌고 한 바퀴 돈다
+          const d = Math.max(0, Math.min(1, (lift - k * 0.12) / 0.64));
+          if (d <= 0)
+            return (
+              <mesh key={k} position={[x, 2.0, 0.088]}>
+                <planeGeometry args={[0.42, 0.84]} />
+                <meshBasicMaterial map={oneTex} transparent toneMapped={false} />
+              </mesh>
+            );
+          const e = Easing.out(Easing.back(1.4))(d);
+          return (
+            <Stick key={k} p={[x * (1 - 0.15 * e), 1.52 + 0.25 * e, 0.12 + 0.55 * e]} s={0.95 + 0.1 * e} r={[0.1 * e, Math.PI * 2 * d, (k - 1.5) * 0.12 * e]} />
           );
         })}
       </group>
@@ -233,7 +250,7 @@ const Plaza: React.FC<{ mode: Mode03; t: number; tag: string }> = ({ mode, t }) 
           <group key={k}>
             <Person p={[(x as number) - 0.45, 0, 1.5]} coat={c1 as string} s={0.62} ry={Math.PI / 2} />
             <Person p={[(x as number) + 0.45, 0, 1.5]} coat={c2 as string} s={0.62} ry={-Math.PI / 2} />
-            {bq(k) > 0 && <Bouquet p={[x as number, 0.45, 1.55]} s={0.55 * bq(k)} />}
+            {bq(k) > 0 && <Bouquet p={[x as number, 0.42, 1.6]} s={0.8 * bq(k)} />}
           </group>
         ))}
     </group>
@@ -302,7 +319,7 @@ const School: React.FC<{ t: number; tag: string }> = ({ t, tag }) => {
       <Box p={[sx + 3.65, 1.08, sz + 1.5]} s={[0.95, 0.04, 0.04]} c="#9a9a9a" />
       {/* 교복 여학생 넷 */}
       <Person p={[sx - 1.2, 0, sz + 0.4]} coat="#2a3560" s={0.6} ry={Math.PI / 2} />
-      <Person p={[sx - 0.4, 0, sz + 0.4]} coat="#2a3560" s={0.6 + 0.16 * grow} ry={-Math.PI / 2} />
+      <Person p={[sx - 0.4, 0, sz + 0.4]} coat="#2a3560" s={0.6 + 0.3 * grow} ry={-Math.PI / 2} />
       <SnackBox p={[sx - 1.0 + 0.45 * pass, 0.5 + 0.1 * Math.sin(pass * Math.PI), sz + 0.45]} s={1.4} />
       <Person p={[sx + 0.9, 0, sz + 1.1]} coat="#2a3560" s={0.6} ry={Math.PI / 2 + 0.3} />
       <Person p={[sx + 1.6, 0, sz + 1.1]} coat="#2a3560" s={0.6 + 0.12 * grow} ry={-Math.PI / 2} />

@@ -31,7 +31,7 @@ const SHOTS: Shot[] = [
   { mode: "bouquet", sent: 6, xfade: 9, trans: "fade", sfx: [{ name: "chime", at: 0.3, vol: 0.3 }] },
   { mode: "farm", sent: 7, xfade: 6, trans: "flash", sfx: [{ name: "whoosh", vol: 0.3 }] },
   { mode: "soil", sent: 8, sfx: [{ name: "thud", at: 2.2, vol: 0.5 }] },
-  { mode: "end", sent: 9, sfx: [{ name: "pop", at: 2.6, vol: 0.4 }] },
+  { mode: "end", sent: 9, xfade: 9, trans: "fade", sfx: [{ name: "pop", at: 2.6, vol: 0.4 }] },
 ];
 
 const CAPS: Record<Lang, Cap[][]> = {
