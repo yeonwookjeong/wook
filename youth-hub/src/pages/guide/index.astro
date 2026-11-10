@@ -1,0 +1,21 @@
+---
+import Base from "../../layouts/Base.astro";
+import { publishedGuides, fmtDate } from "../../lib/guides";
+
+const guides = await publishedGuides();
+---
+
+<Base title="가이드" description="공모전·여행 지원금·채용 준비에 필요한 것을 직접 정리한 글" active="/guide">
+  <section class="hero">
+    <h1>📘 가이드</h1>
+    <p>신청하기 전에 알아두면 좋은 것들을 정리했어요.</p>
+  </section>
+  <div class="section">
+    {guides.map((g) => (
+      <a class="tile" style="display:block;margin-bottom:10px" href={`/guide/${g.id}`}>
+        <b>{g.data.title}{g.data.draft && " (초안)"}</b>
+        <span>{g.data.description} · {fmtDate(g.data.published)}</span>
+      </a>
+    ))}
+  </div>
+</Base>

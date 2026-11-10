@@ -1,0 +1,33 @@
+---
+import Base from "../layouts/Base.astro";
+import { site } from "../site.config";
+const effective = "2026-11-10";
+---
+
+<Base title="개인정보처리방침" description={`${site.name} 개인정보처리방침`}>
+  <article class="article">
+    <h1>개인정보처리방침</h1>
+    <p class="date">시행일 {effective}</p>
+    <p>{site.name}(이하 "사이트")는 이용자의 개인정보를 중요하게 생각하며, 관련 법령을 지킵니다.</p>
+
+    <h2>1. 수집하는 개인정보</h2>
+    <p>사이트는 회원가입을 받지 않으며, 이용자가 직접 입력하는 개인정보를 수집하지 않습니다. 문의 메일을 보내는 경우에만 회신에 필요한 이메일 주소와 문의 내용을 받습니다.</p>
+
+    <h2>2. 자동으로 수집되는 정보와 쿠키</h2>
+    <p>사이트는 방문 통계를 위해 Google Analytics를, 광고 게재를 위해 Google AdSense를 사용할 수 있습니다. 이 과정에서 쿠키, 접속 기기와 브라우저 정보, 방문 페이지와 시간 같은 정보가 Google에 의해 수집될 수 있습니다.</p>
+    <ul>
+      <li>Google을 포함한 제3자 광고 사업자는 쿠키를 사용해 이용자가 이 사이트나 다른 사이트를 방문한 기록을 바탕으로 광고를 게재할 수 있습니다.</li>
+      <li>이용자는 <a href="https://adssettings.google.com" rel="nofollow">Google 광고 설정</a>에서 맞춤 광고를 끌 수 있습니다.</li>
+      <li>브라우저 설정에서 쿠키 저장을 거부할 수 있으며, 이 경우에도 사이트 이용에는 제한이 없습니다.</li>
+    </ul>
+
+    <h2>3. 보유 기간과 파기</h2>
+    <p>문의 메일은 답변을 마친 뒤 1년 동안 보관하고 지체 없이 삭제합니다.</p>
+
+    <h2>4. 제3자 제공</h2>
+    <p>사이트는 이용자의 개인정보를 제3자에게 제공하지 않습니다. 단, 법령에 따른 요청이 있는 경우는 예외로 합니다.</p>
+
+    <h2>5. 문의</h2>
+    <p>개인정보와 관련한 문의는 <a href={`mailto:${site.email}`}>{site.email}</a>로 보내 주세요.</p>
+  </article>
+</Base>

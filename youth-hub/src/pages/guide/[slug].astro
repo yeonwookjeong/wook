@@ -1,0 +1,35 @@
+---
+import Base from "../../layouts/Base.astro";
+import { render } from "astro:content";
+import { publishedGuides, fmtDate } from "../../lib/guides";
+import { site, categories } from "../../site.config";
+
+export async function getStaticPaths() {
+  const guides = await publishedGuides();
+  return guides.map((g) => ({ params: { slug: g.id }, props: { guide: g } }));
+}
+const { guide } = Astro.props;
+const { Content } = await render(guide);
+const cat = guide.data.category !== "common" ? categories[guide.data.category] : null;
+const ld = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  headline: guide.data.title,
+  description: guide.data.description,
+  datePublished: fmtDate(guide.data.published),
+  dateModified: fmtDate(guide.data.updated ?? guide.data.published),
+  publisher: { "@type": "Organization", name: site.name },
+};
+---
+
+<Base title={guide.data.title} description={guide.data.description} active="/guide" noindex={guide.data.draft}>
+  <script type="application/ld+json" set:html={JSON.stringify(ld)} />
+  <article class="article">
+    <h1>{guide.data.title}</h1>
+    <p class="date">
+      작성 {fmtDate(guide.data.published)}{guide.data.updated && ` · 갱신 ${fmtDate(guide.data.updated)}`}
+    </p>
+    <Content />
+    {cat && <p><a href={cat.path}>{cat.emoji} 지금 접수 중인 {cat.label} 보기 →</a></p>}
+  </article>
+</Base>

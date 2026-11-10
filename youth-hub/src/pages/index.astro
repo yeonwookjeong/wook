@@ -1,0 +1,54 @@
+---
+import Base from "../layouts/Base.astro";
+import Board from "../components/Board.astro";
+import { site, categories, type Category } from "../site.config";
+import { openItems, daysLeft } from "../lib/items";
+import { publishedGuides, fmtDate } from "../lib/guides";
+
+// Closing within 7 days, across every board.
+const soon = openItems().filter((it) => {
+  const d = daysLeft(it.end);
+  return d !== null && d <= 7;
+}).sort((a, b) => (a.end ?? "").localeCompare(b.end ?? ""));
+const counts = Object.fromEntries(
+  (Object.keys(categories) as Category[]).map((c) => [c, openItems(c).length]),
+);
+const guides = (await publishedGuides()).slice(0, 4);
+---
+
+<Base>
+  <section class="hero">
+    <h1>{site.tagline}</h1>
+    <p>공모전 · 여행 지원금 · 채용, 마감 전에 챙길 것만 골라 드려요.</p>
+  </section>
+
+  <section class="section">
+    <div class="tiles">
+      {(Object.entries(categories) as [Category, (typeof categories)[Category]][]).map(([key, c]) => (
+        <a class="tile" href={c.path}>
+          <b>{c.emoji} {c.label}</b>
+          <span>{counts[key]}개 접수 중</span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>⏰ 이번 주 마감</h2>
+    <Board items={soon} filters={false} />
+  </section>
+
+  {guides.length > 0 && (
+    <section class="section">
+      <h2>📘 가이드 <a href="/guide">전체 보기</a></h2>
+      <div class="tiles">
+        {guides.map((g) => (
+          <a class="tile" href={`/guide/${g.id}`}>
+            <b>{g.data.title}</b>
+            <span>{fmtDate(g.data.published)}</span>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
+</Base>
