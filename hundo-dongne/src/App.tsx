@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
+import { sajuYear as thisSajuYear } from "@/lib/yeonun";
 import { getSchemeUri } from "@apps-in-toss/web-framework";
 import type { Person } from "@/lib/pairToken";
 import { BirthForm } from "./BirthForm";
 import { saveCard, shareMessage, type Card } from "./card";
 import { forgetAll, loadHome, loadMe, mateToken, readMate, saveHome, saveMe, type Mate } from "./me";
 import {
-  byCode, dirsOf, EL_HANJA, elName, goodStars, guaFromNumber, guaOf, label, MAP, needOf, pairPlaces, PLACE_KIND, proj, rankOf, scoreAll, SIDOS, topPlaces,
-  weakSide, weekendPlan, whyOf, type Gua, type Need, type Region, type Scored,
+  byCode, dirsOf, elName, guaFromNumber, guaOf, label, MAP, needOf, pairPlaces, PLACE_KIND, proj, rankOf, scoreAll, SIDOS, topPlaces,
+  moveCheck, tagsOf, weekendPlan, whyOf, type Gua, type Need, type Region, type Scored,
 } from "./place";
 
 // The pair link's token, from the address the app was opened with (intoss://hundo-dongne?with=…), or the browser's.
@@ -94,7 +95,7 @@ function HomePick({ me, onPick, initial }: { me: Person; onPick: (r: Region) => 
     <section className="card stack">
       <p className="kicker">지금 사는 곳</p>
       <h1>{me.name}님은 지금 어디에 사세요?</h1>
-      <p className="quiet small">동네에서 어느 쪽으로 가면 기운이 채워지는지 보려면 출발점이 있어야 해요. 주소는 받지 않고, 고른 곳은 이 휴대폰에만 남아요.</p>
+      <p className="quiet small">나에게 맞는 동네 순위는 어디 살든 같아요. 사는 곳은 주말 나들이 거리와 이사 방향을 볼 때만 써요. 주소는 받지 않고, 고른 곳은 이 휴대폰에만 남아요.</p>
       <div className="row place-pick">
         <select aria-label="시도" value={sido} onChange={(e) => setSido(e.target.value)}>
           <option value="">시도</option>
@@ -171,8 +172,8 @@ function Result({ me, home, mate, onMove, onForget }: { me: Person; home: Region
 
       <div className="card">
         <p className="quiet small">
-          {me.name}님 사주는 {elName(need.heavy)} 기운이 가장 많아요. 그래서 <strong className="seal">{dirsOf(need.yong)}({EL_HANJA[need.yong]})</strong>이 가장 잘 맞고, 그다음은{" "}
-          <strong>{dirsOf(need.hee)}</strong>이에요. <GuaLine gua={gua} /> 출발점은 <strong>{label(home)}</strong>
+          {me.name}님 사주는 {elName(need.heavy)} 기운이 가장 많아요. 그래서 <strong className="seal">{elName(need.yong)}</strong> 기운이 넉넉한 땅이 가장 잘 맞고, 그다음은{" "}
+          <strong>{elName(need.hee)}</strong> 기운이에요. 사는 곳 <strong>{label(home)}</strong>
           <button className="inline" onClick={onMove}>
             바꾸기
           </button>
@@ -197,32 +198,31 @@ function Result({ me, home, mate, onMove, onForget }: { me: Person; home: Region
             );
           })()}
         </svg>
-        {picked ? <Picked r={picked} all={all} need={need} me={me} home={home} shadeMap={rankShade} onSave={save} /> : <p className="quiet small center">회사나 이사 후보 동네를 눌러 보세요. 순위와 이유가 나와요.</p>}
+        {picked ? <Picked r={picked} all={all} need={need} gua={gua} me={me} home={home} shadeMap={rankShade} onSave={save} /> : <p className="quiet small center">회사나 이사 후보 동네를 눌러 보세요. 순위와 이유가 나와요.</p>}
       </div>
 
       <div className="card">
         <h3>{me.name}님에게 잘 맞는 동네 TOP5</h3>
+        <p className="quiet small">시도마다 가장 잘 맞는 한 곳씩 골랐어요.</p>
         <ol className="top">
           {top.map((r, i) => (
             <li key={r.code} onClick={() => setPicked(r)}>
               <b>{i + 1}</b>
               <span>{label(r)}</span>
-              <em>
-                {r.dir}쪽{r.star ? `, ${r.star}` : ""}
-              </em>
+              <em>{tagsOf(r)}</em>
               <strong>{Math.round(r.score!)}점</strong>
             </li>
           ))}
         </ol>
         <p className="soft">
-          사주 오행으로 보면 <strong>{weakSide(need)}</strong>은 {me.name}님에게 버거운 쪽이에요. 그쪽에 살거나 다녀야 한다면, 집 안의 {dirsOf(need.yong)} 자리를 밝게 쓰고 자주 머무르세요.
+          {elName(need.gi)} 기운이 센 땅은 {me.name}님에게 조금 버거워요. 그런 곳에 살거나 다녀야 한다면, 집 안의 {dirsOf(need.yong)} 자리를 밝게 쓰고 자주 머무르세요.
         </p>
       </div>
 
       <PairBox me={me} home={home} mate={mate} pair={pair} onSave={save} say={say} />
 
       <p className="quiet small">
-        방향으로 기운을 보는 건 풍수에서 쓰는 생활 방법이에요. 이 점수만으로 이사나 직장을 정하진 마시고, 비슷한 두 곳 중에 고를 때 참고하세요. 행정구역은 {MAP.asOf.replace(/-/g, ".")} 기준이에요.
+        땅의 산과 물로 기운을 보는 건 풍수에서 쓰는 생활 방법이에요. 이 점수만으로 이사나 직장을 정하진 마시고, 비슷한 두 곳 중에 고를 때 참고하세요. 행정구역은 {MAP.asOf.replace(/-/g, ".")} 기준이에요.
       </p>
       <button className="link" onClick={onForget}>
         내 정보 지우기
@@ -232,9 +232,9 @@ function Result({ me, home, mate, onMove, onForget }: { me: Person; home: Region
   );
 }
 
-function Picked({ r, all, need, me, home, shadeMap, onSave }: { r: Scored; all: Scored[]; need: Need; me: Person; home: Region; shadeMap: Map<string, string>; onSave: (c: Card, name: string) => void }) {
+function Picked({ r, all, need, gua, me, home, shadeMap, onSave }: { r: Scored; all: Scored[]; need: Need; gua: Gua | null; me: Person; home: Region; shadeMap: Map<string, string>; onSave: (c: Card, name: string) => void }) {
   const rk = rankOf(all, r.code);
-  if (!rk) return <p className="picked"><strong>{label(r)}</strong> 지금 사는 곳과 거의 같은 자리라 방향이 없어요.</p>;
+  if (!rk) return <p className="picked"><strong>{label(r)}</strong> 이 동네는 땅 정보가 없어요.</p>;
   const lines = whyOf(r, need);
   const pct = Math.max(1, Math.round((rk.rank / rk.of) * 100));
   return (
@@ -250,6 +250,15 @@ function Picked({ r, all, need, me, home, shadeMap, onSave }: { r: Scored; all: 
           {l}
         </p>
       ))}
+      <div className="move">
+        <p className="kicker">이사 방향 점검 ({label(home)}에서)</p>
+        {moveCheck(r, need, thisSajuYear()).map((l) => (
+          <p key={l} className="quiet small">
+            {l}
+          </p>
+        ))}
+        {!gua && <p className="quiet small">성별을 넣으면 팔택 방향까지 같이 봐요.</p>}
+      </div>
       <button className="ghost" onClick={() => onSave({ kind: "rank", who: me.name, place: r, rank: rk.rank, of: rk.of, lines, home, shade: shadeMap }, "동네성적표.png")}>
         이 동네 성적표 카드 저장
       </button>
@@ -306,17 +315,6 @@ function PairBox({ me, home, mate, pair, onSave, say }: { me: Person; home: Regi
         </button>
       </div>
     </div>
-  );
-}
-
-// 팔택 in one sentence: the reader's 명괘 and its four good directions, or why it is missing.
-function GuaLine({ gua }: { gua: Gua | null }) {
-  if (!gua) return <>성별을 넣으면 팔택 방향까지 같이 봐요.</>;
-  const good = goodStars(gua);
-  return (
-    <>
-      팔택으로는 {gua.name}괘({gua.east ? "동사명" : "서사명"})라 <strong>{good.map((g) => `${g.dir}쪽`).join(", ")}</strong>이 길한 방향이에요.
-    </>
   );
 }
 

@@ -4,13 +4,15 @@ import type { Person } from "@/lib/pairToken";
 import type { Pillars } from "@/lib/saju";
 import { dayPillar, todayFor } from "@/lib/today";
 import data from "./data/regions.json";
+import landData from "./data/land.json";
 
-// 내 사주 명당: each 시군구 scored from home, in two layers of the same direction.
-//  1. 사주 오행 (50%): the direction read as the five elements (풍수 방위: 북 수, 북동 토, 동 목, 남동 목, 남 화,
-//     남서 토, 서 금, 북서 금) against what this chart needs (lib/myeongri.ts readChart: 용신, 희신, 기신).
-//  2. 팔택 (50%): the same direction as one of the eight stars of the reader's 명괘 (팔택명경 하권 57쪽 총표,
-//     jojeong/knowledge/notes-bazhai.md on claude/saju-db). Needs the gender; without it the first layer alone.
-// The place name's characters are not read (decided 2026-11-07: not convincing).
+// 내 사주 명당: each 시군구 scored by its own ground, read as the five elements, against what this chart needs
+// (lib/myeongri.ts readChart: 용신, 희신, 기신). The same for a reader wherever they live (decided 2026-11-10: the
+// direction from home says nothing about the place itself). The ground (scripts/land2026.py, from the DEM):
+//   목 mountains (산지 비율, 높이), 화 warmth (남쪽일수록), 토 open plains away from water, 금 steep rocky mountains,
+//   수 sea and big rivers. 배산임수 (mountains and water together) adds a little.
+// The direction from home is kept for 이사 방향 점검 only: its element and its 팔택 star (팔택명경 하권 57쪽 총표,
+// jojeong/knowledge/notes-bazhai.md on claude/saju-db). The place name's characters are not read (2026-11-07).
 
 export type Region = { code: string; sido: string; name: string; lon: number; lat: number; d: string };
 export const MAP = data as { w: number; h: number; asOf: string; regions: Region[] };
@@ -118,8 +120,43 @@ export const STAR_LINE: Record<Star, string> = {
 export const starAt = (g: Gua, dirIndex: number): Star => BAZHAI[g.n][dirIndex];
 export const goodStars = (g: Gua) => DIRS.map((d, i) => ({ dir: d.name, star: starAt(g, i) })).filter((x) => STAR_SCORE[x.star] >= 72);
 
+export type Land = { el: number; top: number; mt: number; rock: number; flat: number; sea: number; flow: number; ne: number; lat: number };
+const LAND = (landData as { regions: Record<string, Land> }).regions;
+
+// Each region's ground as five shares 0–1 (목 화 토 금 수), ranked against the whole country so each reads "how much
+// of this, for Korea".
+const pctOf = (vals: number[]) => {
+  const sorted = [...vals].sort((a, b) => a - b);
+  return (v: number) => (sorted.length < 2 ? 0.5 : sorted.findLastIndex((x) => x <= v) / (sorted.length - 1));
+};
+const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
+const LANDS = MAP.regions.map((r) => LAND[r.code]).filter(Boolean);
+const pMt = pctOf(LANDS.map((l) => l.mt)), pTop = pctOf(LANDS.map((l) => l.top)), pRock = pctOf(LANDS.map((l) => l.rock)), pFlat = pctOf(LANDS.map((l) => l.flat));
+// Water: the sea at the border, or the biggest river through it (the DEM's drainage, or a big river Natural Earth
+// names, taken as 10,000 km²); 100 km² reads 0, 10,000 km² reads 1.
+const waterOf = (l: Land) => Math.max(clamp01(l.sea / 40), clamp01((Math.log10(Math.max(l.flow, l.ne > 0 ? 10000 : 0, 1)) - 2) / 2));
+export function groundOf(code: string): number[] | null {
+  const l = LAND[code];
+  if (!l) return null;
+  const mount = (pMt(l.mt) + pTop(l.top)) / 2;
+  const water = waterOf(l);
+  return [mount, clamp01((37.8 - l.lat) / 3.5), 0.7 * pFlat(l.flat) + 0.3 * (1 - water), pRock(l.rock), water];
+}
+
+// A place for this chart: the 용신 counts most, then the 희신; the 기신 and what feeds it count against.
+const weightsOf = (n: Need) => [0, 1, 2, 3, 4].map((e) => (e === n.yong ? 1 : e === n.hee ? 0.6 : e === n.gi ? -0.8 : e === (n.gi + 4) % 5 ? -0.3 : 0.15));
+// 배산임수: mountains behind and water before, both strong for Korea (48 of the 256).
+const isBaesan = (g: number[]) => g[0] >= 0.65 && g[4] >= 0.6;
+function fitOf(g: number[], n: Need): number {
+  const w = weightsOf(n);
+  return g.reduce((s, v, e) => s + v * w[e], 0) + (isBaesan(g) ? 0.15 : 0);
+}
+
 export type Scored = Region & {
-  score: number | null; // 0–100, one decimal kept so near places part
+  score: number | null; // 0–100 over the country, one decimal kept so near places part
+  ground: number[] | null;
+  baesan: boolean;
+  // The way from home, for 이사 방향 점검 and the weekend's distance: never in the score.
   dir: string | null;
   dirEl: number | null;
   star: Star | null;
@@ -132,22 +169,29 @@ const kmBetween = (a: Region, b: Region) => {
   return Math.round(Math.hypot(dx, dy));
 };
 
-function scoreOne(base: Region, to: Region, n: Need, g: Gua | null): Scored {
-  const km = kmBetween(base, to);
+function wayFrom(base: Region, to: Region, g: Gua | null) {
   const deg = bearing(base, to);
-  if (deg === null) return { ...to, score: null, dir: null, dirEl: null, star: null, km };
-  // The two nearest directions blended by angle, so the map shades smoothly instead of in eight wedges.
-  const i = Math.floor(deg / 45) % 8;
-  const t = (deg - DIRS[i].deg) / 45;
-  const el = elementScore(DIRS[i].el, n) * (1 - t) + elementScore(DIRS[(i + 1) % 8].el, n) * t;
+  if (deg === null) return { dir: null, dirEl: null, star: null };
   const di = Math.round(deg / 45) % 8;
-  const star = g ? starAt(g, di) : null;
-  const s = star ? el * 0.5 + STAR_SCORE[star] * 0.5 : el;
-  const d = DIRS[di];
-  return { ...to, score: Math.round(s * 10) / 10, dir: d.name, dirEl: d.el, star, km };
+  return { dir: DIRS[di].name, dirEl: DIRS[di].el, star: g ? starAt(g, di) : null };
 }
 
-export const scoreAll = (base: Region, n: Need, g: Gua | null): Scored[] => MAP.regions.map((r) => scoreOne(base, r, n, g));
+export function scoreAll(base: Region | null, n: Need, g: Gua | null): Scored[] {
+  const raw = MAP.regions.map((r) => {
+    const ground = groundOf(r.code);
+    return { r, ground, fit: ground ? fitOf(ground, n) : null };
+  });
+  const fits = raw.flatMap((x) => (x.fit === null ? [] : [x.fit]));
+  const lo = Math.min(...fits), hi = Math.max(...fits);
+  return raw.map(({ r, ground, fit }) => ({
+    ...r,
+    score: fit === null ? null : Math.round((40 + ((fit - lo) / (hi - lo || 1)) * 58) * 10) / 10,
+    ground,
+    baesan: Boolean(ground && isBaesan(ground)),
+    ...(base ? wayFrom(base, r, g) : { dir: null, dirEl: null, star: null }),
+    km: base ? kmBetween(base, r) : 0,
+  }));
+}
 
 const order = (a: Scored, b: Scored) => b.score! - a.score! || a.code.localeCompare(b.code);
 export const ranked = (all: Scored[]) => all.filter((x) => x.score !== null).sort(order);
@@ -171,14 +215,40 @@ export function rankOf(all: Scored[], code: string): { rank: number; of: number 
   return i < 0 ? null : { rank: i + 1, of: list.length };
 }
 
-// Why this place, in one or two plain lines: the direction's element, then its 팔택 star.
+// Why this place, in one or two plain lines: the side of the ground that gives this chart the most, then 배산임수 or
+// the next side.
+const GROUND_REASON = ["산이 깊어요", "따뜻한 남쪽이에요", "들이 넓어요", "바위산이 많아요", "물이 가까워요"];
 export function whyOf(r: Scored, n: Need): string[] {
+  if (!r.ground) return [];
+  const g = r.ground;
+  const w = weightsOf(n);
+  const gives = [0, 1, 2, 3, 4].filter((e) => w[e] > 0 && g[e] >= 0.4).sort((a, b) => w[b] - w[a] || g[b] - g[a]);
   const out: string[] = [];
-  if (r.dirEl !== null) {
-    const fit = r.dirEl === n.yong ? "가장 필요한" : r.dirEl === n.hee ? "두 번째로 필요한" : r.dirEl === n.gi ? "넘치면 버거운" : "무난한";
-    out.push(`${r.dir}쪽은 ${elName(r.dirEl)} 기운의 방향, ${fit} 기운이에요`);
-  }
+  const say = (e: number) =>
+    `${e === n.yong ? "가장 필요한" : e === n.hee ? "두 번째로 필요한" : "도움이 되는"} ${elName(e)} 기운이 넉넉한 땅이에요. ${GROUND_REASON[e]}`;
+  if (gives.length) out.push(say(gives[0]));
+  else out.push(`필요한 ${elName(n.yong)} 기운이 조금 드는 무난한 땅이에요`);
+  if (r.baesan) out.push("산과 물이 함께 있는 배산임수 자리라 기운이 모여요");
+  else if (gives[1] !== undefined) out.push(say(gives[1]));
+  if (g[n.gi] >= 0.7) out.push(`다만 넘치면 버거운 ${elName(n.gi)} 기운도 센 곳이에요`);
+  return out;
+}
+
+// 이사 방향 점검: from home to this place, its element and its 팔택 star, and this year's 대장군방 and 삼살방
+// (흠정협기변방서; 2026 병오년 대장군 동, 삼살 북, 2027 정미년 대장군 동, 삼살 서).
+const BAD_WAYS: Record<number, { general: string; samsal: string }> = { 2026: { general: "동", samsal: "북" }, 2027: { general: "동", samsal: "서" } };
+export function moveCheck(r: Scored, n: Need, year: number): string[] {
+  if (!r.dir || r.dirEl === null) return ["지금 사는 곳과 거의 같은 자리라 방향을 따질 게 없어요"];
+  const out: string[] = [];
+  const fit = r.dirEl === n.yong ? "가장 필요한" : r.dirEl === n.hee ? "두 번째로 필요한" : r.dirEl === n.gi ? "넘치면 버거운" : "무난한";
+  out.push(`${r.dir}쪽으로 가는 길이에요. ${elName(r.dirEl)} 기운의 방향이라 ${fit} 기운이에요`);
   if (r.star) out.push(`팔택으로는 ${STAR_LINE[r.star]}`);
+  const bad = BAD_WAYS[year];
+  if (bad) {
+    const main = r.dir.length === 1 ? r.dir : null;
+    if (main === bad.general) out.push(`올해(${year}년)는 ${bad.general}쪽이 대장군방이에요. 옛 책은 이 방향으로 집을 옮기는 일을 꺼려요`);
+    if (main === bad.samsal) out.push(`올해(${year}년)는 ${bad.samsal}쪽이 삼살방이에요. 옛 책은 이 방향으로 집을 옮기는 일을 꺼려요`);
+  }
   return out;
 }
 
@@ -248,3 +318,11 @@ export function weekendPlan(me: Person, all: Scored[], now = new Date()): Weeken
   });
 }
 export const guaFromNumber = (n: number | null): Gua | null => (n && GUA[n] ? { n, name: GUA[n], east: [1, 3, 4, 9].includes(n) } : null);
+
+// Short tags for a list row: the strongest one or two sides of the ground.
+const TAG = ["산", "남쪽 볕", "너른 들", "바위산", "물가"];
+export function tagsOf(r: Scored): string {
+  if (!r.ground) return "";
+  const t = [0, 1, 2, 3, 4].filter((e) => r.ground![e] >= 0.6).sort((a, b) => r.ground![b] - r.ground![a]).slice(0, 2).map((e) => TAG[e]);
+  return [...(r.baesan ? ["배산임수"] : []), ...t].slice(0, 2).join(", ");
+}
