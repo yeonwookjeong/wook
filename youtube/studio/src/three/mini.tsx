@@ -40,6 +40,7 @@ export function Rig<M extends string>({ paths, mode, t }: { paths: Record<M, Key
 }
 
 // ---------- 모양 ----------
+// 깜빡임 방지 규칙: 면 위에 붙이는 판(글씨·창문·현수막)은 면에서 최소 1.5cm 띄운다. 망원 카메라는 깊이 구분이 약하다 (EP02 창구, EP03 일력에서 깜빡였음)
 export const Box: React.FC<{ p: [number, number, number]; s: [number, number, number]; c: string; e?: string; ei?: number; shadow?: boolean; r?: [number, number, number]; map?: THREE.Texture; opacity?: number }> = ({ p, s, c, e, ei = 0.4, shadow = true, r, map, opacity = 1 }) => {
   const geo = useMemo(() => new RoundedBoxGeometry(s[0], s[1], s[2], 2, Math.min(0.03, Math.min(...s) * 0.3)), [s[0], s[1], s[2]]);
   return (
@@ -53,7 +54,7 @@ export const Box: React.FC<{ p: [number, number, number]; s: [number, number, nu
 export const Slab: React.FC<{ c: [number, number]; size: [number, number]; top: string; side?: string; map?: THREE.Texture }> = ({ c, size, top, side = "#8c7a64", map }) => (
   <group position={[c[0], 0, c[1]]}>
     <Box p={[0, -0.15, 0]} s={[size[0] + 0.2, 0.3, size[1] + 0.2]} c={side} />
-    <mesh position={[0, 0.003, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+    <mesh position={[0, 0.012, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
       <planeGeometry args={size} />
       <meshStandardMaterial color={top} map={map} />
     </mesh>
@@ -134,7 +135,7 @@ export const MiniFrame: React.FC<{ sky: string; sky2?: string; mix?: number; chi
     <AbsoluteFill style={{ background: sky }}>
       {sky2 && mix > 0 && <AbsoluteFill style={{ background: sky2, opacity: mix }} />}
       <AbsoluteFill style={{ filter: "saturate(1.18) contrast(1.1)" }}>
-        <ThreeCanvas width={width} height={height} shadows={{ type: THREE.PCFSoftShadowMap }} camera={{ fov: FOV, near: 0.05, far: 300 }} gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.1 }}>
+        <ThreeCanvas width={width} height={height} shadows={{ type: THREE.PCFSoftShadowMap }} camera={{ fov: FOV, near: 0.2, far: 300 }} gl={{ antialias: true, logarithmicDepthBuffer: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.1 }}>
           {children}
         </ThreeCanvas>
       </AbsoluteFill>

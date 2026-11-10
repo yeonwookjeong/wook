@@ -159,12 +159,12 @@ const Plaza: React.FC<{ mode: Mode03; t: number; tag: string }> = ({ mode, t }) 
   );
   const oneTex = useMemo(
     () =>
-      canvasTex(128, 256, (g) => {
+      canvasTex(96, 256, (g) => {
         g.fillStyle = "#2a2a2a";
         g.font = "900 250px Arial Black, Arial";
         g.textAlign = "center";
         g.textBaseline = "middle";
-        g.fillText("1", 64, 140);
+        g.fillText("1", 48, 140);
       }),
     [],
   );
@@ -196,12 +196,12 @@ const Plaza: React.FC<{ mode: Mode03; t: number; tag: string }> = ({ mode, t }) 
       <group position={[0, 0, -2.2]}>
         {[-1.0, 1.0].map((x) => <Box key={x} p={[x, 0.4, 0]} s={[0.1, 0.8, 0.1]} c="#6b5a48" />)}
         <Box p={[0, 2.25, 0]} s={[2.5, 3.0, 0.16]} c="#f4f1ea" />
-        <mesh position={[0, 2.05, 0.085]}>
+        <mesh position={[0, 2.05, 0.1]}>
           <planeGeometry args={[2.3, 2.34]} />
           <meshStandardMaterial map={face} />
         </mesh>
         <Box p={[0, 3.55, 0.02]} s={[2.5, 0.5, 0.2]} c={RED} />
-        <mesh position={[0, 3.55, 0.125]}>
+        <mesh position={[0, 3.55, 0.14]}>
           <planeGeometry args={[2.2, 0.5]} />
           <meshBasicMaterial map={band} toneMapped={false} />
         </mesh>
@@ -210,8 +210,8 @@ const Plaza: React.FC<{ mode: Mode03; t: number; tag: string }> = ({ mode, t }) 
           const d = Math.max(0, Math.min(1, (lift - k * 0.12) / 0.64));
           if (d <= 0)
             return (
-              <mesh key={k} position={[x, 2.0, 0.088]}>
-                <planeGeometry args={[0.42, 0.84]} />
+              <mesh key={k} position={[x, 2.0, 0.12 + k * 0.012]}>
+                <planeGeometry args={[0.315, 0.84]} />
                 <meshBasicMaterial map={oneTex} transparent toneMapped={false} />
               </mesh>
             );
@@ -304,12 +304,12 @@ const School: React.FC<{ t: number; tag: string }> = ({ t, tag }) => {
     <group>
       <Slab c={SCHOOL} size={[10, 7]} top="#cdb28a" />
       <Box p={[sx, 1.3, sz - 2.6]} s={[9, 2.6, 1.4]} c="#efe4cc" />
-      <mesh position={[sx, 1.3, sz - 1.89]}>
+      <mesh position={[sx, 1.3, sz - 1.87]}>
         <planeGeometry args={[8.8, 2.2]} />
         <meshStandardMaterial map={win} />
       </mesh>
       <Box p={[sx, 2.72, sz - 2.6]} s={[9.2, 0.2, 1.6]} c="#8a5a3a" />
-      <mesh position={[sx, 2.3, sz - 1.88]}>
+      <mesh position={[sx, 2.3, sz - 1.84]}>
         <circleGeometry args={[0.28, 32]} />
         <meshStandardMaterial color="#ffffff" />
       </mesh>
@@ -343,7 +343,7 @@ const Store: React.FC<{ t: number }> = ({ t }) => {
     <group>
       <Slab c={STORE} size={[8, 6]} top="#e8e6e0" />
       <Box p={[sx, 1.6, sz - 3]} s={[8, 3.2, 0.15]} c="#f4f2ec" />
-      <mesh position={[sx, 2.85, sz - 2.9]}>
+      <mesh position={[sx, 2.85, sz - 2.88]}>
         <planeGeometry args={[2.0, 0.62]} />
         <meshBasicMaterial map={banner} toneMapped={false} />
       </mesh>
@@ -411,7 +411,7 @@ const Kitchen: React.FC<{ t: number }> = ({ t }) => {
     <group>
       <Slab c={KITCHEN} size={[6, 5]} top="#b98f63" />
       <Box p={[kx, 1.6, kz - 2.35]} s={[6, 3.2, 0.15]} c="#f6f3ee" />
-      <mesh position={[kx, 1.55, kz - 2.27]}>
+      <mesh position={[kx, 1.55, kz - 2.25]}>
         <planeGeometry args={[5.8, 1.2]} />
         <meshStandardMaterial map={tiles} />
       </mesh>
@@ -491,7 +491,7 @@ const Farm: React.FC<{ mode: Mode03; t: number }> = ({ mode, t }) => {
     [],
   );
   const paddy = (gx: number, gz: number) => (
-    <mesh key={`${gx}${gz}`} position={[fx + gx * 2.6, 0.01, fz + gz * 2.2]} rotation={[-Math.PI / 2, 0, (gx + gz) % 2 ? Math.PI / 2 : 0]} receiveShadow>
+    <mesh key={`${gx}${gz}`} position={[fx + gx * 2.6, 0.025, fz + gz * 2.2]} rotation={[-Math.PI / 2, 0, (gx + gz) % 2 ? Math.PI / 2 : 0]} receiveShadow>
       <planeGeometry args={[2.4, 2.0]} />
       <meshStandardMaterial map={rows} color={(gx + gz) % 2 ? "#ffffff" : "#e8e0c8"} />
     </mesh>
@@ -524,7 +524,7 @@ const Farm: React.FC<{ mode: Mode03; t: number }> = ({ mode, t }) => {
       <group position={[fx + 4.6, 0, fz - 3.6]}>
         <Box p={[0, 0.6, 0]} s={[2.2, 1.2, 1.4]} c="#efe8dc" />
         <Box p={[0, 1.35, 0]} s={[2.5, 0.3, 1.7]} c="#2f6fb0" />
-        <mesh position={[0, 0.82, 0.71]}>
+        <mesh position={[0, 0.82, 0.725]}>
           <planeGeometry args={[1.7, 0.36]} />
           <meshBasicMaterial map={banner} toneMapped={false} />
         </mesh>
