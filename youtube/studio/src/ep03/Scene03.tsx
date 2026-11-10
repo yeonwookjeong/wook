@@ -324,7 +324,7 @@ const School: React.FC<{ t: number; tag: string }> = ({ t, tag }) => {
       <Person p={[sx + 0.9, 0, sz + 1.1]} coat="#2a3560" s={0.6} ry={Math.PI / 2 + 0.3} />
       <Person p={[sx + 1.6, 0, sz + 1.1]} coat="#2a3560" s={0.6 + 0.12 * grow} ry={-Math.PI / 2} />
       <SnackBox p={[sx + 1.25, 0.5, sz + 1.15]} s={1.3} kind="pink" />
-      <Sprite tex={tagT} s={r01(t, 0.05, 0.25, pop)} pos={[sx + 0.6, 1.75, sz + 1.2]} size={[1.2, 0.3]} />
+      <Sprite tex={tagT} s={r01(t, 0.05, 0.25, pop)} pos={[sx - 0.9, 1.75, sz + 1.0]} size={[1.2, 0.3]} />
     </group>
   );
 };
@@ -514,7 +514,7 @@ const Farm: React.FC<{ mode: Mode03; t: number }> = ({ mode, t }) => {
           <meshStandardMaterial color={c as string} flatShading />
         </mesh>
       ))}
-      {[[-6.2, -3.8], [-5.6, 1.5], [6.4, 1.2], [-6.4, 4.2]].map(([x, z], k) => (
+      {[[-6.2, -3.8], [-5.6, 1.5], [-6.4, 4.2]].map(([x, z], k) => (
         <group key={k} position={[fx + x, 0, fz + z]}>
           <mesh position={[0, 0.5, 0]} castShadow><cylinderGeometry args={[0.07, 0.1, 1.0, 8]} /><meshStandardMaterial color="#6b4a32" /></mesh>
           <mesh position={[0, 1.25, 0]} castShadow><icosahedronGeometry args={[0.6, 0]} /><meshStandardMaterial color={k % 2 ? "#c46a2a" : "#8a9a4a"} flatShading /></mesh>
