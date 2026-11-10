@@ -26,15 +26,15 @@ const STORE: [number, number] = [-16, -12];
 const KITCHEN: [number, number] = [0, -26];
 const FARM: [number, number] = [20, 14];
 const paths = (lang: "en" | "es"): Record<Mode03, Key[]> => ({
-  calendar: [lang === "es" ? K(-4.5, 3.0, 9.2, 0, 1.7, -0.6) : K(4.5, 3.2, 9.5, 0, 1.6, -0.5), K(3.0, 2.9, 8.0, 0, 1.8, -1.0)],
-  ones: [K(3.0, 2.9, 8.0, 0, 1.8, -1.0), K(1.0, 2.4, 4.0, 0, 2.15, -2.0)],
+  calendar: [lang === "es" ? K(-6.0, 3.8, 11.5, 0, 1.4, 0.2) : K(6.0, 3.8, 12.0, 0, 1.4, 0.2), K(2.2, 2.7, 6.4, 0, 1.9, -1.2)],
+  ones: [K(2.2, 2.7, 6.4, 0, 1.9, -1.2), K(1.0, 2.4, 4.0, 0, 2.15, -2.0)],
   give: [K(1.0, 2.4, 4.0, 0, 2.15, -2.0), K(1.0, 1.7, 5.4, -0.1, 0.75, 1.8), K(1.7, 1.45, 4.6, -0.1, 0.7, 1.8)],
   school: [K(SCHOOL[0] + 4.5, 3.6, SCHOOL[1] + 7.5, SCHOOL[0], 1.1, SCHOOL[1] + 0.4), K(SCHOOL[0] + 2.6, 2.3, SCHOOL[1] + 4.8, SCHOOL[0] + 0.2, 0.95, SCHOOL[1] + 0.7)],
   store: [K(STORE[0] + 3.5, 3.0, STORE[1] + 6.5, STORE[0], 1.3, STORE[1] - 1.6), K(STORE[0] + 1.4, 2.2, STORE[1] + 3.8, STORE[0], 1.5, STORE[1] - 2.2)],
   kitchen: [K(KITCHEN[0] + 0.9, 1.85, KITCHEN[1] + 1.9, KITCHEN[0] - 0.4, 1.2, KITCHEN[1] - 1.2), K(KITCHEN[0] + 1.3, 1.75, KITCHEN[1] + 2.0, KITCHEN[0] + 0.25, 1.15, KITCHEN[1] - 1.2)],
   bouquet: [K(-2.8, 2.6, 7.6, 0, 0.9, 1.5), K(2.6, 2.2, 7.0, 0.4, 0.9, 1.5)],
-  farm: [K(FARM[0] + 7, 8.5, FARM[1] + 10, FARM[0] - 0.5, 0.6, FARM[1] - 2.5), K(FARM[0] + 5, 4.8, FARM[1] + 7, FARM[0], 1.5, FARM[1])],
-  soil: [K(FARM[0] + 5, 4.5, FARM[1] + 7, FARM[0], 1.5, FARM[1]), K(FARM[0] + 2.4, 3.1, FARM[1] + 4.8, FARM[0], 2.2, FARM[1])],
+  farm: [K(FARM[0] + 9.5, 4.6, FARM[1] + 4.0, FARM[0] + 4.3, 0.9, FARM[1] - 2.8), K(FARM[0] + 8.6, 4.4, FARM[1] + 5.4, FARM[0] + 3.0, 1.1, FARM[1] - 1.8)],
+  soil: [K(FARM[0] + 8.6, 4.4, FARM[1] + 5.4, FARM[0] + 3.0, 1.1, FARM[1] - 1.8), K(FARM[0] + 4.5, 3.4, FARM[1] + 5.4, FARM[0] + 0.6, 2.0, FARM[1]), K(FARM[0] + 2.4, 3.1, FARM[1] + 4.8, FARM[0], 2.2, FARM[1])],
   end: [K(FARM[0] + 2.4, 3.1, FARM[1] + 4.8, FARM[0], 2.2, FARM[1]), K(FARM[0] + 1.2, 1.6, FARM[1] + 4.6, FARM[0] + 0.05, 0.95, FARM[1] + 2), K(FARM[0] + 0.9, 1.45, FARM[1] + 4.1, FARM[0] + 0.05, 0.95, FARM[1] + 2)],
 });
 
@@ -206,12 +206,19 @@ const Plaza: React.FC<{ mode: Mode03; t: number; tag: string }> = ({ mode, t }) 
       </group>
       {/* 줄 선 사람들 (상자를 들고) */}
       {(i("calendar") || i("ones")) &&
-        QUEUE.map((x, k) => (
-          <group key={k}>
-            <Person p={[x, 0, 1.0]} coat={coats[k]} s={0.62} ry={-Math.PI / 2} />
-            <SnackBox p={[x - 0.12, 0.52, 1.18]} r={[0, -Math.PI / 2, 0]} s={1.1} />
-          </group>
-        ))}
+        QUEUE.map((x, k) => {
+          // 줄이 한 칸씩 앞으로 (첫 장면이 멈춰 있지 않게)
+          const tt = i("calendar") ? t * 3 : 3;
+          const step = Math.floor(tt) + ease(Math.min(1, (tt % 1) * 1.6));
+          const dx = -0.32 * Math.min(3, step);
+          const hop = i("calendar") ? Math.abs(Math.sin(Math.min(1, (tt % 1) * 1.6) * Math.PI)) * 0.05 : 0;
+          return (
+            <group key={k} position={[dx, hop, 0]}>
+              <Person p={[x, 0, 1.0]} coat={coats[k]} s={0.62} ry={-Math.PI / 2} />
+              <SnackBox p={[x - 0.12, 0.52, 1.18]} r={[0, -Math.PI / 2, 0]} s={1.1} />
+            </group>
+          );
+        })}
       {/* 주고받기 */}
       {i("give") && (
         <group>
@@ -447,6 +454,7 @@ const Farm: React.FC<{ mode: Mode03; t: number }> = ({ mode, t }) => {
   const one = useMemo(() => glyphTex("一", { bg: "#f4ead6", fg: "#5a2a14", size: 210, font: BRUSH_HANJA }), []);
   const soil = useMemo(() => glyphTex("土", { bg: "#f4ead6", fg: "#b8222a", size: 220, font: BRUSH_HANJA }), []);
   const q = useMemo(() => qTex(), []);
+  const banner = useMemo(() => glyphTex("농업인의 날 11.11", { bg: "#fffaf0", fg: "#2f6f3a", size: 58, w: 512, h: 112 }), []);
   const i = (m: Mode03) => mode === m;
   // 十一: 나란히 등장(eleven) → 위아래로 겹침 → 土
   const show = i("soil") ? r01(t, 0.02, 0.15, pop) : 0;
@@ -499,10 +507,27 @@ const Farm: React.FC<{ mode: Mode03; t: number }> = ({ mode, t }) => {
       <group position={[fx + 4.6, 0, fz - 3.6]}>
         <Box p={[0, 0.6, 0]} s={[2.2, 1.2, 1.4]} c="#efe8dc" />
         <Box p={[0, 1.35, 0]} s={[2.5, 0.3, 1.7]} c="#2f6fb0" />
+        <mesh position={[0, 0.82, 0.71]}>
+          <planeGeometry args={[1.7, 0.36]} />
+          <meshBasicMaterial map={banner} toneMapped={false} />
+        </mesh>
       </group>
-      {[[-1.8, 2.8, "#6b8e4e"], [1.6, 2.6, "#8a6a3a"], [-3.2, -1.5, "#5b7a4a"]].map(([x, z, c], k) => (
-        <Person key={k} p={[fx + (x as number), 0, fz + (z as number)]} coat={c as string} s={0.62} ry={k - 1} />
-      ))}
+      {/* 가래떡을 든 농부들 (마당), 들판의 농부 */}
+      {[[3.4, -1.9, "#6b8e4e", 0.5], [4.4, -1.6, "#8a6a3a", -0.3], [5.4, -1.9, "#5b7a4a", -0.8]].map(([x, z, c, ry], k) => {
+        const w = i("farm") ? Math.sin((t * 4 + k) * Math.PI) * 0.04 : 0;
+        return (
+          <group key={k} position={[fx + (x as number), Math.abs(w), fz + (z as number)]}>
+            <Person p={[0, 0, 0]} coat={c as string} s={0.62} ry={ry as number} />
+            {[-0.035, 0, 0.035].map((dz, j) => (
+              <mesh key={j} position={[0.14, 0.5 + j * 0.03, 0.12 + dz]} rotation={[0, ry as number, Math.PI / 2]}>
+                <cylinderGeometry args={[0.028, 0.028, 0.34, 12]} />
+                <meshStandardMaterial color="#fbfaf5" />
+              </mesh>
+            ))}
+          </group>
+        );
+      })}
+      <Person p={[fx - 1.8, 0, fz + 2.8]} coat="#6b8e4e" s={0.62} ry={-1} />
       {/* 十 一 → 土 */}
       {(i("soil") || i("end")) && merge < 0.5 && show > 0 && (
         <group scale={show}>
