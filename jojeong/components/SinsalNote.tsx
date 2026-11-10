@@ -35,8 +35,9 @@ export default function SinsalNote({ gift }: { gift: number }) {
       if (done) return;
       done = true;
       cleanup();
-      // A reading is on screen: not now.
-      if (path.startsWith("/reports/") && !document.querySelector('input[name="birth"]')) return;
+      // Not on a report page at all: a reading on screen, or the birth form being filled in (Clarity 11/10: the
+      // notice came up over the free reading's form while people typed, and was closed about one time in seven).
+      if (path.startsWith("/reports/") || document.querySelector('input[name="birth"]')) return;
       try {
         localStorage.setItem(SEEN, "1");
       } catch {}

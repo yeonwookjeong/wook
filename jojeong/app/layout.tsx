@@ -22,6 +22,8 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
   title: { default: `${SITE_NAME}, ${SITE_TAGLINE}`, template: `%s, ${SITE_NAME}` },
   description: "평생 사주, 궁합, 2027 신년운세, 연애, 재물, 직업까지. 같은 일주라도 다 다른 당신만의 사주를 정 훈도가 풀어 드려요.",
+  // The column feed, for readers and for search engines that take RSS (네이버 서치어드바이저).
+  alternates: { types: { "application/rss+xml": [{ url: "/rss.xml", title: `${SITE_NAME}, 훈도의 사주 이야기` }] } },
   // Lets AdSense verify the site once the account is set (lib/ads.ts).
   ...(adsAccount && { other: { "google-adsense-account": adsAccount } }),
   // Search Console and 네이버 서치어드바이저 ownership, from the codes each gives (only the content value).
@@ -85,7 +87,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         {membersEnabled() && (CHANNEL_GIFT_ON || (await isPreview())) && (await currentMember().catch(() => null).then((m) => Boolean(m && m.id.startsWith("k") && !m.channel))) && (
           <ChannelNudge gift={CHANNEL_GIFT} />
         )}
-        {/* Page views and visitors, cookieless (Vercel Web Analytics; enable it in the Vercel project). */}
+        {/* Page views and visitors, cookieless (Vercel Web Analytics, turned on in the Vercel project 2026-11-08). */}
         <Analytics />
         {/* The same, counted for the owner's dashboard (/admin). */}
         <VisitBeacon />

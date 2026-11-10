@@ -154,8 +154,14 @@ function ManseRows({ cols }: { cols: ManseCol[] }) {
     ["12운성", (c) => c.stage],
     ["신살", (c) => (c.sals.length ? c.sals.map((x) => <span key={x} className="block">{x}</span>) : "-")],
   ];
+  // Folded: the terms are for readers who study saju; the eight characters above are enough for everyone else.
   return (
-    <div className={`mt-2 grid ${MANSE_COLS} gap-x-1.5 text-center text-[11px]`}>
+    <details className="group mt-2">
+      <summary className="flex cursor-pointer list-none items-center justify-center gap-1 rounded-lg py-1.5 text-[12px] font-bold text-ink-soft [&::-webkit-details-marker]:hidden">
+        사주 공부한 분을 위한 칸(십성, 지장간, 12운성) 펼치기
+        <span className="transition group-open:rotate-180" aria-hidden="true">▾</span>
+      </summary>
+    <div className={`mt-1 grid ${MANSE_COLS} gap-x-1.5 text-center text-[11px]`}>
       {rows.map(([label, cell]) => (
         <div key={label} className="contents">
           <span className="border-t border-seal/10 py-1 text-left text-[11px] leading-tight font-bold text-ink-soft">{label}</span>
@@ -167,5 +173,6 @@ function ManseRows({ cols }: { cols: ManseCol[] }) {
         </div>
       ))}
     </div>
+    </details>
   );
 }

@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: PageProps<"/column/[slug]">):
     ...(!isPublished(c) && { robots: { index: false } }),
     title: c.title,
     description: c.summary,
-    alternates: { canonical: `/column/${c.slug}` },
+    alternates: { canonical: `/column/${c.slug}`, types: { "application/rss+xml": "/rss.xml" } },
     openGraph: {
       type: "article",
       url: `/column/${c.slug}`,
