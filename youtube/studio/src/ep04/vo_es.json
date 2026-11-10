@@ -1,0 +1,70 @@
+{
+  "voice": "em_alex",
+  "sentences": [
+    {
+      "id": 0,
+      "file": "ep04/vo_es/s0.wav",
+      "sec": 5.035
+    },
+    {
+      "id": 1,
+      "file": "ep04/vo_es/s1.wav",
+      "sec": 1.92
+    },
+    {
+      "id": 2,
+      "file": "ep04/vo_es/s2.wav",
+      "sec": 3.072
+    },
+    {
+      "id": 3,
+      "file": "ep04/vo_es/s3.wav",
+      "sec": 4.395
+    },
+    {
+      "id": 4,
+      "file": "ep04/vo_es/s4.wav",
+      "sec": 7.232
+    },
+    {
+      "id": 5,
+      "file": "ep04/vo_es/s5.wav",
+      "sec": 1.984
+    },
+    {
+      "id": 6,
+      "file": "ep04/vo_es/s6.wav",
+      "sec": 7.68
+    },
+    {
+      "id": 7,
+      "file": "ep04/vo_es/s7.wav",
+      "sec": 7.189
+    },
+    {
+      "id": 8,
+      "file": "ep04/vo_es/s8.wav",
+      "sec": 3.541
+    },
+    {
+      "id": 9,
+      "file": "ep04/vo_es/s9.wav",
+      "sec": 2.752
+    },
+    {
+      "id": 10,
+      "file": "ep04/vo_es/s10.wav",
+      "sec": 5.931
+    },
+    {
+      "id": 11,
+      "file": "ep04/vo_es/s11.wav",
+      "sec": 3.029
+    },
+    {
+      "id": 12,
+      "file": "ep04/vo_es/s12.wav",
+      "sec": 8.491
+    }
+  ]
+}

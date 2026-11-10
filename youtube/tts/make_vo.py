@@ -16,6 +16,9 @@ HERE = Path(__file__).parent
 STUDIO = HERE.parent / "studio"
 VOICE = {"en": ("am_michael", "en-us"), "es": ("em_alex", "es")}
 SPEED = 1.2
+# 1분 편처럼 길이를 늘려야 할 때: SPEED=1.05 python3 make_vo.py ep04 en
+import os
+SPEED = float(os.environ.get("SPEED", SPEED))
 
 
 def main() -> None:

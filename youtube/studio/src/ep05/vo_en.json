@@ -1,0 +1,40 @@
+{
+  "voice": "am_michael",
+  "sentences": [
+    {
+      "id": 0,
+      "file": "ep05/vo_en/s0.wav",
+      "sec": 4.203
+    },
+    {
+      "id": 1,
+      "file": "ep05/vo_en/s1.wav",
+      "sec": 3.584
+    },
+    {
+      "id": 2,
+      "file": "ep05/vo_en/s2.wav",
+      "sec": 4.928
+    },
+    {
+      "id": 3,
+      "file": "ep05/vo_en/s3.wav",
+      "sec": 6.272
+    },
+    {
+      "id": 4,
+      "file": "ep05/vo_en/s4.wav",
+      "sec": 8.619
+    },
+    {
+      "id": 5,
+      "file": "ep05/vo_en/s5.wav",
+      "sec": 5.355
+    },
+    {
+      "id": 6,
+      "file": "ep05/vo_en/s6.wav",
+      "sec": 1.835
+    }
+  ]
+}

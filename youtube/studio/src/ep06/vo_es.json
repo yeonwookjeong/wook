@@ -1,0 +1,40 @@
+{
+  "voice": "em_alex",
+  "sentences": [
+    {
+      "id": 0,
+      "file": "ep06/vo_es/s0.wav",
+      "sec": 4.267
+    },
+    {
+      "id": 1,
+      "file": "ep06/vo_es/s1.wav",
+      "sec": 2.176
+    },
+    {
+      "id": 2,
+      "file": "ep06/vo_es/s2.wav",
+      "sec": 5.419
+    },
+    {
+      "id": 3,
+      "file": "ep06/vo_es/s3.wav",
+      "sec": 4.331
+    },
+    {
+      "id": 4,
+      "file": "ep06/vo_es/s4.wav",
+      "sec": 4.309
+    },
+    {
+      "id": 5,
+      "file": "ep06/vo_es/s5.wav",
+      "sec": 3.733
+    },
+    {
+      "id": 6,
+      "file": "ep06/vo_es/s6.wav",
+      "sec": 1.749
+    }
+  ]
+}

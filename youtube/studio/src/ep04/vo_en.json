@@ -1,0 +1,70 @@
+{
+  "voice": "am_michael",
+  "sentences": [
+    {
+      "id": 0,
+      "file": "ep04/vo_en/s0.wav",
+      "sec": 4.629
+    },
+    {
+      "id": 1,
+      "file": "ep04/vo_en/s1.wav",
+      "sec": 1.728
+    },
+    {
+      "id": 2,
+      "file": "ep04/vo_en/s2.wav",
+      "sec": 2.645
+    },
+    {
+      "id": 3,
+      "file": "ep04/vo_en/s3.wav",
+      "sec": 4.757
+    },
+    {
+      "id": 4,
+      "file": "ep04/vo_en/s4.wav",
+      "sec": 6.997
+    },
+    {
+      "id": 5,
+      "file": "ep04/vo_en/s5.wav",
+      "sec": 1.728
+    },
+    {
+      "id": 6,
+      "file": "ep04/vo_en/s6.wav",
+      "sec": 7.403
+    },
+    {
+      "id": 7,
+      "file": "ep04/vo_en/s7.wav",
+      "sec": 7.68
+    },
+    {
+      "id": 8,
+      "file": "ep04/vo_en/s8.wav",
+      "sec": 3.733
+    },
+    {
+      "id": 9,
+      "file": "ep04/vo_en/s9.wav",
+      "sec": 3.179
+    },
+    {
+      "id": 10,
+      "file": "ep04/vo_en/s10.wav",
+      "sec": 6.379
+    },
+    {
+      "id": 11,
+      "file": "ep04/vo_en/s11.wav",
+      "sec": 2.944
+    },
+    {
+      "id": 12,
+      "file": "ep04/vo_en/s12.wav",
+      "sec": 8.192
+    }
+  ]
+}
