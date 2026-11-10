@@ -10,6 +10,7 @@ export const BUSINESS = {
   hosting: "Vercel Inc.", // 호스팅 서비스 제공자
   // The same in English, for the English pages (app/en).
   nameEn: "Joyhunt",
+  mailOrderEn: "2024-Gyeonggi Paju-0357",
   ownerEn: "Representative: Jeong Yeon-uk",
   addressEn: "304-C152, 33 Gyoha-ro 159beon-gil, Paju-si, Gyeonggi-do, Republic of Korea",
 };

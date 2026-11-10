@@ -47,7 +47,7 @@ const SIX = [1, 0, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2]; // 子丑 寅亥 卯戌 辰�
 export function dayMeeting(a: Pillars, b: Pillars): { title: string; line: string } {
   const x = a.dayBranch, y = b.dayBranch;
   const stemsBond = Math.abs(a.dayStem - b.dayStem) === 5;
-  const bond = stemsBond ? " Your Day Masters also form a pair that pulls together, a rarer bond." : "";
+  const bond = stemsBond ? " And your Day Masters form one of the five pairs that pull together, which is rarer." : "";
   if (x === y) return { title: "Mirror", line: `You were both born on a ${ANIMALS_EN[x]} day: you recognise each other quickly, and can be stubborn in the same places.${bond}` };
   if (SIX[x] === y) return { title: "Pulled together", line: `Your day animals, ${ANIMALS_EN[x]} and ${ANIMALS_EN[y]}, are one of the six natural pairs: an easy, warm pull.${bond}` };
   if ((x + 6) % 12 === y) return { title: "Face to face", line: `Your day animals, ${ANIMALS_EN[x]} and ${ANIMALS_EN[y]}, stand opposite each other: strong attraction, and strong friction.${bond}` };

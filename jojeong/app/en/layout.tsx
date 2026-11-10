@@ -39,7 +39,7 @@ export default function EnLayout({ children }: LayoutProps<"/en">) {
         </nav>
         <p>For entertainment and cultural interest. Saju is a tradition of interpretation, not a prediction.</p>
         <p className="mt-1">
-          {BUSINESS.nameEn}, {BUSINESS.ownerEn} | Business registration {BUSINESS.regNo} | Mail-order registration {BUSINESS.mailOrderNo} | {BUSINESS.email}
+          {BUSINESS.nameEn}, {BUSINESS.ownerEn} | Business registration {BUSINESS.regNo} | Mail-order registration {BUSINESS.mailOrderEn} | {BUSINESS.email}
         </p>
         <p>{BUSINESS.addressEn}</p>
         <p className="mt-1">© Hundo Saju, hundosaju.com</p>

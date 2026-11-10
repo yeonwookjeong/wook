@@ -10,7 +10,7 @@ export default function Legal({ title, updated, children }: { title: string; upd
       <h2>Who we are</h2>
       <p>
         Hundo Saju (hundosaju.com) is run by {BUSINESS.nameEn} ({BUSINESS.ownerEn}), a business registered in the Republic of Korea, registration number{" "}
-        {BUSINESS.regNo}, mail-order registration {BUSINESS.mailOrderNo}. Address: {BUSINESS.addressEn}. Email: {BUSINESS.email}.
+        {BUSINESS.regNo}, mail-order registration {BUSINESS.mailOrderEn}. Address: {BUSINESS.addressEn}. Email: {BUSINESS.email}.
       </p>
     </article>
   );

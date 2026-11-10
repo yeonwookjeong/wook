@@ -88,7 +88,7 @@ export const EN_READINGS: EnReading[] = [
       "What we should agree on early",
       "What we must keep to last",
       "Our ten years: good years together, years out of step",
-      "Coming soon: our good months and careful months",
+      "The months ahead: our good months and careful months",
     ],
     glance: ["In one line", "To each other", "Where you clash", "How to last", "Good times", "The one thing only you two have"],
   },
