@@ -62,7 +62,8 @@ export function personFromForm(form: FormData): Person {
 
 // "우리 둘의 동네": what a link carries to the other person. A name, the eight characters and the 시군구 code of
 // home, nothing else (no birth date, no address).
-export type Mate = { name: string; pillars: Pillars; home: string };
+// `gua`: the 명괘 number (팔택), when the sender gave a gender: one digit, never the birth year.
+export type Mate = { name: string; pillars: Pillars; home: string; gua: number | null };
 
 const b64 = (s: string) => {
   let bin = "";
@@ -74,9 +75,9 @@ const unb64 = (s: string) => {
   return new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)));
 };
 
-export function mateToken(p: Person, home: string): string {
+export function mateToken(p: Person, home: string, gua: number | null): string {
   const x = p.pillars;
-  return b64(JSON.stringify({ n: p.name, h: home, p: [x.yearStem ?? null, x.yearBranch, x.monthStem ?? null, x.monthBranch ?? null, x.dayStem, x.dayBranch, x.hourBranch, x.hourStem ?? null] }));
+  return b64(JSON.stringify({ n: p.name, h: home, ...(gua && { g: gua }), p: [x.yearStem ?? null, x.yearBranch, x.monthStem ?? null, x.monthBranch ?? null, x.dayStem, x.dayBranch, x.hourBranch, x.hourStem ?? null] }));
 }
 
 const int = (v: unknown, max: number) => (typeof v === "number" && Number.isInteger(v) && v >= 0 && v < max ? v : null);
@@ -84,7 +85,7 @@ const int = (v: unknown, max: number) => (typeof v === "number" && Number.isInte
 export function readMate(token: string | null): Mate | null {
   if (!token || token.length > 400) return null;
   try {
-    const o = JSON.parse(unb64(token)) as { n?: unknown; h?: unknown; p?: unknown[] };
+    const o = JSON.parse(unb64(token)) as { n?: unknown; h?: unknown; g?: unknown; p?: unknown[] };
     if (typeof o.n !== "string" || typeof o.h !== "string" || !/^\d{5}$/.test(o.h) || !Array.isArray(o.p) || o.p.length !== 8) return null;
     const [ys, yb, ms, mb, ds, db, hb, hs] = o.p;
     const dayStem = int(ds, 10), dayBranch = int(db, 12), yearBranch = int(yb, 12);
@@ -99,7 +100,8 @@ export function readMate(token: string | null): Mate | null {
       hourBranch: int(hb, 12),
       hourStem: int(hs, 10) ?? undefined,
     } as Pillars;
-    return { name: o.n.slice(0, 10), pillars, home: o.h };
+    const gua = int(o.g, 10);
+    return { name: o.n.slice(0, 10), pillars, home: o.h, gua: gua && gua !== 5 ? gua : null };
   } catch {
     return null;
   }

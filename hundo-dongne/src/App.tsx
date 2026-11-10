@@ -5,8 +5,8 @@ import { BirthForm } from "./BirthForm";
 import { saveCard, shareMessage, type Card } from "./card";
 import { forgetAll, loadHome, loadMe, mateToken, readMate, saveHome, saveMe, type Mate } from "./me";
 import {
-  byCode, dirsOf, EL_HANJA, elName, label, MAP, needOf, pairPlaces, proj, rankOf, scoreAll, SIDOS, topPlaces, weakSide, whyOf,
-  type Need, type Region, type Scored,
+  byCode, dirsOf, EL_HANJA, elName, goodStars, guaFromNumber, guaOf, label, MAP, needOf, pairPlaces, PLACE_KIND, proj, rankOf, scoreAll, SIDOS, topPlaces,
+  weakSide, weekendPlan, whyOf, type Gua, type Need, type Region, type Scored,
 } from "./place";
 
 // The pair link's token, from the address the app was opened with (intoss://hundo-dongne?with=…), or the browser's.
@@ -119,14 +119,16 @@ function HomePick({ me, onPick, initial }: { me: Person; onPick: (r: Region) => 
 
 function Result({ me, home, mate, onMove, onForget }: { me: Person; home: Region; mate: Mate | null; onMove: () => void; onForget: () => void }) {
   const need = useMemo(() => needOf(me.pillars), [me]);
-  const all = useMemo(() => (need ? scoreAll(home, need) : []), [home, need]);
+  const gua = useMemo(() => guaOf(me), [me]);
+  const all = useMemo(() => (need ? scoreAll(home, need, gua) : []), [home, need, gua]);
+  const weekend = useMemo(() => weekendPlan(me, all), [me, all]);
   const top = useMemo(() => topPlaces(all), [all]);
   const [picked, setPicked] = useState<Scored | null>(null);
   const [toast, setToast] = useState("");
 
   const mateHome = mate ? byCode(mate.home) : null;
   const mateNeed = useMemo(() => (mate ? needOf(mate.pillars) : null), [mate]);
-  const pair = useMemo(() => (mateHome && mateNeed ? pairPlaces(all, scoreAll(mateHome, mateNeed)) : []), [all, mateHome, mateNeed]);
+  const pair = useMemo(() => (mateHome && mateNeed ? pairPlaces(all, scoreAll(mateHome, mateNeed, guaFromNumber(mate!.gua))) : []), [all, mateHome, mateNeed, mate]);
 
   if (!need) return <p className="card">사주를 읽지 못했어요. 생일을 다시 넣어 주세요.</p>;
   const first = top[0];
@@ -141,7 +143,7 @@ function Result({ me, home, mate, onMove, onForget }: { me: Person; home: Region
     <section className="stack">
       {first && (
         <div className="card hero">
-          <p className="kicker">내 사주 동네</p>
+          <p className="kicker">내 사주 명당</p>
           <h1>
             {me.name}님의 기운을 채우는 동네 1위
           </h1>
@@ -165,10 +167,12 @@ function Result({ me, home, mate, onMove, onForget }: { me: Person; home: Region
         </div>
       )}
 
+      <WeekendBox me={me} need={need} days={weekend} onPick={setPicked} />
+
       <div className="card">
         <p className="quiet small">
           {me.name}님 사주는 {elName(need.heavy)} 기운이 가장 많아요. 그래서 <strong className="seal">{dirsOf(need.yong)}({EL_HANJA[need.yong]})</strong>이 가장 잘 맞고, 그다음은{" "}
-          <strong>{dirsOf(need.hee)}</strong>이에요. 출발점은 <strong>{label(home)}</strong>
+          <strong>{dirsOf(need.hee)}</strong>이에요. <GuaLine gua={gua} /> 출발점은 <strong>{label(home)}</strong>
           <button className="inline" onClick={onMove}>
             바꾸기
           </button>
@@ -193,7 +197,7 @@ function Result({ me, home, mate, onMove, onForget }: { me: Person; home: Region
             );
           })()}
         </svg>
-        {picked ? <Picked r={picked} all={all} need={need} me={me} home={home} shadeMap={rankShade} onSave={save} /> : <p className="quiet small center">회사나 이사 후보 동네를 눌러 보세요. 이름 풀이와 순위가 나와요.</p>}
+        {picked ? <Picked r={picked} all={all} need={need} me={me} home={home} shadeMap={rankShade} onSave={save} /> : <p className="quiet small center">회사나 이사 후보 동네를 눌러 보세요. 순위와 이유가 나와요.</p>}
       </div>
 
       <div className="card">
@@ -204,21 +208,21 @@ function Result({ me, home, mate, onMove, onForget }: { me: Person; home: Region
               <b>{i + 1}</b>
               <span>{label(r)}</span>
               <em>
-                {r.dir}쪽, {r.hanja}
+                {r.dir}쪽{r.star ? `, ${r.star}` : ""}
               </em>
               <strong>{Math.round(r.score!)}점</strong>
             </li>
           ))}
         </ol>
         <p className="soft">
-          솔직히 말하면 <strong>{weakSide(need)}</strong>은 {me.name}님에게 버거운 쪽이에요. 그쪽에 살거나 다녀야 한다면, 집 안의 {dirsOf(need.yong)} 자리를 밝게 쓰고 자주 머무르세요.
+          사주 오행으로 보면 <strong>{weakSide(need)}</strong>은 {me.name}님에게 버거운 쪽이에요. 그쪽에 살거나 다녀야 한다면, 집 안의 {dirsOf(need.yong)} 자리를 밝게 쓰고 자주 머무르세요.
         </p>
       </div>
 
       <PairBox me={me} home={home} mate={mate} pair={pair} onSave={save} say={say} />
 
       <p className="quiet small">
-        방향과 이름 글자로 기운을 보는 건 풍수와 작명에서 쓰는 생활 방법이에요. 이 점수만으로 이사나 직장을 정하진 마시고, 비슷한 두 곳 중에 고를 때 참고하세요. 행정구역은 {MAP.asOf.replace(/-/g, ".")} 기준이에요.
+        방향으로 기운을 보는 건 풍수에서 쓰는 생활 방법이에요. 이 점수만으로 이사나 직장을 정하진 마시고, 비슷한 두 곳 중에 고를 때 참고하세요. 행정구역은 {MAP.asOf.replace(/-/g, ".")} 기준이에요.
       </p>
       <button className="link" onClick={onForget}>
         내 정보 지우기
@@ -236,7 +240,7 @@ function Picked({ r, all, need, me, home, shadeMap, onSave }: { r: Scored; all: 
   return (
     <div className="picked">
       <p>
-        <strong>{label(r)}</strong> <span className="hanja">{r.hanja}</span>
+        <strong>{label(r)}</strong> <span className="quiet">{r.km}km</span>
       </p>
       <p className="rank">
         {rk.of}곳 중 <b>{rk.rank}</b>위 <span className="quiet">(위에서 {pct}%)</span>
@@ -256,7 +260,7 @@ function Picked({ r, all, need, me, home, shadeMap, onSave }: { r: Scored; all: 
 function PairBox({ me, home, mate, pair, onSave, say }: { me: Person; home: Region; mate: Mate | null; pair: ReturnType<typeof pairPlaces>; onSave: (c: Card, name: string) => void; say: (s: string) => void }) {
   const mateHome = mate ? byCode(mate.home) : null;
   const invite = () =>
-    shareMessage(`우리 둘이 살면 좋은 동네가 어딘지 같이 볼래? 생일만 넣으면 바로 나와`, `intoss://hundo-dongne?with=${mateToken(me, home.code)}`).then((ok) => ok && say("보냈어요"));
+    shareMessage(`우리 둘이 살면 좋은 동네가 어딘지 같이 볼래? 생일만 넣으면 바로 나와`, `intoss://hundo-dongne?with=${mateToken(me, home.code, guaOf(me)?.n ?? null)}`).then((ok) => ok && say("보냈어요"));
   if (!mate || !mateHome || pair.length === 0)
     return (
       <div className="card">
@@ -301,6 +305,56 @@ function PairBox({ me, home, mate, pair, onSave, say }: { me: Person; home: Regi
           다른 사람과도 보기
         </button>
       </div>
+    </div>
+  );
+}
+
+// 팔택 in one sentence: the reader's 명괘 and its four good directions, or why it is missing.
+function GuaLine({ gua }: { gua: Gua | null }) {
+  if (!gua) return <>성별을 넣으면 팔택 방향까지 같이 봐요.</>;
+  const good = goodStars(gua);
+  return (
+    <>
+      팔택으로는 {gua.name}괘({gua.east ? "동사명" : "서사명"})라 <strong>{good.map((g) => `${g.dir}쪽`).join(", ")}</strong>이 길한 방향이에요.
+    </>
+  );
+}
+
+// 이번 주말 명당: Saturday and Sunday, how far to go and two places each.
+function WeekendBox({ me, need, days, onPick }: { me: Person; need: Need; days: ReturnType<typeof weekendPlan>; onPick: (r: Scored) => void }) {
+  return (
+    <div className="card">
+      <p className="kicker">이번 주말 명당</p>
+      <h3>{me.name}님, 이번 주말엔 여기로 가 보세요</h3>
+      {days.map((d) => (
+        <div key={d.date} className="weekend-day">
+          <p>
+            <strong>
+              {d.date} ({d.weekday})
+            </strong>{" "}
+            {d.tone && <span className="tone">{d.tone}</span>}
+          </p>
+          <p className="quiet small">{d.why}. {d.band.label} 거리를 골랐어요.</p>
+          {d.places.length ? (
+            <ol className="top">
+              {d.places.map((r, i) => (
+                <li key={r.code} onClick={() => onPick(r)}>
+                  <b>{i + 1}</b>
+                  <span>{label(r)}</span>
+                  <em>
+                    {r.dir}쪽 {r.km}km
+                  </em>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p className="quiet small">이 거리 안에는 잘 맞는 곳이 없어요. 집 근처에서 쉬어 가세요.</p>
+          )}
+        </div>
+      ))}
+      <p className="quiet small">
+        {me.name}님에게 필요한 {elName(need.yong)} 기운은 {PLACE_KIND[need.yong]} 같은 곳에서 채우기 좋아요. 매주 새로 바뀌어요.
+      </p>
     </div>
   );
 }

@@ -8,8 +8,7 @@
     "build": "tsc -b && vite build && ait build",
     "build:web": "tsc -b && vite build",
     "deploy": "ait deploy",
-    "typecheck": "tsc -b",
-    "data": "python3 -I scripts/names.py"
+    "typecheck": "tsc -b"
   },
   "dependencies": {
     "@apps-in-toss/web-framework": "3.8.0",
