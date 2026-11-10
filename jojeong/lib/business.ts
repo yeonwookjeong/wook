@@ -8,6 +8,10 @@ export const BUSINESS = {
   phone: "070-4578-4984", // 전화 (자동응답: 문의는 이메일로 안내)
   email: "joyhunt.official@gmail.com", // 이메일
   hosting: "Vercel Inc.", // 호스팅 서비스 제공자
+  // The same in English, for the English pages (app/en).
+  nameEn: "Joyhunt",
+  ownerEn: "Representative: Jeong Yeon-uk",
+  addressEn: "304-C152, 33 Gyoha-ro 159beon-gil, Paju-si, Gyeonggi-do, Republic of Korea",
 };
 
 export const hasBusinessInfo = () => Boolean(BUSINESS.name && BUSINESS.regNo && BUSINESS.mailOrderNo);

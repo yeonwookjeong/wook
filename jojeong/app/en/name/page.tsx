@@ -24,7 +24,7 @@ export default function NameHome() {
       <section className="flex flex-col items-center text-center">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/hundo-bow.png" alt="Hundo" width={112} height={112} className="size-28 rounded-full border-2 border-gold/40 bg-white object-cover" />
-        <p className="mt-3 text-[11px] font-bold tracking-[0.2em] text-gold">이름 · YOUR KOREAN NAME</p>
+        <p className="mt-3 text-[11px] font-bold tracking-[0.2em] text-gold">이름 YOUR KOREAN NAME</p>
         <h1 className="mt-2 font-myeongjo text-[27px] leading-tight font-extrabold">
           A Korean name,
           <br />

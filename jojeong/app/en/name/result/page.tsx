@@ -125,7 +125,7 @@ export default async function NameResult({ searchParams }: PageProps<"/en/name/r
         <ul className="flex flex-col gap-1 text-[14.5px] leading-relaxed">
           {prefs.sound && (
             <li>
-              {pick.soundsLike ? "✓ " : "· "}
+              {pick.soundsLike ? "✓ " : "• "}
               <b>{pick.soundsLike ? `Sounds like ${first}.` : pick.closeness >= 0.5 ? `A little like ${first}.` : `Not close to ${first}, honestly.`}</b> {first} in Korean letters is {theirSound}; your name is {pick.ko}.
               {!pick.soundsLike && (soundAlt ? " The name closest to yours is below; your chart came first here." : " No Korean name close to that sound also fit your chart, so the chart came first.")}
             </li>
@@ -137,11 +137,11 @@ export default async function NameResult({ searchParams }: PageProps<"/en/name/r
             </li>
           )}
           {prefs.era === "young" && base.year < 1990 && (
-            <li>· Koreans may hear this as a much younger person&apos;s name. That can be part of the charm.</li>
+            <li>• Koreans may hear this as a much younger person&apos;s name. That can be part of the charm.</li>
           )}
-          {!(targetEra && pick.era === targetEra) && <li>· {ERA[pick.era]}</li>}
-          <li>· {FEEL[pick.feel]}</li>
-          <li>· {pick.hard ? "One sound takes a little practice for English speakers." : "Easy to say in English."}</li>
+          {!(targetEra && pick.era === targetEra) && <li>• {ERA[pick.era]}</li>}
+          <li>• {FEEL[pick.feel]}</li>
+          <li>• {pick.hard ? "One sound takes a little practice for English speakers." : "Easy to say in English."}</li>
         </ul>
       </section>
 
@@ -156,7 +156,7 @@ export default async function NameResult({ searchParams }: PageProps<"/en/name/r
           <p className="mt-1 text-[15px] font-bold">
             {surname.en} {soundAlt.roman}
           </p>
-          {soundAlt.chars && <p className="mt-1 text-[13px] text-ink-soft">{soundAlt.chars.map((c) => `${c.ch} “${c.meaning}”`).join(" · ")}</p>}
+          {soundAlt.chars && <p className="mt-1 text-[13px] text-ink-soft">{soundAlt.chars.map((c) => `${c.ch} “${c.meaning}”`).join(", ")}</p>}
           <p className="mt-2 text-[13.5px] leading-relaxed">
             The name that sounds most like {first} ({theirSound}).{" "}
             {soundAlt.chars ? "Its characters carry less of what your chart needs, so it comes second." : "Written in Hangul only, as many Korean names are: no Hanja for it carries what your chart needs."}
@@ -177,7 +177,7 @@ export default async function NameResult({ searchParams }: PageProps<"/en/name/r
           <select name="s" defaultValue={surname.ko} aria-label="Family name" className="flex-1 rounded-lg border border-ink/20 bg-white/80 px-3 py-2 text-[14px]">
             {SURNAMES.map((s) => (
               <option key={s.ko} value={s.ko}>
-                {s.ko} {s.hanja} · {s.en}
+                {s.ko} {s.hanja}, {s.en}
               </option>
             ))}
           </select>
@@ -189,14 +189,14 @@ export default async function NameResult({ searchParams }: PageProps<"/en/name/r
         <p className="text-[11px] font-bold tracking-[0.15em] text-seal">THE FULL NAME REPORT</p>
         <h2 className="mt-1 font-myeongjo text-[19px] font-extrabold">Three names, written by brush</h2>
         <ul className="mt-3 flex flex-col gap-1.5 text-[14px] leading-relaxed">
-          <li>· {picks.length > 1 ? `${picks.length - 1} more names chosen for your chart, each explained` : "More names chosen for your chart, each explained"}</li>
-          <li>· Your name in brush calligraphy, ready to print or share</li>
-          <li>· Your own name seal (도장), the way Koreans sign</li>
-          <li>· How to write it, stroke by stroke</li>
-          <li>· Your birth chart on one page</li>
+          <li>• {picks.length > 1 ? `${picks.length - 1} more names chosen for your chart, each explained` : "More names chosen for your chart, each explained"}</li>
+          <li>• Your name in brush calligraphy, ready to print or share</li>
+          <li>• Your own name seal (도장), the way Koreans sign</li>
+          <li>• How to write it, stroke by stroke</li>
+          <li>• Your birth chart on one page</li>
         </ul>
         <button disabled className="mt-4 w-full rounded-full bg-seal/60 py-3.5 font-myeongjo text-[16px] font-extrabold text-hanji">
-          Opening soon · $3.99
+          Opening soon, $3.99
         </button>
       </section>
 

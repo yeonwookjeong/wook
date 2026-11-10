@@ -25,6 +25,7 @@ import type { Pillars } from "./saju";
 import { getProfile } from "./store";
 import type { Usage } from "./aiCost";
 import { courtOfReader, subjectFor } from "./subject";
+import { englishOverride, enReadingOfProduct } from "./en/readings";
 
 // Written reports: the engine's chart brief goes to a language model, which writes the reading in 정 훈도's
 // voice. Each report is written once per unique input and cached.
@@ -38,7 +39,7 @@ export const aiEnabled = () =>
   Boolean(isGemini ? process.env.GEMINI_API_KEY : process.env.ANTHROPIC_API_KEY) || process.env.REPORT_MOCK === "1";
 
 export type ReportJob = { key: string; system: string; prompt: string; title: string; modern: boolean };
-export type JobRequest = { product: string; court?: string; m?: string; t?: string; a?: string; b?: string; rel?: string; p?: string; kind?: string; from?: string; n?: string; d?: string; y?: string };
+export type JobRequest = { lang?: string; product: string; court?: string; m?: string; t?: string; a?: string; b?: string; rel?: string; p?: string; kind?: string; from?: string; n?: string; d?: string; y?: string };
 
 // `v`: which prompt writes it. v5 is kept only to find the reports bought before v6, so they open as they were read.
 // `oldBrief`: the three-grade life flow the writer was told before the five grades (see app/api/report/route.ts).
@@ -171,9 +172,13 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
     product.id === "gunghap"
       ? { chapters: chaptersForRel(asked.chapters, product.id, relNow, readAt), focus: focusForRel(asked.focus, product.id, relNow, readAt) }
       : asked;
-  const prompt = userPrompt(titled, subjectLine, briefs);
-  const key = createHash("sha256").update([v, REPORT_MODEL, product.id, system, prompt].join("\n")).digest("base64url");
-  return { key, system, prompt, title: product.title, modern: Boolean(product.modern) };
+  // English (app/en): the same brief and chapters, written in English under English chapter titles.
+  const en = req.lang === "en" ? enReadingOfProduct(product.id) : null;
+  if (req.lang === "en" && (!en || en.chapters.length !== titled.chapters.length)) return { error: "No English reading for this.", status: 404 };
+  const sys = en ? system + englishOverride(en) : system;
+  const prompt = userPrompt(en ? { ...titled, chapters: en.chapters } : titled, subjectLine, briefs);
+  const key = createHash("sha256").update([v, REPORT_MODEL, product.id, sys, prompt].join("\n")).digest("base64url");
+  return { key, system: sys, prompt, title: en ? en.title : product.title, modern: Boolean(product.modern) };
 }
 
 function pairBriefs(a: Person, b: Person, rel: Relation, year: number, at: number): string[] {
