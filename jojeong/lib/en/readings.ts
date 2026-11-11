@@ -50,7 +50,7 @@ export const EN_READINGS: EnReading[] = [
     product: "yeonun",
     title: "2027 Year Ahead",
     hanja: "年運",
-    price: 6.99,
+    price: 5.99,
     people: 1,
     tagline: "What 2027, the year of the Red Sheep, brings you: money, work, love, people, and month by month.",
     teaser: "The year that begins at Ipchun (4 February 2027) read against your own chart, with the best and hardest months marked.",
