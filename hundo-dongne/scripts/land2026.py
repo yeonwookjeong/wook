@@ -1,6 +1,6 @@
 """시군구마다 땅의 모양(산, 평지, 바다, 큰 강, 호수) → src/data/land.json.
 
-사용: python3 -I scripts/land2026.py <HangJeongDong_ver20261001.geojson> <타일 폴더> <ne_10m_rivers_lake_centerlines_scale_rank.geojson> <저수지.csv> <지적통계.csv> <온천업소.csv> [출력]
+사용: python3 -I scripts/land2026.py <HangJeongDong_ver20261001.geojson> <타일 폴더> <ne_10m_rivers_lake_centerlines_scale_rank.geojson> <저수지.csv> <지적통계.csv> <온천업소.csv> <평년값.csv> [출력]
 (numpy, numba, pillow, shapely 필요)
 
 - 행정구역: vuski/admdongkor ver20261001 (scripts/regions2026.py와 같은 원본, 같은 시군구 코드).
@@ -13,6 +13,9 @@
   더해 임야, 논밭(전 답 과수원 목장용지), 물(하천 유지 구거 양어장), 집터와 길(대 도로 주차장 학교용지 등), 공장(공장용지
   창고용지)의 비율(%)을 낸다. 화성시는 2026-02-01 4개 구로 나뉘기 전 기준이라 네 구에 같은 비율을 쓴다.
 - 온천: 공공데이터포털 "행정안전부_전국 온천이용업소 현황"(15086533, UTF-8). 주소의 시군구로 업소 수를 센다.
+- 기후: 기상자료개방포털 우리나라 기후평년값(1991~2020 연별, 218지점: 지점, 기온, 강수량, 일조시간 CSV). 지점 이름을
+  시군구에 잇고(STATION_AT), 그 시군구 중심을 지점 자리로 본다. 각 시군구는 가장 가까운 지점의 값을 쓴다. 높은 산
+  지점(성판악, 진부령)은 동네를 대표하지 않아 뺀다. 일조시간이 비어 있는 지점은 기온, 강수량만 쓴다.
 - 물길: 고도에서 직접 계산한다(우선순위 채우기로 웅덩이를 메운 뒤 각 칸이 흘러가는 곳을 정하고, 위에서 모여드는
   넓이를 더한다). 그 시군구를 지나는 가장 큰 물길이 위쪽에서 모으는 넓이(km²)가 "물길 크기"다. 지도 범위 밖(북쪽
   38.7도 위)은 빠져 임진강, 북한강 상류는 실제보다 작게 나온다. 호수는 고도로 가릴 수 없어 넣지 않는다.
@@ -35,7 +38,7 @@ from shapely.ops import unary_union
 Z, X0, X1, Y0, Y1 = 10, 866, 884, 392, 412
 N = 256 * 2**Z
 
-adm, tiles, rivers_path, reservoirs_path, jijeok_path, spa_path = sys.argv[1:7]
+adm, tiles, rivers_path, reservoirs_path, jijeok_path, spa_path, normals_path = sys.argv[1:8]
 
 # 고도 모자이크
 rows = []
@@ -281,6 +284,48 @@ for row in csv.DictReader(open(spa_path, encoding="utf-8")):
     if c:
         spa[c] += 1
 
+# 기후 평년값: 지점 → 시군구
+STATION_AT = {
+    "서울": ("서울", "종로구"), "기상청": ("서울", "동작구"), "남현": ("서울", "관악구"), "인천": ("인천", "제물포구"), "인천연수": ("인천", "연수구"),
+    "부평": ("인천", "부평구"), "백령도": ("인천", "옹진군"), "부산": ("부산", "중구"), "영도": ("부산", "영도구"), "대구서구": ("대구", "서구"),
+    "신암": ("대구", "동구"), "대전": ("대전", "유성구"), "오월드": ("대전", "중구"), "세천": ("대전", "동구"), "장동": ("대전", "대덕구"),
+    "울산": ("울산", "중구"), "울기": ("울산", "동구"), "광산": ("전남광주", "광산구"), "조선대": ("전남광주", "동구"),
+    "풍암": ("전남광주", "서구"), "중구": ("서울", "중구"), "북구": ("부산", "북구"), "부산남구": ("부산", "남구"),
+    "해운대": ("부산", "해운대구"), "부산진": ("부산", "부산진구"), "동래": ("부산", "동래구"), "가덕도": ("부산", "강서구"),
+    "간절곶": ("울산", "울주군"), "정자": ("울산", "북구"), "광양읍": ("전남광주", "광양시"), "거문도": ("전남광주", "여수시"), "흑산도": ("전남광주", "신안군"),
+    "압해도": ("전남광주", "신안군"), "세종연서": ("세종", "세종시"), "대관령": ("강원", "평창군"), "울릉도": ("경북", "울릉군"),
+    "추풍령": ("경북", "김천시"), "고산": ("제주", "제주시"), "추자도": ("제주", "제주시"), "성산": ("제주", "서귀포시"),
+    "가평조종": ("경기", "가평군"), "경기광주": ("경기", "광주시"), "금곡": ("경기", "남양주시"), "연천청산": ("경기", "연천군"),
+    "간성": ("강원", "고성군"), "사북": ("강원", "정선군"), "삼천포": ("경남", "사천시"), "완산": ("전북", "전주시완산구"),
+}
+SKIP_STATIONS = {"성판악", "진부령"}
+centre = {c: unary_union(g).representative_point() for c, g in groups.items()}
+stations = []
+for row in csv.DictReader(open(normals_path, encoding="utf-8")):
+    nm = row["지점"]
+    if nm in SKIP_STATIONS:
+        continue
+    code = by_name.get(STATION_AT[nm]) if nm in STATION_AT else None
+    if code is None:
+        hits = [c for (sd, g), c in by_name.items() if g in (nm, nm + "시", nm + "군") or (sd == "서울" and g == nm + "구")]
+        hits += [c for (sd, g), c in by_name.items() if not hits and g.startswith(nm + "시")]
+        code = hits[0] if hits else None
+    if code is None:
+        print("기후 지점을 시군구에 못 이음", nm)
+        continue
+    num = lambda k: float(row[k]) if row[k] not in ("", "-") else None
+    stations.append((centre[code], num("기온"), num("강수량"), num("일조시간")))
+
+
+def climate_of(code):
+    p = centre[code]
+    near = sorted(stations, key=lambda st: (st[0].x - p.x) ** 2 + (st[0].y - p.y) ** 2)
+    t = next((st[1] for st in near if st[1] is not None), None)
+    r = next((st[2] for st in near if st[2] is not None), None)
+    sun = next((st[3] for st in near if st[3] is not None), None)
+    return {"temp": t, "rain": r, "sun": sun}
+
+
 dam = defaultdict(list)
 for lake, places in DAM_LAKES.items():
     for key in places:
@@ -322,8 +367,9 @@ for code, geoms in sorted(groups.items()):
         "dam": dam.get(code, []),  # 걸친 큰 댐 호수
         "use": use_of.get(code),  # 땅의 쓰임 비율(%): forest 임야, farm 논밭, water 물, town 집터와 길, factory 공장
         "spa": spa.get(code, 0),  # 온천업소 수
+        "climate": climate_of(code),  # 가장 가까운 지점의 연평균 기온(°C), 연강수량(mm), 연일조시간(시간)
         "lat": round(c.y, 3),
     }
 
-json.dump({"asOf": "2026-10-01", "regions": out}, open(sys.argv[7] if len(sys.argv) > 7 else "src/data/land.json", "w"), ensure_ascii=False, separators=(",", ":"))
+json.dump({"asOf": "2026-10-01", "regions": out}, open(sys.argv[8] if len(sys.argv) > 8 else "src/data/land.json", "w"), ensure_ascii=False, separators=(",", ":"))
 print(len(out), "시군구")

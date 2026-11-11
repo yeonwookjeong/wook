@@ -1,3 +1,4 @@
+import { josa } from "@/lib/josa";
 import { salsAt, type Sal } from "@/lib/deep";
 import { ELEMENT_KO, readChart } from "@/lib/myeongri";
 import type { Person } from "@/lib/pairToken";
@@ -124,7 +125,9 @@ export const starAt = (g: Gua, dirIndex: number): Star => BAZHAI[g.n][dirIndex];
 export const goodStars = (g: Gua) => DIRS.map((d, i) => ({ dir: d.name, star: starAt(g, i) })).filter((x) => STAR_SCORE[x.star] >= 72);
 
 export type Use = { forest: number; farm: number; water: number; town: number; factory: number };
-export type Land = { el: number; top: number; mt: number; rock: number; flat: number; sea: number; flow: number; ne: number; res: number; dam: string[]; use: Use | null; spa: number; lat: number };
+export type Land = { el: number; top: number; mt: number; rock: number; flat: number; sea: number; flow: number; ne: number; res: number; dam: string[]; use: Use | null; spa: number; lat: number; climate: Climate };
+// 1991~2020 평년값 from the nearest KMA station: yearly mean temperature (°C), rain (mm), sunshine (hours).
+export type Climate = { temp: number; rain: number; sun: number };
 const LAND = (landData as { regions: Record<string, Land> }).regions;
 
 // Each region's ground as five shares 0–1 (목 화 토 금 수), ranked against the whole country so each reads "how much
@@ -137,6 +140,7 @@ const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 const LANDS = MAP.regions.map((r) => LAND[r.code]).filter(Boolean);
 const pMt = pctOf(LANDS.map((l) => l.mt)), pTop = pctOf(LANDS.map((l) => l.top)), pRock = pctOf(LANDS.map((l) => l.rock)), pFlat = pctOf(LANDS.map((l) => l.flat));
 const useOf = (l: Land): Use => l.use ?? { forest: 0, farm: 0, water: 0, town: 0, factory: 0 };
+const pTemp = pctOf(LANDS.map((l) => l.climate.temp)), pSun = pctOf(LANDS.map((l) => l.climate.sun)), pRain = pctOf(LANDS.map((l) => l.climate.rain));
 const pForest = pctOf(LANDS.map((l) => useOf(l).forest)), pFarm = pctOf(LANDS.map((l) => useOf(l).farm)), pTown = pctOf(LANDS.map((l) => useOf(l).town)), pFactory = pctOf(LANDS.map((l) => useOf(l).factory));
 // Water, the strongest of: the sea at the border; the biggest river through it (the DEM's drainage, or a big river
 // Natural Earth names running 10 km or more through it, taken as 10,000 km²; 100 km² reads 0, 10,000 km² reads 1); a big dam lake (0.9); the farm
@@ -148,6 +152,7 @@ const waterOf = (l: Land) =>
     l.dam.length ? 0.9 : 0,
     clamp01((Math.log10(l.res + 1) - 1.5) / 1.7),
     clamp01(useOf(l).water / 15), // rivers, ponds and ditches as a share of the land (지적통계)
+    0.6 * pRain(l.climate.rain), // a wet sky: the rainiest places read up to 0.6, never as much as a river
   );
 export function groundOf(code: string): number[] | null {
   const l = LAND[code];
@@ -156,7 +161,7 @@ export function groundOf(code: string): number[] | null {
   const mount = (pMt(l.mt) + pTop(l.top)) / 2;
   return [
     0.6 * pForest(u.forest) + 0.4 * mount, // 목: 숲과 산
-    0.6 * clamp01((37.8 - l.lat) / 3.5) + 0.4 * pTown(u.town), // 화: 남쪽 볕, 번화한 불빛
+    0.35 * pTemp(l.climate.temp) + 0.25 * pSun(l.climate.sun) + 0.4 * pTown(u.town), // 화: 따뜻함, 볕, 번화한 불빛
     0.8 * pFarm(u.farm) + 0.2 * pFlat(l.flat), // 토: 논밭과 들
     0.5 * pRock(l.rock) + 0.5 * pFactory(u.factory), // 금: 바위산, 공장
     waterOf(l), // 수
@@ -243,12 +248,35 @@ function groundReason(r: Scored, e: number): string {
   if (!l) return "";
   const u = useOf(l);
   if (e === 0) return `숲(임야)이 땅의 ${Math.round(u.forest)}%예요`;
-  if (e === 1) return u.town >= 30 ? `집과 길이 땅의 ${Math.round(u.town)}%인 번화한 곳이에요` : "볕이 따뜻한 남쪽이에요";
+  const c = l.climate;
+  if (e === 1) {
+    if (u.town >= 30) return `집과 길이 땅의 ${Math.round(u.town)}%인 번화한 곳이에요`;
+    if (pSun(c.sun) >= pTemp(c.temp)) return `볕이 한 해 ${Math.round(c.sun).toLocaleString()}시간 드는 곳이에요`;
+    return `한 해 평균 기온이 ${c.temp.toFixed(1)}도인 따뜻한 곳이에요`;
+  }
   if (e === 2) return `논밭이 땅의 ${Math.round(u.farm)}%예요`;
   if (e === 3) return u.factory >= 5 ? `공장 땅이 ${Math.round(u.factory)}%예요` : "바위산이 많아요";
   if (l.dam.length) return `${l.dam.join(", ")}가 있어요`;
   if (l.sea >= 10) return "바다에 닿아 있어요";
+  if (waterOf(l) === 0.6 * pRain(c.rain)) return `비가 한 해 ${Math.round(c.rain).toLocaleString()}mm 오는 촉촉한 곳이에요`;
   return "큰 물길이 지나요";
+}
+// The weather of a place against home's, in plain words (only differences big enough to feel).
+export function weatherOf(r: Scored, home: Region | null): string[] {
+  const c = LAND[r.code]?.climate;
+  if (!c) return [];
+  const out = [`한 해 평균 ${c.temp.toFixed(1)}도, 비 ${Math.round(c.rain).toLocaleString()}mm, 볕 ${Math.round(c.sun).toLocaleString()}시간이에요`];
+  const h = home ? LAND[home.code]?.climate : null;
+  if (h && home && home.code !== r.code) {
+    const dt = c.temp - h.temp;
+    const ds = c.sun - h.sun;
+    const warm = Math.abs(dt) >= 0.8 ? `${Math.abs(dt).toFixed(1)}도 ${dt > 0 ? "따뜻해요" : "서늘해요"}` : "";
+    const sun = Math.abs(ds) >= 100 ? `볕이 한 해 ${Math.round(Math.abs(ds))}시간 ${ds > 0 ? "더 들어요" : "덜 들어요"}` : "";
+    if (warm && sun) out.push(`${home.name}보다 ${warm.replace(/해요$/, "하고")}, ${sun}`);
+    else if (warm || sun) out.push(`${home.name}보다 ${warm || sun}`);
+    else out.push(`${josa(home.name, "과/와")} 날씨가 거의 같아요`);
+  }
+  return out;
 }
 // What a place is like, in a name: its strongest side for Korea.
 export const NICK = ["숲의 고을", "불빛 고을", "들녘 고을", "쇠의 고을", "물의 고을"];

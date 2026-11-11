@@ -7,7 +7,7 @@ import { saveCard, shareMessage, type Card } from "./card";
 import { forgetAll, loadHome, loadMe, mateToken, readMate, saveHome, saveMe, type Mate } from "./me";
 import {
   byCode, dirsOf, elName, goodStars, guaFromNumber, guaLabel, guaOf, label, MAP, needOf, pairPlaces, PLACE_KIND, proj, rankOf, scoreAll, SIDOS, topPlaces,
-  lookAlikes, moveCheck, nickOf, tagsOf, weekendPlan, whyOf, type Gua, type Need, type Region, type Scored,
+  lookAlikes, moveCheck, nickOf, weatherOf, tagsOf, weekendPlan, whyOf, type Gua, type Need, type Region, type Scored,
 } from "./place";
 
 // The pair link's token, from the address the app was opened with (intoss://hundo-dongne?with=…), or the browser's.
@@ -155,6 +155,7 @@ function Result({ me, home, mate, onMove, onForget }: { me: Person; home: Region
               {l}
             </p>
           ))}
+          {weatherOf(first, home)[1] && <p className="quiet small">{weatherOf(first, home)[1]}</p>}
           <div className="row two">
             <button className="primary" onClick={() => save({ kind: "one", who: me.name, place: first, lines: whyOf(first, need), home }, "내사주동네.png")}>
               카드 저장
@@ -270,6 +271,14 @@ function Picked({ r, all, need, gua, me, home, shadeMap, onSave }: { r: Scored; 
           {l}
         </p>
       ))}
+      <div className="move">
+        <p className="kicker">날씨 (30년 평균)</p>
+        {weatherOf(r, home).map((l) => (
+          <p key={l} className="quiet small">
+            {l}
+          </p>
+        ))}
+      </div>
       <div className="move">
         <p className="kicker">이사 방향 점검 ({label(home)}에서)</p>
         {moveCheck(r, need, thisSajuYear()).map((l) => (
