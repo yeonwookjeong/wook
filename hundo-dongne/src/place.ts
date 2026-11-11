@@ -135,12 +135,12 @@ const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 const LANDS = MAP.regions.map((r) => LAND[r.code]).filter(Boolean);
 const pMt = pctOf(LANDS.map((l) => l.mt)), pTop = pctOf(LANDS.map((l) => l.top)), pRock = pctOf(LANDS.map((l) => l.rock)), pFlat = pctOf(LANDS.map((l) => l.flat));
 // Water, the strongest of: the sea at the border; the biggest river through it (the DEM's drainage, or a big river
-// Natural Earth names, taken as 10,000 km²; 100 km² reads 0, 10,000 km² reads 1); a big dam lake (0.9); the farm
+// Natural Earth names running 10 km or more through it, taken as 10,000 km²; 100 km² reads 0, 10,000 km² reads 1); a big dam lake (0.9); the farm
 // reservoirs' full surface (about 30 ha reads 0, 1,500 ha reads 1).
 const waterOf = (l: Land) =>
   Math.max(
     clamp01(l.sea / 40),
-    clamp01((Math.log10(Math.max(l.flow, l.ne > 0 ? 10000 : 0, 1)) - 2) / 2),
+    clamp01((Math.log10(Math.max(l.flow, l.ne >= 10 ? 10000 : 0, 1)) - 2) / 2),
     l.dam.length ? 0.9 : 0,
     clamp01((Math.log10(l.res + 1) - 1.5) / 1.7),
   );
