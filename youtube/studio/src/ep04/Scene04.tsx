@@ -26,11 +26,11 @@ const paths = (lang: "en" | "es"): Record<Mode04, Key[]> => {
     intro: [lang === "es" ? K(-2.8, 2.6, 8.2, 0, 1.5, 0.6) : K(2.8, 2.6, 8.2, 0, 1.5, 0.6), K(1.4, 2.3, 6.8, 0, 1.6, 0.6)],
     shoes: [K(1.4, 2.3, 6.8, 0, 1.6, 0.6), K(0.6, 1.3, 3.2, -0.3, 0.55, 1.0)],
     walk: [K(0.6, 1.3, 3.2, -0.3, 0.55, 1.0), K(1.6, 1.0, 3.8, 0.8, 0.3, 1.2)],
-    away: [K(0.4, 1.9, 5.0, 0.0, 0.7, 0.4), K(3.4, 2.3, 4.6, 1.8, 0.7, -1.0)],
-    coin: [K(0.9, 1.4, 3.6, -0.2, 0.75, 1.1), K(0.5, 1.25, 2.9, -0.2, 0.8, 1.1)],
+    away: [K(0.2, 2.0, 6.0, 0.4, 0.75, 0.9), K(1.8, 2.0, 6.2, 2.2, 0.75, 1.1), K(-0.4, 1.9, 5.2, -0.6, 0.85, 1.0)],
+    coin: [K(0.0, 1.5, 4.4, -0.2, 0.8, 1.0), K(0.3, 1.35, 3.6, -0.2, 0.8, 1.0)],
     chicken: [K(cx + 2.8, 2.6, cz + 4.4, cx, 0.8, cz), K(cx + 1.6, 1.9, cz + 3.0, cx, 0.8, cz)],
     fly: [K(cx + 1.6, 1.9, cz + 3.0, cx, 0.8, cz), K(cx + 2.2, 2.6, cz + 4.6, cx + 0.4, 1.6, cz - 0.5)],
-    plate: [K(cx + 1.0, 1.9, cz + 2.4, cx, 0.75, cz), K(cx - 0.6, 1.8, cz + 2.4, cx, 0.75, cz)],
+    plate: [K(cx + 1.4, 1.6, cz + 2.0, cx, 0.7, cz + 0.1), K(cx - 1.2, 1.5, cz + 2.0, cx, 0.7, cz + 0.1)],
     wall: [K(wx + 6, 3.4, wz + 7, wx, 1.0, wz), K(wx + 3.5, 2.4, wz + 5.5, wx - 0.5, 1.0, wz)],
     split: [K(wx + 3.5, 2.4, wz + 5.5, wx - 0.5, 1.0, wz), K(wx + 1.5, 2.0, wz + 4.4, wx - 0.5, 0.9, wz)],
     court: [K(wx - 1.0, 3.0, wz + 6.5, wx - 3.0, 1.6, wz - 2.5), K(wx - 2.0, 2.6, wz + 5.5, wx - 3.4, 1.5, wz - 2.5)],
@@ -166,9 +166,11 @@ const Street: React.FC<{ mode: Mode04; t: number }> = ({ mode, t }) => {
   const open = i("shoes") ? r01(t, 0.15, 0.5, pop) : i("walk") || i("coin") ? 1 : 0;
   const shoeOut = i("shoes") ? r01(t, 0.35, 0.7, pop) : 1;
   const walkX = i("walk") ? r01(t, 0.15, 1, Easing.linear) * 1.6 : 0;
-  const leave = i("away") ? r01(t, 0.05, 0.9, Easing.linear) : 0;
-  const rain = i("away") ? r01(t, 0.45, 0.7, pop) : 0;
-  const coinT = i("coin") ? r01(t, 0.15, 0.6) : 0;
+  const leave = i("away") ? r01(t, 0.05, 0.55, Easing.linear) : 0;
+  const rain = i("away") ? r01(t, 0.6, 0.8, pop) : 0;
+  const coinT = i("coin") ? r01(t, 0.08, 0.45) : 0;
+  const laugh = i("coin") ? r01(t, 0.66, 0.8, pop) : 0;
+  const haha = useMemo(() => glyphTex("HAHA", { bg: "#ffffff", fg: "#e8322b", size: 90, font: "Arial Black, Arial", w: 384, h: 192 }), []);
   const card = (k: number) => (i("intro") ? r01(t, 0.1 + k * 0.18, 0.3 + k * 0.18, pop) : 0);
   return (
     <group>
@@ -198,20 +200,23 @@ const Street: React.FC<{ mode: Mode04; t: number }> = ({ mode, t }) => {
             {card(k) > 0.5 && k === 2 && <Sprite tex={q} s={1} pos={[0.9, 1.55, 0.6]} size={[0.45, 0.45]} />}
           </group>
         ))}
-      {(i("shoes") || i("walk") || i("coin")) && <group scale={1.5} position={[-0.2, 0, 1.25]}><GiftBox p={[0, 0, 0]} open={open} /></group>}
-      {(i("shoes") || i("coin")) && shoeOut > 0 && <Pair p={[-0.2, 0.1 + 0.45 * shoeOut, 1.25]} s={2.2 * shoeOut} ry={0.4} />}
+      {(i("shoes") || i("walk")) && <group scale={1.5} position={[-0.2, 0, 1.25]}><GiftBox p={[0, 0, 0]} open={open} /></group>}
+      {i("shoes") && shoeOut > 0 && <Pair p={[-0.2, 0.1 + 0.45 * shoeOut, 1.25]} s={2.2 * shoeOut} ry={0.4} />}
+      {i("coin") && <Pair p={[-0.75, 0, 1.25]} s={1.1} ry={0} />}
       {i("walk") && <Pair p={[-0.2 + walkX, 0, 1.6 - walkX * 0.5]} s={2.2} ry={-0.45} step={walkX * 2} />}
       {i("away") && (
         <>
           <Person p={[-0.6, 0, 1.0]} coat="#c86b5a" s={0.62} ry={Math.PI / 2} />
           <RainCloud p={[-0.6, 1.25, 1.0]} s={rain} t={t} />
-          <group position={[0.4 + leave * 2.4, 0, 0.8 - leave * 3.2]}>
-            <Person p={[0, 0, 0]} coat="#4a6a8a" s={0.62} ry={Math.PI * 0.85} />
-            <Pair p={[0, 0, 0]} s={0.55} ry={Math.PI * 0.85 - Math.PI / 2} step={leave * 4} />
+          <group position={[0.4 + leave * 2.8, 0, 0.9 + leave * 0.4]}>
+            <Person p={[0, 0, 0]} coat="#4a6a8a" s={0.62} ry={0} />
+            <Pair p={[0, 0, 0]} s={1.1} ry={0} step={leave * 5} />
           </group>
         </>
       )}
-      {i("coin") && <Coin p={[0.35 - 0.6 * coinT, 0.75 + 0.25 * Math.sin(coinT * Math.PI), 1.05]} spin={coinT * 10} s={1.6} />}
+      {i("coin") && coinT < 1 && <Coin p={[0.35 - 1.1 * coinT, 0.6 + 0.45 * Math.sin(coinT * Math.PI), 1.2]} spin={coinT * 12} s={3.2} />}
+      {i("coin") && coinT >= 1 && <Coin p={[-0.6, 0.55, 1.2]} spin={0} s={3.2} />}
+      {i("coin") && laugh > 0 && <Sprite tex={haha} s={laugh} pos={[-0.2, 1.35, 1.1]} size={[0.8, 0.4]} rz={-0.05} />}
     </group>
   );
 };
@@ -262,7 +267,10 @@ const ChickenShop: React.FC<{ mode: Mode04; t: number }> = ({ mode, t }) => {
       ))}
       {/* 날개 하나가 건네지거나, 접시에서 접시로 미끄러짐 */}
       {i("fly") && give < 1 && <Wing p={[cx - 0.45 + 0.9 * give, TOP + 0.08 + 0.15 * Math.sin(give * Math.PI), cz + 0.15]} s={1.2} />}
-      {i("plate") && <Wing p={[cx + 0.45 - 0.9 * slide, TOP + 0.08, cz + 0.15]} s={1.2} />}
+      {i("plate") && [0, 1].map((k) => {
+        const sl = r01(t, 0.15 + k * 0.3, 0.45 + k * 0.3);
+        return <Wing key={k} p={[cx - 0.02 + (k ? 0.08 : -0.08) - 0.45 * sl, TOP + 0.16 + 0.12 * Math.sin(sl * Math.PI), cz + 0.1 * sl]} s={2.0} r={k} />;
+      })}
       {/* 사람 */}
       <Person p={[cx - 0.85, 0, cz + 0.15]} coat="#c86b5a" s={0.62} ry={Math.PI / 2} />
       <group position={[cx + 0.85, 1.6 * rise, cz + 0.15 - 0.6 * rise]} rotation={[0, 0, -0.3 * rise]}>
@@ -399,7 +407,7 @@ export const Scene04: React.FC<{ mode: Mode04; t: number; words: Words04 }> = ({
   const wall = ["wall", "split", "court", "gone", "end"].includes(mode);
   const autumn = wall;
   return (
-    <MiniFrame sky={autumn ? SKY.dusk : SKY.day} filter={mode === "coin" ? "sepia(0.85)" : ""}>
+    <MiniFrame sky={autumn ? SKY.dusk : SKY.day} filter={mode === "coin" ? `sepia(${(0.85 * (1 - interpolate(t, [0.55, 0.65], [0, 1], clamp))).toFixed(3)})` : ""}>
       <Rig paths={P} mode={mode} t={t} />
       <MiniLights dusk={autumn ? 0.6 : 0} />
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.32, 0]} receiveShadow>
