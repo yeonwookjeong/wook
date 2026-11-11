@@ -28,7 +28,7 @@ const paths = (lang: "en" | "es"): Record<Mode05, Key[]> => {
     dec31: [K(0.8, 1.5, 2.8, 0, 0.95, 0), K(-0.6, 1.7, 3.2, -0.6, 1.3, -1.2)],
     jan1: [K(-0.6, 1.7, 3.2, -0.6, 1.3, -1.2), K(1.4, 1.9, 4.2, 0, 1.0, 0)],
     three: [K(rx + 1.4, 2.0, rz + 5.0, rx, 1.35, rz), K(rx + 0.6, 1.9, rz + 4.4, rx, 1.4, rz)],
-    law: [K(px + 4, 4.0, pz + 7.5, px, 1.0, pz - 0.5), K(px + 2.2, 3.0, pz + 5.6, px, 1.0, pz)],
+    law: [K(px + 3, 3.4, pz + 6.0, px, 1.3, pz - 0.8), K(px + 1.4, 2.2, pz + 4.2, px, 1.1, pz)],
     except: [K(ex - 3.6, 2.6, ez + 5.2, ex - 2.2, 1.0, ez), K(ex + 3.6, 2.6, ez + 5.2, ex + 2.2, 1.0, ez)],
     end: [K(ex + 3.6, 2.6, ez + 5.2, ex + 2.2, 1.0, ez), K(ex + 0.9, 1.5, ez + 3.4, ex, 1.1, ez + 1.2)],
   };
@@ -101,10 +101,12 @@ const Ward: React.FC<{ mode: Mode05; t: number; w: Words05 }> = ({ mode, t, w })
       {/* 달력 */}
       <group position={[wx - 0.6, 1.4, wz - 2.2]}>
         <Box p={[0, 0, 0]} s={[0.62, 0.62, 0.05]} c="#ffffff" />
-        <mesh position={[0, 0, 0.035]}>
-          <planeGeometry args={[0.56, 0.56]} />
-          <meshBasicMaterial map={dec} toneMapped={false} />
-        </mesh>
+        {flip < 0.6 && (
+          <mesh position={[0, 0, 0.035]}>
+            <planeGeometry args={[0.56, 0.56]} />
+            <meshBasicMaterial map={dec} toneMapped={false} />
+          </mesh>
+        )}
         {flip > 0 && (
           <mesh position={[0, 0.28 - 0.28 * Math.cos(flip * Math.PI) * 0 , 0.045]} rotation={[-Math.PI * (1 - flip), 0, 0]}>
             <planeGeometry args={[0.56, 0.56]} />
@@ -176,7 +178,7 @@ const Room: React.FC<{ t: number; w: Words05 }> = ({ t, w }) => {
       <Box p={[rx - 1.2, 0.6, rz - 1.65]} s={[1.6, 0.4, 0.12]} c="#8a9bb0" />
       <Person p={[rx, 0, rz + 0.2]} coat="#e0b04a" s={0.68} ry={0.2} />
       {cards.map((tex, k) => (
-        <Sprite key={k} tex={tex} s={r01(t, 0.1 + k * 0.2, 0.3 + k * 0.2, pop)} pos={[rx - 0.7 + k * 0.7, 1.55 + (k === 1 ? 0.12 : 0), rz + 0.3]} size={[0.6, 0.4]} />
+        <Sprite key={k} tex={tex} s={r01(t, 0.1 + k * 0.2, 0.3 + k * 0.2, pop)} pos={[rx - 0.52 + k * 0.52, 1.55 + (k === 1 ? 0.12 : 0), rz + 0.3]} size={[0.48, 0.32]} />
       ))}
     </group>
   );
