@@ -18,13 +18,13 @@ const TOP = 0.5; // 테이블 높이
 const SKIN = "#f0c9a6";
 
 const paths = (lang: "en" | "es"): Record<Mode07, Key[]> => ({
-  glass: [lang === "es" ? K(-0.9, 1.2, 2.4, 0, 0.75, 0) : K(0.9, 1.2, 2.4, 0, 0.75, 0), K(0.5, 1.05, 1.8, 0, 0.78, 0)],
-  turn: [K(0.5, 1.05, 1.8, 0, 0.78, 0), K(1.6, 1.4, 2.8, 0.1, 0.8, 0)],
+  glass: [lang === "es" ? K(-0.7, 1.5, 4.0, 0, 0.7, 0) : K(0.7, 1.5, 4.0, 0, 0.7, 0), K(0.3, 1.35, 3.4, 0, 0.7, 0)],
+  turn: [K(0.3, 1.35, 3.4, 0, 0.7, 0), K(1.3, 1.4, 3.2, 0.3, 0.75, 0)],
   receive: [K(1.0, 1.0, 1.4, 0.15, 0.62, 0), K(0.7, 0.95, 1.2, 0.15, 0.62, 0)],
   pour: [K(-1.0, 1.0, 1.4, -0.15, 0.62, 0), K(-0.7, 0.95, 1.2, -0.15, 0.62, 0)],
-  self: [K(0.3, 1.5, 2.6, 0, 0.7, 0), K(-0.3, 1.4, 2.4, 0, 0.7, 0)],
+  self: [K(0.3, 1.6, 3.6, 0, 0.65, 0), K(-0.3, 1.5, 3.4, 0, 0.65, 0)],
   friends: [K(-2.2, 1.9, 4.0, -1.8, 0.8, 0), K(-1.6, 1.7, 3.4, -1.4, 0.8, 0)],
-  end: [K(-1.6, 1.7, 3.4, -1.4, 0.8, 0), K(0.2, 1.7, 3.6, 0, 1.0, 0)],
+  end: [K(-1.6, 1.7, 3.4, -1.4, 0.8, 0), K(0.1, 1.9, 4.6, 0, 1.1, 0)],
 });
 
 const Glass: React.FC<{ p: [number, number, number]; tilt?: number; full?: number }> = ({ p, tilt = 0, full = 1 }) => (
@@ -135,7 +135,7 @@ export const Scene07: React.FC<{ mode: Mode07; t: number; words: Words07 }> = ({
           g.roundRect(6, 6, 500, 128, 30);
           g.fill();
           g.fillStyle = "#c8231f";
-          g.font = `900 ${x.length > 14 ? 44 : 56}px Arial Black, Arial`;
+          g.font = `900 ${x.length > 16 ? 38 : x.length > 12 ? 46 : 56}px Arial Black, Arial`;
           g.textAlign = "center";
           g.textBaseline = "middle";
           g.fillText(x, 256, 74);
