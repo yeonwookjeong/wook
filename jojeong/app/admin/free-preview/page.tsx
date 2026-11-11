@@ -6,6 +6,7 @@ import YearAhead from "@/components/YearAhead";
 import { isAdmin, isPreview } from "@/lib/admin";
 import { previewModeAction } from "../actions";
 import { freeReadingOf } from "@/lib/freeReading";
+import { figuresFor } from "@/lib/iljuFigures";
 import { decadeTags, layersOf, manseOf, salSeats, yearPreviewOf } from "@/lib/freePreview";
 import { chartOf } from "@/lib/myeongri";
 import { parseBirth } from "@/lib/personForm";
@@ -169,6 +170,7 @@ export default async function FreePreviewPage({
           query=""
           addGender="/admin/free-preview"
           locked
+          figures={figuresFor(pillars.dayStem, pillars.dayBranch)}
           seats={salSeats(pillars)}
           tags={Object.fromEntries((profile?.daeun ?? []).map((d) => [d.from, decadeTags(pillars, d)]))}
         />
