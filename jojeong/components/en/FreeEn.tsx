@@ -212,7 +212,7 @@ export default function FreeEn({ name, pillars, r, locked = true }: { name: stri
               <li key={s.name} className="py-2.5">
                 <p className="flex items-baseline gap-2">
                   <b className="font-myeongjo">{s.plain}</b>
-                  <span className="text-[11px] text-ink-soft">{s.name}</span>
+                  <span className="shrink-0 text-[11px] whitespace-nowrap text-ink-soft">{s.name}</span>
                   {s.rate !== null && <span className="ml-auto shrink-0 rounded-full bg-seal/10 px-2 py-0.5 text-[11px] font-bold text-seal">{perHundredEn(s.rate)}</span>}
                 </p>
                 <p className="mt-0.5 text-[13px] leading-relaxed text-ink/85">{s.line}</p>
