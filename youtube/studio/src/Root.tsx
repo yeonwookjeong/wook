@@ -13,6 +13,7 @@ import { Ep02, EP02, Ep02Check } from "./ep02/Ep02";
 import { Ep03, EP03, Ep03Check } from "./ep03/Ep03";
 import { Ep04, EP04, Ep04Check } from "./ep04/Ep04";
 import { Ep05, EP05, Ep05Check } from "./ep05/Ep05";
+import { Ep06, EP06, Ep06Check } from "./ep06/Ep06";
 
 // 쇼츠 규격: 세로 1080×1920, 30fps
 export const RemotionRoot: React.FC = () => {
@@ -41,6 +42,9 @@ export const RemotionRoot: React.FC = () => {
       <Composition id="Ep05" component={Ep05} durationInFrames={EP05.en.total} fps={30} width={1080} height={1920} defaultProps={{ lang: "en" as const }} />
       <Composition id="Ep05Es" component={Ep05} durationInFrames={EP05.es.total} fps={30} width={1080} height={1920} defaultProps={{ lang: "es" as const }} />
       <Composition id="Ep05Check" component={Ep05Check} durationInFrames={14} fps={30} width={1080} height={1920} />
+      <Composition id="Ep06" component={Ep06} durationInFrames={EP06.en.total} fps={30} width={1080} height={1920} defaultProps={{ lang: "en" as const }} />
+      <Composition id="Ep06Es" component={Ep06} durationInFrames={EP06.es.total} fps={30} width={1080} height={1920} defaultProps={{ lang: "es" as const }} />
+      <Composition id="Ep06Check" component={Ep06Check} durationInFrames={14} fps={30} width={1080} height={1920} />
       <Composition id="MapOld" component={MapOpening} durationInFrames={MAP_OPENING_FRAMES} fps={30} width={1080} height={1920} defaultProps={{ variant: "old" as const }} />
       <Composition id="MapModern" component={MapOpening} durationInFrames={MAP_OPENING_FRAMES} fps={30} width={1080} height={1920} defaultProps={{ variant: "modern" as const }} />
       <Composition id="MapRef" component={MapRef} durationInFrames={1} fps={30} width={1024} height={1536} />
