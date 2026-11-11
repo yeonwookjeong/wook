@@ -118,7 +118,7 @@ export const SKY = {
 };
 
 /** 하늘 + 3D + 틸트시프트. sky2/mix 로 두 하늘을 섞는다 */
-export const MiniFrame: React.FC<{ sky: string; sky2?: string; mix?: number; children: React.ReactNode }> = ({ sky, sky2, mix = 0, children }) => {
+export const MiniFrame: React.FC<{ sky: string; sky2?: string; mix?: number; filter?: string; children: React.ReactNode }> = ({ sky, sky2, mix = 0, filter = "", children }) => {
   const { width, height } = useVideoConfig();
   const band = (side: "top" | "bottom"): React.CSSProperties => ({
     position: "absolute",
@@ -134,7 +134,7 @@ export const MiniFrame: React.FC<{ sky: string; sky2?: string; mix?: number; chi
   return (
     <AbsoluteFill style={{ background: sky }}>
       {sky2 && mix > 0 && <AbsoluteFill style={{ background: sky2, opacity: mix }} />}
-      <AbsoluteFill style={{ filter: "saturate(1.18) contrast(1.1)" }}>
+      <AbsoluteFill style={{ filter: `saturate(1.18) contrast(1.1) ${filter}` }}>
         <ThreeCanvas width={width} height={height} shadows={{ type: THREE.PCFSoftShadowMap }} camera={{ fov: FOV, near: 0.2, far: 300 }} gl={{ antialias: true, logarithmicDepthBuffer: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.1 }}>
           {children}
         </ThreeCanvas>
