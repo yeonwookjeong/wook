@@ -3,7 +3,9 @@
 import { useMemo } from "react";
 import { Easing, interpolate } from "remotion";
 import * as THREE from "three";
-import { Person } from "../three/World";
+import { Character } from "../three/kenney";
+
+const CS = 1.35; // Kenney 사람 배율
 import { canvasTex, clamp, rng } from "../three/kit";
 import { Box, glyphTex, K, Key, MiniFrame, MiniLights, qTex, Rig, SKY, Slab, Sprite } from "../three/mini";
 
@@ -187,8 +189,8 @@ const Street: React.FC<{ mode: Mode04; t: number }> = ({ mode, t }) => {
       {/* 커플 */}
       {(i("intro") || i("shoes") || i("walk") || i("coin")) && (
         <>
-          <Person p={[-0.75, 0, 1.0]} coat="#c86b5a" s={0.62} ry={Math.PI / 2} />
-          <Person p={[0.35, 0, 1.0]} coat="#4a6a8a" s={0.62} ry={-Math.PI / 2} />
+          <Character kind="female-a" p={[-0.75, 0, 1.0]} ry={Math.PI / 2} s={CS} clip={i("coin") ? (t > 0.66 ? "emote-yes" : "interact-left") : "idle"} animT={t * 3} />
+          <Character kind="male-a" p={[0.35, 0, 1.0]} ry={-Math.PI / 2} s={CS} clip={i("coin") ? (t > 0.66 ? "emote-yes" : "interact-right") : "idle"} animT={t * 3} />
         </>
       )}
       {i("intro") &&
@@ -206,11 +208,10 @@ const Street: React.FC<{ mode: Mode04; t: number }> = ({ mode, t }) => {
       {i("walk") && <Pair p={[-0.2 + walkX, 0, 1.6 - walkX * 0.5]} s={2.2} ry={-0.45} step={walkX * 2} />}
       {i("away") && (
         <>
-          <Person p={[-0.6, 0, 1.0]} coat="#c86b5a" s={0.62} ry={Math.PI / 2} />
+          <Character kind="female-a" p={[-0.6, 0, 1.0]} ry={Math.PI / 2} s={CS} clip="idle" animT={t * 2} headPitch={0.3 * rain} />
           <RainCloud p={[-0.6, 1.25, 1.0]} s={rain} t={t} />
           <group position={[0.4 + leave * 2.8, 0, 0.9 + leave * 0.4]}>
-            <Person p={[0, 0, 0]} coat="#4a6a8a" s={0.62} ry={0} />
-            <Pair p={[0, 0, 0]} s={1.1} ry={0} step={leave * 5} />
+            <Character kind="male-a" p={[0, 0, 0]} ry={Math.PI / 2} s={CS} clip="walk" animT={t * 4} />
           </group>
         </>
       )}
@@ -272,18 +273,18 @@ const ChickenShop: React.FC<{ mode: Mode04; t: number }> = ({ mode, t }) => {
         return <Wing key={k} p={[cx - 0.02 + (k ? 0.08 : -0.08) - 0.45 * sl, TOP + 0.16 + 0.12 * Math.sin(sl * Math.PI), cz + 0.1 * sl]} s={2.0} r={k} />;
       })}
       {/* 사람 */}
-      <Person p={[cx - 0.85, 0, cz + 0.15]} coat="#c86b5a" s={0.62} ry={Math.PI / 2} />
+      <Character kind="female-a" p={[cx - 0.85, 0, cz + 0.15]} ry={Math.PI / 2} s={CS} clip="idle" animT={t * 2} />
       <group position={[cx + 0.85, 1.6 * rise, cz + 0.15 - 0.6 * rise]} rotation={[0, 0, -0.3 * rise]}>
-        <Person p={[0, 0, 0]} coat="#4a6a8a" s={0.62} ry={-Math.PI / 2} />
+        <Character kind="male-a" p={[0, 0, 0]} ry={-Math.PI / 2} s={CS} clip={rise > 0.05 ? "jump" : "idle"} animT={t * 2} />
         <BackWings p={[0.05, 0.62, 0]} s={2.2 * sprout} flap={t * 30} />
       </group>
       {i("fly") && rise > 0.3 && (
         <group position={[cx + 1.6, 1.6 * rise + 0.1, cz - 0.6 * rise]}>
-          <Person p={[0, 0, 0]} coat="#8c5a8a" s={0.62} ry={-Math.PI / 2} />
+          <Character kind="female-c" p={[0, 0, 0]} ry={-Math.PI / 2} s={CS} clip="jump" animT={t * 2} />
           <BackWings p={[0.05, 0.62, 0]} s={2.2} flap={t * 30 + 1} />
         </group>
       )}
-      {i("plate") && <Person p={[cx + 0.85, 0, cz + 0.15]} coat="#4a6a8a" s={0.62} ry={-Math.PI / 2} />}
+      {i("plate") && <Character kind="male-a" p={[cx + 0.85, 0, cz + 0.15]} ry={-Math.PI / 2} s={CS} clip="idle" animT={t * 2} />}
     </group>
   );
 };
@@ -373,20 +374,20 @@ const StoneWall: React.FC<{ mode: Mode04; t: number; court: string }> = ({ mode,
       {(i("wall") || i("court") || i("gone")) &&
         [0, 1, 2].map((k) => (
           <group key={k} position={[wx + walk(k), 0, wz + 1.0 + (k % 2) * 0.5]}>
-            <Person p={[0, 0, -0.12]} coat={["#c86b5a", "#e0b04a", "#6f7d5c"][k]} s={0.6} ry={Math.PI / 2} />
-            <Person p={[0, 0, 0.12]} coat={["#4a6a8a", "#3d4a63", "#8c5a8a"][k]} s={0.6} ry={Math.PI / 2} />
+            <Character kind={(["female-b", "female-d", "female-e"] as const)[k]} p={[0, 0, -0.14]} ry={Math.PI / 2} s={CS} clip="walk" animT={t * 4 + k * 0.3} />
+            <Character kind={(["male-b", "male-d", "male-e"] as const)[k]} p={[0, 0, 0.14]} ry={Math.PI / 2} s={CS} clip="walk" animT={t * 4 + k * 0.3 + 0.2} />
           </group>
         ))}
       {i("split") && (
         <group position={[wx - 0.5, 0, wz + 1.2]}>
-          <Person p={[-0.15 - 1.4 * apart, 0, 0]} coat="#c86b5a" s={0.62} ry={Math.PI / 2 + (apart > 0.05 ? Math.PI : 0)} />
-          <Person p={[0.15 + 1.4 * apart, 0, 0]} coat="#4a6a8a" s={0.62} ry={Math.PI / 2} />
+          <Character kind="female-a" p={[-0.15 - 1.4 * apart, 0, 0]} ry={Math.PI / 2 + (apart > 0.05 ? Math.PI : 0)} s={CS} clip={apart > 0.05 ? "walk" : "idle"} animT={t * 4} />
+          <Character kind="male-a" p={[0.15 + 1.4 * apart, 0, 0]} ry={Math.PI / 2} s={CS} clip={apart > 0.05 ? "walk" : "idle"} animT={t * 4} />
         </group>
       )}
       {i("end") && (
         <group position={[wx - 0.6, 0, wz + 1.2]}>
-          <Person p={[-0.16 + 0.04 * hold, 0, 0]} coat="#c86b5a" s={0.62} ry={Math.PI / 2} />
-          <Person p={[0.16 - 0.04 * hold, 0, 0]} coat="#4a6a8a" s={0.62} ry={Math.PI / 2} />
+          <Character kind="female-a" p={[-0.2 + 0.04 * hold, 0, 0]} ry={0.3} s={CS} clip="idle" animT={t * 2} headYaw={-0.3 * hold} />
+          <Character kind="male-a" p={[0.2 - 0.04 * hold, 0, 0]} ry={-0.3} s={CS} clip="idle" animT={t * 2} headYaw={0.3 * hold} />
           {hold > 0.5 && (
             <mesh position={[0, 0.42, 0.05]}>
               <sphereGeometry args={[0.035, 10, 8]} />
