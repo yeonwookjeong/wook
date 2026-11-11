@@ -128,7 +128,7 @@ const DECADE_EN: Record<string, string> = {
   "기반을 다지며 버틴 10년": "A decade of holding on and building foundations",
   "무난하게 자란 시기": "Growing up without much upheaval",
 };
-const decadeEn = (ko: string) => DECADE_EN[ko] ?? (ko.includes("다시 ") ? `${DECADE_EN[ko.replace("다시 ", "")] ?? ""}, once again` : "") ?? "";
+const decadeEn = (ko: string) => DECADE_EN[ko] ?? (ko.includes("다시 ") && DECADE_EN[ko.replace("다시 ", "")] ? `${DECADE_EN[ko.replace("다시 ", "")]}, once again` : "");
 
 // The money and love verdicts (lib/domains.ts domainCard): a fixed set of types and lines.
 const CARD_EN: Record<string, string> = {

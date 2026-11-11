@@ -6,6 +6,7 @@ import { dayMaster, dayMeeting, elementCounts, ELEMENTS_EN, ANIMALS_EN } from "@
 import { enReadingById, usd } from "@/lib/en/readings";
 import { getReportText } from "@/lib/store";
 import FreeEn from "@/components/en/FreeEn";
+import { isFull } from "@/lib/saju";
 import { enFreeOf } from "@/lib/en/free";
 
 export const metadata: Metadata = { title: "Your free preview" };
@@ -79,7 +80,7 @@ export default async function Preview({ params, searchParams }: PageProps<"/en/r
     <div className="flex flex-col gap-6 pt-6">
       <p className="text-center text-[13px] text-ink-soft">{r.title}, free preview</p>
       <Card p={a} />
-      {free && <FreeEn name={a.name} pillars={a.pillars} r={free} />}
+      {free && isFull(a.pillars) && <FreeEn name={a.name} pillars={a.pillars} r={free} />}
       {b && <Card p={b} />}
       {meet && (
         <section className="doc-paper px-5 py-5 text-center">

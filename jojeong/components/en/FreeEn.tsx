@@ -1,6 +1,6 @@
 import { EL_STYLE } from "@/components/SajuChart";
 import { chartOf, BRANCH_EL, stemEl } from "@/lib/myeongri";
-import { BRANCHES, STEMS, type Pillars } from "@/lib/saju";
+import { BRANCHES, STEMS, type FullPillars } from "@/lib/saju";
 import { ANIMALS_EN, STEMS_EN } from "@/lib/en/chart";
 import { ELEMENT_EN, MOOD_EN, perHundredEn, type EnFree } from "@/lib/en/free";
 
@@ -84,7 +84,7 @@ function Donut({ powers }: { powers: EnFree["powers"] }) {
 
 // `name`: the reader's first name. `locked`: the full reading is not theirs yet, so as on the Korean screen the
 // second finding and the decades' words (all but the present one) are kept for it.
-export default function FreeEn({ name, pillars, r, locked = true }: { name: string; pillars: Pillars; r: EnFree; locked?: boolean }) {
+export default function FreeEn({ name, pillars, r, locked = true }: { name: string; pillars: FullPillars; r: EnFree; locked?: boolean }) {
   const slots = chartOf(pillars);
   const dayStem = pillars.dayStem;
   return (
