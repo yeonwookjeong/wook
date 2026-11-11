@@ -5,6 +5,8 @@ import { decodePerson, type Person } from "@/lib/pairToken";
 import { dayMaster, dayMeeting, elementCounts, ELEMENTS_EN, ANIMALS_EN } from "@/lib/en/chart";
 import { enReadingById, usd } from "@/lib/en/readings";
 import { getReportText } from "@/lib/store";
+import FreeEn from "@/components/en/FreeEn";
+import { enFreeOf } from "@/lib/en/free";
 
 export const metadata: Metadata = { title: "Your free preview" };
 
@@ -69,12 +71,15 @@ export default async function Preview({ params, searchParams }: PageProps<"/en/r
     );
   }
   const meet = b ? dayMeeting(a.pillars, b.pillars) : null;
+  // One person: the whole Korean free screen, in English (lib/en/free.ts).
+  const free = !b ? enFreeOf(a) : null;
   const sample = await getReportText(`en-sample:${r.id}`).catch(() => null);
 
   return (
     <div className="flex flex-col gap-6 pt-6">
       <p className="text-center text-[13px] text-ink-soft">{r.title}, free preview</p>
       <Card p={a} />
+      {free && <FreeEn name={a.name} pillars={a.pillars} r={free} />}
       {b && <Card p={b} />}
       {meet && (
         <section className="doc-paper px-5 py-5 text-center">
