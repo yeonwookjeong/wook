@@ -2,12 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { sajuYear as thisSajuYear } from "@/lib/yeonun";
 import { getSchemeUri } from "@apps-in-toss/web-framework";
 import type { Person } from "@/lib/pairToken";
+import { josa } from "@/lib/josa";
 import { BirthForm } from "./BirthForm";
 import { saveCard, shareMessage, type Card } from "./card";
 import { forgetAll, loadHome, loadMe, mateToken, readMate, saveHome, saveMe, type Mate } from "./me";
 import {
   byCode, dirsOf, elName, goodStars, guaFromNumber, guaLabel, guaOf, label, MAP, needOf, pairPlaces, PLACE_KIND, proj, rankOf, scoreAll, SIDOS, topPlaces,
-  lookAlikes, moveCheck, nickOf, weatherOf, tagsOf, weekendPlan, whyOf, type Gua, type Need, type Region, type Scored,
+  localPlaces, lookAlikes, moveCheck, nickOf, weatherOf, tagsOf, weekendPlan, whyOf, type Gua, type Need, type Region, type Scored,
 } from "./place";
 
 // The pair link's token, from the address the app was opened with (intoss://hundo-dongne?with=…), or the browser's.
@@ -95,7 +96,7 @@ function HomePick({ me, onPick, initial }: { me: Person; onPick: (r: Region) => 
     <section className="card stack">
       <p className="kicker">지금 사는 곳</p>
       <h1>{me.name}님은 지금 어디에 사세요?</h1>
-      <p className="quiet small">나에게 맞는 동네 순위는 어디 살든 같아요. 사는 곳은 주말 나들이 거리와 이사 방향을 볼 때만 써요. 주소는 받지 않고, 고른 곳은 이 휴대폰에만 남아요.</p>
+      <p className="quiet small">사는 지역 안에서 잘 맞는 동네부터 보여 드리고, 그다음 전국 순위를 보여 드려요. 주소는 받지 않고, 고른 곳은 이 휴대폰에만 남아요.</p>
       <div className="row place-pick">
         <select aria-label="시도" value={sido} onChange={(e) => setSido(e.target.value)}>
           <option value="">시도</option>
@@ -124,6 +125,8 @@ function Result({ me, home, mate, onMove, onForget }: { me: Person; home: Region
   const all = useMemo(() => (need ? scoreAll(home, need, gua) : []), [home, need, gua]);
   const weekend = useMemo(() => weekendPlan(me, all), [me, all]);
   const top = useMemo(() => topPlaces(all), [all]);
+  const local = useMemo(() => localPlaces(all, home), [all, home]);
+  const [allLocal, setAllLocal] = useState(false);
   const alike = useMemo(() => (need ? lookAlikes(all, need) : []), [all, need]);
   const [picked, setPicked] = useState<Scored | null>(null);
   const [toast, setToast] = useState("");
@@ -133,7 +136,8 @@ function Result({ me, home, mate, onMove, onForget }: { me: Person; home: Region
   const pair = useMemo(() => (mateHome && mateNeed ? pairPlaces(all, scoreAll(mateHome, mateNeed, guaFromNumber(mate!.gua))) : []), [all, mateHome, mateNeed, mate]);
 
   if (!need) return <p className="card">사주를 읽지 못했어요. 생일을 다시 넣어 주세요.</p>;
-  const first = top[0];
+  const first = local.list[0];
+  const homeAt = local.list.findIndex((r) => r.code === home.code);
   const say = (s: string) => {
     setToast(s);
     setTimeout(() => setToast(""), 2400);
@@ -147,7 +151,7 @@ function Result({ me, home, mate, onMove, onForget }: { me: Person; home: Region
         <div className="card hero">
           <p className="kicker">내 사주 명당</p>
           <h1>
-            {me.name}님의 기운을 채우는 동네 1위
+            {local.area}에서 {me.name}님에게 가장 잘 맞는 동네
           </h1>
           <p className="place-big">{label(first)}</p>
           {whyOf(first, need).map((l) => (
@@ -155,20 +159,54 @@ function Result({ me, home, mate, onMove, onForget }: { me: Person; home: Region
               {l}
             </p>
           ))}
-          {weatherOf(first, home)[1] && <p className="quiet small">{weatherOf(first, home)[1]}</p>}
+          <p className="quiet small">전국 {rankOf(all, first.code)!.of}곳 가운데서는 {rankOf(all, first.code)!.rank}위예요.</p>
           <div className="row two">
             <button className="primary" onClick={() => save({ kind: "one", who: me.name, place: first, lines: whyOf(first, need), home }, "내사주동네.png")}>
               카드 저장
             </button>
             <button
               className="ghost"
-              onClick={() => shareMessage(`내 사주에 맞는 동네 1위는 ${label(first)}래. 너는 어디야?`).then((ok) => ok && say("보냈어요"))}
+              onClick={() => shareMessage(`${local.area}에서 내 사주에 맞는 동네 1위는 ${first.name}래. 너는 어디야?`).then((ok) => ok && say("보냈어요"))}
             >
               친구에게 보내기
             </button>
           </div>
         </div>
       )}
+
+      <div className="card">
+        <p className="kicker">우리 지역 순위</p>
+        <h3>
+          {local.area} {local.list.length}곳, {me.name}님에게 잘 맞는 순서
+        </h3>
+        <ol className="top">
+          {(allLocal ? local.list : local.list.slice(0, 5)).map((r, i) => (
+            <li key={r.code} onClick={() => setPicked(r)} className={r.code === home.code ? "mine" : undefined}>
+              <b>{i + 1}</b>
+              <span>
+                {local.mixed ? label(r) : r.name}
+                {r.code === home.code ? " (사는 곳)" : ""}
+              </span>
+              <em>{tagsOf(r)}</em>
+              <strong>{Math.round(r.score!)}점</strong>
+            </li>
+          ))}
+        </ol>
+        {local.list.length > 5 && (
+          <button className="link" onClick={() => setAllLocal(!allLocal)}>
+            {allLocal ? "접기" : `${local.list.length}곳 모두 보기`}
+          </button>
+        )}
+        {homeAt >= 0 && (
+          <p className="soft">
+            {homeAt === 0
+              ? `지금 사는 ${josa(home.name, "이/가")} 이 지역에서 가장 잘 맞아요. 이미 명당에 살고 계셔요.`
+              : homeAt < local.list.length / 3
+                ? `지금 사는 ${josa(home.name, "은/는")} ${local.list.length}곳 중 ${homeAt + 1}위예요. 꽤 잘 맞는 곳에 살고 계셔요.`
+                : `지금 사는 ${josa(home.name, "은/는")} ${local.list.length}곳 중 ${homeAt + 1}위예요. 주말이나 산책은 ${first.name} 쪽으로 다니면 모자란 기운을 채우기 좋아요.`}
+          </p>
+        )}
+      </div>
 
       <WeekendBox me={me} need={need} days={weekend} onPick={setPicked} />
 
@@ -204,7 +242,8 @@ function Result({ me, home, mate, onMove, onForget }: { me: Person; home: Region
       </div>
 
       <div className="card">
-        <h3>{me.name}님에게 잘 맞는 동네 TOP5</h3>
+        <p className="kicker">전국으로 넓히면</p>
+        <h3>{me.name}님에게 잘 맞는 동네 전국 TOP5</h3>
         <p className="quiet small">시도마다 가장 잘 맞는 한 곳씩 골랐어요.</p>
         <ol className="top">
           {top.map((r, i) => (

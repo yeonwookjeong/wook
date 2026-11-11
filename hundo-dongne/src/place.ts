@@ -234,6 +234,16 @@ export function topPlaces(all: Scored[], k = 5): Scored[] {
   return out;
 }
 
+// 우리 지역: the places of home's own 시도, ranked. A 시도 with few places (세종, 제주, 대전, 울산) takes in its
+// nearest neighbours until there are six, so the list is never one or two lines.
+export function localPlaces(all: Scored[], home: Region, min = 6): { list: Scored[]; area: string; mixed: boolean } {
+  const list = ranked(all);
+  const own = list.filter((r) => r.sido === home.sido);
+  if (own.length >= min) return { list: own, area: home.sido, mixed: false };
+  const near = list.filter((r) => r.sido !== home.sido).sort((a, b) => a.km - b.km).slice(0, min - own.length);
+  return { list: [...own, ...near].sort(order), area: `${home.sido} 근처`, mixed: true };
+}
+
 export function rankOf(all: Scored[], code: string): { rank: number; of: number } | null {
   const list = ranked(all);
   const i = list.findIndex((r) => r.code === code);

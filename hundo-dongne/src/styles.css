@@ -451,3 +451,5 @@ ul {
 .bar-row.want .track span { background: #b3261e; }
 .bar-row.want span:first-child { font-weight: 800; }
 .bar-row.avoid .track span { background: #8f877b; }
+.top li.mine span { font-weight: 800; }
+.top li.mine { outline: 2px solid #211b17; outline-offset: -2px; border-radius: 10px; }
