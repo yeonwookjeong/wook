@@ -4,6 +4,7 @@ import { MOODS, type FreeReading as Reading } from "@/lib/freeReading";
 import { salHanja } from "@/lib/freePreview";
 import { perHundred } from "@/lib/rarity";
 import LockedLine from "./LockedLine";
+import type { figuresFor } from "@/lib/iljuFigures";
 
 const TOPIC: Record<Domain, string> = { jaemul: "돈", yeonae: "사랑", jikup: "일" };
 // The five grades of a decade, with the colour its bar is drawn in (lib/freeReading.ts moodOf).
@@ -90,8 +91,11 @@ export default function FreeReading({
   ask,
   locked = false,
   near = false,
+  figures,
 }: {
   near?: boolean;
+  // 같은 일주로 태어난 인물 (lib/iljuFigures.ts): shown only where it is passed (the admin preview for now).
+  figures?: ReturnType<typeof figuresFor>;
   name: string;
   r: Reading;
   query: string;
@@ -147,6 +151,26 @@ export default function FreeReading({
         <p className="mt-2 text-[11px] text-ink-soft">상위, 하위는 다른 모든 사주와 비교했어요.</p>
         {ask?.("성향 지도")}
       </Card>
+
+      {figures && figures.list.length > 0 && (
+        <Card hanja="同 日 生" title={figures.same === "ilju" ? `${name}님과 같은 일주로 태어난 인물` : `${name}님과 같은 일간으로 태어난 인물`}>
+          <p className="mt-1 text-center text-[12px] text-ink-soft">
+            {figures.label}
+            {figures.same === "ilju" ? ", 태어난 날의 두 글자가 같아요" : ", 태어난 날의 윗글자가 같아요"}
+          </p>
+          <ul className="mt-3 flex flex-col divide-y divide-seal/10">
+            {figures.list.map((f) => (
+              <li key={f.name} className="flex items-baseline gap-3 py-2.5">
+                <b className="shrink-0 font-myeongjo text-[16px]">{f.name}</b>
+                <span className="text-[13px] leading-snug text-ink/85">{f.line}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-[11px] leading-relaxed text-ink-soft">
+            태어난 시가 전하지 않는 분이 많아 태어난 날로만 맞췄어요. 같은 일주라도 나머지 글자에 따라 삶의 모양은 달라요.
+          </p>
+        </Card>
+      )}
 
       <Card hanja="神 殺" title={`${name}님 사주 속 별`}>
         {r.sals.length ? (
