@@ -4,7 +4,8 @@ import { AbsoluteFill, Audio, Easing, interpolate, Sequence, spring, staticFile,
 import { loadFont as loadNotoSans } from "@remotion/google-fonts/NotoSansKR";
 import voEn from "./vo_en.json";
 import voEs from "./vo_es.json";
-import { Mode04, Scene04, Words04 } from "./Scene04";
+import { Mode04, Words04 } from "./Scene04";
+import { SceneCas04 } from "../cas/SceneCas04";
 
 const { fontFamily: sans } = loadNotoSans();
 const FPS = 30;
@@ -100,7 +101,7 @@ const Caption: React.FC<{ cap: Cap }> = ({ cap }) => {
   const { fps } = useVideoConfig();
   const pop = spring({ frame, fps, config: { damping: 12, stiffness: 260 } });
   return (
-    <div style={{ position: "absolute", left: 60, right: 60, top: 1180, display: "flex", justifyContent: "center", flexWrap: "wrap", gap: "0 22px", transform: `scale(${0.85 + 0.15 * pop})` }}>
+    <div style={{ position: "absolute", left: 60, right: 60, top: 1480, display: "flex", justifyContent: "center", flexWrap: "wrap", gap: "0 22px", transform: `scale(${0.85 + 0.15 * pop})` }}>
       {cap.map((x, i) => (
         <span key={i} style={{ fontFamily: sans, fontWeight: 900, fontSize: 88, lineHeight: 1.15, textAlign: "center", color: x.hl ? YELLOW : "#fff", WebkitTextStroke: "14px #000", paintOrder: "stroke fill", textShadow: "0 6px 18px rgba(0,0,0,0.55)" }}>
           {x.text}
@@ -166,7 +167,7 @@ const ShotView: React.FC<{ shot: Shot; caps: Cap[]; dur: number; words: Words04;
   return (
     <AbsoluteFill>
       <AbsoluteFill style={{ opacity: fadeIn, transform: `translate(${shake}px, ${shake * 0.4}px)`, ...(ink ? maskStyle(ink.fill) : {}) }}>
-        <Scene04 mode={shot.mode} t={t} words={words} />
+        <SceneCas04 mode={shot.mode} t={t} words={words} />
       </AbsoluteFill>
       {ink && <AbsoluteFill style={{ background: "#b3141a", opacity: 0.9, ...maskStyle(ink.rim) }} />}
       {flash > 0 && <AbsoluteFill style={{ background: "#fffaf0", opacity: flash }} />}
@@ -222,5 +223,5 @@ import { useCurrentFrame as useF } from "remotion";
 import { ORDER04 } from "./Scene04";
 export const Ep04Check: React.FC = () => {
   const f = useF();
-  return <Scene04 mode={ORDER04[f % ORDER04.length]} t={f < ORDER04.length ? 0.15 : 0.85} words={WORDS.en} />;
+  return <SceneCas04 mode={ORDER04[f % ORDER04.length]} t={f < ORDER04.length ? 0.15 : 0.85} words={WORDS.en} />;
 };

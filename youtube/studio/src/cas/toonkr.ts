@@ -9,7 +9,7 @@ type P2 = [number, number];
 
 export type Hair = "bob" | "short" | "long";
 export type Look = { skin: string; hair: Hair; hairC: string; top: string; bottom: string; shoes: string; glasses?: boolean };
-export type Mouth = "smile" | "grin" | "open" | "o" | "smug" | "flat";
+export type Mouth = "smile" | "grin" | "open" | "o" | "smug" | "flat" | "sad";
 export type Pose = {
   armL?: number; // 도(°): 0 = 아래로, 90 = 옆으로 수평 (화면 왼쪽 팔)
   armR?: number; // 화면 오른쪽 팔
@@ -20,6 +20,8 @@ export type Pose = {
   wings?: number; // 등 날개 0..1
   flap?: number; // 날갯짓 각도(라디안)
   legs?: "stand" | "fly" | "sit";
+  walk?: number; // 걸음 위상(라디안): 다리가 번갈아 앞뒤로
+  blush?: number; // 볼 빨개짐 0..1
 };
 
 export const ME: Look = { skin: "#f6d3b5", hair: "bob", hairC: "#231a1e", top: "#ef6f5e", bottom: "#3b4a7a", shoes: "#f4efe6" };
@@ -162,9 +164,9 @@ function drawFace(p: Pen, L: Look, P: Pose) {
   const ey = HY + 20;
   const brow = P.brow ?? 0;
   // 볼터치
-  p.g.globalAlpha = 0.35;
-  p.dot(HX - 100, ey + 60, 26, "#ff8a8a");
-  p.dot(HX + 100, ey + 60, 26, "#ff8a8a");
+  p.g.globalAlpha = 0.35 + 0.45 * (P.blush ?? 0);
+  p.dot(HX - 100, ey + 60, 26 + 10 * (P.blush ?? 0), "#ff8a8a");
+  p.dot(HX + 100, ey + 60, 26 + 10 * (P.blush ?? 0), "#ff8a8a");
   p.g.globalAlpha = 1;
   // 눈
   [-1, 1].forEach((sd) => {
@@ -183,6 +185,7 @@ function drawFace(p: Pen, L: Look, P: Pose) {
   const m = P.mouth ?? "smile";
   if (m === "smile") p.stroke(ell(HX, my - 18, 30, 22, 25, 155, 16), 9);
   if (m === "flat") p.stroke([[HX - 22, my], [HX + 22, my]], 9);
+  if (m === "sad") p.stroke(ell(HX, my + 26, 28, 20, 205, 335, 16), 9);
   if (m === "smug") p.stroke([[HX - 28, my + 2], [HX + 4, my + 4], [HX + 30, my - 10]], 9);
   if (m === "o") p.fill(ell(HX, my, 13, 16), "#6a2230", 7);
   if (m === "grin") {
@@ -206,7 +209,8 @@ export function drawChar(g: CanvasRenderingContext2D, L: Look, P: Pose) {
   const legC = L.bottom;
   [-1, 1].forEach((sd) => {
     const x = HX + sd * 52;
-    const foot: P2 = fly ? [x + sd * 30, 905] : sit ? [x + sd * 8, 860] : [x, 935];
+    const wk = P.walk !== undefined ? Math.sin(P.walk + (sd > 0 ? Math.PI : 0)) : 0;
+    const foot: P2 = fly ? [x + sd * 30, 905] : sit ? [x + sd * 8, 860] : [x + wk * 46, 935 - Math.max(0, wk) * 22];
     p.limb([x, 760], foot, legC, 66);
     p.fill(ell(foot[0] + sd * 14, foot[1] + 22, 50, 26), L.shoes, 10);
   });
