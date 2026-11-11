@@ -371,5 +371,39 @@ for code, geoms in sorted(groups.items()):
         "lat": round(c.y, 3),
     }
 
+# 행정동: the same ground figures one level down, so a city's 구 can be read street by street. Land use and the
+# weather stay at the 시군구 (the statistics go no lower). Rows: [이름, 산지%, 높은 곳 m, 험한 산%, 평지%, 바다%,
+# 물길 km², 큰 강 km, 경도, 위도].
+dongs = defaultdict(list)
+for f in src["features"]:
+    p = f["properties"]
+    g = shape(f["geometry"]).buffer(0)
+    si, sj, m = inside(g)
+    e, s = elev[si, sj][m], slope[si, sj][m]
+    if e.size < 4:
+        c = g.representative_point()
+        i = int(np.argmin(abs(lat - c.y)))
+        j = int(np.argmin(abs(lon - c.x)))
+        si, sj = slice(max(0, i - 1), i + 2), slice(max(0, j - 1), j + 2)
+        e, s = elev[si, sj].ravel(), slope[si, sj].ravel()
+        up = upstream[si, sj].ravel()
+    else:
+        up = upstream[si, sj][m]
+    land = e > -2
+    e2, s2 = (e[land], s[land]) if land.any() else (e, s)
+    ring = g.buffer(0.02).difference(g)
+    ri, rj, rm = inside(ring)
+    re = elev[ri, rj][rm]
+    sea = float((re < -2).mean()) if re.size else 0.0
+    river_km = sum(g.intersection(r).length for r in rivers if g.intersects(r)) * 111 * math.cos(math.radians(g.centroid.y))
+    c = g.representative_point()
+    dongs[p["sgg"]].append([
+        p["adm_nm"].split()[-1], round(float((s2 >= 8).mean()) * 100), round(float(np.percentile(e2, 95))),
+        round(float((s2 >= 16).mean()) * 100), round(float(((s2 < 2) & (e2 < 80)).mean()) * 100), round(sea * 100),
+        round(float(up.max()) if up.size else 0.0), round(river_km, 1), round(c.x, 4), round(c.y, 4),
+    ])
+json.dump({"asOf": "2026-10-01", "dongs": dongs}, open("src/data/dong.json", "w"), ensure_ascii=False, separators=(",", ":"))
+print(sum(len(v) for v in dongs.values()), "행정동")
+
 json.dump({"asOf": "2026-10-01", "regions": out}, open(sys.argv[8] if len(sys.argv) > 8 else "src/data/land.json", "w"), ensure_ascii=False, separators=(",", ":"))
 print(len(out), "시군구")

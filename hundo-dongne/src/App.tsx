@@ -8,7 +8,7 @@ import { saveCard, shareMessage, type Card } from "./card";
 import { forgetAll, loadHome, loadMe, mateToken, readMate, saveHome, saveMe, type Mate } from "./me";
 import {
   byCode, dirsOf, elName, goodStars, guaFromNumber, guaLabel, guaOf, label, MAP, needOf, pairPlaces, PLACE_KIND, proj, rankOf, scoreAll, SIDOS, topPlaces,
-  localPlaces, lookAlikes, moveCheck, nickOf, weatherOf, tagsOf, weekendPlan, whyOf, type Gua, type Need, type Region, type Scored,
+  dongsOf, loadDongs, localPlaces, lookAlikes, type DongData, moveCheck, nickOf, weatherOf, tagsOf, weekendPlan, whyOf, type Gua, type Need, type Region, type Scored,
 } from "./place";
 
 // The pair link's token, from the address the app was opened with (intoss://hundo-dongne?with=…), or the browser's.
@@ -159,6 +159,7 @@ function Result({ me, home, mate, onMove, onForget }: { me: Person; home: Region
               {l}
             </p>
           ))}
+          <DongLine code={first.code} need={need} lead="그중에서도" />
           <p className="quiet small">전국 {rankOf(all, first.code)!.of}곳 가운데서는 {rankOf(all, first.code)!.rank}위예요.</p>
           <div className="row two">
             <button className="primary" onClick={() => save({ kind: "one", who: me.name, place: first, lines: whyOf(first, need), home }, "내사주동네.png")}>
@@ -197,6 +198,7 @@ function Result({ me, home, mate, onMove, onForget }: { me: Person; home: Region
             {allLocal ? "접기" : `${local.list.length}곳 모두 보기`}
           </button>
         )}
+        {home.code !== first.code && <DongLine code={home.code} need={need} lead={`지금 사는 ${home.name} 안에서는`} />}
         {homeAt >= 0 && (
           <p className="soft">
             {homeAt === 0
@@ -310,6 +312,7 @@ function Picked({ r, all, need, gua, me, home, shadeMap, onSave }: { r: Scored; 
           {l}
         </p>
       ))}
+      <DongLine code={r.code} need={need} lead={`${r.name} 안에서는`} />
       <div className="move">
         <p className="kicker">날씨 (30년 평균)</p>
         {weatherOf(r, home).map((l) => (
@@ -451,5 +454,29 @@ function GroundBars({ r, need }: { r: Scored; need: Need }) {
       ))}
       <p className="quiet small">빨간 막대는 필요한 기운, 회색 막대는 버거운 기운이에요. 전국 256곳과 견준 세기예요.</p>
     </div>
+  );
+}
+
+// The best dongs of one 시군구, in a line: "그중에서도 신림동, 서원동, 난곡동 쪽이 가장 잘 맞아요".
+function useDongs() {
+  const [d, setD] = useState<DongData | null>(null);
+  useEffect(() => {
+    let live = true;
+    loadDongs().then((x) => live && setD(x), () => {});
+    return () => {
+      live = false;
+    };
+  }, []);
+  return d;
+}
+function DongLine({ code, need, lead }: { code: string; need: Need; lead: string }) {
+  const d = useDongs();
+  const list = useMemo(() => (d ? dongsOf(code, need, d) : []), [d, code, need]);
+  if (list.length < 2) return null;
+  const top = list.slice(0, 3);
+  return (
+    <p className="dong">
+      {lead} <b>{top.map((x) => x.name).join(", ")}</b> 쪽이 가장 잘 맞아요. <span className="quiet">{top[0].name}: {top[0].why}</span>
+    </p>
   );
 }

@@ -426,3 +426,59 @@ export function lookAlikes(all: Scored[], n: Need, k = 3): Scored[] {
     .filter((r) => !seen.has(r.sido) && !!seen.add(r.sido))
     .slice(0, k);
 }
+
+// 행정동 one level down (scripts/land2026.py writes src/data/dong.json, loaded only when asked). Hills, rock, flats
+// and water are the dong's own; forest, farms, factories, town and weather stay the 시군구's, the statistics going no
+// lower. Row: [이름, 산지%, 높은 곳 m, 험한 산%, 평지%, 바다%, 물길 km², 큰 강 km, 경도, 위도].
+export type DongRow = [string, number, number, number, number, number, number, number, number, number];
+export type DongData = Record<string, DongRow[]>;
+let dongData: Promise<DongData> | null = null;
+export const loadDongs = () => (dongData ??= import("./data/dong.json").then((m) => (m.default as unknown as { dongs: DongData }).dongs));
+
+export type DongScored = { name: string; fit: number; ground: number[]; why: string };
+type DongPct = { mt: (v: number) => number; top: (v: number) => number; rock: (v: number) => number; flat: (v: number) => number };
+const dongPcts = new WeakMap<DongData, DongPct>();
+function dongPctOf(d: DongData): DongPct {
+  let p = dongPcts.get(d);
+  if (!p) {
+    const rows = Object.values(d).flat();
+    p = { mt: pctOf(rows.map((r) => r[1])), top: pctOf(rows.map((r) => r[2])), rock: pctOf(rows.map((r) => r[3])), flat: pctOf(rows.map((r) => r[4])) };
+    dongPcts.set(d, p);
+  }
+  return p;
+}
+function dongWhy(row: DongRow, e: number): string {
+  const [, mt, top, rock, flat, sea, flow, river] = row;
+  if (e === 0) return top >= 150 ? `산자락 동네예요. 가장 높은 곳이 ${top}m쯤이에요` : `언덕이 땅의 ${mt}%예요`;
+  if (e === 1) return "볕과 불빛이 도는 동네예요";
+  if (e === 2) return `평평한 땅이 ${flat}%예요`;
+  if (e === 3) return `가파른 바위 비탈이 ${rock}%예요`;
+  if (sea >= 10) return "바다에 닿아 있어요";
+  if (river >= 1 || flow >= 10000) return "큰 강이 곁을 흘러요";
+  return flow >= 100 ? "물길이 모여 흘러요" : "물기가 도는 동네예요";
+}
+// The dongs of one 시군구, best for this chart first.
+export function dongsOf(code: string, n: Need, d: DongData): DongScored[] {
+  const rows = d[code];
+  const g0 = groundOf(code);
+  const l = LAND[code];
+  if (!rows?.length || !g0 || !l) return [];
+  const p = dongPctOf(d);
+  const u = useOf(l);
+  const w = weightsOf(n);
+  return rows
+    .map((row) => {
+      const [name, mt, top, rock, flat, sea, flow, river] = row;
+      const mount = (p.mt(mt) + p.top(top)) / 2;
+      const ground = [
+        0.3 * pForest(u.forest) + 0.7 * mount,
+        g0[1],
+        0.5 * pFarm(u.farm) + 0.5 * p.flat(flat),
+        0.5 * p.rock(rock) + 0.5 * pFactory(u.factory),
+        Math.max(clamp01(sea / 40), clamp01((Math.log10(Math.max(flow, river >= 1 ? 10000 : 0, 1)) - 2) / 2), 0.6 * pRain(l.climate.rain)),
+      ];
+      const best = [0, 1, 2, 3, 4].filter((e) => w[e] > 0 && e !== 1).sort((a, b) => w[b] * ground[b] - w[a] * ground[a])[0];
+      return { name, fit: fitOf(ground, n), ground, why: dongWhy(row, best) };
+    })
+    .sort((a, b) => b.fit - a.fit || a.name.localeCompare(b.name));
+}
