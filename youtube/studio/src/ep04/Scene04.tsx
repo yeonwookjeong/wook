@@ -219,8 +219,9 @@ const Street: React.FC<{ mode: Mode04; t: number }> = ({ mode, t }) => {
           </group>
         </>
       )}
-      {i("coin") && coinT < 1 && <Coin p={[0.2 - 0.5 * coinT, 0.42 + 0.5 * Math.sin(coinT * Math.PI), 1.45]} spin={coinT * 12} s={4.2} />}
-      {i("coin") && coinT >= 1 && <Coin p={[-0.3, 0.42, 1.45]} spin={0} s={4.2} />}
+      {/* 동전: 남자 손 → 두 사람 사이 빈 공간으로 작게 건너감 → 여자 손. 웃음 나오면 사라짐 */}
+      {i("coin") && laugh < 0.05 && <Coin p={[0.0 - 0.4 * coinT, 0.52 + 0.22 * Math.sin(coinT * Math.PI), 1.02]} spin={coinT * 6.3} s={2.0} />}
+      
       {i("coin") && laugh > 0 && <Sprite tex={haha} s={laugh} pos={[-0.2, 1.35, 1.1]} size={[0.8, 0.4]} rz={-0.05} />}
     </group>
   );
