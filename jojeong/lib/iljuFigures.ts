@@ -57,7 +57,7 @@ const RAW: Raw[] = [
 export type IljuFigure = { name: string; line: string; stem: number; branch: number };
 
 function dayOf(b: Born): { stem: number; branch: number } {
-  const e = ("lunar" in b ? Lunar.fromYmd(...b.lunar) : Solar.fromYmd(...b.solar).getLunar()).getEightChar();
+  const e = ("lunar" in b ? Lunar.fromYmdHms(...b.lunar, 12, 0, 0) : Solar.fromYmd(...b.solar).getLunar()).getEightChar();
   return {
     stem: STEMS.indexOf(e.getDayGan() as (typeof STEMS)[number]),
     branch: BRANCHES.indexOf(e.getDayZhi() as (typeof BRANCHES)[number]),
