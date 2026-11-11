@@ -482,3 +482,37 @@ export function dongsOf(code: string, n: Need, d: DongData): DongScored[] {
     })
     .sort((a, b) => b.fit - a.fit || a.name.localeCompare(b.name));
 }
+
+// 약속 명당: where a group meets fairly (the farthest person's straight-line distance kept near its least), and of
+// those, the places best for this chart; then the days in the next two weeks that suit meeting people (그날 운세, 도화
+// and 천을귀인 lift a day, 공망 lowers it).
+export type MeetPlace = { r: Scored; far: number; spread: number };
+export function meetPlaces(all: Scored[], people: Region[], k = 3): MeetPlace[] {
+  if (people.length < 2) return [];
+  const rows = ranked(all).map((r) => {
+    const d = people.map((p) => kmBetween(p, r));
+    return { r, far: Math.max(...d), spread: Math.max(...d) - Math.min(...d) };
+  });
+  const least = Math.min(...rows.map((x) => x.far));
+  const fair = rows.filter((x) => x.far <= least * 1.25 + 4);
+  return fair.sort((a, b) => b.r.score! - a.r.score! || a.far - b.far).slice(0, k);
+}
+export type MeetDay = { date: string; weekday: string; weekend: boolean; why: string; score: number; at: number };
+const MEET_WHY: Partial<Record<Sal, string>> = {
+  도화: "도화가 도는 날이라 사람 사이가 부드러워요",
+  천을귀인: "귀인이 드는 날이라 만남에서 도움을 얻기 좋아요",
+  문창귀인: "말과 글이 잘 풀리는 날이라 이야기가 잘 통해요",
+};
+export function meetDays(me: Person, now = new Date(), k = 3): MeetDay[] {
+  const out: MeetDay[] = [];
+  for (let i = 1; i <= 14; i++) {
+    const day = kstDay(i, now);
+    const t = todayFor(me, new Date(Date.UTC(day.y, day.m - 1, day.d, 3)));
+    const sals = salsAt(me.pillars, dayPillar(day.y, day.m, day.d).branch);
+    const good = (["도화", "천을귀인", "문창귀인"] as Sal[]).filter((s) => sals.includes(s));
+    const score = (t.score ?? 50) + good.length * 12 - (sals.includes("공망") ? 15 : 0) - (sals.includes("양인") ? 6 : 0);
+    const why = good.length ? MEET_WHY[good[0]]! : (t.score ?? 50) >= 70 ? "그날 기운이 좋아 만남이 가벼워요" : "무난하게 만나기 좋은 날이에요";
+    out.push({ date: `${day.m}월 ${day.d}일`, weekday: "일월화수목금토"[day.w], weekend: day.w === 0 || day.w === 6, why, score, at: i });
+  }
+  return [...out].sort((a, b) => b.score - a.score || a.at - b.at).slice(0, k).sort((a, b) => a.at - b.at);
+}

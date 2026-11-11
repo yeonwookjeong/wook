@@ -455,3 +455,7 @@ ul {
 .top li.mine { outline: 2px solid #211b17; outline-offset: -2px; border-radius: 10px; }
 .dong { font-size: 15px; line-height: 1.55; margin: 8px 0; }
 .dong .quiet { display: block; font-size: 13px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.chips .chip { display: inline-flex; font-size: 14px; padding: 6px 10px; }
+.chips .chip.mine { background: var(--hanji-deep); }
+.tone { font-size: 12px; padding: 2px 6px; border-radius: 6px; background: #f3e3d8; color: #b3261e; }

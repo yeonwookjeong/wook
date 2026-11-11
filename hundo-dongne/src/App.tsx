@@ -8,7 +8,7 @@ import { saveCard, shareMessage, type Card } from "./card";
 import { forgetAll, loadHome, loadMe, mateToken, readMate, saveHome, saveMe, type Mate } from "./me";
 import {
   byCode, dirsOf, elName, goodStars, guaFromNumber, guaLabel, guaOf, label, MAP, needOf, pairPlaces, PLACE_KIND, proj, rankOf, scoreAll, SIDOS, topPlaces,
-  dongsOf, loadDongs, localPlaces, lookAlikes, type DongData, moveCheck, nickOf, weatherOf, tagsOf, weekendPlan, whyOf, type Gua, type Need, type Region, type Scored,
+  dongsOf, loadDongs, meetDays, meetPlaces, localPlaces, lookAlikes, type DongData, moveCheck, nickOf, weatherOf, tagsOf, weekendPlan, whyOf, type Gua, type Need, type Region, type Scored,
 } from "./place";
 
 // The pair link's token, from the address the app was opened with (intoss://hundo-dongne?with=…), or the browser's.
@@ -279,6 +279,8 @@ function Result({ me, home, mate, onMove, onForget }: { me: Person; home: Region
         </p>
       </div>
 
+      <MeetBox me={me} home={home} all={all} onPick={setPicked} say={say} />
+
       <PairBox me={me} home={home} mate={mate} pair={pair} onSave={save} say={say} />
 
       <p className="quiet small">
@@ -478,5 +480,85 @@ function DongLine({ code, need, lead }: { code: string; need: Need; lead: string
     <p className="dong">
       {lead} <b>{top.map((x) => x.name).join(", ")}</b> 쪽이 가장 잘 맞아요. <span className="quiet">{top[0].name}: {top[0].why}</span>
     </p>
+  );
+}
+
+// 약속 명당: friends' 시군구 (kept only on this screen, never saved), the fairest places for everyone, best for my
+// chart among them, and the days of the next two weeks good for meeting.
+function MeetBox({ me, home, all, onPick, say }: { me: Person; home: Region; all: Scored[]; onPick: (r: Scored) => void; say: (s: string) => void }) {
+  const [friends, setFriends] = useState<Region[]>([]);
+  const [sido, setSido] = useState(home.sido);
+  const people = useMemo(() => [home, ...friends], [home, friends]);
+  const places = useMemo(() => meetPlaces(all, people), [all, people]);
+  const days = useMemo(() => meetDays(me), [me]);
+  const add = (code: string) => {
+    const r = byCode(code);
+    if (r && friends.length < 5) setFriends([...friends, r]);
+  };
+  const share = () => {
+    const where = places.map((x, i) => `${i + 1}. ${label(x.r)}`).join("\n");
+    const when = days.map((d) => `${d.date}(${d.weekday})`).join(", ");
+    void shareMessage(`우리 약속 장소 후보예요. 다들 오기 공평한 곳으로 골랐어요.\n${where}\n날짜는 ${when} 중에 어때요?`).then((ok) => ok && say("보냈어요"));
+  };
+  return (
+    <div className="card">
+      <p className="kicker">약속 명당</p>
+      <h3>모두 오기 공평하고, {me.name}님에게 좋은 약속 장소</h3>
+      <p className="quiet small">같이 만날 사람이 사는 곳을 골라 주세요(5명까지). 고른 곳은 저장하지 않아요.</p>
+      <div className="chips">
+        <span className="chip mine">나: {home.name}</span>
+        {friends.map((f, i) => (
+          <button key={f.code + i} className="chip" onClick={() => setFriends(friends.filter((_, j) => j !== i))} aria-label={`${label(f)} 빼기`}>
+            {label(f)} ✕
+          </button>
+        ))}
+      </div>
+      {friends.length < 5 && (
+        <div className="row place-pick">
+          <select aria-label="친구 시도" value={sido} onChange={(e) => setSido(e.target.value)}>
+            {SIDOS.map((x) => (
+              <option key={x}>{x}</option>
+            ))}
+          </select>
+          <select aria-label="친구 시군구" value="" onChange={(e) => add(e.target.value)}>
+            <option value="">친구 사는 곳 더하기</option>
+            {MAP.regions
+              .filter((r) => r.sido === sido)
+              .map((r) => (
+                <option key={r.code} value={r.code}>
+                  {r.name}
+                </option>
+              ))}
+          </select>
+        </div>
+      )}
+      {places.length > 0 && (
+        <>
+          <ol className="top">
+            {places.map((x, i) => (
+              <li key={x.r.code} onClick={() => onPick(x.r)}>
+                <b>{i + 1}</b>
+                <span>{label(x.r)}</span>
+                <em>가장 먼 사람 {Math.round(x.far)}km</em>
+                <strong>{Math.round(x.r.score!)}점</strong>
+              </li>
+            ))}
+          </ol>
+          <p className="quiet small">거리는 사는 곳 가운데끼리 잰 직선거리예요. 그중 {me.name}님 기운을 채우는 곳을 앞에 뒀어요.</p>
+          <p className="kicker">만나기 좋은 날 (2주 안)</p>
+          {days.map((d) => (
+            <p key={d.date} className="small">
+              <strong>
+                {d.date} ({d.weekday})
+              </strong>{" "}
+              {d.weekend && <span className="tone">주말</span>} <span className="quiet">{d.why}</span>
+            </p>
+          ))}
+          <button className="primary" onClick={share}>
+            약속 후보 보내기
+          </button>
+        </>
+      )}
+    </div>
   );
 }
