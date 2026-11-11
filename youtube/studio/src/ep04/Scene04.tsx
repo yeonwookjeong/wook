@@ -3,11 +3,11 @@
 import { useMemo } from "react";
 import { Easing, interpolate } from "remotion";
 import * as THREE from "three";
-import { Character } from "../three/kenney";
+import { Character, Prop } from "../three/kenney";
 
 const CS = 1.35; // Kenney 사람 배율
 import { canvasTex, clamp, rng } from "../three/kit";
-import { Box, glyphTex, K, Key, MiniFrame, MiniLights, qTex, Rig, SKY, Slab, Sprite } from "../three/mini";
+import { Box, glyphTex, K, Key, MiniFrame, MiniLights, PEN_KO, qTex, Rig, SKY, Slab, Sprite } from "../three/mini";
 
 export type Mode04 = "intro" | "shoes" | "walk" | "away" | "coin" | "chicken" | "fly" | "plate" | "wall" | "split" | "court" | "gone" | "end";
 export const ORDER04: Mode04[] = ["intro", "shoes", "walk", "away", "coin", "chicken", "fly", "plate", "wall", "split", "court", "gone", "end"];
@@ -27,16 +27,16 @@ const paths = (lang: "en" | "es"): Record<Mode04, Key[]> => {
   return {
     intro: [lang === "es" ? K(-2.8, 2.6, 8.2, 0, 1.5, 0.6) : K(2.8, 2.6, 8.2, 0, 1.5, 0.6), K(1.4, 2.3, 6.8, 0, 1.6, 0.6)],
     shoes: [K(1.4, 2.3, 6.8, 0, 1.6, 0.6), K(0.4, 1.6, 4.4, -0.25, 0.65, 1.1)],
-    walk: [K(0.4, 1.6, 4.4, -0.25, 0.65, 1.1), K(2.1, 1.3, 4.2, 1.3, 0.2, 0.9)],
+    walk: [K(0.4, 1.6, 4.4, -0.25, 0.65, 1.1), K(1.9, 0.95, 3.0, 1.3, 0.15, 0.9)],
     away: [K(0.6, 2.1, 6.6, 0.4, 0.6, 1.0), K(1.4, 2.1, 6.8, 1.2, 0.6, 1.1), K(-0.3, 1.9, 5.4, -0.6, 0.75, 1.0)],
     coin: [K(-0.2, 2.0, 6.4, -0.2, 0.75, 1.0), K(-0.1, 1.8, 5.8, -0.2, 0.75, 1.0)],
-    chicken: [K(cx + 1.2, 2.9, cz + 6.6, cx, 0.6, cz), K(cx + 0.7, 2.4, cz + 5.8, cx, 0.6, cz)],
-    fly: [K(cx + 0.7, 2.4, cz + 5.8, cx, 0.6, cz), K(cx + 1.6, 2.6, cz + 5.8, cx + 1.0, 1.7, cz - 0.5)],
-    plate: [K(cx + 1.5, 1.9, cz + 3.2, cx, 0.65, cz + 0.1), K(cx - 1.3, 1.8, cz + 3.2, cx, 0.65, cz + 0.1)],
+    chicken: [K(cx - 0.6, 2.6, cz + 6.4, cx - 0.6, 0.75, cz - 0.8), K(cx + 0.2, 2.0, cz + 4.4, cx, 0.6, cz)],
+    fly: [K(cx + 0.2, 2.0, cz + 4.4, cx, 0.6, cz), K(cx - 0.2, 2.4, cz + 5.6, cx - 0.2, 1.5, cz - 0.8)],
+    plate: [K(cx + 0.7, 1.9, cz + 3.6, cx - 0.1, 0.6, cz), K(cx - 0.6, 1.8, cz + 3.4, cx - 0.15, 0.6, cz)],
     wall: [K(wx + 4, 3.0, wz + 8.5, wx, 0.9, wz + 0.8), K(wx + 2.0, 2.2, wz + 7.0, wx - 0.3, 0.7, wz + 1.1)],
     split: [K(wx + 1.4, 2.0, wz + 6.2, wx - 0.5, 0.6, wz + 1.2), K(wx + 0.4, 2.4, wz + 7.6, wx - 0.5, 0.6, wz + 1.2)],
-    court: [K(wx - 1.0, 3.0, wz + 6.5, wx - 3.0, 1.6, wz - 2.5), K(wx - 2.0, 2.6, wz + 5.5, wx - 3.4, 1.5, wz - 2.5)],
-    gone: [K(wx - 2.0, 2.6, wz + 5.5, wx - 3.4, 1.5, wz - 2.5), K(wx + 0.4, 2.4, wz + 6.6, wx - 0.6, 0.8, wz + 1.2)],
+    court: [K(wx - 1.2, 3.6, wz + 10.0, wx - 2.6, 1.5, wz - 0.6), K(wx - 2.0, 3.3, wz + 9.0, wx - 3.0, 1.5, wz - 0.6)],
+    gone: [K(wx - 2.0, 3.3, wz + 9.0, wx - 3.0, 1.5, wz - 0.6), K(wx + 0.4, 2.4, wz + 6.6, wx - 0.6, 0.8, wz + 1.2)],
     end: [K(wx + 0.4, 2.4, wz + 6.6, wx - 0.6, 0.8, wz + 1.2), K(wx + 0.9, 1.6, wz + 4.0, wx - 0.6, 0.75, wz + 1.2)],
   };
 };
@@ -186,11 +186,15 @@ const Street: React.FC<{ mode: Mode04; t: number }> = ({ mode, t }) => {
           <ShopSign text={label as string} y={2.4} />
         </group>
       ))}
+      {/* 거리 소품: 화분, 벤치 */}
+      {[-4.7, -1.7, 1.8, 4.9].map((x) => <Prop key={x} kit="furniture" name="pottedPlant" p={[x, 0, -2.2]} s={2.2} />)}
+      <Prop kit="furniture" name="bench" p={[1.0, 0, -2.0]} s={2.0} />
+      <Prop kit="furniture" name="bench" p={[-2.9, 0, -2.0]} s={2.0} />
       {/* 커플 */}
       {(i("intro") || i("shoes") || i("walk") || i("coin")) && (
         <>
-          <Character kind="female-a" p={[-0.75, 0, 1.0]} ry={Math.PI / 2} s={CS} clip={i("coin") ? (t > 0.66 ? "emote-yes" : "interact-left") : "idle"} animT={t * 3} />
-          <Character kind="male-a" p={[0.35, 0, 1.0]} ry={-Math.PI / 2} s={CS} clip={i("coin") ? (t > 0.66 ? "emote-yes" : "interact-right") : "idle"} animT={t * 3} />
+          <Character kind="female-a" p={[-0.75, 0, 1.0]} ry={Math.PI / 2 - 0.6} s={CS} clip={i("coin") ? (t > 0.66 ? "emote-yes" : "interact-left") : "idle"} animT={t * 3} />
+          <Character kind="male-a" p={[0.35, 0, 1.0]} ry={-Math.PI / 2 + 0.6} s={CS} clip={i("coin") ? (t > 0.66 ? "emote-yes" : "interact-right") : "idle"} animT={t * 3} />
         </>
       )}
       {i("intro") &&
@@ -198,25 +202,25 @@ const Street: React.FC<{ mode: Mode04; t: number }> = ({ mode, t }) => {
           <group key={k}>
             <Sprite tex={cards[k]} s={card(k)} pos={[-0.9 + k * 0.9, 2.05, 0.6]} size={[0.6, 0.6]} />
             {card(k) > 0.5 && k === 0 && <Pair p={[-0.9, 1.45, 0.6]} s={1.6} ry={0.5} />}
-            {card(k) > 0.5 && k === 1 && <Wing p={[0, 1.55, 0.6]} s={3.2} />}
+            {card(k) > 0.5 && k === 1 && <Drum p={[0, 1.55, 0.6]} s={3.0} r={0.4} />}
             {card(k) > 0.5 && k === 2 && <Sprite tex={q} s={1} pos={[0.9, 1.55, 0.6]} size={[0.45, 0.45]} />}
           </group>
         ))}
-      {(i("shoes") || i("walk")) && <group scale={1.5} position={[-0.2, 0, 1.25]}><GiftBox p={[0, 0, 0]} open={open} /></group>}
-      {i("shoes") && shoeOut > 0 && <Pair p={[-0.2, 0.1 + 0.45 * shoeOut, 1.25]} s={2.2 * shoeOut} ry={0.4} />}
-      {i("coin") && <Pair p={[-0.75, 0, 1.25]} s={1.1} ry={0} />}
-      {i("walk") && <Pair p={[-0.2 + walkX, 0, 1.6 - walkX * 0.5]} s={2.2} ry={-0.45} step={walkX * 2} />}
+      {(i("shoes") || i("walk")) && <group scale={0.85} position={[-0.2, 0, 1.25]}><GiftBox p={[0, 0, 0]} open={open} /></group>}
+      {i("shoes") && shoeOut > 0 && <Pair p={[-0.2, 0.25 + 0.3 * shoeOut, 1.25]} s={1.15 * shoeOut} ry={0.4} />}
+      {i("coin") && <Pair p={[-0.75, 0, 1.3]} s={0.75} ry={0} />}
+      {i("walk") && <Pair p={[-0.2 + walkX, 0, 1.6 - walkX * 0.5]} s={1.15} ry={-0.45} step={walkX * 2} />}
       {i("away") && (
         <>
-          <Character kind="female-a" p={[-0.6, 0, 1.0]} ry={Math.PI / 2} s={CS} clip="idle" animT={t * 2} headPitch={0.3 * rain} />
+          <Character kind="female-a" p={[-0.6, 0, 1.0]} ry={0.5} s={CS} clip="idle" animT={t * 2} headPitch={0.3 * rain} />
           <RainCloud p={[-0.6, 1.25, 1.0]} s={rain} t={t} />
           <group position={[0.4 + leave * 2.8, 0, 0.9 + leave * 0.4]}>
             <Character kind="male-a" p={[0, 0, 0]} ry={Math.PI / 2} s={CS} clip="walk" animT={t * 4} />
           </group>
         </>
       )}
-      {i("coin") && coinT < 1 && <Coin p={[0.35 - 1.1 * coinT, 0.6 + 0.45 * Math.sin(coinT * Math.PI), 1.2]} spin={coinT * 12} s={3.2} />}
-      {i("coin") && coinT >= 1 && <Coin p={[-0.6, 0.55, 1.2]} spin={0} s={3.2} />}
+      {i("coin") && coinT < 1 && <Coin p={[0.35 - 1.1 * coinT, 0.6 + 0.45 * Math.sin(coinT * Math.PI), 1.2]} spin={coinT * 12} s={4.2} />}
+      {i("coin") && coinT >= 1 && <Coin p={[-0.55, 0.6, 1.25]} spin={0} s={4.2} />}
       {i("coin") && laugh > 0 && <Sprite tex={haha} s={laugh} pos={[-0.2, 1.35, 1.1]} size={[0.8, 0.4]} rz={-0.05} />}
     </group>
   );
@@ -233,58 +237,165 @@ const ShopSign: React.FC<{ text: string; y: number }> = ({ text, y }) => {
 };
 
 // ---------- 2. 치킨집 ----------
+/** 후라이드 닭다리: 원점 = 가운데, 뼈가 +x */
+const Drum: React.FC<{ p: [number, number, number]; r?: number; s?: number; tilt?: number }> = ({ p, r = 0, s = 1, tilt = 0 }) => (
+  <group position={p} rotation={[0, r, tilt]} scale={s}>
+    <mesh rotation={[0, 0, Math.PI / 2]} castShadow>
+      <capsuleGeometry args={[0.045, 0.05, 6, 12]} />
+      <meshStandardMaterial color="#c9772a" roughness={0.95} />
+    </mesh>
+    <mesh position={[0.075, 0, 0]} rotation={[0, 0, Math.PI / 2]} castShadow>
+      <cylinderGeometry args={[0.012, 0.014, 0.06, 8]} />
+      <meshStandardMaterial color="#f4ecd8" />
+    </mesh>
+    <mesh position={[0.108, 0, 0]} castShadow>
+      <sphereGeometry args={[0.018, 10, 8]} />
+      <meshStandardMaterial color="#f4ecd8" />
+    </mesh>
+  </group>
+);
+
+/** 치킨 바구니 */
+const Basket: React.FC<{ p: [number, number, number]; s?: number; n?: number }> = ({ p, s = 1, n = 6 }) => (
+  <group position={p} scale={s}>
+    <mesh position={[0, 0.045, 0]} castShadow>
+      <cylinderGeometry args={[0.17, 0.13, 0.09, 24, 1, true]} />
+      <meshStandardMaterial color="#e2c08a" side={THREE.DoubleSide} />
+    </mesh>
+    <mesh position={[0, 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <circleGeometry args={[0.13, 24]} />
+      <meshStandardMaterial color="#e2c08a" />
+    </mesh>
+    <mesh position={[0, 0.07, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <circleGeometry args={[0.16, 24]} />
+      <meshStandardMaterial color="#f7f2e6" />
+    </mesh>
+    {Array.from({ length: n }, (_, k) => {
+      const a = (k / n) * Math.PI * 2;
+      return <Drum key={k} p={[Math.cos(a) * 0.07, 0.11 + (k % 2) * 0.03, Math.sin(a) * 0.07]} r={-a} tilt={0.35} />;
+    })}
+  </group>
+);
+
+const Plate: React.FC<{ p: [number, number, number] }> = ({ p }) => (
+  <group position={p}>
+    <mesh position={[0, 0.008, 0]} receiveShadow castShadow>
+      <cylinderGeometry args={[0.12, 0.09, 0.016, 28]} />
+      <meshStandardMaterial color="#ffffff" />
+    </mesh>
+  </group>
+);
+
+/** 가구 모델은 원점이 모서리라서, 가운데 기준으로 놓는 포장 */
+const FURN: Record<string, [number, number]> = { table: [0.841, 0.447], chair: [0.2, 0.2], kitchenFridgeSmall: [0.43, 0.282] };
+const Furn: React.FC<{ name: string; p: [number, number, number]; ry?: number; s: number }> = ({ name, p, ry = 0, s }) => {
+  const [w, d] = FURN[name];
+  return (
+    <group position={p} rotation={[0, ry, 0]}>
+      <Prop kit="furniture" name={name} p={[(-w / 2) * s, 0, (d / 2) * s]} s={s} />
+    </group>
+  );
+};
+
 const ChickenShop: React.FC<{ mode: Mode04; t: number }> = ({ mode, t }) => {
   const i = (m: Mode04) => mode === m;
   const [cx, cz] = SHOP;
+  const F = 1.53; // 가구 배율: 앉은 사람 가슴 높이에 식탁 윗면
+  const SEAT = 0.32; // 의자 앉는 면 높이 (sit 동작은 엉덩이가 원점)
+  const TOP = 0.327 * F; // 식탁 윗면 높이
   const sign = useMemo(() => glyphTex("CHICKEN", { bg: "#f2c14e", fg: "#7a2a10", size: 76, font: "Arial Black, Arial", w: 512, h: 128 }), []);
+  const menu = useMemo(
+    () =>
+      canvasTex(512, 384, (g) => {
+        g.fillStyle = "#2f3a33"; g.fillRect(0, 0, 512, 384);
+        g.strokeStyle = "#c9a76a"; g.lineWidth = 12; g.strokeRect(6, 6, 500, 372);
+        g.fillStyle = "#fff6dc"; g.textBaseline = "middle";
+        g.font = `64px ${PEN_KO}`; g.textAlign = "center"; g.fillText("메뉴", 256, 62);
+        g.font = `52px ${PEN_KO}`; g.textAlign = "left";
+        [["후라이드", "18,000"], ["양념", "19,000"], ["반반", "19,000"], ["치맥 세트", "23,000"]].forEach(([a, b], k) => {
+          g.fillText(a, 46, 140 + k * 62); g.textAlign = "right"; g.fillText(b, 470, 140 + k * 62); g.textAlign = "left";
+        });
+      }),
+    [],
+  );
+  const tiles = useMemo(
+    () =>
+      canvasTex(512, 512, (g) => {
+        g.fillStyle = "#d7b48a"; g.fillRect(0, 0, 512, 512);
+        for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) {
+          g.fillStyle = (x + y) % 2 ? "#cfa97c" : "#dcbb93"; g.fillRect(x * 64 + 1, y * 64 + 1, 62, 62);
+        }
+      }),
+    [],
+  );
   const give = i("fly") ? r01(t, 0.05, 0.3) : 0;
   const sprout = i("fly") ? r01(t, 0.3, 0.5, pop) : 0;
   const rise = i("fly") ? r01(t, 0.5, 1, Easing.in(Easing.quad)) : 0;
-  const slide = i("plate") ? r01(t, 0.2, 0.7) : 0;
-  const TOP = 0.55;
+  const sx = 0.86; // 뒤 손님 식탁 의자
+  const ux = 0.56; // 우리 식탁: 세로로 놓고 좌우에 마주 앉기 // 의자 위치(식탁 가운데에서 좌우)
   return (
     <group>
-      <Slab c={SHOP} size={[7, 6]} top="#c9a06a" />
-      <Box p={[cx, 1.5, cz - 2.6]} s={[7, 3, 0.15]} c="#f6ead2" />
-      <mesh position={[cx, 2.4, cz - 2.5]}>
-        <planeGeometry args={[2.2, 0.55]} />
+      <Slab c={SHOP} size={[7, 6]} top="#d7b48a" map={tiles} />
+      {/* 뒷벽: 아래는 나무 판, 위는 크림색 */}
+      <Box p={[cx, 1.6, cz - 2.6]} s={[7, 3.2, 0.15]} c="#f6ead2" />
+      <Box p={[cx, 0.45, cz - 2.5]} s={[7, 0.9, 0.04]} c="#a8714a" />
+      <Box p={[cx, 0.92, cz - 2.48]} s={[7, 0.05, 0.06]} c="#7d5236" />
+      <mesh position={[cx - 1.0, 2.55, cz - 2.5]}>
+        <planeGeometry args={[2.0, 0.5]} />
         <meshBasicMaterial map={sign} toneMapped={false} />
       </mesh>
-      {/* 테이블 */}
-      <Box p={[cx, TOP, cz]} s={[1.4, 0.06, 0.8]} c="#b5845a" />
-      {[[-0.6, -0.3], [0.6, -0.3], [-0.6, 0.3], [0.6, 0.3]].map(([x, z], k) => <Box key={k} p={[cx + x, TOP / 2, cz + z]} s={[0.06, TOP, 0.06]} c="#8a6040" />)}
-      {/* 바구니 + 치킨 */}
-      <mesh position={[cx, TOP + 0.08, cz]} castShadow>
-        <cylinderGeometry args={[0.22, 0.16, 0.14, 20, 1, true]} />
-        <meshStandardMaterial color="#d8b07a" side={THREE.DoubleSide} />
+      <mesh position={[cx + 1.35, 1.75, cz - 2.5]}>
+        <planeGeometry args={[1.3, 0.975]} />
+        <meshStandardMaterial map={menu} />
       </mesh>
-      {[[-0.08, 0.05], [0.07, -0.05], [0, 0.08], [0.09, 0.06], [-0.06, -0.07]].map(([x, z], k) => <Wing key={k} p={[cx + x, TOP + 0.15, cz + z]} r={k} s={1.1} />)}
-      {/* 접시 두 개: 왼쪽 사람, 오른쪽 사람 */}
-      {[-0.45, 0.45].map((x) => (
-        <mesh key={x} position={[cx + x, TOP + 0.04, cz + 0.15]} rotation={[-Math.PI / 2, 0, 0]}>
-          <circleGeometry args={[0.14, 24]} />
-          <meshStandardMaterial color="#ffffff" />
-        </mesh>
+      {/* 벽등 */}
+      {[-2.2, -0.2, 2.4].map((x) => (
+        <group key={x} position={[cx + x, 1.45, cz - 2.48]}>
+          <Box p={[0, 0, 0.05]} s={[0.12, 0.2, 0.1]} c="#3b3532" />
+          <mesh position={[0, 0.02, 0.12]}><sphereGeometry args={[0.07, 12, 10]} /><meshStandardMaterial color="#ffe3a3" emissive="#ffcf6b" emissiveIntensity={0.9} /></mesh>
+        </group>
       ))}
-      {/* 날개 하나가 건네지거나, 접시에서 접시로 미끄러짐 */}
-      {i("fly") && give < 1 && <Wing p={[cx - 0.45 + 0.9 * give, TOP + 0.08 + 0.15 * Math.sin(give * Math.PI), cz + 0.15]} s={1.2} />}
+      {/* 음료 냉장고, 화분 */}
+      <Furn name="kitchenFridgeSmall" p={[cx + 2.8, 0, cz - 2.2]} s={2.0} />
+      <Prop kit="furniture" name="pottedPlant" p={[cx - 3.0, 0, cz - 2.1]} s={1.8} />
+      {/* 뒤쪽 손님 테이블 */}
+      <group position={[cx - 2.0, 0, cz - 1.9]}>
+        <Furn name="table" p={[0, 0, 0]} s={F} />
+        <Furn name="chair" p={[-sx, 0, 0]} ry={Math.PI / 2} s={F} />
+        <Furn name="chair" p={[sx, 0, 0]} ry={-Math.PI / 2} s={F} />
+        <Character kind="male-c" p={[-sx, SEAT, 0]} ry={Math.PI / 2 - 0.7} s={CS} clip="sit" animT={0.2} />
+        {!(i("fly") && rise > 0.3) && <Character kind="female-b" p={[sx, SEAT, 0]} ry={-Math.PI / 2 + 0.7} s={CS} clip="sit" animT={0.2} headYaw={0.4} />}
+        <Basket p={[0, TOP, 0]} s={0.9} />
+        <Prop kit="food" name="soda-bottle" p={[0.18, TOP, -0.1]} s={0.3} />
+      </group>
+      {/* 우리 커플 식탁 */}
+      <Furn name="table" p={[cx, 0, cz]} ry={Math.PI / 2} s={F} />
+      <Furn name="chair" p={[cx - ux, 0, cz + 0.1]} ry={Math.PI / 2} s={F} />
+      <Furn name="chair" p={[cx + ux, 0, cz + 0.1]} ry={-Math.PI / 2} s={F} />
+      <Basket p={[cx, TOP, cz - 0.3]} s={1.1} n={i("plate") ? 4 : 6} />
+      <Plate p={[cx - 0.18, TOP, cz + 0.12]} />
+      <Plate p={[cx + 0.18, TOP, cz + 0.12]} />
+      <Prop kit="food" name="soda-bottle" p={[cx + 0.05, TOP, cz - 0.6]} s={0.3} />
+      {/* 닭다리 하나가 건네짐 → 받은 사람이 날아감 */}
+      {i("fly") && give < 1 && <Drum p={[cx - 0.18 + 0.36 * give, TOP + 0.05 + 0.3 * Math.sin(give * Math.PI), cz + 0.12]} s={1.6} r={give * 6} />}
+      {i("fly") && give >= 1 && rise < 0.05 && <Drum p={[cx + 0.18, TOP + 0.05, cz + 0.12]} s={1.6} />}
+      {/* 접시 위로 하나씩 조용히 옮겨짐 */}
       {i("plate") && [0, 1].map((k) => {
         const sl = r01(t, 0.15 + k * 0.3, 0.45 + k * 0.3);
-        return <Wing key={k} p={[cx - 0.02 + (k ? 0.08 : -0.08) - 0.45 * sl, TOP + 0.16 + 0.12 * Math.sin(sl * Math.PI), cz + 0.1 * sl]} s={2.0} r={k} />;
+        return <Drum key={k} p={[cx - 0.18 * sl + (k ? 0.03 : -0.03), TOP + 0.13 - 0.08 * sl + 0.15 * Math.sin(sl * Math.PI), cz - 0.3 + 0.42 * sl]} s={1.5} r={k} />;
       })}
       {/* 사람 */}
-      <Character kind="female-a" p={[cx - 0.85, 0, cz + 0.15]} ry={Math.PI / 2} s={CS} clip="idle" animT={t * 2} />
-      <group position={[cx + 0.85, 1.6 * rise, cz + 0.15 - 0.6 * rise]} rotation={[0, 0, -0.3 * rise]}>
-        <Character kind="male-a" p={[0, 0, 0]} ry={-Math.PI / 2} s={CS} clip={rise > 0.05 ? "jump" : "idle"} animT={t * 2} />
-        <BackWings p={[0.05, 0.62, 0]} s={2.2 * sprout} flap={t * 30} />
+      <Character kind="female-a" p={[cx - ux, SEAT, cz + 0.1]} ry={Math.PI / 2 - 0.7} s={CS} clip="sit" animT={0.2} headYaw={i("plate") ? -0.25 * r01(t, 0.6, 0.8) : 0} />
+      <group position={[cx + ux, SEAT + 1.5 * rise, cz + 0.1 - 0.5 * rise]} rotation={[0, 0, -0.25 * rise]}>
+        <Character kind="male-a" p={[0, 0, 0]} ry={-Math.PI / 2 + 0.7} s={CS} clip={rise > 0.05 ? "jump" : "sit"} animT={rise > 0.05 ? t * 2 : 0.2} />
+        <BackWings p={[0.08, 0.6, 0]} s={1.8 * sprout} flap={t * 30} />
       </group>
       {i("fly") && rise > 0.3 && (
-        <group position={[cx + 1.6, 1.6 * rise + 0.1, cz - 0.6 * rise]}>
-          <Character kind="female-c" p={[0, 0, 0]} ry={-Math.PI / 2} s={CS} clip="jump" animT={t * 2} />
-          <BackWings p={[0.05, 0.62, 0]} s={2.2} flap={t * 30 + 1} />
+        <group position={[cx - 2.0 + sx, SEAT + 1.5 * rise, cz - 1.9 - 0.3 * rise]}>
+          <Character kind="female-b" p={[0, 0, 0]} ry={-Math.PI / 2} s={CS} clip="jump" animT={t * 2} />
+          <BackWings p={[0.08, 0.6, 0]} s={1.8} flap={t * 30 + 1} />
         </group>
       )}
-      {i("plate") && <Character kind="male-a" p={[cx + 0.85, 0, cz + 0.15]} ry={-Math.PI / 2} s={CS} clip="idle" animT={t * 2} />}
     </group>
   );
 };
@@ -362,9 +473,11 @@ const StoneWall: React.FC<{ mode: Mode04; t: number; court: string }> = ({ mode,
       {/* 옛 가정법원 (나타났다 사라짐) */}
       {courtIn > 0.01 && (
         <group position={[wx - 3.4, 0, wz - 2.6]}>
-          <Box p={[0, 1.4, 0]} s={[3.2, 2.8, 1.6]} c="#a7a9ad" opacity={courtIn} />
-          {[-1.1, -0.37, 0.37, 1.1].map((x) => <Box key={x} p={[x, 1.1, 0.85]} s={[0.18, 2.2, 0.18]} c="#c9cbcf" opacity={courtIn} />)}
-          <mesh position={[0, 2.45, 0.83]}>
+          <Box p={[0, 1.7, 0]} s={[3.2, 3.4, 1.6]} c="#b9b2a4" opacity={courtIn} />
+          <Box p={[0, 3.5, 0.05]} s={[3.6, 0.22, 1.9]} c="#4b4f56" opacity={courtIn} />
+          {[-1.05, -0.35, 0.35, 1.05].map((x) => <Box key={"w" + x} p={[x, 2.75, 0.81]} s={[0.4, 0.5, 0.02]} c="#5d7a92" opacity={courtIn} />)}
+          {[-1.1, -0.37, 0.37, 1.1].map((x) => <Box key={x} p={[x, 1.2, 0.85]} s={[0.18, 2.4, 0.18]} c="#e3ded3" opacity={courtIn} />)}
+          <mesh position={[0, 2.2, 0.95]}>
             <planeGeometry args={[2.2, 0.48]} />
             <meshBasicMaterial map={courtSign} transparent opacity={courtIn} toneMapped={false} />
           </mesh>
@@ -408,9 +521,9 @@ export const Scene04: React.FC<{ mode: Mode04; t: number; words: Words04 }> = ({
   const wall = ["wall", "split", "court", "gone", "end"].includes(mode);
   const autumn = wall;
   return (
-    <MiniFrame sky={autumn ? SKY.dusk : SKY.day} filter={mode === "coin" ? `sepia(${(0.85 * (1 - interpolate(t, [0.55, 0.65], [0, 1], clamp))).toFixed(3)})` : ""}>
+    <MiniFrame sky={autumn ? SKY.dusk : SKY.day} filter={mode === "coin" ? `sepia(${(0.55 * (1 - interpolate(t, [0.55, 0.65], [0, 1], clamp))).toFixed(3)})` : ""}>
       <Rig paths={P} mode={mode} t={t} />
-      <MiniLights dusk={autumn ? 0.6 : 0} />
+      <MiniLights dusk={autumn ? 0.35 : 0} />
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.32, 0]} receiveShadow>
         <planeGeometry args={[220, 220]} />
         <meshStandardMaterial color={autumn ? "#c9b98a" : "#c9d6a8"} />
