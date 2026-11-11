@@ -26,18 +26,18 @@ const paths = (lang: "en" | "es"): Record<Mode04, Key[]> => {
   const [cx, cz] = SHOP;
   return {
     intro: [lang === "es" ? K(-2.8, 2.6, 8.2, 0, 1.5, 0.6) : K(2.8, 2.6, 8.2, 0, 1.5, 0.6), K(1.4, 2.3, 6.8, 0, 1.6, 0.6)],
-    shoes: [K(1.4, 2.3, 6.8, 0, 1.6, 0.6), K(0.6, 1.3, 3.2, -0.3, 0.55, 1.0)],
-    walk: [K(0.6, 1.3, 3.2, -0.3, 0.55, 1.0), K(1.6, 1.0, 3.8, 0.8, 0.3, 1.2)],
-    away: [K(0.2, 2.0, 6.0, 0.4, 0.75, 0.9), K(1.8, 2.0, 6.2, 2.2, 0.75, 1.1), K(-0.4, 1.9, 5.2, -0.6, 0.85, 1.0)],
-    coin: [K(0.0, 1.5, 4.4, -0.2, 0.8, 1.0), K(0.3, 1.35, 3.6, -0.2, 0.8, 1.0)],
-    chicken: [K(cx + 2.8, 2.6, cz + 4.4, cx, 0.8, cz), K(cx + 1.6, 1.9, cz + 3.0, cx, 0.8, cz)],
-    fly: [K(cx + 1.6, 1.9, cz + 3.0, cx, 0.8, cz), K(cx + 2.2, 2.6, cz + 4.6, cx + 0.4, 1.6, cz - 0.5)],
-    plate: [K(cx + 1.4, 1.6, cz + 2.0, cx, 0.7, cz + 0.1), K(cx - 1.2, 1.5, cz + 2.0, cx, 0.7, cz + 0.1)],
-    wall: [K(wx + 6, 3.4, wz + 7, wx, 1.0, wz), K(wx + 3.5, 2.4, wz + 5.5, wx - 0.5, 1.0, wz)],
-    split: [K(wx + 3.5, 2.4, wz + 5.5, wx - 0.5, 1.0, wz), K(wx + 1.5, 2.0, wz + 4.4, wx - 0.5, 0.9, wz)],
+    shoes: [K(1.4, 2.3, 6.8, 0, 1.6, 0.6), K(0.4, 1.6, 4.4, -0.25, 0.65, 1.1)],
+    walk: [K(0.4, 1.6, 4.4, -0.25, 0.65, 1.1), K(2.1, 1.3, 4.2, 1.3, 0.2, 0.9)],
+    away: [K(0.6, 2.1, 6.6, 0.4, 0.6, 1.0), K(1.4, 2.1, 6.8, 1.2, 0.6, 1.1), K(-0.3, 1.9, 5.4, -0.6, 0.75, 1.0)],
+    coin: [K(-0.2, 2.0, 6.4, -0.2, 0.75, 1.0), K(-0.1, 1.8, 5.8, -0.2, 0.75, 1.0)],
+    chicken: [K(cx + 1.2, 2.9, cz + 6.6, cx, 0.6, cz), K(cx + 0.7, 2.4, cz + 5.8, cx, 0.6, cz)],
+    fly: [K(cx + 0.7, 2.4, cz + 5.8, cx, 0.6, cz), K(cx + 1.6, 2.6, cz + 5.8, cx + 1.0, 1.7, cz - 0.5)],
+    plate: [K(cx + 1.5, 1.9, cz + 3.2, cx, 0.65, cz + 0.1), K(cx - 1.3, 1.8, cz + 3.2, cx, 0.65, cz + 0.1)],
+    wall: [K(wx + 4, 3.0, wz + 8.5, wx, 0.9, wz + 0.8), K(wx + 2.0, 2.2, wz + 7.0, wx - 0.3, 0.7, wz + 1.1)],
+    split: [K(wx + 1.4, 2.0, wz + 6.2, wx - 0.5, 0.6, wz + 1.2), K(wx + 0.4, 2.4, wz + 7.6, wx - 0.5, 0.6, wz + 1.2)],
     court: [K(wx - 1.0, 3.0, wz + 6.5, wx - 3.0, 1.6, wz - 2.5), K(wx - 2.0, 2.6, wz + 5.5, wx - 3.4, 1.5, wz - 2.5)],
-    gone: [K(wx - 2.0, 2.6, wz + 5.5, wx - 3.4, 1.5, wz - 2.5), K(wx + 0.5, 2.2, wz + 5.0, wx - 1.0, 1.0, wz)],
-    end: [K(wx + 0.5, 2.2, wz + 5.0, wx - 1.0, 1.0, wz), K(wx + 1.2, 1.5, wz + 3.6, wx - 0.6, 0.8, wz + 0.6)],
+    gone: [K(wx - 2.0, 2.6, wz + 5.5, wx - 3.4, 1.5, wz - 2.5), K(wx + 0.4, 2.4, wz + 6.6, wx - 0.6, 0.8, wz + 1.2)],
+    end: [K(wx + 0.4, 2.4, wz + 6.6, wx - 0.6, 0.8, wz + 1.2), K(wx + 0.9, 1.6, wz + 4.0, wx - 0.6, 0.75, wz + 1.2)],
   };
 };
 
@@ -319,7 +319,7 @@ const StoneWall: React.FC<{ mode: Mode04; t: number; court: string }> = ({ mode,
   const courtIn = i("court") ? r01(t, 0.05, 0.35) : i("gone") ? 1 - r01(t, 0.1, 0.5) : 0;
   const hold = i("end") ? r01(t, 0.1, 0.4) : 0;
   const qS = i("end") ? r01(t, 0.6, 0.8, pop) : 0;
-  const walk = (k: number) => ((t * 0.6 + k * 0.33) % 1) * 6 - 3;
+  const walk = (k: number) => ((t * 0.5 + k * 0.33) % 1) * 4.4 - 2.2;
   return (
     <group>
       <Slab c={WALL} size={[12, 8]} top="#cbbf9f" side="#7d6a52" />
@@ -380,8 +380,8 @@ const StoneWall: React.FC<{ mode: Mode04; t: number; court: string }> = ({ mode,
         ))}
       {i("split") && (
         <group position={[wx - 0.5, 0, wz + 1.2]}>
-          <Character kind="female-a" p={[-0.15 - 1.4 * apart, 0, 0]} ry={Math.PI / 2 + (apart > 0.05 ? Math.PI : 0)} s={CS} clip={apart > 0.05 ? "walk" : "idle"} animT={t * 4} />
-          <Character kind="male-a" p={[0.15 + 1.4 * apart, 0, 0]} ry={Math.PI / 2} s={CS} clip={apart > 0.05 ? "walk" : "idle"} animT={t * 4} />
+          <Character kind="female-a" p={[-0.15 - 0.85 * apart, 0, 0]} ry={Math.PI / 2 + (apart > 0.05 ? Math.PI : 0)} s={CS} clip={apart > 0.05 ? "walk" : "idle"} animT={t * 4} />
+          <Character kind="male-a" p={[0.15 + 0.85 * apart, 0, 0]} ry={Math.PI / 2} s={CS} clip={apart > 0.05 ? "walk" : "idle"} animT={t * 4} />
         </group>
       )}
       {i("end") && (
