@@ -7,7 +7,7 @@ import { saveCard, shareMessage, type Card } from "./card";
 import { forgetAll, loadHome, loadMe, mateToken, readMate, saveHome, saveMe, type Mate } from "./me";
 import {
   byCode, dirsOf, elName, goodStars, guaFromNumber, guaLabel, guaOf, label, MAP, needOf, pairPlaces, PLACE_KIND, proj, rankOf, scoreAll, SIDOS, topPlaces,
-  moveCheck, tagsOf, weekendPlan, whyOf, type Gua, type Need, type Region, type Scored,
+  lookAlikes, moveCheck, nickOf, tagsOf, weekendPlan, whyOf, type Gua, type Need, type Region, type Scored,
 } from "./place";
 
 // The pair link's token, from the address the app was opened with (intoss://hundo-dongne?with=…), or the browser's.
@@ -124,6 +124,7 @@ function Result({ me, home, mate, onMove, onForget }: { me: Person; home: Region
   const all = useMemo(() => (need ? scoreAll(home, need, gua) : []), [home, need, gua]);
   const weekend = useMemo(() => weekendPlan(me, all), [me, all]);
   const top = useMemo(() => topPlaces(all), [all]);
+  const alike = useMemo(() => (need ? lookAlikes(all, need) : []), [all, need]);
   const [picked, setPicked] = useState<Scored | null>(null);
   const [toast, setToast] = useState("");
 
@@ -219,6 +220,23 @@ function Result({ me, home, mate, onMove, onForget }: { me: Person; home: Region
         </p>
       </div>
 
+      <div className="card">
+        <p className="kicker">나를 닮은 동네</p>
+        <h3>{me.name}님 사주와 땅 모양이 가장 비슷한 곳</h3>
+        <ol className="top">
+          {alike.map((r, i) => (
+            <li key={r.code} onClick={() => setPicked(r)}>
+              <b>{i + 1}</b>
+              <span>{label(r)}</span>
+              <em>{nickOf(r)}</em>
+            </li>
+          ))}
+        </ol>
+        <p className="quiet small">
+          닮은 동네는 마음이 편하지만, 모자란 기운을 채워 주진 않아요. 쉬러 가기 좋은 곳이고, 살기엔 위의 TOP5가 더 잘 맞아요.
+        </p>
+      </div>
+
       <PairBox me={me} home={home} mate={mate} pair={pair} onSave={save} say={say} />
 
       <p className="quiet small">
@@ -245,6 +263,8 @@ function Picked({ r, all, need, gua, me, home, shadeMap, onSave }: { r: Scored; 
       <p className="rank">
         {rk.of}곳 중 <b>{rk.rank}</b>위 <span className="quiet">(위에서 {pct}%)</span>
       </p>
+      <p className="nick">{nickOf(r)}</p>
+      <GroundBars r={r} need={need} />
       {lines.map((l) => (
         <p key={l} className="why">
           {l}
@@ -363,6 +383,25 @@ function WeekendBox({ me, need, days, onPick }: { me: Person; need: Need; days: 
       <p className="quiet small">
         {me.name}님에게 필요한 {elName(need.yong)} 기운은 {PLACE_KIND[need.yong]} 같은 곳에서 채우기 좋아요. 매주 새로 바뀌어요.
       </p>
+    </div>
+  );
+}
+
+// The place's five sides as bars, the reader's needed ones marked.
+const BAR_NAME = ["나무", "불", "흙", "쇠", "물"];
+function GroundBars({ r, need }: { r: Scored; need: Need }) {
+  if (!r.ground) return null;
+  return (
+    <div className="bars">
+      {r.ground.map((v, e) => (
+        <div key={e} className={`bar-row${e === need.yong || e === need.hee ? " want" : e === need.gi ? " avoid" : ""}`}>
+          <span>{BAR_NAME[e]}</span>
+          <span className="track">
+            <span style={{ width: `${Math.round(v * 100)}%` }} />
+          </span>
+        </div>
+      ))}
+      <p className="quiet small">빨간 막대는 필요한 기운, 회색 막대는 버거운 기운이에요. 전국 256곳과 견준 세기예요.</p>
     </div>
   );
 }

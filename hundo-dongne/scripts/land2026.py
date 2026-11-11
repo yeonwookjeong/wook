@@ -1,6 +1,6 @@
 """시군구마다 땅의 모양(산, 평지, 바다, 큰 강, 호수) → src/data/land.json.
 
-사용: python3 -I scripts/land2026.py <HangJeongDong_ver20261001.geojson> <타일 폴더> <ne_10m_rivers_lake_centerlines_scale_rank.geojson> <저수지.csv> [출력]
+사용: python3 -I scripts/land2026.py <HangJeongDong_ver20261001.geojson> <타일 폴더> <ne_10m_rivers_lake_centerlines_scale_rank.geojson> <저수지.csv> <지적통계.csv> <온천업소.csv> [출력]
 (numpy, numba, pillow, shapely 필요)
 
 - 행정구역: vuski/admdongkor ver20261001 (scripts/regions2026.py와 같은 원본, 같은 시군구 코드).
@@ -9,6 +9,10 @@
   고도 = R*256 + G + B/256 - 32768 (m, 바다는 음수).
 - 저수지: 공공데이터포털 "한국농어촌공사_농업기반시설 시설제원_저수지"(15044339, 3,402곳, UTF-8로 바꾼 CSV). 소재지의
   시군구로 모아 만수면적(ha)을 더한다. 큰 댐 호수는 이 목록에 없어 아래 DAM_LAKES에 시군구로 적었다.
+- 땅의 쓰임: 공공데이터포털 "국토교통부_지적기본통계집계"(15063997, 2025-12-31, UTF-8로 바꾼 CSV). 시군구마다 지목별 면적을
+  더해 임야, 논밭(전 답 과수원 목장용지), 물(하천 유지 구거 양어장), 집터와 길(대 도로 주차장 학교용지 등), 공장(공장용지
+  창고용지)의 비율(%)을 낸다. 화성시는 2026-02-01 4개 구로 나뉘기 전 기준이라 네 구에 같은 비율을 쓴다.
+- 온천: 공공데이터포털 "행정안전부_전국 온천이용업소 현황"(15086533, UTF-8). 주소의 시군구로 업소 수를 센다.
 - 물길: 고도에서 직접 계산한다(우선순위 채우기로 웅덩이를 메운 뒤 각 칸이 흘러가는 곳을 정하고, 위에서 모여드는
   넓이를 더한다). 그 시군구를 지나는 가장 큰 물길이 위쪽에서 모으는 넓이(km²)가 "물길 크기"다. 지도 범위 밖(북쪽
   38.7도 위)은 빠져 임진강, 북한강 상류는 실제보다 작게 나온다. 호수는 고도로 가릴 수 없어 넣지 않는다.
@@ -31,7 +35,7 @@ from shapely.ops import unary_union
 Z, X0, X1, Y0, Y1 = 10, 866, 884, 392, 412
 N = 256 * 2**Z
 
-adm, tiles, rivers_path, reservoirs_path = sys.argv[1:5]
+adm, tiles, rivers_path, reservoirs_path, jijeok_path, spa_path = sys.argv[1:7]
 
 # 고도 모자이크
 rows = []
@@ -237,6 +241,46 @@ DAM_LAKES = {
     "부안호": [("전북", "부안군")],
     "보령호": [("충남", "보령시")],
 }
+# 땅의 쓰임(지적통계)
+USE = {
+    "forest": {"임야"},
+    "farm": {"전", "답", "과수원", "목장용지"},
+    "water": {"하천", "유지", "구거", "양어장"},
+    "town": {"대", "도로", "주차장", "학교용지", "주유소용지", "체육용지", "종교용지", "철도용지", "수도용지", "공원", "유원지"},
+    "factory": {"공장용지", "창고용지"},
+}
+area = defaultdict(lambda: defaultdict(float))
+for row in csv.DictReader(open(jijeok_path, encoding="utf-8")):
+    a = float(row["면적"] or 0)
+    key = row["행정구역"].strip()
+    area[key]["all"] += a
+    for k, kinds in USE.items():
+        if row["지목"] in kinds:
+            area[key][k] += a
+use_of = {}
+for key, v in area.items():
+    t = key.split()
+    sd = SIDO_KEY.get(t[0], t[0])
+    shares = {k: round(v[k] / v["all"] * 100, 1) for k in USE} if v["all"] else None
+    # "세종특별자치시" has no 시군구 word: the whole 시도 is one place.
+    targets = [c for (s_, g), c in by_name.items() if s_ == sd and (len(t) == 1 or g == "".join(t[1:]) or (len(t) == 2 and g.startswith(t[1]) and g != t[1]))]
+    for c in targets:
+        use_of[c] = shares
+print("땅의 쓰임이 없는 시군구", [names[c] for c in groups if c not in use_of])
+
+# 온천업소: 주소 "경북 경주시 …"의 시군구
+SHORT = {"서울": "서울", "부산": "부산", "대구": "대구", "인천": "인천", "광주": "전남광주", "대전": "대전", "울산": "울산", "세종": "세종",
+         "경기": "경기", "강원": "강원", "충북": "충북", "충남": "충남", "전북": "전북", "전남": "전남광주", "경북": "경북", "경남": "경남", "제주": "제주"}
+spa = defaultdict(int)
+for row in csv.DictReader(open(spa_path, encoding="utf-8")):
+    t = row["주소"].split()
+    if len(t) < 2:
+        continue
+    sd = SIDO_KEY.get(t[0], SHORT.get(t[0], t[0]))
+    c = by_name.get((sd, t[1] + (t[2] if len(t) > 2 and t[2].endswith("구") and t[1].endswith("시") else ""))) or by_name.get((sd, t[1]))
+    if c:
+        spa[c] += 1
+
 dam = defaultdict(list)
 for lake, places in DAM_LAKES.items():
     for key in places:
@@ -276,8 +320,10 @@ for code, geoms in sorted(groups.items()):
         "ne": round(river_km),  # Natural Earth 강 길이(km), 확인용
         "res": round(reservoir_ha.get(code, 0)),  # 농업용 저수지 만수면적 합(ha)
         "dam": dam.get(code, []),  # 걸친 큰 댐 호수
+        "use": use_of.get(code),  # 땅의 쓰임 비율(%): forest 임야, farm 논밭, water 물, town 집터와 길, factory 공장
+        "spa": spa.get(code, 0),  # 온천업소 수
         "lat": round(c.y, 3),
     }
 
-json.dump({"asOf": "2026-10-01", "regions": out}, open(sys.argv[5] if len(sys.argv) > 5 else "src/data/land.json", "w"), ensure_ascii=False, separators=(",", ":"))
+json.dump({"asOf": "2026-10-01", "regions": out}, open(sys.argv[7] if len(sys.argv) > 7 else "src/data/land.json", "w"), ensure_ascii=False, separators=(",", ":"))
 print(len(out), "시군구")

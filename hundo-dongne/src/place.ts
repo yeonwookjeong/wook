@@ -8,9 +8,10 @@ import landData from "./data/land.json";
 
 // 내 사주 명당: each 시군구 scored by its own ground, read as the five elements, against what this chart needs
 // (lib/myeongri.ts readChart: 용신, 희신, 기신). The same for a reader wherever they live (decided 2026-11-10: the
-// direction from home says nothing about the place itself). The ground (scripts/land2026.py, from the DEM):
-//   목 mountains (산지 비율, 높이), 화 warmth (남쪽일수록), 토 open plains away from water, 금 steep rocky mountains,
-//   수 sea and big rivers. 배산임수 (mountains and water together) adds a little.
+// direction from home says nothing about the place itself). The ground (scripts/land2026.py): the land's own use from
+// the 지적통계 (임야, 논밭, 물, 집터와 길, 공장) with the DEM's mountains and the sea, rivers and lakes:
+//   목 숲(임야)과 산, 화 남쪽 볕과 번화한 불빛(집터와 길), 토 논밭, 금 바위산과 공장, 수 바다 강 호수 저수지.
+// 배산임수 (mountains and water together) adds a little.
 // The direction from home is kept for 이사 방향 점검 only: its element and its 팔택 star (팔택명경 하권 57쪽 총표,
 // jojeong/knowledge/notes-bazhai.md on claude/saju-db). The place name's characters are not read (2026-11-07).
 
@@ -43,13 +44,13 @@ const DIRS: { deg: number; el: number; name: string }[] = [
 ];
 export const dirsOf = (el: number) => DIRS.filter((d) => d.el === el).map((d) => `${d.name}쪽`).join(", ");
 
-export type Need = { yong: number; hee: number; gi: number; short: number; heavy: number };
+export type Need = { yong: number; hee: number; gi: number; short: number; heavy: number; elements: number[] };
 
 export function needOf(p: Pillars): Need | null {
   const r = readChart(p);
   if (!r) return null;
   const e = r.elements;
-  return { yong: r.yong, hee: r.hee, gi: r.gi, heavy: e.indexOf(Math.max(...e)), short: e.indexOf(Math.min(...e)) };
+  return { yong: r.yong, hee: r.hee, gi: r.gi, heavy: e.indexOf(Math.max(...e)), short: e.indexOf(Math.min(...e)), elements: [...e] };
 }
 
 // One element's fit, 0–100: 용신 best, 희신 next, 기신 worst, the element feeding the 기신 low, the rest between.
@@ -122,7 +123,8 @@ export const STAR_LINE: Record<Star, string> = {
 export const starAt = (g: Gua, dirIndex: number): Star => BAZHAI[g.n][dirIndex];
 export const goodStars = (g: Gua) => DIRS.map((d, i) => ({ dir: d.name, star: starAt(g, i) })).filter((x) => STAR_SCORE[x.star] >= 72);
 
-export type Land = { el: number; top: number; mt: number; rock: number; flat: number; sea: number; flow: number; ne: number; res: number; dam: string[]; lat: number };
+export type Use = { forest: number; farm: number; water: number; town: number; factory: number };
+export type Land = { el: number; top: number; mt: number; rock: number; flat: number; sea: number; flow: number; ne: number; res: number; dam: string[]; use: Use | null; spa: number; lat: number };
 const LAND = (landData as { regions: Record<string, Land> }).regions;
 
 // Each region's ground as five shares 0–1 (목 화 토 금 수), ranked against the whole country so each reads "how much
@@ -134,6 +136,8 @@ const pctOf = (vals: number[]) => {
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 const LANDS = MAP.regions.map((r) => LAND[r.code]).filter(Boolean);
 const pMt = pctOf(LANDS.map((l) => l.mt)), pTop = pctOf(LANDS.map((l) => l.top)), pRock = pctOf(LANDS.map((l) => l.rock)), pFlat = pctOf(LANDS.map((l) => l.flat));
+const useOf = (l: Land): Use => l.use ?? { forest: 0, farm: 0, water: 0, town: 0, factory: 0 };
+const pForest = pctOf(LANDS.map((l) => useOf(l).forest)), pFarm = pctOf(LANDS.map((l) => useOf(l).farm)), pTown = pctOf(LANDS.map((l) => useOf(l).town)), pFactory = pctOf(LANDS.map((l) => useOf(l).factory));
 // Water, the strongest of: the sea at the border; the biggest river through it (the DEM's drainage, or a big river
 // Natural Earth names running 10 km or more through it, taken as 10,000 km²; 100 km² reads 0, 10,000 km² reads 1); a big dam lake (0.9); the farm
 // reservoirs' full surface (about 30 ha reads 0, 1,500 ha reads 1).
@@ -143,13 +147,20 @@ const waterOf = (l: Land) =>
     clamp01((Math.log10(Math.max(l.flow, l.ne >= 10 ? 10000 : 0, 1)) - 2) / 2),
     l.dam.length ? 0.9 : 0,
     clamp01((Math.log10(l.res + 1) - 1.5) / 1.7),
+    clamp01(useOf(l).water / 15), // rivers, ponds and ditches as a share of the land (지적통계)
   );
 export function groundOf(code: string): number[] | null {
   const l = LAND[code];
   if (!l) return null;
+  const u = useOf(l);
   const mount = (pMt(l.mt) + pTop(l.top)) / 2;
-  const water = waterOf(l);
-  return [mount, clamp01((37.8 - l.lat) / 3.5), 0.7 * pFlat(l.flat) + 0.3 * (1 - water), pRock(l.rock), water];
+  return [
+    0.6 * pForest(u.forest) + 0.4 * mount, // 목: 숲과 산
+    0.6 * clamp01((37.8 - l.lat) / 3.5) + 0.4 * pTown(u.town), // 화: 남쪽 볕, 번화한 불빛
+    0.8 * pFarm(u.farm) + 0.2 * pFlat(l.flat), // 토: 논밭과 들
+    0.5 * pRock(l.rock) + 0.5 * pFactory(u.factory), // 금: 바위산, 공장
+    waterOf(l), // 수
+  ];
 }
 
 // A place for this chart: the 용신 counts most, then the 희신; the 기신 and what feeds it count against.
@@ -226,9 +237,23 @@ export function rankOf(all: Scored[], code: string): { rank: number; of: number 
 
 // Why this place, in one or two plain lines: the side of the ground that gives this chart the most, then 배산임수 or
 // the next side.
-const GROUND_REASON = ["산이 깊어요", "따뜻한 남쪽이에요", "들이 넓어요", "바위산이 많아요", "물이 가까워요"];
-// The water named when the place has one: its dam lake.
-const waterReason = (r: Scored) => (LAND[r.code]?.dam.length ? `${LAND[r.code].dam.join(", ")}가 있어요` : GROUND_REASON[4]);
+// The reason for a side of the ground, with the place's own figures where it has them.
+function groundReason(r: Scored, e: number): string {
+  const l = LAND[r.code];
+  if (!l) return "";
+  const u = useOf(l);
+  if (e === 0) return `숲(임야)이 땅의 ${Math.round(u.forest)}%예요`;
+  if (e === 1) return u.town >= 30 ? `집과 길이 땅의 ${Math.round(u.town)}%인 번화한 곳이에요` : "볕이 따뜻한 남쪽이에요";
+  if (e === 2) return `논밭이 땅의 ${Math.round(u.farm)}%예요`;
+  if (e === 3) return u.factory >= 5 ? `공장 땅이 ${Math.round(u.factory)}%예요` : "바위산이 많아요";
+  if (l.dam.length) return `${l.dam.join(", ")}가 있어요`;
+  if (l.sea >= 10) return "바다에 닿아 있어요";
+  return "큰 물길이 지나요";
+}
+// What a place is like, in a name: its strongest side for Korea.
+export const NICK = ["숲의 고을", "불빛 고을", "들녘 고을", "쇠의 고을", "물의 고을"];
+export const nickOf = (r: Scored) => (r.ground ? NICK[r.ground.indexOf(Math.max(...r.ground))] : "");
+export const spaOf = (r: Scored) => LAND[r.code]?.spa ?? 0;
 export function whyOf(r: Scored, n: Need): string[] {
   if (!r.ground) return [];
   const g = r.ground;
@@ -236,12 +261,13 @@ export function whyOf(r: Scored, n: Need): string[] {
   const gives = [0, 1, 2, 3, 4].filter((e) => w[e] > 0 && g[e] >= 0.4).sort((a, b) => w[b] - w[a] || g[b] - g[a]);
   const out: string[] = [];
   const say = (e: number) =>
-    `${e === n.yong ? "가장 필요한" : e === n.hee ? "두 번째로 필요한" : "도움이 되는"} ${elName(e)} 기운이 넉넉한 땅이에요. ${e === 4 ? waterReason(r) : GROUND_REASON[e]}`;
+    `${e === n.yong ? "가장 필요한" : e === n.hee ? "두 번째로 필요한" : "도움이 되는"} ${elName(e)} 기운이 넉넉한 땅이에요. ${groundReason(r, e)}`;
   if (gives.length) out.push(say(gives[0]));
   else out.push(`필요한 ${elName(n.yong)} 기운이 조금 드는 무난한 땅이에요`);
   if (r.baesan) out.push(LAND[r.code]?.dam.length ? `산과 ${LAND[r.code].dam.join(", ")}가 함께 있는 배산임수 자리라 기운이 모여요` : "산과 물이 함께 있는 배산임수 자리라 기운이 모여요");
   else if (gives[1] !== undefined) out.push(say(gives[1]));
-  if (g[n.gi] >= 0.7) out.push(`다만 넘치면 버거운 ${elName(n.gi)} 기운도 센 곳이에요`);
+  if (g[n.gi] >= 0.7) out.push(`다만 넘치면 버거운 ${elName(n.gi)} 기운도 센 곳이에요. ${groundReason(r, n.gi)}`);
+  if (spaOf(r) >= 5) out.push(`온천이 ${spaOf(r)}곳 있어 물과 불이 만나는 동네예요`);
   return out;
 }
 
@@ -331,9 +357,34 @@ export function weekendPlan(me: Person, all: Scored[], now = new Date()): Weeken
 export const guaFromNumber = (n: number | null): Gua | null => (n && GUA[n] ? { n, name: GUA[n], east: [1, 3, 4, 9].includes(n) } : null);
 
 // Short tags for a list row: the strongest one or two sides of the ground.
-const TAG = ["산", "남쪽 볕", "너른 들", "바위산", "물가"];
+const TAG = ["숲", "불빛", "논밭", "쇠", "물가"];
 export function tagsOf(r: Scored): string {
   if (!r.ground) return "";
   const t = [0, 1, 2, 3, 4].filter((e) => r.ground![e] >= 0.6).sort((a, b) => r.ground![b] - r.ground![a]).slice(0, 2).map((e) => TAG[e]);
-  return [...(r.baesan ? ["배산임수"] : []), ...t].slice(0, 2).join(", ");
+  return [...(r.baesan ? ["배산임수"] : []), ...(spaOf(r) >= 5 ? ["온천"] : []), ...t].slice(0, 2).join(", ");
+}
+
+// 나를 닮은 동네: the ground whose five sides are shaped most like the chart's own five elements (cosine of the two,
+// each centred on its mean so the shape counts, not the size). A place like oneself is easy to live in but does not
+// fill what is missing: the counterpart of the ranking.
+export function lookAlikes(all: Scored[], n: Need, k = 3): Scored[] {
+  const centre = (v: number[]) => {
+    const m = v.reduce((a, b) => a + b, 0) / v.length;
+    return v.map((x) => x - m);
+  };
+  const me = centre(n.elements);
+  const sim = (g: number[]) => {
+    const c = centre(g);
+    const dot = c.reduce((s, x, i) => s + x * me[i], 0);
+    const nn = Math.hypot(...c) * Math.hypot(...me);
+    return nn ? dot / nn : 0;
+  };
+  const seen = new Set<string>();
+  return all
+    .filter((r) => r.ground)
+    .map((r) => ({ r, s: sim(r.ground!) }))
+    .sort((a, b) => b.s - a.s || a.r.code.localeCompare(b.r.code))
+    .map((x) => x.r)
+    .filter((r) => !seen.has(r.sido) && !!seen.add(r.sido))
+    .slice(0, k);
 }

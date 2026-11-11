@@ -442,3 +442,12 @@ ul {
 .picked .ghost { width: 100%; margin-top: 8px; }
 .top li { cursor: pointer; }
 .toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: var(--ink); color: var(--hanji); padding: 10px 18px; border-radius: 999px; font-size: 14px; }
+
+.nick { font-weight: 800; color: var(--seal, #b3261e); margin: 2px 0 6px; }
+.bars { margin: 8px 0 12px; }
+.bar-row { display: grid; grid-template-columns: 3em 1fr; align-items: center; gap: 8px; font-size: 13px; margin-bottom: 4px; }
+.bar-row .track { height: 9px; border-radius: 5px; background: #ece2cc; overflow: hidden; }
+.bar-row .track span { display: block; height: 100%; background: #d9b9a6; }
+.bar-row.want .track span { background: #b3261e; }
+.bar-row.want span:first-child { font-weight: 800; }
+.bar-row.avoid .track span { background: #8f877b; }
