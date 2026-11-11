@@ -32,7 +32,7 @@ const paths = (lang: "en" | "es"): Record<Mode04, Key[]> => {
     coin: [K(-0.2, 2.0, 6.4, -0.2, 0.75, 1.0), K(-0.1, 1.8, 5.8, -0.2, 0.75, 1.0)],
     chicken: [K(cx - 0.6, 2.6, cz + 6.4, cx - 0.6, 0.75, cz - 0.8), K(cx + 0.2, 2.0, cz + 4.4, cx, 0.6, cz)],
     fly: [K(cx + 0.2, 2.0, cz + 4.4, cx, 0.6, cz), K(cx - 0.2, 2.4, cz + 5.6, cx - 0.2, 1.5, cz - 0.8)],
-    plate: [K(cx + 0.7, 1.9, cz + 3.6, cx - 0.1, 0.6, cz), K(cx - 0.6, 1.8, cz + 3.4, cx - 0.15, 0.6, cz)],
+    plate: [K(cx + 0.5, 2.2, cz + 4.4, cx, 0.6, cz), K(cx - 0.4, 2.1, cz + 4.2, cx - 0.05, 0.6, cz)],
     wall: [K(wx + 4, 3.0, wz + 8.5, wx, 0.9, wz + 0.8), K(wx + 2.0, 2.2, wz + 7.0, wx - 0.3, 0.7, wz + 1.1)],
     split: [K(wx + 1.4, 2.0, wz + 6.2, wx - 0.5, 0.6, wz + 1.2), K(wx + 0.4, 2.4, wz + 7.6, wx - 0.5, 0.6, wz + 1.2)],
     court: [K(wx - 1.2, 3.6, wz + 10.0, wx - 2.6, 1.5, wz - 0.6), K(wx - 2.0, 3.3, wz + 9.0, wx - 3.0, 1.5, wz - 0.6)],
@@ -219,8 +219,8 @@ const Street: React.FC<{ mode: Mode04; t: number }> = ({ mode, t }) => {
           </group>
         </>
       )}
-      {i("coin") && coinT < 1 && <Coin p={[0.35 - 1.1 * coinT, 0.6 + 0.45 * Math.sin(coinT * Math.PI), 1.2]} spin={coinT * 12} s={4.2} />}
-      {i("coin") && coinT >= 1 && <Coin p={[-0.55, 0.6, 1.25]} spin={0} s={4.2} />}
+      {i("coin") && coinT < 1 && <Coin p={[0.2 - 0.5 * coinT, 0.42 + 0.5 * Math.sin(coinT * Math.PI), 1.45]} spin={coinT * 12} s={4.2} />}
+      {i("coin") && coinT >= 1 && <Coin p={[-0.3, 0.42, 1.45]} spin={0} s={4.2} />}
       {i("coin") && laugh > 0 && <Sprite tex={haha} s={laugh} pos={[-0.2, 1.35, 1.1]} size={[0.8, 0.4]} rz={-0.05} />}
     </group>
   );
