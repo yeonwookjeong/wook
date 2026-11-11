@@ -419,7 +419,7 @@ const StoneWall: React.FC<{ mode: Mode04; t: number; court: string }> = ({ mode,
       }),
     [],
   );
-  const courtSign = useMemo(() => glyphTex(court, { bg: "#3b3e44", fg: "#ffffff", size: 54, font: "Arial", w: 512, h: 110 }), [court]);
+  const courtSign = useMemo(() => glyphTex(court, { bg: "#3b3e44", fg: "#ffffff", size: court.length > 14 ? 38 : 54, font: "Arial", w: 512, h: 110 }), [court]);
   const q = useMemo(() => qTex(), []);
   const leaves = useMemo(() => {
     const r = rng(21);
