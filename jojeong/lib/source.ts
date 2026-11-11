@@ -3,13 +3,14 @@
 // the person. The road is read once, on the first visit: the page they landed on, then the app they opened it in
 // (Instagram, Threads and 카카오톡 name themselves in the browser's user agent), then the site that sent them.
 // "toss": bought in the Apps in Toss mini app (lib/tossApps.ts); written on its orders, never read from a visit.
-export const SOURCES = ["game", "instagram", "threads", "search", "kakao", "other", "direct", "toss"] as const;
+export const SOURCES = ["game", "instagram", "threads", "x", "search", "kakao", "other", "direct", "toss"] as const;
 export type Source = (typeof SOURCES)[number];
 export const isSource = (v: unknown): v is Source => SOURCES.includes(v as Source);
 export const SOURCE_LABEL: Record<Source, string> = {
   game: "왕이 될 사주 (친구 초대)",
   instagram: "인스타그램",
   threads: "스레드",
+  x: "X (트위터)",
   search: "검색 (구글, 네이버)",
   kakao: "카카오톡",
   other: "다른 사이트",
@@ -24,6 +25,7 @@ export function classify({ path, referrer, ua, query }: { path: string; referrer
   const tag = new URLSearchParams(query).get("utm_source")?.toLowerCase() ?? "";
   if (/^(ig|insta)/.test(tag)) return "instagram";
   if (tag.startsWith("thread")) return "threads";
+  if (tag === "x" || tag === "twitter") return "x";
   if (/Instagram/i.test(ua)) return "instagram";
   // Threads' in-app browser goes by its code name.
   if (/Barcelona/i.test(ua)) return "threads";
@@ -33,6 +35,8 @@ export function classify({ path, referrer, ua, query }: { path: string; referrer
   } catch {}
   if (/instagram\.com$/.test(host)) return "instagram";
   if (/threads\.(net|com)$/.test(host)) return "threads";
+  // X wraps every link in t.co; its in-app browser names itself "Twitter".
+  if (/^(t\.co|x\.com|(mobile\.)?twitter\.com)$/.test(host) || /Twitter/i.test(ua)) return "x";
   if (/(^|\.)(google|naver|daum|bing)\./.test(host)) return "search";
   // Search apps open results in their own browser and often send no referrer.
   if (/NAVER\(inapp|DaumApps|DaumDevice|Whale\/.*NAVER/i.test(ua)) return "search";
