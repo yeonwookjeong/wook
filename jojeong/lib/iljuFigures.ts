@@ -1,4 +1,5 @@
 import { Lunar, Solar } from "lunar-javascript";
+import { KINGS } from "./kings";
 import { BRANCHES, BRANCHES_KO, STEMS, STEMS_KO } from "./saju";
 
 // "나와 같은 일주로 태어난 인물": people whose birthday is well recorded, matched to the reader by the day pillar
@@ -28,6 +29,30 @@ const RAW: Raw[] = [
   { name: "안중근", line: "하얼빈에서 뜻을 이룬 독립운동가", born: { solar: [1879, 9, 2] } },
   { name: "방정환", line: "어린이날을 만든 사람", born: { solar: [1899, 11, 9] } },
   { name: "윤동주", line: "하늘과 바람과 별을 노래한 시인", born: { solar: [1917, 12, 30] } },
+  { name: "송시열", line: "조선 후기 성리학을 이끈 학자", born: { lunar: [1607, 11, 12] } },
+  { name: "유성룡", line: "임진왜란 때 나라 살림을 맡아 징비록을 남긴 재상", born: { lunar: [1542, 10, 1] } },
+  { name: "곽재우", line: "임진왜란 때 붉은 옷을 입고 싸운 의병장", born: { lunar: [1552, 8, 28] } },
+  { name: "조식", line: "실천을 앞세운 조선의 선비", born: { lunar: [1501, 6, 26] } },
+  { name: "박지원", line: "열하일기를 쓴 실학자", born: { lunar: [1737, 2, 5] } },
+  { name: "정선", line: "우리 산천을 그대로 그린 진경산수의 화가", born: { lunar: [1676, 1, 3] } },
+  { name: "최제우", line: "동학을 연 사상가", born: { lunar: [1824, 10, 28] } },
+  { name: "이육사", line: "광야와 청포도를 노래한 시인", born: { lunar: [1904, 4, 4] } },
+  { name: "안창호", line: "교육으로 나라를 세우려 한 독립운동가", born: { solar: [1878, 11, 9] } },
+  { name: "윤봉길", line: "상하이에서 뜻을 이룬 독립운동가", born: { solar: [1908, 6, 21] } },
+  { name: "이봉창", line: "도쿄에서 뜻을 펼친 독립운동가", born: { solar: [1900, 8, 10] } },
+  { name: "유관순", line: "만세 운동에 앞장선 독립운동가", born: { solar: [1902, 12, 16] } },
+  { name: "한용운", line: "님의 침묵을 쓴 시인이자 독립운동가", born: { solar: [1879, 8, 29] } },
+  { name: "신채호", line: "우리 역사를 새로 쓴 역사학자", born: { solar: [1880, 12, 8] } },
+  { name: "주시경", line: "한글이라는 이름을 널리 쓴 국어학자", born: { solar: [1876, 12, 22] } },
+  { name: "김소월", line: "진달래꽃을 쓴 시인", born: { solar: [1902, 8, 6] } },
+  { name: "이상", line: "날개를 쓴 작가", born: { solar: [1910, 9, 23] } },
+  { name: "이중섭", line: "소를 그린 화가", born: { solar: [1916, 4, 10] } },
+  { name: "나혜석", line: "우리나라 첫 여성 서양화가", born: { solar: [1896, 4, 28] } },
+  { name: "김유정", line: "봄봄과 동백꽃을 쓴 작가", born: { solar: [1908, 1, 11] } },
+  { name: "백남준", line: "비디오 아트를 연 예술가", born: { solar: [1932, 7, 20] } },
+  { name: "김대건", line: "우리나라 첫 천주교 신부", born: { solar: [1821, 8, 21] } },
+  { name: "정주영", line: "맨손으로 큰 기업을 일군 기업가", born: { solar: [1915, 11, 25] } },
+  { name: "이병철", line: "큰 기업을 세운 기업가", born: { solar: [1910, 2, 12] } },
   { name: "레오나르도 다빈치", line: "모나리자를 그린 화가이자 발명가", born: { solar: [1452, 4, 15] } },
   { name: "갈릴레오 갈릴레이", line: "망원경으로 하늘을 새로 본 과학자", born: { solar: [1564, 2, 15] } },
   { name: "아이작 뉴턴", line: "만유인력을 밝힌 과학자", born: { solar: [1643, 1, 4] } },
@@ -52,9 +77,31 @@ const RAW: Raw[] = [
   { name: "헬렌 켈러", line: "보지도 듣지도 못한 채 세상을 바꾼 작가", born: { solar: [1880, 6, 27] } },
   { name: "피카소", line: "그림의 틀을 깨뜨린 화가", born: { solar: [1881, 10, 25] } },
   { name: "엔리코 페르미", line: "첫 원자로를 세운 물리학자", born: { solar: [1901, 9, 29] } },
+  { name: "슈베르트", line: "가곡의 왕이라 불린 작곡가", born: { solar: [1797, 1, 31] } },
+  { name: "빅토르 위고", line: "레 미제라블을 쓴 작가", born: { solar: [1802, 2, 26] } },
+  { name: "안데르센", line: "인어공주를 쓴 동화 작가", born: { solar: [1805, 4, 2] } },
+  { name: "루이 파스퇴르", line: "백신의 길을 연 과학자", born: { solar: [1822, 12, 27] } },
+  { name: "쥘 베른", line: "해저 2만 리를 쓴 작가", born: { solar: [1828, 2, 8] } },
+  { name: "마크 트웨인", line: "톰 소여의 모험을 쓴 작가", born: { solar: [1835, 11, 30] } },
+  { name: "차이콥스키", line: "백조의 호수를 쓴 작곡가", born: { solar: [1840, 5, 7] } },
+  { name: "슈바이처", line: "아프리카에서 병원을 연 의사", born: { solar: [1875, 1, 14] } },
+  { name: "코코 샤넬", line: "옷의 틀을 바꾼 디자이너", born: { solar: [1883, 8, 19] } },
+  { name: "찰리 채플린", line: "웃음으로 세상을 그린 배우", born: { solar: [1889, 4, 16] } },
+  { name: "월트 디즈니", line: "미키 마우스를 만든 사람", born: { solar: [1901, 12, 5] } },
+  { name: "프리다 칼로", line: "자화상으로 이름난 화가", born: { solar: [1907, 7, 6] } },
+  { name: "넬슨 만델라", line: "남아프리카의 화해를 이끈 대통령", born: { solar: [1918, 7, 18] } },
+  { name: "앤디 워홀", line: "팝아트를 연 예술가", born: { solar: [1928, 8, 6] } },
+  { name: "마틴 루서 킹", line: "나에게는 꿈이 있다고 말한 인권 운동가", born: { solar: [1929, 1, 15] } },
+  { name: "오드리 헵번", line: "로마의 휴일의 배우이자 구호 활동가", born: { solar: [1929, 5, 4] } },
+  { name: "엘비스 프레슬리", line: "로큰롤의 왕", born: { solar: [1935, 1, 8] } },
+  { name: "존 레넌", line: "비틀스의 음악가", born: { solar: [1940, 10, 9] } },
+  { name: "브루스 리", line: "무술을 세계에 알린 배우", born: { solar: [1940, 11, 27] } },
+  { name: "스티븐 호킹", line: "블랙홀을 연구한 물리학자", born: { solar: [1942, 1, 8] } },
+  { name: "스티브 잡스", line: "아이폰을 만든 기업가", born: { solar: [1955, 2, 24] } },
+  { name: "마이클 잭슨", line: "팝의 황제", born: { solar: [1958, 8, 29] } },
 ];
 
-export type IljuFigure = { name: string; line: string; stem: number; branch: number };
+export type IljuFigure = { name: string; line: string; stem: number; branch: number; ko: boolean };
 
 function dayOf(b: Born): { stem: number; branch: number } {
   const e = ("lunar" in b ? Lunar.fromYmdHms(...b.lunar, 12, 0, 0) : Solar.fromYmd(...b.solar).getLunar()).getEightChar();
@@ -64,7 +111,22 @@ function dayOf(b: Born): { stem: number; branch: number } {
   };
 }
 
-export const ILJU_FIGURES: IljuFigure[] = RAW.map((r) => ({ name: r.name, line: r.line, ...dayOf(r.born) }));
+// Korean names are told first (a reader here meets their own history before the world's).
+const isKo = (name: string) => /^[가-힣]{2,3}$/.test(name) && !FOREIGN.has(name);
+const FOREIGN = new Set(["바흐", "칸트", "괴테", "다윈", "간디", "처칠", "피카소", "에디슨"]);
+// The kings of Joseon from lib/kings.ts (its dates are checked against the Annals), each with a line that says
+// what the reign is remembered for; 연산군 is left out.
+const KING_LINE: Record<string, string> = {
+  태조: "조선을 세운 임금", 정종: "조선의 두 번째 임금", 태종: "왕권을 다진 조선의 임금", 문종: "측우기를 만드는 데 힘쓴 임금",
+  단종: "어린 나이에 왕위에 오른 임금", 세조: "나라의 법과 제도를 정비한 임금", 예종: "조선의 여덟 번째 임금", 성종: "경국대전을 완성한 임금",
+  중종: "조선의 열한 번째 임금", 인종: "효심으로 이름난 임금", 명종: "조선의 열세 번째 임금", 선조: "임진왜란을 겪은 임금",
+  광해군: "실리를 앞세운 외교를 편 임금", 인조: "조선의 열여섯 번째 임금", 효종: "북벌을 꿈꾼 임금", 현종: "조선의 열여덟 번째 임금",
+  숙종: "46년 동안 나라를 다스린 임금", 경종: "조선의 스무 번째 임금", 순조: "조선의 스물세 번째 임금", 헌종: "여덟 살에 왕위에 오른 임금",
+  철종: "강화도령이라 불린 임금", 고종: "대한제국을 선포한 임금", 순종: "대한제국의 마지막 황제",
+};
+const KING_FIGURES: IljuFigure[] = KINGS.filter((k) => KING_LINE[k.name]).map((k) => ({ name: k.name, line: KING_LINE[k.name], stem: k.dayStem, branch: k.dayBranch, ko: true }));
+
+export const ILJU_FIGURES: IljuFigure[] = [...RAW.map((r) => ({ name: r.name, line: r.line, ...dayOf(r.born), ko: isKo(r.name) })), ...KING_FIGURES].sort((a, b) => Number(b.ko) - Number(a.ko));
 
 // The same day pillar if anyone has it; otherwise the same day stem (the element one is born as), so every reader
 // gets someone. `same` says which.
