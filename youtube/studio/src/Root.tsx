@@ -18,6 +18,7 @@ import { Ep07, EP07, Ep07Check } from "./ep07/Ep07";
 import { KenneyTest } from "./three/KenneyTest";
 import { CasTest, CasTestCheck, CAS_TEST_FRAMES } from "./cas/CasTest";
 import { WingCheck } from "./cas/WingCheck";
+import { Props05Check } from "./cas/Props05Check";
 import { KenneyMeasure } from "./three/KenneyMeasure";
 
 // 쇼츠 규격: 세로 1080×1920, 30fps
@@ -53,6 +54,7 @@ export const RemotionRoot: React.FC = () => {
       <Composition id="Ep07" component={Ep07} durationInFrames={EP07.en.total} fps={30} width={1080} height={1920} defaultProps={{ lang: "en" as const }} />
       <Composition id="Ep07Es" component={Ep07} durationInFrames={EP07.es.total} fps={30} width={1080} height={1920} defaultProps={{ lang: "es" as const }} />
       <Composition id="Ep07Check" component={Ep07Check} durationInFrames={14} fps={30} width={1080} height={1920} />
+      <Composition id="Props05Check" component={Props05Check} durationInFrames={1} fps={30} width={1080} height={1920} />
       <Composition id="WingCheck" component={WingCheck} durationInFrames={1} fps={30} width={1080} height={1920} />
       <Composition id="CasTest" component={CasTest} durationInFrames={CAS_TEST_FRAMES} fps={30} width={1080} height={1920} />
       <Composition id="CasTestCheck" component={CasTestCheck} durationInFrames={10} fps={30} width={1080} height={1920} />
