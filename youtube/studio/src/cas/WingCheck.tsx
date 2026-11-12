@@ -12,8 +12,8 @@ export const WingCheck: React.FC = () => {
   }, []);
   return (
     <AbsoluteFill style={{ background: "#f4ead8", alignItems: "center", justifyContent: "center", gap: 40, flexDirection: "column" }}>
-      <canvas ref={a} width={800} height={600} />
-      <canvas ref={b} width={600} height={400} />
+      <canvas ref={a} width={800} height={600} style={{ outline: "4px dashed red" }} />
+      <canvas ref={b} width={600} height={400} style={{ outline: "4px dashed red" }} />
     </AbsoluteFill>
   );
 };

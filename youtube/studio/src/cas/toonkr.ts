@@ -253,7 +253,8 @@ export function drawWing(g: CanvasRenderingContext2D, w = 400, h = 300) {
   g.clearRect(0, 0, w, h);
   g.save();
   g.scale(w / 400, h / 300);
-  g.translate(200, 150); g.rotate(-0.28); g.translate(-200, -150);
+  // 회전한 날개 끝이 캔버스 밖으로 잘리지 않게: 가운데 기준으로 줄이고 살짝 아래로
+  g.translate(200, 160); g.rotate(-0.28); g.scale(0.82, 0.82); g.translate(-210, -150);
   // 한눈에 '날개'로 읽히게: 새 날개 모양(위는 둥근 앞날개, 아래는 깃털처럼 물결) + 노릇한 튀김 색 + 어깨 뼈 마디
   const shape = new Path2D();
   shape.moveTo(70, 200);
