@@ -196,3 +196,52 @@ export function drawLeaf(g: G) {
   pts.push([64, 70]);
   fillInk(g, pts, "#f5c531", 6);
 }
+
+/** 은행나무 (가을, 노란 잎 덩어리), 600x900 */
+export function drawGinkgo(g: G, seed = 1) {
+  g.clearRect(0, 0, 600, 900);
+  const r = (k: number) => { const x = Math.sin((k + seed * 13) * 78.233) * 43758.5; return x - Math.floor(x); };
+  // 줄기와 가지
+  fillInk(g, [[275, 900], [282, 560], [250, 430], [268, 425], [296, 520], [318, 430], [336, 436], [310, 570], [322, 900]], "#6b4a32", 12);
+  // 잎 덩어리: 여러 원을 겹친 실루엣 → 잉크 테두리 → 노란색 → 그늘/밝은 점
+  const blobs: [number, number, number][] = [];
+  for (let k = 0; k < 16; k++) blobs.push([300 + (r(k) - 0.5) * 360, 300 + (r(k + 40) - 0.5) * 360 - Math.abs(r(k) - 0.5) * 80, 70 + r(k + 80) * 60]);
+  const all = (c: string, grow: number) => { g.fillStyle = c; blobs.forEach(([x, y, rr]) => { g.beginPath(); g.arc(x, y, rr + grow, 0, Math.PI * 2); g.fill(); }); };
+  all(INK, 7);
+  all("#f2c431", 0);
+  g.save();
+  g.globalCompositeOperation = "source-atop";
+  const gr = g.createLinearGradient(0, 120, 0, 520);
+  gr.addColorStop(0, "rgba(255,240,170,0.5)");
+  gr.addColorStop(1, "rgba(170,100,0,0.45)");
+  g.fillStyle = gr;
+  g.fillRect(0, 0, 600, 600);
+  for (let k = 0; k < 90; k++) {
+    g.fillStyle = k % 2 ? "rgba(200,130,10,0.45)" : "rgba(255,236,140,0.75)";
+    const x = 120 + r(k + 200) * 360, y = 140 + r(k + 300) * 330;
+    g.beginPath(); g.moveTo(x, y); g.arc(x, y, 14, Math.PI * 1.1, Math.PI * 1.9); g.closePath(); g.fill();
+  }
+  g.restore();
+}
+
+/** 담 너머 궁궐 지붕 (처마가 휜 한옥), 1200x600 */
+export function drawHanok(g: G) {
+  g.clearRect(0, 0, 1200, 600);
+  // 몸체: 붉은 기둥 + 단청 띠
+  fillInk(g, [[220, 330], [980, 330], [980, 600], [220, 600]], "#a33c2c", 12);
+  [300, 460, 620, 780, 900].forEach((x) => fillInk(g, [[x, 330], [x + 30, 330], [x + 30, 600], [x, 600]], "#7e2a20", 6));
+  fillInk(g, [[210, 318], [990, 318], [990, 360], [210, 360]], "#3f8a6a", 8);
+  for (let x = 230; x < 980; x += 40) fillInk(g, ell(x, 339, 12, 10), x % 80 ? "#e9c45a" : "#d6564a", 4);
+  // 지붕: 처마 끝이 위로 휜 곡선
+  const roof: P2[] = [];
+  for (let i = 0; i <= 40; i++) { const t = i / 40; const x = 40 + 1120 * t; const y = 330 - 70 * Math.pow(Math.abs(t - 0.5) * 2, 3) - 6; roof.push([x, y]); }
+  roof.push([1010, 150], [190, 150]);
+  fillInk(g, roof, "#4d5157", 12);
+  // 기와 줄
+  g.strokeStyle = "rgba(30,30,36,0.6)"; g.lineWidth = 6;
+  for (let x = 210; x < 1000; x += 34) { g.beginPath(); g.moveTo(x, 160); g.lineTo(x + (x - 600) * 0.12, 310 - 30 * Math.pow(Math.abs(x - 600) / 560, 3)); g.stroke(); }
+  // 용마루
+  fillInk(g, [[170, 128], [1030, 128], [1050, 158], [150, 158]], "#3b3e44", 10);
+  fillInk(g, [[140, 110], [180, 128], [150, 158]], "#3b3e44", 8);
+  fillInk(g, [[1060, 110], [1020, 128], [1050, 158]], "#3b3e44", 8);
+}

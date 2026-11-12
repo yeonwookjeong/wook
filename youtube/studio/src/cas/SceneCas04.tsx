@@ -7,7 +7,7 @@ import { useMemo } from "react";
 import * as THREE from "three";
 import type { Mode04, Words04 } from "../ep04/Scene04";
 import { PEN_KO } from "../three/mini";
-import { drawBubble, drawCoin, drawCrack, drawGift, drawHeart, drawLeaf, drawNumCard, drawPaper, drawQ, drawRain, drawSneakers, drawStamp } from "./cards";
+import { drawBubble, drawCoin, drawCrack, drawGift, drawGinkgo, drawHanok, drawHeart, drawLeaf, drawNumCard, drawPaper, drawQ, drawRain, drawSneakers, drawStamp } from "./cards";
 import { Blob, bez, CamSet, camAt, Card, CK, glowTex, InkBall, InkBox, InkCyl, painted, Person, popIn, rng, seg, Stool, V3, handAt } from "./kit";
 import { canvasTexture, drawBaram, drawBasket, drawWing, GUY2, HIM, Look, ME, Pose, RIVAL } from "./toonkr";
 
@@ -338,7 +338,7 @@ const Shop: React.FC<{ mode: Mode04; t: number; P: Props }> = ({ mode, t, P }) =
       <CamSet p={cam.p} t={cam.t} />
       <hemisphereLight args={["#7d8fd0", "#5a3a2a", 0.75]} />
       <ambientLight intensity={0.18} color="#8090d0" />
-      <pointLight position={[0, 1.85, 0.1]} intensity={5.5} distance={7} decay={1.3} color="#ffb870" castShadow shadow-mapSize={[1024, 1024]} shadow-bias={-0.002} />
+      <pointLight position={[0, 1.85, 0.1]} intensity={5.5} distance={7} decay={1.3} color="#ffb870" castShadow shadow-mapSize={[2048, 2048]} shadow-bias={-0.006} shadow-normalBias={0.03} />
       <pointLight position={[-1.65, 1.85, -1.35]} intensity={3.2} distance={5} decay={1.3} color="#ffb870" />
       <pointLight position={[1.7, 1.85, -0.5]} intensity={3.2} distance={5} decay={1.3} color="#ffb870" />
       <directionalLight position={[1.5, 3, 4]} intensity={0.45} color="#ffe6cc" />
@@ -366,7 +366,7 @@ const Shop: React.FC<{ mode: Mode04; t: number; P: Props }> = ({ mode, t, P }) =
         <group key={k}>
           <InkBox p={[x as number, TOP - 0.025, z as number]} s={[0.55, 0.05, 0.62]} c="#c98f5a" />
           <InkBox p={[x as number, TOP / 2, z as number]} s={[0.12, TOP, 0.12]} c="#6a4a32" />
-          <Card tex={P.basket} at={[x as number, TOP + 0.1, z as number]} w={0.33} h={0.22} cam={C} />
+          <Card tex={P.basket} at={[x as number, TOP + 0.13, z as number]} w={0.33} h={0.22} cam={C} />
           <Stool x={(a as V3)[0]} z={(a as V3)[2] - 0.1} />
           <Stool x={(b as V3)[0]} z={(b as V3)[2] - 0.1} />
         </group>
@@ -378,14 +378,14 @@ const Shop: React.FC<{ mode: Mode04; t: number; P: Props }> = ({ mode, t, P }) =
       <InkCyl p={[0, 0.02, 0]} r={0.26} h={0.04} c="#6a4a32" />
       <Stool x={S_HER[0]} z={-0.1} />
       <Stool x={S_HE[0]} z={rise > 0.02 ? 0 : -0.1} />
-      {[-0.19, 0.19].map((x) => <InkCyl key={x} p={[x, TOP + 0.01, 0.2]} r={0.11} r2={0.09} h={0.02} c="#ffffff" th={0.006} />)}
+      {[-0.19, 0.19].map((x) => <InkCyl key={x} p={[x, TOP + 0.022, 0.2]} r={0.11} r2={0.09} h={0.02} c="#ffffff" th={0.006} />)}
       {[-0.24, 0.24].map((x) => (
         <group key={x}>
-          <InkCyl p={[x, TOP + 0.08, -0.18]} r={0.045} h={0.16} c="#f2b13a" th={0.006} />
-          <InkCyl p={[x, TOP + 0.17, -0.18]} r={0.047} h={0.03} c="#fffaf0" th={0.006} />
+          <InkCyl p={[x, TOP + 0.095, -0.18]} r={0.045} h={0.16} c="#f2b13a" th={0.006} />
+          <InkCyl p={[x, TOP + 0.19, -0.18]} r={0.047} h={0.03} c="#fffaf0" th={0.006} />
         </group>
       ))}
-      <Card tex={P.basket} at={[0, TOP + 0.12, -0.05]} w={0.42} h={0.28} cam={C} />
+      <Card tex={P.basket} at={[0, TOP + 0.16, -0.05]} w={0.42} h={0.28} cam={C} />
       {/* 사람 */}
       <Person look={RIVAL} pose={rivPose} feet={rv} cam={C} />
       <Person look={GUY2} pose={g2Pose} feet={G2} cam={C} flipX />
@@ -430,15 +430,34 @@ const Wall: React.FC<{ mode: Mode04; t: number; P: Props; court: string }> = ({ 
   const cam = camAt(WALL_CAM[mode], t);
   const C = cam.p;
   const tex = useMemo(() => {
-    const stones = painted(1024, 256, "#b9ae9c", (g, r) => {
-      for (let y = 0; y < 256; y += 42) for (let x = -(y % 84); x < 1024; x += 76) {
-        const sh = 150 + Math.floor(r() * 60);
-        g.fillStyle = `rgb(${sh},${sh - 10},${sh - 26})`;
-        g.strokeStyle = "rgba(43,26,34,0.75)"; g.lineWidth = 4;
-        g.beginPath(); g.roundRect(x + 3, y + 3, 70, 36, 10); g.fill(); g.stroke();
-      }
+    // 돌담: 아래는 큰 돌, 위로 갈수록 작은 돌. 크기·색이 제각각, 밝은 회반죽 줄눈
+    const stones = painted(1024, 512, "#8f8576", (g, r) => {
+      const pal = ["#b9ad97", "#a99d8a", "#c4b8a2", "#9d917f", "#b1a48c", "#cfc3ad"];
+      let y = 0;
+      const rows = [92, 84, 76, 66, 58, 50, 44, 42];
+      rows.forEach((rh) => {
+        let x = -r() * 60;
+        while (x < 1024) {
+          const w = rh * (1.1 + r() * 1.3);
+          g.fillStyle = pal[Math.floor(r() * pal.length)];
+          g.strokeStyle = "rgba(43,26,34,0.8)"; g.lineWidth = 5;
+          g.beginPath(); g.roundRect(x + 4, y + 4, w - 8, rh - 8, Math.min(18, rh * 0.3)); g.fill(); g.stroke();
+          g.strokeStyle = "rgba(255,255,255,0.35)"; g.lineWidth = 4;
+          g.beginPath(); g.moveTo(x + 12, y + 10); g.lineTo(x + w - 16, y + 10); g.stroke();
+          g.strokeStyle = "rgba(60,40,30,0.25)"; g.lineWidth = 6;
+          g.beginPath(); g.moveTo(x + 10, y + rh - 10); g.lineTo(x + w - 12, y + rh - 10); g.stroke();
+          x += w;
+        }
+        y += rh;
+      });
     }, 12);
-    stones.wrapS = THREE.RepeatWrapping; stones.repeat.set(4, 1);
+    stones.wrapS = THREE.RepeatWrapping; stones.repeat.set(5, 1);
+    const tiles = painted(512, 128, "#55585e", (g) => {
+      for (let x = 0; x < 512; x += 32) { g.fillStyle = "#3e4147"; g.fillRect(x, 0, 12, 128); g.fillStyle = "rgba(255,255,255,0.12)"; g.fillRect(x + 14, 0, 6, 128); }
+    }, 16);
+    tiles.wrapS = THREE.RepeatWrapping; tiles.repeat.set(24, 1);
+    const ginkgo = [1, 2, 3].map((k) => canvasTexture(600, 900, (g) => drawGinkgo(g, k)));
+    const hanok = canvasTexture(1200, 600, drawHanok);
     const road = painted(1024, 512, "#d9c9a6", (g) => {
       g.strokeStyle = "rgba(90,70,50,0.35)"; g.lineWidth = 4;
       for (let y = 0; y < 512; y += 64) for (let x = (y / 64) % 2 ? 0 : 60; x < 1024; x += 120) { g.beginPath(); g.roundRect(x, y + 4, 112, 56, 12); g.stroke(); }
@@ -446,7 +465,7 @@ const Wall: React.FC<{ mode: Mode04; t: number; P: Props; court: string }> = ({ 
     road.wrapS = road.wrapT = THREE.RepeatWrapping; road.repeat.set(3, 1);
     const grass = painted(512, 512, "#b7a253", undefined, 15);
     const sign = canvasTexture(640, 128, (g) => { g.fillStyle = "#3b3e44"; g.fillRect(0, 0, 640, 128); g.strokeStyle = "#2b1a22"; g.lineWidth = 10; g.strokeRect(5, 5, 630, 118); g.font = `bold ${court.length > 14 ? 50 : 64}px ${SANS}`; g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#ffffff"; g.fillText(court, 320, 68); });
-    return { stones, road, grass, sign };
+    return { stones, road, grass, sign, tiles, ginkgo, hanok };
   }, [court]);
   const r = useMemo(() => { const g = rng(21); return Array.from({ length: 26 }, () => ({ x: (g() - 0.5) * 7, z: (g() - 0.5) * 3, o: g(), s: 0.6 + g() * 0.6 })); }, []);
 
@@ -524,24 +543,24 @@ const Wall: React.FC<{ mode: Mode04; t: number; P: Props; court: string }> = ({ 
       {/* 길, 풀밭 */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0.4]} receiveShadow><planeGeometry args={[16, 1.9]} /><meshStandardMaterial map={tex.road} roughness={0.95} /></mesh>
       <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow><planeGeometry args={[16, 12]} /><meshStandardMaterial map={tex.grass} roughness={1} /></mesh>
-      {/* 돌담 + 기와 */}
-      <InkBox p={[0, 0.65, -0.9]} s={[16, 1.3, 0.45]} c="#ffffff" map={tex.stones} round={0.02} />
-      <InkBox p={[0, 1.38, -0.9]} s={[16.2, 0.16, 0.72]} c="#4b4f56" />
-      <InkBox p={[0, 1.5, -0.9]} s={[16.2, 0.1, 0.32]} c="#3b3e44" />
-      {/* 담 너머 궁궐 */}
-      <group position={[1.8, 0, -3.4]}>
-        <InkBox p={[0, 0.9, 0]} s={[3.0, 1.8, 1.4]} c="#a33c2c" />
-        <InkBox p={[0, 1.72, 0.72]} s={[3.0, 0.14, 0.04]} c="#3f8a6a" />
-        <InkBox p={[0, 2.0, 0]} s={[3.8, 0.18, 2.1]} c="#4b4f56" r={[0, 0, 0]} />
-        <InkBox p={[0, 2.25, 0]} s={[3.0, 0.32, 1.4]} c="#4b4f56" />
-        <InkBox p={[0, 2.46, 0]} s={[3.3, 0.1, 0.3]} c="#3b3e44" />
-      </group>
-      {/* 은행나무 */}
-      {[-4.4, 2.4, 4.4].map((x) => (
+      {/* 돌담 + 기와 지붕(양쪽으로 기울어진 판 + 용마루) */}
+      <InkBox p={[0, 0.7, -0.9]} s={[18, 1.4, 0.5]} c="#ffffff" map={tex.stones} round={0.03} />
+      <InkBox p={[0, 1.44, -0.9]} s={[18.2, 0.08, 0.62]} c="#6a6e75" round={0.02} />
+      <InkBox p={[0, 1.55, -0.73]} s={[18.4, 0.04, 0.42]} c="#ffffff" map={tex.tiles} r={[0.42, 0, 0]} round={0.01} />
+      <InkBox p={[0, 1.55, -1.07]} s={[18.4, 0.04, 0.42]} c="#ffffff" map={tex.tiles} r={[-0.42, 0, 0]} round={0.01} />
+      <InkBox p={[0, 1.66, -0.9]} s={[18.4, 0.08, 0.1]} c="#3b3e44" round={0.03} />
+      {/* 담 너머 궁궐 (처마가 휜 한옥 지붕 그림) */}
+      <Card tex={tex.hanok} at={[1.6, 2.0, -3.6]} w={3.8} h={1.9} cam={[C[0] * 0.2, C[1], C[2]]} tint="#f2e6dc" />
+      <Card tex={tex.hanok} at={[-3.4, 1.85, -4.4]} w={3.0} h={1.5} cam={[C[0] * 0.2, C[1], C[2]]} tint="#e6d8d0" />
+      {/* 은행나무 (그림 나무), 옛날식 가로등 */}
+      {[[-4.6, -0.35, 0], [-0.7, -0.4, 1], [2.6, -0.35, 2], [5.0, -0.4, 0]].map(([x, z, k]) => (
+        <Card key={x} tex={tex.ginkgo[k]} at={[x, 1.45, z]} w={1.9} h={2.85} cam={C} />
+      ))}
+      {[-3.2, 0.9, 4.0].map((x) => (
         <group key={x}>
-          <InkCyl p={[x, 0.9, -0.45]} r={0.06} r2={0.09} h={1.8} c="#6b4a32" />
-          <InkBall p={[x, 2.1, -0.45]} r={0.6} c="#f2c43a" />
-          <InkBall p={[x + 0.35, 1.8, -0.3]} r={0.38} c="#f5cf4a" />
+          <InkCyl p={[x, 0.9, -0.55]} r={0.035} h={1.8} c="#2f3a33" />
+          <InkBox p={[x, 1.86, -0.55]} s={[0.16, 0.2, 0.16]} c="#fff1c8" e="#ffd98a" round={0.02} />
+          <InkBox p={[x, 1.98, -0.55]} s={[0.22, 0.04, 0.22]} c="#2f3a33" round={0.01} />
         </group>
       ))}
       {/* 떨어지는 은행잎 */}

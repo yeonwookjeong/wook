@@ -247,24 +247,59 @@ export function handUV(P: Pose, side: 1 | -1): [number, number] {
 }
 
 // ---------- 소품 카드 ----------
-/** 한국식 후라이드 치킨 날개: 봉(통통한 쪽) + 날개살(납작한 쪽)이 V자로 꺾인 모양 */
+/** 후라이드 치킨 날개: 관절에서 V자로 꺾인 두 마디 (아래 왼쪽 = 통통한 봉, 위 오른쪽 = 넓적한 날개살 + 뾰족한 끝).
+ *  테두리는 작은 혹으로 오돌토돌(튀김옷), 그늘은 튀김옷에만 */
 export function drawWing(g: CanvasRenderingContext2D, w = 400, h = 300) {
-  const p = new Pen(g);
   g.clearRect(0, 0, w, h);
+  const rot = (pts: P2[], a: number, cx: number, cy: number): P2[] => pts.map(([x, y]) => [cx + (x - cx) * Math.cos(a) - (y - cy) * Math.sin(a), cy + (x - cx) * Math.sin(a) + (y - cy) * Math.cos(a)]);
+  // V자(체크 표시) 모양: 관절이 아래 가운데, 왼쪽 위로 통통한 봉, 오른쪽 위로 넓적한 날개살 + 끝
+  const shapes: P2[][] = [
+    rot(ell(128, 160, 88, 46, 0, 360, 40), Math.PI / 4.2, 128, 160), // 봉
+    rot(ell(282, 150, 96, 60, 0, 360, 40), -Math.PI / 4.6, 282, 150), // 날개살
+    [[338, 92], [372, 40], [392, 34], [388, 62], [362, 108]], // 날개 끝
+  ];
+  const joint: [number, number, number][] = [[202, 228, 40]];
+  const outline = (pts: P2[], step = 13) => {
+    const out: P2[] = [];
+    for (let i = 0; i < pts.length; i++) {
+      const [x0, y0] = pts[i], [x1, y1] = pts[(i + 1) % pts.length];
+      const n = Math.max(1, Math.round(Math.hypot(x1 - x0, y1 - y0) / step));
+      for (let k = 0; k < n; k++) out.push([x0 + ((x1 - x0) * k) / n, y0 + ((y1 - y0) * k) / n]);
+    }
+    return out;
+  };
+  const blob = (c: CanvasRenderingContext2D, fill: string, grow: number) => {
+    c.fillStyle = fill;
+    shapes.forEach((pts) => {
+      c.beginPath(); pts.forEach(([x, y], i) => (i ? c.lineTo(x, y) : c.moveTo(x, y))); c.closePath(); c.fill();
+      outline(pts).forEach(([x, y], k) => { c.beginPath(); c.arc(x, y, 6 + (k % 3) * 1.5 + grow, 0, Math.PI * 2); c.fill(); });
+    });
+    joint.forEach(([x, y, r]) => { c.beginPath(); c.arc(x, y, r + grow, 0, Math.PI * 2); c.fill(); });
+  };
+  // 튀김옷은 따로 그려서 그늘·알갱이를 입힌 뒤 얹는다 (잉크 테두리는 그대로)
+  const off = document.createElement("canvas");
+  off.width = 400; off.height = 300;
+  const o = off.getContext("2d")!;
+  blob(o, "#e6a645", 0);
+  o.globalCompositeOperation = "source-atop";
+  const gr = o.createLinearGradient(0, 30, 0, 280);
+  gr.addColorStop(0, "rgba(255,232,165,0.6)");
+  gr.addColorStop(0.55, "rgba(0,0,0,0)");
+  gr.addColorStop(1, "rgba(130,55,0,0.5)");
+  o.fillStyle = gr; o.fillRect(0, 0, 400, 300);
+  const r = (k: number) => { const x = Math.sin(k * 91.7) * 43758.5; return x - Math.floor(x); };
+  for (let k = 0; k < 80; k++) {
+    o.fillStyle = k % 3 ? "rgba(155,75,10,0.45)" : "rgba(255,228,150,0.75)";
+    o.beginPath(); o.arc(40 + r(k) * 330, 20 + r(k + 99) * 260, 2.5 + r(k + 7) * 4.5, 0, Math.PI * 2); o.fill();
+  }
   g.save();
   g.scale(w / 400, h / 300);
-  const crust = "#d98a2b";
-  // 날개살 (납작, 끝이 갈라짐)
-  p.fill([[190, 170], [240, 110], [300, 70], [350, 60], [370, 80], [345, 105], [372, 120], [340, 140], [290, 165], [240, 200]], crust);
-  // 봉 (통통)
-  p.fill([...ell(130, 190, 95, 62, 0, 360)], crust);
-  // 관절 혹
-  p.fill(ell(205, 180, 40, 38), shade(crust, 0.95));
-  // 바삭한 튀김옷 점·주름
-  g.globalAlpha = 0.55;
-  [[90, 170], [120, 210], [150, 160], [170, 215], [100, 205], [140, 185], [260, 120], [300, 100], [320, 120], [280, 145], [230, 170]].forEach(([x, y], k) => p.dot(x, y, 7 + (k % 3) * 2, "#a85e15"));
-  [[110, 180], [160, 200], [270, 130], [310, 85]].forEach(([x, y]) => p.dot(x, y, 6, "#f6c56a"));
-  g.globalAlpha = 1;
+  blob(g, INK, 7);
+  g.drawImage(off, 0, 0);
+  // 관절 주름
+  g.strokeStyle = INK; g.lineWidth = 6; g.lineCap = "round";
+  g.beginPath(); g.moveTo(178, 200); g.quadraticCurveTo(200, 214, 226, 202); g.stroke();
+  g.beginPath(); g.moveTo(344, 84); g.lineTo(366, 104); g.stroke();
   g.restore();
 }
 
