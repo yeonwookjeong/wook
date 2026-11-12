@@ -18,7 +18,6 @@ const RAW: Raw[] = [
   { name: "정약용", line: "실학자, 유배지에서 수많은 책을 쓰다", born: { lunar: [1762, 6, 16] } },
   { name: "정조", line: "조선의 임금, 규장각을 세우다", born: { lunar: [1752, 9, 22] } },
   { name: "영조", line: "조선에서 가장 오래 나라를 다스린 임금", born: { lunar: [1694, 9, 13] } },
-  { name: "이성계", line: "조선을 세운 임금", born: { lunar: [1335, 10, 11] } },
   { name: "신사임당", line: "조선의 화가이자 시인", born: { lunar: [1504, 10, 29] } },
   { name: "이황", line: "조선 성리학의 큰 스승", born: { lunar: [1501, 11, 25] } },
   { name: "이이", line: "과거에 아홉 번 장원한 조선의 학자", born: { lunar: [1536, 12, 26] } },
@@ -51,6 +50,8 @@ const RAW: Raw[] = [
   { name: "김유정", line: "봄봄과 동백꽃을 쓴 작가", born: { solar: [1908, 1, 11] } },
   { name: "백남준", line: "비디오 아트를 연 예술가", born: { solar: [1932, 7, 20] } },
   { name: "김대건", line: "우리나라 첫 천주교 신부", born: { solar: [1821, 8, 21] } },
+  { name: "윤선도", line: "어부사시사를 지은 시인", born: { lunar: [1587, 6, 22] } },
+  { name: "안익태", line: "애국가를 작곡한 음악가", born: { solar: [1906, 12, 5] } },
   { name: "정주영", line: "맨손으로 큰 기업을 일군 기업가", born: { solar: [1915, 11, 25] } },
   { name: "이병철", line: "큰 기업을 세운 기업가", born: { solar: [1910, 2, 12] } },
   { name: "레오나르도 다빈치", line: "모나리자를 그린 화가이자 발명가", born: { solar: [1452, 4, 15] } },
@@ -77,6 +78,12 @@ const RAW: Raw[] = [
   { name: "헬렌 켈러", line: "보지도 듣지도 못한 채 세상을 바꾼 작가", born: { solar: [1880, 6, 27] } },
   { name: "피카소", line: "그림의 틀을 깨뜨린 화가", born: { solar: [1881, 10, 25] } },
   { name: "엔리코 페르미", line: "첫 원자로를 세운 물리학자", born: { solar: [1901, 9, 29] } },
+  { name: "코페르니쿠스", line: "지구가 해를 돈다고 밝힌 천문학자", born: { solar: [1473, 2, 19] } },
+  { name: "벤저민 프랭클린", line: "피뢰침을 만든 발명가이자 미국 건국의 아버지", born: { solar: [1706, 1, 17] } },
+  { name: "가우디", line: "사그라다 파밀리아를 지은 건축가", born: { solar: [1852, 6, 25] } },
+  { name: "헤밍웨이", line: "노인과 바다를 쓴 작가", born: { solar: [1899, 7, 21] } },
+  { name: "루이 암스트롱", line: "재즈의 얼굴이 된 트럼펫 연주자", born: { solar: [1901, 8, 4] } },
+  { name: "찰스 린드버그", line: "대서양을 처음 홀로 날아 건넌 비행사", born: { solar: [1902, 2, 4] } },
   { name: "슈베르트", line: "가곡의 왕이라 불린 작곡가", born: { solar: [1797, 1, 31] } },
   { name: "빅토르 위고", line: "레 미제라블을 쓴 작가", born: { solar: [1802, 2, 26] } },
   { name: "안데르센", line: "인어공주를 쓴 동화 작가", born: { solar: [1805, 4, 2] } },
@@ -112,8 +119,8 @@ function dayOf(b: Born): { stem: number; branch: number } {
 }
 
 // Korean names are told first (a reader here meets their own history before the world's).
-const isKo = (name: string) => /^[가-힣]{2,3}$/.test(name) && !FOREIGN.has(name);
-const FOREIGN = new Set(["바흐", "칸트", "괴테", "다윈", "간디", "처칠", "피카소", "에디슨"]);
+const FOREIGN = new Set(["바흐", "칸트", "괴테", "간디", "처칠", "피카소", "에디슨", "가우디", "모차르트", "슈베르트", "톨스토이", "나폴레옹", "프로이트", "안데르센", "헤밍웨이"]);
+const isKo = (name: string) => /^[가-힣]{2,4}$/.test(name) && !FOREIGN.has(name);
 // The kings of Joseon from lib/kings.ts (its dates are checked against the Annals), each with a line that says
 // what the reign is remembered for; 연산군 is left out.
 const KING_LINE: Record<string, string> = {
