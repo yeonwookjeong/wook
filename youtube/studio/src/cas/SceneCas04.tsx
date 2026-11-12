@@ -76,7 +76,7 @@ const STREET_CAM: Record<string, CK[]> = {
   intro: [{ u: 0, p: [0, 1.15, 3.2], t: [0, 0.92, 0.6] }, { u: 1, p: [0, 1.12, 2.95], t: [0, 0.9, 0.6] }],
   shoes: [{ u: 0, p: [0.05, 1.02, 3.0], t: [0, 0.75, 0.6] }, { u: 1, p: [0.05, 1.0, 2.8], t: [0, 0.74, 0.6] }],
   walk: [{ u: 0, p: [0.2, 0.42, 2.0], t: [0.2, 0.18, 0.7] }, { u: 1, p: [1.1, 0.48, 2.2], t: [1.2, 0.22, 0.4] }],
-  away: [{ u: 0, p: [0.0, 1.2, 3.7], t: [0.0, 0.68, 0.5] }, { u: 0.6, p: [0.2, 1.2, 3.8], t: [0.2, 0.68, 0.5] }, { u: 1, p: [-0.25, 1.12, 3.1], t: [-0.3, 0.75, 0.5] }],
+  away: [{ u: 0, p: [-0.1, 1.2, 3.9], t: [-0.1, 0.68, 0.5] }, { u: 0.6, p: [0.15, 1.2, 4.0], t: [0.15, 0.68, 0.5] }, { u: 1, p: [-0.25, 1.12, 3.1], t: [-0.3, 0.75, 0.5] }],
   coin: [{ u: 0, p: [0, 1.1, 3.15], t: [0, 0.8, 0.6] }, { u: 1, p: [0, 1.08, 2.9], t: [0, 0.8, 0.6] }],
 };
 
@@ -213,9 +213,9 @@ const Street: React.FC<{ mode: Mode04; t: number; P: Props }> = ({ mode, t, P })
           <InkBall p={[x + 0.3, 1.45, -0.45]} r={0.35} c="#5f9c48" />
         </group>
       ))}
-      <InkBox p={[1.15, 0.25, -0.55]} s={[0.9, 0.06, 0.3]} c="#8a5a3a" />
-      <InkBox p={[1.15, 0.45, -0.68]} s={[0.9, 0.3, 0.05]} c="#8a5a3a" />
-      {[0.8, 1.5].map((x) => <InkBox key={x} p={[x, 0.11, -0.55]} s={[0.05, 0.22, 0.28]} c="#3b3e44" />)}
+      <InkBox p={[2.75, 0.25, -0.55]} s={[0.9, 0.06, 0.3]} c="#8a5a3a" />
+      <InkBox p={[2.75, 0.45, -0.68]} s={[0.9, 0.3, 0.05]} c="#8a5a3a" />
+      {[2.4, 3.1].map((x) => <InkBox key={x} p={[x, 0.11, -0.55]} s={[0.05, 0.22, 0.28]} c="#3b3e44" />)}
       <InkCyl p={[-1.05, 1.2, -0.7]} r={0.03} h={2.4} c="#3b3e44" />
       <InkBall p={[-1.05, 2.42, -0.7]} r={0.1} c="#fff2c8" th={0.01} />
       {/* 사람 */}
@@ -228,7 +228,7 @@ const Street: React.FC<{ mode: Mode04; t: number; P: Props }> = ({ mode, t, P })
         </>
       )}
       {/* 지나가는 사람들 (뒤쪽) */}
-      {(i("intro") || i("away")) &&
+      {i("intro") &&
         [0, 1].map((k) => {
           const x = -3 + ((t * 0.9 + k * 0.5) % 1) * 6;
           return <Person key={k} look={FOLK[k]} pose={{ walk: t * 30 + k, armL: 15, armR: 15, mouth: "smile", look: 0.6 }} feet={[x, 0, -0.35]} cam={C} scale={0.95} />;
@@ -251,8 +251,8 @@ const WIN: V3 = [-1.3, 1.5, -2.38];
 const MORE: { at: V3; look: Look; flip?: boolean }[] = [
   { at: [1.35, SEAT, -1.5], look: FOLK[0] },
   { at: [2.05, SEAT, -1.5], look: FOLK[1], flip: true },
-  { at: [1.9, SEAT, 0.6], look: FOLK[2] },
-  { at: [2.6, SEAT, 0.6], look: FOLK[3], flip: true },
+  { at: [2.3, SEAT, -0.4], look: FOLK[2] },
+  { at: [3.0, SEAT, -0.4], look: FOLK[3], flip: true },
 ];
 const SHOP_CAM: Record<string, CK[]> = {
   chicken: [{ u: 0, p: [0, 0.98, 0.95], t: [0, 0.62, -0.05] }, { u: 0.25, p: [0, 1.0, 1.05], t: [0, 0.64, -0.05] }, { u: 1, p: [0, 1.25, 3.6], t: [0, 0.8, 0] }],
@@ -362,7 +362,7 @@ const Shop: React.FC<{ mode: Mode04; t: number; P: Props }> = ({ mode, t, P }) =
         </group>
       ))}
       {/* 다른 식탁들 */}
-      {[[-1.45, -1.45, RV0, G2], [1.7, -1.5, MORE[0].at, MORE[1].at], [2.25, 0.6, MORE[2].at, MORE[3].at]].map(([x, z, a, b], k) => (
+      {[[-1.45, -1.45, RV0, G2], [1.7, -1.5, MORE[0].at, MORE[1].at], [2.65, -0.4, MORE[2].at, MORE[3].at]].map(([x, z, a, b], k) => (
         <group key={k}>
           <InkBox p={[x as number, TOP - 0.025, z as number]} s={[0.55, 0.05, 0.62]} c="#c98f5a" />
           <InkBox p={[x as number, TOP / 2, z as number]} s={[0.12, TOP, 0.12]} c="#6a4a32" />
@@ -453,7 +453,7 @@ const Wall: React.FC<{ mode: Mode04; t: number; P: Props; court: string }> = ({ 
   const blink = (k: number) => Math.floor(t * 60 + k * 13) % 23 === 0;
   const extra: React.ReactNode[] = [];
   // 법원: court 에서 솟아오르고, gone 에서 사라짐
-  const courtH = i("court") ? seg(t, 0.15, 0.32) : i("gone") ? 1 - seg(t, 0.15, 0.55) : 0;
+  const courtH = i("court") ? seg(t, 0.15, 0.32) : i("gone") ? 1 - 0.85 * seg(t, 0.1, 0.6) : 0;
   const past = i("court") ? seg(t, 0.12, 0.2) : i("gone") ? 1 - seg(t, 0.5, 0.65) : 0;
 
   // 우리 커플
@@ -466,9 +466,9 @@ const Wall: React.FC<{ mode: Mode04; t: number; P: Props; court: string }> = ({ 
     showUs = true;
     const walk = 1 - seg(t, 0.0, 0.62);
     const apart = seg(t, 0.68, 0.85);
-    const base = -0.1 + 0.5 * walk;
-    herAt = [base - 0.2 - 0.28 * apart, 0, 0.35];
-    himAt = [base + 0.2 + 0.28 * apart, 0, 0.35];
+    const base = -0.05 + 0.35 * walk;
+    herAt = [base - 0.2 - 0.18 * apart, 0, 0.35];
+    himAt = [base + 0.2 + 0.18 * apart, 0, 0.35];
     const walking = t < 0.62;
     her = { armL: 12, armR: apart > 0.05 ? 15 : 50, look: apart > 0.05 ? 0.6 : 0.4, mouth: t > 0.66 ? (t > 0.85 ? "sad" : "open") : "smile", brow: t > 0.66 ? 0.8 : 0, walk: walking ? t * 40 : undefined, blink: blink(0) };
     him = { armL: apart > 0.05 ? 15 : 50, armR: 12, look: apart > 0.05 ? -0.6 : -0.4, mouth: t > 0.66 ? (t > 0.85 ? "sad" : "open") : "smile", brow: t > 0.66 ? 0.8 : 0, walk: walking ? t * 40 + Math.PI : undefined, blink: blink(1) };
@@ -494,7 +494,7 @@ const Wall: React.FC<{ mode: Mode04; t: number; P: Props; court: string }> = ({ 
   if (i("court")) {
     extra.push(<Card key="q" tex={P.q} at={[0, 1.15, 0.3]} w={0.36} h={0.43} cam={C} scale={popIn(t, 0.0, 0.08) * (1 - seg(t, 0.14, 0.2))} />);
   }
-  if (i("gone")) extra.push(<Card key="st" tex={P.story} at={[-1.0, 1.3 + 0.04 * Math.sin(t * 9), -0.2]} w={0.9} h={0.54} cam={C} scale={popIn(t, 0.62, 0.74)} />);
+  if (i("gone")) extra.push(<Card key="st" tex={P.story} at={[-1.0, 1.3 + 0.04 * Math.sin(t * 9), -0.2]} w={0.9} h={0.54} cam={C} scale={popIn(t, 0.4, 0.52)} />);
 
   // 걷는 다른 커플들
   const walkers: React.ReactNode[] = [];
@@ -503,8 +503,8 @@ const Wall: React.FC<{ mode: Mode04; t: number; P: Props; court: string }> = ({ 
     [0, 1].forEach((k) => {
       const dir = grim ? -1 : 1;
       const u = grim ? seg(t, 0.4, 1) : (t * 0.35 + k * 0.5) % 1;
-      const x = grim ? 0.6 - 2.4 * u - k * 0.9 : -2.6 + 5.2 * u;
-      const z = grim ? 0.45 + k * 0.4 : -0.05 + k * 0.5;
+      const x = grim ? 0.6 - 2.4 * u - k * 0.9 : i("wall") ? -1.6 + 3.0 * u : -3.0 + 6.0 * u;
+      const z = grim ? 0.45 + k * 0.4 : i("end") ? -0.4 : -0.05 + k * 0.5;
       const pa: Pose = { armL: grim ? 15 : 12, armR: grim ? 15 : 50, look: dir * 0.6, mouth: grim ? "flat" : "smile", walk: t * 34 + k };
       const pb: Pose = { armL: grim ? 15 : 50, armR: 12, look: dir * 0.6, mouth: grim ? "sad" : "smile", walk: t * 34 + k + Math.PI };
       const gap = grim ? 0.3 : 0.2;
