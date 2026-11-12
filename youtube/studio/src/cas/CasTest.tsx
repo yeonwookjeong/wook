@@ -295,7 +295,7 @@ const Shop: React.FC<{ f: number }> = ({ f }) => {
       </group>
       {/* 우리 식탁 */}
       <InkBox p={[0, TOP - 0.025, 0]} s={[0.66, 0.05, 0.72]} c="#d39a62" />
-      <InkBox p={[0, TOP / 2, 0]} s={[0.14, TOP, 0.14]} c="#6a4a32" />
+      <InkBox p={[0, (TOP - 0.07) / 2, 0]} s={[0.14, TOP - 0.07, 0.14]} c="#6a4a32" />
       <InkCyl p={[0, 0.02, 0]} r={0.26} h={0.04} c="#6a4a32" />
       {[HER, HE0].map((s, k) => (k === 1 && f > 162 ? <Stool key={k} x={s[0]} z={s[2]} /> : <Stool key={k} x={s[0]} z={s[2] - 0.1} />))}
       {[-0.19, 0.19].map((x) => <InkCyl key={x} p={[x, TOP + 0.01, 0.2]} r={0.11} r2={0.09} h={0.02} c="#ffffff" th={0.006} />)}

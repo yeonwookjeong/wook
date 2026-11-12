@@ -24,7 +24,7 @@ export type Pose = {
   blush?: number; // 볼 빨개짐 0..1
 };
 
-export const ME: Look = { skin: "#f6d3b5", hair: "bob", hairC: "#231a1e", top: "#ef6f5e", bottom: "#3b4a7a", shoes: "#f4efe6" };
+export const ME: Look = { skin: "#f6d3b5", hair: "bob", hairC: "#231a1e", top: "#ef6f5e", bottom: "#3b4a7a", shoes: "#8a5a3a" };
 export const HIM: Look = { skin: "#efc9a6", hair: "short", hairC: "#1e1a1c", top: "#2f6f8f", bottom: "#38363f", shoes: "#2b2b30", glasses: true };
 export const RIVAL: Look = { skin: "#f4d0b0", hair: "long", hairC: "#5a3424", top: "#c23b5a", bottom: "#2d2d3a", shoes: "#c23b5a" };
 export const GUY2: Look = { skin: "#e8c09c", hair: "short", hairC: "#2b2220", top: "#6a8a3a", bottom: "#3b3f52", shoes: "#4a3426" };
@@ -247,59 +247,48 @@ export function handUV(P: Pose, side: 1 | -1): [number, number] {
 }
 
 // ---------- 소품 카드 ----------
-/** 후라이드 치킨 날개: 관절에서 V자로 꺾인 두 마디 (아래 왼쪽 = 통통한 봉, 위 오른쪽 = 넓적한 날개살 + 뾰족한 끝).
- *  테두리는 작은 혹으로 오돌토돌(튀김옷), 그늘은 튀김옷에만 */
+/** 후라이드 치킨 날개: 펼친 새 날개 실루엣. 봉(왼쪽 아래 둥근 곤봉 + 뼈 마디) → 날개살(넓적한 판) → 날개 끝(뾰족).
+ *  매끈한 잉크 외곽, 황금색 튀김옷, 위쪽 광택, 바삭한 결 */
 export function drawWing(g: CanvasRenderingContext2D, w = 400, h = 300) {
   g.clearRect(0, 0, w, h);
-  const rot = (pts: P2[], a: number, cx: number, cy: number): P2[] => pts.map(([x, y]) => [cx + (x - cx) * Math.cos(a) - (y - cy) * Math.sin(a), cy + (x - cx) * Math.sin(a) + (y - cy) * Math.cos(a)]);
-  // V자(체크 표시) 모양: 관절이 아래 가운데, 왼쪽 위로 통통한 봉, 오른쪽 위로 넓적한 날개살 + 끝
-  const shapes: P2[][] = [
-    rot(ell(128, 160, 88, 46, 0, 360, 40), Math.PI / 4.2, 128, 160), // 봉
-    rot(ell(282, 150, 96, 60, 0, 360, 40), -Math.PI / 4.6, 282, 150), // 날개살
-    [[338, 92], [372, 40], [392, 34], [388, 62], [362, 108]], // 날개 끝
-  ];
-  const joint: [number, number, number][] = [[202, 228, 40]];
-  const outline = (pts: P2[], step = 13) => {
-    const out: P2[] = [];
-    for (let i = 0; i < pts.length; i++) {
-      const [x0, y0] = pts[i], [x1, y1] = pts[(i + 1) % pts.length];
-      const n = Math.max(1, Math.round(Math.hypot(x1 - x0, y1 - y0) / step));
-      for (let k = 0; k < n; k++) out.push([x0 + ((x1 - x0) * k) / n, y0 + ((y1 - y0) * k) / n]);
-    }
-    return out;
-  };
-  const blob = (c: CanvasRenderingContext2D, fill: string, grow: number) => {
-    c.fillStyle = fill;
-    shapes.forEach((pts) => {
-      c.beginPath(); pts.forEach(([x, y], i) => (i ? c.lineTo(x, y) : c.moveTo(x, y))); c.closePath(); c.fill();
-      outline(pts).forEach(([x, y], k) => { c.beginPath(); c.arc(x, y, 6 + (k % 3) * 1.5 + grow, 0, Math.PI * 2); c.fill(); });
-    });
-    joint.forEach(([x, y, r]) => { c.beginPath(); c.arc(x, y, r + grow, 0, Math.PI * 2); c.fill(); });
-  };
-  // 튀김옷은 따로 그려서 그늘·알갱이를 입힌 뒤 얹는다 (잉크 테두리는 그대로)
-  const off = document.createElement("canvas");
-  off.width = 400; off.height = 300;
-  const o = off.getContext("2d")!;
-  blob(o, "#e6a645", 0);
-  o.globalCompositeOperation = "source-atop";
-  const gr = o.createLinearGradient(0, 30, 0, 280);
-  gr.addColorStop(0, "rgba(255,232,165,0.6)");
-  gr.addColorStop(0.55, "rgba(0,0,0,0)");
-  gr.addColorStop(1, "rgba(130,55,0,0.5)");
-  o.fillStyle = gr; o.fillRect(0, 0, 400, 300);
-  const r = (k: number) => { const x = Math.sin(k * 91.7) * 43758.5; return x - Math.floor(x); };
-  for (let k = 0; k < 80; k++) {
-    o.fillStyle = k % 3 ? "rgba(155,75,10,0.45)" : "rgba(255,228,150,0.75)";
-    o.beginPath(); o.arc(40 + r(k) * 330, 20 + r(k + 99) * 260, 2.5 + r(k + 7) * 4.5, 0, Math.PI * 2); o.fill();
-  }
   g.save();
   g.scale(w / 400, h / 300);
-  blob(g, INK, 7);
-  g.drawImage(off, 0, 0);
-  // 관절 주름
-  g.strokeStyle = INK; g.lineWidth = 6; g.lineCap = "round";
-  g.beginPath(); g.moveTo(178, 200); g.quadraticCurveTo(200, 214, 226, 202); g.stroke();
-  g.beginPath(); g.moveTo(344, 84); g.lineTo(366, 104); g.stroke();
+  g.translate(200, 150); g.rotate(-0.28); g.translate(-200, -150);
+  // 한눈에 '날개'로 읽히게: 새 날개 모양(위는 둥근 앞날개, 아래는 깃털처럼 물결) + 노릇한 튀김 색 + 어깨 뼈 마디
+  const shape = new Path2D();
+  shape.moveTo(70, 200);
+  shape.bezierCurveTo(70, 120, 170, 60, 300, 50); // 위쪽 둥근 앞날개
+  shape.bezierCurveTo(345, 46, 380, 56, 388, 74); // 날개 끝
+  shape.bezierCurveTo(360, 92, 352, 108, 360, 124); // 깃 1
+  shape.bezierCurveTo(320, 128, 306, 142, 312, 162); // 깃 2
+  shape.bezierCurveTo(268, 162, 252, 178, 256, 200); // 깃 3
+  shape.bezierCurveTo(212, 198, 194, 214, 196, 236); // 깃 4
+  shape.bezierCurveTo(150, 236, 120, 246, 104, 250);
+  shape.bezierCurveTo(80, 246, 70, 226, 70, 200);
+  shape.closePath();
+  g.beginPath(); g.arc(70, 222, 17, 0, Math.PI * 2); g.fillStyle = "#f6ecd8"; g.fill(); g.lineWidth = 9; g.strokeStyle = INK; g.stroke();
+  const gr = g.createLinearGradient(0, 50, 0, 250);
+  gr.addColorStop(0, "#f7c25a");
+  gr.addColorStop(0.55, "#e0902c");
+  gr.addColorStop(1, "#b5621a");
+  g.fillStyle = gr;
+  g.fill(shape);
+  g.save();
+  g.clip(shape);
+  const r = (k: number) => { const x = Math.sin(k * 91.7) * 43758.5; return x - Math.floor(x); };
+  for (let k = 0; k < 60; k++) {
+    const x = 50 + r(k) * 320, y = 50 + r(k + 50) * 200;
+    g.strokeStyle = k % 2 ? "rgba(140,62,8,0.45)" : "rgba(255,226,150,0.6)";
+    g.lineWidth = 4; g.lineCap = "round";
+    g.beginPath(); g.arc(x, y, 7 + r(k + 9) * 6, Math.PI * 1.1, Math.PI * 1.8); g.stroke();
+  }
+  g.fillStyle = "rgba(255,248,215,0.55)";
+  g.beginPath(); g.ellipse(170, 108, 70, 12, -0.4, 0, Math.PI * 2); g.fill();
+  g.beginPath(); g.ellipse(300, 66, 30, 7, -0.15, 0, Math.PI * 2); g.fill();
+  g.restore();
+  g.lineWidth = 10; g.strokeStyle = INK; g.lineJoin = "round"; g.stroke(shape);
+  g.lineWidth = 7; g.lineCap = "round";
+  g.beginPath(); g.moveTo(150, 175); g.quadraticCurveTo(230, 125, 330, 95); g.stroke();
   g.restore();
 }
 

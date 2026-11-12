@@ -13,7 +13,7 @@ import { canvasTexture, drawBaram, drawBasket, drawWing, GUY2, HIM, Look, ME, Po
 
 const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 const SANS = '"Noto Sans KR", Arial, sans-serif';
-const HIM_NEW: Look = { ...HIM, shoes: "#ffffff" };
+const ME_NEW: Look = { ...ME, shoes: "#ffffff" };
 const FOLK: Look[] = [
   { skin: "#f2cfae", hair: "long", hairC: "#2a1e1a", top: "#7b5ac9", bottom: "#33364a", shoes: "#f4efe6" },
   { skin: "#e9c39f", hair: "short", hairC: "#231c1c", top: "#d98a2b", bottom: "#3b3f52", shoes: "#2b2b30" },
@@ -76,7 +76,7 @@ const STREET_CAM: Record<string, CK[]> = {
   intro: [{ u: 0, p: [0, 1.15, 3.2], t: [0, 0.92, 0.6] }, { u: 1, p: [0, 1.12, 2.95], t: [0, 0.9, 0.6] }],
   shoes: [{ u: 0, p: [0.05, 1.02, 3.0], t: [0, 0.75, 0.6] }, { u: 1, p: [0.05, 1.0, 2.8], t: [0, 0.74, 0.6] }],
   walk: [{ u: 0, p: [0.2, 0.42, 2.0], t: [0.2, 0.18, 0.7] }, { u: 1, p: [1.1, 0.48, 2.2], t: [1.2, 0.22, 0.4] }],
-  away: [{ u: 0, p: [-0.1, 1.2, 3.9], t: [-0.1, 0.68, 0.5] }, { u: 0.6, p: [0.15, 1.2, 4.0], t: [0.15, 0.68, 0.5] }, { u: 1, p: [-0.25, 1.12, 3.1], t: [-0.3, 0.75, 0.5] }],
+  away: [{ u: 0, p: [0.1, 1.2, 3.9], t: [0.1, 0.68, 0.5] }, { u: 0.6, p: [-0.15, 1.2, 4.0], t: [-0.15, 0.68, 0.5] }, { u: 1, p: [0.3, 1.12, 3.1], t: [0.35, 0.75, 0.5] }],
   coin: [{ u: 0, p: [0, 1.1, 3.15], t: [0, 0.8, 0.6] }, { u: 1, p: [0, 1.08, 2.9], t: [0, 0.8, 0.6] }],
 };
 
@@ -112,7 +112,7 @@ const Street: React.FC<{ mode: Mode04; t: number; P: Props }> = ({ mode, t, P })
   // --- 동작 ---
   let her: Pose = { armL: 12, armR: 55, look: 0.4, mouth: "smile", blink: blink(0) };
   let him: Pose = { armL: 55, armR: 12, look: -0.4, mouth: "smile", blink: blink(1) };
-  let herAt = HER0, himAt = HE0, himLook: Look = HIM;
+  let herAt = HER0, himAt = HE0, herLook: Look = ME;
   let herBob = 0, himBob = 0;
   const extra: React.ReactNode[] = [];
 
@@ -126,14 +126,14 @@ const Street: React.FC<{ mode: Mode04; t: number; P: Props }> = ({ mode, t, P })
     him = { ...him, mouth: t > 0.6 ? "o" : "grin", brow: t > 0.6 ? 0.8 : 0 };
   }
   if (i("shoes")) {
-    // 여자가 선물 상자를 내밀고 → 열리면 운동화가 튀어나옴
+    // 남자가 선물 상자를 내밀고 → 열리면 운동화가 튀어나옴, 여자가 좋아함
     const open = seg(t, 0.4, 0.6);
-    her = { armL: 12, armR: 70, look: 0.5, mouth: "smile", blink: blink(0) };
-    him = { armL: 20, armR: 12, look: -0.4, mouth: t > 0.6 ? "grin" : "smile", brow: t > 0.55 ? 0.6 : 0 };
-    herAt = [-0.32, 0, 0.6]; himAt = [0.34, 0, 0.6];
-    const hand = handAt(her, 1, herAt);
-    extra.push(<Card key="gift" tex={open > 0.5 ? P.giftO : P.giftC} at={[hand[0] + 0.05, hand[1] + 0.02, hand[2] + 0.04]} w={0.3} h={0.3} cam={C} scale={popIn(t, 0.0, 0.15)} />);
-    extra.push(<Card key="sh" tex={P.shoes} at={[hand[0] + 0.05, hand[1] + 0.12 + 0.18 * seg(t, 0.5, 0.75), hand[2] + 0.05]} w={0.34} h={0.22} cam={C} scale={popIn(t, 0.5, 0.7)} />);
+    her = { armL: 12, armR: 20, look: 0.5, mouth: t > 0.6 ? "grin" : "smile", brow: t > 0.55 ? 0.6 : 0, blink: blink(0) };
+    him = { armL: 12, armR: 70, look: -0.5, mouth: "smile", blink: blink(1) };
+    herAt = [-0.34, 0, 0.6]; himAt = [0.32, 0, 0.6];
+    const hand = handAt(him, 1, himAt, true);
+    extra.push(<Card key="gift" tex={open > 0.5 ? P.giftO : P.giftC} at={[hand[0] - 0.05, hand[1] + 0.02, hand[2] + 0.04]} w={0.3} h={0.3} cam={C} scale={popIn(t, 0.0, 0.15)} />);
+    extra.push(<Card key="sh" tex={P.shoes} at={[hand[0] - 0.05, hand[1] + 0.12 + 0.18 * seg(t, 0.5, 0.75), hand[2] + 0.05]} w={0.34} h={0.22} cam={C} scale={popIn(t, 0.5, 0.7)} />);
     extra.push(<Card key="n1" tex={P.n1} at={[0.0, 1.32, 0.55]} w={0.24} h={0.3} cam={C} scale={popIn(t, 0.0, 0.18) * (1 - seg(t, 0.85, 1))} />);
   }
   if (i("walk")) {
@@ -146,34 +146,34 @@ const Street: React.FC<{ mode: Mode04; t: number; P: Props }> = ({ mode, t, P })
     herAt = [-0.6, 0, 0.0]; himAt = [-0.15, 0, 0.0];
   }
   if (i("away")) {
-    // 운동화 건네기 → 신고 → 걸어서 떠남, 혼자 남은 여자 위로 비구름
+    // 남자가 운동화를 건넴 → 여자가 신고 걸어서 떠남, 혼자 남은 남자 위로 비구름
     const give = seg(t, 0.14, 0.34);
     const leave = seg(t, 0.55, 1);
-    her = { armL: 12, armR: give < 1 ? 70 : 20, look: 0.6, mouth: t > 0.72 ? "sad" : "smile", brow: t > 0.72 ? -0.6 : 0, blink: blink(0) };
-    himLook = t > 0.4 ? HIM_NEW : HIM;
-    him = { armL: 25, armR: 15, look: leave > 0.05 ? 0.6 : -0.5, mouth: leave > 0.05 ? "smug" : "grin", walk: leave > 0.02 ? t * 40 : undefined };
-    herAt = [-0.45, 0, 0.55];
-    himAt = [0.3 + 1.9 * leave, 0, 0.55 - 0.4 * leave];
-    himBob = leave > 0.02 ? Math.abs(Math.sin(t * 20)) * 0.03 : 0;
-    const hand = handAt(her, 1, herAt);
-    if (t < 0.36) extra.push(<Card key="sh" tex={P.shoes} at={[hand[0] + (himAt[0] - 0.2 - hand[0]) * give, hand[1] + 0.05 + 0.12 * Math.sin(give * Math.PI), hand[2] + 0.04]} w={0.3} h={0.2} cam={C} />);
+    him = { armL: 12, armR: give < 1 ? 70 : 20, look: -0.6, mouth: t > 0.72 ? "sad" : "smile", brow: t > 0.72 ? -0.6 : 0, blink: blink(1) };
+    herLook = t > 0.4 ? ME_NEW : ME;
+    her = { armL: 15, armR: 25, look: leave > 0.05 ? -0.6 : 0.5, mouth: leave > 0.05 ? "smug" : "grin", walk: leave > 0.02 ? t * 40 : undefined };
+    himAt = [0.45, 0, 0.55];
+    herAt = [-0.3 - 1.9 * leave, 0, 0.55 - 0.4 * leave];
+    herBob = leave > 0.02 ? Math.abs(Math.sin(t * 20)) * 0.03 : 0;
+    const hand = handAt(him, 1, himAt, true);
+    if (t < 0.36) extra.push(<Card key="sh" tex={P.shoes} at={[hand[0] + (herAt[0] + 0.2 - hand[0]) * give, hand[1] + 0.05 + 0.12 * Math.sin(give * Math.PI), hand[2] + 0.04]} w={0.3} h={0.2} cam={C} />);
     const rain = popIn(t, 0.7, 0.82);
-    extra.push(<Card key="rain" tex={P.rain[Math.floor(t * 40) % 4]} at={[herAt[0], 1.22, herAt[2] + 0.02]} w={0.42} h={0.32} cam={C} scale={rain} />);
+    extra.push(<Card key="rain" tex={P.rain[Math.floor(t * 40) % 4]} at={[himAt[0], 1.22, himAt[2] + 0.02]} w={0.42} h={0.32} cam={C} scale={rain} />);
   }
   if (i("coin")) {
-    // (옛날, 세피아) 운동화를 받은 쪽이 동전을 건넴 → "SOLD" 도장 → (지금, 색) 둘 다 웃음
+    // (옛날, 세피아) 남자가 운동화를 주면 여자가 동전을 건넴 → "SOLD" 도장 → (지금, 색) 둘 다 웃음
     const coin = seg(t, 0.28, 0.42);
     const now = t > 0.75;
     herAt = [-0.3, 0, 0.6]; himAt = [0.3, 0, 0.6];
-    her = { armL: 12, armR: t < 0.25 ? 65 : coin > 0 && coin < 1 ? 50 : 20, look: 0.5, mouth: now ? "grin" : "smile", blink: blink(0) };
-    him = { armL: t > 0.26 && t < 0.45 ? 65 : 20, armR: 12, look: -0.5, mouth: now ? "grin" : "smile", blink: blink(1) };
+    him = { armL: 12, armR: t < 0.25 ? 65 : t > 0.38 && t < 0.5 ? 60 : 20, look: -0.5, mouth: now ? "grin" : "smile", blink: blink(1) };
+    her = { armL: 12, armR: t > 0.26 && t < 0.42 ? 65 : 20, look: 0.5, mouth: now ? "grin" : "smile", blink: blink(0) };
+    if (t > 0.3) herLook = ME_NEW;
     if (now) { herBob = Math.abs(Math.sin(t * 50)) * 0.02; himBob = Math.abs(Math.sin(t * 50 + 1)) * 0.02; }
-    const hh = handAt(him, -1, himAt);
+    const hh = handAt(him, 1, himAt, true);
     const sh = handAt(her, 1, herAt);
-    if (t < 0.27) extra.push(<Card key="sh" tex={P.shoes} at={[sh[0] + 0.02, sh[1] + 0.05, sh[2] + 0.04]} w={0.26} h={0.17} cam={C} scale={popIn(t, 0.04, 0.12)} />);
-    if (t > 0.27 && t < 0.75) extra.push(<Card key="sh2" tex={P.shoes} at={[hh[0] + 0.12, 0.08, hh[2] + 0.1]} w={0.24} h={0.16} cam={C} />);
+    if (t < 0.27) extra.push(<Card key="sh" tex={P.shoes} at={[hh[0] - 0.02, hh[1] + 0.05, hh[2] + 0.04]} w={0.26} h={0.17} cam={C} scale={popIn(t, 0.04, 0.12)} />);
     if (t > 0.26 && t < 0.75) {
-      const at: V3 = [hh[0] + (sh[0] - hh[0]) * coin, hh[1] + 0.06 + 0.2 * Math.sin(coin * Math.PI), hh[2] + 0.05];
+      const at: V3 = [sh[0] + (hh[0] - sh[0]) * coin, sh[1] + 0.06 + 0.2 * Math.sin(coin * Math.PI), sh[2] + 0.05];
       extra.push(<Card key="coin" tex={P.coin} at={at} w={0.14} h={0.14} cam={C} sx={Math.abs(Math.cos(coin * Math.PI * 3))} />);
     }
     extra.push(<Card key="stamp" tex={P.stamp} at={[0, 1.22, 0.7]} w={0.42} h={0.42} cam={C} scale={popIn(t, 0.46, 0.54) * (1 - seg(t, 0.72, 0.78))} />);
@@ -221,8 +221,8 @@ const Street: React.FC<{ mode: Mode04; t: number; P: Props }> = ({ mode, t, P })
       {/* 사람 */}
       {!i("walk") && (
         <>
-          <Person look={ME} pose={her} feet={herAt} cam={C} bob={herBob} />
-          <Person look={himLook} pose={him} feet={himAt} cam={C} flipX bob={himBob} />
+          <Person look={herLook} pose={her} feet={herAt} cam={C} bob={herBob} />
+          <Person look={HIM} pose={him} feet={himAt} cam={C} flipX bob={himBob} />
           <Blob at={herAt} />
           <Blob at={himAt} />
         </>
@@ -365,7 +365,7 @@ const Shop: React.FC<{ mode: Mode04; t: number; P: Props }> = ({ mode, t, P }) =
       {[[-1.45, -1.45, RV0, G2], [1.7, -1.5, MORE[0].at, MORE[1].at], [2.65, -0.4, MORE[2].at, MORE[3].at]].map(([x, z, a, b], k) => (
         <group key={k}>
           <InkBox p={[x as number, TOP - 0.025, z as number]} s={[0.55, 0.05, 0.62]} c="#c98f5a" />
-          <InkBox p={[x as number, TOP / 2, z as number]} s={[0.12, TOP, 0.12]} c="#6a4a32" />
+          <InkBox p={[x as number, (TOP - 0.07) / 2, z as number]} s={[0.12, TOP - 0.07, 0.12]} c="#6a4a32" />
           <Card tex={P.basket} at={[x as number, TOP + 0.13, z as number]} w={0.33} h={0.22} cam={C} />
           <Stool x={(a as V3)[0]} z={(a as V3)[2] - 0.1} />
           <Stool x={(b as V3)[0]} z={(b as V3)[2] - 0.1} />
@@ -374,7 +374,7 @@ const Shop: React.FC<{ mode: Mode04; t: number; P: Props }> = ({ mode, t, P }) =
       {MORE.map((m, k) => <Person key={k} look={m.look} pose={{ legs: "sit", armL: 25, armR: 25, look: m.flip ? -0.6 : 0.6, mouth: k % 2 ? "grin" : "smile", blink: blinkF(4 + k) }} feet={m.at} cam={C} flipX={m.flip} />)}
       {/* 우리 식탁 */}
       <InkBox p={[0, TOP - 0.025, 0]} s={[0.66, 0.05, 0.72]} c="#d39a62" />
-      <InkBox p={[0, TOP / 2, 0]} s={[0.14, TOP, 0.14]} c="#6a4a32" />
+      <InkBox p={[0, (TOP - 0.07) / 2, 0]} s={[0.14, TOP - 0.07, 0.14]} c="#6a4a32" />
       <InkCyl p={[0, 0.02, 0]} r={0.26} h={0.04} c="#6a4a32" />
       <Stool x={S_HER[0]} z={-0.1} />
       <Stool x={S_HE[0]} z={rise > 0.02 ? 0 : -0.1} />
