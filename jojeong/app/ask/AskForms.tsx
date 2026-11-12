@@ -24,11 +24,31 @@ const STARTERS: { topic: (typeof TOPICS)[number]; label: string; text: string }[
 ];
 const MAX = 300;
 
+// A question in flight can lose its connection (the phone locks, another app is opened, the signal drops) and
+// Safari then throws "Load failed". The answer may still have been written on the server, and a question is spent
+// only once an answer is saved, so the reader is told to reload; the question goes back in the box.
+const DROPPED = "답서를 쓰는 사이 연결이 끊겼사옵니다. 새로고침하시면 답서가 보일 수 있사옵니다. 답서가 없으면 질문권도 그대로이옵니다.";
+async function askSafe(prev: FormState, formData: FormData): Promise<FormState> {
+  try {
+    return await askAction(prev, formData);
+  } catch {
+    return { error: DROPPED };
+  }
+}
+function Reload() {
+  return (
+    <button type="button" onClick={() => window.location.reload()} className="mt-2 w-full rounded-xl bg-seal py-2.5 text-sm font-bold text-hanji">
+      새로고침해서 답서 확인하기
+    </button>
+  );
+}
+
 function ErrorLine({ error }: { error: string | null }) {
   return error ? (
-    <p role="alert" className="rounded-xl bg-seal/10 px-4 py-3 text-sm text-seal">
-      {error}
-    </p>
+    <div role="alert" className="rounded-xl bg-seal/10 px-4 py-3 text-sm text-seal">
+      <p>{error}</p>
+      {error === DROPPED && <Reload />}
+    </div>
   ) : null;
 }
 
@@ -124,7 +144,7 @@ export function AskForm({
   // Folded to one line while reading; the choices open with the box.
   const [open, setOpen] = useState(false);
   const whoLabel = people.find((x) => x.id === withId)?.label ?? "나";
-  const [state, action, pending] = useActionState<FormState, FormData>(askAction, { error: null });
+  const [state, action, pending] = useActionState<FormState, FormData>(askSafe, { error: null });
   const [text, setText] = useState("");
   const [topic, setTopic] = useState("");
   const [needCredits, setNeedCredits] = useState(false);
@@ -192,6 +212,16 @@ export function AskForm({
     }
     was.current = pending;
   }, [pending, state.error]);
+  // The connection dropped: the question goes back in the box, so nothing written is lost.
+  useEffect(() => {
+    if (state.error !== DROPPED || !sent.question) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- restore the question once the failed send returns
+    setText(sent.question);
+    setTopic(sent.topic);
+    try {
+      localStorage.setItem(draftKey(room), JSON.stringify({ text: sent.question, topic: sent.topic }));
+    } catch {}
+  }, [state, sent, room]);
   return (
     <>
       {pending && <Writing question={sent.question} topic={sent.topic} />}
@@ -324,7 +354,7 @@ export function AskForm({
 
 // After several topics came in one question: pick the one to answer first. Nothing is spent until then.
 export function ChooseForm({ room, question, topic, choices }: { room: string; question: string; topic: string; choices: string[] }) {
-  const [state, action, pending] = useActionState<FormState, FormData>(askAction, { error: null });
+  const [state, action, pending] = useActionState<FormState, FormData>(askSafe, { error: null });
   return (
     <div className="mt-2 flex flex-col gap-1.5">
       {choices.map((c) => (
