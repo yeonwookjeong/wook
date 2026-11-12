@@ -180,7 +180,7 @@ const CapTrack: React.FC<{ caps: Cap[]; dur: number }> = ({ caps, dur }) => {
   return (
     <>
       {caps.map((c, i) => (
-        <Sequence key={i} from={Math.round(i * per)} durationInFrames={Math.round(per)} layout="none">
+        <Sequence key={i} from={Math.round(i * per)} durationInFrames={Math.round((i + 1) * per) - Math.round(i * per)} layout="none">
           <Caption cap={c} />
         </Sequence>
       ))}

@@ -292,7 +292,7 @@ const ShotView: React.FC<{ shot: Shot; dur: number; lang: Lang; split?: number }
       {g ? <AbsoluteFill style={{ background: `radial-gradient(circle at 50% 46%, rgba(0,0,0,0) 25%, rgba(0,0,0,${0.7 * g}) 100%)` }} /> : null}
       {shot.overlay && <Overlay kind={shot.overlay} dur={dur} at={shot.at} lang={lang} />}
       {shot.caps.map((c, i) => (
-        <Sequence key={i} from={Math.round(i * per)} durationInFrames={Math.round(per)} layout="none">
+        <Sequence key={i} from={Math.round(i * per)} durationInFrames={Math.round((i + 1) * per) - Math.round(i * per)} layout="none">
           <Caption cap={c} />
         </Sequence>
       ))}
