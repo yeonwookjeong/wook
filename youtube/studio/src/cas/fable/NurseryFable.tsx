@@ -431,8 +431,8 @@ const World: React.FC<{ frame: number }> = ({ frame }) => {
 
   // 카메라: 넓게 시작해서 우리 아기로 천천히 밀고 들어간다 (끝에서도 아주 조금 계속 움직임)
   const k = sstep(Math.min(1, u * 1.04)) * 0.94 + u * 0.06;
-  const camP = lerp3([0.0, 1.42, 3.7], [0.11, 1.06, 2.32], k);
-  const camT = lerp3([0.02, 1.0, GZ], [0.11, 0.87, 0.3], sstep(Math.min(1, u * 1.15)));
+  const camP = lerp3([0.0, 1.42, 3.7], [0.08, 1.06, 2.32], k);
+  const camT = lerp3([0.02, 1.0, GZ], [0.08, 0.87, 0.3], sstep(Math.min(1, u * 1.15)));
   const cam: V3 = [camP[0] + Math.sin(T * 0.7) * 0.006, camP[1] + Math.sin(T * 0.9 + 1) * 0.004, camP[2]];
   const fov = 37 - 3 * k;
 
@@ -446,8 +446,8 @@ const World: React.FC<{ frame: number }> = ({ frame }) => {
   // 부모
   const blinkA = frame % 97 > 92, blinkB = (frame + 40) % 113 > 108;
   const wave = Math.sin(T * 5.2);
-  const mom: Pose = { armL: 14, armR: 138 + wave * 9, mouth: "grin", blink: blinkA, look: 0.4, blush: 0.75, brow: 0.3 };
-  const dad: Pose = { armL: 150, armR: 16, mouth: u > 0.45 ? "grin" : "smile", blink: blinkB, look: -0.2, blush: 0.4, brow: 0.5 };
+  const mom: Pose = { armL: 14, armR: 138 + wave * 9, mouth: "grin", blink: blinkA, look: 0.4, blush: 0.75 };
+  const dad: Pose = { armL: 150, armR: 16, mouth: u > 0.45 ? "grin" : "smile", blink: blinkB, look: -0.2, blush: 0.4 };
   const bobM = Math.abs(Math.sin(T * 2.6)) * 0.014, bobD = Math.abs(Math.sin(T * 2.6 + 1.2)) * 0.008;
 
   // 풍선
@@ -553,8 +553,8 @@ const World: React.FC<{ frame: number }> = ({ frame }) => {
       ))}
 
       {/* 부모 (유리 너머) */}
-      <Person look={ME} pose={mom} feet={[-0.46, 0.0, GZ - 0.42]} cam={cam} tint="#f0dccd" bob={bobM} />
-      <Person look={HIM} pose={dad} feet={[0.1, 0.06, GZ - 0.5]} cam={cam} tint="#ecd6c6" bob={bobD} />
+      <Person look={ME} pose={mom} feet={[-0.42, 0.0, GZ - 0.42]} cam={cam} tint="#f0dccd" bob={bobM} />
+      <Person look={HIM} pose={dad} feet={[0.13, 0.06, GZ - 0.5]} cam={cam} tint="#ecd6c6" bob={bobD} />
 
       {/* ---------- 아기 침대들 ---------- */}
       {[-1.26, -0.42, 0.42, 1.26].map((x, i) => (
