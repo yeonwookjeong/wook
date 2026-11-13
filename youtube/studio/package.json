@@ -10,11 +10,13 @@
   },
   "dependencies": {
     "@react-three/fiber": "9.8.2",
+    "@react-three/postprocessing": "3.2.2",
     "@remotion/cli": "4.0.535",
     "@remotion/google-fonts": "4.0.535",
     "@remotion/three": "4.0.535",
     "@types/three": "0.187.0",
     "d3-geo": "3.1.1",
+    "postprocessing": "6.39.6",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "remotion": "4.0.535",
