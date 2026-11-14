@@ -88,24 +88,28 @@ export default function CourtBoard({
   return (
     <section className="mt-5" aria-label={`${kingName} 전하의 조정도`}>
       {/* 근정전 */}
-      <Image src="/king/hall.webp" alt="열린 문 안으로 어좌가 보이는 근정전" width={1080} height={700} priority className="block h-auto w-full" />
-
-      {/* 어좌 */}
-      <div className="relative z-10 mx-2 -mt-4 rounded-xl bg-[#0f2236] px-4 pt-3.5 pb-4 text-hanji shadow-[0_8px_20px_rgb(15_34_54/0.3),inset_0_0_0_1px_rgb(217_180_101/0.4)]">
-        {throne ?? (
-          <>
-            <p className="font-myeongjo text-[12px] font-bold tracking-[0.2em] text-[#d9b465]">御 座</p>
-            <p className="mt-1 font-myeongjo text-[24px] leading-tight font-extrabold">{kingName} 전하</p>
-          </>
-        )}
+      {/* Full-bleed, sky and hills included, so the hall does not stand on blank paper (대표님 11/15 "배경이 휑"). */}
+      <div className="relative -mx-4">
+        <Image src="/king/hero.webp" alt="노을 아래 열린 문 안으로 어좌가 보이는 근정전" width={1080} height={780} priority className="block h-auto w-full" />
+        <span aria-hidden className="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-hanji to-transparent" />
       </div>
 
-      {/* 행각 사이 마당 */}
+      {/* 행각 사이 마당, full-bleed like the hall above, with the throne card at its head (대표님 11/15 "배경이 휑"). */}
       <div
-        className="relative -mt-8 overflow-hidden rounded-b-xl px-2.5 pt-28 pb-5"
-        style={{ background: "url(/king/yard.webp) top / cover no-repeat, #f4ecdb" }}
+        className="relative -mx-4 px-4 pb-5"
+        style={{ background: "url(/king/yard.webp) top / cover no-repeat, #7e6363" }}
       >
-        <p className="relative mx-auto w-fit rounded-md bg-[#211b17]/70 px-3 py-1 text-center font-myeongjo text-[12px] font-bold tracking-[0.3em] text-[#f1d892]">
+        {/* 어좌 */}
+        <div className="relative z-10 mx-1.5 -mt-16 rounded-xl bg-[#0f2236] px-4 pt-3.5 pb-4 text-hanji shadow-[0_8px_20px_rgb(15_34_54/0.3),inset_0_0_0_1px_rgb(217_180_101/0.4)]">
+          {throne ?? (
+            <>
+              <p className="font-myeongjo text-[12px] font-bold tracking-[0.2em] text-[#d9b465]">御 座</p>
+              <p className="mt-1 font-myeongjo text-[24px] leading-tight font-extrabold">{kingName} 전하</p>
+            </>
+          )}
+        </div>
+
+        <p className="relative mx-auto mt-5 w-fit rounded-md bg-[#211b17]/70 px-3 py-1 text-center font-myeongjo text-[12px] font-bold tracking-[0.3em] text-[#f1d892]">
           朝 廷 圖
         </p>
         {bestRole && (
@@ -131,16 +135,19 @@ export default function CourtBoard({
             </span>
           </p>
         </div>
+
+        {/* 근정문, standing on the yard's last row of stones so it is not left floating (대표님 11/15). */}
+        <Image src="/king/gate.webp" alt="근정문" width={1080} height={452} className="relative mx-auto mt-6 -mb-5 block h-auto w-[88%]" />
       </div>
 
-      {/* 근정문과 그 밖의 유배 */}
-      <Image src="/king/gate.webp" alt="근정문" width={1080} height={452} className="mx-auto mt-5 block h-auto w-[78%]" />
-      <div className="relative mt-1">
-        <Image src="/king/exile.webp" alt="유배 가는 배와 섬" width={720} height={392} className="mx-auto block h-auto w-[56%]" />
-        <p className="mt-1 text-center text-[14px] leading-relaxed text-ink-soft">
-          <b className="font-myeongjo text-ink">궐문 밖, 유배 가는 배</b>
-          <br />
-          {yubae.length ? `${names(yubae)}, 먼 섬으로 떠났사옵니다` : "아직 아무도 태우지 않았사옵니다"}
+      {/* 궐문 밖: 유배, in a night-sea panel like the 간신 one so the boat sits in a scene, not on blank paper. */}
+      <div className="mt-3 flex items-center gap-3 overflow-hidden rounded-xl bg-[#0f2236] py-2 pr-4 pl-1 text-hanji shadow-[inset_0_0_0_1px_rgb(217_180_101/0.35)]">
+        <Image src="/king/exile.webp" alt="유배 가는 배와 섬" width={720} height={392} className="h-[84px] w-auto shrink-0" />
+        <p className="text-[14px] leading-snug">
+          <b className="font-myeongjo text-[#f1d892]">궐문 밖, 유배</b> {names(yubae)}
+          <span className="block text-[13px] text-hanji/80">
+            {yubae.length ? "먼 섬으로 떠났사옵니다" : "아직 아무도 배에 태우지 않았사옵니다"}
+          </span>
         </p>
       </div>
       {caption && <p className="mt-3 text-center text-[12px] leading-relaxed text-ink-soft">{caption}</p>}
