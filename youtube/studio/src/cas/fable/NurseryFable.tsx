@@ -341,11 +341,12 @@ const StringTube: React.FC<{ a: V3; b: V3; sway: number }> = ({ a, b, sway }) =>
 // ---------------------------------------------------------------- 후처리
 // @react-three/postprocessing 의 <EffectComposer> 는 패스를 effect 에서 붙여서 Remotion 의 첫 advance 때 빈 화면이 나온다.
 // 그래서 postprocessing 을 직접 조립한다 (렌더 중에 동기적으로 완성).
-const MSAA = 4;
+const FXV = (process.env.REMOTION_FX ?? "");
+const MSAA = FXV.includes("m0") ? 0 : 4;
 const Post: React.FC<{ focus: number; range: number }> = ({ focus, range }) => {
   const { gl, scene, camera, size } = useThree();
   const fx = useMemo(() => {
-    const composer = new EffectComposer(gl, { frameBufferType: THREE.HalfFloatType, multisampling: MSAA });
+    const composer = new EffectComposer(gl, { frameBufferType: FXV.includes("u8") ? THREE.UnsignedByteType : THREE.HalfFloatType, multisampling: MSAA });
     const dof = new DepthOfFieldEffect(camera, { worldFocusDistance: 3, worldFocusRange: 3, bokehScale: 3.4, resolutionScale: 0.5 });
     const bloom = new BloomEffect({ mipmapBlur: true, intensity: 0.6, luminanceThreshold: 1.0, luminanceSmoothing: 0.2, radius: 0.72 });
     const tone = new ToneMappingEffect({ mode: ToneMappingMode.NEUTRAL });
@@ -353,7 +354,7 @@ const Post: React.FC<{ focus: number; range: number }> = ({ focus, range }) => {
     const bc = new BrightnessContrastEffect({ brightness: 0, contrast: 0.08 });
     const vig = new VignetteEffect({ offset: 0.28, darkness: 0.62 });
     composer.addPass(new RenderPass(scene, camera));
-    composer.addPass(new EffectPass(camera, dof));
+    if (!FXV.includes("nodof")) composer.addPass(new EffectPass(camera, dof));
     composer.addPass(new EffectPass(camera, bloom, tone, hue, bc, vig));
     if (!MSAA) composer.addPass(new EffectPass(camera, new SMAAEffect({ preset: SMAAPreset.HIGH })));
     return { composer, dof, w: 0, h: 0 };
