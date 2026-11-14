@@ -10,7 +10,6 @@ import Hero from "@/components/Hero";
 import Hundo from "@/components/Hundo";
 import CourtBoard, { type BoardSeat } from "@/components/CourtBoard";
 import { ownedCourts } from "@/lib/load";
-import { courtCount } from "@/lib/store";
 
 // A made-up court for the landing: most seats taken, two still open, one 간신 caught.
 const EXAMPLE: BoardSeat[] = [
@@ -25,12 +24,12 @@ const EXAMPLE: BoardSeat[] = [
 
 export const metadata: Metadata = {
   title: { absolute: `${SERVICE_NAME}, ${TAGLINE}` },
-  description: "생년월일만 넣으면 전하가 됩니다. 친구를 부르면 사주가 영의정부터 간신까지 관직을 내려드립니다.",
+  description: "나랑 같은 일주의 조선 왕은 누구일까? 실록에서 찾은 조선 왕 27명의 생일로, 같은 일주의 왕과 내가 어떤 왕이었을지, 친구 중 누가 가장 잘 맞는 신하인지 알려 드려요.",
 };
 
 // 왕이 될 사주: the free Joseon game people share. The site's main page (/) is the present-day readings.
 export default async function KingHome() {
-  const [courts, count] = await Promise.all([ownedCourts(), courtCount()]);
+  const courts = await ownedCourts();
 
   return (
     <>
@@ -38,14 +37,16 @@ export default async function KingHome() {
 
       <section className="mt-6 text-center">
         <h2 className="font-myeongjo text-[22px] leading-snug font-extrabold">
-          누가 영의정이고,
+          나랑 같은 일주 <span className="text-seal">왕</span>은
           <br />
-          누가 <span className="text-seal">간신</span>일까?
+          누구일까?
         </h2>
         <p className="mt-2 text-[15px] leading-relaxed text-ink-soft">
-          생년월일로 즉위하고 친구들을 부르면,
+          조선 왕 스물일곱 분의 생일을 실록에서 찾았사옵니다.
           <br />
-          <b className="text-ink">사주로 친구마다 관직</b>이 정해지옵니다.
+          생년월일로 즉위하면 <b className="text-ink">같은 일주의 왕</b>, <b className="text-ink">전하가 어떤 왕이었을지</b>,
+          <br />
+          벗들 가운데 <b className="text-ink">누가 가장 잘 맞는 신하</b>인지 알려 드리옵니다.
         </p>
       </section>
 
@@ -53,9 +54,9 @@ export default async function KingHome() {
 
       <ol className="mt-5 grid grid-cols-3 gap-2 text-center text-xs text-ink-soft">
         {[
-          ["생년월일로", "즉위하기"],
+          ["생년월일로", "같은 일주 왕 찾기"],
           ["단톡방에", "링크 올리기"],
-          ["친구마다", "관직 발표"],
+          ["궁합 순으로", "관직 발표"],
         ].map(([a, b], i) => (
           <li key={a} className="flex flex-col items-center gap-1.5">
             <span className="flex size-7 items-center justify-center border border-seal/50 font-myeongjo text-sm font-extrabold text-seal">
@@ -70,11 +71,10 @@ export default async function KingHome() {
         ))}
       </ol>
 
-      {count > 0 && (
-        <p className="mx-auto mt-5 w-fit border-y border-seal/30 px-3 py-1 text-center text-sm">
-          지금까지 <b className="font-myeongjo text-base text-seal">{count.toLocaleString("ko-KR")}</b>명의 전하가 즉위하셨사옵니다
-        </p>
-      )}
+      {/* A fact in place of the running count (2026-11-14: a small number read as an empty room). */}
+      <p className="mx-auto mt-5 w-fit border-y border-seal/30 px-3 py-1 text-center text-sm">
+        실록으로 생일을 확인한 조선 왕 <b className="font-myeongjo text-base text-seal">27</b>분과 맞대어 보옵니다
+      </p>
 
       {/* Only this browser's own courts (owner cookie), so a returning king can pick up where they left off. */}
       {courts.length > 0 && (
