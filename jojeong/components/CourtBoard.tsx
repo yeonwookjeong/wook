@@ -33,7 +33,7 @@ const ROOF = "#2b2522";
 const PILLAR = "#9e2a22";
 const WALL = "#efe6d2";
 
-const names = (list: BoardSeat[]) => (list.length ? list[0].name + (list.length > 1 ? ` 외 ${list.length - 1}` : "") : "");
+const names = (list: BoardSeat[]) => (list.length ? list[0].name + (list.length > 1 ? ` +${list.length - 1}` : "") : "");
 
 function Dancheong({ id }: { id: string }) {
   return (
