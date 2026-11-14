@@ -39,6 +39,7 @@ export const isFreeView = (v: unknown): v is FreeView => FREE_VIEW.includes(v as
 export function freeOfNext(next: string): string {
   if (next.startsWith("/s/")) return "friend";
   if (next.startsWith("/sinsal")) return "sinsal";
+  if (next === "/calendar") return "calendar";
   const m = /^\/reports\/([a-z]+)/.exec(next);
   if (m) return isFreeView(m[1]) ? m[1] : "paid";
   return next.startsWith("/#today") ? "today" : "home";
