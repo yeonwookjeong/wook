@@ -282,8 +282,8 @@ const Nursery: React.FC<{ mode: Mode05; t: number }> = ({ mode, t }) => {
   // 다른 아기들 숫자표: dec31 끝에 "1", jan1 중간에 "2"
   const others = ROWS.map((p, i) => {
     const a0 = 0.5 + i * 0.045;
-    const s = est ? 0 : dec ? pop(t, a0, 0.08) : 1 + 0.4 * pulse(t, 0.46 + i * 0.012, 0.09);
-    const n = jan && t > 0.5 + i * 0.012 ? 2 : 1;
+    const s = est ? 0 : dec ? pop(t, a0, 0.08) : 1 + 0.5 * pulse(t, twoAt, 0.1);
+    const n = isTwo ? 2 : 1;
     return { p, s, n };
   });
 
@@ -362,7 +362,7 @@ const Nursery: React.FC<{ mode: Mode05; t: number }> = ({ mode, t }) => {
         <Bassinet key={i} at={p} baby={tx.babies[i % 4]} tag={tx.tags[i % 4]} tint={i < 4 ? "#a2aede" : "#b4bde6"} breathe={breathe(i)} />
       ))}
       {others.map((o, i) => o.s > 0.01 && (
-        <Card key={i} tex={tagTex(o.n, o.n === 2 ? "#ffd23a" : "#ffe9a8")} at={[o.p[0], 0.9 + Math.sin(T * 1.6 + i) * 0.008, o.p[2] + 0.02]} w={0.2} h={0.182} cam={cam} scale={o.s} tint={i < 4 ? "#c9cdea" : "#dcdcf0"} />
+        <Card key={i} tex={tagTex(o.n, o.n === 2 ? "#ffd23a" : "#ffe9a8")} at={[o.p[0] + 0.17, 0.635 + Math.sin(T * 1.6 + i) * 0.005, o.p[2] + 0.12]} w={0.165} h={0.15} cam={cam} scale={o.s} tint={i < 4 ? "#c9cdea" : "#dcdcf0"} />
       ))}
 
       {/* 우리 아기 */}
@@ -418,7 +418,7 @@ const Nursery: React.FC<{ mode: Mode05; t: number }> = ({ mode, t }) => {
 // ================================================================ 2. 거실 생일상 (three · end)
 const AGES: [keyof Words05, string, string][] = [["korean", "28", "#e2343a"], ["year", "27", "#3b6fb6"], ["intl", "26", "#2f9d7a"]];
 const CW = 0.335, CH = 0.41;
-const TX = 0.44, TZ = 0.42;
+const TX = 0.43, TZ = 0.42;
 const Living: React.FC<{ mode: Mode05; t: number; w: Words05 }> = ({ mode, t, w }) => {
   const end = mode === "end";
   const T = t * DUR[mode];
@@ -464,9 +464,9 @@ const Living: React.FC<{ mode: Mode05; t: number; w: Words05 }> = ({ mode, t, w 
   const shown = AT.filter((a) => t >= a).length;
   const shrug = end ? 0 : seg(t, 0.72, 0.82);
   const pose: Pose = end
-    ? { armL: 20, armR: 128 + Math.sin(T * 6) * 6, mouth: "grin", blush: 0.6, look: 0, brow: 0.4 }
+    ? { armL: 128 + Math.sin(T * 6) * 6, armR: 16, mouth: "grin", blush: 0.6, look: 0, brow: 0.4 }
     : shrug > 0.5
-      ? { armL: 82, armR: 82, mouth: "flat", brow: 0.9, look: Math.sin(T * 3) * 0.6, blush: 0.3 }
+      ? { armL: 82, armR: 40, mouth: "flat", brow: 0.9, look: Math.sin(T * 3) * 0.6, blush: 0.3 }
       : { armL: 12, armR: shown > 0 ? 30 : 12, mouth: shown === 0 ? "smile" : "o", brow: shown * 0.3, look: [0, -0.9, 0, 0.9][shown], blush: 0.4, blink: Math.floor(T * 30) % 90 > 86 };
   const qS = end ? pop(t, 0.38, 0.2) : 0;
   const lights = useMemo(() => Array.from({ length: 13 }, (_, i) => ({ x: -1.5 + i * 0.25, y: 2.08 - Math.sin((i / 12) * Math.PI) * 0.16, c: ["#ffd76a", "#ff8fa6", "#8fe0ff", "#b8ff9a"][i % 4] })), []);
@@ -482,7 +482,7 @@ const Living: React.FC<{ mode: Mode05; t: number; w: Words05 }> = ({ mode, t, w 
       </spotLight>
       <pointLight position={[-0.95, 1.1, -0.9]} intensity={3.2} distance={4} decay={1.5} color="#ffb060" />
       <pointLight position={[1.3, 1.3, -0.4]} intensity={1.4} distance={4} decay={1.5} color="#ff8fb0" />
-      <pointLight position={[TX, 0.85, TZ + 0.15]} intensity={1.1} distance={1.6} decay={1.6} color="#ffc070" />
+      <pointLight position={[TX, 1.05, TZ + 0.15]} intensity={1.1} distance={1.6} decay={1.6} color="#ffc070" />
 
       <Floor tex={tx.floor} size={9} rough={0.45} />
       <InkBox p={[0, 1.6, -1.6]} s={[7, 3.2, 0.12]} c="#ffffff" map={tx.wall} th={0.01} />
@@ -514,17 +514,17 @@ const Living: React.FC<{ mode: Mode05; t: number; w: Words05 }> = ({ mode, t, w 
       {tx.balloons.map((b, i) => <Decal key={i} tex={b} p={[1.2 + (i - 1) * 0.17, 1.42 + (i % 2) * 0.12 + Math.sin(T * 1.3 + i) * 0.012, -1.2 + i * 0.03]} w={0.26} h={0.39} tint="#f0d8c8" r={[0, 0, (i - 1) * 0.16]} />)}
 
       {/* 생일상 (얼굴을 가리지 않게 옆으로) */}
-      <InkCyl p={[TX, 0.36, TZ]} r={0.34} h={0.04} c="#8a5a3a" th={0.012} seg={40} />
-      <InkCyl p={[TX, 0.165, TZ]} r={0.06} h={0.33} c="#6f452c" th={0.01} />
-      <InkCyl p={[TX, 0.425, TZ]} r={0.15} h={0.09} c="#fff4e6" th={0.01} />
-      <InkCyl p={[TX, 0.492, TZ]} r={0.152} h={0.045} c="#ff9db0" th={0.01} />
-      {[-0.08, 0, 0.08].map((x, i) => (
+      <InkCyl p={[TX, 0.64, TZ]} r={0.2} h={0.04} c="#8a5a3a" th={0.012} seg={40} />
+      <InkCyl p={[TX, 0.31, TZ]} r={0.035} h={0.62} c="#6f452c" th={0.01} />
+      <InkCyl p={[TX, 0.02, TZ]} r={0.14} h={0.03} c="#6f452c" th={0.01} />
+      <InkCyl p={[TX, 0.7, TZ]} r={0.125} h={0.08} c="#fff4e6" th={0.01} />
+      <InkCyl p={[TX, 0.76, TZ]} r={0.127} h={0.04} c="#ff9db0" th={0.01} />
+      {[-0.065, 0, 0.065].map((x, i) => (
         <group key={x}>
-          <InkCyl p={[TX + x, 0.56, TZ + (i === 1 ? 0.05 : 0)]} r={0.011} h={0.09} c={["#8fc8ff", "#ffd76a", "#b8ff9a"][i]} th={0.005} seg={8} />
-          <Glow tex={tx.gold} p={[TX + x, 0.635 + Math.sin(T * 9 + i) * 0.004, TZ + 0.02 + (i === 1 ? 0.05 : 0)]} w={0.09} h={0.12} o={0.95} k={2.2} />
+          <InkCyl p={[TX + x, 0.82, TZ + (i === 1 ? 0.04 : 0)]} r={0.01} h={0.08} c={["#8fc8ff", "#ffd76a", "#b8ff9a"][i]} th={0.005} seg={8} />
+          <Glow tex={tx.gold} p={[TX + x, 0.885 + Math.sin(T * 9 + i) * 0.004, TZ + 0.02 + (i === 1 ? 0.04 : 0)]} w={0.08} h={0.11} o={0.95} k={2.2} />
         </group>
       ))}
-      <InkCyl p={[TX - 0.23, 0.405, TZ + 0.06]} r={0.06} r2={0.04} h={0.045} c="#f4f1ea" th={0.008} />
 
       {/* 주인공 */}
       <Guy look={ME} pose={pose} feet={[0, 0, 0]} cam={cam} s={S} bob={Math.abs(Math.sin(T * 2.2)) * 0.008 + (end ? pulse(t, 0.38, 0.25) * 0.05 : 0)} />
@@ -614,11 +614,11 @@ const Desk: React.FC<{ u: number; w: Words05 }> = ({ u, w }) => {
 // ================================================================ 3-B. 새벽 광장 (law 뒷부분)
 const ELDER: Look = { skin: "#eac4a2", hair: "short", hairC: "#b9b6bd", top: "#8a6a9a", bottom: "#4a4658", shoes: "#3a3030", glasses: true };
 const CROWD: { look: Look; x: number; z: number; y: number; from: number; to: number; s: number; flip?: boolean }[] = [
-  { look: RIVAL, x: -0.74, z: -0.5, y: 0.4, from: 29, to: 27, s: 1 },
-  { look: ELDER, x: 0.0, z: -0.55, y: 0.4, from: 61, to: 60, s: 1 },
-  { look: GUY2, x: 0.74, z: -0.5, y: 0.4, from: 25, to: 24, s: 1, flip: true },
-  { look: ME, x: -0.36, z: 0.5, y: 0, from: 28, to: 26, s: 1.04 },
-  { look: HIM, x: 0.36, z: 0.46, y: 0, from: 33, to: 32, s: 1.04, flip: true },
+  { look: RIVAL, x: -0.74, z: -0.65, y: 0.8, from: 29, to: 27, s: 1 },
+  { look: ELDER, x: 0.0, z: -0.7, y: 0.8, from: 61, to: 60, s: 1 },
+  { look: GUY2, x: 0.74, z: -0.65, y: 0.8, from: 25, to: 24, s: 1, flip: true },
+  { look: ME, x: -0.36, z: 0.95, y: 0, from: 28, to: 26, s: 1.04 },
+  { look: HIM, x: 0.36, z: 0.9, y: 0, from: 33, to: 32, s: 1.04, flip: true },
 ];
 const Plaza: React.FC<{ u: number; w: Words05 }> = ({ u }) => {
   const T = u * 6;
@@ -633,13 +633,13 @@ const Plaza: React.FC<{ u: number; w: Words05 }> = ({ u }) => {
   }), []);
   const k = sstep(u);
   const settle = 1 - sstep(clamp01(u / 0.12));
-  const cam: V3 = lerp3([0, 1.3, 5.5], [0, 1.24, 4.8], k * 0.55 + u * 0.45);
+  const cam: V3 = lerp3([0, 1.34, 5.95], [0, 1.28, 5.25], k * 0.55 + u * 0.45);
   cam[1] += settle * 0.9;
   // 숫자가 줄어드는 때: 뒷부분("Overnight… one or two years younger")
   const at = (i: number) => 0.52 + [1, 3, 0, 4, 2][i] * 0.05;
   return (
     <>
-      <CamSet p={cam} t={[0, 1.02 + settle * 0.5, 0]} fov={35} />
+      <CamSet p={cam} t={[0, 1.06 + settle * 0.5, 0]} fov={35} />
       <color attach="background" args={["#f0b090"]} />
       <fogExp2 attach="fog" args={["#eeb096", 0.035]} />
       <hemisphereLight args={["#ffd0b0", "#6a5080", 0.95]} />
@@ -651,19 +651,18 @@ const Plaza: React.FC<{ u: number; w: Words05 }> = ({ u }) => {
       <Decal tex={tx.near} p={[0.8, 1.55, -10.5]} w={17} h={4.2} tint="#f0c8cc" />
       <Floor tex={tx.floor} size={18} rough={0.55} z={-3} />
       {/* 계단 단 */}
-      <InkBox p={[0, 0.2, -0.95]} s={[5.2, 0.4, 1.5]} c="#e6d2c4" th={0.012} round={0.02} />
-      <InkBox p={[0, 0.133, -0.08]} s={[5.2, 0.266, 0.26]} c="#ead6c8" th={0.01} round={0.02} />
-      <InkBox p={[0, 0.066, 0.16]} s={[5.2, 0.132, 0.26]} c="#eedccf" th={0.01} round={0.02} />
+      <InkBox p={[0, 0.4, -1.15]} s={[5.6, 0.8, 1.7]} c="#e6d2c4" th={0.012} round={0.02} />
+      {[0, 1, 2].map((i) => <InkBox key={i} p={[0, (0.6 - i * 0.2) / 2, -0.2 + i * 0.22]} s={[5.6, 0.6 - i * 0.2, 0.24]} c={["#e9d5c8", "#ecdacc", "#f0dfd2"][i]} th={0.01} round={0.02} />)}
       {/* 가로등 · 나무 */}
       {[-1.45, 1.45].map((x) => (
         <group key={x}>
-          <InkCyl p={[x, 1.0, -1.3]} r={0.03} h={1.6} c="#3f3a52" th={0.008} seg={10} />
-          <InkCyl p={[x, 1.86, -1.3]} r={0.1} r2={0.06} h={0.14} c="#3f3a52" th={0.008} />
-          <mesh position={[x, 1.76, -1.3]}>
+          <InkCyl p={[x, 1.6, -1.3]} r={0.03} h={1.6} c="#3f3a52" th={0.008} seg={10} />
+          <InkCyl p={[x, 2.46, -1.3]} r={0.1} r2={0.06} h={0.14} c="#3f3a52" th={0.008} />
+          <mesh position={[x, 2.36, -1.3]}>
             <sphereGeometry args={[0.055, 12, 10]} />
             <meshBasicMaterial color={new THREE.Color("#ffe6b0").multiplyScalar(2.2)} toneMapped={false} />
           </mesh>
-          <Glow tex={tx.warm} p={[x, 1.76, -1.25]} w={0.9} h={0.9} o={0.6} />
+          <Glow tex={tx.warm} p={[x, 2.36, -1.25]} w={0.9} h={0.9} o={0.6} />
         </group>
       ))}
       {[-2.1, 2.1].map((x) => (
