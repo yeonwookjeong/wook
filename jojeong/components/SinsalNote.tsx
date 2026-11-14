@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import AskLink from "./AskLink";
 import { trackEvent } from "./VisitBeacon";
 
-// The one notice: 왕이 될 사주 since its renewal (2026-11-14; before that the 신살 유형 테스트), once per browser, after the first screen has been read. Never
+// The one notice: 왕이 될 사주 since its renewal (2026-11-14; before that the 신살 유형 테스트), once per browser, as soon as a page opens. Never
 // over paying, a bought report, the room, the owner's pages, a friend's link or a reading on screen, nor on the 도감
 // game itself (seeing it counts as seen). `gift`: the questions a Kakao sign-up brings, shown under it to non-members.
 const QUIET = ["/ask", "/pay", "/admin", "/login", "/r/", "/my", "/leave", "/logout", "/e/", "/s/"];
@@ -29,29 +29,19 @@ export default function SinsalNote({ gift }: { gift: number }) {
     } catch {
       return;
     }
-    // Not over the first screen: once the visitor has scrolled past most of it, or after 25 seconds on the page.
-    let done = false;
-    const pop = () => {
-      if (done) return;
-      done = true;
-      cleanup();
-      // Not on a report page at all: a reading on screen, or the birth form being filled in (Clarity 11/10: the
-      // notice came up over the free reading's form while people typed, and was closed about one time in seven).
-      if (path.startsWith("/reports/") || document.querySelector('input[name="birth"]')) return;
+    // Right as the page opens (대표님 11/14: 홈에 들어오자마자), but never over someone typing: if a field already has
+    // the cursor, this visit is skipped and the notice waits for the next one. Never over a reading on screen.
+    const t = setTimeout(() => {
+      if (path.startsWith("/reports/")) return;
+      const el = document.activeElement;
+      if (el && /^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName)) return;
       try {
         localStorage.setItem(SEEN, "1");
       } catch {}
       setShow(true);
       trackEvent("king_pop");
-    };
-    const onScroll = () => window.scrollY > window.innerHeight * 0.8 && pop();
-    const t = setTimeout(pop, 25000);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    const cleanup = () => {
-      clearTimeout(t);
-      window.removeEventListener("scroll", onScroll);
-    };
-    return cleanup;
+    }, 700);
+    return () => clearTimeout(t);
   }, [path]);
   useEffect(() => {
     if (!show) return;
