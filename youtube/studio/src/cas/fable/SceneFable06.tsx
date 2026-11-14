@@ -33,6 +33,18 @@ const text = (g: G, s: string, x: number, y: number, size: number, w: number, c:
   g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = c;
   g.fillText(s, x, y + k * 0.04);
 };
+/** 길면 두 줄로 나눠 크게 쓴다 */
+const text2 = (g: G, s: string, x: number, y: number, size: number, w: number, c: string, lineH: number) => {
+  const one = fit(g, s, size, w);
+  const sp = s.split(" ");
+  if (one >= size * 0.72 || sp.length < 2) return text(g, s, x, y, size, w, c);
+  let best = 1, bd = 1e9;
+  for (let i = 1; i < sp.length; i++) { const d = Math.abs(sp.slice(0, i).join(" ").length - sp.slice(i).join(" ").length); if (d < bd) { bd = d; best = i; } }
+  const a = sp.slice(0, best).join(" "), b = sp.slice(best).join(" ");
+  const k = Math.min(fit(g, a, size * 0.8, w), fit(g, b, size * 0.8, w), lineH);
+  text(g, a, x, y - k * 0.56, k, w, c);
+  text(g, b, x, y + k * 0.56, k, w, c);
+};
 /** 말풍선 (640x380, 꼬리 아래) */
 const drawBubble = (g: G, s: string, bg: string, fg: string, crack = false) => {
   g.clearRect(0, 0, 640, 380);
@@ -41,7 +53,7 @@ const drawBubble = (g: G, s: string, bg: string, fg: string, crack = false) => {
   g.fillStyle = bg; g.fill(); g.lineWidth = 14; g.strokeStyle = INK; g.stroke();
   g.beginPath(); g.roundRect(24, 24, 592, 246, 70); g.fillStyle = bg; g.fill(); g.stroke();
   g.fillStyle = bg; g.fillRect(288, 250, 76, 26);
-  text(g, s, 320, 148, 120, 510, fg);
+  text2(g, s, 320, 148, 120, 510, fg, 100);
   if (crack) {
     g.strokeStyle = INK; g.lineWidth = 9;
     g.beginPath(); g.moveTo(300, 22); g.lineTo(340, 80); g.lineTo(296, 132); g.lineTo(352, 190); g.lineTo(310, 236); g.lineTo(330, 272); g.stroke();
@@ -65,9 +77,9 @@ const drawWord = (g: G, s: string, bg: string, fg: string, cross = false) => {
   g.lineJoin = "round"; g.lineCap = "round";
   g.beginPath(); g.roundRect(22, 22, 436, 276, 44); g.fillStyle = bg; g.fill(); g.lineWidth = 16; g.strokeStyle = INK; g.stroke();
   g.beginPath(); g.roundRect(44, 44, 392, 232, 28); g.lineWidth = 6; g.strokeStyle = "rgba(255,255,255,0.55)"; g.stroke();
-  text(g, s, 240, 160, 170, 350, fg);
+  text(g, s, 240, 160, 170, 360, fg);
   if (cross) {
-    [[26, INK], [14, "#e2343a"]].forEach(([w, c]) => {
+    [[20, INK], [10, "#e2343a"]].forEach(([w, c]) => {
       g.lineWidth = w as number; g.strokeStyle = c as string;
       g.beginPath(); g.moveTo(70, 70); g.lineTo(410, 250); g.moveTo(410, 70); g.lineTo(70, 250); g.stroke();
     });
@@ -367,13 +379,13 @@ const Ours: React.FC<{ t: number; w: Words06F }> = ({ t, w }) => {
     clock: canvasTexture(128, 128, drawClockMini),
     map: canvasTexture(400, 520, drawKoreaMap),
     tags: [w.house, w.school, w.country].map((s, i) => canvasTexture(600, 220, (g) => drawTagLabel(g, s, [RED, BLUE, "#2f9d7a"][i]))),
-    my: canvasTexture(480, 320, (g) => drawWord(g, w.my, "#d9dae2", "#8a8c98", true)),
+    my: canvasTexture(480, 320, (g) => drawWord(g, w.my, "#eef0f6", "#4a4c5a", true)),
     our: canvasTexture(480, 320, (g) => drawWord(g, w.our, "#ffd23a", INK)),
     gold: glowTex("255,210,110"), white: glowTex("255,250,240"),
     sparks: ["#ffd23a", "#ff7fa8", "#7fe0ff"].map((c) => canvasTexture(256, 256, (g) => drawSpark(g, c))),
   }), [w]);
   const k = sstep(t);
-  const cam: V3 = lerp3([0, 1.55, 4.9], [0, 1.5, 4.3], k * 0.5 + t * 0.5);
+  const cam: V3 = lerp3([0, 1.5, 5.1], [0, 1.45, 4.6], k * 0.5 + t * 0.5);
   const AT = [0.08, 0.25, 0.42];
   const item = (i: number) => pop(t, AT[i] - 0.05, 0.08);
   const big = pop(t, 0.74, 0.08), cross = pop(t, 0.7, 0.06);
@@ -381,7 +393,7 @@ const Ours: React.FC<{ t: number; w: Words06F }> = ({ t, w }) => {
   const TW = 0.52, TH = 0.19;
   return (
     <>
-      <CamSet p={cam} t={[0, 1.27, -0.6]} fov={35} />
+      <CamSet p={cam} t={[0, 1.18, -0.6]} fov={35} />
       <color attach="background" args={["#bfe0f6"]} />
       <fogExp2 attach="fog" args={["#cfe6f4", 0.025]} />
       <hemisphereLight args={["#d8ecff", "#7a9a6a", 1.0 * dimK]} />
@@ -389,24 +401,24 @@ const Ours: React.FC<{ t: number; w: Words06F }> = ({ t, w }) => {
       <Sky tex={tx.sky} z={-16} k={dimK} />
       {/* 계단식 언덕 */}
       <Floor c="#7cc46a" size={20} rough={0.9} />
-      <InkBox p={[0, 0.25, 0.3]} s={[6, 0.5, 1.5]} c="#8fd07a" th={0.014} round={0.05} />
-      <InkBox p={[0, 0.475, -0.95]} s={[6, 0.95, 1.3]} c="#84c872" th={0.014} round={0.05} />
-      <InkBox p={[0, 0.75, -2.2]} s={[6, 1.5, 1.4]} c="#78be68" th={0.014} round={0.05} />
-      {[[-1.5, 0.5, 0.2, 0.3], [1.3, 0.95, -1.1, 0.34], [1.25, 1.5, -2.3, 0.4], [-1.45, 1.5, -2.2, 0.36]].map(([x, y, z, r], i) => (
+      <InkBox p={[0, 0.25, 0.45]} s={[6, 0.5, 1.0]} c="#8fd07a" th={0.014} round={0.05} />
+      <InkBox p={[0, 0.45, -0.35]} s={[6, 0.9, 0.8]} c="#84c872" th={0.014} round={0.05} />
+      <InkBox p={[0, 0.65, -1.25]} s={[6, 1.3, 1.2]} c="#78be68" th={0.014} round={0.05} />
+      {[[-1.35, 0.5, 0.5, 0.26], [1.25, 0.9, -0.4, 0.3], [1.2, 1.3, -1.3, 0.34], [-1.3, 1.3, -1.3, 0.32]].map(([x, y, z, r], i) => (
         <group key={i}>
           <InkCyl p={[x, y + 0.14, z]} r={0.04} h={0.28} c="#6a4a3a" th={0.008} seg={8} />
           <InkBall p={[x, y + 0.28 + r * 0.8, z]} r={r} c={i % 2 ? "#5fae58" : "#6cba5e"} />
         </group>
       ))}
       {/* 집 */}
-      <group position={[-0.42, 0.5, 0.42]} scale={item(0)}>
+      <group position={[-0.36, 0.5, 0.45]} scale={item(0) * 0.8}>
         <InkBox p={[0, 0.2, 0]} s={[0.62, 0.4, 0.46]} c="#fff0d8" th={0.014} />
         <Roof p={[0, 0.4 + 0.11, 0]} r={0.33} len={0.74} c="#e2574c" />
         <Decal tex={tx.house} p={[0, 0.2, 0.246]} w={0.56} h={0.39} />
         <InkBox p={[0.18, 0.62, -0.05]} s={[0.08, 0.2, 0.08]} c="#b86a3a" th={0.008} />
       </group>
       {/* 학교 */}
-      <group position={[0.34, 0.95, -0.9]} scale={item(1)}>
+      <group position={[0.3, 0.9, -0.3]} scale={item(1) * 0.7}>
         <InkBox p={[0, 0.27, 0]} s={[1.04, 0.54, 0.4]} c="#ffe2b0" th={0.014} />
         <InkBox p={[0, 0.57, 0]} s={[1.1, 0.06, 0.46]} c="#6f8fb0" th={0.012} />
         <InkBox p={[0, 0.72, 0]} s={[0.26, 0.26, 0.3]} c="#ffe2b0" th={0.012} />
@@ -415,30 +427,30 @@ const Ours: React.FC<{ t: number; w: Words06F }> = ({ t, w }) => {
         <Decal tex={tx.clock} p={[0, 0.72, 0.167]} w={0.16} h={0.16} />
       </group>
       {/* 나라: 한반도 지도 표지 */}
-      <group position={[-0.3, 1.5, -2.1]} scale={item(2)}>
+      <group position={[-0.32, 1.3, -1.0]} scale={item(2) * 0.8}>
         <InkCyl p={[0, 0.12, -0.03]} r={0.03} h={0.24} c="#6a4a3a" th={0.008} seg={8} />
         <Decal tex={tx.map} p={[0, 0.58, 0]} w={0.62} h={0.806} />
       </group>
-      {/* OUR 꼬리표 */}
-      {([[-0.42, 1.5, 0.5], [0.34, 2.12, -0.85], [-0.3, 2.62, -2.05]] as V3[]).map((p, i) => {
+      {/* OUR 꼬리표: 각자 바로 옆에 */}
+      {([[0.3, 0.86, 0.5], [0.36, 1.8, -0.25], [-0.32, 2.2, -0.95]] as V3[]).map((p, i) => {
         const s = pop(t, AT[i], 0.07);
         return (
           <group key={i}>
             <Glow tex={tx.gold} p={[p[0], p[1], p[2] - 0.03]} w={1.0} h={0.7} o={0.6 * pulse(t, AT[i], 0.14)} />
-            <Card tex={tx.tags[i]} at={[p[0], p[1] + Math.sin(T * 2 + i) * 0.008, p[2]]} w={TW * (1 + i * 0.12)} h={TH * (1 + i * 0.12)} cam={cam} scale={s} rotZ={(i - 1) * 0.04} tint={dimK < 0.8 ? "#c8c8d4" : "#ffffff"} />
+            <Card tex={tx.tags[i]} at={[p[0], p[1] + Math.sin(T * 2 + i) * 0.008, p[2]]} w={TW * (1 + i * 0.08)} h={TH * (1 + i * 0.08)} cam={cam} scale={s} rotZ={(i - 1) * 0.04} tint={dimK < 0.8 ? "#c8c8d4" : "#ffffff"} />
           </group>
         );
       })}
       {/* 큰 OUR / 가위표 MY */}
-      {cross > 0.01 && <Card tex={tx.my} at={[0, 1.82, 1.5]} w={0.3} h={0.2} cam={cam} scale={cross} rotZ={-0.08} tint="#ffffff" />}
+      {cross > 0.01 && <Card tex={tx.my} at={[0, 1.78, 1.5]} w={0.4} h={0.267} cam={cam} scale={cross} rotZ={-0.08} tint="#ffffff" />}
       {big > 0.01 && (
         <>
-          <Glow tex={tx.gold} p={[0, 1.4, 1.42]} w={1.6} h={1.3} o={0.5 + 0.4 * pulse(t, 0.74, 0.14)} />
-          <Card tex={tx.our} at={[0, 1.42 + Math.sin(T * 2.4) * 0.008, 1.5]} w={0.6} h={0.4} cam={cam} scale={big} rotZ={0.03} tint="#ffffff" />
-          {[0, 1, 2, 3, 4, 5].map((i) => { const a = clamp01((t - 0.74) / 0.2), ang = (i / 6) * Math.PI * 2 + 0.5, r = 0.2 + a * 0.25; return a < 1 ? <Glow key={i} tex={tx.sparks[i % 3]} p={[Math.cos(ang) * r * 1.3, 1.42 + Math.sin(ang) * r, 1.55]} w={0.1} h={0.1} o={1 - a} k={2.2} /> : null; })}
+          <Glow tex={tx.gold} p={[0, 1.3, 1.42]} w={1.6} h={1.3} o={0.5 + 0.4 * pulse(t, 0.74, 0.14)} />
+          <Card tex={tx.our} at={[0, 1.3 + Math.sin(T * 2.4) * 0.008, 1.5]} w={0.62} h={0.413} cam={cam} scale={big} rotZ={0.03} tint="#ffffff" />
+          {[0, 1, 2, 3, 4, 5].map((i) => { const a = clamp01((t - 0.74) / 0.2), ang = (i / 6) * Math.PI * 2 + 0.5, r = 0.2 + a * 0.25; return a < 1 ? <Glow key={i} tex={tx.sparks[i % 3]} p={[Math.cos(ang) * r * 1.3, 1.3 + Math.sin(ang) * r, 1.55]} w={0.1} h={0.1} o={1 - a} k={2.2} /> : null; })}
         </>
       )}
-      <Post focus={big > 0.5 ? Math.hypot(cam[1] - 1.42, cam[2] - 1.5) : 5.2} range={big > 0.5 ? 2.2 : 6} bloom={0.4} vig={0.45} />
+      <Post focus={big > 0.5 ? Math.hypot(cam[1] - 1.3, cam[2] - 1.5) : 4.9} range={big > 0.5 ? 2.2 : 6} bloom={0.4} vig={0.45} />
     </>
   );
 };
@@ -522,7 +534,7 @@ const Boss: React.FC<{ u: number; w: Words06F }> = ({ u, w }) => {
   const k = sstep(u);
   const cam: V3 = lerp3([0, 1.12, 3.95], [0, 1.1, 3.4], k * 0.5 + u * 0.5);
   const lab = pop(u, 0.2, 0.14);
-  const pose: Pose = { armL: 150, armR: 150, mouth: "smug", brow: -0.3, legs: "sit", blush: 0.3, look: Math.sin(T * 1.5) * 0.3 };
+  const pose: Pose = { armL: 38, armR: 38, mouth: "smug", brow: -0.3, legs: "sit", blush: 0.3, look: Math.sin(T * 1.5) * 0.3 };
   return (
     <>
       <CamSet p={cam} t={[0, 0.92, 0]} fov={35} />
@@ -541,12 +553,12 @@ const Boss: React.FC<{ u: number; w: Words06F }> = ({ u, w }) => {
       <InkBox p={[0, 2.75, -1.6]} s={[7, 0.5, 0.14]} c="#4a3440" th={0.012} />
       {[-1.5, -0.5, 0.5, 1.5].map((x) => <InkBox key={x} p={[x, 1.45, -1.6]} s={[0.07, 2.1, 0.1]} c="#4a3440" th={0.01} />)}
       {/* 사장 의자 */}
-      <InkBox p={[0, 0.9, -0.22]} s={[0.78, 1.25, 0.14]} c="#7a2a34" th={0.016} round={0.07} />
+      <InkBox p={[0, 0.98, -0.22]} s={[0.82, 1.5, 0.14]} c="#7a2a34" th={0.016} round={0.07} />
       <InkBox p={[0, 0.3, -0.05]} s={[0.7, 0.14, 0.5]} c="#7a2a34" th={0.014} round={0.05} />
       {[-0.4, 0.4].map((x) => <InkBox key={x} p={[x, 0.55, -0.05]} s={[0.09, 0.09, 0.44]} c="#4a1820" th={0.01} round={0.03} />)}
       <InkCyl p={[0, 0.12, -0.05]} r={0.05} h={0.24} c="#3a3a44" th={0.008} />
       {/* 주인공 (정장) */}
-      <Guy look={SUIT} pose={pose} feet={[0, 0.2, 0]} cam={cam} s={1.22} shadow={0} bob={Math.sin(T * 2) * 0.004} />
+      <Guy look={SUIT} pose={pose} feet={[0, 0.36, 0]} cam={cam} s={1.25} shadow={0} bob={Math.sin(T * 2) * 0.004} />
       {/* 큰 책상 + 명패 */}
       <InkBox p={[0, 0.64, 0.62]} s={[1.9, 0.07, 0.7]} c="#6a4028" th={0.014} round={0.02} />
       <InkBox p={[0, 0.3, 0.9]} s={[1.8, 0.6, 0.08]} c="#5a3420" th={0.014} round={0.02} />
@@ -562,7 +574,7 @@ const Boss: React.FC<{ u: number; w: Words06F }> = ({ u, w }) => {
           <Card tex={tx.label} at={[0, 1.8 + Math.sin(T * 2) * 0.008, 0.1]} w={BW * 1.08} h={BH * 1.08} cam={cam} scale={lab} tint="#ffffff" />
         </>
       )}
-      {[0, 1, 2].map((i) => <Glow key={i} tex={tx.sparks[i % 2]} p={[[-0.2, 0.22, 0.05][i], [0.8, 0.84, 0.74][i], 0.95]} w={0.09} h={0.09} o={0.5 + 0.5 * Math.sin(T * 5 + i * 2)} k={2} />)}
+      {[0, 1, 2].map((i) => <Glow key={i} tex={tx.sparks[i % 2]} p={[[-0.33, 0.33, 0.3][i], [0.86, 0.9, 0.7][i], 0.95]} w={0.09} h={0.09} o={0.5 + 0.5 * Math.sin(T * 5 + i * 2)} k={2} />)}
       <Post focus={Math.hypot(cam[1] - 0.9, cam[2])} range={2.8} bloom={0.55} />
     </>
   );
@@ -634,12 +646,12 @@ const Office: React.FC<{ u: number; w: Words06F }> = ({ u, w }) => {
 };
 
 // ================================================================ 4. 거리 간판마다 "우리"
-const SIGNS: { s: string; bg: string; fg: string; p: V3; w: number; h: number; at: number; v?: boolean; icon?: "cross"; ry: number }[] = [
-  { s: "우리 집밥", bg: "#ff8a3a", fg: "#ffffff", p: [-0.72, 1.62, 0.5], w: 0.72, h: 0.225, at: 0.02, ry: 0.5 },
-  { s: "우리 약국", bg: "#1f9d6f", fg: "#ffffff", p: [0.72, 1.2, -0.3], w: 0.72, h: 0.225, at: 0.3, icon: "cross", ry: -0.5 },
-  { s: "우리 마트", bg: "#e2343a", fg: "#fff6c8", p: [-0.78, 2.12, -1.4], w: 0.8, h: 0.25, at: 0.6, ry: 0.5 },
-  { s: "우리 분식", bg: "#ffd23a", fg: INK, p: [0.86, 2.0, -1.9], w: 0.3, h: 0.87, at: 0.6, v: true, ry: -0.5 },
-  { s: "우리 꽃집", bg: "#ff7fa8", fg: "#ffffff", p: [0.0, 2.55, -4.2], w: 1.1, h: 0.344, at: 0.78, ry: 0 },
+const SIGNS: { s: string; bg: string; fg: string; p: V3; w: number; h: number; at: number; v?: boolean; icon?: "cross" }[] = [
+  { s: "우리 집밥", bg: "#ff8a3a", fg: "#ffffff", p: [-0.31, 1.5, 0.3], w: 0.5, h: 0.156, at: 0.02 },
+  { s: "우리 약국", bg: "#1f9d6f", fg: "#ffffff", p: [0.36, 1.34, -0.4], w: 0.58, h: 0.181, at: 0.3, icon: "cross" },
+  { s: "우리 마트", bg: "#e2343a", fg: "#fff6c8", p: [-0.3, 2.08, -1.4], w: 0.66, h: 0.206, at: 0.6 },
+  { s: "우리 분식", bg: "#ffd23a", fg: INK, p: [0.52, 1.85, -1.6], w: 0.24, h: 0.7, at: 0.6, v: true },
+  { s: "우리 꽃집", bg: "#ff7fa8", fg: "#ffffff", p: [-0.1, 2.75, -4.2], w: 1.1, h: 0.344, at: 0.78 },
 ];
 const Street: React.FC<{ t: number }> = ({ t }) => {
   const T = t * DUR.everywhere;
@@ -654,11 +666,11 @@ const Street: React.FC<{ t: number }> = ({ t }) => {
     warm: glowTex("255,196,130"),
   }), []);
   const k = sstep(t);
-  const cam: V3 = lerp3([0, 1.3, 4.6], [0, 1.26, 3.6], k * 0.5 + t * 0.5);
+  const cam: V3 = lerp3([0, 1.0, 4.5], [0, 1.0, 3.85], k * 0.5 + t * 0.5);
   const walk: Pose = { walk: T * 7, armL: 25, armR: 25, mouth: t > 0.3 ? "o" : "smile", brow: t > 0.3 ? 0.8 : 0, look: Math.sin(T * 4) * 0.9, blush: 0.5 };
   return (
     <>
-      <CamSet p={cam} t={[0, 1.5, -1.5]} fov={35} />
+      <CamSet p={cam} t={[0, 1.0, -1.5]} fov={35} />
       <color attach="background" args={["#3a2f6a"]} />
       <fogExp2 attach="fog" args={["#4a3a78", 0.05]} />
       <hemisphereLight args={["#8a8fe0", "#4a3050", 0.75]} />
@@ -680,11 +692,12 @@ const Street: React.FC<{ t: number }> = ({ t }) => {
       {SIGNS.map((s, i) => {
         const on = seg(t, s.at, s.at + 0.03);
         const fl = pulse(t, s.at, 0.14);
-        const x = s.p[0] - Math.sign(s.p[0]) * 0.02;
+        const sx = Math.sign(s.p[0]);
         return (
-          <group key={i} position={[x, s.p[1], s.p[2]]} rotation={[0, s.ry, 0]}>
+          <group key={i} position={s.p}>
+            {sx !== 0 && <InkBox p={[sx * (s.w / 2 + 0.35), s.h * 0.2, -0.04]} s={[0.7, 0.035, 0.035]} c="#2a2438" th={0.008} round={0.008} />}
             <InkBox p={[0, 0, -0.04]} s={[s.w + 0.04, s.h + 0.04, 0.05]} c="#2a2438" th={0.012} round={0.02} />
-            <Decal tex={tx.signs[i]} p={[0, 0, 0.005]} w={s.w} h={s.h} k={0.32 + on * (1.0 + 0.5 * fl)} scale={1 + 0.12 * fl} />
+            <Decal tex={tx.signs[i]} p={[0, 0, 0.005]} w={s.w} h={s.h} k={0.32 + on * (1.0 + 0.5 * fl)} scale={1 + 0.1 * fl} />
             <Glow tex={tx.glows[i]} p={[0, 0, 0.06]} w={s.w * 2.2} h={Math.max(s.h, 0.4) * 2.6} o={on * (0.4 + 0.5 * fl)} />
           </group>
         );
@@ -700,8 +713,8 @@ const Street: React.FC<{ t: number }> = ({ t }) => {
           <Glow tex={tx.warm} p={[x, 1.74, -2.55 - i * 1.2]} w={0.9} h={0.9} o={0.6} />
         </group>
       ))}
-      <Guy look={ME} pose={walk} feet={[0.02, 0, 0.2 - t * 0.5]} cam={cam} s={1.05} bob={Math.abs(Math.sin(T * 7)) * 0.02} tint="#f0dcd8" />
-      <Post focus={Math.hypot(cam[1] - 1.2, cam[2] + 0.5)} range={5} bloom={0.75} vig={0.6} />
+      <Guy look={ME} pose={walk} feet={[-0.04, 0, 0.95 - t * 0.35]} cam={cam} s={1.25} bob={Math.abs(Math.sin(T * 7)) * 0.02} tint="#f0dcd8" />
+      <Post focus={Math.hypot(cam[1] - 1.2, cam[2] - 0.3)} range={5} bloom={0.75} vig={0.6} />
     </>
   );
 };
@@ -720,16 +733,16 @@ const End: React.FC<{ t: number; w: Words06F }> = ({ t, w }) => {
   const cam: V3 = lerp3([0, 1.14, 4.0], [0, 1.16, 3.5], k * 0.5 + t * 0.5);
   const sL = pop(t, 0.08, 0.1), sR = pop(t, 0.2, 0.1), q = pop(t, 0.5, 0.12);
   const pose: Pose = t < 0.5 ? { armL: 60, armR: 60, mouth: "o", brow: 0.6, look: Math.sin(T * 5) * 0.9 } : { armL: 84, armR: 84, mouth: "grin", brow: 0.8, blush: 0.6 };
-  const CWd = 0.46, CHt = 0.307;
+  const CWd = 0.43, CHt = 0.287;
   return (
     <>
       <CamSet p={cam} t={[0, 1.17, 0]} fov={35} />
       <LivingRoom tx={room} T={T} bright={0.8} sofaX={1.25} />
       <Guy look={ME} pose={pose} feet={[0, 0, 0]} cam={cam} s={1.25} bob={Math.abs(Math.sin(T * 2.2)) * 0.008 + pulse(t, 0.5, 0.2) * 0.04} />
-      <Glow tex={tx.blue} p={[-0.34, 1.42, 0.1]} w={0.9} h={0.8} o={0.3 * Math.min(1, sL)} />
-      <Card tex={tx.my} at={[-0.34, 1.42 + Math.sin(T * 2) * 0.012, 0.16]} w={CWd} h={CHt} cam={cam} scale={sL} rotZ={0.07 + Math.sin(T * 1.5) * 0.02} tint="#ffffff" />
-      <Glow tex={room.gold} p={[0.34, 1.42, 0.1]} w={0.9} h={0.8} o={0.3 * Math.min(1, sR)} />
-      <Card tex={tx.our} at={[0.34, 1.42 + Math.sin(T * 2 + 2) * 0.012, 0.16]} w={CWd} h={CHt} cam={cam} scale={sR} rotZ={-0.07 + Math.sin(T * 1.5 + 1) * 0.02} tint="#ffffff" />
+      <Glow tex={tx.blue} p={[-0.3, 1.44, 0.1]} w={0.9} h={0.8} o={0.3 * Math.min(1, sL)} />
+      <Card tex={tx.my} at={[-0.3, 1.44 + Math.sin(T * 2) * 0.012, 0.16]} w={CWd} h={CHt} cam={cam} scale={sL} rotZ={0.07 + Math.sin(T * 1.5) * 0.02} tint="#ffffff" />
+      <Glow tex={room.gold} p={[0.3, 1.44, 0.1]} w={0.9} h={0.8} o={0.3 * Math.min(1, sR)} />
+      <Card tex={tx.our} at={[0.3, 1.44 + Math.sin(T * 2 + 2) * 0.012, 0.16]} w={CWd} h={CHt} cam={cam} scale={sR} rotZ={-0.07 + Math.sin(T * 1.5 + 1) * 0.02} tint="#ffffff" />
       {q > 0.01 && (
         <>
           <Glow tex={room.gold} p={[0, 1.88, 0.1]} w={1.4} h={1.4} o={0.5 * Math.min(1, q)} />
