@@ -15,7 +15,7 @@ type G = CanvasRenderingContext2D;
 
 // ---------------------------------------------------------------- 그림 (캔버스)
 /** 포대기 아기 (설계 400x400). 색을 바꿀 수 있고 음영이 조금 더 들어간다 */
-const drawBabyX = (g: G, k: number, wrap: string, wrap2: string, hat: string, awake: boolean) => {
+export const drawBabyX = (g: G, k: number, wrap: string, wrap2: string, hat: string, awake: boolean) => {
   g.save();
   g.scale(k, k);
   g.clearRect(0, 0, 400, 400);
@@ -63,51 +63,42 @@ const drawBabyX = (g: G, k: number, wrap: string, wrap2: string, hat: string, aw
   g.restore();
 };
 
-/** 숫자 1 호일 풍선 (600x900) */
-const drawFoilOne = (g: G) => {
+/** 숫자 호일 풍선 (600x900): 굵은 둥근 획으로 그린 1 / 2 */
+export const drawFoil = (g: G, digit: "1" | "2", c0 = "#ff3b4e", c1 = "#b3122a", c2 = "#ff6a72") => {
   g.clearRect(0, 0, 600, 900);
   g.lineJoin = "round"; g.lineCap = "round";
-  const shape = () => {
+  const shape = (dx = 0, dy = 0) => {
     g.beginPath();
-    g.moveTo(300, 150); g.lineTo(372, 150); g.lineTo(372, 690); g.lineTo(262, 690); g.lineTo(262, 330); g.lineTo(196, 372); g.lineTo(158, 300);
-    g.closePath();
+    if (digit === "1") { g.moveTo(208 + dx, 312 + dy); g.lineTo(322 + dx, 200 + dy); g.lineTo(322 + dx, 680 + dy); }
+    else { g.arc(300 + dx, 318 + dy, 122, Math.PI * 1.02, Math.PI * 0.2); g.lineTo(186 + dx, 680 + dy); g.lineTo(430 + dx, 680 + dy); }
   };
-  // 잉크 외곽
-  shape(); g.lineWidth = 150; g.strokeStyle = INK; g.stroke();
-  // 본체
-  const body = g.createLinearGradient(120, 0, 480, 0);
-  body.addColorStop(0, "#c2182f"); body.addColorStop(0.35, "#ff3b4e"); body.addColorStop(0.62, "#ff5a66"); body.addColorStop(1, "#b3122a");
-  shape(); g.lineWidth = 116; g.strokeStyle = body; g.stroke(); g.fillStyle = body; g.fill();
-  // 아래쪽 그늘
-  g.save();
-  shape(); g.lineWidth = 116; g.stroke(); g.clip();
-  const sh = g.createLinearGradient(0, 80, 0, 780);
-  sh.addColorStop(0, "rgba(255,190,170,0.28)"); sh.addColorStop(0.45, "rgba(255,255,255,0)"); sh.addColorStop(1, "rgba(90,0,30,0.45)");
-  g.fillStyle = sh; g.fillRect(0, 0, 600, 900);
-  g.restore();
-  // 가장자리 솔기 (호일 주름)
-  shape(); g.lineWidth = 104; g.strokeStyle = "rgba(120,0,25,0.0)"; g.stroke();
-  g.strokeStyle = "rgba(255,255,255,0.22)"; g.lineWidth = 3;
-  for (let k = 0; k < 26; k++) {
-    const y = 170 + k * 21;
-    g.beginPath(); g.moveTo(210, y); g.lineTo(224, y + 5); g.stroke();
-    g.beginPath(); g.moveTo(424, y); g.lineTo(410, y + 5); g.stroke();
-  }
+  shape(); g.lineWidth = 178; g.strokeStyle = INK; g.stroke();
+  const body = g.createLinearGradient(90, 0, 510, 0);
+  body.addColorStop(0, c1); body.addColorStop(0.35, c0); body.addColorStop(0.6, c2); body.addColorStop(1, c1);
+  shape(); g.lineWidth = 144; g.strokeStyle = body; g.stroke();
+  // 위아래 음영
+  const sh = g.createLinearGradient(0, 100, 0, 780);
+  sh.addColorStop(0, "rgba(255,225,200,0.30)"); sh.addColorStop(0.45, "rgba(255,255,255,0)"); sh.addColorStop(1, "rgba(60,0,30,0.38)");
+  shape(); g.lineWidth = 144; g.strokeStyle = sh; g.stroke();
+  // 솔기
+  shape(); g.lineWidth = 132; g.strokeStyle = "rgba(255,255,255,0.10)"; g.stroke();
+  shape(); g.lineWidth = 122; g.strokeStyle = body; g.stroke();
+  shape(); g.lineWidth = 122; g.strokeStyle = sh; g.stroke();
   // 광택
-  g.strokeStyle = "rgba(255,255,255,0.85)"; g.lineWidth = 26;
-  g.beginPath(); g.moveTo(286, 190); g.lineTo(286, 300); g.stroke();
-  g.strokeStyle = "rgba(255,255,255,0.5)"; g.lineWidth = 16;
-  g.beginPath(); g.moveTo(286, 350); g.lineTo(286, 560); g.stroke();
-  g.beginPath(); g.moveTo(196, 300); g.lineTo(238, 262); g.stroke();
+  g.setLineDash([120, 70, 190, 2000]);
+  shape(-30, -26); g.lineWidth = 22; g.strokeStyle = "rgba(255,255,255,0.8)"; g.stroke();
+  g.setLineDash([]);
   g.fillStyle = "rgba(255,255,255,0.9)";
-  g.beginPath(); g.ellipse(396, 204, 9, 20, 0.2, 0, Math.PI * 2); g.fill();
+  g.beginPath(); g.ellipse(digit === "1" ? 362 : 392, 250, 9, 20, 0.2, 0, Math.PI * 2); g.fill();
   // 매듭
-  g.beginPath(); g.moveTo(296, 742); g.lineTo(338, 742); g.lineTo(350, 800); g.lineTo(284, 800); g.closePath();
-  g.fillStyle = "#d21f37"; g.fill(); g.lineWidth = 12; g.strokeStyle = INK; g.stroke();
+  const kx = digit === "1" ? 322 : 308;
+  g.beginPath(); g.moveTo(kx - 22, 766); g.lineTo(kx + 22, 766); g.lineTo(kx + 34, 822); g.lineTo(kx - 34, 822); g.closePath();
+  g.fillStyle = c1; g.fill(); g.lineWidth = 12; g.strokeStyle = INK; g.stroke();
 };
+const drawFoilOne = (g: G) => drawFoil(g, "1");
 
 /** 벽시계 문자판 (512) */
-const drawClockFace = (g: G) => {
+export const drawClockFace = (g: G) => {
   g.clearRect(0, 0, 512, 512);
   g.beginPath(); g.arc(256, 256, 250, 0, Math.PI * 2);
   const gr = g.createRadialGradient(220, 200, 20, 256, 256, 260);
@@ -128,7 +119,7 @@ const drawClockFace = (g: G) => {
 };
 
 /** 신생아실 간판 (1024x300) */
-const drawSign = (g: G) => {
+export const drawSign = (g: G) => {
   g.clearRect(0, 0, 1024, 300);
   const gr = g.createLinearGradient(0, 0, 0, 300);
   gr.addColorStop(0, "#ffe9c9"); gr.addColorStop(1, "#ffcf9a");
@@ -149,7 +140,7 @@ const drawSign = (g: G) => {
 };
 
 /** 유리 반사 줄무늬 */
-const drawGlass = (g: G) => {
+export const drawGlass = (g: G) => {
   g.clearRect(0, 0, 1024, 512);
   const base = g.createLinearGradient(0, 0, 0, 512);
   base.addColorStop(0, "rgba(150,190,255,0.20)"); base.addColorStop(0.5, "rgba(150,190,255,0.03)"); base.addColorStop(1, "rgba(150,190,255,0.10)");
@@ -164,7 +155,7 @@ const drawGlass = (g: G) => {
 };
 
 /** 복도 창밖: 밤하늘 + 도시 불빛 */
-const drawNight = (g: G) => {
+export const drawNight = (g: G) => {
   const r = rng(11);
   const sky = g.createLinearGradient(0, 0, 0, 512);
   sky.addColorStop(0, "#0b1238"); sky.addColorStop(0.7, "#27245e"); sky.addColorStop(1, "#6a3a78");
@@ -182,7 +173,7 @@ const drawNight = (g: G) => {
 };
 
 /** 불꽃 (잉크 없이 빛으로만) */
-const drawSpark = (g: G, c: string) => {
+export const drawSpark = (g: G, c: string) => {
   g.clearRect(0, 0, 256, 256);
   g.lineCap = "round";
   for (let k = 0; k < 18; k++) {
@@ -196,7 +187,7 @@ const drawSpark = (g: G, c: string) => {
 };
 
 /** 위에서 내려오는 빛기둥 */
-const drawBeam = (g: G) => {
+export const drawBeam = (g: G) => {
   g.clearRect(0, 0, 256, 512);
   for (let y = 0; y < 512; y += 2) {
     const v = y / 512, half = 26 + v * 100;
@@ -207,22 +198,24 @@ const drawBeam = (g: G) => {
   }
 };
 
-const drawNameTag = (g: G, c: string, star: boolean) => {
+export const drawNameTag = (g: G, c: string, star: boolean) => {
   g.clearRect(0, 0, 256, 160);
   g.beginPath(); g.roundRect(8, 8, 240, 144, 26); g.fillStyle = "#fffaf0"; g.fill(); g.lineWidth = 12; g.strokeStyle = INK; g.stroke();
   g.fillStyle = c; g.beginPath(); g.roundRect(14, 14, 228, 46, [20, 20, 0, 0]); g.fill();
   g.strokeStyle = INK; g.lineWidth = 7; g.lineCap = "round";
   if (star) {
-    g.fillStyle = "#ffcf3a"; g.beginPath();
-    for (let k = 0; k < 10; k++) { const a = (k / 10) * Math.PI * 2 - Math.PI / 2, rr = k % 2 ? 15 : 34; g.lineTo(128 + Math.cos(a) * rr, 104 + Math.sin(a) * rr); }
-    g.closePath(); g.fill(); g.stroke();
+    const x = 128, y = 100, k = 30;
+    g.beginPath(); g.moveTo(x, y + k * 0.9);
+    g.bezierCurveTo(x - k * 1.5, y - k * 0.2, x - k * 0.6, y - k * 1.2, x, y - k * 0.35);
+    g.bezierCurveTo(x + k * 0.6, y - k * 1.2, x + k * 1.5, y - k * 0.2, x, y + k * 0.9);
+    g.fillStyle = "#ff8fa6"; g.fill(); g.stroke();
   } else {
     g.beginPath(); g.moveTo(50, 90); g.lineTo(206, 90); g.moveTo(50, 122); g.lineTo(160, 122); g.stroke();
   }
 };
 
 // ---------------------------------------------------------------- 부품
-const BABIES: { wrap: string; wrap2: string; hat: string; awake?: boolean; tag: string }[] = [
+export const BABIES: { wrap: string; wrap2: string; hat: string; awake?: boolean; tag: string }[] = [
   { wrap: "#fbe3ea", wrap2: "#f4bccb", hat: "#9fd0f0", tag: "#ff8fa6" },
   { wrap: "#e2efff", wrap2: "#b7d3f7", hat: "#ffe08a", tag: "#6fb0f0" },
   { wrap: "#fff3cf", wrap2: "#f6dc94", hat: "#f7a8b8", awake: true, tag: "#ff8fa6" },
@@ -230,7 +223,7 @@ const BABIES: { wrap: string; wrap2: string; hat: string; awake?: boolean; tag: 
 ];
 
 /** 색을 1보다 크게 줄 수 있는 평면 (블룸용) */
-const Glow: React.FC<{ tex: THREE.Texture; p: V3; w: number; h: number; k?: number; c?: string; o?: number; r?: V3; add?: boolean; scale?: number; order?: number; fog?: boolean }> = ({ tex, p, w, h, k = 1, c = "#ffffff", o = 1, r, add = true, scale = 1, order = 0, fog = false }) => {
+export const Glow: React.FC<{ tex: THREE.Texture; p: V3; w: number; h: number; k?: number; c?: string; o?: number; r?: V3; add?: boolean; scale?: number; order?: number; fog?: boolean }> = ({ tex, p, w, h, k = 1, c = "#ffffff", o = 1, r, add = true, scale = 1, order = 0, fog = false }) => {
   const col = useMemo(() => new THREE.Color(c).multiplyScalar(k), [c, k]);
   if (o < 0.005 || scale < 0.005) return null;
   return (
@@ -242,7 +235,7 @@ const Glow: React.FC<{ tex: THREE.Texture; p: V3; w: number; h: number; k?: numb
 };
 
 /** 뒤로 살짝 누운 그림판 (아기) */
-const Flat: React.FC<{ tex: THREE.Texture; p: V3; w: number; h: number; lean?: number; tint?: string; rz?: number }> = ({ tex, p, w, h, lean = 0, tint = "#ffffff", rz = 0 }) => (
+export const Flat: React.FC<{ tex: THREE.Texture; p: V3; w: number; h: number; lean?: number; tint?: string; rz?: number }> = ({ tex, p, w, h, lean = 0, tint = "#ffffff", rz = 0 }) => (
   <group position={p} rotation={[-lean, 0, 0]}>
     <mesh rotation={[0, 0, rz]}>
       <planeGeometry args={[w, h]} />
@@ -254,7 +247,7 @@ const Flat: React.FC<{ tex: THREE.Texture; p: V3; w: number; h: number; lean?: n
 const acrylic = new THREE.MeshPhysicalMaterial({ color: "#cfeaff", transparent: true, opacity: 0.11, roughness: 0.08, metalness: 0, clearcoat: 1, depthWrite: false, side: THREE.DoubleSide });
 
 /** 투명 아기 침대 + 수레 */
-const Bassinet: React.FC<{ at: V3; s?: number; baby: THREE.Texture; tag: THREE.Texture; tint: string; breathe: number; rim?: string }> = ({ at, s = 1, baby, tag, tint, breathe, rim = "#f4f1ea" }) => {
+export const Bassinet: React.FC<{ at: V3; s?: number; baby: THREE.Texture; tag: THREE.Texture; tint: string; breathe: number; rim?: string }> = ({ at, s = 1, baby, tag, tint, breathe, rim = "#f4f1ea" }) => {
   const W = 0.44, D = 0.28, Y = 0.36;
   return (
     <group position={at} scale={s}>
@@ -288,13 +281,12 @@ const Bassinet: React.FC<{ at: V3; s?: number; baby: THREE.Texture; tag: THREE.T
 };
 
 /** 벽시계 */
-const Clock: React.FC<{ at: V3; frame: number; face: THREE.Texture }> = ({ at, frame, face }) => {
-  const R = 0.165;
-  const sec = 50 + Math.floor(frame / 30);
-  const tick = Math.min(1, ((frame % 30) / 30) * 6); // 초침이 톡 넘어간다
-  const sA = ((sec - 1 + sstep(tick)) / 60) * Math.PI * 2;
-  const mA = ((59 + sec / 60) / 60) * Math.PI * 2;
-  const hA = ((11 + 59.8 / 60) / 12) * Math.PI * 2;
+export const Clock: React.FC<{ at: V3; frame?: number; secs?: number; face: THREE.Texture; R?: number }> = ({ at, frame = 0, secs, face, R = 0.165 }) => {
+  const sec0 = secs ?? 23 * 3600 + 59 * 60 + 50 + frame / 30;
+  const whole = Math.floor(sec0), fr = sec0 - whole;
+  const sA = ((whole - 1 + sstep(Math.min(1, fr * 6))) / 60) * Math.PI * 2; // 초침이 톡 넘어간다
+  const mA = (sec0 / 3600) * Math.PI * 2;
+  const hA = (sec0 / 43200) * Math.PI * 2;
   const hand = (a: number, len: number, w: number, c: string, z: number, tail = 0) => (
     <group rotation={[0, 0, -a]} position={[0, 0, z]}>
       <mesh position={[0, (len - tail) / 2, 0]}>
@@ -324,7 +316,7 @@ const Clock: React.FC<{ at: V3; frame: number; face: THREE.Texture }> = ({ at, f
 };
 
 /** 풍선 줄 */
-const StringTube: React.FC<{ a: V3; b: V3; sway: number }> = ({ a, b, sway }) => {
+export const StringTube: React.FC<{ a: V3; b: V3; sway: number }> = ({ a, b, sway }) => {
   const geo = useMemo(() => {
     const mid: V3 = [(a[0] + b[0]) / 2 + 0.035 + sway * 0.5, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2];
     const q: V3 = [a[0] * 0.75 + b[0] * 0.25 - 0.02, a[1] * 0.75 + b[1] * 0.25, a[2]];
@@ -341,12 +333,11 @@ const StringTube: React.FC<{ a: V3; b: V3; sway: number }> = ({ a, b, sway }) =>
 // ---------------------------------------------------------------- 후처리
 // @react-three/postprocessing 의 <EffectComposer> 는 패스를 effect 에서 붙여서 Remotion 의 첫 advance 때 빈 화면이 나온다.
 // 그래서 postprocessing 을 직접 조립한다 (렌더 중에 동기적으로 완성).
-const FXV = (process.env.REMOTION_FX ?? "");
-const MSAA = FXV.includes("m0") ? 0 : 4;
-const Post: React.FC<{ focus: number; range: number }> = ({ focus, range }) => {
+const MSAA = 0; // 소프트웨어 GL 에서 MSAA 는 너무 느려서 SMAA 로 대신한다
+export const Post: React.FC<{ focus: number; range: number; bloom?: number; sat?: number; vig?: number }> = ({ focus, range, bloom: bloomK = 0.6, sat = 0.12, vig: vigK = 0.62 }) => {
   const { gl, scene, camera, size } = useThree();
   const fx = useMemo(() => {
-    const composer = new EffectComposer(gl, { frameBufferType: FXV.includes("u8") ? THREE.UnsignedByteType : THREE.HalfFloatType, multisampling: MSAA });
+    const composer = new EffectComposer(gl, { frameBufferType: THREE.HalfFloatType, multisampling: MSAA });
     const dof = new DepthOfFieldEffect(camera, { worldFocusDistance: 3, worldFocusRange: 3, bokehScale: 3.4, resolutionScale: 0.5 });
     const bloom = new BloomEffect({ mipmapBlur: true, intensity: 0.6, luminanceThreshold: 1.0, luminanceSmoothing: 0.2, radius: 0.72 });
     const tone = new ToneMappingEffect({ mode: ToneMappingMode.NEUTRAL });
@@ -354,13 +345,16 @@ const Post: React.FC<{ focus: number; range: number }> = ({ focus, range }) => {
     const bc = new BrightnessContrastEffect({ brightness: 0, contrast: 0.08 });
     const vig = new VignetteEffect({ offset: 0.28, darkness: 0.62 });
     composer.addPass(new RenderPass(scene, camera));
-    if (!FXV.includes("nodof")) composer.addPass(new EffectPass(camera, dof));
+    composer.addPass(new EffectPass(camera, dof));
     composer.addPass(new EffectPass(camera, bloom, tone, hue, bc, vig));
     if (!MSAA) composer.addPass(new EffectPass(camera, new SMAAEffect({ preset: SMAAPreset.HIGH })));
-    return { composer, dof, w: 0, h: 0 };
+    return { composer, dof, bloom, hue, vig, w: 0, h: 0 };
   }, [gl, scene, camera]);
   fx.dof.cocMaterial.worldFocusDistance = focus;
   fx.dof.cocMaterial.worldFocusRange = range;
+  fx.bloom.intensity = bloomK;
+  fx.hue.saturation = sat;
+  fx.vig.darkness = vigK;
   useFrame(() => {
     if (fx.w !== size.width || fx.h !== size.height) { fx.composer.setSize(size.width, size.height, false); fx.w = size.width; fx.h = size.height; }
     fx.composer.render(1 / 30);
@@ -426,7 +420,7 @@ const World: React.FC<{ frame: number }> = ({ frame }) => {
       babies: BABIES.map((b) => canvasTexture(400, 400, (g) => drawBabyX(g, 1, b.wrap, b.wrap2, b.hat, !!b.awake))),
       tags: BABIES.map((b) => canvasTexture(256, 160, (g) => drawNameTag(g, b.tag, false))),
       ourBaby: canvasTexture(1000, 1000, (g) => drawBabyX(g, 2.5, "#fff6f0", "#ffd3dc", "#ffd45c", false)),
-      ourTag: canvasTexture(256, 160, (g) => drawNameTag(g, "#ff5a6e", true)),
+      ourTag: canvasTexture(256, 160, (g) => drawNameTag(g, "#ffd9a0", true)),
     };
   }, []);
 
