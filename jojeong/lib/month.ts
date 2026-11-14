@@ -32,6 +32,8 @@ export type Month = {
 };
 
 const KST = 9 * 3600_000;
+// The engine speaks of "오늘"; on any other day of the grid that reads wrong ("중요한 일은 오늘 하세요" under 24일).
+const thatDay = (s: string) => s.replace(/오늘/g, "이날");
 
 export function monthFor(me: Person, now = new Date()): Month {
   const kst = new Date(now.getTime() + KST);
@@ -52,11 +54,11 @@ export function monthFor(me: Person, now = new Date()): Month {
       score: t.score ?? 0,
       today: date === todayDate,
       past: date < todayDate,
-      personal: t.personal ?? "",
+      personal: date === todayDate ? (t.personal ?? "") : thatDay(t.personal ?? ""),
       best: t.best?.label ?? null,
       hour: t.hour?.label.replace(/\(.+\)$/, "") ?? null,
       avoid: t.watch?.avoid ?? null,
-      hundo: t.hundo,
+      hundo: t.hundo && date !== todayDate ? thatDay(t.hundo) : t.hundo,
     });
   }
   const ahead = days.filter((d) => !d.past);
