@@ -4,36 +4,31 @@
     {
       "id": 0,
       "file": "ep06/vo_es/s0.wav",
-      "sec": 2.475
+      "sec": 3.371
     },
     {
       "id": 1,
       "file": "ep06/vo_es/s1.wav",
-      "sec": 2.795
+      "sec": 4.053
     },
     {
       "id": 2,
       "file": "ep06/vo_es/s2.wav",
-      "sec": 2.539
+      "sec": 4.629
     },
     {
       "id": 3,
       "file": "ep06/vo_es/s3.wav",
-      "sec": 5.44
+      "sec": 4.224
     },
     {
       "id": 4,
       "file": "ep06/vo_es/s4.wav",
-      "sec": 4.395
+      "sec": 2.731
     },
     {
       "id": 5,
       "file": "ep06/vo_es/s5.wav",
-      "sec": 2.731
-    },
-    {
-      "id": 6,
-      "file": "ep06/vo_es/s6.wav",
       "sec": 1.877
     }
   ]

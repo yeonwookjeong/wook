@@ -52,7 +52,7 @@ export const RemotionRoot: React.FC = () => {
       <Composition id="Ep05Check" component={Ep05Check} durationInFrames={14} fps={30} width={1080} height={1920} />
       <Composition id="Ep06" component={Ep06} durationInFrames={EP06.en.total} fps={30} width={1080} height={1920} defaultProps={{ lang: "en" as const }} />
       <Composition id="Ep06Es" component={Ep06} durationInFrames={EP06.es.total} fps={30} width={1080} height={1920} defaultProps={{ lang: "es" as const }} />
-      <Composition id="Ep06Check" component={Ep06Check} durationInFrames={14} fps={30} width={1080} height={1920} />
+      <Composition id="Ep06Check" component={Ep06Check} durationInFrames={12} fps={30} width={1080} height={1920} />
       <Composition id="Ep07" component={Ep07} durationInFrames={EP07.en.total} fps={30} width={1080} height={1920} defaultProps={{ lang: "en" as const }} />
       <Composition id="Ep07Es" component={Ep07} durationInFrames={EP07.es.total} fps={30} width={1080} height={1920} defaultProps={{ lang: "es" as const }} />
       <Composition id="Ep07Check" component={Ep07Check} durationInFrames={14} fps={30} width={1080} height={1920} />

@@ -4,7 +4,7 @@ import { AbsoluteFill, Audio, Easing, interpolate, Sequence, spring, staticFile,
 import { loadFont as loadNotoSans } from "@remotion/google-fonts/NotoSansKR";
 import voEn from "./vo_en.json";
 import voEs from "./vo_es.json";
-import { Mode06, Scene06, Words06 } from "./Scene06";
+import { Mode06F as Mode06, SceneFable06, Words06F as Words06, ORDER06F } from "../cas/fable/SceneFable06";
 
 const { fontFamily: sans } = loadNotoSans();
 const FPS = 30;
@@ -13,7 +13,7 @@ const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 
 type Lang = "en" | "es";
 type Cap = { text: string; hl?: boolean }[];
-type Fx = { name: string; at?: number; vol?: number };
+type Fx = { name: string; at?: number; u?: number; vol?: number };
 // xfade: 장소가 바뀌는 컷이 앞 컷 위로 겹쳐 들어오는 프레임 수. trans: 넘어가는 방식
 //   fade = 흐리게 겹침, ink = 빨간 잉크가 번지며 새 장면이 드러남, flash = 흰 빛이 번쩍하며 바뀜 (video-shotcraft 전환 카드)
 type Shot = { mode: Mode06; sent: number; weight?: number; sfx?: Fx[]; shake?: number; xfade?: number; trans?: "fade" | "ink" | "flash" };
@@ -22,41 +22,42 @@ const w = (text: string) => ({ text });
 
 // weight: 자막 글자 수 대신 쓰는 길이 비율 (짧은 자막인데 장면이 필요할 때)
 const SHOTS: Shot[] = [
-  { mode: "my", sent: 0, sfx: [{ name: "glitch", at: 0.8, vol: 0.3 }, { name: "pop", at: 1.1, vol: 0.4 }] },
-  { mode: "ours", sent: 1, sfx: [{ name: "pop", at: 0.6, vol: 0.3 }, { name: "pop", at: 1.1, vol: 0.3 }, { name: "pop", at: 1.6, vol: 0.3 }] },
-  { mode: "only", sent: 2, xfade: 9, trans: "fade", sfx: [{ name: "pop", at: 0.5, vol: 0.35 }] },
-  { mode: "belong", sent: 3, xfade: 9, trans: "fade", sfx: [{ name: "chime", at: 0.3, vol: 0.3 }] },
-  { mode: "company", sent: 4, xfade: 9, trans: "fade", sfx: [{ name: "pop", at: 1.6, vol: 0.35 }] },
-  { mode: "everywhere", sent: 5, xfade: 6, trans: "flash", sfx: [{ name: "pop", at: 0.4, vol: 0.3 }, { name: "pop", at: 0.9, vol: 0.3 }] },
-  { mode: "end", sent: 6, sfx: [{ name: "pop", at: 1.2, vol: 0.4 }] },
+  // 0 외동 거실: MY MOM 말풍선이 깨지고 OUR MOM
+  { mode: "onlychild", sent: 0, sfx: [{ name: "glitch", u: 0.62, vol: 0.3 }, { name: "pop", u: 0.72, vol: 0.4 }] },
+  // 1 집·학교·나라에 OUR 꼬리표 (세 번 팝)
+  { mode: "ours", sent: 1, xfade: 9, trans: "fade", sfx: [{ name: "pop", u: 0.08, vol: 0.3 }, { name: "pop", u: 0.25, vol: 0.3 }, { name: "pop", u: 0.42, vol: 0.3 }] },
+  // 2 가족이 둥글게 모이고 원 위에 OUR
+  { mode: "group", sent: 2, xfade: 9, trans: "fade", sfx: [{ name: "chime", u: 0.55, vol: 0.3 }] },
+  // 3 MY COMPANY = 사장님 / OUR COMPANY = 직원들 사이
+  { mode: "company", sent: 3, xfade: 9, trans: "fade", sfx: [{ name: "pop", u: 0.1, vol: 0.35 }, { name: "pop", u: 0.6, vol: 0.35 }] },
+  // 4 거리 간판에 우리 ○○가 켜짐
+  { mode: "everywhere", sent: 4, xfade: 6, trans: "flash", sfx: [{ name: "pop", u: 0.3, vol: 0.3 }, { name: "pop", u: 0.6, vol: 0.3 }] },
+  // 5 MY / OUR 카드 사이 물음표
+  { mode: "end", sent: 5, sfx: [{ name: "pop", u: 0.5, vol: 0.4 }] },
 ];
 
 const CAPS: Record<Lang, Cap[][]> = {
   en: [
-    [[w("In Korea,")], [w("people rarely say"), h("my.")], [w("They say"), h("our.")]],
-    [[w("Our mom.")], [w("Our house.")], [w("Our school.")], [h("Our country.")]],
-    [[w("Even if you're")], [w("an only child,")], [w("it's still"), h("our mom.")]],
-    [[w("In Korean,")], [w("things you belong to")], [w("are shared with"), h("your group.")], [w("Family, school,")], [w("company, country.")]],
-    [[w("So"), h("my company")], [w("sounds a little cold.")], [h("Our company")], [w("sounds like you're part of it.")]],
+    [[w("You're an only child.")], [w("But in Korea,")], [w("your mom is still"), h("our mom.")]],
+    [[w("Our house.")], [w("Our school.")], [w("Our country.")], [w("Koreans say"), h("our,"), w("not my.")]],
+    [[w("In Korean,")], [w("what belongs to your group")], [w("is"), h("ours.")], [w("Your family is the group,")], [w("so it's"), h("our mom.")]],
+    [[w("Say"), h("my company,")], [w("and it sounds like you own it.")], [h("Our company")], [w("means you work there.")]],
     [[w("Once you notice it,")], [w("you hear it"), h("everywhere.")]],
     [[w("In your language,")], [w("do you say"), h("my, or our?")]],
   ],
   es: [
-    [[w("En Corea,")], [w("casi nunca dicen"), h("mi.")], [w("Dicen"), h("nuestro.")]],
-    [[w("Nuestra mamá.")], [w("Nuestra casa.")], [w("Nuestra escuela.")], [h("Nuestro país.")]],
-    [[w("Aunque seas")], [w("hijo único,")], [w("sigue siendo"), h("nuestra mamá.")]],
-    [[w("En coreano,")], [w("lo que te une a un grupo")], [w("se comparte con"), h("ese grupo.")], [w("La familia, la escuela,")], [w("la empresa, el país.")]],
-    [[w("Por eso"), h("mi empresa")], [w("suena un poco fría.")], [h("Nuestra empresa")], [w("suena a que eres parte de ella.")]],
+    [[w("Eres hijo único.")], [w("Pero en Corea,")], [w("tu mamá sigue siendo"), h("nuestra mamá.")]],
+    [[w("Nuestra casa.")], [w("Nuestra escuela.")], [w("Nuestro país.")], [w("Los coreanos dicen"), h("nuestro,"), w("no mi.")]],
+    [[w("En coreano,")], [w("lo que es de tu grupo")], [w("es"), h("nuestro.")], [w("Tu familia es el grupo,")], [w("así que es"), h("nuestra mamá.")]],
+    [[w("Si dices"), h("mi empresa,")], [w("suena a que eres el dueño.")], [h("Nuestra empresa")], [w("es donde trabajas.")]],
     [[w("Cuando te das cuenta,")], [w("lo escuchas"), h("en todas partes.")]],
     [[w("En tu idioma,")], [w("¿dices"), h("mi o nuestro?")]],
   ],
-
 };
 
 const WORDS: Record<Lang, Words06> = {
-  en: { lang: "en", my: "MY", our: "OUR", house: "OUR HOUSE", school: "OUR SCHOOL", country: "OUR COUNTRY", mom: "OUR MOM", myCo: "MY COMPANY", ourCo: "OUR COMPANY" },
-  es: { lang: "es", my: "MI", our: "NUESTRO", house: "NUESTRA CASA", school: "NUESTRA ESCUELA", country: "NUESTRO PAÍS", mom: "NUESTRA MAMÁ", myCo: "MI EMPRESA", ourCo: "NUESTRA EMPRESA" },
-
+  en: { lang: "en", my: "MY", our: "OUR", myMom: "MY MOM", ourMom: "OUR MOM", house: "OUR HOUSE", school: "OUR SCHOOL", country: "OUR COUNTRY", myCo: "MY COMPANY", ourCo: "OUR COMPANY", boss: "BOSS" },
+  es: { lang: "es", my: "MI", our: "NUESTRO", myMom: "MI MAMÁ", ourMom: "NUESTRA MAMÁ", house: "NUESTRA CASA", school: "NUESTRA ESCUELA", country: "NUESTRO PAÍS", myCo: "MI EMPRESA", ourCo: "NUESTRA EMPRESA", boss: "JEFE" },
 };
 
 type Vo = { sentences: { id: number; file: string; sec: number }[] };
@@ -82,7 +83,7 @@ const Caption: React.FC<{ cap: Cap }> = ({ cap }) => {
   const { fps } = useVideoConfig();
   const pop = spring({ frame, fps, config: { damping: 12, stiffness: 260 } });
   return (
-    <div style={{ position: "absolute", left: 60, right: 60, top: 1180, display: "flex", justifyContent: "center", flexWrap: "wrap", gap: "0 22px", transform: `scale(${0.85 + 0.15 * pop})` }}>
+    <div style={{ position: "absolute", left: 60, right: 60, top: 1480, display: "flex", justifyContent: "center", flexWrap: "wrap", gap: "0 22px", transform: `scale(${0.85 + 0.15 * pop})` }}>
       {cap.map((x, i) => (
         <span key={i} style={{ fontFamily: sans, fontWeight: 900, fontSize: 88, lineHeight: 1.15, textAlign: "center", color: x.hl ? YELLOW : "#fff", WebkitTextStroke: "14px #000", paintOrder: "stroke fill", textShadow: "0 6px 18px rgba(0,0,0,0.55)" }}>
           {x.text}
@@ -148,7 +149,7 @@ const ShotView: React.FC<{ shot: Shot; caps: Cap[]; dur: number; words: Words06;
   return (
     <AbsoluteFill>
       <AbsoluteFill style={{ opacity: fadeIn, transform: `translate(${shake}px, ${shake * 0.4}px)`, ...(ink ? maskStyle(ink.fill) : {}) }}>
-        <Scene06 mode={shot.mode} t={t} words={words} />
+        <SceneFable06 mode={shot.mode} t={t} words={words} />
       </AbsoluteFill>
       {ink && <AbsoluteFill style={{ background: "#b3141a", opacity: 0.9, ...maskStyle(ink.rim) }} />}
       {flash > 0 && <AbsoluteFill style={{ background: "#fffaf0", opacity: flash }} />}
@@ -179,7 +180,7 @@ export const Ep06: React.FC<{ lang?: Lang }> = ({ lang = "en" }) => {
         <Sequence key={i} from={b.starts[i] - (shot.xfade ?? 0)} durationInFrames={b.frames[i] + (shot.xfade ?? 0)}>
           <ShotView shot={shot} caps={b.caps[i]} dur={b.frames[i]} words={WORDS[lang]} pre={shot.xfade ?? 0} />
           {(shot.sfx ?? []).map((fx, k) => (
-            <Sequence key={k} from={(shot.xfade ?? 0) + Math.round((fx.at ?? 0) * FPS)} layout="none">
+            <Sequence key={k} from={(shot.xfade ?? 0) + (fx.u !== undefined ? Math.round(fx.u * b.frames[i]) : Math.round((fx.at ?? 0) * FPS))} layout="none">
               <Audio src={staticFile(`sfx/${fx.name}.wav`)} volume={fx.vol ?? 0.4} />
             </Sequence>
           ))}
@@ -199,10 +200,9 @@ export const Ep06: React.FC<{ lang?: Lang }> = ({ lang = "en" }) => {
   );
 };
 
-// 점검용: 컷마다 한 장면 (앞 7장 t=0.15, 뒤 7장 t=0.85)
+// 점검용: 컷마다 한 장면 (앞 6장 t=0.15, 뒤 6장 t=0.85)
 import { useCurrentFrame as useF } from "remotion";
-import { ORDER06 } from "./Scene06";
 export const Ep06Check: React.FC = () => {
   const f = useF();
-  return <Scene06 mode={ORDER06[f % ORDER06.length]} t={f < ORDER06.length ? 0.15 : 0.85} words={WORDS.en} />;
+  return <SceneFable06 mode={ORDER06F[f % ORDER06F.length]} t={f < ORDER06F.length ? 0.15 : 0.85} words={WORDS.en} />;
 };
