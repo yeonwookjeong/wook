@@ -97,12 +97,10 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
         <>
           {isOwner && seats.length === 0 ? (
             <>
-              {/* First thing after the accession: the empty court (drawn above) and the way to fill it (the game's loop). */}
-              <div className="mt-3">
-                <ShareLinkButton path={`/court/${court.id}`} text={inviteText} label="친구 불러 자리 채우기" />
-              </div>
-              <p className="mt-2 text-center text-[12px] leading-relaxed text-ink-soft">
-                단톡방에 올리면 여럿이 한 번에 들어오옵니다. 들어오는 친구마다 사주로 관직이 정해지옵니다.
+              {/* First thing after the accession: the empty court (drawn above). The way to fill it is the floating
+                  button at the bottom; a second copy here showed twice on one screen (대표님 11/15 "어색"). */}
+              <p className="mt-3 text-center text-[13px] leading-relaxed text-ink-soft">
+                아래 붉은 버튼으로 단톡방에 올리면 여럿이 한 번에 들어오옵니다. 들어오는 친구마다 사주로 관직이 정해지옵니다.
               </p>
               <section className="mt-6">
                 <Hundo mood="bow">전하, 즉위를 경하드리옵니다. 벗들을 기다리시는 동안 전하의 실록부터 올리옵니다.</Hundo>

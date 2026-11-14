@@ -103,7 +103,7 @@ export default function CourtBoard({
       {/* 행각 사이 마당 */}
       <div
         className="relative -mt-8 overflow-hidden rounded-b-xl px-2.5 pt-28 pb-5"
-        style={{ background: "url(/king/yard.webp) top / 100% auto no-repeat, linear-gradient(#f4ecdb 0 64px, #7d6a5a 64px)" }}
+        style={{ background: "url(/king/yard.webp) top / 100% auto no-repeat, linear-gradient(#f4ecdb 0 64px, #786060 64px)" }}
       >
         <p className="relative mx-auto w-fit rounded-md bg-[#211b17]/70 px-3 py-1 text-center font-myeongjo text-[12px] font-bold tracking-[0.3em] text-[#f1d892]">
           朝 廷 圖
@@ -123,7 +123,7 @@ export default function CourtBoard({
 
         {/* 행각 기둥 뒤: 간신 */}
         <div className="relative mt-5 flex items-end gap-3 overflow-hidden rounded-lg bg-[#211b17]/85 pr-3 text-hanji">
-          <Image src="/king/gansin.webp" alt="행각 기둥 뒤에서 엿보는 간신" width={360} height={514} className="-mb-1 h-[104px] w-auto shrink-0" />
+          <Image src="/king/gansin.webp" alt="행각 기둥 뒤에서 엿보는 간신" width={360} height={514} className={`-mb-1 h-[104px] w-auto shrink-0 ${gansin.length ? "" : "opacity-40 grayscale"}`} />
           <p className="py-3 text-[14px] leading-snug">
             <b className="font-myeongjo text-[#f1d892]">간신</b> {names(gansin)}
             <span className="block text-[13px] text-hanji/80">
@@ -134,9 +134,9 @@ export default function CourtBoard({
       </div>
 
       {/* 근정문과 그 밖의 유배 */}
-      <Image src="/king/gate.webp" alt="근정문" width={1080} height={452} className="mt-6 block h-auto w-full" />
-      <div className="relative mt-2">
-        <Image src="/king/exile.webp" alt="유배 가는 배와 섬" width={720} height={392} className="mx-auto block h-auto w-[84%]" />
+      <Image src="/king/gate.webp" alt="근정문" width={1080} height={452} className="mx-auto mt-5 block h-auto w-[78%]" />
+      <div className="relative mt-1">
+        <Image src="/king/exile.webp" alt="유배 가는 배와 섬" width={720} height={392} className="mx-auto block h-auto w-[56%]" />
         <p className="mt-1 text-center text-[14px] leading-relaxed text-ink-soft">
           <b className="font-myeongjo text-ink">궐문 밖, 유배 가는 배</b>
           <br />
