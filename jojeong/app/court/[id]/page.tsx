@@ -79,7 +79,13 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
           )}
         </p>
       </header>
-      {(isOwner || joined) && <KingMatch pillars={court.king} />}
+      {(isOwner || joined) && (
+        <CourtBoard
+          kingName={court.kingName}
+          seats={seats.map((x) => ({ role: x.role, name: x.minister.name, score: x.match.score }))}
+          throne={<KingMatch pillars={court.king} />}
+        />
+      )}
       {!isOwner && !joined ? (
         <Invitation
           courtId={court.id}
@@ -91,8 +97,7 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
         <>
           {isOwner && seats.length === 0 ? (
             <>
-              {/* First thing after the accession: the empty court and the way to fill it (the game's loop). */}
-              <CourtBoard kingName={court.kingName} seats={[]} />
+              {/* First thing after the accession: the empty court (drawn above) and the way to fill it (the game's loop). */}
               <div className="mt-3">
                 <ShareLinkButton path={`/court/${court.id}`} text={inviteText} label="친구 불러 자리 채우기" />
               </div>
@@ -134,7 +139,6 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
             </section>
           )}
 
-          {seats.length > 0 && <CourtBoard kingName={court.kingName} seats={seats.map((x) => ({ role: x.role, name: x.minister.name }))} />}
           {seats.length > 0 && (
             <div className="mt-6 flex items-end justify-between gap-2">
               <p className="font-myeongjo text-[15px] font-extrabold">
