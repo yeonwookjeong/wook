@@ -88,10 +88,14 @@ export default function CourtBoard({
   return (
     <section className="mt-5" aria-label={`${kingName} 전하의 조정도`}>
       {/* 근정전 */}
-      <Image src="/king/hall.webp" alt="열린 문 안으로 어좌가 보이는 근정전" width={1080} height={700} priority className="block h-auto w-full" />
+      {/* Full-bleed, sky and hills included, so the hall does not stand on blank paper (대표님 11/15 "배경이 휑"). */}
+      <div className="relative -mx-4">
+        <Image src="/king/hero.webp" alt="노을 아래 열린 문 안으로 어좌가 보이는 근정전" width={1080} height={780} priority className="block h-auto w-full" />
+        <span aria-hidden className="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-hanji to-transparent" />
+      </div>
 
       {/* 어좌 */}
-      <div className="relative z-10 mx-2 -mt-4 rounded-xl bg-[#0f2236] px-4 pt-3.5 pb-4 text-hanji shadow-[0_8px_20px_rgb(15_34_54/0.3),inset_0_0_0_1px_rgb(217_180_101/0.4)]">
+      <div className="relative z-10 mx-2 -mt-16 rounded-xl bg-[#0f2236] px-4 pt-3.5 pb-4 text-hanji shadow-[0_8px_20px_rgb(15_34_54/0.3),inset_0_0_0_1px_rgb(217_180_101/0.4)]">
         {throne ?? (
           <>
             <p className="font-myeongjo text-[12px] font-bold tracking-[0.2em] text-[#d9b465]">御 座</p>
