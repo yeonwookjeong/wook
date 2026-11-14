@@ -131,16 +131,19 @@ export default function CourtBoard({
             </span>
           </p>
         </div>
+
+        {/* 근정문, standing on the yard's last row of stones so it is not left floating (대표님 11/15). */}
+        <Image src="/king/gate.webp" alt="근정문" width={1080} height={452} className="relative mx-auto mt-6 -mb-5 block h-auto w-[88%]" />
       </div>
 
-      {/* 근정문과 그 밖의 유배 */}
-      <Image src="/king/gate.webp" alt="근정문" width={1080} height={452} className="mx-auto mt-5 block h-auto w-[78%]" />
-      <div className="relative mt-1">
-        <Image src="/king/exile.webp" alt="유배 가는 배와 섬" width={720} height={392} className="mx-auto block h-auto w-[56%]" />
-        <p className="mt-1 text-center text-[14px] leading-relaxed text-ink-soft">
-          <b className="font-myeongjo text-ink">궐문 밖, 유배 가는 배</b>
-          <br />
-          {yubae.length ? `${names(yubae)}, 먼 섬으로 떠났사옵니다` : "아직 아무도 태우지 않았사옵니다"}
+      {/* 궐문 밖: 유배, in a night-sea panel like the 간신 one so the boat sits in a scene, not on blank paper. */}
+      <div className="mt-3 flex items-center gap-3 overflow-hidden rounded-xl bg-[#0f2236] py-2 pr-4 pl-1 text-hanji shadow-[inset_0_0_0_1px_rgb(217_180_101/0.35)]">
+        <Image src="/king/exile.webp" alt="유배 가는 배와 섬" width={720} height={392} className="h-[84px] w-auto shrink-0" />
+        <p className="text-[14px] leading-snug">
+          <b className="font-myeongjo text-[#f1d892]">궐문 밖, 유배</b> {names(yubae)}
+          <span className="block text-[13px] text-hanji/80">
+            {yubae.length ? "먼 섬으로 떠났사옵니다" : "아직 아무도 배에 태우지 않았사옵니다"}
+          </span>
         </p>
       </div>
       {caption && <p className="mt-3 text-center text-[12px] leading-relaxed text-ink-soft">{caption}</p>}
