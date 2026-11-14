@@ -73,14 +73,13 @@ export default function SinsalNote({ gift }: { gift: number }) {
         className="relative w-full max-w-[400px] animate-rise overflow-hidden rounded-3xl bg-[#0f2236] text-hanji shadow-[0_20px_50px_rgb(0_0_0/0.45),inset_0_0_0_1px_rgb(212_175_95/0.4)]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="relative flex h-[clamp(130px,24dvh,210px)] items-end justify-center bg-[radial-gradient(circle_at_50%_35%,rgb(212_175_95/0.28),transparent_65%)]">
-          <Image src="/hundo-decree.png" alt="어명 두루마리를 펼친 정 훈도" width={200} height={200} className="h-[92%] w-auto object-contain" />
-          <span aria-hidden className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-[#0f2236]" />
+        <div className="relative flex justify-center pt-6">
+          <Image src="/hundo-decree.png" alt="어명 두루마리를 펼친 정 훈도" width={200} height={200} className="size-[clamp(112px,18dvh,152px)] rounded-full bg-white object-cover shadow-[0_0_0_3px_#d4af5f]" />
           <button type="button" onClick={close} aria-label="닫기" className="absolute top-2.5 right-2.5 size-8 rounded-full bg-[#0f2236]/60 text-hanji/90 backdrop-blur-sm">
             ✕
           </button>
         </div>
-        <div className="relative -mt-2 px-5 pb-4 text-center">
+        <div className="relative mt-4 px-5 pb-4 text-center">
           <p className="font-myeongjo text-[12px] font-bold tracking-[0.3em] text-[#d4af5f]">新 刊, 왕이 될 사주</p>
           <h2 className="mt-1 font-myeongjo text-[21px] leading-snug font-extrabold">나랑 같은 일주 왕은 누구일까</h2>
           <p className="mt-2 text-[14px] leading-relaxed break-keep text-hanji/85">
