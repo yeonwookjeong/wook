@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import AskLink from "./AskLink";
-import Peaks from "./Peaks";
 import { trackEvent } from "./VisitBeacon";
 
 // The one notice: 왕이 될 사주 since its renewal (2026-11-14; before that the 신살 유형 테스트), once per browser, as soon as a page opens. Never
@@ -63,9 +63,9 @@ export default function SinsalNote({ gift }: { gift: number }) {
         className="relative w-full max-w-[400px] animate-rise overflow-hidden rounded-3xl bg-[#0f2236] text-hanji shadow-[0_20px_50px_rgb(0_0_0/0.45),inset_0_0_0_1px_rgb(212_175_95/0.4)]"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* 일월오봉도, the screen behind the king's throne, as the notice's picture (대표님 11/14: 훈도 말고 왕의 상징). */}
-        <div className="relative h-[clamp(112px,19dvh,150px)]">
-          <Peaks />
+        {/* The throne before the 일월오봉도 as the notice's picture (대표님 11/14: 훈도 말고 왕의 상징; 그림 public/king). */}
+        <div className="relative flex justify-center px-4 pt-5">
+          <Image src="/king/throne.webp" alt="일월오봉도 앞 어좌" width={1080} height={639} className="h-[clamp(130px,24dvh,210px)] w-auto object-contain" />
           <button type="button" onClick={close} aria-label="닫기" className="absolute top-2.5 right-2.5 size-8 rounded-full bg-[#0f2236]/60 text-hanji/90 backdrop-blur-sm">
             ✕
           </button>
