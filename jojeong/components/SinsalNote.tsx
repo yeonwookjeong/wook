@@ -1,9 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import AskLink from "./AskLink";
 import { trackEvent } from "./VisitBeacon";
 
@@ -63,8 +63,9 @@ export default function SinsalNote({ gift }: { gift: number }) {
         className="relative w-full max-w-[400px] animate-rise overflow-hidden rounded-3xl bg-[#0f2236] text-hanji shadow-[0_20px_50px_rgb(0_0_0/0.45),inset_0_0_0_1px_rgb(212_175_95/0.4)]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="relative flex justify-center pt-6">
-          <Image src="/hundo-decree.png" alt="어명 두루마리를 펼친 정 훈도" width={200} height={200} className="size-[clamp(112px,18dvh,152px)] rounded-full bg-white object-cover shadow-[0_0_0_3px_#d4af5f]" />
+        {/* The throne before the 일월오봉도 as the notice's picture (대표님 11/14: 훈도 말고 왕의 상징; 그림 public/king). */}
+        <div className="relative flex justify-center px-4 pt-5">
+          <Image src="/king/throne.webp" alt="일월오봉도 앞 어좌" width={1080} height={639} className="h-[clamp(130px,24dvh,210px)] w-auto object-contain" />
           <button type="button" onClick={close} aria-label="닫기" className="absolute top-2.5 right-2.5 size-8 rounded-full bg-[#0f2236]/60 text-hanji/90 backdrop-blur-sm">
             ✕
           </button>

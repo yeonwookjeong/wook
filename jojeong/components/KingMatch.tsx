@@ -28,7 +28,7 @@ export default function KingMatch({ pillars }: { pillars: Pillars }) {
 
   return (
     <div className="text-hanji">
-      <div className="rounded-xl bg-[#1c2a40] px-4 py-4 shadow-[inset_0_0_0_1px_rgb(217_180_101/0.3)]">
+      <div>
         <p className="font-myeongjo text-[12px] font-bold tracking-[0.2em] text-[#d9b465]">御 座</p>
         <p className="mt-1 font-myeongjo text-[13px] font-bold text-[#d4af5f]">
           {link.kind === "pillar"
