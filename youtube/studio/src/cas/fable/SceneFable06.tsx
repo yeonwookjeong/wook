@@ -72,12 +72,12 @@ const drawTagLabel = (g: G, s: string, bg: string, fg = "#ffffff") => {
   text(g, s, 300, 88, 84, 500, fg);
 };
 /** 큰 낱말 카드 (480x320). cross = 빨간 가위표 */
-const drawWord = (g: G, s: string, bg: string, fg: string, cross = false) => {
-  g.clearRect(0, 0, 480, 320);
+const drawWord = (g: G, s: string, bg: string, fg: string, cross = false, W = 480) => {
+  g.clearRect(0, 0, W, 320);
   g.lineJoin = "round"; g.lineCap = "round";
-  g.beginPath(); g.roundRect(22, 22, 436, 276, 44); g.fillStyle = bg; g.fill(); g.lineWidth = 16; g.strokeStyle = INK; g.stroke();
-  g.beginPath(); g.roundRect(44, 44, 392, 232, 28); g.lineWidth = 6; g.strokeStyle = "rgba(255,255,255,0.55)"; g.stroke();
-  text(g, s, 240, 160, 170, 360, fg);
+  g.beginPath(); g.roundRect(22, 22, W - 44, 276, 44); g.fillStyle = bg; g.fill(); g.lineWidth = 16; g.strokeStyle = INK; g.stroke();
+  g.beginPath(); g.roundRect(44, 44, W - 88, 232, 28); g.lineWidth = 6; g.strokeStyle = "rgba(255,255,255,0.55)"; g.stroke();
+  text(g, s, W / 2, 160, 170, W - 120, fg);
   if (cross) {
     [[20, INK], [10, "#e2343a"]].forEach(([w, c]) => {
       g.lineWidth = w as number; g.strokeStyle = c as string;
@@ -271,6 +271,24 @@ const Roof: React.FC<{ p: V3; r: number; len: number; c: string; flat?: number }
     </group>
   );
 };
+/** 박공지붕: 삼각형 면이 카메라 쪽(+z)을 보게 (정면에서 집 모양 ⌂ 이 바로 읽힘) */
+const Gable: React.FC<{ p: V3; w: number; h: number; d: number; c: string }> = ({ p, w, h, d, c }) => {
+  const geo = useMemo(() => {
+    const sh = new THREE.Shape();
+    sh.moveTo(-w / 2, 0); sh.lineTo(w / 2, 0); sh.lineTo(0, h); sh.closePath();
+    const g = new THREE.ExtrudeGeometry(sh, { depth: d, bevelEnabled: false });
+    g.translate(0, 0, -d / 2);
+    return g;
+  }, [w, h, d]);
+  return (
+    <group position={p}>
+      <mesh geometry={geo} castShadow>
+        <meshStandardMaterial color={c} roughness={0.8} />
+      </mesh>
+      <mesh geometry={geo} material={inkMat(0.014)} />
+    </group>
+  );
+};
 /** 거실 (onlychild · group · end 공용) */
 const LivingRoom: React.FC<{ tx: { floor: THREE.Texture; wall: THREE.Texture; warm: THREE.Texture; white: THREE.Texture; photo: THREE.Texture }; T: number; bright?: number; sofaX?: number }> = ({ tx, T, bright = 0.6, sofaX = 1.0 }) => (
   <>
@@ -311,7 +329,7 @@ const useRoomTex = () => useMemo(() => ({ floor: woodFloor(), wall: tealWall(), 
 
 const MOM: Look = { skin: "#f4d0b0", hair: "long", hairC: "#5a3424", top: "#c86b8a", bottom: "#4a4a6a", shoes: "#8a5a3a" };
 const GRAN: Look = { skin: "#eac4a2", hair: "bob", hairC: "#c4c0c8", top: "#8a6a9a", bottom: "#4a4658", shoes: "#3a3030", glasses: true };
-const SUIT: Look = { ...ME, top: "#2b3558", bottom: "#2b3558", shoes: "#1e1a1c" };
+const SUIT: Look = { skin: "#e8c09c", hair: "short", hairC: "#4a4448", top: "#2b3558", bottom: "#2b3558", shoes: "#1e1a1c" };
 const BW = 0.6, BH = 0.356; // 말풍선
 const RED = "#e2343a", BLUE = "#3b6fb6", GOLD = "#ffb52e", GREY = "#b9bcc8";
 
@@ -390,7 +408,7 @@ const Ours: React.FC<{ t: number; w: Words06F }> = ({ t, w }) => {
   const item = (i: number) => pop(t, AT[i] - 0.05, 0.08);
   const big = pop(t, 0.74, 0.08), cross = pop(t, 0.7, 0.06);
   const dimK = 1 - 0.45 * seg(t, 0.68, 0.78);
-  const TW = 0.52, TH = 0.19;
+  const TW = 0.66, TH = 0.241;
   return (
     <>
       <CamSet p={cam} t={[0, 1.18, -0.6]} fov={35} />
@@ -412,17 +430,17 @@ const Ours: React.FC<{ t: number; w: Words06F }> = ({ t, w }) => {
       ))}
       {/* 집 */}
       <group position={[-0.36, 0.5, 0.45]} scale={item(0) * 0.8}>
+        <InkBox p={[0.2, 0.62, -0.06]} s={[0.08, 0.22, 0.08]} c="#b86a3a" th={0.008} />
         <InkBox p={[0, 0.2, 0]} s={[0.62, 0.4, 0.46]} c="#fff0d8" th={0.014} />
-        <Roof p={[0, 0.4 + 0.11, 0]} r={0.33} len={0.74} c="#e2574c" />
+        <Gable p={[0, 0.4, 0]} w={0.8} h={0.34} d={0.54} c="#e2574c" />
         <Decal tex={tx.house} p={[0, 0.2, 0.246]} w={0.56} h={0.39} />
-        <InkBox p={[0.18, 0.62, -0.05]} s={[0.08, 0.2, 0.08]} c="#b86a3a" th={0.008} />
       </group>
       {/* 학교 */}
       <group position={[0.3, 0.9, -0.3]} scale={item(1) * 0.7}>
         <InkBox p={[0, 0.27, 0]} s={[1.04, 0.54, 0.4]} c="#ffe2b0" th={0.014} />
         <InkBox p={[0, 0.57, 0]} s={[1.1, 0.06, 0.46]} c="#6f8fb0" th={0.012} />
         <InkBox p={[0, 0.72, 0]} s={[0.26, 0.26, 0.3]} c="#ffe2b0" th={0.012} />
-        <Roof p={[0, 0.9, 0]} r={0.16} len={0.3} c="#6f8fb0" />
+        <Gable p={[0, 0.85, 0]} w={0.36} h={0.18} d={0.34} c="#6f8fb0" />
         <Decal tex={tx.school} p={[0, 0.27, 0.217]} w={1.0} h={0.5} />
         <Decal tex={tx.clock} p={[0, 0.72, 0.167]} w={0.16} h={0.16} />
       </group>
@@ -432,11 +450,10 @@ const Ours: React.FC<{ t: number; w: Words06F }> = ({ t, w }) => {
         <Decal tex={tx.map} p={[0, 0.58, 0]} w={0.62} h={0.806} />
       </group>
       {/* OUR 꼬리표: 각자 바로 옆에 */}
-      {([[0.3, 0.86, 0.5], [0.36, 1.8, -0.25], [-0.32, 2.2, -0.95]] as V3[]).map((p, i) => {
+      {([[-0.34, 1.36, 0.6], [0.36, 1.8, -0.25], [-0.32, 2.2, -0.95]] as V3[]).map((p, i) => {
         const s = pop(t, AT[i], 0.07);
         return (
           <group key={i}>
-            <Glow tex={tx.gold} p={[p[0], p[1], p[2] - 0.03]} w={1.0} h={0.7} o={0.6 * pulse(t, AT[i], 0.14)} />
             <Card tex={tx.tags[i]} at={[p[0], p[1] + Math.sin(T * 2 + i) * 0.008, p[2]]} w={TW * (1 + i * 0.08)} h={TH * (1 + i * 0.08)} cam={cam} scale={s} rotZ={(i - 1) * 0.04} tint={dimK < 0.8 ? "#c8c8d4" : "#ffffff"} />
           </group>
         );
@@ -445,7 +462,7 @@ const Ours: React.FC<{ t: number; w: Words06F }> = ({ t, w }) => {
       {cross > 0.01 && <Card tex={tx.my} at={[0, 1.78, 1.5]} w={0.4} h={0.267} cam={cam} scale={cross} rotZ={-0.08} tint="#ffffff" />}
       {big > 0.01 && (
         <>
-          <Glow tex={tx.gold} p={[0, 1.3, 1.42]} w={1.6} h={1.3} o={0.5 + 0.4 * pulse(t, 0.74, 0.14)} />
+          <Glow tex={tx.gold} p={[0, 1.3, 1.42]} w={1.6} h={1.3} o={0.45 * big} />
           <Card tex={tx.our} at={[0, 1.3 + Math.sin(T * 2.4) * 0.008, 1.5]} w={0.62} h={0.413} cam={cam} scale={big} rotZ={0.03} tint="#ffffff" />
           {[0, 1, 2, 3, 4, 5].map((i) => { const a = clamp01((t - 0.74) / 0.2), ang = (i / 6) * Math.PI * 2 + 0.5, r = 0.2 + a * 0.25; return a < 1 ? <Glow key={i} tex={tx.sparks[i % 3]} p={[Math.cos(ang) * r * 1.3, 1.3 + Math.sin(ang) * r, 1.55]} w={0.1} h={0.1} o={1 - a} k={2.2} /> : null; })}
         </>
@@ -723,9 +740,10 @@ const Street: React.FC<{ t: number }> = ({ t }) => {
 const End: React.FC<{ t: number; w: Words06F }> = ({ t, w }) => {
   const T = t * DUR.end;
   const room = useRoomTex();
+  const OW = w.our.length > 4 ? 680 : 480;
   const tx = useMemo(() => ({
     my: canvasTexture(480, 320, (g) => drawWord(g, w.my, "#8fc8ff", INK)),
-    our: canvasTexture(480, 320, (g) => drawWord(g, w.our, "#ffd23a", INK)),
+    our: canvasTexture(OW, 320, (g) => drawWord(g, w.our, "#ffd23a", INK, false, OW)),
     q: canvasTexture(400, 480, drawQ),
     blue: glowTex("110,170,255"),
   }), [w]);
@@ -739,10 +757,10 @@ const End: React.FC<{ t: number; w: Words06F }> = ({ t, w }) => {
       <CamSet p={cam} t={[0, 1.17, 0]} fov={35} />
       <LivingRoom tx={room} T={T} bright={0.8} sofaX={1.25} />
       <Guy look={ME} pose={pose} feet={[0, 0, 0]} cam={cam} s={1.25} bob={Math.abs(Math.sin(T * 2.2)) * 0.008 + pulse(t, 0.5, 0.2) * 0.04} />
-      <Glow tex={tx.blue} p={[-0.3, 1.44, 0.1]} w={0.9} h={0.8} o={0.3 * Math.min(1, sL)} />
-      <Card tex={tx.my} at={[-0.3, 1.44 + Math.sin(T * 2) * 0.012, 0.16]} w={CWd} h={CHt} cam={cam} scale={sL} rotZ={0.07 + Math.sin(T * 1.5) * 0.02} tint="#ffffff" />
-      <Glow tex={room.gold} p={[0.3, 1.44, 0.1]} w={0.9} h={0.8} o={0.3 * Math.min(1, sR)} />
-      <Card tex={tx.our} at={[0.3, 1.44 + Math.sin(T * 2 + 2) * 0.012, 0.16]} w={CWd} h={CHt} cam={cam} scale={sR} rotZ={-0.07 + Math.sin(T * 1.5 + 1) * 0.02} tint="#ffffff" />
+      <Glow tex={tx.blue} p={[OW > 480 ? -0.36 : -0.3, 1.44, 0.1]} w={0.9} h={0.8} o={0.3 * Math.min(1, sL)} />
+      <Card tex={tx.my} at={[OW > 480 ? -0.36 : -0.3, 1.44 + Math.sin(T * 2) * 0.012, 0.16]} w={CWd} h={CHt} cam={cam} scale={sL} rotZ={0.07 + Math.sin(T * 1.5) * 0.02} tint="#ffffff" />
+      <Glow tex={room.gold} p={[(OW > 480 ? 0.24 : 0.3), 1.44, 0.1]} w={0.9} h={0.8} o={0.3 * Math.min(1, sR)} />
+      <Card tex={tx.our} at={[(OW > 480 ? 0.24 : 0.3), 1.44 + Math.sin(T * 2 + 2) * 0.012, 0.16]} w={CWd * OW / 480} h={CHt} cam={cam} scale={sR} rotZ={-0.07 + Math.sin(T * 1.5 + 1) * 0.02} tint="#ffffff" />
       {q > 0.01 && (
         <>
           <Glow tex={room.gold} p={[0, 1.88, 0.1]} w={1.4} h={1.4} o={0.5 * Math.min(1, q)} />
