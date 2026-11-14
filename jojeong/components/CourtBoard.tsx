@@ -94,22 +94,22 @@ export default function CourtBoard({
         <span aria-hidden className="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-hanji to-transparent" />
       </div>
 
-      {/* 어좌 */}
-      <div className="relative z-10 mx-2 -mt-16 rounded-xl bg-[#0f2236] px-4 pt-3.5 pb-4 text-hanji shadow-[0_8px_20px_rgb(15_34_54/0.3),inset_0_0_0_1px_rgb(217_180_101/0.4)]">
-        {throne ?? (
-          <>
-            <p className="font-myeongjo text-[12px] font-bold tracking-[0.2em] text-[#d9b465]">御 座</p>
-            <p className="mt-1 font-myeongjo text-[24px] leading-tight font-extrabold">{kingName} 전하</p>
-          </>
-        )}
-      </div>
-
-      {/* 행각 사이 마당 */}
+      {/* 행각 사이 마당, full-bleed like the hall above, with the throne card at its head (대표님 11/15 "배경이 휑"). */}
       <div
-        className="relative -mt-8 overflow-hidden rounded-b-xl px-2.5 pt-28 pb-5"
-        style={{ background: "url(/king/yard.webp) top / cover no-repeat, #f4ecdb" }}
+        className="relative -mx-4 px-4 pb-5"
+        style={{ background: "url(/king/yard.webp) top / cover no-repeat, #7e6363" }}
       >
-        <p className="relative mx-auto w-fit rounded-md bg-[#211b17]/70 px-3 py-1 text-center font-myeongjo text-[12px] font-bold tracking-[0.3em] text-[#f1d892]">
+        {/* 어좌 */}
+        <div className="relative z-10 mx-1.5 -mt-16 rounded-xl bg-[#0f2236] px-4 pt-3.5 pb-4 text-hanji shadow-[0_8px_20px_rgb(15_34_54/0.3),inset_0_0_0_1px_rgb(217_180_101/0.4)]">
+          {throne ?? (
+            <>
+              <p className="font-myeongjo text-[12px] font-bold tracking-[0.2em] text-[#d9b465]">御 座</p>
+              <p className="mt-1 font-myeongjo text-[24px] leading-tight font-extrabold">{kingName} 전하</p>
+            </>
+          )}
+        </div>
+
+        <p className="relative mx-auto mt-5 w-fit rounded-md bg-[#211b17]/70 px-3 py-1 text-center font-myeongjo text-[12px] font-bold tracking-[0.3em] text-[#f1d892]">
           朝 廷 圖
         </p>
         {bestRole && (
