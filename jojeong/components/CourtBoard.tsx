@@ -134,7 +134,7 @@ export default function CourtBoard({
       </div>
 
       {/* 근정문과 그 밖의 유배 */}
-      <Image src="/king/gate.webp" alt="근정문" width={1080} height={490} className="mt-6 block h-auto w-full" />
+      <Image src="/king/gate.webp" alt="근정문" width={1080} height={452} className="mt-6 block h-auto w-full" />
       <div className="relative mt-2">
         <Image src="/king/exile.webp" alt="유배 가는 배와 섬" width={720} height={392} className="mx-auto block h-auto w-[84%]" />
         <p className="mt-1 text-center text-[14px] leading-relaxed text-ink-soft">
