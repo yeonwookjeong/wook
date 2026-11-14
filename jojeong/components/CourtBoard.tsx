@@ -80,11 +80,10 @@ function Seat({ role, here, best, side }: { role: RoleKey; here: BoardSeat[]; be
       >
         <p className="font-myeongjo text-[14px] leading-tight font-bold">
           {ROLES[role].title}
-          {best && <span className="ml-1 font-sans text-[12px] text-seal">최고 궁합</span>}
         </p>
         <p className="mt-1 flex items-baseline justify-between gap-1 text-[14px] leading-tight">
           <span className={`truncate ${here.length ? "" : "text-ink-soft"}`}>{here.length ? names(here) : "비어 있음"}</span>
-          {top !== undefined && <span className="shrink-0 text-[12px] font-bold text-gold">{top}점</span>}
+          {top !== undefined && <span className={`shrink-0 text-[12px] font-bold ${best ? "text-seal" : "text-gold"}`}>{top}점</span>}
         </p>
       </div>
     </div>
@@ -136,6 +135,11 @@ export default function CourtBoard({
       <div className="relative rounded-xl bg-[#d9cfbb] bg-[repeating-linear-gradient(0deg,transparent_0_27px,rgb(33_27_23/0.07)_27px_28px),repeating-linear-gradient(90deg,transparent_0_41px,rgb(33_27_23/0.07)_41px_42px)] px-3 pt-5 pb-6">
         <div aria-hidden className="absolute inset-y-0 left-1/2 w-9 -translate-x-1/2 border-x border-ink/10 bg-[#e6dcc7]" />
         <p className="relative text-center font-myeongjo text-[12px] font-bold tracking-[0.4em] text-[#4a4038]">朝 廷 圖</p>
+        {bestRole && (
+          <p className="relative mx-auto mt-2 w-fit rounded-md bg-[#e6dcc7] px-2 py-1 text-center text-[12px] text-[#4a4038]">
+            붉은 테가 전하와 가장 잘 맞는 신하이옵니다
+          </p>
+        )}
         {ROWS.map(([w, e]) => (
           <div key={e} className="relative mt-3 grid grid-cols-[1fr_36px_1fr] items-center">
             {w ? <Seat role={w} here={at(w)} best={bestRole === w} side="w" /> : <div />}
