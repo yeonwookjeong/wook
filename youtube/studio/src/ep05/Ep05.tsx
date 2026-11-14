@@ -14,7 +14,8 @@ const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 
 type Lang = "en" | "es";
 type Cap = { text: string; hl?: boolean }[];
-type Fx = { name: string; at?: number; vol?: number };
+// at = 컷 시작부터 초, u = 컷 길이에 대한 비율(0~1, 언어마다 길이가 달라도 화면과 맞음)
+type Fx = { name: string; at?: number; u?: number; vol?: number };
 // xfade: 장소가 바뀌는 컷이 앞 컷 위로 겹쳐 들어오는 프레임 수. trans: 넘어가는 방식
 //   fade = 흐리게 겹침, ink = 빨간 잉크가 번지며 새 장면이 드러남, flash = 흰 빛이 번쩍하며 바뀜 (video-shotcraft 전환 카드)
 type Shot = { mode: Mode05; sent: number; weight?: number; sfx?: Fx[]; shake?: number; xfade?: number; trans?: "fade" | "ink" | "flash" };
@@ -25,7 +26,7 @@ const w = (text: string) => ({ text });
 const SHOTS: Shot[] = [
   { mode: "baby", sent: 0, sfx: [{ name: "ding", at: 0.1, vol: 0.3 }] },
   { mode: "dec31", sent: 1, sfx: [{ name: "pop", at: 0.5, vol: 0.35 }] },
-  { mode: "jan1", sent: 2, sfx: [{ name: "chime", at: 0.6, vol: 0.35 }, { name: "pop", at: 2.4, vol: 0.4 }] },
+  { mode: "jan1", sent: 2, sfx: [{ name: "chime", at: 0.6, vol: 0.35 }, { name: "pop", u: 0.81, vol: 0.4 }] },
   { mode: "three", sent: 3, xfade: 9, trans: "fade", sfx: [{ name: "pop", at: 1.2, vol: 0.3 }, { name: "pop", at: 2.3, vol: 0.3 }, { name: "pop", at: 3.4, vol: 0.3 }] },
   { mode: "law", sent: 4, xfade: 6, trans: "flash", sfx: [{ name: "thud", at: 0.2, vol: 0.4 }, { name: "whoosh", at: 2.3, vol: 0.3 }] },
   { mode: "except", sent: 5, xfade: 9, trans: "fade", sfx: [{ name: "buzz", at: 1.6, vol: 0.2 }] },
@@ -180,7 +181,7 @@ export const Ep05: React.FC<{ lang?: Lang }> = ({ lang = "en" }) => {
         <Sequence key={i} from={b.starts[i] - (shot.xfade ?? 0)} durationInFrames={b.frames[i] + (shot.xfade ?? 0)}>
           <ShotView shot={shot} caps={b.caps[i]} dur={b.frames[i]} words={WORDS[lang]} pre={shot.xfade ?? 0} />
           {(shot.sfx ?? []).map((fx, k) => (
-            <Sequence key={k} from={(shot.xfade ?? 0) + Math.round((fx.at ?? 0) * FPS)} layout="none">
+            <Sequence key={k} from={(shot.xfade ?? 0) + (fx.u !== undefined ? Math.round(fx.u * b.frames[i]) : Math.round((fx.at ?? 0) * FPS))} layout="none">
               <Audio src={staticFile(`sfx/${fx.name}.wav`)} volume={fx.vol ?? 0.4} />
             </Sequence>
           ))}

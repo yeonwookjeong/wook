@@ -418,7 +418,7 @@ const Nursery: React.FC<{ mode: Mode05; t: number }> = ({ mode, t }) => {
 // ================================================================ 2. 거실 생일상 (three · end)
 const AGES: [keyof Words05, string, string][] = [["korean", "28", "#e2343a"], ["year", "27", "#3b6fb6"], ["intl", "26", "#2f9d7a"]];
 const CW = 0.335, CH = 0.41;
-const TX = 0.5, TZ = 0.42;
+const TX = 0.44, TZ = 0.42;
 const Living: React.FC<{ mode: Mode05; t: number; w: Words05 }> = ({ mode, t, w }) => {
   const end = mode === "end";
   const T = t * DUR[mode];
@@ -627,7 +627,7 @@ const Plaza: React.FC<{ u: number; w: Words05 }> = ({ u }) => {
     floor: tiles("#d8c4b4", "rgba(255,240,225,0.25)", "rgba(150,110,110,0.14)", "rgba(90,60,70,0.28)", 4, 12),
     sky: canvasTexture(1024, 512, drawDawn),
     far: canvasTexture(1024, 512, (g) => drawSkyline(g, "#a487b8", 3, 0.08, 230)),
-    near: canvasTexture(1024, 512, (g) => drawSkyline(g, "#6a5a92", 17, 0.16, 300)),
+    near: canvasTexture(1024, 512, (g) => drawSkyline(g, "#8068a4", 17, 0.2, 260)),
     sun: glowTex("255,236,190"), warm: glowTex("255,196,130"), mint: glowTex("130,255,200"),
     sparks: ["#ffd23a", "#9cffcf", "#ffffff"].map((c) => canvasTexture(256, 256, (g) => drawSpark(g, c))),
   }), []);
@@ -647,8 +647,8 @@ const Plaza: React.FC<{ u: number; w: Words05 }> = ({ u }) => {
       <directionalLight position={[2, 3, 5]} intensity={0.5} color="#b0b8ff" />
       <Sky tex={tx.sky} z={-16} w={36} h={16} y={5.6} k={1.1} />
       <Glow tex={tx.sun} p={[-1.5, 1.75, -15.5]} w={9} h={9} o={0.95} k={1.5} />
-      <Decal tex={tx.far} p={[0, 2.2, -12]} w={22} h={6} tint="#f2c4c0" />
-      <Decal tex={tx.near} p={[0.8, 1.9, -7.5]} w={15} h={5} tint="#e8c0c8" />
+      <Decal tex={tx.far} p={[0, 2.0, -13]} w={24} h={5.5} tint="#f6ccc4" />
+      <Decal tex={tx.near} p={[0.8, 1.55, -10.5]} w={17} h={4.2} tint="#f0c8cc" />
       <Floor tex={tx.floor} size={18} rough={0.55} z={-3} />
       {/* 계단 단 */}
       <InkBox p={[0, 0.2, -0.95]} s={[5.2, 0.4, 1.5]} c="#e6d2c4" th={0.012} round={0.02} />
