@@ -103,7 +103,7 @@ export default function CourtBoard({
       {/* 행각 사이 마당 */}
       <div
         className="relative -mt-8 overflow-hidden rounded-b-xl px-2.5 pt-28 pb-5"
-        style={{ background: "#7d6a5a url(/king/yard.webp) top / 100% auto no-repeat" }}
+        style={{ background: "url(/king/yard.webp) top / 100% auto no-repeat, linear-gradient(#f4ecdb 0 64px, #7d6a5a 64px)" }}
       >
         <p className="relative mx-auto w-fit rounded-md bg-[#211b17]/70 px-3 py-1 text-center font-myeongjo text-[12px] font-bold tracking-[0.3em] text-[#f1d892]">
           朝 廷 圖
