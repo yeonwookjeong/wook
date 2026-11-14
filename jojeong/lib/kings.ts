@@ -1,6 +1,6 @@
 import { Lunar } from "lunar-javascript";
 import { josa } from "./josa";
-import { BRANCHES, ELEMENTS_KO, STEMS, STEMS_KO, type Pillars } from "./saju";
+import { BRANCHES, BRANCHES_KO, ELEMENTS_KO, matchPillars, STEMS, STEMS_KO, type Pillars } from "./saju";
 
 // Lunar birthdays from the Annals, cross-checked against at least one published solar date each where available.
 const RAW: { name: string; lunar: [number, number, number]; note: string }[] = [
@@ -84,4 +84,19 @@ export function kingLinkText(p: Pillars) {
     headline: `조선 27왕 중 ${stemLabel} 일간은 한 분도 없었사옵니다`,
     short: `조선 최초의 ${stemLabel} 군주`,
   };
+}
+
+// The day pillars that would sit best by this king (2026-11-14, 왕이 될 사주 개편): every one of the sixty
+// matched by the same engine that seats a friend, with the rest of the chart held equal to the king's own so
+// only the day pillar moves the score. Those the engine would make 간신 or send into exile are left out.
+export function bestMinisterIljus(king: Pillars, n = 3): { stem: number; branch: number; name: string; score: number }[] {
+  const rows: { stem: number; branch: number; name: string; score: number }[] = [];
+  for (let i = 0; i < 60; i++) {
+    const stem = i % 10;
+    const branch = i % 12;
+    const m = matchPillars(king, { ...king, dayStem: stem, dayBranch: branch, hourBranch: null, hourStem: undefined });
+    if (m.role === "gansin" || m.role === "yubae") continue;
+    rows.push({ stem, branch, name: `${STEMS_KO[stem]}${BRANCHES_KO[branch]}`, score: m.score });
+  }
+  return rows.sort((a, b) => b.score - a.score || a.stem - b.stem).slice(0, n);
 }
