@@ -123,7 +123,7 @@ export default function CourtBoard({
 
         {/* 행각 기둥 뒤: 간신 */}
         <div className="relative mt-5 flex items-end gap-3 overflow-hidden rounded-lg bg-[#211b17]/85 pr-3 text-hanji">
-          <Image src="/king/gansin.webp" alt="행각 기둥 뒤에서 엿보는 간신" width={360} height={554} className="-mb-1 h-[104px] w-auto shrink-0" />
+          <Image src="/king/gansin.webp" alt="행각 기둥 뒤에서 엿보는 간신" width={360} height={514} className="-mb-1 h-[104px] w-auto shrink-0" />
           <p className="py-3 text-[14px] leading-snug">
             <b className="font-myeongjo text-[#f1d892]">간신</b> {names(gansin)}
             <span className="block text-[13px] text-hanji/80">
