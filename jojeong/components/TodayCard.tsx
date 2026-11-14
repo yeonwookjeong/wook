@@ -232,7 +232,12 @@ export default function TodayCard({ today, name, frame = "doc-paper mt-5", revea
                   </li>
                 ))}
               </ol>
-              <p className="mt-1 text-right text-[11px] text-ink-soft">◎ 좋음 &nbsp;○ 무난 &nbsp;△ 조심</p>
+              <p className="mt-1 flex items-center justify-between text-[12px] text-ink-soft">
+                <Link href="/calendar" className="font-bold text-seal underline underline-offset-2">
+                  이번 달 달력 보기
+                </Link>
+                <span>◎ 좋음 &nbsp;○ 무난 &nbsp;△ 조심</span>
+              </p>
             </div>
           )}
 

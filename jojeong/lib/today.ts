@@ -3,6 +3,7 @@ import { meetings, salsAt, stemClash, stemCombine } from "./deep";
 import { ILJU_IMAGE, meet, rankMonth } from "./iljuRank";
 import { ELEMENT_HANJA, ELEMENT_KO, BRANCH_EL, GROUP_OF, HIDDEN, elScore, readChart, stemEl, tenGod, type Reading, type TenGod } from "./myeongri";
 import type { Person } from "./pairToken";
+import { isAdult } from "./products";
 import { ANIMALS, BRANCHES, BRANCHES_KO, hourStemOf, STEMS, STEMS_KO, type Pillars } from "./saju";
 
 // 오늘의 운세 for the main page. Rule-based, no writer involved: the same pieces the paid reports stand on
@@ -137,7 +138,28 @@ function dayScore(p: Pillars, r: Reading, stem: number, branch: number) {
 // Shown on screen: the order is kept, the lower half pressed a little, so the hardest day reads about 25, not
 // 12 (low enough to be taken seriously, not a number in the teens that reads as a ruined chart).
 const shown = (raw: number) => (raw >= 55 ? raw : Math.round(55 - (55 - raw) * 0.7));
-const markOf = (raw: number) => (raw >= 70 ? "◎" : raw >= 50 ? "○" : "△") as "◎" | "○" | "△";
+// △ only on a month's hardest days (2026-11-14 대표님): with no cap one reader in seven had ten or more 조심할 날 in
+// December, which reads as a ruined month. The other dim days read ○, and their card drops the warning box.
+const HARD_CAP = 6;
+const hardMemo = new Map<string, Set<number>>();
+function hardDaysOf(p: Pillars, r: Reading, y: number, m: number): Set<number> {
+  const key = `${p.dayStem}.${p.dayBranch}.${r.yong}.${r.gi}.${y}.${m}`;
+  const hit = hardMemo.get(key);
+  if (hit) return hit;
+  const n = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const dim: { d: number; raw: number }[] = [];
+  for (let d = 1; d <= n; d++) {
+    const dp = dayPillar(y, m, d);
+    const raw = dayScore(p, r, dp.stem, dp.branch);
+    if (raw < 50) dim.push({ d, raw });
+  }
+  const set = new Set(dim.sort((a, b) => a.raw - b.raw || a.d - b.d).slice(0, HARD_CAP).map((x) => x.d));
+  if (hardMemo.size > 500) hardMemo.clear();
+  hardMemo.set(key, set);
+  return set;
+}
+const markAt = (p: Pillars, r: Reading, raw: number, y: number, m: number, d: number) =>
+  (raw >= 70 ? "◎" : raw < 50 && hardDaysOf(p, r, y, m).has(d) ? "△" : "○") as "◎" | "○" | "△";
 
 // For a hard day: the one thing to steer clear of and what to do instead, from its sharpest cause (the same
 // causes as the monthly ranking, worded for a day).
@@ -165,6 +187,9 @@ const HUNDO_HARD: Record<string, string> = {
 };
 // Subject particles for the area labels.
 const SUBJ: Record<Area["key"], string> = { money: "재물이", work: "일이", love: "연애가", health: "건강이" };
+const subj = (a: Area) => (a.key === "love" && a.label === "관계" ? "관계가" : SUBJ[a.key]);
+const minor = (me: Person) => me.birthYear !== null && me.birthYear > 0 && !isAdult(me.birthYear);
+const MINOR_LOVE_LINE = ["말 한마디에 다투기 쉬운 날. 따지는 대화는 미루세요", "서운한 말이 오가기 쉬운 날", "잔잔하게 흘러가는 날", "친구와 어울리기 좋은 날", "마음이 잘 통하는 날, 먼저 말을 걸어 보세요"];
 
 // Four areas in one to five stars, from the ten gods the day brings and how its branch meets the chart.
 function areasOf(me: Person, r: Reading, stem: number, branch: number): Area[] {
@@ -209,7 +234,10 @@ function areasOf(me: Person, r: Reading, stem: number, branch: number): Area[] {
   return [
     area("money", "재물", money, "/reports/jaemul", "재물운"),
     area("work", "일", work, "/reports/jikup", "직업, 적성"),
-    area("love", "연애", love, "/reports/yeonae", "연애, 결혼"),
+    // Under 19 the same stars read as friends and people around, not dating (2026-11-14, 청소년 기준은 lib/products.ts).
+    minor(me)
+      ? { ...area("love", "관계", love, null, null), line: MINOR_LOVE_LINE[star(love) - 1] }
+      : area("love", "연애", love, "/reports/yeonae", "연애, 결혼"),
     area("health", "건강", health, null, null),
   ];
 }
@@ -277,7 +305,7 @@ export function todayFor(me: Person | null, now = new Date()): Today {
   const areas = areasOf(me, r, stem, branch);
   const best = areas.reduce((a, x) => (x.stars > a.stars ? x : a));
   const worst = areas.reduce((a, x) => (x.stars < a.stars ? x : a));
-  const hard = score < 50;
+  const hard = score < 50 && hardDaysOf(p, r, y, m).has(d);
   const hit = [s, b].find((e) => e === r.yong);
   const bad = [s, b].find((e) => e === r.gi);
   let personal =
@@ -298,7 +326,7 @@ export function todayFor(me: Person | null, now = new Date()): Today {
           : hard
             ? "오늘의 일진이 내 일주와 부딪히는 날이에요. 아래 것만은 꼭 피하세요."
             : best.stars > worst.stars
-              ? `오늘은 ${SUBJ[best.key]} 가장 낫고 ${SUBJ[worst.key]} 가장 약한 날이에요.`
+              ? `오늘은 ${subj(best)} 가장 낫고 ${subj(worst)} 가장 약한 날이에요.`
               : "좋은 쪽도 나쁜 쪽도 두드러지지 않는 날이에요. 미뤄 둔 정리를 하기 좋아요.";
   const mt = meetings(branch, p.dayBranch);
   if (mt.includes("충")) personal += " 가까운 사람과 부딪히기 쉬우니 말은 한 번 더 고르세요.";
@@ -310,7 +338,7 @@ export function todayFor(me: Person | null, now = new Date()): Today {
   const at = (i: number) => {
     const t = new Date(Date.UTC(y, m - 1, d + i));
     const dp = dayPillar(t.getUTCFullYear(), t.getUTCMonth() + 1, t.getUTCDate());
-    return { t, mark: markOf(dayScore(p, r, dp.stem, dp.branch)) };
+    return { t, mark: markAt(p, r, dayScore(p, r, dp.stem, dp.branch), t.getUTCFullYear(), t.getUTCMonth() + 1, t.getUTCDate()) };
   };
   const week = Array.from({ length: 7 }, (_, i) => {
     const { t, mark } = at(i - dow);
@@ -341,7 +369,7 @@ export function todayFor(me: Person | null, now = new Date()): Today {
   return {
     ...out,
     personal,
-    rating: score >= 70 ? 2 : score >= 50 ? 1 : 0,
+    rating: score >= 70 ? 2 : hard ? 0 : 1,
     score: shown(score),
     rank: ranks.find((x) => x.stem === p.dayStem && x.branch === p.dayBranch)!.rank,
     ilju: `${STEMS_KO[p.dayStem]}${BRANCHES_KO[p.dayBranch]}일주`,
