@@ -42,6 +42,14 @@ const ell = (cx: number, cy: number, rx: number, ry: number, a0 = 0, a1 = 360, n
   }
   return out;
 };
+const qb = (a: P2, c: P2, b: P2, n = 14): P2[] => {
+  const out: P2[] = [];
+  for (let i = 0; i <= n; i++) {
+    const t = i / n, u = 1 - t;
+    out.push([u * u * a[0] + 2 * u * t * c[0] + t * t * b[0], u * u * a[1] + 2 * u * t * c[1] + t * t * b[1]]);
+  }
+  return out;
+};
 const rrect = (x: number, y: number, w: number, h: number, r: number): P2[] => {
   const out: P2[] = [];
   const corner = (cx: number, cy: number, a0: number) => ell(cx, cy, r, r, a0, a0 + 90, 8).forEach((p) => out.push(p));
@@ -143,8 +151,25 @@ function drawWings(p: Pen, s: number, flap: number) {
 }
 
 function drawHairBack(p: Pen, L: Look) {
-  if (L.hair === "bob") p.fill([...ell(HX, HY - 10, HRX + 26, HRY + 22, 180, 360), [HX + HRX + 26, HY + 150], [HX - HRX - 26, HY + 150]], L.hairC);
-  if (L.hair === "long") p.fill([...ell(HX, HY - 10, HRX + 28, HRY + 24, 180, 360), [HX + HRX + 40, HY + 300], [HX - HRX - 40, HY + 300]], L.hairC);
+  if (L.hair === "bob") {
+    // 단발: 끝이 안으로 둥글게 말려 들어감 (네모 판처럼 보이지 않게)
+    const side = (sd: number): P2[] => [
+      ...qb([HX + sd * 198, HY - 10], [HX + sd * 206, HY + 110], [HX + sd * 188, HY + 152]),
+      ...qb([HX + sd * 188, HY + 152], [HX + sd * 172, HY + 182], [HX + sd * 118, HY + 162]),
+    ];
+    p.fill([...ell(HX, HY - 10, HRX + 26, HRY + 22, 180, 360), ...side(1), [HX, HY + 150], ...side(-1).reverse()], L.hairC);
+  }
+  if (L.hair === "long") {
+    // 긴 생머리: 머리를 감싸고 어깨 뒤로 흘러내려 끝이 둥글게 모이는 두 갈래 (네모 판처럼 보이지 않게)
+    const side = (sd: number): P2[] => [
+      ...qb([HX + sd * 198, HY - 10], [HX + sd * 206, HY + 150], [HX + sd * 214, HY + 250]),
+      ...qb([HX + sd * 214, HY + 250], [HX + sd * 196, HY + 302], [HX + sd * 140, HY + 262]),
+      ...qb([HX + sd * 140, HY + 262], [HX + sd * 120, HY + 190], [HX + sd * 60, HY + 150]),
+    ];
+    const r = side(1);
+    const l = side(-1).reverse();
+    p.fill([...ell(HX, HY - 10, HRX + 26, HRY + 22, 180, 360), ...r, [HX, HY + 150], ...l], L.hairC);
+  }
 }
 
 function drawHairFront(p: Pen, L: Look) {
@@ -152,12 +177,28 @@ function drawHairFront(p: Pen, L: Look) {
     // 짧은 머리 + 옆 가르마
     const pts: P2[] = [...ell(HX, HY - 6, HRX + 10, HRY + 12, 185, 355), [HX + HRX - 10, HY - 40], [HX + 60, HY - 95], [HX - 40, HY - 70], [HX - HRX + 4, HY - 20]];
     p.fill(pts, L.hairC);
+  } else if (L.hair === "long") {
+    // 긴 머리 앞쪽: 옆으로 넘긴 앞머리 (눈썹을 가리지 않음)
+    const top = ell(HX, HY - 10, HRX + 22, HRY + 20, 182, 358);
+    const pts: P2[] = [
+      ...top,
+      [HX + HRX + 8, HY + 20],
+      [HX + HRX - 18, HY + 10],
+      ...qb([HX + HRX - 18, HY + 10], [HX + 90, HY - 72], [HX - 50, HY - 82]),
+      ...qb([HX - 50, HY - 82], [HX - HRX + 10, HY - 70], [HX - HRX - 6, HY + 10]),
+    ];
+    p.fill(pts, L.hairC);
+    p.g.globalAlpha = 0.45;
+    p.stroke(ell(HX, HY - 10, HRX - 10, HRY - 8, 215, 255, 12), 9, shade(L.hairC, 1.7));
+    p.g.globalAlpha = 1;
   } else {
     // 앞머리(뱅): 일자
     const top = ell(HX, HY - 10, HRX + 22, HRY + 20, 182, 358);
     const pts: P2[] = [...top, [HX + HRX + 10, HY - 10], [HX + HRX - 30, HY - 60], [HX - HRX + 30, HY - 60], [HX - HRX - 10, HY - 10]];
     p.fill(pts, L.hairC);
-    p.stroke([[HX - 60, HY - 150], [HX - 20, HY - 70]], 7, shade(L.hairC, 1.8));
+    p.g.globalAlpha = 0.45;
+    p.stroke(ell(HX, HY - 10, HRX - 10, HRY - 8, 215, 255, 12), 9, shade(L.hairC, 1.8));
+    p.g.globalAlpha = 1;
   }
 }
 
