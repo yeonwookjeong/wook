@@ -13,7 +13,7 @@ export default function EnLayout({ children }: LayoutProps<"/en">) {
   return (
     <div lang="en" className="flex flex-1 flex-col">
       <header className="flex items-center justify-between pt-4">
-        <Link href="/en/name" className="flex items-center gap-2">
+        <Link href="/en" className="flex items-center gap-2">
           <span
             className="flex size-[30px] shrink-0 -rotate-6 flex-col items-center justify-center rounded-[5px] border-2 border-seal font-myeongjo text-[10px] leading-none font-extrabold text-seal"
             aria-hidden="true"
