@@ -1,5 +1,20 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Composition, continueRender, delayRender } from "remotion";
+import { AbsoluteFill, Composition, continueRender, delayRender } from "remotion";
+import { loadFont } from "@remotion/google-fonts/NotoSansKR";
+import { SceneA06 } from "./SceneA";
+import { SceneB } from "./SceneB";
+const { fontFamily: sans } = loadFont();
+const WORDS_EN = { lang: "en" as const, my: "MY", our: "OUR", myMom: "MY MOM", ourMom: "OUR MOM", house: "OUR HOUSE", school: "OUR SCHOOL", country: "OUR COUNTRY", myCo: "MY COMPANY", ourCo: "OUR COMPANY", boss: "BOSS" };
+/** 본편과 같은 자막 모양 (비교를 공정하게) */
+const Cap: React.FC = () => (
+  <AbsoluteFill style={{ top: 1480, alignItems: "center" }}>
+    <div style={{ width: 940, textAlign: "center", fontFamily: sans, fontWeight: 900, fontSize: 88, lineHeight: 1.15, WebkitTextStroke: "14px #000", paintOrder: "stroke fill", textShadow: "0 6px 18px rgba(0,0,0,0.55)", color: "#fff" }}>
+      so it's <span style={{ color: "#ffd23a" }}>our mom.</span>
+    </div>
+  </AbsoluteFill>
+);
+const StyleA: React.FC = () => (<AbsoluteFill><SceneA06 mode="group" t={0.9} words={WORDS_EN} /><Cap /></AbsoluteFill>);
+const StyleB: React.FC = () => (<AbsoluteFill style={{ background: "#9fb89a" }}><SceneB ourMom="OUR MOM" /><Cap /></AbsoluteFill>);
 import { BOSS2, Cast, DAD2, GRAN2, KID2, MOM2, Pose2, drawCast } from "../cas/toonkr2";
 
 const FONT = "'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif";
@@ -48,6 +63,8 @@ const Sheet: React.FC = () => {
 
 export const StyleRoot: React.FC = () => (
   <>
+    <Composition id="StyleA" component={StyleA} durationInFrames={1} fps={30} width={1080} height={1920} />
+    <Composition id="StyleB" component={StyleB} durationInFrames={1} fps={30} width={1080} height={1920} />
     <Composition id="CastSheet" component={Sheet} durationInFrames={1} fps={30} width={1920} height={1080} />
   </>
 );
