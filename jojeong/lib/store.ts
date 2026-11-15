@@ -323,15 +323,18 @@ export async function tossOrderIds(userKey: string): Promise<string[]> {
 
 // Questions sent from the contact page, kept for the owner's inbox (/admin): what it is about, what was
 // written, and an optional email to answer to. Newest last in the list.
-export type Inquiry = { id: string; topic: string; body: string; email: string; at: number; done: boolean };
+// `ctx`: what the form adds on its own (the page and error number it was opened from, the device, signed in or
+// not, and the orders this browser bought), so a report can be matched to the error list and to a payment.
+export type InquiryCtx = { page?: string; code?: string; device?: string; member?: string; orders?: string[] };
+export type Inquiry = { id: string; topic: string; body: string; email: string; at: number; done: boolean; ctx?: InquiryCtx };
 const INQUIRY_DAILY_CAP = 300;
 
-export async function addInquiry(topic: string, body: string, email: string): Promise<"ok" | "busy"> {
+export async function addInquiry(topic: string, body: string, email: string, ctx?: InquiryCtx): Promise<"ok" | "busy"> {
   const day = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
   // A plain cap on how many a day are kept, so a flood of junk cannot fill the store.
   if ((await backend().incr(`inquiries:day:${day}`)) > INQUIRY_DAILY_CAP) return "busy";
   const id = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
-  const inquiry: Inquiry = { id, topic, body, email, at: Date.now(), done: false };
+  const inquiry: Inquiry = { id, topic, body, email, at: Date.now(), done: false, ...(ctx && { ctx }) };
   await backend().set(`inquiry:${id}`, JSON.stringify(inquiry));
   await backend().push("inquiries", id);
   return "ok";
@@ -504,4 +507,67 @@ export async function countCreditEventClaim(code: string): Promise<number> {
 export async function creditEventClaims(codes: string[]): Promise<number[]> {
   if (!codes.length) return [];
   return (await backend().mget(codes.map((c) => `cevent-n:${c}`))).map((v) => Number(v ?? 0));
+}
+
+// Errors the site ran into, kept for the owner's page (admin, 도구 tab) without waiting for someone to write in.
+// One record per kind of error (where it happened and the start of its message), with how often and where it came
+// back. Only the page path is kept, never the query or what was typed (birth dates are never stored), and long
+// path segments (links that carry a token) are masked. A daily cap keeps a burst from filling the store.
+export type SiteError = {
+  sig: string;
+  kind: "server" | "client";
+  message: string;
+  route: string;
+  paths: string[];
+  digests: string[];
+  first: number;
+  last: number;
+  count: number;
+};
+const ERROR_DAILY_CAP = 2000;
+const ERROR_DAYS = 30;
+export const maskPath = (path: string) =>
+  (path.split(/[?#]/)[0] || "/")
+    .split("/")
+    .map((seg) => (seg.length > 20 || /^[A-Za-z0-9_-]{12,}$/.test(seg) ? ":token" : seg))
+    .join("/")
+    .slice(0, 120);
+export async function noteSiteError(e: { kind: SiteError["kind"]; message: string; route?: string; path: string; digest?: string }) {
+  const day = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
+  if ((await backend().incr(`errors:day:${day}`)) > ERROR_DAILY_CAP) return;
+  const message = e.message.replace(/\s+/g, " ").trim().slice(0, 300) || "(내용 없음)";
+  const path = maskPath(e.path);
+  const route = (e.route || path).slice(0, 120);
+  const sig = createHash("sha1").update(`${e.kind}|${route}|${message.slice(0, 160)}`).digest("hex").slice(0, 12);
+  const key = `error:${sig}`;
+  const raw = await backend().get(key);
+  const prev = raw ? (JSON.parse(raw) as SiteError) : null;
+  const now = Date.now();
+  const digests = e.digest ? [e.digest.slice(0, 40), ...(prev?.digests ?? []).filter((d) => d !== e.digest)].slice(0, 5) : (prev?.digests ?? []);
+  const next: SiteError = prev
+    ? { ...prev, last: now, count: prev.count + 1, paths: [path, ...prev.paths.filter((p) => p !== path)].slice(0, 5), digests }
+    : { sig, kind: e.kind, message, route, paths: [path], digests, first: now, last: now, count: 1 };
+  await backend().set(key, JSON.stringify(next), ERROR_DAYS * 86400);
+  if (!prev) await backend().push("errors", sig);
+}
+// Those of the last day, for the owner page's banner.
+export const freshSiteErrors = (list: SiteError[]) => {
+  const since = Date.now() - 86400000;
+  return list.filter((e) => e.last >= since);
+};
+// The last few weeks of errors, most recent first.
+export async function listSiteErrors(days = 14): Promise<SiteError[]> {
+  const sigs = [...new Set((await backend().list("errors")).slice(-300))];
+  const raws = await backend().mget(sigs.map((s) => `error:${s}`));
+  const since = Date.now() - days * 86400000;
+  return raws
+    .flatMap((r) => {
+      try {
+        return r ? [JSON.parse(r) as SiteError] : [];
+      } catch {
+        return [];
+      }
+    })
+    .filter((e) => e.last >= since)
+    .sort((a, b) => b.last - a.last);
 }

@@ -24,7 +24,7 @@ export function parseBirth(formData: FormData): Omit<Parsed, "name"> {
 
   const calendar = String(formData.get("calendar") ?? "solar");
   if (calendar !== "solar" && calendar !== "lunar" && calendar !== "lunar-leap")
-    throw new BirthInputError("양력·음력을 골라 주세요.", "양력·음력을 골라주시옵소서.");
+    throw new BirthInputError("양력, 음력을 골라 주세요.", "양력, 음력을 골라주시옵소서.");
 
   // The clock time as typed ("0930", "오후 9시 30분"…), or nothing when unknown. An hour slot ("hour") is still
   // accepted from older pages.

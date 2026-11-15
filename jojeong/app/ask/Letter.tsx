@@ -46,11 +46,11 @@ export function RoomHead({ person, ilju, credits, extra, bare = false }: { perso
       <div className="flex items-center gap-3">
         {!bare && <HundoFace size={50} />}
         <div className="min-w-0 flex-1">
-          {!bare && <p className="font-myeongjo text-[11px] font-bold tracking-[0.25em] text-[#d4af5f]">觀象監 · 問訓導</p>}
+          {!bare && <p className="font-myeongjo text-[11px] font-bold tracking-[0.25em] text-[#d4af5f]">觀象監, 問訓導</p>}
           <h1 className="font-myeongjo text-[19px] font-extrabold">{bare ? `${person.name}님의 사랑방` : "정 훈도의 사랑방"}</h1>
           <p className="truncate text-[12.5px] opacity-75">
-            {person.name}님 · {ilju}
-            {extra ? ` · ${extra}` : ""}
+            {person.name}님, {ilju}
+            {extra ? `, ${extra}` : ""}
           </p>
         </div>
         {credits !== undefined && (
@@ -61,11 +61,11 @@ export function RoomHead({ person, ilju, credits, extra, bare = false }: { perso
       </div>
       <div className="mt-3.5 grid grid-cols-4 gap-1.5">
         <Pillar label="時" stem={hourStem} branch={p.hourBranch} />
-        <Pillar label="日 · 나" stem={p.dayStem} branch={p.dayBranch} me />
+        <Pillar label="日, 나" stem={p.dayStem} branch={p.dayBranch} me />
         <Pillar label="月" stem={p.monthStem} branch={p.monthBranch} />
         <Pillar label="年" stem={p.yearStem} branch={p.yearBranch} />
       </div>
-      <p className="mt-2 text-center text-[11px] opacity-55">이 여덟 글자로만 답해 드려요 · 생년월일은 저장하지 않아요</p>
+      <p className="mt-2 text-center text-[11px] opacity-55">이 여덟 글자로만 답해 드려요, 생년월일은 저장하지 않아요</p>
     </section>
   );
 }
@@ -141,7 +141,7 @@ export function AnswerLetter({
           );
           const head = p.part && (
             <span className="mb-1 block font-sans text-[11px] font-bold tracking-[0.18em] text-seal">
-              <span className="font-myeongjo text-[13px] tracking-[0.12em]">{p.part}</span> · {p.head ?? PART_LABELS[p.part]}
+              <span className="font-myeongjo text-[13px] tracking-[0.12em]">{p.part}</span>, {p.head ?? PART_LABELS[p.part]}
             </span>
           );
           // The closing step sits apart: the one marked 一事, or (answers before the marks) the last of three or more.

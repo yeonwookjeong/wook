@@ -8,11 +8,14 @@ const field = "w-full rounded-xl border border-ink/15 bg-white/70 px-4 py-3 text
 
 // Write and send right here: no mail app needed (many open the site inside Instagram, where mailto does
 // nothing). Choosing a topic fills in the lines that help the answer.
-export default function ContactForm({ initial }: { initial?: string }) {
+// `page`, `code`: opened from the error screen (components/ErrorScreen.tsx); they go along with the message.
+export default function ContactForm({ initial, page, code }: { initial?: string; page?: string; code?: string }) {
   const first = INQUIRY_TOPICS.find((t) => t.key === initial) ?? INQUIRY_TOPICS[0];
   const [state, action, pending] = useActionState<InquiryState, FormData>(sendInquiryAction, { status: "idle", message: null });
   const [topic, setTopic] = useState<string>(first.key);
-  const [body, setBody] = useState<string>(first.body.join("\n") + "\n");
+  const fill = (lines: readonly string[]) =>
+    lines.map((l) => (page && l === "어느 화면에서:" ? `${l} ${page}` : l)).join("\n") + "\n";
+  const [body, setBody] = useState<string>(fill(first.body));
 
   if (state.status === "sent")
     return (
@@ -24,6 +27,8 @@ export default function ContactForm({ initial }: { initial?: string }) {
 
   return (
     <form action={action} className="flex flex-col gap-3">
+      {page && <input type="hidden" name="page" value={page} />}
+      {code && <input type="hidden" name="code" value={code} />}
       <fieldset className="flex flex-wrap gap-2">
         <legend className="mb-2 text-sm font-semibold text-ink-soft">무엇에 대한 문의인가요?</legend>
         {INQUIRY_TOPICS.map((t) => (
@@ -35,7 +40,7 @@ export default function ContactForm({ initial }: { initial?: string }) {
               checked={topic === t.key}
               onChange={() => {
                 setTopic(t.key);
-                setBody(t.body.join("\n") + "\n");
+                setBody(fill(t.body));
               }}
               className="peer sr-only"
             />
@@ -46,6 +51,11 @@ export default function ContactForm({ initial }: { initial?: string }) {
         ))}
       </fieldset>
       <p className="text-xs text-ink-soft">{INQUIRY_TOPICS.find((t) => t.key === topic)?.desc}</p>
+      {code && (
+        <p className="rounded-xl bg-seal/8 px-3 py-2 text-xs leading-relaxed text-ink-soft">
+          함께 보내져요: 화면 {page ?? "-"}, 오류 번호 {code}, 쓰신 휴대폰과 브라우저
+        </p>
+      )}
       <label className="flex flex-col gap-1.5">
         <span className="text-sm font-semibold text-ink-soft">내용</span>
         <textarea name="body" value={body} onChange={(e) => setBody(e.target.value)} rows={7} maxLength={2000} required className={field} />

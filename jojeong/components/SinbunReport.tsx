@@ -37,7 +37,7 @@ export default function SinbunReport({
           <p
             className={`font-myeongjo text-sm font-extrabold tracking-[0.3em] ${NIGHT_GOLD}`}
           >
-            號 牌 · 조선 신분
+            號 牌, 조선 신분
           </p>
           <p className="mt-3 text-[14px] text-hanji/80">{heading}</p>
           <div className="relative mt-2">
@@ -68,7 +68,7 @@ export default function SinbunReport({
               </span>
             )}
             <span className="rounded-full border border-[#d4af5f]/60 px-3 py-1 text-xs font-extrabold text-[#d4af5f]">
-              {s.rank} · {m.name} {m.hanja}
+              {s.rank}, {m.name} {m.hanja}
             </span>
           </div>
         </section>
@@ -157,14 +157,14 @@ export default function SinbunReport({
                   <span
                     className={`mt-1 rounded-full px-1.5 text-[10.5px] font-bold ${mine ? "bg-[#d4af5f] text-[#0f2236]" : "text-hanji/70"}`}
                   >
-                    {mine ? `그대 · ${r}` : r}
+                    {mine ? `그대, ${r}` : r}
                   </span>
                 </li>
               );
             })}
           </ul>
           <p className="mt-3 text-center text-[11px] leading-relaxed text-hanji/50">
-            1677년 『호패사목』은 2품 이상은 상아, 3품 이하는 뿔, 생원·진사는
+            1677년 『호패사목』은 2품 이상은 상아, 3품 이하는 뿔, 생원, 진사는
             회양목으로 정했어요. 여기서는 감정한 신분에 맞춰 골랐어요.
           </p>
         </section>
@@ -224,7 +224,7 @@ export default function SinbunReport({
           <span className="mt-1 block text-seal">
             지금 시대에 어울리는 일 세&nbsp;가지는{" "}
             <span className="inline-block">
-              &lsquo;직업·적성&rsquo; 보고서에서 →
+              &lsquo;직업, 적성&rsquo; 보고서에서 →
             </span>
           </span>
         </Link>
@@ -239,7 +239,7 @@ export default function SinbunReport({
             </summary>
             <ul className="mt-2 flex flex-col gap-1 bg-ink/5 px-3 py-2 leading-relaxed">
               {s.basis.map((b) => (
-                <li key={b}>· {b}</li>
+                <li key={b}>, {b}</li>
               ))}
             </ul>
           </details>

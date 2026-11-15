@@ -8,8 +8,8 @@ import { samjaeOf, TTI } from "@/lib/samjae";
 const YEAR = 2026;
 
 export const metadata: Metadata = {
-  title: `${YEAR}·${YEAR + 1} 삼재 띠 확인`,
-  description: `${YEAR}년 삼재 띠는 토끼띠·양띠·돼지띠(눌삼재), ${YEAR + 1}년에는 같은 띠가 날삼재로 끝나요. 띠별 삼재 연도와 들삼재·눌삼재·날삼재를 한눈에 확인하세요.`,
+  title: `${YEAR}, ${YEAR + 1} 삼재 띠 확인`,
+  description: `${YEAR}년 삼재 띠는 토끼띠, 양띠, 돼지띠(눌삼재), ${YEAR + 1}년에는 같은 띠가 날삼재로 끝나요. 띠별 삼재 연도와 들삼재, 눌삼재, 날삼재를 한눈에 확인하세요.`,
 };
 
 // Free: every 띠's 삼재 this year and next, and the reader's own when a chart is saved. Rule-based, no writer.
@@ -26,10 +26,10 @@ export default async function SamjaePage() {
         <p className="font-myeongjo text-sm font-extrabold tracking-[0.4em] text-seal">三 災</p>
         <h1 className="mt-2 font-myeongjo text-3xl font-extrabold">{YEAR} 삼재 띠</h1>
         <p className="mt-2 text-[15px] leading-relaxed">
-          올해 삼재는 <b className="text-seal">{inSamjae.map((t) => `${t}띠`).join(" · ")}</b>
+          올해 삼재는 <b className="text-seal">{inSamjae.map((t) => `${t}띠`).join(", ")}</b>
           {stage && ` (${stage})`}
         </p>
-        <p className="mt-1 text-xs text-ink-soft">무료 · 띠는 입춘(2월 4일 무렵) 기준이에요</p>
+        <p className="mt-1 text-xs text-ink-soft">무료, 띠는 입춘(2월 4일 무렵) 기준이에요</p>
       </section>
 
       {me && mineNow && (

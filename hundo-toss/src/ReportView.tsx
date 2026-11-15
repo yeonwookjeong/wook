@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { productById } from "@/lib/products";
 import { readReport } from "./api";
+import { askReviewOnce } from "./review";
 
 type Section = { label: string; headline: string; why?: string; todo?: string; paras: string[] };
 
@@ -45,7 +46,10 @@ function OneReport({ order, product }: { order: string; product: string }) {
       if (r === "writing") {
         setState("writing");
         timer = setTimeout(go, 5000);
-      } else if (r === "done") setState("done");
+      } else if (r === "done") {
+        setState("done");
+        askReviewOnce();
+      }
       else {
         setState("error");
         setError(r.error);

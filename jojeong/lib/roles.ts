@@ -14,7 +14,7 @@ export type Role = {
 export const ROLES: Record<RoleKey, Role> = {
   yeong: {
     title: "영의정",
-    rank: "정1품 · 조정 서열 1위",
+    rank: "정1품, 조정 서열 1위",
     order: 0,
     tagline: "전하의 반쪽, 나라의 기둥",
     report:
@@ -34,7 +34,7 @@ export const ROLES: Record<RoleKey, Role> = {
   },
   daejehak: {
     title: "대제학",
-    rank: "정2품 · 홍문관",
+    rank: "정2품, 홍문관",
     order: 2,
     tagline: "전하의 스승이자 브레인",
     report:
@@ -44,7 +44,7 @@ export const ROLES: Record<RoleKey, Role> = {
   },
   byeongjo: {
     title: "병조판서",
-    rank: "정2품 · 병조",
+    rank: "정2품, 병조",
     order: 2,
     tagline: "등을 맡길 수 있는 전우",
     report:
@@ -54,7 +54,7 @@ export const ROLES: Record<RoleKey, Role> = {
   },
   hojo: {
     title: "호조판서",
-    rank: "정2품 · 호조",
+    rank: "정2품, 호조",
     order: 2,
     tagline: "같이 있으면 돈이 도는 곳간지기",
     report:
@@ -64,7 +64,7 @@ export const ROLES: Record<RoleKey, Role> = {
   },
   yejo: {
     title: "예조판서",
-    rank: "정2품 · 예조",
+    rank: "정2품, 예조",
     order: 2,
     tagline: "잔치를 여는 흥 담당",
     report:
@@ -74,7 +74,7 @@ export const ROLES: Record<RoleKey, Role> = {
   },
   daesaheon: {
     title: "대사헌",
-    rank: "종2품 · 사헌부",
+    rank: "종2품, 사헌부",
     order: 3,
     tagline: "뼈 때리는 직언 담당",
     report:
@@ -94,7 +94,7 @@ export const ROLES: Record<RoleKey, Role> = {
   },
   yubae: {
     title: "유배",
-    rank: "귀양 · 먼 섬",
+    rank: "귀양, 먼 섬",
     order: 5,
     tagline: "거리를 둬야 서로 사는 사이",
     report:

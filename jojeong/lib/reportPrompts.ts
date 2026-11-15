@@ -1,4 +1,5 @@
 import { PRODUCTS, type Product, type ProductId } from "./products";
+import type { Rel } from "./rels";
 
 // How each written report reads. The chapters are the product's table of contents — the questions people
 // actually ask — and every chapter becomes one "## [question] headline" section on the page.
@@ -236,6 +237,33 @@ const POINTS_RULE = `- 장 머리 줄은 반드시 '## [' 로 시작하고, 장 
 - 그 아래 본문 3~5문단, 문단 사이는 빈 줄.
 - 본문도 해요체로 쓴다. '~습니다/~입니다'는 장마다 꼭 짚을 한 줄에만.
 - 사주 용어에 한자를 괄호로 붙이지 않는다(삼합(三合) ✕). 용어는 뜻으로 바꿔 말한다: '일지와 삼합' ✕ → '올해 기운이 배우자 자리와 손을 잡아요' ○.`;
+// 궁합 between friends, at work or in a family: chapter titles without love words, since the title is printed on the
+// report and a "끌림" there reads as romance however the chapter is written (2026-11-04). Orders paid before
+// REL_TITLES_SINCE keep the titles their reports were written with.
+export const REL_TITLES_SINCE = Date.parse("2026-11-04T04:00:00Z");
+const REL_TITLES: Record<"일" | "친구" | "가족", Record<string, string>> = {
+  친구: { "우리 둘, 첫인상과 끌림의 정체": "우리 둘, 첫인상과 서로를 알아본 이유", "싸울 때 우리는 어떻게 될까": "부딪힐 때 우리는 어떻게 될까" },
+  일: {
+    "우리 둘, 첫인상과 끌림의 정체": "우리 둘, 첫인상과 일로 맞는 지점",
+    "싸울 때 우리는 어떻게 될까": "부딪힐 때 우리는 어떻게 될까",
+    "돈과 생활, 잘 맞을까": "돈과 일, 잘 맞을까",
+  },
+  가족: { "우리 둘, 첫인상과 끌림의 정체": "우리 둘, 닮은 점과 다른 점", "싸울 때 우리는 어떻게 될까": "부딪힐 때 우리는 어떻게 될까" },
+};
+// `rel`: lib/pairYears.ts REL_OF of the order's relation. `at`: when it was paid (none: as of now).
+export const chaptersForRel = (chapters: string[], id: string, rel: Rel, at?: number): string[] =>
+  id !== "gunghap" || rel === "연인" || (at !== undefined && at < REL_TITLES_SINCE) ? chapters : chapters.map((c) => REL_TITLES[rel][c] ?? c);
+// …and the 궁합 brief told to the writer outside lovers: the focus asks "왜 끌리고" and lists 끌림 for lovers, and the
+// writer echoed 끌림 into a friend's report (2026-11-04 16:49). From REL_FOCUS_SINCE the focus says it plainly.
+export const REL_FOCUS_SINCE = Date.parse("2026-11-04T09:00:00Z");
+export const focusForRel = (focus: string, id: string, rel: Rel, at?: number): string =>
+  id !== "gunghap" || rel === "연인" || (at !== undefined && at < REL_FOCUS_SINCE)
+    ? focus
+    : `${focus
+        .replace("왜 끌리고 왜 부딪히나", "왜 통하고 왜 부딪히나")
+        .replace("연인·배우자면 끌림·연애·결혼·생활, ", "")
+        .replace(" 장 제목의 '끌림'이나 '싸움'도 관계에 맞는 뜻으로 읽는다.", "")}
+- 이 두 사람은 연인이 아니다. '끌림', '끌리다', '설렘', '연애', '결혼', '배우자'라는 말은 장 제목, 헤드라인, 본문 어디에도 한 번도 쓰지 않는다. 서로를 알아보는 이유는 '통한다', '손발이 맞는다'처럼 쓴다.`;
 // The chapters shown for a bought report: as they were when it was bought.
 export const chaptersFor = (id: ProductId, v8: boolean) => (v8 ? SPECS.v8[id]?.chapters : SPECS.v7[id]?.chapters) ?? [];
 
@@ -278,6 +306,7 @@ const RHYTHM_RULES = `[문장 리듬: 첫 문장이 비슷하면 틀에 찍은 �
   ① 구체적인 장면 하나(회의실, 새벽 세 시, 명절 밥상처럼) ② 브리프의 숫자 하나 ③ 과거 연도 하나 ④ 짧게 끊는 단언 한 줄 ⑤ 겉과 속의 대비 ⑥ 질문
 - 질문으로 여는 장은 보고서 전체에서 두 번까지. 이름 부르기, "사실", "혹시", "많은 분들이"로 여는 것도 각각 한 번까지.
 - 이웃한 문단이 같은 단어로 시작하지 않는다. 같은 어미가 세 문장 넘게 이어지지 않게, 짧은 문장과 긴 문장을 섞는다.
+- 가운뎃점(·)과 긴 줄표(—)는 쓰지 않는다. 나열은 쉼표로, 덧붙임은 문장을 끊어서 쓴다.
 - 공감 → 이유 → 장면 → 조언의 순서를 모든 장에 똑같이 쓰지 않는다. 장면부터, 결론부터, 과거부터 여는 장이 섞여야 한다.`;
 
 // The Joseon reports about a court's people (뒷조사, 관계도, 인사기록): 정 훈도 speaks as a Joseon official.

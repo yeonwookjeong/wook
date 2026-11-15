@@ -50,7 +50,7 @@ export function SinbunCard({ who, rank, job, line, rise, yong, tag, rarity }: { 
           </span>
           훈도사주
         </span>
-        <span style={{ color: GOLD }}>조선 신분 감정 · 호패</span>
+        <span style={{ color: GOLD }}>조선 신분 감정, 호패</span>
       </div>
       <p className="mt-1 text-center text-[11px] text-hanji/70">{who}</p>
       {/* The tag takes the height left between the head and the words, its width following. */}
@@ -69,7 +69,7 @@ export function SinbunCard({ who, rank, job, line, rise, yong, tag, rarity }: { 
             </span>
           )}
           <span className="rounded-full border px-2 py-px font-extrabold" style={{ borderColor: `${GOLD}99`, color: GOLD }}>
-            {rank} · {m.name} {m.hanja}
+            {rank}, {m.name} {m.hanja}
           </span>
         </p>
       </div>

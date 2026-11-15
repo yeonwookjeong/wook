@@ -22,11 +22,11 @@ export default function SinsalType({ name, head, rest, pillars }: { name: string
   return (
     <>
       <section className="pt-6 text-center">
-        <p className={`font-myeongjo text-sm font-extrabold tracking-[0.3em] ${NIGHT_GOLD}`}>神 煞 · 살 유형</p>
+        <p className={`font-myeongjo text-sm font-extrabold tracking-[0.3em] ${NIGHT_GOLD}`}>神 煞, 살 유형</p>
         <p className="mt-3 text-[14px] text-hanji/80">{name}님은</p>
         <h1 className="mt-1 font-myeongjo text-[32px] leading-tight font-extrabold">{head.nick}</h1>
         <p className="mt-1 text-[14px] text-hanji/80">
-          {head.sal} <span className="text-hanji/55">{head.hanja}</span> · {head.line}
+          {head.sal} <span className="text-hanji/55">{head.hanja}</span>, {head.line}
         </p>
         <div className="mt-3 flex flex-wrap justify-center gap-1.5">
           <span className="rounded-full bg-[#d4af5f] px-3 py-1 text-xs font-extrabold text-[#0f2236]">이 유형 {rareText(head)}</span>
@@ -54,7 +54,7 @@ export default function SinsalType({ name, head, rest, pillars }: { name: string
             ))}
           </ul>
           <p className="mt-3 border-t border-white/10 pt-3 text-center text-[13.5px] leading-relaxed text-hanji/90">
-            {makeup.map((r) => r.card.line).join(" · ")}
+            {makeup.map((r) => r.card.line).join(", ")}
           </p>
           <p className="mt-2 text-center text-[11.5px] text-hanji/50">살이 적힌 칸 수로 나눈 비중이에요.</p>
         </section>

@@ -27,9 +27,9 @@ export function yearBridge(pillars: Pillars, profile: Profile | null, query: str
   return {
     href: `/reports/yeonun?${query ? `${query}&` : ""}y=${y}`,
     seal: verdict ?? n.hanja,
-    kicker: `${n.hanja}年 · ${isPreview(y) ? "미리 보는 신년운세" : "올해 운세"}`,
+    kicker: `${n.hanja}年, ${isPreview(y) ? "미리 보는 신년운세" : "올해 운세"}`,
     title: `${who}의 ${y} ${n.ko} 운세`,
-    line: "한 해 판정과 달마다 좋은 달·조심할 달까지 무료로 먼저",
+    line: "한 해 판정과 달마다 좋은 달, 조심할 달까지 무료로 먼저",
   };
 }
 

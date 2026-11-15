@@ -28,7 +28,7 @@ const RISKY: Partial<Record<string, (THEM: string, lover: boolean) => Rule[]>> =
     { re: /운명(?:의\s*(?:상대|짝|사람)|처럼|이야|이에요|이랍니다|적)/, why: "운명 단정" },
     { re: new RegExp(String.raw`${THEM}[은는이가도]?[^.!?\n]{0,12}(?:아직|여전히|지금도)[^.!?\n]{0,15}(?:사랑|그리워|미련|생각(?:하|뿐|해)|잊지\s*못)`), why: "상대 마음 단정" },
     { re: /(?:확률|가능성)[은는이가]?\s*\d+\s*(?:%|퍼센트)|\d+\s*(?:%|퍼센트)\s*(?:의\s*)?(?:확률|가능성)|열에\s*\S+[은는]|(?:재회|돌아올|만날)\s*(?:확률|가능성)[이은는]\s*(?:높|커|크)/, why: "확률" },
-    { re: new RegExp(String.raw`(?:${THEM}|새\s*(?:연인|애인|여자친구|남자친구))[은는이가]?[^.!?\n]{0,12}(?:못된|나쁜\s*사람|형편없|수준\s*낮|쓰레기|별로인\s*사람)`), why: "상대·새 연인 깎아내림" },
+    { re: new RegExp(String.raw`(?:${THEM}|새\s*(?:연인|애인|여자친구|남자친구))[은는이가]?[^.!?\n]{0,12}(?:못된|나쁜\s*사람|형편없|수준\s*낮|쓰레기|별로인\s*사람)`), why: "상대, 새 연인 깎아내림" },
   ],
 };
 // A clause that softens or denies what it names ("~할 수 있어요", "~해야 한다는 생각은", "~인 건 아니에요"). Read
@@ -42,7 +42,10 @@ export function riskyLines(productId: string, text: string, them: string[] = [],
   const rules = RISKY[productId]?.(themOf(them.filter(Boolean)), lover);
   if (!rules) return [];
   const hits: string[] = [];
-  const clauses = text.split(/(?<=[.!?。])\s+|\n+|[,，]/);
+  // A chapter's headline ("## [질문] 헤드라인") opens on the chapter's own question, in brackets: the rules read what
+  // was written after it, not the question asked.
+  const writing = text.replace(/^(\s*#+\s*)\[[^\]\n]*\]/gm, "$1");
+  const clauses = writing.split(/(?<=[.!?。])\s+|\n+|[,，]/);
   clauses.forEach((clause, i) => {
     const soft = SOFT.test(clause) || QUOTED.test(clauses[i + 1] ?? "");
     for (const { re, why, hard } of rules) {

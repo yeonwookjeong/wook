@@ -4,13 +4,13 @@ import Hundo from "@/components/Hundo";
 import { SITE_NAME, SITE_SUMMARY } from "@/lib/brand";
 
 export const metadata: Metadata = {
-  title: { absolute: "훈도사주 소개 · 나한테만 맞는 사주 풀이" },
+  title: { absolute: "훈도사주 소개, 나한테만 맞는 사주 풀이" },
   description: SITE_SUMMARY,
 };
 
 const FREE = [
   { href: "/reports/pyeongsaeng", title: "무료 사주 분석", line: "여덟 글자의 무게, 다섯 가지 힘, 10년 흐름" },
-  { href: "/reports/gukjeong", title: "내 사주 풀이", line: "여덟 글자로 보는 성격·재능·돈·사랑·일, 2027년 한눈에" },
+  { href: "/reports/gukjeong", title: "내 사주 풀이", line: "여덟 글자로 보는 성격, 재능, 돈, 사랑, 일, 2027년 한눈에" },
   { href: "/ranking", title: "이달의 일주 랭킹", line: "60일주 가운데 내 일주는 이번 달 몇 위" },
   { href: "/samjae", title: "삼재 띠 확인", line: "올해와 내년 삼재 띠" },
   { href: "/king", title: "왕이 될 사주", line: "친구들과 하는 조선 조정 놀이" },

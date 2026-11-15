@@ -60,9 +60,9 @@ export function domainBrief(domain: Domain, pillars: Pillars, gender: Gender | n
     const store = chartOf(p).some((s) => s.branch === STORE[wealthEl]);
     lines.push(
       "■ ★ 재물 심화 근거 (평생 사주에는 없는 계산. 이 보고서의 뼈대)",
-      `- 재성(돈 기운, ${EL(wealthEl)}): 비중 ${share("재성")}% · 자리 ${places.length ? places.join(", ") : "드러난 곳 없음(지장간에만 있거나 없음)"}`,
+      `- 재성(돈 기운, ${EL(wealthEl)}): 비중 ${share("재성")}%, 자리 ${places.length ? places.join(", ") : "드러난 곳 없음(지장간에만 있거나 없음)"}`,
       `- 식상(재주) ${share("식상")}% → 재성 ${share("재성")}%: ${share("식상") >= 10 && share("재성") >= 10 ? "재주가 돈으로 이어지는 흐름(식상생재)이 살아 있음" : share("식상") >= 10 ? "재주는 있으나 돈으로 잇는 고리가 약함" : share("재성") >= 10 ? "돈 기운은 있으나 스스로 만들어 내는 재주가 약함" : "둘 다 약함"}`,
-      `- 비겁(나눠 가져가는 기운) ${share("비겁")}%${placesOf(c, "비겁").some((x) => x.includes("지")) ? `, 자리 ${placesOf(c, "비겁").join(", ")}` : ""}: ${share("비겁") >= 30 && share("재성") < 20 ? "돈을 두고 다투는 구조(군비쟁재) — 동업·보증·더치페이 안 하는 자리에서 새기 쉬움" : "크게 새는 구조는 아님"}`,
+      `- 비겁(나눠 가져가는 기운) ${share("비겁")}%${placesOf(c, "비겁").some((x) => x.includes("지")) ? `, 자리 ${placesOf(c, "비겁").join(", ")}` : ""}: ${share("비겁") >= 30 && share("재성") < 20 ? "돈을 두고 다투는 구조(군비쟁재) — 동업, 보증, 더치페이 안 하는 자리에서 새기 쉬움" : "크게 새는 구조는 아님"}`,
       `- 재물 창고(${BRANCHES[STORE[wealthEl]]}): ${store ? "원국에 있음 — 모아 두는 힘" : "원국에 없음 — 들어와도 머물게 하는 장치가 필요"}`,
       `- 감당할 힘: ${r.strength}${(r.strength === "신약" || r.strength === "극신약") && share("재성") >= 30 ? " — 재다신약: 큰돈보다 꾸준한 돈이 맞음" : ""}`,
     );
@@ -73,17 +73,17 @@ export function domainBrief(domain: Domain, pillars: Pillars, gender: Gender | n
     const natal = chartOf(p).filter((s) => s.branch !== null && s.pos !== "일");
     const seatMeet = natal.flatMap((s) => {
       const m = meetings(seat, s.branch!);
-      return m.length ? [`${s.pos}지 ${BRANCHES[s.branch!]}와 ${m.join("·")}`] : [];
+      return m.length ? [`${s.pos}지 ${BRANCHES[s.branch!]}와 ${m.join(", ")}`] : [];
     });
     const dohwa = chartOf(p).flatMap((s) => (s.branch !== null && salsAt(p, s.branch).includes("도화") ? [`${s.pos}지`] : []));
     const mixed =
       c.gender === "f" && placesOf(c, "관성").length >= 2 && chartOf(p).some((s) => s.stem !== null && tenGod(p.dayStem, s.stem) === "정관") && chartOf(p).some((s) => s.stem !== null && tenGod(p.dayStem, s.stem) === "편관");
     lines.push(
-      "■ ★ 연애·결혼 심화 근거 (평생 사주에는 없는 계산. 이 보고서의 뼈대)",
-      `- 배우자 기운(${groups.join("·")}${c.gender ? "" : ", 성별을 몰라 둘 다"}): 비중 ${groups.map((g) => `${g} ${share(g)}%`).join(", ")} · 자리 ${groups.flatMap((g) => placesOf(c, g)).join(", ") || "드러난 곳 없음"}`,
-      `- 배우자 자리(일지 ${BRANCHES[seat]}): ${seatGod}(${GROUP_OF[seatGod]}) · 12운성 ${stageOf(p.dayStem, seat)} · 원국과 ${seatMeet.length ? seatMeet.join(", ") : "합충 없음(안정)"}`,
+      "■ ★ 연애, 결혼 심화 근거 (평생 사주에는 없는 계산. 이 보고서의 뼈대)",
+      `- 배우자 기운(${groups.join(", ")}${c.gender ? "" : ", 성별을 몰라 둘 다"}): 비중 ${groups.map((g) => `${g} ${share(g)}%`).join(", ")}, 자리 ${groups.flatMap((g) => placesOf(c, g)).join(", ") || "드러난 곳 없음"}`,
+      `- 배우자 자리(일지 ${BRANCHES[seat]}): ${seatGod}(${GROUP_OF[seatGod]}), 12운성 ${stageOf(p.dayStem, seat)}, 원국과 ${seatMeet.length ? seatMeet.join(", ") : "합충 없음(안정)"}`,
       `- 도화: ${dohwa.length ? dohwa.join(", ") : "없음"}`,
-      `- 표현하는 힘(식상) ${share("식상")}% · 받아들이는 힘(인성) ${share("인성")}%${c.gender === "f" && share("식상") >= 30 ? " · 식상이 관(배우자성)을 누르는 구조(상관견관) — 상대에게 기대치가 높고 말로 부딪히기 쉬움" : ""}${c.gender === "m" && share("비겁") >= 30 ? " · 비겁이 재(배우자성)를 다투는 구조 — 연인에게 친구·형제 문제가 끼기 쉬움" : ""}`,
+      `- 표현하는 힘(식상) ${share("식상")}%, 받아들이는 힘(인성) ${share("인성")}%${c.gender === "f" && share("식상") >= 30 ? ", 식상이 관(배우자성)을 누르는 구조(상관견관) — 상대에게 기대치가 높고 말로 부딪히기 쉬움" : ""}${c.gender === "m" && share("비겁") >= 30 ? ", 비겁이 재(배우자성)를 다투는 구조 — 연인에게 친구, 형제 문제가 끼기 쉬움" : ""}`,
       ...(mixed ? ["- 관살혼잡: 정관과 편관이 함께 — 끌리는 사람이 두 부류로 갈림"] : []),
     );
   } else {
@@ -91,13 +91,13 @@ export function domainBrief(domain: Domain, pillars: Pillars, gender: Gender | n
     const sals = [...new Set(chartOf(p).flatMap((s) => (s.branch === null ? [] : salsAt(p, s.branch).filter((x) => ["역마", "문창귀인", "화개", "양인", "천을귀인"].includes(x)).map((x) => `${x}(${s.pos}지)`))))];
     const month = chartOf(p).filter((s) => s.branch !== null && s.pos !== "월").flatMap((s) => {
       const m = meetings(p.monthBranch, s.branch!);
-      return m.length ? [`${s.pos}지와 ${m.join("·")}`] : [];
+      return m.length ? [`${s.pos}지와 ${m.join(", ")}`] : [];
     });
     lines.push(
       "■ ★ 직업 심화 근거 (평생 사주에는 없는 계산. 이 보고서의 뼈대)",
-      `- 격국 ${GYEOK_NAME[r.gyeok]} · 월간 투출 ${chartOf(p).find((s) => s.pos === "월")!.stem !== null && GROUP_OF[tenGod(p.dayStem, p.monthStem)] === GROUP_OF[r.gyeok] ? "있음(격이 드러나 뚜렷함)" : "없음(격이 속에 숨음)"}`,
+      `- 격국 ${GYEOK_NAME[r.gyeok]}, 월간 투출 ${chartOf(p).find((s) => s.pos === "월")!.stem !== null && GROUP_OF[tenGod(p.dayStem, p.monthStem)] === GROUP_OF[r.gyeok] ? "있음(격이 드러나 뚜렷함)" : "없음(격이 속에 숨음)"}`,
       `- 일하는 방식 점수: ${top.map(([k, v]) => `${k} ${v}`).join(" > ")}`,
-      `- 관성(자리·책임) ${share("관성")}% · 인성(자격·학습) ${share("인성")}%${share("관성") >= 10 && share("인성") >= 10 ? " — 관인상생: 조직에서 인정받아 올라가는 구조" : ""}`,
+      `- 관성(자리, 책임) ${share("관성")}%, 인성(자격, 학습) ${share("인성")}%${share("관성") >= 10 && share("인성") >= 10 ? " — 관인상생: 조직에서 인정받아 올라가는 구조" : ""}`,
       `- 일 관련 신살: ${sals.length ? sals.join(", ") : "두드러진 것 없음"}`,
       `- 일터 자리(월지 ${BRANCHES[p.monthBranch]}): 원국과 ${month.length ? month.join(", ") : "합충 없음"}`,
     );
@@ -113,7 +113,7 @@ export function domainBrief(domain: Domain, pillars: Pillars, gender: Gender | n
 export type DomainCard = { type: string; line: string; facts: { label: string; value: string; note: string; rank?: string; why?: string }[] };
 
 // The numbers above, against the same births as lib/rarity.json (scripts/domainRanks.mts).
-const POWER: Record<GodGroup, string> = { 비겁: "나를 지키는 힘", 식상: "표현하는 힘", 재성: "돈·현실 감각", 관성: "책임·규칙의 힘", 인성: "배우고 받는 힘" };
+const POWER: Record<GodGroup, string> = { 비겁: "나를 지키는 힘", 식상: "표현하는 힘", 재성: "돈, 현실 감각", 관성: "책임, 규칙의 힘", 인성: "배우고 받는 힘" };
 const rankWord = (x: { side: "high" | "low"; rate: number }) => (x.rate > 0.4 ? "보통 수준" : `${x.side === "high" ? "상위" : "하위"} ${Math.max(1, Math.round(x.rate * 100))}%`);
 function workRank(name: string, score: number) {
   const h = (ranks.work as Record<string, number[]>)[name];
@@ -125,9 +125,9 @@ function workRank(name: string, score: number) {
 const MEDIAN = 23; // every work type's median among all births (lib/domainRanks.json)
 
 const WORK_SAL: Record<string, string> = {
-  역마: "움직이는 일, 출장·해외·이동이 잦은 일과 인연이 있어요",
-  문창귀인: "글·공부·기획처럼 머리로 하는 일에서 빛나요",
-  화개: "연구·예술·전문 분야처럼 깊이 파고드는 일이 맞아요",
+  역마: "움직이는 일, 출장, 해외, 이동이 잦은 일과 인연이 있어요",
+  문창귀인: "글, 공부, 기획처럼 머리로 하는 일에서 빛나요",
+  화개: "연구, 예술, 전문 분야처럼 깊이 파고드는 일이 맞아요",
   양인: "승부가 나는 일, 전문 기술로 버티는 일에 강해요",
   천을귀인: "일이 막힐 때 도와주는 윗사람 복이 있어요",
 };
@@ -137,8 +137,8 @@ const WORK_SAL: Record<string, string> = {
 // however much 인성).
 export const WORK_TYPES: { name: string; basis: GodGroup; helper: GodGroup; where: string; score: (share: (g: GodGroup) => number) => number }[] = [
   { name: "조직형", basis: "관성", helper: "재성", where: "조직 안에서 자리와 책임을 맡아 올라가는 일", score: (s) => s("관성") + Math.round(s("재성") / 3) },
-  { name: "전문·자격형", basis: "인성", helper: "관성", where: "공부와 자격으로 인정받는 전문 분야", score: (s) => s("인성") + Math.round(s("관성") / 3) },
-  { name: "창작·기술형", basis: "식상", helper: "비겁", where: "내 손과 머리로 만들어 내는 일", score: (s) => s("식상") + Math.round(s("비겁") / 3) },
+  { name: "전문, 자격형", basis: "인성", helper: "관성", where: "공부와 자격으로 인정받는 전문 분야", score: (s) => s("인성") + Math.round(s("관성") / 3) },
+  { name: "창작, 기술형", basis: "식상", helper: "비겁", where: "내 손과 머리로 만들어 내는 일", score: (s) => s("식상") + Math.round(s("비겁") / 3) },
   { name: "사업형", basis: "재성", helper: "식상", where: "판을 벌이고 사람과 돈을 굴리는 일", score: (s) => s("재성") + Math.round(s("식상") / 3) },
   { name: "독립형", basis: "비겁", helper: "인성", where: "내 이름으로 혼자 서는 일, 프리랜서나 자영업", score: (s) => s("비겁") + Math.round(s("인성") / 3) },
 ];
@@ -178,19 +178,19 @@ export function domainCard(domain: Domain, pillars: Pillars, gender: Gender | nu
           value: `${money}%`,
           note: money >= 30 ? "돈 기운이 많은 편이에요" : money >= 10 ? "보통이에요" : "적은 편이에요",
           rank: rankWord(godRank("재성", money / 100)),
-          why: "내 사주 전체를 100으로 놓았을 때 돈·현실 감각의 기운이 차지하는 몫이에요",
+          why: "내 사주 전체를 100으로 놓았을 때 돈, 현실 감각의 기운이 차지하는 몫이에요",
         },
         {
           label: "재물 창고",
           value: store ? "있음" : "없음",
-          note: store ? "들어온 돈을 모아 두는 힘이 있어요" : "들어와도 머물게 하는 장치(자동이체·적금)가 필요해요",
+          note: store ? "들어온 돈을 모아 두는 힘이 있어요" : "들어와도 머물게 하는 장치(자동이체, 적금)가 필요해요",
           rank: `${perHundred(ranks.store / ranks.total)}이 가진`,
           why: "돈 기운을 담아 두는 땅 글자가 사주에 있는지예요",
         },
         {
           label: "새는 구멍",
           value: rival ? "있음" : weak ? "주의" : "작음",
-          note: rival ? "나눠 가져가는 기운이 강해요. 동업·보증·돈 빌려주기에서 새요" : weak ? "돈이 몸보다 커요. 큰돈보다 꾸준한 돈이 맞아요" : "크게 새는 구조는 아니에요",
+          note: rival ? "나눠 가져가는 기운이 강해요. 동업, 보증, 돈 빌려주기에서 새요" : weak ? "돈이 몸보다 커요. 큰돈보다 꾸준한 돈이 맞아요" : "크게 새는 구조는 아니에요",
         },
       ],
     };
@@ -226,15 +226,15 @@ export function domainCard(domain: Domain, pillars: Pillars, gender: Gender | nu
           value: `${Math.round(spouse)}%`,
           note: spouse >= 25 ? "사람이 잘 들어오는 편이에요" : spouse >= 8 ? "보통이에요" : "적은 편이라 먼저 움직여야 해요",
           rank: groups.length === 1 ? rankWord(godRank(groups[0], spouse / 100)) : undefined,
-          why: `내 사주 전체를 100으로 놓았을 때 연인·배우자를 뜻하는 기운이 차지하는 몫이에요${groups.length > 1 ? " (성별을 넣으면 남들과 견줘 드려요)" : ""}`,
+          why: `내 사주 전체를 100으로 놓았을 때 연인, 배우자를 뜻하는 기운이 차지하는 몫이에요${groups.length > 1 ? " (성별을 넣으면 남들과 견줘 드려요)" : ""}`,
         },
-        { label: "배우자 자리", value: shaken ? (bound ? "묶임·흔들림" : "흔들림") : bound ? "묶임" : "안정", note: shaken ? (bound ? "정은 깊은데 부딪히는 글자도 있어 시기를 고르는 게 중요해요" : "부딪히는 글자가 있어 시기를 고르는 게 중요해요") : bound ? "합으로 묶여 정이 깊은 대신 쉽게 못 놓아요" : "큰 흔들림 없이 안정적이에요" },
+        { label: "배우자 자리", value: shaken ? (bound ? "묶임, 흔들림" : "흔들림") : bound ? "묶임" : "안정", note: shaken ? (bound ? "정은 깊은데 부딪히는 글자도 있어 시기를 고르는 게 중요해요" : "부딪히는 글자가 있어 시기를 고르는 게 중요해요") : bound ? "합으로 묶여 정이 깊은 대신 쉽게 못 놓아요" : "큰 흔들림 없이 안정적이에요" },
         {
           label: "도화",
           value: dohwa ? "있음" : "없음",
           note: dohwa ? "사람을 끄는 매력이 있어 먼저 다가오는 사람이 많아요" : "첫눈보다 알수록 끌리는 매력이에요",
           rank: salRate("도화") === null ? undefined : `${perHundred(salRate("도화")!)}이 가진`,
-          why: "사람의 눈길을 끄는 글자(자·오·묘·유 중 하나)가 내 사주에 드는지예요",
+          why: "사람의 눈길을 끄는 글자(자, 오, 묘, 유 중 하나)가 내 사주에 드는지예요",
         },
       ],
     };
@@ -251,7 +251,7 @@ export function domainCard(domain: Domain, pillars: Pillars, gender: Gender | nu
         value: `${w.score}점`,
         note: "",
         rank: rankWord(workRank(w.name, w.score)),
-        why: `${POWER[w.basis]} ${share(w.basis)} + ${POWER[w.helper]} ${share(w.helper)}의 3분의 1 · 보통 사람은 ${MEDIAN}점 안팎`,
+        why: `${POWER[w.basis]} ${share(w.basis)} + ${POWER[w.helper]} ${share(w.helper)}의 3분의 1, 보통 사람은 ${MEDIAN}점 안팎`,
       })),
       ...(sals.length ? [{ label: "일복 신호", value: sals[0], note: WORK_SAL[sals[0]] }] : []),
     ],
@@ -322,7 +322,7 @@ export function decadeOf(domain: Domain, pillars: Pillars, gender: Gender | null
       if (seat.includes("충")) {
         score -= 2;
         move = true;
-        why.push("배우자 자리가 움직이는 해(만남·이별·결혼 같은 큰 변화)");
+        why.push("배우자 자리가 움직이는 해(만남, 이별, 결혼 같은 큰 변화)");
       }
       if (salsAt(p, b).includes("도화")) {
         score += 1;
@@ -339,11 +339,11 @@ export function decadeOf(domain: Domain, pillars: Pillars, gender: Gender | null
     } else {
       if (has("관성")) {
         score += 2;
-        why.push("자리·책임·승진 기운(관성)이 드는 해");
+        why.push("자리, 책임, 승진 기운(관성)이 드는 해");
       }
       if (has("인성")) {
         score += 1;
-        why.push("배움·자격·문서의 해");
+        why.push("배움, 자격, 문서의 해");
       }
       if (gs === "관성" && gb === "인성") {
         score += 1;
@@ -354,15 +354,15 @@ export function decadeOf(domain: Domain, pillars: Pillars, gender: Gender | null
         why.push("윗사람과 부딪히기 쉬운 해(상관견관)");
       } else if (has("식상")) {
         score += 1;
-        why.push("재주를 드러내는 해(창작·독립에 유리)");
+        why.push("재주를 드러내는 해(창작, 독립에 유리)");
       }
       if (meetings(b, p.monthBranch).includes("충")) {
         move = true;
-        why.push("일터 자리가 흔들리는 해(이직·이동)");
+        why.push("일터 자리가 흔들리는 해(이직, 이동)");
       }
       if (salsAt(p, b).includes("역마")) {
         move = true;
-        why.push("역마: 이동·출장·새 판의 기운");
+        why.push("역마: 이동, 출장, 새 판의 기운");
       }
     }
     const grade: DecadeYear["grade"] = score >= 3 ? 2 : score >= 1 ? 1 : score >= 0 ? 0 : -1;
@@ -374,7 +374,7 @@ export function decadeOf(domain: Domain, pillars: Pillars, gender: Gender | null
 export function decadeBrief(domain: Domain, years: DecadeYear[]): string {
   if (!years.length) return "";
   return [
-    `■ ★ 10년 달력 (${DECADE_FROM}~${DECADE_FROM + YEARS - 1}, 엔진 계산. 보고서에 표로 함께 나간다. ◎·✕ 해는 본문에서 구체적으로 짚을 것)`,
+    `■ ★ 10년 달력 (${DECADE_FROM}~${DECADE_FROM + YEARS - 1}, 엔진 계산. 보고서에 표로 함께 나간다. ◎, ✕ 해는 본문에서 구체적으로 짚을 것)`,
     ...years.map((y) => `- ${y.year} ${y.gz} ${"✕△○◎"[y.grade + 1]} ${y.tag}: ${y.why.join(", ") || "특별히 드는 기운 없음"}`),
   ].join("\n");
 }

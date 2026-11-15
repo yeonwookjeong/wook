@@ -16,7 +16,7 @@ import { FigureOf, VerdictCard } from "../Figures";
 import { defaultFigures, figureKit } from "@/lib/askFigures";
 import { withFigures } from "@/lib/askText";
 
-export const metadata: Metadata = { title: "사랑방 · 정 훈도에게 묻기", robots: { index: false } };
+export const metadata: Metadata = { title: "사랑방, 정 훈도에게 묻기", robots: { index: false } };
 // An answer is written by the model inside the action: give it the same room as a report.
 export const maxDuration = 300;
 
@@ -83,7 +83,7 @@ export default async function MemberRoomPage({ params }: PageProps<"/ask/[id]">)
           )}
           {room.messages.map((m, i) =>
             m.role === "guest" ? (
-              <Question key={i} slip text={m.text} topic={[m.topic, m.withLabel && `${m.withLabel} 이야기`].filter(Boolean).join(" · ")} at={m.at} />
+              <Question key={i} slip text={m.text} topic={[m.topic, m.withLabel && `${m.withLabel} 이야기`].filter(Boolean).join(", ")} at={m.at} />
             ) : m.choices ? (
               <div key={i} className="doc-paper rounded-[4px] px-5 py-4 text-[15px] leading-relaxed">
                 <div className="flex items-start gap-3">
@@ -124,7 +124,7 @@ export default async function MemberRoomPage({ params }: PageProps<"/ask/[id]">)
       {/* The people seen together: up to five, each renamed, entered again or taken off (still remembered). */}
       <details id="people" open={people.length === 0 ? undefined : true} className="doc-paper mt-5 mb-10 scroll-mt-4 px-5 py-4">
         <summary className="cursor-pointer text-sm font-bold">
-          {people.length ? `함께 보는 사람 (${people.length}/${MAX_PEOPLE})` : "그 사람의 사주도 함께 보기 (연애·궁합·관계 질문에)"}
+          {people.length ? `함께 보는 사람 (${people.length}/${MAX_PEOPLE})` : "그 사람의 사주도 함께 보기 (연애, 궁합, 관계 질문에)"}
         </summary>
         {people.length > 0 && (
           <ul className="mt-3 flex flex-col divide-y divide-seal/10">
@@ -134,7 +134,7 @@ export default async function MemberRoomPage({ params }: PageProps<"/ask/[id]">)
                   <p className="min-w-0 text-sm">
                     <b>{x.label}</b>{" "}
                     <span className="text-ink-soft">
-                      · {REL_LABEL[relOf(x.rel, x.label)].split(" ")[0]} · {x.p ? `${x.p.name} · ${iljuOf(x.p)}` : "?"}
+{REL_LABEL[relOf(x.rel, x.label)].split(" ")[0]}, {x.p ? `${x.p.name}, ${iljuOf(x.p)}` : "?"}
                     </span>
                   </p>
                   <RemovePersonButton room={room.id} person={x.id} label={x.label} />

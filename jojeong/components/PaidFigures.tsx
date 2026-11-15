@@ -38,7 +38,7 @@ export function PairYearsFigure({ x, a, b }: { x: PairYears; a: string; b: strin
     <Frame
       title="우리 둘의 10년"
       sub={`${a}님과 ${b}님, 해마다 각자의 운과 ${x.seat}에 드는 기운`}
-      note={`각자의 칸은 그 사람의 한 해 판정(대길·길·평·조심·인내)이에요. 맨 오른쪽은 두 사람에게 그해가 어떤지예요.${x.noDaeun.length ? ` ${x.noDaeun.join("·")}님은 성별을 몰라 10년 대운 없이 본 판정이에요.` : ""}`}
+      note={`각자의 칸은 그 사람의 한 해 판정(대길, 길, 평, 조심, 인내)이에요. 맨 오른쪽은 두 사람에게 그해가 어떤지예요.${x.noDaeun.length ? ` ${x.noDaeun.join(", ")}님은 성별을 몰라 10년 대운 없이 본 판정이에요.` : ""}`}
     >
       <div className="grid grid-cols-[2.6rem_2.6rem_2.6rem_1fr] items-center gap-x-1.5 gap-y-1 text-center text-[11.5px]">
         <span className="text-[11px] font-bold text-ink-soft">해</span>
@@ -67,7 +67,7 @@ export function PairYearsFigure({ x, a, b }: { x: PairYears; a: string; b: strin
 // 평생 사주 "앞으로 10년": each year's verdict and what decides it.
 export function YearsAheadFigure({ rows, name }: { rows: YearRow[]; name: string }) {
   return (
-    <Frame title="앞으로 10년, 해마다" sub={`${name}님의 해마다 판정 · 연운 보고서와 같은 계산`} note="◆ 표시는 10년 대운이 바뀌는 해예요.">
+    <Frame title="앞으로 10년, 해마다" sub={`${name}님의 해마다 판정, 연운 보고서와 같은 계산`} note="◆ 표시는 10년 대운이 바뀌는 해예요.">
       <ul className="flex flex-col divide-y divide-seal/10">
         {rows.map((r) => (
           <li key={r.year} className="flex items-start gap-2.5 py-2">

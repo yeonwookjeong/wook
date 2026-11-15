@@ -121,7 +121,7 @@ export default function StoreHero({
             <img src={CHARACTER.bust} alt={`별자리 두루마리를 든 ${CHARACTER_NAME}`} width={80} height={80} className="size-full object-cover" />
           </div>
           <p className="relative mb-2 flex-1 rounded-2xl rounded-bl-sm bg-[#f7efd9]/95 px-4 py-3 text-[13px] leading-relaxed text-ink">
-            <span className="block text-[11px] font-extrabold text-seal">관상감 명과학 훈도 · 정가</span>
+            <span className="block text-[11px] font-extrabold text-seal">관상감 명과학 훈도, 정가</span>
             {slim
               ? "조선 관상감에서 사주와 길일을 가르치던 훈도, 정가이옵니다. 이제 그대의 여덟 글자를 보겠사옵니다."
               : "소신이 그 훈도, 정가이옵니다. 왕실의 사주와 궁합을 보던 눈으로, 이제 그대의 여덟 글자를 보겠사옵니다."}

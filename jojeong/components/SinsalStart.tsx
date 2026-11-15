@@ -48,10 +48,10 @@ export default function SinsalStart({ band, next = "/sinsal" }: { band?: React.R
 export function SinsalHeader() {
   return (
     <section className="pt-6 text-center">
-      <p className="font-myeongjo text-sm font-extrabold tracking-[0.3em] text-[#d4af5f]">神 煞 · 신살 유형 테스트</p>
+      <p className="font-myeongjo text-sm font-extrabold tracking-[0.3em] text-[#d4af5f]">神 煞, 신살 유형 테스트</p>
       <h1 className="mt-2 font-myeongjo text-[28px] font-extrabold">나는 어떤 살의 사람일까</h1>
       <p className="mt-2 text-[14.5px] leading-relaxed text-hanji/85">20가지 살 유형 중 나는 100명 중 몇 명일까</p>
-      <p className="mt-1 text-xs text-hanji/55">무료 · 생년월일은 저장하지 않아요</p>
+      <p className="mt-1 text-xs text-hanji/55">무료, 생년월일은 저장하지 않아요</p>
     </section>
   );
 }

@@ -32,16 +32,16 @@ const TOPICS: { id: ProductId; name: string; ask: string }[] = [
   { id: "pyeongsaeng", name: "평생 사주", ask: "나는 어떤 사람이고 어떻게 살아갈까?" },
   { id: "yeonun", name: "연운", ask: "그해 나한테 무슨 일이? 지난해도, 앞으로의 해도" },
   { id: "jaemul", name: "재물운", ask: "돈이 왜 안 모일까, 언제 트일까?" },
-  { id: "yeonae", name: "연애·결혼", ask: "나랑 맞는 사람은 언제 올까?" },
-  { id: "jikup", name: "직업·적성", ask: "지금 일, 나랑 맞을까?" },
+  { id: "yeonae", name: "연애, 결혼", ask: "나랑 맞는 사람은 언제 올까?" },
+  { id: "jikup", name: "직업, 적성", ask: "지금 일, 나랑 맞을까?" },
   { id: "gunghap", name: "궁합", ask: "우리, 진짜 잘 맞을까?" },
-  { id: "taekil", name: "택일", ask: "결혼·이사·계약·면접, 언제 할까?" },
+  { id: "taekil", name: "택일", ask: "결혼, 이사, 계약, 면접, 언제 할까?" },
 ];
 
 // Free, computed, no payment: night-blue tiles under the choices (components/FreeTiles.tsx).
 const FREE: FreeTile[] = [
-  { href: "/reports/gukjeong", hanja: "國運", title: "내 사주 · 2027", line: "여덟 글자와 2027년 열두 달, 무료로", tag: "내 사주" },
-  { href: "/samjae", hanja: "三災", title: "2026·2027 삼재 띠", line: "토끼·양·돼지띠, 2027년 날삼재로 끝나요", tag: "띠별" },
+  { href: "/reports/gukjeong", hanja: "國運", title: "내 사주, 2027", line: "여덟 글자와 2027년 열두 달, 무료로", tag: "내 사주" },
+  { href: "/samjae", hanja: "三災", title: "2026, 2027 삼재 띠", line: "토끼, 양, 돼지띠, 2027년 날삼재로 끝나요", tag: "띠별" },
   { href: "/king", hanja: "王", title: "왕이 될 사주", line: "친구를 불러 내 조정을 꾸리는 놀이", tag: "친구와" },
   { href: "/reports/sinbun", hanja: "身分", title: "조선 신분 감정", line: "조선에 태어났다면 어떤 신분이었을까", tag: "혼자" },
   { href: "/sinsal", hanja: "神煞", title: "신살 유형 테스트", line: "나는 20가지 살 유형 중 무엇일까", tag: "친구와" },
@@ -93,7 +93,7 @@ export default async function Home() {
           // The first stop is the free reading (the chart and 2027, computed, no AI), not a report on sale:
           // people read something complete before being asked to pay.
           me
-            ? { href: "/reports/gukjeong", label: `${me.person.name}님 무료 운세 보기`, sub: "사주 분석과 2027년 운세까지 · 무료" }
+            ? { href: "/reports/gukjeong", label: `${me.person.name}님 무료 운세 보기`, sub: "사주 분석과 2027년 운세까지, 무료" }
             : // ?new=1 asks for a chart: without it the report falls back to a court this browser enthroned
               // (lib/subject.ts), which right after "다른 사람 보기" brings back the chart just let go.
               { href: "/reports/gukjeong?new=1", label: "내 사주 무료로 보기", sub: "생년월일만 넣으면 사주 분석과 2027년 운세를 바로 보여 드려요" }
@@ -112,7 +112,7 @@ export default async function Home() {
           <span className="flex items-center gap-1.5 text-xs">
             <b className="text-seal">이달의 일주 랭킹</b>
             <span className="text-ink-soft">
-              {mp.label} · {mp.term} {mp.from}~
+              {mp.label}, {mp.term} {mp.from}~
             </span>
           </span>
           <b className="mt-0.5 block font-myeongjo text-[17px] leading-snug">
@@ -121,11 +121,11 @@ export default async function Home() {
           <span className="block text-[12px] text-ink-soft">
             {myRank && myRank.rank > 50 ? (
               <>
-                {me!.person.name}님 {myRank.name}는 이달 <b className="text-ink">미리 대비하면 되는 일주</b> · 대비법 보기
+                {me!.person.name}님 {myRank.name}는 이달 <b className="text-ink">미리 대비하면 되는 일주</b>, 대비법 보기
               </>
             ) : myRank ? (
               <>
-                {me!.person.name}님 {myRank.name}는 <b className="text-seal">{myRank.rank}위</b> · 60일주 전체 순위 보기
+                {me!.person.name}님 {myRank.name}는 <b className="text-seal">{myRank.rank}위</b>, 60일주 전체 순위 보기
               </>
             ) : (
               "60일주 중 내 일주는 몇 위? 전체 순위 보기"
@@ -138,7 +138,7 @@ export default async function Home() {
       {ny && nyProduct && (
         <RoyalDoc className="mt-5" paperClassName="px-5">
           <p className="text-center text-xs font-extrabold text-seal">
-            {ny} {yearName(ny).ko.replace("년", "")}년({yearName(ny).hanja}年) · {yearNickname(ny)}
+            {ny} {yearName(ny).ko.replace("년", "")}년({yearName(ny).hanja}年), {yearNickname(ny)}
           </p>
           <div className="mt-2 flex items-center justify-center gap-3">
             <Seal hanja={nyProduct.hanja} />
@@ -161,7 +161,7 @@ export default async function Home() {
             ))}
           </ol>
           <p className="mt-3 text-center text-[12px] text-ink-soft">
-            {ny}년 판정과 달마다 흐름은 무료로 먼저 · 한 해 전체 풀이 <Price />
+            {ny}년 판정과 달마다 흐름은 무료로 먼저, 한 해 전체 풀이 <Price />
           </p>
           <Link
             href={nyOwned ? `/reports/yeonun?order=${nyOwned.id}` : `/reports/yeonun?y=${ny}`}
@@ -265,7 +265,7 @@ export default async function Home() {
                 <b className="block font-myeongjo text-[15px] leading-snug">
                   <ColumnTitle title={c.title} />
                 </b>
-                <span className="mt-0.5 block text-[12px] text-ink-soft">{catLabel(c.cat)} · 읽는 글</span>
+                <span className="mt-0.5 block text-[12px] text-ink-soft">{catLabel(c.cat)}, 읽는 글</span>
               </Link>
             </li>
           ))}

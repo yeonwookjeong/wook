@@ -92,7 +92,7 @@ export function holidaysOf(y: number): Map<string, string> {
   // A day that is already a holiday keeps both names (2028: 개천절·추석 연휴).
   const add = (t: number, name: string) => {
     const k = key(ymdOf(t)[1], ymdOf(t)[2]);
-    out.set(k, out.has(k) ? `${out.get(k)}·${name}` : name);
+    out.set(k, out.has(k) ? `${out.get(k)}, ${name}` : name);
   };
   for (const t of seollal) {
     const l = Solar.fromYmd(...ymdOf(t)).getLunar();
@@ -123,7 +123,7 @@ export function holidaysOf(y: number): Map<string, string> {
   ]);
   for (const t of [...weekendRule].sort((a, b) => a - b)) {
     if (seollal.includes(t) || chuseok.includes(t)) continue;
-    const shared = (out.get(key(ymdOf(t)[1], ymdOf(t)[2])) ?? "").includes("·");
+    const shared = (out.get(key(ymdOf(t)[1], ymdOf(t)[2])) ?? "").includes(", ");
     if (weekday(t) === 0 || weekday(t) === 6 || shared) substitute(t);
   }
   holidayCache.set(y, out);

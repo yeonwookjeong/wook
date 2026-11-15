@@ -134,17 +134,17 @@ export default function FreeReading({
         </ul>
         <div className="mt-4 grid gap-2 text-[14px] leading-relaxed">
           <p className="rounded-xl bg-seal/5 px-3 py-2">
-            <b className="text-seal">가장 강한 힘 · {r.strong.name}</b>
+            <b className="text-seal">가장 강한 힘, {r.strong.name}</b>
             <br />
             {first(r.strong.line)}
           </p>
           <p className="rounded-xl bg-ink/5 px-3 py-2">
-            <b>가장 약한 힘 · {r.weak.name}</b>
+            <b>가장 약한 힘, {r.weak.name}</b>
             <br />
             {first(r.weak.line)}
           </p>
         </div>
-        <p className="mt-2 text-[11px] text-ink-soft">상위·하위는 1950~2008년에 태어날 수 있는 모든 날·시의 사주와 비교했어요.</p>
+        <p className="mt-2 text-[11px] text-ink-soft">상위, 하위는 다른 모든 사주와 비교했어요.</p>
         {ask?.("성향 지도")}
       </Card>
 
@@ -164,7 +164,7 @@ export default function FreeReading({
                   )}
                 </p>
                 <p className="mt-0.5 text-[13px] leading-relaxed text-ink/85">{s.line}</p>
-                {seats?.[s.name] && <p className="mt-0.5 text-[11px] font-bold text-ink-soft">사주표 · {seats[s.name]}</p>}
+                {seats?.[s.name] && <p className="mt-0.5 text-[11px] font-bold text-ink-soft">사주표, {seats[s.name]}</p>}
               </li>
             ))}
           </ul>
@@ -178,7 +178,7 @@ export default function FreeReading({
       </Card>
 
       {r.domains.length > 0 && (
-        <Card hanja="三 事" title="돈 · 사랑 · 일, 한 줄 판정">
+        <Card hanja="三 事" title="돈, 사랑, 일, 한 줄 판정">
           <ul className="mt-3 flex flex-col gap-2">
             {r.domains.map(({ domain, card }) => (
               <li key={domain}>
@@ -193,7 +193,7 @@ export default function FreeReading({
               </li>
             ))}
           </ul>
-          {ask?.("돈·사랑·일")}
+          {ask?.("돈, 사랑, 일")}
         </Card>
       )}
 
@@ -281,11 +281,11 @@ export default function FreeReading({
               </>
             ) : onLifeReport ? (
               <a href="#report-start" className="mt-3 block text-right text-[12px] font-bold text-seal">
-                시기마다 무슨 일이 생기는지 · 아래에서 이어 보기 ↓
+                시기마다 무슨 일이 생기는지, 아래에서 이어 보기 ↓
               </a>
             ) : (
               <Link href={`/reports/pyeongsaeng${q}`} className="mt-3 block text-right text-[12px] font-bold text-seal">
-                시기마다 무슨 일이 생기는지 · 평생 사주 →
+                시기마다 무슨 일이 생기는지, 평생 사주 →
               </Link>
             )}
           </>

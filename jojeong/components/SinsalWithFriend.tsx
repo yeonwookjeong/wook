@@ -33,7 +33,7 @@ export default function SinsalWithFriend({ friend, me }: { friend: Person; me: P
       <div className="mt-3 grid grid-cols-2 gap-3">
         {pair.map(({ who, c, g }) => (
           <div key={who + c.id} className="text-center">
-            <Image src={imageOf(c, g)} alt={`${c.sal} · ${c.nick}`} width={400} height={500} className="h-auto w-full rounded-lg ring-1 ring-[#d4af5f]/50" />
+            <Image src={imageOf(c, g)} alt={`${c.sal}, ${c.nick}`} width={400} height={500} className="h-auto w-full rounded-lg ring-1 ring-[#d4af5f]/50" />
             <p className="mt-1.5 text-[12px] text-hanji/60">{who}님</p>
             <p className="font-myeongjo text-[15px] font-extrabold">{c.sal}</p>
             <p className="text-[12px] text-hanji/80">{c.nick}</p>
@@ -43,13 +43,13 @@ export default function SinsalWithFriend({ friend, me }: { friend: Person; me: P
       </div>
       <ul className="mt-4 flex flex-col gap-1.5 rounded-lg border-l-4 border-[#d4af5f] bg-white/[0.06] px-3 py-2 text-[13px] leading-relaxed">
         <li>
-          <b>둘 다 가진 살</b> · {list(both)}
+          <b>둘 다 가진 살</b>, {list(both)}
         </li>
         <li>
-          <b>{me.name}님에게만</b> · {list(onlyMe)}
+          <b>{me.name}님에게만</b>, {list(onlyMe)}
         </li>
         <li>
-          <b>{friend.name}님에게만</b> · {list(onlyThem)}
+          <b>{friend.name}님에게만</b>, {list(onlyThem)}
         </li>
       </ul>
       <p className="mt-2 text-[12px] text-hanji/60">같은 살이라도 다른 칸과 어울리는 결은 사람마다 달라요.</p>

@@ -182,7 +182,7 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
           ? `그런데 사주에 ${GOD_GLOSS[r.godList.find((g) => GROUP_OF[g] === heavy) ?? "비견"].replace(/\(.*\)/, "")}의 기운(${heavy})이 유난히 두터워, ${josa(excess, "과/와")} 같은 형국이에요.`
           : "사주의 기운이 어느 한쪽으로 크게 쏠리지 않아 제 모양을 잘 지키고 있어요."
       }`,
-      `${img.cureText}. ${cureHave.length ? `다행히 사주에 ${cureHave.map((c) => STEMS[c]).join("·")}의 기운이 이미 있어 제 빛을 낼 재료를 갖췄어요.` : "사주에 이 재료가 드러나 있지 않아, 운에서 들어올 때 비로소 크게 빛나요."}`,
+      `${img.cureText}. ${cureHave.length ? `다행히 사주에 ${cureHave.map((c) => STEMS[c]).join(", ")}의 기운이 이미 있어 제 빛을 낼 재료를 갖췄어요.` : "사주에 이 재료가 드러나 있지 않아, 운에서 들어올 때 비로소 크게 빛나요."}`,
       r.method === "종격"
         ? `${r.strength}을 넘어 한 기운이 사주를 통째로 채운 특별한 구조(${r.outer})예요. 이런 사주는 억지로 균형을 맞추기보다 강한 흐름을 타야 풀려서, 용신이 보통과 반대로 ${EL(r.yong)} 기운이 돼요. ${EL(r.gi)} 기운이 몰릴 때 오히려 막혀요.`
         : r.method === "조후"
@@ -199,12 +199,12 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
       ...natalSals.slice(0, 2).map((s) => NATAL_SAL[s]),
     ],
     basis: [
-      `궁성·조후 보정 오행 비율 · ${[0, 1, 2, 3, 4].map((e) => `${ELEMENT_KO[e]} ${pct(r.weights, e)}%`).join(" · ")}`,
+      `궁성, 조후 보정 오행 비율, ${[0, 1, 2, 3, 4].map((e) => `${ELEMENT_KO[e]} ${pct(r.weights, e)}%`).join(", ")}`,
       `일간을 돕는 기운 ${Math.round(r.support * 100)}% → ${r.balanced ? "중화에 가까운 " : ""}${r.strength}`,
-      `용신 ${EL(r.yong)} (${r.method === "종격" ? `${r.outer}, 억부로는 ${EL(r.eokbu)}` : r.method === "조후" ? `조후 우선, 억부로는 ${EL(r.eokbu)}` : "억부"}) · 희신 ${EL(r.hee)} · 기신 ${EL(r.gi)}`,
-      ...(r.bonds.length ? [`합 · ${r.bonds.join(" · ")}`] : []),
-      `물상으로 빛을 내는 기운 · ${img.cure.map((c) => `${STEMS[c]}${ELEMENT_HANJA[stemEl(c)]}`).join(" · ")}`,
-      `격국 ${GYEOK_NAME[r.gyeok]} · 일지 12운성 ${stageOf(p.dayStem, p.dayBranch)} · 공망 ${gongmang(p).map((b) => BRANCHES[b]).join("")}`,
+      `용신 ${EL(r.yong)} (${r.method === "종격" ? `${r.outer}, 억부로는 ${EL(r.eokbu)}` : r.method === "조후" ? `조후 우선, 억부로는 ${EL(r.eokbu)}` : "억부"}), 희신 ${EL(r.hee)}, 기신 ${EL(r.gi)}`,
+      ...(r.bonds.length ? [`합, ${r.bonds.join(", ")}`] : []),
+      `물상으로 빛을 내는 기운, ${img.cure.map((c) => `${STEMS[c]}${ELEMENT_HANJA[stemEl(c)]}`).join(", ")}`,
+      `격국 ${GYEOK_NAME[r.gyeok]}, 일지 12운성 ${stageOf(p.dayStem, p.dayBranch)}, 공망 ${gongmang(p).map((b) => BRANCHES[b]).join("")}`,
     ],
   };
 
@@ -245,7 +245,7 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
       ...yearSals.map((s) => SAL_YEAR[s]),
     ],
     basis: [
-      `세운 丙午 · 천간 丙 = ${yearGods[0]}, 지지 午 = ${yearGods[1]}`,
+      `세운 丙午, 천간 丙 = ${yearGods[0]}, 지지 午 = ${yearGods[1]}`,
       `일간 ${STEMS[p.dayStem]}의 午 자리 12운성: ${stage}`,
       ...(yearSals.length ? [`올해의 신살: ${yearSals.join(", ")}`] : []),
     ],
@@ -284,7 +284,7 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
             ]
           : []),
       ],
-      basis: [`대운 ${STEMS[now.stem]}${BRANCHES[now.branch]} · 천간 ${tenGod(p.dayStem, now.stem)} · 지지 ${tenGod(p.dayStem, HIDDEN[now.branch].at(-1)![0])} · ${now.from}~${now.to}년`],
+      basis: [`대운 ${STEMS[now.stem]}${BRANCHES[now.branch]}, 천간 ${tenGod(p.dayStem, now.stem)}, 지지 ${tenGod(p.dayStem, HIDDEN[now.branch].at(-1)![0])}, ${now.from}~${now.to}년`],
     });
   }
 
@@ -305,7 +305,7 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
     label: "재물운",
     headline: sy.money.h,
     paras: [sy.money.t, ...(wealthNatal ? [wealthNatal] : []), ...hitsFor("재백", "전택")],
-    basis: [`원국 재성 ${r.gods.재성}자 · 올해 ${yearGroup === "재성" ? "재성이 직접 드는 해" : `${yearGroup}이 드는 해`}`],
+    basis: [`원국 재성 ${r.gods.재성}자, 올해 ${yearGroup === "재성" ? "재성이 직접 드는 해" : `${yearGroup}이 드는 해`}`],
   });
   sections.push({
     id: "work",
@@ -313,7 +313,7 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
     label: "일과 명예",
     headline: sy.work.h,
     paras: [sy.work.t, ...hitsFor("관록", "명궁")],
-    basis: [`격국 ${GYEOK_NAME[r.gyeok]} · 원국 관성 ${r.gods.관성}자`],
+    basis: [`격국 ${GYEOK_NAME[r.gyeok]}, 원국 관성 ${r.gods.관성}자`],
   });
 
   const dayMeet = meetings(YEAR.branch, p.dayBranch)[0];
@@ -335,7 +335,7 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
     label: "연애와 인연",
     headline: sy.love.h,
     paras: [sy.love.t, ...loveExtra, ...hitsFor("부처")],
-    basis: [`배우자 자리(일지) ${BRANCHES[p.dayBranch]} · 올해 午와 ${dayMeet ?? "특별한 작용 없음"}`],
+    basis: [`배우자 자리(일지) ${BRANCHES[p.dayBranch]}, 올해 午와 ${dayMeet ?? "특별한 작용 없음"}`],
   });
   sections.push({
     id: "people",
@@ -343,7 +343,7 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
     label: "사람과 관계",
     headline: sy.people.h,
     paras: [sy.people.t, ...hitsFor("노복", "형제", "부모")],
-    basis: [`원국 비겁 ${r.gods.비겁}자 · 인성 ${r.gods.인성}자`],
+    basis: [`원국 비겁 ${r.gods.비겁}자, 인성 ${r.gods.인성}자`],
   });
 
   const weakest = [0, 1, 2, 3, 4].reduce((a, b) => (r.weights[b] < r.weights[a] ? b : a));
@@ -358,7 +358,7 @@ export function yearReading(p: Pillars, profile: Profile | null): YearReading | 
       `사주 전체로 보면 ${EL(weakest)} 기운이 가장 여리니, ${ELEMENT_HEALTH[weakest]}이 평생의 약한 고리예요.${hot ? " 원국에 이미 불이 많은데 불의 해가 겹치니, 올해는 특히 열과 염증을 다스리셔야 해요." : ""}`,
       ...hitsFor("질액", "복덕"),
     ],
-    basis: [`가장 약한 오행 ${EL(weakest)} · 원국 화(火) 비율 ${pct(r.weights, FIRE)}%`],
+    basis: [`가장 약한 오행 ${EL(weakest)}, 원국 화(火) 비율 ${pct(r.weights, FIRE)}%`],
   });
 
   const moveLines = [

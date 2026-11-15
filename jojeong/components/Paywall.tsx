@@ -49,7 +49,7 @@ export default async function Paywall({
     if (o) offers.set(s, o);
   }
   const sets = offered.filter((s) => offers.has(s));
-  const titleIn = (id: ProductId) => (id === "yeonun" && ny !== null ? `${ny} 신년운세` : productById(id)!.title.split(" · ")[0]);
+  const titleIn = (id: ProductId) => (id === "yeonun" && ny !== null ? `${ny} 신년운세` : productById(id)!.title.split(", ")[0]);
   // Money and work showed three sets under the single report and sold least: one set in front, the rest folded.
   const lead = (pr === "a" ? FRONT_SET_A : FRONT_SET)[product.id];
   const front = lead && sets.includes(lead) ? [lead] : sets;
@@ -67,8 +67,8 @@ export default async function Paywall({
         <span className="min-w-0 flex-1">
           <span className="block font-myeongjo text-[16px] leading-snug">{o.owned.length ? `${SETS[s].title}로 올리기` : SETS[s].title}</span>
           <span className="mt-0.5 block font-sans text-[11.5px] leading-snug font-medium text-ink-soft">
-            {o.owned.length ? `${missing.map(titleIn).join(" · ")} 더하기` : SETS[s].products.map(titleIn).join(" · ")}
-            {o.bonus ? ` · 질문 ${o.bonus}개` : ""}
+            {o.owned.length ? `${missing.map(titleIn).join(", ")} 더하기` : SETS[s].products.map(titleIn).join(", ")}
+            {o.bonus ? `, 질문 ${o.bonus}개` : ""}
           </span>
         </span>
         <span className="shrink-0 text-right">
@@ -85,7 +85,7 @@ export default async function Paywall({
         <PayButton secondary request={{ set: s, p: request.p, from: product.id }} label={label} />
         {o.owned.length > 0 && (
           <p className="mt-1 text-[11px] text-ink-soft">
-            {josa(o.owned.map(titleIn).join(" · "), "은/는")} 이미 있어서 {won(o.credit)} 빼 드려요
+            {josa(o.owned.map(titleIn).join(", "), "은/는")} 이미 있어서 {won(o.credit)} 빼 드려요
           </p>
         )}
       </div>
@@ -115,7 +115,7 @@ export default async function Paywall({
         </p>
         {bonus > 0 && (
           <p className="mt-1 text-[12.5px] font-bold text-[#9a7424]">
-            정 훈도 질문 {bonus}개 포함{guest && <span className="font-normal"> · 카카오 로그인하면 바로 받아요</span>}
+            정 훈도 질문 {bonus}개 포함{guest && <span className="font-normal">, 카카오 로그인하면 바로 받아요</span>}
           </p>
         )}
         {note && <p className="mt-3 rounded-xl bg-gold/10 px-3 py-2 text-left text-[12px] leading-relaxed">{note}</p>}
@@ -135,7 +135,7 @@ export default async function Paywall({
             결제 준비 중이에요
           </button>
         )}
-        <p className="mt-2 text-[11px] text-ink-soft">결제하면 바로 열려요 · 링크로 언제든 다시 볼 수 있어요</p>
+        <p className="mt-2 text-[11px] text-ink-soft">결제하면 바로 열려요, 링크로 언제든 다시 볼 수 있어요</p>
       </div>
       <p className="mt-4 text-left text-[11px] leading-relaxed text-ink-soft">
         보고서는 결제 즉시 열리는 디지털 콘텐츠라, 열람을 시작한 뒤에는 전자상거래법에 따라 청약철회가 제한돼요. 결제 전에 위의 목차와 풀이로 내용을 확인해

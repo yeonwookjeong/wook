@@ -6,6 +6,7 @@ import Hundo from "@/components/Hundo";
 import ReportShelf from "@/components/ReportShelf";
 import RoyalDoc from "@/components/RoyalDoc";
 import KingCard from "@/components/KingCard";
+import KingMatch from "@/components/KingMatch";
 import CourtBoard from "@/components/CourtBoard";
 import NextStep from "@/components/NextStep";
 import TrackLink from "@/components/TrackLink";
@@ -41,6 +42,8 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
   const kingType = KING_TYPES[court.king.dayStem];
   const tier = TIERS[reignTier(court.king).tier];
   const cast = castOf(seats);
+  // Friends listed by how well they suit the king, best first (2026-11-14: "나랑 잘 맞는 사람" at a glance).
+  const byScore = [...seats].sort((a, b) => b.match.score - a.match.score);
   // The game's two ways into 훈도사주: the coming year and the whole chart, both free, read for this king.
   const bq = isOwner ? await bridgeQuery(court.king) : "";
   const year = yearBridge(court.king, isOwner ? await getProfile(court.id, "king") : null, bq, "전하");
@@ -64,19 +67,25 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
     <>
       <header className="animate-rise pt-6 text-center">
         <p className="text-sm font-bold text-gold">
-          {kingType.title} · <span className={tier.dark ? "text-seal" : ""}>{tier.label}</span>
+          {kingType.title}, <span className={tier.dark ? "text-seal" : ""}>{tier.label}</span>
         </p>
         <h1 className="mt-0.5 font-myeongjo text-3xl font-extrabold">{court.kingName} 전하의 조정</h1>
         <p className="mt-2 text-sm text-ink-soft">
           신하 <b className="text-ink">{seats.length}</b>명
           {seats.length > 0 && (
             <>
-              {" · "}간신 <b className="text-seal">{gansinCount}</b>명 적발
+              {", "}간신 <b className="text-seal">{gansinCount}</b>명 적발
             </>
           )}
         </p>
       </header>
-
+      {(isOwner || joined) && (
+        <CourtBoard
+          kingName={court.kingName}
+          seats={seats.map((x) => ({ role: x.role, name: x.minister.name, score: x.match.score }))}
+          throne={<KingMatch pillars={court.king} />}
+        />
+      )}
       {!isOwner && !joined ? (
         <Invitation
           courtId={court.id}
@@ -88,22 +97,19 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
         <>
           {isOwner && seats.length === 0 ? (
             <>
-              {/* First thing after the accession: the empty court and the way to fill it (the game's loop). */}
-              <CourtBoard kingName={court.kingName} seats={[]} />
-              <div className="mt-3">
-                <ShareLinkButton path={`/court/${court.id}`} text={inviteText} label="친구 불러 자리 채우기" />
-              </div>
-              <p className="mt-2 text-center text-[12px] leading-relaxed text-ink-soft">
-                단톡방에 올리면 여럿이 한 번에 들어오옵니다. 들어오는 친구마다 사주로 관직이 정해지옵니다.
+              {/* First thing after the accession: the empty court (drawn above). The way to fill it is the floating
+                  button at the bottom; a second copy here showed twice on one screen (대표님 11/15 "어색"). */}
+              <p className="mt-3 text-center text-[13px] leading-relaxed text-ink-soft">
+                아래 붉은 버튼으로 단톡방에 올리면 여럿이 한 번에 들어오옵니다. 들어오는 친구마다 사주로 관직이 정해지옵니다.
               </p>
               <section className="mt-6">
                 <Hundo mood="bow">전하, 즉위를 경하드리옵니다. 벗들을 기다리시는 동안 전하의 실록부터 올리옵니다.</Hundo>
               </section>
               <Sillok kingName={court.kingName} pillars={court.king} cast={cast} />
               {/* Folded like the chronicle's body, so inviting friends and the reports are a short scroll away. */}
-              <details className="group mt-3 rounded-2xl border border-ink/15 bg-white/40">
+              <details open className="group mt-3 rounded-2xl border border-ink/15 bg-white/40">
                 <summary className="cursor-pointer list-none py-3 text-center text-sm font-bold text-ink-soft [&::-webkit-details-marker]:hidden">
-                  즉위 교서 펼쳐 보기 · {KING_TYPES[court.king.dayStem].title}
+                  전하는 어떤 왕이었을까, {KING_TYPES[court.king.dayStem].title}
                   <span className="ml-1 inline-block transition group-open:rotate-180">▾</span>
                 </summary>
                 <div className="px-1 pb-3">
@@ -131,13 +137,17 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
             </section>
           )}
 
-          {seats.length > 0 && <CourtBoard kingName={court.kingName} seats={seats.map((x) => ({ role: x.role, name: x.minister.name }))} />}
           {seats.length > 0 && (
-            <p className="mt-6 text-right text-[11px] text-ink-soft">오른쪽 숫자는 전하와의 궁합 점수 · 평균 68점</p>
+            <div className="mt-6 flex items-end justify-between gap-2">
+              <p className="font-myeongjo text-[15px] font-extrabold">
+                전하와 가장 잘 맞는 신하, <span className="text-seal">{byScore[0].minister.name}</span>
+              </p>
+              <p className="text-[12px] text-ink-soft">궁합 점수 순, 평균 68점</p>
+            </div>
           )}
           {seats.length > 0 && (
             <ol className="mt-1.5 flex flex-col gap-2">
-              {seats.map((seat) => (
+              {byScore.map((seat) => (
                 <SeatRow
                   key={seat.minister.id}
                   courtId={court.id}
@@ -204,7 +214,7 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
               query={`court=${court.id}`}
               highlights={{
                 sinbun: `왕이 아니었다면 ‘${sinbunOf(court.king).job}’`,
-                gukjeong: "여덟 글자로 보는 성격·재능, 2027년 한눈에까지",
+                gukjeong: "여덟 글자로 보는 성격, 재능, 2027년 한눈에까지",
               }}
             />
           )}

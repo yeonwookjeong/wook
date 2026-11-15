@@ -42,7 +42,7 @@ export function pairYears(a: Person, b: Person, relation: Relation, from: number
     const shaken = (hitA && hitB) || (hitA && bad(me)) || (hitB && bad(them));
     const hitNames = [hitA && a.name, hitB && b.name].filter(Boolean) as string[];
     const [mark, why]: [PairMark, string] = shaken
-      ? ["관계가 흔들리기 쉬운 해", `${hitNames.join("·")}님의 ${seat}를 그해 기운이 충`]
+      ? ["관계가 흔들리기 쉬운 해", `${hitNames.join(", ")}님의 ${seat}를 그해 기운이 충`]
       : hitNames.length
         ? ["한 사람 자리가 흔들리는 해", `${hitNames[0]}님의 ${seat}를 그해 기운이 충`]
         : good(me) && good(them)
@@ -65,7 +65,7 @@ export function pairYearsBrief(a: Person, b: Person, x: PairYears): string {
   return [
     `■ ★ 두 사람의 10년 (${x.seat} 기준, 화면에 표로 그대로 보인다)`,
     ...x.rows.map((r) => `- ${r.year} ${r.gz}: ${a.name} ${r.me} / ${b.name} ${r.them} → ${r.mark} (${r.why})`),
-    ...(x.noDaeun.length ? [`- ${x.noDaeun.join("·")}님은 성별을 몰라 10년 대운 없이 그해 기운만으로 본 판정이다. 이 사람의 해는 단정하지 말고 가볍게 짚는다.`] : []),
+    ...(x.noDaeun.length ? [`- ${x.noDaeun.join(", ")}님은 성별을 몰라 10년 대운 없이 그해 기운만으로 본 판정이다. 이 사람의 해는 단정하지 말고 가볍게 짚는다.`] : []),
   ].join("\n");
 }
 

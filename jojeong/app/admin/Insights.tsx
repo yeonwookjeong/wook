@@ -183,3 +183,89 @@ export async function DailyTable({ from, to, paid }: { from: string; to: string;
     </section>
   );
 }
+
+// New visitors by road, week by week (Monday to Sunday, KST), from the day roads were first kept (10/1): the one
+// table that says whether visitors are falling, and on which road. The payments are those made in that week.
+const TREND_FROM = "2026-10-01";
+export async function WeeklyTrend({ paid }: { paid: Order[] }) {
+  const today = daysAgo();
+  const days = daysBetween(TREND_FROM, today);
+  const roads = SOURCES.filter((s) => s !== "toss");
+  const counts = await readDays(roads.map((s) => `src:${s}`), days);
+  // Monday of the week a day falls in.
+  const monday = (d: string) => {
+    const t = Date.parse(`${d}T12:00:00Z`);
+    return new Date(t - ((new Date(t).getUTCDay() + 6) % 7) * 86400000).toISOString().slice(0, 10);
+  };
+  const weeks: { start: string; days: number; by: Record<string, number>; total: number; pay: number; won: number }[] = [];
+  days.forEach((d, i) => {
+    const w = monday(d);
+    let row = weeks.at(-1);
+    if (!row || row.start !== w) weeks.push((row = { start: w, days: 0, by: {}, total: 0, pay: 0, won: 0 }));
+    row.days += 1;
+    for (const s of roads) {
+      const v = counts[`src:${s}`][i];
+      row.by[s] = (row.by[s] ?? 0) + v;
+      row.total += v;
+    }
+  });
+  for (const o of paid) {
+    const d = kday(o.paidAt ?? o.createdAt);
+    const row = d >= TREND_FROM ? weeks.find((w) => w.start === monday(d)) : undefined;
+    if (row) {
+      row.pay += 1;
+      row.won += o.amount;
+    }
+  }
+  const perDay = (w: (typeof weeks)[number]) => w.total / w.days;
+  const max = Math.max(1, ...weeks.map(perDay));
+  const md = (d: string) => `${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}`;
+  return (
+    <section className="doc-paper mt-4 px-3 py-4">
+      <h2 className="px-1 font-myeongjo font-extrabold">주별 새 방문</h2>
+      <p className="mt-1 px-1 text-[11px] text-ink-soft">길마다 처음 온 브라우저 수, 월요일부터 일요일까지. 막대는 하루 평균이라 덜 끝난 주도 견줄 수 있어요.</p>
+      <div className="mt-2 overflow-x-auto">
+        <table className="w-full min-w-[560px] text-right text-[12px] tabular-nums">
+          <thead>
+            <tr className="text-ink-soft">
+              <th className="py-1 text-left font-normal">주</th>
+              <th className="px-1 py-1 text-left font-normal">하루 평균</th>
+              {roads.map((s) => (
+                <th key={s} className="px-1 py-1 font-normal">
+                  {SOURCE_LABEL[s].replace(/ \(.+\)$/, "").replace("직접, 알 수 없음", "직접")}
+                </th>
+              ))}
+              <th className="px-1 py-1 font-normal">합계</th>
+              <th className="px-1 py-1 font-normal">결제</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[...weeks].reverse().map((w) => (
+              <tr key={w.start} className="border-t border-seal/10">
+                <td className="py-1 text-left whitespace-nowrap">
+                  {md(w.start)}~{w.days < 7 ? <span className="text-ink-soft"> ({w.days}일)</span> : null}
+                </td>
+                <td className="px-1 py-1 text-left">
+                  <span className="flex items-center gap-1">
+                    <span className="inline-block h-2 rounded-sm bg-seal/70" style={{ width: `${Math.max(2, (perDay(w) / max) * 70)}px` }} />
+                    {Math.round(perDay(w))}
+                  </span>
+                </td>
+                {roads.map((s) => (
+                  <td key={s} className="px-1 py-1">
+                    {n(w.by[s] ?? 0)}
+                  </td>
+                ))}
+                <td className="px-1 py-1 font-bold">{n(w.total)}</td>
+                <td className="px-1 py-1 text-seal">
+                  {n(w.pay)}
+                  <span className="block text-[10px] text-ink-soft">{n(w.won)}원</span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}

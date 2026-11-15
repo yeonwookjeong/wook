@@ -1,0 +1,17 @@
+---
+import Base from "../layouts/Base.astro";
+import Board from "../components/Board.astro";
+import { categories } from "../site.config";
+import { openItems } from "../lib/items";
+
+const c = categories.travel;
+const items = openItems("travel");
+---
+
+<Base title={`${c.label} 모음`} description={c.blurb} active={c.path}>
+  <section class="hero">
+    <h1>{c.emoji} {c.label}</h1>
+    <p>{c.blurb}</p>
+  </section>
+  <Board items={items} />
+</Base>

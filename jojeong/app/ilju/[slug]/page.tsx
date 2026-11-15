@@ -24,8 +24,8 @@ export async function generateMetadata({ params }: PageProps<"/ilju/[slug]">): P
   if (!e) return {};
   const f = iljuHead(e);
   return {
-    title: `${f.name}(${f.hanja}) 성격 · 연애 · 궁합`,
-    description: `${f.name}, ${f.image}. ${e.heard[0]} 연애·일·돈 쓰는 법, 잘 맞는 일주와 이번 달 순위까지.`,
+    title: `${f.name}(${f.hanja}) 성격, 연애, 궁합`,
+    description: `${f.name}, ${f.image}. ${e.heard[0]} 연애, 일, 돈 쓰는 법, 잘 맞는 일주와 이번 달 순위까지.`,
     // A sample until the pages are reviewed: kept out of search for now.
     robots: { index: false },
   };
@@ -158,7 +158,7 @@ export default async function IljuPage({ params }: PageProps<"/ilju/[slug]">) {
         </span>
         <span className="min-w-0 flex-1">
           <b className="block text-[12px] text-seal">
-            이번 달 {mp.label} · 60일주 중 {rank.rank}위
+            이번 달 {mp.label}, 60일주 중 {rank.rank}위
           </b>
           <span className="block text-[14px] leading-snug">{rank.line}</span>
         </span>

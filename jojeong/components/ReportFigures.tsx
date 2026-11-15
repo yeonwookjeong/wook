@@ -19,10 +19,10 @@ const MARK = ["✕", "△", "○", "◎"];
 const MARK_STYLE = ["bg-ink text-hanji", "bg-[#d4af5f]/35 text-ink", "bg-seal/15 text-seal", "bg-seal text-hanji"];
 const MARK_WORD = ["조심", "잔잔", "무난", "좋음"];
 // The month tags (lib/yeonun.ts monthMarks) in the reader's words.
-const TAG_WORD: Record<string, string> = { 변동: "변화가 큰 달", "인연·약속": "약속이 잘 붙는 달", 귀인: "도와주는 사람", 합: "마음이 통함" };
-const tagWords = (tags: string[]) => tags.map((t) => TAG_WORD[t] ?? t).join(" · ");
+const TAG_WORD: Record<string, string> = { 변동: "변화가 큰 달", "인연, 약속": "약속이 잘 붙는 달", 귀인: "도와주는 사람", 합: "마음이 통함" };
+const tagWords = (tags: string[]) => tags.map((t) => TAG_WORD[t] ?? t).join(", ");
 // What each group of the ten gods brings, plainly.
-const GROUP_WORD: Record<string, string> = { 비겁: "동료·경쟁", 식상: "표현·재주", 재성: "돈·결과", 관성: "일·책임", 인성: "배움·도움" };
+const GROUP_WORD: Record<string, string> = { 비겁: "동료, 경쟁", 식상: "표현, 재주", 재성: "돈, 결과", 관성: "일, 책임", 인성: "배움, 도움" };
 
 // On top of a bought report, open: the reader's eight characters, the first thing they paid to have read.
 // The chart's own rarest traits, shown on top (the chapters then leave these out). The element ones are left to the
@@ -103,7 +103,7 @@ export function PairCharts({ a, b }: { a: React.ReactNode; b: React.ReactNode })
 export function MonthsStrip({ title, sub, months, y, pick }: { title: string; sub?: string; months: MonthMark[]; y: number; pick?: number[] }) {
   const shown = pick ? months.filter((_, i) => pick.includes(i)) : months;
   return (
-    <Frame title={title} sub={sub} note="◎ 좋음 · ○ 무난 · △ 잔잔 · ✕ 조심. 달은 절기로 바뀌어요(달 초 4~8일 무렵).">
+    <Frame title={title} sub={sub} note="◎ 좋음, ○ 무난, △ 잔잔, ✕ 조심. 달은 절기로 바뀌어요(달 초 4~8일 무렵).">
       <ul className="grid grid-cols-3 gap-1.5 text-center">
         {shown.map((m) => {
           const [mm] = m.from.split("/").map(Number);
@@ -111,7 +111,7 @@ export function MonthsStrip({ title, sub, months, y, pick }: { title: string; su
             <li key={m.from} className="rounded-lg bg-white/60 px-1 py-1.5 ring-1 ring-seal/10">
               <span className="block text-[11px] text-ink-soft">
                 {mm === 1 && months.indexOf(m) > 0 ? `${y + 1}.` : ""}
-                {mm}월 · {m.gz}
+                {mm}월, {m.gz}
               </span>
               <span className={`mt-1 inline-block rounded-md px-2 py-0.5 text-[12px] font-extrabold ${MARK_STYLE[m.rating]}`}>
                 {MARK[m.rating]} {MARK_WORD[m.rating]}
@@ -127,7 +127,7 @@ export function MonthsStrip({ title, sub, months, y, pick }: { title: string; su
 
 const AREA_WHAT: Record<string, string> = { 돈: "돈과 재물", 일: "일과 자리", 사랑: "사랑과 인연", 사람: "사람과 귀인", 몸: "몸과 마음" };
 
-const SEAT_WHO: Record<string, string> = { 연: "조상·부모님", 월: "부모님·형제", 일: "나 · 배우자", 시: "자녀 · 말년" };
+const SEAT_WHO: Record<string, string> = { 연: "조상, 부모님", 월: "부모님, 형제", 일: "나, 배우자", 시: "자녀, 말년" };
 const monthName = (months: MonthMark[], i: number, y: number) => {
   const [m] = months[i].from.split("/").map(Number);
   return `${m === 1 && i > 0 ? `${y + 1}년 ` : ""}${m}월`;
@@ -186,8 +186,8 @@ export function AreaFigure({ area, preview, months, y }: { area: string; preview
 export function ActionsFigure({ months, y }: { months: MonthMark[]; y: number }) {
   const at = (f: (m: MonthMark) => boolean) => months.map((m, i) => (f(m) ? i : -1)).filter((i) => i >= 0);
   const rows: [string, string, number[], boolean][] = [
-    ["시작·이사·개업", "◎ 힘 받는 달", at((m) => m.rating === 3), true],
-    ["계약·약속·합치기", "인연·약속이 붙는 달", at((m) => m.tags.includes("인연·약속") || m.tags.includes("합")), true],
+    ["시작, 이사, 개업", "◎ 힘 받는 달", at((m) => m.rating === 3), true],
+    ["계약, 약속, 합치기", "인연, 약속이 붙는 달", at((m) => m.tags.includes("인연, 약속") || m.tags.includes("합")), true],
     ["사람 도움이 필요한 일", "도와주는 사람이 오는 달", at((m) => m.tags.includes("귀인")), true],
     ["큰 결정은 미루기", "✕ 조심할 달", at((m) => m.rating === 0), false],
     ["생활이 흔들리기 쉬움", "변화가 큰 달", at((m) => m.tags.includes("변동")), false],
@@ -199,8 +199,8 @@ export function ActionsFigure({ months, y }: { months: MonthMark[]; y: number })
       <ul className="flex flex-col gap-1.5 text-[12.5px]">
         {shown.map(([what, why, idx, good]) => (
           <li key={what} className={`rounded-lg px-2.5 py-1.5 ${good ? "bg-seal/8" : "bg-ink/5"}`}>
-            <b className={good ? "text-seal" : ""}>{what}</b> <span className="text-[11px] text-ink-soft">· {why}</span>
-            <span className="mt-0.5 block font-bold">{idx.map((i) => monthName(months, i, y)).join(" · ")}</span>
+            <b className={good ? "text-seal" : ""}>{what}</b> <span className="text-[11px] text-ink-soft">, {why}</span>
+            <span className="mt-0.5 block font-bold">{idx.map((i) => monthName(months, i, y)).join(", ")}</span>
           </li>
         ))}
       </ul>
@@ -218,7 +218,7 @@ export function MomentsFigure({ months, best, worst, y }: { months: MonthMark[];
         {good ? "◎" : "✕"} {monthName(months, i, y)}
       </b>{" "}
       <span className="text-ink-soft">
-        {months[i].gz} · {span(i)}
+        {months[i].gz}, {span(i)}
       </span>
       {months[i].tags.length > 0 && <span className="mt-0.5 block text-[11.5px]">{tagWords(months[i].tags)}</span>}
     </li>
@@ -240,15 +240,15 @@ export function FamilyFigure({ slots, gods, gender, meets, y, yearGods }: { slot
   const stars: [string, Group][] = [
     ["어머니(인성)", "인성"],
     ["아버지(재성)", "재성"],
-    ["형제·친구(비겁)", "비겁"],
+    ["형제, 친구(비겁)", "비겁"],
     ...((gender === "m" ? [["자녀(관성)", "관성"]] : gender === "f" ? [["남편(관성)", "관성"], ["자녀(식상)", "식상"]] : []) as [string, Group][]),
   ];
   const WHOSE: Record<Group, string> = {
-    인성: "어머니·윗사람",
-    재성: gender === "m" ? "아버지·아내" : "아버지",
-    비겁: "형제·친구",
+    인성: "어머니, 윗사람",
+    재성: gender === "m" ? "아버지, 아내" : "아버지",
+    비겁: "형제, 친구",
     식상: gender === "f" ? "자녀" : "아랫사람",
-    관성: gender === "m" ? "자녀" : gender === "f" ? "남편" : "윗사람·직장",
+    관성: gender === "m" ? "자녀" : gender === "f" ? "남편" : "윗사람, 직장",
   };
   const quiet = meets && !meets.length;
   return (
@@ -261,9 +261,9 @@ export function FamilyFigure({ slots, gods, gender, meets, y, yearGods }: { slot
             <div key={s.pos} className={`rounded-lg px-1 py-2 ring-1 ${m ? "bg-white/80 ring-seal/40" : "bg-white/60 ring-seal/10"}`}>
               <span className="block text-[10.5px] text-ink-soft">{s.pos}주</span>
               <b className="mt-0.5 block font-myeongjo text-[17px] leading-tight">
-                {s.stem === null ? "·" : STEMS[s.stem]}
+                {s.stem === null ? "-" : STEMS[s.stem]}
                 <br />
-                {s.branch === null ? "·" : BRANCHES[s.branch]}
+                {s.branch === null ? "-" : BRANCHES[s.branch]}
               </b>
               <span className="mt-1 block text-[10.5px] leading-tight font-bold text-seal">{SEAT_WHO[s.pos]}</span>
               {m && (
@@ -284,7 +284,7 @@ export function FamilyFigure({ slots, gods, gender, meets, y, yearGods }: { slot
         </ul>
       )}
       {quiet && <p className="mt-2 text-[12px]">{y}년 기운은 가족의 네 자리 어디도 크게 건드리지 않아요. 집안은 큰 변동 없이 흘러가는 쪽이에요.</p>}
-      {meets && !quiet && <p className="mt-2 text-[11px] text-ink-soft">가까워짐은 도움이 오가는 자리, 흔들림·마음 쓸 일은 올해 신경 써 줄 자리예요.</p>}
+      {meets && !quiet && <p className="mt-2 text-[11px] text-ink-soft">가까워짐은 도움이 오가는 자리, 흔들림, 마음 쓸 일은 올해 신경 써 줄 자리예요.</p>}
       {gods && !y && (
         <>
           <ul className="mt-3 grid grid-cols-2 gap-1.5 text-[12px]">
@@ -304,7 +304,7 @@ export function FamilyFigure({ slots, gods, gender, meets, y, yearGods }: { slot
 
 // 10년 대운 속의 이 해: the decade, how the year sits with it, and what the year touches in the chart, in words.
 const feelOf = (m: string) => (m.includes("합") ? "tie" : m === "충" ? "clash" : m === "공망" ? "" : "rub");
-const SEAT_PLAIN: Record<string, string> = { 연지: "바깥 관계·윗사람", 월지: "일터·부모", 일지: "나·배우자", 시지: "자녀·아랫사람", 일간: "나 자신" };
+const SEAT_PLAIN: Record<string, string> = { 연지: "바깥 관계, 윗사람", 월지: "일터, 부모", 일지: "나, 배우자", 시지: "자녀, 아랫사람", 일간: "나 자신" };
 const FEEL_WORD: Record<string, string> = { tie: "가까워져요", clash: "흔들려요", rub: "마음 쓸 일이 생겨요" };
 export function DecadeLayerFigure({ layers, decade }: { layers: Layers; decade: { mood: string; theme: string } | null }) {
   if (!layers.daeun) return null;
@@ -331,7 +331,7 @@ export function DecadeLayerFigure({ layers, decade }: { layers: Layers; decade: 
           <b className="text-seal">지금의 10년</b>{" "}
           <span className="text-ink-soft">
             {layers.daeun.from}~{layers.daeun.to}
-            {decade ? ` · ${decade.mood}` : ""}
+            {decade ? `, ${decade.mood}` : ""}
           </span>
           {decade && <span className="mt-0.5 block text-[12px]">{decade.theme}</span>}
         </li>
@@ -365,7 +365,7 @@ export function NowFigure({ flow, y }: { flow: NonNullable<FreeReading["flow"]>;
   const len = cur.to - cur.from + 1;
   const k = y - cur.from + 1;
   return (
-    <Frame title="지금, 이 10년의 몇 번째 해" sub={`${cur.from}~${cur.to}년 · ${cur.young ? "성장기" : `${cur.mood}의 10년`}`}>
+    <Frame title="지금, 이 10년의 몇 번째 해" sub={`${cur.from}~${cur.to}년, ${cur.young ? "성장기" : `${cur.mood}의 10년`}`}>
       <ol className="grid gap-0.5" style={{ gridTemplateColumns: `repeat(${len}, minmax(0, 1fr))` }}>
         {Array.from({ length: len }, (_, j) => (
           <li key={j} className={`h-3 rounded-sm ${j + 1 < k ? "bg-seal/35" : j + 1 === k ? "bg-seal" : "bg-ink/8"}`} />
@@ -375,11 +375,11 @@ export function NowFigure({ flow, y }: { flow: NonNullable<FreeReading["flow"]>;
         <b className="text-seal">
           {len}년 중 {k}년째
         </b>{" "}
-        · {cur.to > y ? `남은 해 ${cur.to - y}년` : "올해가 이 10년의 마지막 해"} · {cur.theme}
+{cur.to > y ? `남은 해 ${cur.to - y}년` : "올해가 이 10년의 마지막 해"}, {cur.theme}
       </p>
       {next && (
         <p className="mt-2 rounded-lg bg-white/60 px-2.5 py-1.5 text-[12.5px] ring-1 ring-seal/10">
-          <b>{next.from === y + 1 ? "내년부터 새 10년" : "다음 10년"}</b> {next.from}~{next.to} · {next.young ? "성장기" : next.mood}
+          <b>{next.from === y + 1 ? "내년부터 새 10년" : "다음 10년"}</b> {next.from}~{next.to}, {next.young ? "성장기" : next.mood}
           <span className="block text-[11.5px] text-ink-soft">{next.theme}</span>
         </p>
       )}
@@ -391,7 +391,7 @@ export function NowFigure({ flow, y }: { flow: NonNullable<FreeReading["flow"]>;
 export function YearPlaceFigure({ y, rows, decade }: { y: number; rows: YearRow[]; decade: { from: number; to: number; mood: string; theme: string } | null }) {
   const V: Record<string, string> = { 대길: SCALE5_CHIP[0], 길: SCALE5_CHIP[1], 평: SCALE5_CHIP[2], 조심: SCALE5_CHIP[3], 인내: SCALE5_CHIP[4] };
   return (
-    <Frame title="10년 흐름 속의 이 해" sub={decade ? `${decade.from}~${decade.to}년 · ${decade.mood}의 10년` : undefined} note={decade ? decade.theme : undefined}>
+    <Frame title="10년 흐름 속의 이 해" sub={decade ? `${decade.from}~${decade.to}년, ${decade.mood}의 10년` : undefined} note={decade ? decade.theme : undefined}>
       <ol className="grid grid-cols-3 gap-1.5 text-center">
         {rows.map((r) => (
           <li key={r.year} className={`rounded-lg px-1 py-2 ${r.year === y ? "bg-white/80 ring-2 ring-seal/40" : "bg-white/40"}`}>
@@ -424,11 +424,11 @@ export function PowersFigure({ name, powers, strong, weak }: { name: string; pow
       {strong && weak && (
         <div className="mt-3 grid grid-cols-2 gap-2 text-[12px] leading-snug">
           <p className="rounded-lg bg-seal/8 px-2.5 py-2">
-            <b className="block text-seal">무기 · {strong.name}</b>
+            <b className="block text-seal">무기, {strong.name}</b>
             {strong.line}
           </p>
           <p className="rounded-lg bg-ink/5 px-2.5 py-2">
-            <b className="block">약점 · {weak.name}</b>
+            <b className="block">약점, {weak.name}</b>
             {weak.line}
           </p>
         </div>
@@ -438,7 +438,7 @@ export function PowersFigure({ name, powers, strong, weak }: { name: string; pow
 }
 
 // What is plenty and what is missing, for the body chapter.
-const BODY = ["간·눈·근육", "심장·혈관·잠", "위장·소화", "폐·피부·호흡", "신장·방광·몸의 물"];
+const BODY = ["간, 눈, 근육", "심장, 혈관, 잠", "위장, 소화", "폐, 피부, 호흡", "신장, 방광, 몸의 물"];
 // weights: the weighted shares the free screen quotes (lib/rarity.ts), so the two never show two numbers.
 export function ElementsFigure({ name, elements, weights }: { name: string; elements: number[]; weights?: number[] }) {
   const sum = elements.reduce((a, b) => a + b, 0) || 1;
@@ -459,7 +459,7 @@ export function ElementsFigure({ name, elements, weights }: { name: string; elem
             <span />
             <span className="-mt-1 text-[10.5px] text-ink-soft">
               {BODY[e]}
-              {p >= 30 ? " · 많음" : p <= 8 ? " · 모자람" : ""}
+              {p >= 30 ? ", 많음" : p <= 8 ? ", 모자람" : ""}
             </span>
           </li>
         ))}
@@ -472,7 +472,7 @@ export function ElementsFigure({ name, elements, weights }: { name: string; elem
 export function FlowFigure({ flow }: { flow: NonNullable<FreeReading["flow"]> }) {
   const MOOD: Record<string, string> = { 활짝: SCALE5_CHIP[0], 기회: SCALE5_CHIP[1], 무난: SCALE5_CHIP[2], 다지기: SCALE5_CHIP[3], 버티기: SCALE5_CHIP[4] };
   return (
-    <Frame title="인생의 10년들" sub="10년마다 바뀌는 큰 흐름(대운) · 지금 있는 칸에 표시했어요">
+    <Frame title="인생의 10년들" sub="10년마다 바뀌는 큰 흐름(대운), 지금 있는 칸에 표시했어요">
       <ul className="flex flex-col divide-y divide-seal/10">
         {flow.map((f) => (
           <li key={f.from} className={`flex items-start gap-2 py-1.5 text-[12px] ${f.now ? "-mx-1.5 rounded-md bg-seal/8 px-1.5" : ""}`}>
@@ -484,7 +484,7 @@ export function FlowFigure({ flow }: { flow: NonNullable<FreeReading["flow"]> })
             </span>
             <span className={`shrink-0 rounded-md px-1.5 py-0.5 text-[11px] font-extrabold ${f.young ? "bg-ink/5 text-ink-soft" : MOOD[f.mood]}`}>{f.young ? "성장기" : f.mood}</span>
             <span className="min-w-0 leading-snug">
-              {f.now && <b className="text-seal">지금 · </b>}
+              {f.now && <b className="text-seal">지금, </b>}
               {f.theme}
             </span>
           </li>
@@ -503,7 +503,7 @@ export function RareFigure({ name, d, areas, skipTop = false }: { name: string; 
   const ilju = areas ? null : d.ilju;
   if (!items.length && !ilju) return null;
   return (
-    <Frame title={`${name}님 사주에서 드문 것${areas ? ` · ${areas.join("·")}` : ""}`} sub="이 특징을 가진 사람이 100명 중 몇 명인지예요 (1950~2008년생의 모든 사주와 견줌)">
+    <Frame title={`${name}님 사주에서 드문 것${areas ? `, ${areas.join(", ")}` : ""}`} sub="이 특징을 가진 사람이 100명 중 몇 명인지예요 (다른 모든 사주와 견줌)">
       <ul className="flex flex-col gap-1.5 text-[12.5px]">
         {ilju && (
           <li className="flex items-baseline justify-between gap-2 rounded-lg bg-seal/8 px-2.5 py-1.5">
@@ -536,14 +536,14 @@ export function LendsFigure({ c, a, b }: { c: Couple; a: string; b: string }) {
     <Frame title="꼭 필요한 기운, 서로 쥐고 있을까" sub="각자 사주의 균형을 잡아 주는 기운이 상대에게 얼마나 있는지예요">
       <ul className="flex flex-col gap-1.5 text-[12.5px]">
         <li className="rounded-lg bg-seal/8 px-2.5 py-1.5">
-          <b className="text-seal">{a}님에게 필요한 기운</b> · {b}님 사주에 {give(c.yongGive[0])}
+          <b className="text-seal">{a}님에게 필요한 기운</b>, {b}님 사주에 {give(c.yongGive[0])}
         </li>
         <li className="rounded-lg bg-seal/8 px-2.5 py-1.5">
-          <b className="text-seal">{b}님에게 필요한 기운</b> · {a}님 사주에 {give(c.yongGive[1])}
+          <b className="text-seal">{b}님에게 필요한 기운</b>, {a}님 사주에 {give(c.yongGive[1])}
         </li>
         {c.sharedLack.length > 0 && (
           <li className="rounded-lg bg-ink/5 px-2.5 py-1.5">
-            <b>둘 다 모자람</b> {c.sharedLack.map((e) => `${ELEMENT_KO[e]}(${ELEMENT_HANJA[e]})`).join(" · ")} · 함께 밖에서 채워야 하는 기운
+            <b>둘 다 모자람</b> {c.sharedLack.map((e) => `${ELEMENT_KO[e]}(${ELEMENT_HANJA[e]})`).join(", ")}, 함께 밖에서 채워야 하는 기운
           </li>
         )}
       </ul>
@@ -555,7 +555,7 @@ export function LendsFigure({ c, a, b }: { c: Couple; a: string; b: string }) {
 export function SeatLinesFigure({ lines }: { lines: string[] }) {
   if (!lines.length) return null;
   return (
-    <Frame title="두 사람의 자리끼리" sub="같은 자리에 무엇이 만나는지 · 합은 끌림, 충은 부딪힘이에요">
+    <Frame title="두 사람의 자리끼리" sub="같은 자리에 무엇이 만나는지, 합은 끌림, 충은 부딪힘이에요">
       <ul className="flex flex-col gap-1 text-[12.5px]">
         {lines.map((l, i) => (
           <li key={i} className="rounded-lg bg-white/60 px-2.5 py-1.5 ring-1 ring-seal/10">
@@ -571,17 +571,17 @@ export function SeatLinesFigure({ lines }: { lines: string[] }) {
 export function DaysFigure({ days, title }: { days: DayPick[]; title: string }) {
   if (!days.length) return null;
   return (
-    <Frame title={title} sub="위 달력에서 고른 날 · 순서대로 1·2·3순위 · 시간은 다음 장에">
+    <Frame title={title} sub="위 달력에서 고른 날, 순서대로 1, 2, 3순위, 시간은 다음 장에">
       <ol className="flex flex-col gap-1.5 text-[12.5px]">
         {days.map((d, i) => (
           <li key={d.date} className={`rounded-lg px-2.5 py-2 ${i === 0 ? "bg-seal/10 ring-1 ring-seal/30" : "bg-white/60 ring-1 ring-seal/10"}`}>
             <b className="font-myeongjo">
-              {i + 1}순위 · {Number(d.date.slice(5, 7))}월 {Number(d.date.slice(8, 10))}일
+              {i + 1}순위, {Number(d.date.slice(5, 7))}월 {Number(d.date.slice(8, 10))}일
             </b>{" "}
             <span className="text-ink-soft">
-              {d.lunar} · {d.gz}
+              {d.lunar}, {d.gz}
             </span>
-            {d.reasons.length > 0 && <span className="mt-0.5 block text-[11.5px]">{d.reasons.map((r) => r.tag).join(" · ")}</span>}
+            {d.reasons.length > 0 && <span className="mt-0.5 block text-[11.5px]">{d.reasons.map((r) => r.tag).join(", ")}</span>}
           </li>
         ))}
       </ol>
@@ -608,7 +608,7 @@ export function HoursFigure({ days }: { days: DayPick[] }) {
                 </span>
               ))}
             </span>
-            {d.ceremony && <span className="mt-1 block text-[11.5px]">예식·식사 시간 {d.ceremony}</span>}
+            {d.ceremony && <span className="mt-1 block text-[11.5px]">예식, 식사 시간 {d.ceremony}</span>}
             {d.son && <span className="block text-[11.5px]">손 있는 방향 {d.son}</span>}
           </li>
         ))}
@@ -630,8 +630,8 @@ export function WhenFigure({ years, title }: { years: DecadeYear[]; title: strin
       <b className="font-myeongjo">
         {on ? (y.grade === 2 ? "◎" : "○") : "✕"} {y.year}년
       </b>{" "}
-      <span className="text-ink-soft">· {y.tag}</span>
-      {y.why.length > 0 && <span className="mt-0.5 block text-[11.5px]">{y.why.map(plainWhy).join(" · ")}</span>}
+      <span className="text-ink-soft">, {y.tag}</span>
+      {y.why.length > 0 && <span className="mt-0.5 block text-[11.5px]">{y.why.map(plainWhy).join(", ")}</span>}
     </li>
   );
   return (

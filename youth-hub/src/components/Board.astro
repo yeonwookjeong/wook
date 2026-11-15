@@ -1,0 +1,102 @@
+---
+import Card from "./Card.astro";
+import AdSlot from "./AdSlot.astro";
+import { site } from "../site.config";
+import { regionList, type Item } from "../lib/items";
+
+interface Props { items: Item[]; filters?: boolean }
+const { items, filters = true } = Astro.props;
+const regions = regionList.filter((r) => r === "전국" || items.some((it) => it.regions.includes(r)));
+---
+
+{items.some((it) => it.sample) && (
+  <p class="notice">지금 보이는 카드는 화면 확인용 <b>예시 데이터</b>입니다. 실제 공고 수집을 연결하면 바뀝니다.</p>
+)}
+
+{filters && (
+  <div class="filters" data-board-filters>
+    <input type="search" placeholder="검색 (예: 숏폼, 학력무관, 한달살기)" data-q aria-label="검색" />
+    <select data-region aria-label="지역">
+      <option value="">전체 지역</option>
+      {regions.map((r) => <option value={r}>{r}</option>)}
+    </select>
+    <select data-sort aria-label="정렬">
+      <option value="score">추천순</option>
+      <option value="end">마감임박순</option>
+      <option value="value">금액순</option>
+    </select>
+  </div>
+)}
+<p class="count" data-count>{items.length}개</p>
+
+<div class="grid" data-board data-ad-every={site.adEvery}>
+  {items.map((item, i) => (
+    <>
+      <Card item={item} />
+      {(i + 1) % site.adEvery === 0 && i + 1 < items.length && <AdSlot />}
+    </>
+  ))}
+  {items.length < site.adEvery && items.length > 0 && <AdSlot />}
+</div>
+
+<script>
+  // Filters run in the browser over cards that are already in the page (so search engines read every card).
+  // Ads stay where the build put them; only cards are hidden or reordered.
+  const KST = 9 * 3600 * 1000;
+  const today = new Date(Date.now() + KST).toISOString().slice(0, 10);
+
+  for (const board of document.querySelectorAll<HTMLElement>("[data-board]")) {
+    const cards = [...board.querySelectorAll<HTMLElement>(".card")];
+    const box = board.previousElementSibling?.previousElementSibling as HTMLElement | null;
+    const countEl = board.previousElementSibling as HTMLElement | null;
+    const q = box?.querySelector<HTMLInputElement>("[data-q]");
+    const region = box?.querySelector<HTMLSelectElement>("[data-region]");
+    const sort = box?.querySelector<HTMLSelectElement>("[data-sort]");
+    const original = [...cards];
+
+    // Refresh D-day against today's date: the page may have been built a few hours ago.
+    for (const c of cards) {
+      const end = c.dataset.end;
+      if (!end) continue;
+      const d = Math.round((Date.parse(end) - Date.parse(today)) / 86400000);
+      const badge = c.querySelector<HTMLElement>("[data-dday]");
+      if (d < 0) c.remove();
+      else if (badge) badge.textContent = d === 0 ? "오늘 마감" : `D-${d}`;
+    }
+
+    // ?q=숏폼 or ?region=전남 in a link (from a Threads post) opens the board already filtered.
+    const params = new URLSearchParams(location.search);
+    if (q && params.get("q")) q.value = params.get("q")!;
+    if (region && params.get("region")) region.value = params.get("region")!;
+
+    const apply = () => {
+      const words = (q?.value ?? "").trim().toLowerCase().split(/\s+/).filter(Boolean);
+      const r = region?.value ?? "";
+      let shown = 0;
+      const live = original.filter((c) => c.isConnected);
+      const order = [...live];
+      if (sort?.value === "end") order.sort((a, b) => (a.dataset.end || "9999").localeCompare(b.dataset.end || "9999"));
+      if (sort?.value === "value") order.sort((a, b) => Number(b.dataset.value) - Number(a.dataset.value));
+      // Cards take even places and ads odd ones, so an ad stays after every N visible cards whatever the sort.
+      const every = Number(board.dataset.adEvery) || 6;
+      let visible = 0;
+      order.forEach((c) => {
+        const okQ = words.every((w) => c.dataset.search!.includes(w));
+        const regs = c.dataset.regions!.split(",");
+        const okR = !r || regs.includes(r) || regs.includes("전국");
+        c.hidden = !(okQ && okR);
+        c.style.order = String((c.hidden ? 10000 : visible++) * 2);
+        if (!c.hidden) shown++;
+      });
+      board.querySelectorAll<HTMLElement>(".ad").forEach((ad, j) => {
+        ad.style.order = String(((j + 1) * every - 1) * 2 + 1);
+      });
+      if (countEl) countEl.textContent = `${shown}개`;
+    };
+    let timer = 0;
+    q?.addEventListener("input", () => { clearTimeout(timer); timer = window.setTimeout(apply, 200); });
+    region?.addEventListener("change", apply);
+    sort?.addEventListener("change", apply);
+    apply();
+  }
+</script>

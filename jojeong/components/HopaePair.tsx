@@ -29,7 +29,7 @@ export default function HopaePair({ me, them }: { me: Side; them: Side }) {
   return (
     <SinsalNight>
       <section className="pt-6 text-center">
-        <p className={`font-myeongjo text-sm font-extrabold tracking-[0.3em] ${NIGHT_GOLD}`}>號 牌 · 나란히</p>
+        <p className={`font-myeongjo text-sm font-extrabold tracking-[0.3em] ${NIGHT_GOLD}`}>號 牌, 나란히</p>
         <h2 className="mt-2 font-myeongjo text-[22px] font-extrabold">우리 둘, 조선에서는</h2>
         <div className="mt-4 grid grid-cols-2 gap-3">
           {[them, me].map((s, i) => (

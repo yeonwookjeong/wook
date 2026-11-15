@@ -21,7 +21,7 @@ export default function ReunionIntro({ a, b, r }: { a: Person; b: Person; r: Reu
         <span className="text-xs text-ink-soft">사주로 본 두 사람</span>
         <span className="font-myeongjo text-2xl font-extrabold text-seal">{r.verdict}</span>
         <span className="text-[11px] text-ink-soft">
-          남은 끈 {r.ties.length}개 · 멀어지게 한 것 {r.splits.length}개
+          남은 끈 {r.ties.length}개, 멀어지게 한 것 {r.splits.length}개
         </span>
       </div>
 

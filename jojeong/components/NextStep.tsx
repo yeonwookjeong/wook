@@ -29,7 +29,7 @@ export default function NextStep({ from, steps: { ask, main, more = [] } }: { fr
         <p className="mt-2 flex flex-wrap justify-center gap-x-1 text-[12.5px] text-ink-soft">
           {more.map((m, i) => (
             <span key={m.href}>
-              {i > 0 && <span className="mx-1 text-ink-soft/50">·</span>}
+              {i > 0 && <span className="mx-1 text-ink-soft/50">, </span>}
               <TrackLink event="to_saju" from={from} href={m.href} className="font-bold text-seal underline underline-offset-2">
                 {m.title}
               </TrackLink>

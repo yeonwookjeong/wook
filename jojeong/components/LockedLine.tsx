@@ -19,7 +19,7 @@ export default function LockedLine({ href, chapter, className = "" }: { href: st
     <Link href={href} className={`mt-2 flex items-center gap-2 rounded-xl border border-seal/25 bg-seal/5 px-3 py-2 text-[12.5px] ${className}`}>
       <span aria-hidden="true">🔒</span>
       <span className="min-w-0 flex-1">
-        <b className="text-seal">평생 사주 {n}장</b> · {title}
+        <b className="text-seal">평생 사주 {n}장</b>, {title}
         <span className="block text-[11px] text-ink-soft">이유와 시기는 여기서 이어서 풀어 드려요</span>
       </span>
       <span aria-hidden="true" className="shrink-0 font-bold text-seal">

@@ -26,7 +26,7 @@ const VERDICT_STYLE: Record<string, string> = {
 
 // After the free year: the paid reports, the whole life first.
 const NEXT: { id: ProductId; ask: string }[] = [
-  { id: "pyeongsaeng", ask: "성격·돈·일·사랑·가족·건강, 인생 전체를 한 권에" },
+  { id: "pyeongsaeng", ask: "성격, 돈, 일, 사랑, 가족, 건강, 인생 전체를 한 권에" },
   { id: "yeonun", ask: "내년은? 그때 그 해는? 궁금한 해를 한 해씩" },
   { id: "jaemul", ask: "돈이 왜 안 모일까, 언제 트일까" },
   { id: "yeonae", ask: "나랑 맞는 사람은 언제 올까" },
@@ -95,7 +95,7 @@ export default function YearReport({
                   <div className="mt-3 bg-ink/5 px-3 py-2 text-[11px] leading-relaxed text-ink-soft">
                     <p className="font-bold">정 훈도가 이렇게 본 까닭</p>
                     {s.basis.map((b) => (
-                      <p key={b}>· {b}</p>
+                      <p key={b}>, {b}</p>
                     ))}
                     {cite?.[s.id] && <ClassicLine c={cite[s.id]} />}
                   </div>
@@ -224,7 +224,7 @@ export default function YearReport({
             </li>
           ))}
         </ol>
-        <p className="mt-2 text-center text-[11px] text-ink-soft">◎ 좋음 · ○ 무난 · △ 조심 · ✕ 고비 (절기 기준 2026년 2월 ~ 2027년 1월)</p>
+        <p className="mt-2 text-center text-[11px] text-ink-soft">◎ 좋음, ○ 무난, △ 조심, ✕ 고비 (절기 기준 2026년 2월 ~ 2027년 1월)</p>
 
         <div className="mt-4 grid grid-cols-3 gap-1.5 text-center">
           {[
@@ -250,7 +250,7 @@ export default function YearReport({
           <h2 className="mt-1 text-center font-myeongjo text-lg font-extrabold">더 깊이 봐 드릴 수 있어요</h2>
           <p className="mt-2 mb-4 text-center text-sm leading-relaxed text-ink-soft">
             {missing.daeun && "성별을 알려 주시면 10년 대운과 올해의 자리를, "}
-            {missing.palaces && "태어난 시간을 알려 주시면 돈·일·연애·건강 영역별 운을 "}더 정밀하게 풀어 드려요.
+            {missing.palaces && "태어난 시간을 알려 주시면 돈, 일, 연애, 건강 영역별 운을 "}더 정밀하게 풀어 드려요.
           </p>
           <DeepenForm courtId={deepen.courtId} who={deepen.who} needs={missing} />
         </section>

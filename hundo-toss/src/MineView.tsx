@@ -3,7 +3,7 @@ import { productById } from "@/lib/products";
 import { myOrders } from "./api";
 import { itemBySku } from "./catalog";
 import { readList } from "./me";
-import { anonKey, MINE_KEY, type Bought } from "./purchase";
+import { anonKey, MINE_KEY, REFUNDED_KEY, type Bought } from "./purchase";
 
 type Row = { order: string; opens: string[]; who: string; at: number };
 
@@ -14,9 +14,12 @@ export function MineView({ onOpen }: { onOpen: (order: string, opens: string[]) 
 
   useEffect(() => {
     (async () => {
+      // A refunded order is left out here too (the server's list already leaves it out).
+      const refunded = new Set(await readList(REFUNDED_KEY));
       const local = (await readList(MINE_KEY)).flatMap((raw): Row[] => {
         try {
           const b = JSON.parse(raw) as Bought;
+          if (b.toss && refunded.has(b.toss)) return [];
           return [{ order: b.order, opens: itemBySku(b.sku)?.opens ?? [b.product], who: b.who, at: b.at }];
         } catch {
           return [];

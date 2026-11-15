@@ -1,42 +1,155 @@
-import { EMPTY_SEATS, ROLES } from "@/lib/roles";
+import Image from "next/image";
+import type { ReactNode } from "react";
+import { ROLES } from "@/lib/roles";
 import type { RoleKey } from "@/lib/saju";
 
-export type BoardSeat = { role: RoleKey; name: string };
+export type BoardSeat = { role: RoleKey; name: string; score?: number };
 
-// 조정도: the king on top and the court's seats below, taken ones with who sits there and empty ones waiting.
-// Shown right after the accession (all empty, so there is something to fill) and as an example on /king.
-export default function CourtBoard({ kingName, seats, caption }: { kingName: string; seats: BoardSeat[]; caption?: string }) {
-  const extra = [...new Set(seats.map((s) => s.role))].filter((r) => !EMPTY_SEATS.includes(r));
-  const roles = [...EMPTY_SEATS, ...extra];
+// 조정도, as 근정전 and its yard (2026-11-15 3판, 대표님이 뽑아 주신 그림 public/king/*): the hall with the throne
+// seen through its open doors, the yard between the 행각 where each office stands at its 품계석 (the closer to the
+// throne the higher), 간신 peeking from behind a 행각 pillar, and the exiled in a boat beyond 근정문.
+// The posts carry no 東班/西班 label: the offices sit by rank, not by the real civil-east, military-west split (안 A).
+// `throne`: what sits on the throne (the court page puts the same-day-pillar king there); a plain name otherwise.
+
+// Rows nearest the throne first; each row is [west, east].
+const ROWS: [RoleKey | null, RoleKey][] = [
+  ["jwa", "yeong"],
+  ["hojo", "daejehak"],
+  ["byeongjo", "yejo"],
+  [null, "daesaheon"],
+];
+const POST: Partial<Record<RoleKey, string>> = {
+  yeong: "正一品",
+  jwa: "正一品",
+  daejehak: "正二品",
+  byeongjo: "正二品",
+  hojo: "正二品",
+  yejo: "正二品",
+  daesaheon: "從二品",
+};
+
+const names = (list: BoardSeat[]) => (list.length ? list[0].name + (list.length > 1 ? ` +${list.length - 1}` : "") : "");
+
+// 품계석: the stone picture with its rank carved down the face.
+function Post({ text }: { text: string }) {
   return (
-    <section className="doc-paper mt-5 px-4 pt-4 pb-4">
-      <p className="text-center font-myeongjo text-xs font-extrabold tracking-[0.4em] text-seal">朝 廷 圖</p>
-      <p className="mx-auto mt-2 w-fit rounded-full bg-ink px-4 py-1.5 font-myeongjo text-sm font-extrabold text-hanji">
-        {kingName} 전하
-      </p>
-      <ul className="mt-3 grid grid-cols-4 gap-1.5">
-        {roles.map((r) => {
-          const here = seats.filter((s) => s.role === r);
-          const danger = ROLES[r].tone === "red" || ROLES[r].tone === "gray";
-          return (
-            <li
-              key={r}
-              className={`flex min-h-[64px] flex-col items-center justify-center rounded-lg px-1 py-2 text-center ${
-                here.length
-                  ? danger
-                    ? "border border-seal/50 bg-seal/10"
-                    : "border border-gold/50 bg-white/70"
-                  : "border border-dashed border-ink/25"
-              }`}
-            >
-              <span className={`font-myeongjo text-[13px] leading-tight font-extrabold ${danger ? "text-seal" : ""}`}>{ROLES[r].title}</span>
-              <span className={`mt-1 text-[12px] leading-tight ${here.length ? "font-bold" : "text-ink-soft/70"}`}>
-                {here.length ? here[0].name + (here.length > 1 ? ` 외 ${here.length - 1}` : "") : "?"}
-              </span>
-            </li>
-          );
-        })}
-      </ul>
+    <span aria-hidden className="relative block h-[76px] w-[30px] shrink-0">
+      <Image src="/king/stone.webp" alt="" width={96} height={242} className="absolute inset-0 size-full object-contain" />
+      <span className="absolute inset-x-0 top-[22%] flex flex-col items-center font-myeongjo text-[12px] leading-[1.15] font-bold text-[#4a3f35]">
+        {text.split("").map((c, i) => (
+          <span key={i}>{c}</span>
+        ))}
+      </span>
+    </span>
+  );
+}
+
+function Seat({ role, here, best, side }: { role: RoleKey; here: BoardSeat[]; best: boolean; side: "w" | "e" }) {
+  const top = here.reduce<number | undefined>((m, s) => (s.score === undefined ? m : Math.max(m ?? 0, s.score)), undefined);
+  return (
+    <div className={`flex items-end gap-1 ${side === "w" ? "flex-row-reverse" : ""}`}>
+      <Post text={POST[role] ?? ""} />
+      <div
+        className={`min-w-0 flex-1 rounded-lg px-2 py-2 ${
+          here.length
+            ? best
+              ? "bg-[#fbf6ea] shadow-[0_2px_6px_rgb(0_0_0/0.25),inset_0_0_0_2px_#b3261e]"
+              : "bg-[#fbf6ea]/95 shadow-[0_2px_6px_rgb(0_0_0/0.2)]"
+            : "bg-[#fbf6ea]/60 shadow-[inset_0_0_0_1px_rgb(33_27_23/0.35)] outline-1 -outline-offset-4 outline-ink/30 outline-dashed"
+        }`}
+      >
+        <p className="font-myeongjo text-[14px] leading-tight font-bold">{ROLES[role].title}</p>
+        <p className="mt-1 flex items-baseline justify-between gap-1 text-[14px] leading-tight">
+          <span className={`truncate whitespace-nowrap ${here.length ? "" : "text-ink-soft"}`}>{here.length ? names(here) : "비어 있음"}</span>
+          {top !== undefined && <span className={`shrink-0 text-[12px] font-bold ${best ? "text-seal" : "text-gold"}`}>{top}점</span>}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export default function CourtBoard({
+  kingName,
+  seats,
+  caption,
+  throne,
+}: {
+  kingName: string;
+  seats: BoardSeat[];
+  caption?: string;
+  throne?: ReactNode;
+}) {
+  const at = (r: RoleKey) => seats.filter((s) => s.role === r);
+  const scored = seats.filter((s) => s.score !== undefined && s.role !== "gansin" && s.role !== "yubae");
+  const bestRole = scored.length ? scored.reduce((a, b) => ((b.score ?? 0) > (a.score ?? 0) ? b : a)).role : null;
+  const gansin = at("gansin");
+  const yubae = at("yubae");
+
+  return (
+    <section className="mt-5" aria-label={`${kingName} 전하의 조정도`}>
+      {/* 근정전 */}
+      {/* Full-bleed, sky and hills included, so the hall does not stand on blank paper (대표님 11/15 "배경이 휑"). */}
+      <div className="relative -mx-4">
+        <Image src="/king/hero.webp" alt="노을 아래 열린 문 안으로 어좌가 보이는 근정전" width={1080} height={780} priority className="block h-auto w-full" />
+        <span aria-hidden className="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-hanji to-transparent" />
+      </div>
+
+      {/* 행각 사이 마당, full-bleed like the hall above, with the throne card at its head (대표님 11/15 "배경이 휑"). */}
+      <div
+        className="relative -mx-4 px-4 pb-5"
+        style={{ background: "url(/king/yard.webp) top / cover no-repeat, #7e6363" }}
+      >
+        {/* 어좌 */}
+        <div className="relative z-10 mx-1.5 -mt-16 rounded-xl bg-[#0f2236] px-4 pt-3.5 pb-4 text-hanji shadow-[0_8px_20px_rgb(15_34_54/0.3),inset_0_0_0_1px_rgb(217_180_101/0.4)]">
+          {throne ?? (
+            <>
+              <p className="font-myeongjo text-[12px] font-bold tracking-[0.2em] text-[#d9b465]">御 座</p>
+              <p className="mt-1 font-myeongjo text-[24px] leading-tight font-extrabold">{kingName} 전하</p>
+            </>
+          )}
+        </div>
+
+        <p className="relative mx-auto mt-5 w-fit rounded-md bg-[#211b17]/70 px-3 py-1 text-center font-myeongjo text-[12px] font-bold tracking-[0.3em] text-[#f1d892]">
+          朝 廷 圖
+        </p>
+        {bestRole && (
+          <p className="relative mx-auto mt-2 w-fit rounded-md bg-[#fbf6ea]/90 px-2 py-1 text-center text-[12px] text-[#4a4038]">
+            붉은 테가 전하와 가장 잘 맞는 신하이옵니다
+          </p>
+        )}
+        {ROWS.map(([w, e]) => (
+          <div key={e} className="relative mt-3 grid grid-cols-[1fr_40px_1fr] items-end">
+            {w ? <Seat role={w} here={at(w)} best={bestRole === w} side="w" /> : <div />}
+            <div />
+            <Seat role={e} here={at(e)} best={bestRole === e} side="e" />
+          </div>
+        ))}
+
+        {/* 행각 기둥 뒤: 간신 */}
+        <div className="relative mt-5 flex items-end gap-3 overflow-hidden rounded-lg bg-[#211b17]/85 pr-3 text-hanji">
+          <Image src="/king/gansin.webp" alt="행각 기둥 뒤에서 엿보는 간신" width={360} height={514} className={`-mb-1 h-[104px] w-auto shrink-0 ${gansin.length ? "" : "opacity-40 grayscale"}`} />
+          <p className="py-3 text-[14px] leading-snug">
+            <b className="font-myeongjo text-[#f1d892]">간신</b> {names(gansin)}
+            <span className="block text-[13px] text-hanji/80">
+              {gansin.length ? "행각 기둥 뒤에서 엿듣고 있사옵니다" : "아직 기둥 뒤에 숨은 자가 없사옵니다"}
+            </span>
+          </p>
+        </div>
+
+        {/* 근정문, standing on the yard's last row of stones so it is not left floating (대표님 11/15). */}
+        <Image src="/king/gate.webp" alt="근정문" width={1080} height={452} className="relative mx-auto mt-6 -mb-5 block h-auto w-[88%]" />
+      </div>
+
+      {/* 궐문 밖: 유배, in a night-sea panel like the 간신 one so the boat sits in a scene, not on blank paper. */}
+      <div className="mt-3 flex items-center gap-3 overflow-hidden rounded-xl bg-[#0f2236] py-2 pr-4 pl-1 text-hanji shadow-[inset_0_0_0_1px_rgb(217_180_101/0.35)]">
+        <Image src="/king/exile.webp" alt="유배 가는 배와 섬" width={720} height={392} className="h-[84px] w-auto shrink-0" />
+        <p className="text-[14px] leading-snug">
+          <b className="font-myeongjo text-[#f1d892]">궐문 밖, 유배</b> {names(yubae)}
+          <span className="block text-[13px] text-hanji/80">
+            {yubae.length ? "먼 섬으로 떠났사옵니다" : "아직 아무도 배에 태우지 않았사옵니다"}
+          </span>
+        </p>
+      </div>
       {caption && <p className="mt-3 text-center text-[12px] leading-relaxed text-ink-soft">{caption}</p>}
     </section>
   );

@@ -1,6 +1,6 @@
 import type { DecadeYear, Domain } from "@/lib/domains";
 
-const TITLE: Record<Domain, string> = { jaemul: "재물", yeonae: "연애·결혼", jikup: "직업" };
+const TITLE: Record<Domain, string> = { jaemul: "재물", yeonae: "연애, 결혼", jikup: "직업" };
 const MARK = ["✕", "△", "○", "◎"];
 const STYLE = ["bg-ink/10 text-ink", "bg-ink/5 text-ink-soft", "bg-gold/25 text-ink", "bg-seal text-hanji"];
 // The calendar starts at this year, so the free taste is the year the reader is in; next year is already the hook.
@@ -29,7 +29,7 @@ export default function DecadeTable({ name, domain, years, locked, inline = fals
         {name}님의 {TITLE[domain]} 10년 달력
       </h2>
       <p className="mt-1 text-center text-[11px] text-ink-soft">
-        {years[0].year}~{years.at(-1)!.year} · 해마다 드는 기운을 {name}님 사주에 비춰 계산했어요 · ◎ 좋음 ○ 무난 △ 잔잔 ✕ 조심
+        {years[0].year}~{years.at(-1)!.year}, 해마다 드는 기운을 {name}님 사주에 비춰 계산했어요, ◎ 좋음 ○ 무난 △ 잔잔 ✕ 조심
       </p>
       <ul className="mt-4 flex flex-col divide-y divide-seal/10">
         {shown.map((y) => (
@@ -44,7 +44,7 @@ export default function DecadeTable({ name, domain, years, locked, inline = fals
               {peeked.has(y.year) ? (
                 <span className="text-[12px] leading-snug font-bold text-seal">🔒 왜 그런지, 그해 무엇을 할지는 보고서에</span>
               ) : (
-                <span className="text-[12px] leading-snug text-ink-soft">{(plain ? y.why.map(plainWhy) : y.why).join(" · ") || "특별히 드는 기운이 없는 해예요"}</span>
+                <span className="text-[12px] leading-snug text-ink-soft">{(plain ? y.why.map(plainWhy) : y.why).join(", ") || "특별히 드는 기운이 없는 해예요"}</span>
               )}
             </span>
           </li>

@@ -17,18 +17,38 @@ const TOPICS = ["연애", "일", "돈", "사람", "기타"] as const;
 // Starters for an empty box: a situation half written, so the guest tells what is going on, which is where a
 // question beats a report.
 const STARTERS: { topic: (typeof TOPICS)[number]; label: string; text: string }[] = [
-  { topic: "일", label: "이직·제안", text: "요즘 이직(또는 새 제안)을 고민 중인데, " },
+  { topic: "일", label: "이직, 제안", text: "요즘 이직(또는 새 제안)을 고민 중인데, " },
   { topic: "연애", label: "그 사람", text: "요즘 마음 가는 사람이 있는데, " },
   { topic: "돈", label: "돈 결정", text: "돈이 들어가는 결정을 앞두고 있는데, " },
   { topic: "사람", label: "관계 고민", text: "가까운 사람과 사이가 어긋나서, " },
 ];
 const MAX = 300;
 
+// A question in flight can lose its connection (the phone locks, another app is opened, the signal drops) and
+// Safari then throws "Load failed". The answer may still have been written on the server, and a question is spent
+// only once an answer is saved, so the reader is told to reload; the question goes back in the box.
+const DROPPED = "답서를 쓰는 사이 연결이 끊겼사옵니다. 새로고침하시면 답서가 보일 수 있사옵니다. 답서가 없으면 질문권도 그대로이옵니다.";
+async function askSafe(prev: FormState, formData: FormData): Promise<FormState> {
+  try {
+    return await askAction(prev, formData);
+  } catch {
+    return { error: DROPPED };
+  }
+}
+function Reload() {
+  return (
+    <button type="button" onClick={() => window.location.reload()} className="mt-2 w-full rounded-xl bg-seal py-2.5 text-sm font-bold text-hanji">
+      새로고침해서 답서 확인하기
+    </button>
+  );
+}
+
 function ErrorLine({ error }: { error: string | null }) {
   return error ? (
-    <p role="alert" className="rounded-xl bg-seal/10 px-4 py-3 text-sm text-seal">
-      {error}
-    </p>
+    <div role="alert" className="rounded-xl bg-seal/10 px-4 py-3 text-sm text-seal">
+      <p>{error}</p>
+      {error === DROPPED && <Reload />}
+    </div>
   ) : null;
 }
 
@@ -36,7 +56,7 @@ export function OpenRoomForm() {
   const [state, action, pending] = useActionState<FormState, FormData>(openRoomAction, { error: null });
   return (
     <form action={action} onSubmit={keepValues(action)} className="mt-3 flex flex-col gap-3">
-      <PersonFields nameLabel="이름" unknownHour="모름" modern binaryGender genderLabel="성별 · 배우자의 별과 10년 흐름을 볼 때 꼭 필요해요" />
+      <PersonFields nameLabel="이름" unknownHour="모름" modern binaryGender genderLabel="성별, 배우자의 별과 10년 흐름을 볼 때 꼭 필요해요" />
       <ErrorLine error={state.error} />
       <button type="submit" disabled={pending} className="rounded-xl bg-ink py-3 text-sm font-extrabold text-hanji disabled:opacity-60">
         {pending ? "방을 여는 중이에요…" : "내 사주로 사랑방 열기"}
@@ -124,7 +144,7 @@ export function AskForm({
   // Folded to one line while reading; the choices open with the box.
   const [open, setOpen] = useState(false);
   const whoLabel = people.find((x) => x.id === withId)?.label ?? "나";
-  const [state, action, pending] = useActionState<FormState, FormData>(askAction, { error: null });
+  const [state, action, pending] = useActionState<FormState, FormData>(askSafe, { error: null });
   const [text, setText] = useState("");
   const [topic, setTopic] = useState("");
   const [needCredits, setNeedCredits] = useState(false);
@@ -192,6 +212,16 @@ export function AskForm({
     }
     was.current = pending;
   }, [pending, state.error]);
+  // The connection dropped: the question goes back in the box, so nothing written is lost.
+  useEffect(() => {
+    if (state.error !== DROPPED || !sent.question) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- restore the question once the failed send returns
+    setText(sent.question);
+    setTopic(sent.topic);
+    try {
+      localStorage.setItem(draftKey(room), JSON.stringify({ text: sent.question, topic: sent.topic }));
+    } catch {}
+  }, [state, sent, room]);
   return (
     <>
       {pending && <Writing question={sent.question} topic={sent.topic} />}
@@ -285,7 +315,7 @@ export function AskForm({
         ) : (
           <button type="button" onClick={() => setOpen(true)} className="mb-1.5 flex max-w-full items-center gap-1 text-[12px] text-hanji/60">
             <span className="truncate">
-              <b className="text-[#e2bc68]">{whoLabel} 이야기</b> · {topic || "주제 고르기"}
+              <b className="text-[#e2bc68]">{whoLabel} 이야기</b>, {topic || "주제 고르기"}
             </span>
             <span aria-hidden>▴</span>
           </button>
@@ -313,7 +343,7 @@ export function AskForm({
         </div>
         {open && text && (
           <p className="mt-1 text-right text-[11px] text-hanji/55">
-            {[...text].length}/{MAX} · 무슨 일이 있는지, 언제까지 정해야 하는지 적어 주실수록 깊어져요
+            {[...text].length}/{MAX}, 무슨 일이 있는지, 언제까지 정해야 하는지 적어 주실수록 깊어져요
           </p>
         )}
         <ErrorLine error={state.error} />
@@ -324,7 +354,7 @@ export function AskForm({
 
 // After several topics came in one question: pick the one to answer first. Nothing is spent until then.
 export function ChooseForm({ room, question, topic, choices }: { room: string; question: string; topic: string; choices: string[] }) {
-  const [state, action, pending] = useActionState<FormState, FormData>(askAction, { error: null });
+  const [state, action, pending] = useActionState<FormState, FormData>(askSafe, { error: null });
   return (
     <div className="mt-2 flex flex-col gap-1.5">
       {choices.map((c) => (

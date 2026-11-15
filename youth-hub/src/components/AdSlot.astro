@@ -1,0 +1,14 @@
+---
+import { site } from "../site.config";
+// An AdSense unit once the site is approved; until then a dashed box in dev only, nothing in the built site.
+const live = Boolean(site.adsenseClient && site.adsenseSlot);
+---
+
+{live ? (
+  <div class="ad">
+    <ins class="adsbygoogle" style="display:block" data-ad-client={site.adsenseClient} data-ad-slot={site.adsenseSlot} data-ad-format="auto" data-full-width-responsive="true"></ins>
+    <script is:inline>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+) : import.meta.env.DEV ? (
+  <div class="ad placeholder">광고 자리</div>
+) : null}

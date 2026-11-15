@@ -25,8 +25,8 @@ function Head({ d, rank }: { d: DayPick; rank?: number }) {
         <span className={`ml-auto rounded-md px-1.5 text-xs font-extrabold ${MARK_STYLE[d.grade]}`}>{MARK[d.grade]}</span>
       </p>
       <p className="text-xs text-ink-soft">
-        {d.lunar} · {d.gz}
-        {d.weekend && " · 주말"}
+        {d.lunar}, {d.gz}
+        {d.weekend && ", 주말"}
       </p>
     </>
   );
@@ -117,7 +117,7 @@ function Month({ days }: { days: DayPick[] }) {
           return (
             <span key={i} className={`rounded-md py-1 ${d ? MARK_STYLE[d.grade] : "text-ink-soft/30"}`}>
               {i + 1}
-              <span className="block text-[11px] leading-none">{d ? (d.grade >= 0 ? MARK[d.grade] : "·") : ""}</span>
+              <span className="block text-[11px] leading-none">{d ? (d.grade >= 0 ? MARK[d.grade] : "-") : ""}</span>
             </span>
           );
         })}
@@ -127,8 +127,8 @@ function Month({ days }: { days: DayPick[] }) {
 }
 
 const HOW = [
-  "책력(통서)이 이 일에 맞다고 한 날만 후보로 올려요. 면접·시험은 책력에 정한 글자가 없어, 책력이 쉬라고 한 날만 빼고 모두 후보로 올려요.",
-  "면접·시험은 그날이 나에게 관성(인정받는 기운)·인성(합격·문서의 기운)인지, 문창귀인·천을귀인이 드는지로 점수를 더해요.",
+  "책력(통서)이 이 일에 맞다고 한 날만 후보로 올려요. 면접, 시험은 책력에 정한 글자가 없어, 책력이 쉬라고 한 날만 빼고 모두 후보로 올려요.",
+  "면접, 시험은 그날이 나에게 관성(인정받는 기운), 인성(합격, 문서의 기운)인지, 문창귀인, 천을귀인이 드는지로 점수를 더해요.",
   "그날을 지키는 신이 황도(길한 신)인지 흑도인지, 건제십이신과 28수 별자리가 무엇인지로 점수를 매겨요.",
   "사주와 부딪히는(충) 날은 빼고, 사주에 필요한 기운이 들어오거나 합이 드는 날에 점수를 더해요.",
   "좋은 시간은 그날의 황도시 가운데 낮 시간이고, 사주와 부딪히는 시간은 뺐어요.",
@@ -160,9 +160,9 @@ function Preview({ kind, days, label, names }: { kind: Kind; days: DayPick[]; la
   ];
   return (
     <section className="doc-paper mt-4 px-5 pt-6 pb-5">
-      <h2 className="text-center font-myeongjo text-lg font-extrabold">{KINDS[kind].title} · 좋은 날을 찾았어요</h2>
+      <h2 className="text-center font-myeongjo text-lg font-extrabold">{KINDS[kind].title}, 좋은 날을 찾았어요</h2>
       <p className="mt-1 text-center text-xs text-ink-soft">
-        {label} · {names} 사주로 골랐어요
+        {label}, {names} 사주로 골랐어요
       </p>
       <div className="mt-4 grid grid-cols-4 gap-1.5 text-center">
         {stats.map((s) => (
@@ -180,8 +180,8 @@ function Preview({ kind, days, label, names }: { kind: Kind; days: DayPick[]; la
               <span className="min-w-0 flex-1">
                 <b className="block font-myeongjo text-lg tracking-widest text-ink/30 select-none">●●월 ●●일</b>
                 <span className="text-[12px] text-ink-soft">
-                  좋은 표시 {d.reasons.length}가지{d.warns.length ? ` · 걸리는 표시 ${d.warns.length}가지` : " · 걸리는 표시 없음"}
-                  {d.weekend ? " · 주말" : ""}
+                  좋은 표시 {d.reasons.length}가지{d.warns.length ? `, 걸리는 표시 ${d.warns.length}가지` : ", 걸리는 표시 없음"}
+                  {d.weekend ? ", 주말" : ""}
                 </span>
               </span>
               <span className={`rounded-md px-1.5 text-xs font-extrabold ${MARK_STYLE[d.grade]}`}>{MARK[d.grade]}</span>
@@ -222,7 +222,7 @@ export default function TaekilResult({ kind, days, label, names, full, once = fa
         <section className="doc-paper mt-4 px-5 pt-6 pb-5">
           <h2 className="text-center font-myeongjo text-lg font-extrabold">한눈에 고르기</h2>
           <p className="mt-1 text-center text-xs text-ink-soft">
-            {label} · {KINDS[kind].yi.length ? `책력상 ${KINDS[kind].label}에 맞는 날 ${fit}일` : `${fit}일`} 가운데 {names} 사주로 골랐어요
+            {label}, {KINDS[kind].yi.length ? `책력상 ${KINDS[kind].label}에 맞는 날 ${fit}일` : `${fit}일`} 가운데 {names} 사주로 골랐어요
           </p>
           <ul className="mt-4 flex flex-col gap-1.5">
             {picks.map((p) => (
@@ -237,7 +237,7 @@ export default function TaekilResult({ kind, days, label, names, full, once = fa
       )}
 
       <section className="doc-paper mt-4 px-5 pt-6 pb-5">
-        <h2 className="text-center font-myeongjo text-lg font-extrabold">{KINDS[kind].title} · 가장 좋은 날 세 개</h2>
+        <h2 className="text-center font-myeongjo text-lg font-extrabold">{KINDS[kind].title}, 가장 좋은 날 세 개</h2>
         {best.length ? (
           <ol className="mt-4 flex flex-col gap-2">
             {best.map((d, i) => (
@@ -260,7 +260,7 @@ export default function TaekilResult({ kind, days, label, names, full, once = fa
           <ul className="mt-3 flex flex-col gap-2 text-[13px] leading-relaxed">
             {dirs.map((x) => (
               <li key={x.year} className="rounded-xl bg-gold/10 px-3 py-2">
-                <b>{x.year}</b>(입춘부터) 대장군방 <b>{x.daejanggun}</b> · 삼살방 <b>{x.samsal}</b>
+                <b>{x.year}</b>(입춘부터) 대장군방 <b>{x.daejanggun}</b>, 삼살방 <b>{x.samsal}</b>
               </li>
             ))}
           </ul>
@@ -294,7 +294,7 @@ export default function TaekilResult({ kind, days, label, names, full, once = fa
 
       <section className="doc-paper mt-4 px-5 pt-6 pb-5">
         <h2 className="text-center font-myeongjo text-lg font-extrabold">기간 전체 택일 달력</h2>
-        <p className="mt-1 text-center text-[11px] text-ink-soft">◎ 길일 · ○ 무난 · △ 애매 · 점(·)은 피할 날이나 책력상 맞지 않는 날</p>
+        <p className="mt-1 text-center text-[11px] text-ink-soft">◎ 길일, ○ 무난, △ 애매, 점(, )은 피할 날이나 책력상 맞지 않는 날</p>
         {months.map((m) => (
           <Month key={m[0].date} days={m} />
         ))}
@@ -329,7 +329,7 @@ export default function TaekilResult({ kind, days, label, names, full, once = fa
       )}
 
       <p className="mt-4 px-1 text-[11px] leading-relaxed text-ink-soft">
-        황도일·건제십이신·28수는 전통 책력(통서)의 풀이이고, 충은 사주의 일지나 띠와 부딪히는 날이에요. 날짜를 정하는 건 결국 사람의 사정이 먼저예요. 좋은
+        황도일, 건제십이신, 28수는 전통 책력(통서)의 풀이이고, 충은 사주의 일지나 띠와 부딪히는 날이에요. 날짜를 정하는 건 결국 사람의 사정이 먼저예요. 좋은
         날이 사정에 안 맞으면 ○ 무난한 날도 충분히 괜찮아요.
       </p>
     </>

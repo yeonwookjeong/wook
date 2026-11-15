@@ -21,7 +21,7 @@ export default function SinsalList({ mine }: { mine?: Set<SinsalId> }) {
                 <summary className="flex cursor-pointer list-none items-center gap-2 [&::-webkit-details-marker]:hidden">
                   <span className={`w-[6.2rem] shrink-0 text-[13px] font-bold ${on ? NIGHT_GOLD : ""}`}>
                     {c.sal}
-                    {on && " · 나"}
+                    {on && ", 나"}
                   </span>
                   <span className="relative h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-white/10">
                     <span className={`absolute inset-y-0 left-0 rounded-full ${on ? "bg-[#d4af5f]" : "bg-hanji/45"}`} style={{ width: `${Math.max(2, (per100(c.id) / MAX) * 100)}%` }} />
@@ -30,7 +30,7 @@ export default function SinsalList({ mine }: { mine?: Set<SinsalId> }) {
                 </summary>
                 <div className="mt-1.5 pb-1 pl-1 text-[12.5px] leading-relaxed text-hanji/85">
                   <p className="font-bold">
-                    {c.nick} <span className="font-normal text-hanji/65">· {c.line}</span>
+                    {c.nick} <span className="font-normal text-hanji/65">, {c.line}</span>
                   </p>
                   <p className="mt-0.5">{c.body}</p>
                 </div>

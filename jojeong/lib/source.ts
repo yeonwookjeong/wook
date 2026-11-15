@@ -3,17 +3,18 @@
 // the person. The road is read once, on the first visit: the page they landed on, then the app they opened it in
 // (Instagram, Threads and 카카오톡 name themselves in the browser's user agent), then the site that sent them.
 // "toss": bought in the Apps in Toss mini app (lib/tossApps.ts); written on its orders, never read from a visit.
-export const SOURCES = ["game", "instagram", "threads", "search", "kakao", "other", "direct", "toss"] as const;
+export const SOURCES = ["game", "instagram", "threads", "x", "search", "kakao", "other", "direct", "toss"] as const;
 export type Source = (typeof SOURCES)[number];
 export const isSource = (v: unknown): v is Source => SOURCES.includes(v as Source);
 export const SOURCE_LABEL: Record<Source, string> = {
   game: "왕이 될 사주 (친구 초대)",
   instagram: "인스타그램",
   threads: "스레드",
-  search: "검색 (구글·네이버)",
+  x: "X (트위터)",
+  search: "검색 (구글, 네이버)",
   kakao: "카카오톡",
   other: "다른 사이트",
-  direct: "직접 · 알 수 없음",
+  direct: "직접, 알 수 없음",
   toss: "토스 미니앱",
 };
 export const SRC_COOKIE = "jj_src";
@@ -24,6 +25,7 @@ export function classify({ path, referrer, ua, query }: { path: string; referrer
   const tag = new URLSearchParams(query).get("utm_source")?.toLowerCase() ?? "";
   if (/^(ig|insta)/.test(tag)) return "instagram";
   if (tag.startsWith("thread")) return "threads";
+  if (tag === "x" || tag === "twitter") return "x";
   if (/Instagram/i.test(ua)) return "instagram";
   // Threads' in-app browser goes by its code name.
   if (/Barcelona/i.test(ua)) return "threads";
@@ -33,6 +35,8 @@ export function classify({ path, referrer, ua, query }: { path: string; referrer
   } catch {}
   if (/instagram\.com$/.test(host)) return "instagram";
   if (/threads\.(net|com)$/.test(host)) return "threads";
+  // X wraps every link in t.co; its in-app browser names itself "Twitter".
+  if (/^(t\.co|x\.com|(mobile\.)?twitter\.com)$/.test(host) || /Twitter/i.test(ua)) return "x";
   if (/(^|\.)(google|naver|daum|bing)\./.test(host)) return "search";
   // Search apps open results in their own browser and often send no referrer.
   if (/NAVER\(inapp|DaumApps|DaumDevice|Whale\/.*NAVER/i.test(ua)) return "search";
@@ -47,18 +51,18 @@ export function classify({ path, referrer, ua, query }: { path: string; referrer
 export const DIRECT_KINDS = ["ios-safari", "ios-chrome", "ios-app", "android-chrome", "android-app", "samsung", "facebook", "line", "band", "x", "desktop", "bot", "unknown"] as const;
 export type DirectKind = (typeof DIRECT_KINDS)[number];
 export const DIRECT_KIND_LABEL: Record<DirectKind, string> = {
-  "ios-safari": "아이폰 사파리 (주소 입력·복사 붙여넣기·즐겨찾기)",
+  "ios-safari": "아이폰 사파리 (주소 입력, 복사 붙여넣기, 즐겨찾기)",
   "ios-chrome": "아이폰 크롬",
   "ios-app": "아이폰 앱 안 브라우저 (이름 없는 앱)",
   "android-chrome": "안드로이드 크롬",
   "android-app": "안드로이드 앱 안 브라우저 (이름 없는 앱)",
   samsung: "삼성 인터넷",
-  facebook: "페이스북·메신저",
+  facebook: "페이스북, 메신저",
   line: "라인",
   band: "밴드",
   x: "X (트위터)",
   desktop: "PC",
-  bot: "검색 로봇·미리보기 (10/19 밤부터 방문에서 뺌)",
+  bot: "검색 로봇, 미리보기 (10/19 밤부터 방문에서 뺌)",
   unknown: "알 수 없음",
 };
 export const isDirectKind = (v: unknown): v is DirectKind => DIRECT_KINDS.includes(v as DirectKind);

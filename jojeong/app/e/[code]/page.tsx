@@ -71,14 +71,14 @@ export default async function EventPage({ params, searchParams }: { params: Prom
         <form action={claim} className="mt-5">
           <input type="hidden" name="code" value={code} />
           <button className="block w-full rounded-2xl bg-[#FEE500] py-3.5 font-bold text-[#191919]">질문 {event?.credits}개 받기</button>
-          <p className="mt-2 text-[11.5px] text-ink-soft">{member.nick}님 계정으로 받아요 · 한 계정에 한 번</p>
+          <p className="mt-2 text-[11.5px] text-ink-soft">{member.nick}님 계정으로 받아요, 한 계정에 한 번</p>
         </form>
       ) : (
         <div className="mt-5">
           <a href={`/login/kakao?next=${encodeURIComponent(`/e/${code}`)}`} className="block rounded-2xl bg-[#FEE500] py-3.5 font-bold text-[#191919]">
             카카오로 로그인하고 받기
           </a>
-          <p className="mt-2 text-[11.5px] text-ink-soft">카카오 계정 하나에 한 번 드려요 · 생년월일은 저장하지 않아요</p>
+          <p className="mt-2 text-[11.5px] text-ink-soft">카카오 계정 하나에 한 번 드려요, 생년월일은 저장하지 않아요</p>
         </div>
       )}
     </section>

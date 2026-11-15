@@ -46,11 +46,11 @@ export const patternRate = (id: string, gender: Gender | null, v2 = true) => {
 export const perHundred = (rate: number) => (rate < 0.01 ? "100명 중 1명도 안 되는" : `100명 중 ${Math.round(rate * 100)}명`);
 
 const GROUP_PLAIN: Record<GodGroup, string> = {
-  비겁: "나와 같은 기운(비겁: 자존심·동료)",
-  식상: "표현하는 기운(식상: 말·재주)",
-  재성: "재물의 기운(재성: 돈·현실)",
-  관성: "규칙과 책임의 기운(관성: 일·조직)",
-  인성: "받쳐 주는 기운(인성: 공부·보살핌)",
+  비겁: "나와 같은 기운(비겁: 자존심, 동료)",
+  식상: "표현하는 기운(식상: 말, 재주)",
+  재성: "재물의 기운(재성: 돈, 현실)",
+  관성: "규칙과 책임의 기운(관성: 일, 조직)",
+  인성: "받쳐 주는 기운(인성: 공부, 보살핌)",
 };
 
 export type Distinct = {

@@ -101,7 +101,7 @@ export default function ShareResult({
             <b className="block font-myeongjo text-[15px]">
               요약 한 장만 <span className="ml-1 rounded bg-seal px-1.5 py-0.5 text-[11px] text-hanji">추천</span>
             </b>
-            <span className="mt-0.5 block text-[12px] leading-snug text-ink-soft">일주, 가장 큰 힘, 돈·사랑·일 한 줄만 보여요. 사주 글자는 담기지 않아요.</span>
+            <span className="mt-0.5 block text-[12px] leading-snug text-ink-soft">일주, 가장 큰 힘, 돈, 사랑, 일 한 줄만 보여요. 사주 글자는 담기지 않아요.</span>
           </button>
           <button type="button" onClick={() => send("full")} className="mt-2 w-full rounded-xl border border-ink/20 bg-white px-4 py-3 text-left">
             <b className="block font-myeongjo text-[15px]">전체 결과</b>
@@ -116,7 +116,7 @@ export default function ShareResult({
         disabled={state === "making"}
         className="mt-3 w-full rounded-2xl border-2 border-seal bg-white/70 py-3 font-myeongjo text-[15px] font-extrabold text-seal disabled:opacity-60"
       >
-        {state === "making" ? "카드를 만드는 중…" : "카드 이미지로 저장 · 스토리"}
+        {state === "making" ? "카드를 만드는 중…" : "카드 이미지로 저장, 스토리"}
       </button>
       {state === "error" && <p className="mt-2 text-xs text-seal">카드를 만들지 못했어요. 화면을 캡처해 주세요.</p>}
       {made ? (

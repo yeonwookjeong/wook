@@ -51,7 +51,7 @@ export default function Sillok({ kingName, pillars, cast = {} }: { kingName: str
         <p className="mt-1.5 text-sm text-ink-soft">
           {s.deposed ? (
             <>
-              폐위 · <b className="text-seal">{s.epithet}</b>으로 강등
+              폐위, <b className="text-seal">{s.epithet}</b>으로 강등
             </>
           ) : (
             <>
@@ -95,8 +95,8 @@ export default function Sillok({ kingName, pillars, cast = {} }: { kingName: str
         <summary className="flex cursor-pointer list-none items-center gap-3 [&::-webkit-details-marker]:hidden">
           <span className="h-px flex-1 bg-ink/15" />
           <span className="rounded-full border border-seal/40 bg-white/70 px-4 py-2 font-myeongjo text-sm font-extrabold text-seal">
-            <span className="group-open:hidden">사주 풀이 · 실록 본문 펼쳐 보기</span>
-            <span className="hidden group-open:inline">사주 풀이 · 실록 본문 접기</span>
+            <span className="group-open:hidden">사주 풀이, 실록 본문 펼쳐 보기</span>
+            <span className="hidden group-open:inline">사주 풀이, 실록 본문 접기</span>
           </span>
           <span className="h-px flex-1 bg-ink/15" />
         </summary>
@@ -108,12 +108,12 @@ export default function Sillok({ kingName, pillars, cast = {} }: { kingName: str
             <ul className="mt-1.5 flex flex-col gap-1 text-[13px] leading-snug text-ink-soft">
               {s.reasons.map((r) => (
                 <li key={r} className="flex gap-1">
-                  <span aria-hidden="true">·</span>
+                  <span aria-hidden="true">, </span>
                   <span>{r}</span>
                 </li>
               ))}
               <li className="flex gap-1 font-bold text-ink">
-                <span aria-hidden="true">·</span>
+                <span aria-hidden="true">, </span>
                 <span>
                   하여 {s.tierLabel}의 사주이옵니다. {s.lifeVerdict}.
                 </span>

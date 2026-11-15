@@ -1,0 +1,16 @@
+---
+import Base from "../layouts/Base.astro";
+import { site } from "../site.config";
+---
+
+<Base title="문의" description={`${site.name}에 문의하기`}>
+  <article class="article">
+    <h1>문의</h1>
+    <p>정보 오류 제보, 공고 등록 요청, 제휴 문의는 아래 메일로 보내 주세요.</p>
+    <p><a href={`mailto:${site.email}`}>{site.email}</a></p>
+    <ul>
+      <li>정보 오류: 해당 카드의 제목과 원문 공고 주소를 함께 적어 주시면 빠르게 고칠게요.</li>
+      <li>공고 등록: 기관명, 모집 기간, 원문 주소를 보내 주세요.</li>
+    </ul>
+  </article>
+</Base>

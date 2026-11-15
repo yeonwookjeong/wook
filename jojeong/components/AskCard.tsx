@@ -11,9 +11,9 @@ export default async function AskCard({ from, lead }: { from: AskFrom; lead?: st
     <AskLink from={from} className="jjok-box mt-4 flex items-center gap-3 px-4 py-4">
       <HundoFace size={46} />
       <span className="min-w-0 flex-1">
-        <span className="block font-myeongjo text-[11px] font-bold tracking-[0.2em] text-[#d4af5f]">問訓導 · 맞춤 상담</span>
+        <span className="block font-myeongjo text-[11px] font-bold tracking-[0.2em] text-[#d4af5f]">問訓導, 맞춤 상담</span>
         <b className="mt-0.5 block font-myeongjo text-[17px] leading-snug">{lead ?? "내 고민 하나, 정 훈도에게 묻기"}</b>
-        <span className="mt-0.5 block text-[12px] opacity-75">그대 사주로 답서를 써 드려요 · 카카오로 로그인하면 첫 질문 {JOIN_GIFT}개</span>
+        <span className="mt-0.5 block text-[12px] opacity-75">그대 사주로 답서를 써 드려요, 카카오로 로그인하면 첫 질문 {JOIN_GIFT}개</span>
       </span>
       <span className="shrink-0 font-myeongjo text-sm font-extrabold text-[#d4af5f]">→</span>
     </AskLink>

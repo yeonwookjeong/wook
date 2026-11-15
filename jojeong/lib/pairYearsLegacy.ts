@@ -41,7 +41,7 @@ export function pairYearsV1(a: Person, b: Person, relation: Relation, from: numb
     const tie = joins(sa) && joins(sb);
     const [me, them] = [ra.verdict, rb.verdict];
     const [mark, why]: [PairMark, string] = clash.length
-      ? ["관계가 흔들리기 쉬운 해", `${clash.join("·")}의 ${seat}를 그해 기운이 충`]
+      ? ["관계가 흔들리기 쉬운 해", `${clash.join(", ")}의 ${seat}를 그해 기운이 충`]
       : good(me) && good(them)
         ? tie
           ? ["정이 깊어지는 해", `둘 다 좋은 해에 두 사람의 ${seat}와 모두 합`]

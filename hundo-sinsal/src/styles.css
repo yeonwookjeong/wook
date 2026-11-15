@@ -1,0 +1,83 @@
+/* On top of the 훈도사주 mini app's styles (hundo-toss/src/styles.css). */
+.face {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  margin: 8px 0 12px;
+}
+.face img {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 16px;
+  background: var(--hanji-deep);
+  flex: none;
+}
+.face.big {
+  flex-direction: column;
+  text-align: center;
+}
+.face.big img {
+  width: 220px;
+  height: 220px;
+  border-radius: 20px;
+}
+.rare {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--seal);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+.rest {
+  border-top: 1px solid var(--hanji-deep);
+  padding-top: 8px;
+}
+.makeup {
+  margin: 8px 0 12px;
+}
+.makeup-row {
+  display: grid;
+  grid-template-columns: 6.5em 1fr 3em;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+.makeup-row .track {
+  height: 10px;
+  border-radius: 5px;
+  background: var(--hanji-deep);
+  overflow: hidden;
+}
+.makeup-row .track span {
+  display: block;
+  height: 100%;
+  background: var(--seal);
+}
+.more {
+  background: var(--hanji);
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 8px;
+  font-size: 15px;
+}
+.link.inline {
+  margin: 4px 0 0;
+  padding: 0;
+}
+.secondary {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--seal);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--seal);
+  font-weight: 700;
+}
+.today h3 {
+  font-size: 16px;
+}

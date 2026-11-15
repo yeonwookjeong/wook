@@ -112,7 +112,7 @@ export default function SinsalShare({ name, path, text, cards }: { name: string;
             disabled={state === "making"}
             className="rounded-2xl border-2 border-[#d4af5f] py-3 font-myeongjo text-[14px] font-extrabold text-[#d4af5f] disabled:opacity-60"
           >
-            {w === "feed" ? "카드 저장 · 피드" : "카드 저장 · 스토리"}
+            {w === "feed" ? "카드 저장, 피드" : "카드 저장, 스토리"}
           </button>
         ))}
       </div>

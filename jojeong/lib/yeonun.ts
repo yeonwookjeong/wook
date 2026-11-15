@@ -10,7 +10,7 @@ import { BRANCHES, BRANCHES_KO, isFull, STEMS, STEMS_KO, type FullPillars, type 
 // Computed only; the written report (paid) explains what this finds.
 
 export type Verdict = "대길" | "길" | "평" | "조심" | "인내";
-export const VERDICT_MARK: Record<Verdict, string> = { 대길: "◎", 길: "○", 평: "·", 조심: "△", 인내: "✕" };
+export const VERDICT_MARK: Record<Verdict, string> = { 대길: "◎", 길: "○", 평: "-", 조심: "△", 인내: "✕" };
 
 // The year pillar (the year turns at 입춘, early February).
 export const yearPillar = (y: number) => ({ stem: (((y - 4) % 10) + 10) % 10, branch: (((y - 4) % 12) + 12) % 12 });
@@ -160,7 +160,7 @@ export function monthMarks(p: Pillars, r: Reading, y: number): MonthMark[] {
       adj += delta;
     };
     if (ms.includes("충")) mark("변동", -1.2);
-    if (ms.includes("육합") || ms.includes("삼합")) mark("인연·약속", 0.8);
+    if (ms.includes("육합") || ms.includes("삼합")) mark("인연, 약속", 0.8);
     if (salsAt(p, m.branch).includes("천을귀인")) mark("귀인", 1);
     if (stemCombine(m.stem, p.dayStem)) mark("합", 0.5);
     const total = s + adj;
@@ -205,8 +205,8 @@ function reasonLine(r: Reading, s: YearScore, y: number): string {
   const els = [...new Set([stemEl(stem), BRANCH_EL[branch]])];
   const good = els.filter((e) => elScore(r, e) > 0);
   const bad = els.filter((e) => elScore(r, e) < 0);
-  if (good.length && !bad.length) parts.push(`필요한 ${good.map((e) => ELEMENT_KO[e]).join("·")} 기운이 들어와요`);
-  else if (bad.length && !good.length) parts.push(`버거운 ${bad.map((e) => ELEMENT_KO[e]).join("·")} 기운이 몰려요`);
+  if (good.length && !bad.length) parts.push(`필요한 ${good.map((e) => ELEMENT_KO[e]).join(", ")} 기운이 들어와요`);
+  else if (bad.length && !good.length) parts.push(`버거운 ${bad.map((e) => ELEMENT_KO[e]).join(", ")} 기운이 몰려요`);
   else if (good.length && bad.length) parts.push(`반가운 ${ELEMENT_KO[good[0]]} 기운과 버거운 ${ELEMENT_KO[bad[0]]} 기운이 섞여요`);
   const day = s.meets.find((m) => m.pos === "일");
   if (day?.meeting === "충") parts.push("내 자리(일지)가 흔들려 변화가 커요");
@@ -214,7 +214,7 @@ function reasonLine(r: Reading, s: YearScore, y: number): string {
   else if (s.meets.some((m) => m.meeting === "충")) parts.push("사주와 부딪히는 자리가 있어 변동이 있어요");
   if (s.sals.includes("천을귀인")) parts.push("귀인이 드는 해예요");
   if (!parts.length) parts.push("크게 밀지도 막지도 않는 기운이에요");
-  return parts.slice(0, 2).join(" · ");
+  return parts.slice(0, 2).join(", ");
 }
 
 export function yearRows(p: Pillars, profile: Profile | null, from: number, to: number, now: number): YearRow[] | null {
@@ -275,7 +275,7 @@ export function newYearProduct<T extends { title: string; hanja: string; tagline
     ...product,
     title: isPreview(y, now) ? `미리 보는 ${y} 신년운세` : `${y} 신년운세`,
     hanja: yearName(y).hanja,
-    tagline: `${y}년에 잡을 기회와 피할 고비, 내 사주로 미리 짚어 드려요. 돈·일·사랑·몸부터 달마다 할 일까지`,
+    tagline: `${y}년에 잡을 기회와 피할 고비, 내 사주로 미리 짚어 드려요. 돈, 일, 사랑, 몸부터 달마다 할 일까지`,
   };
 }
 
@@ -318,12 +318,12 @@ const MEET_PLAIN: Partial<Record<Meeting, string>> = {
   해: "서로 해쳐(해) 그 자리의 일이 어긋나기 쉬워요",
   파: "깨뜨려(파) 그 자리의 일이 한 번 틀어졌다 다시 맞춰져요",
 };
-const SEAT: Record<"연" | "월" | "일" | "시", string> = { 연: "집안·윗사람 자리(연지)", 월: "일터·생활 자리(월지)", 일: "나와 배우자 자리(일지)", 시: "자녀·앞날 자리(시지)" };
+const SEAT: Record<"연" | "월" | "일" | "시", string> = { 연: "집안, 윗사람 자리(연지)", 월: "일터, 생활 자리(월지)", 일: "나와 배우자 자리(일지)", 시: "자녀, 앞날 자리(시지)" };
 const SAL_PLAIN: Record<string, string> = {
   천을귀인: "천을귀인이 드는 해라, 곤란할 때 뜻밖의 도움이 와요.",
-  문창귀인: "문창귀인이 드는 해라, 시험·글·자격에 운이 붙어요.",
+  문창귀인: "문창귀인이 드는 해라, 시험, 글, 자격에 운이 붙어요.",
   도화: "도화가 드는 해라, 사람을 끄는 매력과 인연이 커져요.",
-  역마: "역마가 드는 해라, 이사·이직·먼 길처럼 움직일 일이 생겨요.",
+  역마: "역마가 드는 해라, 이사, 이직, 먼 길처럼 움직일 일이 생겨요.",
   양인: "양인이 드는 해라, 추진력이 세지는 만큼 다툼과 부상을 조심해요.",
   공망: "공망이 드는 해라, 애쓴 만큼 손에 잡히지 않는 일이 있어요. 실속을 챙기세요.",
 };
@@ -351,7 +351,7 @@ export function yearDetail(p: Pillars, profile: Profile | null, y: number, now: 
   } as const;
   for (const k of ["need", "help", "worst", "feed"] as const) {
     const es = els.filter((e) => kindOf(e) === k);
-    if (es.length) points.push(`${es.map((e) => ELEMENT_KO[e]).join("·")}(${es.map((e) => ELEMENT_HANJA[e]).join("")}) 기운이 들어와요. ${ELINE[k]}`);
+    if (es.length) points.push(`${es.map((e) => ELEMENT_KO[e]).join(", ")}(${es.map((e) => ELEMENT_HANJA[e]).join("")}) 기운이 들어와요. ${ELINE[k]}`);
   }
   const groups = new Map<string, typeof s.meets>();
   for (const m of s.meets) groups.set(`${m.meeting}-${m.branch}`, [...(groups.get(`${m.meeting}-${m.branch}`) ?? []), m]);
@@ -359,7 +359,7 @@ export function yearDetail(p: Pillars, profile: Profile | null, y: number, now: 
     const m = ms[0];
     const plain = MEET_PLAIN[m.meeting];
     if (!plain) continue;
-    const seats = ms.length === 1 ? SEAT[m.pos] : `${ms.map((x) => SEAT[x.pos].replace(/ 자리\(.*\)$/, "")).join(", ")} 자리(${ms.map((x) => `${x.pos}지`).join("·")})`;
+    const seats = ms.length === 1 ? SEAT[m.pos] : `${ms.map((x) => SEAT[x.pos].replace(/ 자리\(.*\)$/, "")).join(", ")} 자리(${ms.map((x) => `${x.pos}지`).join(", ")})`;
     points.push(`${n.ko}의 ${BJ(branch, "이/가")} ${seats}의 ${BJ(m.branch, "과/와")} ${plain.replace("그 자리의", ms.length > 1 ? "그 자리들의" : "그 자리의")}.${m.gathers ? " 다만 모이는 기운이 사주에 버거워 좋은 만큼 부담도 커요." : ""}`);
   }
   for (const x of s.stemMeets) {
@@ -429,7 +429,7 @@ export function yeonunBrief(p: Pillars, profile: Profile | null, y: number, now:
     `- 무료 화면의 풀이: ${d.points.join(" / ")}`,
     `- 달별(절기 기준, ◎좋음 ○무난 △조심 ✕고비): ${d.months.map((m) => `${m.from.split("/")[0]}월(${m.from}~) ${m.gz} ${"✕△○◎"[m.rating]}${m.tags.length ? `(${m.tags.join(",")})` : ""}`).join(" / ")}`,
     `- 가장 좋은 달: ${d.best.map((i) => `${d.months[i].from.split("/")[0]}월`).join(", ")} / 조심할 달: ${d.worst.map((i) => `${d.months[i].from.split("/")[0]}월`).join(", ")}`,
-    `- 원국 자리와의 만남(자리 = 삶의 영역: 연지 집안·부모, 월지 일터·생활, 일지 나·배우자, 시지 자녀·앞날): ${d.score.meets.map((m) => `${m.pos}지 ${BRANCHES[m.branch]}와 ${m.meeting}${m.gathers ? "(모이는 기운이 버거움)" : ""}`).join(", ") || "없음"} / 천간: ${d.score.stemMeets.map((x) => `${x.pos}간 ${STEMS[x.stem]}와 ${x.kind}`).join(", ") || "없음"}`,
+    `- 원국 자리와의 만남(자리 = 삶의 영역: 연지 집안, 부모, 월지 일터, 생활, 일지 나, 배우자, 시지 자녀, 앞날): ${d.score.meets.map((m) => `${m.pos}지 ${BRANCHES[m.branch]}와 ${m.meeting}${m.gathers ? "(모이는 기운이 버거움)" : ""}`).join(", ") || "없음"} / 천간: ${d.score.stemMeets.map((x) => `${x.pos}간 ${STEMS[x.stem]}와 ${x.kind}`).join(", ") || "없음"}`,
     `- 그해 신살: ${d.score.sals.join(", ") || "없음"}`,
     ...(d.score.daeun
       ? (() => {

@@ -313,7 +313,7 @@ export default function AiReport({
               );
             })}
           </dl>
-          {save && <p className="mt-3 text-right font-myeongjo text-[11px] text-ink-soft">훈도사주 · 정 훈도</p>}
+          {save && <p className="mt-3 text-right font-myeongjo text-[11px] text-ink-soft">훈도사주, 정 훈도</p>}
         </section>
       )}
       {save && summary && summaryRows.length > 0 && (

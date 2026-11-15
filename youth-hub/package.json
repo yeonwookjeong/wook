@@ -1,0 +1,16 @@
+{
+  "name": "youth-hub",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "collect": "node scripts/collect.mjs"
+  },
+  "dependencies": {
+    "astro": "5.18.2",
+    "@astrojs/sitemap": "^3.2.1"
+  }
+}

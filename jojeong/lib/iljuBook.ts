@@ -95,7 +95,7 @@ function meet(stem: number, branch: number, s: number, b: number): Match {
     ...small.map((k) => `${k}(${BRANCHES[branch]}${BRANCHES[b]})`),
   ]
     .filter(Boolean)
-    .join(" · ");
+    .join(", ");
   return { hanja: `${STEMS[s]}${BRANCHES[b]}`, name: `${STEMS_KO[s]}${BRANCHES_KO[b]}`, score, plain, why };
 }
 
