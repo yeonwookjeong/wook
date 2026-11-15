@@ -92,7 +92,7 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
     ...SALE_KEYS.flatMap((k) => [`view:${k}`, `co:${k}`]),
     ...COLUMNS.map((c) => `cv:${c.slug}`),
     ...FREE_VIEW.flatMap((f) => [`fv:${f}`, `fe:${f}`]),
-    ...["friend", "home", "today", "paid"].map((f) => `fe:${f}`),
+    ...["friend", "home", "today", "paid", "king"].map((f) => `fe:${f}`),
   ]);
   // All columns read, the sum of each one's count.
   const readsIn = (p: Period) => COLUMNS.reduce((a, c) => a + (stats[`cv:${c.slug}`]?.[p] ?? 0), 0);
@@ -1066,6 +1066,7 @@ function FreeTable({ stats, period }: { stats: Record<string, Record<Period, num
     ["친구 링크", v("fe:friend")],
     ["홈", v("fe:home") + v("fe:today")],
     ["유료 보고서 화면", v("fe:paid")],
+    ["왕이 될 사주 즉위", v("fe:king")],
   ] as const;
   return (
     <section className="doc-paper mt-4 px-3 py-4">
