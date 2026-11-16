@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { classify, directKind, isBotUa, SRC_COOKIE } from "@/lib/source";
+import { classify, directKind, isBotUa, landingOf, SRC_COOKIE } from "@/lib/source";
 
 // Reports each page view to /api/stat, and whether this browser is new today, this week, this month or at all.
 // The browser remembers only the dates it was last counted; nothing identifies it.
@@ -64,7 +64,7 @@ export default function VisitBeacon() {
     send({
       v: { day: seen.d !== cur.d, week: seen.w !== cur.w, month: seen.m !== cur.m, ever },
       ...(ever && src && { src }),
-      ...(ever && src === "direct" && { dx: directKind(navigator.userAgent) }),
+      ...(ever && src === "direct" && { dx: directKind(navigator.userAgent), dl: landingOf(path) }),
     });
     try {
       localStorage.setItem("hv", JSON.stringify(cur));

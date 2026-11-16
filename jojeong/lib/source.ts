@@ -3,11 +3,12 @@
 // the person. The road is read once, on the first visit: the page they landed on, then the app they opened it in
 // (Instagram, Threads and 카카오톡 name themselves in the browser's user agent), then the site that sent them.
 // "toss": bought in the Apps in Toss mini app (lib/tossApps.ts); written on its orders, never read from a visit.
-export const SOURCES = ["game", "instagram", "threads", "x", "search", "kakao", "other", "direct", "toss"] as const;
+export const SOURCES = ["game", "share", "instagram", "threads", "x", "search", "kakao", "other", "direct", "toss"] as const;
 export type Source = (typeof SOURCES)[number];
 export const isSource = (v: unknown): v is Source => SOURCES.includes(v as Source);
 export const SOURCE_LABEL: Record<Source, string> = {
   game: "왕이 될 사주 (친구 초대)",
+  share: "친구가 보낸 결과 링크",
   instagram: "인스타그램",
   threads: "스레드",
   x: "X (트위터)",
@@ -22,6 +23,9 @@ export const SRC_COOKIE = "jj_src";
 export function classify({ path, referrer, ua, query }: { path: string; referrer: string; ua: string; query: string }): Source {
   // An invitation to a court is the game spreading, whatever app it was opened in.
   if (path.startsWith("/court/")) return "game";
+  // A result someone sent with the share button (/l short links, /s long ones), whatever app it was opened in:
+  // pasted into Safari it carries no referrer, but the address itself says it was shared (대표님 11/16).
+  if (/^\/(l|s)\//.test(path)) return "share";
   const tag = new URLSearchParams(query).get("utm_source")?.toLowerCase() ?? "";
   if (/^(ig|insta)/.test(tag)) return "instagram";
   if (tag.startsWith("thread")) return "threads";
@@ -88,4 +92,28 @@ export function directKind(ua: string): DirectKind {
   }
   if (/Windows|Macintosh|X11|CrOS/.test(ua)) return "desktop";
   return "unknown";
+}
+
+// For a visit that came out as "direct": the page it first landed on, which tells more of the road than the browser
+// does (대표님 11/16 "사파리 ㅇㅈㄹ 할거면 필요가 없지"). A column or the 60일주 사전 is mostly a link from a blog,
+// a search app or a saved bookmark; the home page is mostly a typed or pasted address, or a profile link.
+export const LANDINGS = ["home", "column", "ilju", "reports", "sinsal", "king", "ranking", "samjae", "en", "etc"] as const;
+export type Landing = (typeof LANDINGS)[number];
+export const LANDING_LABEL: Record<Landing, string> = {
+  home: "홈 (주소 입력, 프로필 링크, 즐겨찾기)",
+  column: "칼럼 (블로그, 검색 앱, 저장한 링크)",
+  ilju: "60일주 사전",
+  reports: "보고서, 무료 풀이 화면",
+  sinsal: "신살 테스트",
+  king: "왕이 될 사주",
+  ranking: "일주 랭킹",
+  samjae: "삼재",
+  en: "영어판",
+  etc: "그 밖의 화면",
+};
+export const isLanding = (v: unknown): v is Landing => LANDINGS.includes(v as Landing);
+export function landingOf(path: string): Landing {
+  if (path === "/" || path === "") return "home";
+  const first = path.split("/")[1] as Landing;
+  return LANDINGS.includes(first) && first !== "home" && first !== "etc" ? first : "etc";
 }
