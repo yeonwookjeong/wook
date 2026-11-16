@@ -1,11 +1,23 @@
 import Link from "next/link";
+import type { StepFrom } from "@/lib/nextStep";
 import { isOpen, productById, type ProductId } from "@/lib/products";
 import Keep from "./Keep";
 import TrackLink from "./TrackLink";
 
 // A short shelf of reports under a free result. `query` carries whose chart the report page should read;
-// `highlights` swaps a report's tagline for a line read from that chart.
-export default function ReportShelf({ ids, query, highlights = {} }: { ids: ProductId[]; query: string; highlights?: Partial<Record<ProductId, string>> }) {
+// `highlights` swaps a report's tagline for a line read from that chart. `from` is the page the steps count for
+// (the court page passed none before 11/16, so its shelf was counted as the minister result's).
+export default function ReportShelf({
+  ids,
+  query,
+  highlights = {},
+  from = "minister",
+}: {
+  ids: ProductId[];
+  query: string;
+  highlights?: Partial<Record<ProductId, string>>;
+  from?: StepFrom;
+}) {
   return (
     <section className="mt-8">
       <p className="text-center font-myeongjo text-xs font-extrabold tracking-[0.4em] text-seal">秘 密 報 告</p>
@@ -27,7 +39,7 @@ export default function ReportShelf({ ids, query, highlights = {} }: { ids: Prod
                 const free = isOpen(p);
                 return (
                   <li key={id}>
-                    <TrackLink event="to_saju" from="minister" href={p.modern ? `/reports/${id}` : `/reports/${id}?${query}`} className={`${free ? "doc-paper" : "jjok-box"} flex items-center gap-3 px-4 py-4`}>
+                    <TrackLink event="to_saju" from={from} href={p.modern ? `/reports/${id}` : `/reports/${id}?${query}`} className={`${free ? "doc-paper" : "jjok-box"} flex items-center gap-3 px-4 py-4`}>
                       <span
                         className={`flex h-11 min-w-11 shrink-0 items-center justify-center border-2 px-1 font-myeongjo font-extrabold ${free ? "border-seal/60 text-seal" : "border-gold/60 text-gold"} ${p.hanja.length > 2 ? "text-xs" : "text-sm"}`}
                       >

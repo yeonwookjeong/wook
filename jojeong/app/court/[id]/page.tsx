@@ -219,6 +219,7 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
 
           {isOwner && (
             <ReportShelf
+              from="court"
               ids={["sinbun", "pyeongsaeng", "gunghap", "gukjeong", "yeonae"]}
               query={`court=${court.id}`}
               highlights={{
