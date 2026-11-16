@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import NextStep from "@/components/NextStep";
+import CourtGunghap from "@/components/CourtGunghap";
 import Hundo from "@/components/Hundo";
 import AdSlot from "@/components/AdSlot";
 import ReportShelf from "@/components/ReportShelf";
@@ -175,6 +176,13 @@ export default async function MinisterPage({ params }: PageProps<"/court/[id]/m/
         </p>
       </section>
 
+      {isSelf && (
+        <CourtGunghap
+          from="minister"
+          title={`${court.kingName} 전하와 ${seat.match.score}점, 진짜 궁합은`}
+          line="궁합 보고서, 끌림과 부딪힘부터 앞으로 10년 함께할 때까지"
+        />
+      )}
       {isSelf && <MyChartTeaser pillars={seat.minister.pillars} name={seat.minister.name} />}
       {isSelf && <NextStep from="minister" steps={ministerStep} />}
       {isSelf && (
