@@ -2,9 +2,13 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { EN_FAQ, EN_READINGS, priceLabel } from "@/lib/en/catalog";
+import { intlColumns } from "@/lib/intl/columns";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: { absolute: "Hundo · Korean saju readings in English" },
+  alternates: { canonical: "/en", languages: { ko: "/", en: "/en", ja: "/ja" } },
   description:
     "Saju, the Korean four pillars of destiny, read in plain English by Hundo, a fortune scholar of Joseon's royal observatory. Your life in Joseon, your Korean name, and full readings on love, money, work and the year ahead.",
 };
@@ -13,6 +17,7 @@ export const metadata: Metadata = {
 export default function EnHome() {
   const free = EN_READINGS.filter((r) => r.free);
   const paid = EN_READINGS.filter((r) => !r.free);
+  const guides = intlColumns("en").slice(0, 3);
   return (
     <>
       <section className="-mx-4 mt-4">
@@ -48,6 +53,23 @@ export default function EnHome() {
           ))}
         </ol>
       </section>
+
+      {guides.length > 0 && (
+        <section className="mt-8">
+          <h2 className="font-myeongjo text-[22px] font-extrabold">Saju guides</h2>
+          <div className="mt-3 flex flex-col gap-3">
+            {guides.map((c) => (
+              <Link key={c.slug} href={`/en/column/${c.slug}`} className="block rounded-2xl bg-white/70 px-4 py-4 shadow-[inset_0_0_0_1px_rgb(33_27_23/0.1)]">
+                <p className="font-myeongjo text-[17px] leading-snug font-extrabold">{c.title}</p>
+                <p className="mt-1 line-clamp-2 text-[14px] leading-relaxed text-ink-soft">{c.summary}</p>
+              </Link>
+            ))}
+            <Link href="/en/column" className="text-center text-[14px] font-bold text-seal">
+              All guides →
+            </Link>
+          </div>
+        </section>
+      )}
 
       <section className="mt-8">
         <h2 className="font-myeongjo text-[22px] font-extrabold">Start free</h2>
