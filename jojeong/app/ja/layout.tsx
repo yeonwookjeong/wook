@@ -10,7 +10,8 @@ export const metadata: Metadata = {
 
 export default function JaLayout({ children }: LayoutProps<"/ja">) {
   return (
-    <div lang="ja" className="flex flex-1 flex-col">
+    // Japanese has no spaces between words: the Korean keep-all (globals.css) would break lines only at punctuation.
+    <div lang="ja" className="flex flex-1 flex-col [line-break:strict] [word-break:normal]">
       <header className="flex items-center justify-between pt-4">
         <Link href="/ja" className="flex items-center gap-2">
           <span
