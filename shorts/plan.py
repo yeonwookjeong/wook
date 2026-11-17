@@ -29,7 +29,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 RECIPES = HERE / "recipes"
 OUT = HERE / "out"
-MAX_PER_VIDEO = 3
+MAX_PER_VIDEO = 6  # 내용이 충분하면 한 영상에서 여러 개 (억지로 채우지는 않음)
 
 
 def video_id(url: str) -> str:
