@@ -10,7 +10,7 @@ import { freshSiteErrors, lastReportError, listInquiries, listSiteErrors, member
 import { listFeedback } from "@/lib/feedback";
 import { memberFixAction } from "./actions";
 import { allMembers, memberNo, VIA_LABEL, viaOf, type Member } from "@/lib/members";
-import { adminSignOut, creditEventCreateAction, creditEventToggleAction, deleteDownFeedbackAction, reviewShownAction, giftCopyAction, reportErrorClearAction, giftRevokeAction, inquiryDeleteAction, inquiryDoneAction, rewriteReportAction, testOrderAction } from "./actions";
+import { adminSignOut, creditEventCreateAction, creditEventToggleAction, deleteDownFeedbackAction, giftCopyAction, reportErrorClearAction, giftRevokeAction, inquiryDeleteAction, inquiryDoneAction, rewriteReportAction, testOrderAction } from "./actions";
 import Dashboard, { rangeOf } from "./Dashboard";
 import { threadsPosts } from "@/lib/threads";
 import GiftForm from "./GiftForm";
@@ -877,16 +877,6 @@ async function FeedbackSection() {
               {f.rewarded && <span className="ml-1 rounded bg-seal/10 px-1 text-[10.5px] font-bold text-seal">질문권 지급</span>}
               {f.member && <span className="ml-1 font-mono text-[10px] text-ink-soft">{memberNo(f.member)}</span>}
               {f.text && <span className="block text-ink-soft">{f.text}</span>}
-              {f.up && f.share && f.text.trim() && (
-                <form action={reviewShownAction} className="mt-1">
-                  <input type="hidden" name="order" value={f.order} />
-                  <input type="hidden" name="product" value={f.product} />
-                  <input type="hidden" name="on" value={f.shown ? "0" : "1"} />
-                  <button className={`rounded-full px-2 py-0.5 text-[10.5px] font-bold ${f.shown ? "bg-[#1f6b4a] text-white" : "border border-seal/40 text-seal"}`}>
-                    {f.shown ? "사이트에 공개 중 · 내리기" : "사이트에 공개하기"}
-                  </button>
-                </form>
-              )}
               {!f.up && <RewriteBox order={f.order} product={f.product} />}
             </li>
           ))}
