@@ -8,7 +8,7 @@ import { matchPillars, type Pillars } from "./saju";
 // 나와 같은 일주 유명인 (2026-11-17 대표님): public figures' six letters (scripts/celebs.mts, Wikidata), matched with
 // the guest's chart three ways: the same day pillar, how many of the six letters are the same, and the 궁합 score
 // (lib/couple.ts, as friends: no hour, no spouse star) placed among real pairs as 상위 n%, with a title.
-// No photos, and only kind words: a name with a birth year and a field, nothing more.
+// No photos: a name with a birth year and a field, nothing more.
 
 export const CELEB_TAGS = ["아이돌", "배우", "가수", "운동선수", "역사 인물"] as const;
 export type CelebTag = (typeof CELEB_TAGS)[number];
@@ -40,7 +40,27 @@ const TITLES: readonly (readonly [number, string])[] = [
 export const titleOf = (score: number) => (TITLES.find(([s]) => score >= s) ?? TITLES[TITLES.length - 1])[1];
 export const topPct = (score: number) => Math.max(0.1, atLeast[Math.min(99, score)] ?? 100);
 
-// What ties the two, in kind words only, strongest first.
+// The other end (대표님 11/17: 궁합이니 안 맞는 사이도 보여 준다). The words are about the pair, never the person.
+const FOES: readonly (readonly [number, string])[] = [
+  [51, "견원지간"],
+  [57, "앙숙"],
+  [63, "티격태격"],
+];
+export const foeOf = (score: number) => FOES.find(([s]) => score <= s)?.[1] ?? null;
+export const bottomPct = (score: number) => Math.max(0.1, Math.round((100 - (atLeast[score + 1] ?? 0)) * 10) / 10);
+
+function clashes(me: Pillars, c: Pillars): string[] {
+  const f = matchPillars(me, c).facts;
+  const out: string[] = [];
+  if (f.dayClash) out.push("생활의 자리끼리 정면으로 부딪히는 충");
+  if (f.dayWonjin) out.push("이유 없이 서운함이 쌓이는 원진");
+  if (f.yearClash) out.push("띠끼리 부딪히는 충");
+  if (f.group === "관성") out.push("상대가 그대를 다잡으려 드는 기운");
+  if (f.group === "식상" && out.length < 2) out.push("그대가 내어 주기만 하는 기운");
+  return out.slice(0, 2);
+}
+
+// What ties the two, strongest first.
 function reasons(me: Pillars, c: Pillars): string[] {
   const f = matchPillars(me, c).facts;
   const out: string[] = [];
@@ -70,6 +90,7 @@ export type StarBoard = {
   sameIlju: Hit[]; // same day pillar, most known first
   twins: Hit[]; // four or more of the six letters the same
   best: Hit[]; // highest 궁합, most known first among equals
+  worst: Hit[]; // 티격태격 and below, most known first
 };
 
 export function starBoard(me: Pillars): StarBoard {
@@ -85,5 +106,10 @@ export function starBoard(me: Pillars): StarBoard {
     .sort((a, b) => a.c.fame - b.c.fame)
     .slice(0, 300)
     .map(({ c, score }) => ({ ...hit(c), score, title: titleOf(score), pct: topPct(score), why: reasons(me, c.p) }));
-  return { sameIlju, twins, best };
+  const worst = scored
+    .filter((x) => x.score <= 63)
+    .sort((a, b) => a.c.fame - b.c.fame)
+    .slice(0, 300)
+    .map(({ c, score }) => ({ ...hit(c), score, title: foeOf(score)!, pct: bottomPct(score), why: clashes(me, c.p) }));
+  return { sameIlju, twins, best, worst };
 }
