@@ -1,7 +1,6 @@
 import { Plaque } from "./ask/Hall";
 import Image from "next/image";
 import Link from "next/link";
-import ReviewStrip from "@/components/ReviewStrip";
 import { forgetMeAction } from "@/app/actions";
 import { HundoFace } from "@/app/ask/Letter";
 import AskLink from "@/components/AskLink";
@@ -289,9 +288,6 @@ export default async function HomeV2() {
           <span aria-hidden className="h-px w-6 bg-gold/40" />
         </p>
       )}
-
-      {/* 손님 후기, 풀어 드린 수 바로 아래 (대표님 11/17, 사주아이처럼). */}
-      <ReviewStrip className="-mx-4 mt-4" />
 
       {/* The free extras, two to a row (a swiped row hid the last one half off the edge). */}
       <nav aria-label="무료로 보기" className="mt-4 grid grid-cols-2 gap-2">

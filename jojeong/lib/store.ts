@@ -480,13 +480,6 @@ export async function deleteFeedbackRaw(key: string) {
   await backend().set(`fb:${key}`, "");
   await backend().remove("feedbacks", key);
 }
-// The reviews the owner put on the site (lib/feedback.ts publicReviews): one record, so a page reads it once.
-export async function getPublicReviewsRaw(): Promise<string | null> {
-  return backend().get("reviews:public");
-}
-export async function setPublicReviewsRaw(raw: string) {
-  await backend().set("reviews:public", raw);
-}
 export async function feedbackKeys(): Promise<string[]> {
   return backend().list("feedbacks");
 }
