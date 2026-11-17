@@ -1,4 +1,5 @@
-// Builds lib/naming/hanja.tsv: every 인명용 한자 with what naming needs (docs/naming-study.md, 11장).
+// Builds lib/naming/hanja.tsv: every 인명용 한자 with what naming needs (docs/naming-study.md, 11장),
+// and lib/naming/pool.json: the part the naming engine (lib/naming/engine.ts) reads.
 // Inputs (not kept in the repo, see lib/naming/SOURCES.md):
 //   1. data-gov.csv from github.com/rutopio/Korean-Name-Hanja-Charset (MIT): the Supreme Court list, one row per reading
 //   2. moji.db from npm @mandel59/mojidata: Unicode Unihan (kRSUnicode, kTotalStrokes, kDefinition, kKoreanEducationHanja)
@@ -80,8 +81,9 @@ for (const [ch, sounds] of readings) {
   const sure = sureEl !== undefined ? 1 : 0;
   // pool 1: 교육용 한자(친숙함) + 자원오행 있음 + 뜻 무난 → 먼저 쓰는 후보
   // pool 2: 교육용은 아니지만 이름에 흔히 쓰일 만한 글자(필획 17 이하) → 사람 검수 뒤에 쓰는 후보
+  // pool 3: 교육용이고 뜻 무난하지만 자원오행이 미정인 글자 → "소리 우선"일 때 한 글자의 짝으로만 씀 (오행은 다른 글자가 채움)
   const ok = el !== "-" && !neg;
-  const pool = ok && edu ? 1 : ok && pil <= 17 ? 2 : 0;
+  const pool = ok && edu ? 1 : ok && pil <= 17 ? 2 : el === "-" && edu && !neg && pil <= 17 ? 3 : 0;
   rows.push({ ch, ko: [...sounds].join("/"), rad, won, pil, el, sure, edu, neg, num: NUMERALS.has(ch) ? 1 : 0, pool, def });
 }
 rows.sort((a, b) => a.ko.localeCompare(b.ko, "ko") || a.ch.localeCompare(b.ch));
@@ -90,6 +92,12 @@ const head = "ch\tko\trad\twon\tpil\tel\tsure\tedu\tneg\tnum\tpool\tdef";
 const body = rows.map((r) => [r.ch, r.ko, r.rad, r.won, r.pil, r.el, r.sure, r.edu, r.neg, r.num, r.pool, r.def].join("\t"));
 mkdirSync(new URL("../lib/naming/", import.meta.url), { recursive: true });
 writeFileSync(new URL("../lib/naming/hanja.tsv", import.meta.url), [head, ...body].join("\n") + "\n");
+// The engine reads only the candidates (pool 1·2·3) and the surnames, as compact rows: [한자, 음들, 원획, 오행(0~4), sure, pool, 첫 영어 뜻]
+const SURNAME_CH = new Set([..."金李朴崔鄭姜趙尹張林韓吳徐申權黃安宋柳洪高文孫裵白許南盧河閔羅陳都馬劉"]);
+const engineRows = rows
+  .filter((r) => r.pool > 0 || SURNAME_CH.has(r.ch))
+  .map((r) => [r.ch, r.ko, r.won, EL.indexOf(r.el), r.sure, r.pool, r.def.split(";")[0].replace(/\s*\([^)]*\)/g, "").trim()]);
+writeFileSync(new URL("../lib/naming/pool.json", import.meta.url), "[\n" + engineRows.map((r) => JSON.stringify(r)).join(",\n") + "\n]\n");
 
 const count = (f: (r: Row) => boolean) => rows.filter(f).length;
 console.log(`인명용 ${readings.size}자 → 표 ${rows.length}자 (Unihan에 없음 ${missing})`);
