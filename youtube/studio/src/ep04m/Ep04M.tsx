@@ -20,11 +20,12 @@ const src = (n: string) => staticFile(`m04/${n}.png`);
 const SRC_H: Record<string, number> = {
   man_01: 257, man_02: 255, man_03: 254, man_04: 253, man_05: 251, man_06: 248, man_07: 251,
   woman_01: 308, woman_02: 304, woman_03: 306, woman_04: 301, woman_05: 302, woman_06: 298, woman_07: 302,
+  c80_01: 481, c80_02: 496, c80_03: 492, c80_04: 476,
 };
 const MAN_K = 640 / 257; // 남자 키 640px
 const WOMAN_K = 610 / 308; // 여자 키 610px
 const P: React.FC<{ pose: string; x: number; floor: number; s?: number; flip?: boolean; bob?: number; o?: number; pop?: number; rot?: number }> = ({ pose, x, floor, s = 1, flip, bob = 0, o = 1, pop = 1, rot = 0 }) => {
-  const k = pose.startsWith("man") ? MAN_K : WOMAN_K;
+  const k = pose === "c80_02" || pose === "c80_03" ? 640 / 496 : pose === "c80_01" || pose === "c80_04" ? 610 / 481 : pose.startsWith("man") ? MAN_K : WOMAN_K;
   const h = SRC_H[pose] * k * s;
   return (
     <div style={{ position: "absolute", left: x, top: floor - h - bob, height: h, transform: `translateX(-50%) scale(${pop}) rotate(${rot}deg)`, transformOrigin: "50% 100%", opacity: o }}>
@@ -130,11 +131,18 @@ const Away: React.FC<SceneProps> = ({ t, f }) => (
     <P pose="man_05" x={330} floor={FLOOR_PARK + 60} s={1.1} />
   </Stage>
 );
+// 몇십 년 전(1980년대): 같은 공원, 흑백. 신발을 받으면 동전을 건네 "산 것"으로 친다 → 지금 커플은 웃어넘김
 const Coin: React.FC<SceneProps> = ({ t, f }) => {
+  const swap = t > 0.33; // 동전과 신발이 오간 뒤
   const k = interpolate(t, [0.6, 0.68], [0, 1], cl);
   return (
     <>
-      <Stage bg="market_old" z={lerp(1.45, 1.25, ease(Math.min(1, t / 0.6)))} fx={420} fy={1560} />
+      <div style={{ position: "absolute", inset: 0, filter: "grayscale(1) sepia(0.12) contrast(1.05)" }}>
+        <Stage bg="park" z={1.12} fy={1400}>
+          <P pose={swap ? "c80_04" : "c80_01"} x={swap ? 420 : 400} floor={FLOOR_PARK} />
+          <P pose={swap ? "c80_03" : "c80_02"} x={swap ? 690 : 700} floor={FLOOR_PARK} pop={swap ? 1 : 0.97 + 0.03 * Math.sin(f * 0.3)} />
+        </Stage>
+      </div>
       {k > 0 && (
         <Stage bg="park" z={1.1} fy={1400} o={k}>
           <P pose="man_04" x={400} floor={FLOOR_PARK} bob={Math.abs(Math.sin(f * 0.6)) * 6} />
