@@ -22,7 +22,7 @@ const h = (text: string) => ({ text, hl: true });
 const w = (text: string) => ({ text });
 
 // weight: 자막 글자 수 대신 쓰는 길이 비율 (짧은 자막인데 장면이 필요할 때)
-const SHOTS: Shot[] = [
+export const SHOTS: Shot[] = [
   { mode: "intro", sent: 0, sfx: [{ name: "pop", at: 0.5, vol: 0.35 }, { name: "pop", at: 1.4, vol: 0.35 }, { name: "pop", at: 2.3, vol: 0.35 }] },
   { mode: "shoes", sent: 1, sfx: [{ name: "pop", at: 0.4, vol: 0.4 }] },
   { mode: "walk", sent: 2 },
@@ -38,7 +38,7 @@ const SHOTS: Shot[] = [
   { mode: "end", sent: 12, sfx: [{ name: "pop", at: 5.5, vol: 0.4 }] },
 ];
 
-const CAPS: Record<Lang, Cap[][]> = {
+export const CAPS: Record<Lang, Cap[][]> = {
   en: [
     [[w("Korean couples")], [w("avoid these")], [h("three things.")], [w("Number three")], [w("is a street"), w("in Seoul.")]],
     [[h("Number one:")], [w("shoes as a gift.")]],
