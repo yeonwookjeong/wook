@@ -22,9 +22,9 @@ export const POSTS: Record<Exam, Post[]> = {
   jap: ["yeokgwan", "naeui", "gwansang", "yulgwan"],
 };
 
-type Facts = { r: Reading; g: Record<GodGroup, number>; t: Record<TenGod, number>; sals: Set<Sal | "괴강" | "백호">; clash: number };
+export type Facts = { r: Reading; g: Record<GodGroup, number>; t: Record<TenGod, number>; sals: Set<Sal | "괴강" | "백호">; clash: number };
 
-function factsOf(p: Pillars): Facts | null {
+export function factsOf(p: Pillars): Facts | null {
   const r = readChart(p);
   if (!r) return null;
   const sum = Object.values(r.godWeights).reduce((a, b) => a + b, 0) || 1;
