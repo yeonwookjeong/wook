@@ -11,6 +11,8 @@ export const metadata: Metadata = {
   title: "벼슬길, 내 사주로 조선 과거를 본다면",
   description: "문과, 무과, 잡과 중 내 사주가 가리키는 과거와 첫 벼슬, 시련, 마지막 벼슬까지. 사주대로 걸을지 내 선택대로 걸을지, 두 인생을 나란히 보여 드려요.",
   alternates: { canonical: "/byeoseul" },
+  // 대표님 시험 기간 (11/17): 메뉴와 사이트맵에 없고 검색에도 안 나오게. 공개할 때 지운다.
+  robots: { index: false, follow: false },
 };
 
 // 벼슬길: the birth date once (remembered in this browser, as for every free page), then the game.
