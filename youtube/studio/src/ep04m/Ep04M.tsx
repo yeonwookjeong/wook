@@ -31,8 +31,9 @@ const P: React.FC<{ pose: string; x: number; floor: number; s?: number; flip?: b
   const k = K[pose] ?? (pose.startsWith("man") ? MAN_K : WOMAN_K);
   const h = SRC_H[pose] * k * s;
   const fr = useCurrentFrame();
-  const breathe = 1 + 0.014 * Math.sin(fr * 0.16 + x * 0.01);
-  const sway = 1.2 * Math.sin(fr * 0.09 + x * 0.02);
+  const breathe = 1;
+  const sway = 0;
+  void fr;
   const squash = 1;
   return (
     <div style={{ position: "absolute", left: x, top: floor - h - bob, height: h, transform: `translateX(-50%) scale(${pop * squash}, ${pop * breathe * (2 - squash)}) rotate(${rot + sway}deg)`, transformOrigin: "50% 100%", opacity: o }}>
@@ -299,9 +300,8 @@ const ShotM: React.FC<{ mode: string; dur: number; pre: number; kind?: "cloud" |
   const o = !pre ? 1 : kind === "cloud" ? (f0 < pre * 0.55 ? 0 : 1) : interpolate(f0, [0, pre], [0, 1], cl);
   return (
     <AbsoluteFill>
-      <AbsoluteFill style={{ opacity: o, transform: beatCam(f, dur, caps), transformOrigin: "540px 1450px" }}>
+      <AbsoluteFill style={{ opacity: o }}>
         <S t={t} f={Math.max(0, f)} dur={dur} lang={lang} />
-        {OUTDOOR.has(mode) && <DriftClouds f={f0} />}
       </AbsoluteFill>
       {pre > 0 && kind === "cloud" && f0 < pre * 1.3 && <CloudWipe p={f0 / (pre * 1.3)} />}
     </AbsoluteFill>
