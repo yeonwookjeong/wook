@@ -21,11 +21,14 @@ const SRC_H: Record<string, number> = {
   man_01: 257, man_02: 255, man_03: 254, man_04: 253, man_05: 251, man_06: 248, man_07: 251,
   woman_01: 308, woman_02: 304, woman_03: 306, woman_04: 301, woman_05: 302, woman_06: 298, woman_07: 302,
   c80_01: 481, c80_02: 496, c80_03: 492, c80_04: 476,
+  cw_01: 401, cw_02: 410, cw_03: 406, cw_04: 400, fly_01: 263, fly_02: 285, fly_03: 271,
 };
 const MAN_K = 640 / 257; // 남자 키 640px
 const WOMAN_K = 610 / 308; // 여자 키 610px
 const P: React.FC<{ pose: string; x: number; floor: number; s?: number; flip?: boolean; bob?: number; o?: number; pop?: number; rot?: number }> = ({ pose, x, floor, s = 1, flip, bob = 0, o = 1, pop = 1, rot = 0 }) => {
-  const k = pose === "c80_02" || pose === "c80_03" ? 640 / 496 : pose === "c80_01" || pose === "c80_04" ? 610 / 481 : pose.startsWith("man") ? MAN_K : WOMAN_K;
+  // 시트마다 그린 크기가 달라서 시트별 배율 (서 있는 키 기준: 남자 640, 여자 610)
+  const K: Record<string, number> = { c80_02: 640 / 496, c80_03: 640 / 496, c80_01: 610 / 481, c80_04: 610 / 481, cw_02: 640 / 410, cw_03: 640 / 410, cw_01: 610 / 401, cw_04: 610 / 401, fly_01: 640 / 256, fly_02: 640 / 256, fly_03: 640 / 256 };
+  const k = K[pose] ?? (pose.startsWith("man") ? MAN_K : WOMAN_K);
   const h = SRC_H[pose] * k * s;
   return (
     <div style={{ position: "absolute", left: x, top: floor - h - bob, height: h, transform: `translateX(-50%) scale(${pop}) rotate(${rot}deg)`, transformOrigin: "50% 100%", opacity: o }}>
@@ -95,7 +98,7 @@ const Wings: React.FC<{ x: number; y: number; flap: number; s?: number }> = ({ x
 };
 
 // ---------------------------------------------------------------- 장면
-type SceneProps = { t: number; f: number; dur: number };
+type SceneProps = { t: number; f: number; dur: number; lang?: Lang };
 const FLOOR_PARK = 1700;
 
 const Intro: React.FC<SceneProps> = ({ t, f }) => {
@@ -154,16 +157,21 @@ const Coin: React.FC<SceneProps> = ({ t, f }) => {
 };
 const Chicken: React.FC<SceneProps> = ({ t }) => <Stage bg="chicken_pub" z={lerp(1, 1.35, ease(t))} fx={540} fy={1350} />;
 const FLOOR_PUB = 1830;
-const Fly: React.FC<SceneProps> = ({ t, f }) => {
-  const up = Math.max(0, (t - 0.45) / 0.55);
-  const lift = ease(up) * 1500;
+// 닭 날개를 건넴 → 먹음 → 놀람 → 등에 날개가 돋음 → 떠오름 → 뒤돌아 날아감, 여자는 빈손으로 멍하니
+// 자막 박자에 맞춤: "So feed your partner wings"에서 건네고 먹음 → "fly off"에서 놀람·날개 돋음·떠오름 → "someone else"에서 날아감
+const FLY_BEATS: Record<Lang, number[]> = { en: [0.5, 0.58, 0.667, 0.72, 0.78, 0.833], es: [0.43, 0.57, 0.71, 0.76, 0.81, 0.857] };
+const Fly: React.FC<SceneProps> = ({ t, f, lang = "en" }) => {
+  const B = FLY_BEATS[lang];
+  const step = B.filter((b) => t >= b).length; // 0 = 그냥 앉아 있음
+  const rise = ease(interpolate(t, [B[4], B[5]], [0, 1], cl));
+  const away = ease(interpolate(t, [B[5], 1], [0, 1], cl));
+  const man = ["man_01", "man_01", "cw_02", "cw_03", "fly_01", "fly_02", "fly_03"][step];
+  const woman = step === 0 ? "woman_01" : step === 1 ? "cw_01" : step < 6 ? "woman_01" : "cw_04";
+  const bob = step === 5 ? Math.sin(f * 0.5) * 14 : 0;
   return (
     <Stage bg="chicken_pub" z={1.08} fy={1500}>
-      <P pose={t > 0.55 ? "woman_05" : "woman_07"} x={300} floor={FLOOR_PUB} />
-      <div style={{ position: "absolute", left: 0, top: -lift, width: 1080, height: 1920, transform: `rotate(${Math.sin(f * 0.3) * 4 * up}deg)`, transformOrigin: "780px 1500px" }}>
-        {up > 0 && <Wings x={790} y={FLOOR_PUB - 400} flap={Math.sin(f * 0.9)} s={0.9 + 0.2 * Math.min(1, up * 4)} />}
-        <P pose="man_07" x={780} floor={FLOOR_PUB} />
-      </div>
+      <P pose={woman} x={300} floor={FLOOR_PUB} />
+      <P pose={man} x={lerp(770, 1000, away)} floor={FLOOR_PUB - rise * 260 - away * 900} bob={bob} s={1 - away * 0.45} />
     </Stage>
   );
 };
@@ -258,7 +266,7 @@ const CapTrack: React.FC<{ caps: Cap[]; dur: number }> = ({ caps, dur }) => {
   );
 };
 
-const ShotM: React.FC<{ mode: string; dur: number; pre: number; kind?: "cloud" | "old" }> = ({ mode, dur, pre, kind }) => {
+const ShotM: React.FC<{ mode: string; dur: number; pre: number; kind?: "cloud" | "old"; lang: Lang }> = ({ mode, dur, pre, kind, lang }) => {
   const f0 = useCurrentFrame();
   const f = f0 - pre;
   const t = interpolate(f, [0, dur], [0, 1], cl);
@@ -268,7 +276,7 @@ const ShotM: React.FC<{ mode: string; dur: number; pre: number; kind?: "cloud" |
   return (
     <AbsoluteFill>
       <AbsoluteFill style={{ opacity: o }}>
-        <S t={t} f={Math.max(0, f)} dur={dur} />
+        <S t={t} f={Math.max(0, f)} dur={dur} lang={lang} />
       </AbsoluteFill>
       {pre > 0 && kind === "cloud" && f0 < pre * 1.3 && <CloudWipe p={f0 / (pre * 1.3)} />}
     </AbsoluteFill>
@@ -286,7 +294,7 @@ export const Ep04M: React.FC<{ lang?: Lang }> = ({ lang = "en" }) => {
         const pre = tr?.n ?? 0;
         return (
           <Sequence key={i} from={b.starts[i] - pre} durationInFrames={b.frames[i] + pre}>
-            <ShotM mode={shot.mode} dur={b.frames[i]} pre={pre} kind={tr?.kind} />
+            <ShotM mode={shot.mode} dur={b.frames[i]} pre={pre} kind={tr?.kind} lang={lang} />
             {(shot.sfx ?? []).map((fx, k) => (
               <Sequence key={k} from={pre + Math.round((fx.at ?? 0) * FPS)} layout="none">
                 <Audio src={staticFile(`sfx/${fx.name}.wav`)} volume={fx.vol ?? 0.4} />
