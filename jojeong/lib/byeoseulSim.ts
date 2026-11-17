@@ -316,7 +316,8 @@ export function walk(b: Board, l: Life, scene: Scene, door: Door): Life {
     track = out.to;
   }
   // Years pass: a step of seniority every other scene, besides what the door brought.
-  index += out.step + (scene.id === "exam" || first || l.steps.length % 2 === 1 ? 0 : 1);
+  // A setback is never softened by seniority, so the words and the move agree.
+  index += out.step + (scene.id === "exam" || first || out.step < 0 || l.steps.length % 2 === 1 ? 0 : 1);
   const top = TRACK[track].ladder.length - 1;
   const ceil = b.ceil[track];
   // Past the ceiling this chart reaches on this road, it goes no further.
