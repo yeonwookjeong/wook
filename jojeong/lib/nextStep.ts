@@ -2,7 +2,7 @@
 // page first where there is one, the paid report after (무료 → 무료 → 유료). The pages and their steps live here,
 // so a new free page is one more line. Each click is counted as `to:<from>` as well as `to_saju`, for the
 // owner's dashboard (which page actually sends people on).
-export const STEP_FROM = ["king", "court", "minister", "sinbun", "reading", "gukjeong", "ranking", "samjae", "today", "ilju", "column", "sinsal"] as const;
+export const STEP_FROM = ["king", "court", "minister", "sinbun", "reading", "gukjeong", "ranking", "samjae", "today", "ilju", "column", "sinsal", "byeoseul"] as const;
 export type StepFrom = (typeof STEP_FROM)[number];
 // The free pages that carry a result card to save or send (components/SaveCard.tsx), counted per page.
 export const SHARE_FROM: StepFrom[] = ["sinbun", "reading", "ilju", "sinsal"];
@@ -21,6 +21,7 @@ export const STEP_LABEL: Record<StepFrom, string> = {
   ilju: "60일주 사전",
   column: "사주 이야기 (칼럼)",
   sinsal: "신살 유형 테스트",
+  byeoseul: "벼슬길",
 };
 
 export type Step = { href: string; title: string; line?: string; seal?: string; kicker?: string; free?: boolean };
