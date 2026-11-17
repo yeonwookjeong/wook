@@ -55,6 +55,12 @@ export default function ByeoseulGame({ board, name }: { board: Board; name: stri
   const chartLife = lifeOf(board, board.exams[0], board.posts[board.exams[0]][0]);
   const life = exam && post ? lifeOf(board, exam, post) : null;
   const strayed = life !== null && life.off > 0;
+  // 첫 문은 달랐어도 그 뒤로 사주를 따른 길 (대표님 11/17): the exam picked, then the chart's post for that exam.
+  const examOff = exam !== null && exam !== board.exams[0];
+  const postOff = exam !== null && post !== null && post !== board.posts[exam][0];
+  const back = exam && examOff && postOff ? lifeOf(board, exam, board.posts[exam][0]) : null;
+  // Where the chosen road's chart-following part ended: the late return if there is one, else the road itself.
+  const returned = back ?? (examOff && !postOff ? life : null);
 
   return (
     <div className="mt-6 flex flex-col gap-6">
@@ -126,8 +132,29 @@ export default function ByeoseulGame({ board, name }: { board: Board; name: stri
 
           <p className="mt-6 font-myeongjo text-[13px] font-extrabold tracking-[0.2em] text-seal">第四關 · 終職</p>
           <div className="mt-2 flex flex-col gap-3">
-            <LifeCard life={life} name={name} label={strayed ? "그대가 고른 길" : "사주대로 걸은 길"} dark />
-            {strayed && <LifeCard life={chartLife} name={name} label="사주대로 갔다면" />}
+            <LifeCard
+              life={life}
+              name={name}
+              label={!strayed ? "사주대로 걸은 길" : examOff && !postOff ? "첫 문은 달랐지만, 그 뒤로 사주를 따른 길" : "그대가 고른 길"}
+              dark
+            />
+            {back && <LifeCard life={back} name={name} label="그 뒤로라도 사주를 따랐다면" />}
+            {strayed && <LifeCard life={chartLife} name={name} label="처음부터 사주대로 갔다면" />}
+            {returned && (
+              <p className="rounded-xl bg-white/60 px-4 py-3 text-[14px] leading-relaxed">
+                {returned.tier === chartLife.tier ? (
+                  <>
+                    첫 문이 달라 {returned.age - chartLife.age}년 늦게 출발했어도, 결을 되찾으니 <b>{END_TEXT[returned.post][returned.tier]}</b>까지 닿았사옵니다. 사주는
+                    늦는 길을 막지 않사옵니다.
+                  </>
+                ) : (
+                  <>
+                    첫 문이 달라 {returned.age - chartLife.age}년 늦었지만, 결을 되찾으니 <b>{END_TEXT[returned.post][returned.tier]}</b>까지는 올랐사옵니다. 늦게라도 제
+                    결로 돌아오면 길은 다시 열리옵니다.
+                  </>
+                )}
+              </p>
+            )}
           </div>
           <button
             type="button"
