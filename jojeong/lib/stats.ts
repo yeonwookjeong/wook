@@ -70,6 +70,7 @@ export async function track(
     | `tp:${string}`
     | `src:${string}`
     | `dx:${string}`
+    | `dl:${string}`
     | `sh:${string}`
     | `sv:${string}`
     | `sl:${string}`

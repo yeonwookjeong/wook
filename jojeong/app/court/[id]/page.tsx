@@ -10,6 +10,8 @@ import KingMatch from "@/components/KingMatch";
 import CourtBoard from "@/components/CourtBoard";
 import NextStep from "@/components/NextStep";
 import TrackLink from "@/components/TrackLink";
+import CourtGunghap from "@/components/CourtGunghap";
+import { josa } from "@/lib/josa";
 import Sillok from "@/components/Sillok";
 import PairHighlights from "@/components/PairHighlights";
 import SeatRow from "@/components/SeatRow";
@@ -158,6 +160,13 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
               ))}
             </ol>
           )}
+          {isOwner && seats.length > 0 && (
+            <CourtGunghap
+              from="court"
+              title={`${josa(byScore[0].minister.name, "과/와")} ${byScore[0].match.score}점, 두 사람 진짜 궁합은`}
+              line="궁합 보고서, 끌림과 부딪힘부터 앞으로 10년 함께할 때까지"
+            />
+          )}
 
           {isOwner && (
             <details className="group mt-3 rounded-2xl border-2 border-dashed border-ink/25 bg-white/40">
@@ -210,6 +219,7 @@ export default async function CourtPage({ params }: PageProps<"/court/[id]">) {
 
           {isOwner && (
             <ReportShelf
+              from="court"
               ids={["sinbun", "pyeongsaeng", "gunghap", "gukjeong", "yeonae"]}
               query={`court=${court.id}`}
               highlights={{

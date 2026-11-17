@@ -2,7 +2,7 @@ import { isAdmin } from "@/lib/admin";
 import { columnBySlug } from "@/lib/columns";
 import { saleLabel } from "@/lib/sales";
 import { isStepFrom } from "@/lib/nextStep";
-import { isBotUa, isDirectKind, isSource } from "@/lib/source";
+import { isBotUa, isDirectKind, isLanding, isSource } from "@/lib/source";
 import { currentMemberId } from "@/lib/members";
 import { noteMemberView } from "@/lib/store";
 import { ASK_FROM, CH_FROM, CLIENT_EVENTS, isFreeView, track, trackVisit, type AskFrom, type ChFrom, type ClientEvent } from "@/lib/stats";
@@ -11,7 +11,7 @@ import { ASK_FROM, CH_FROM, CLIENT_EVENTS, isFreeView, track, trackVisit, type A
 // or `view:<sale>` for a paid report's page (lib/sales.ts), or `cv:<slug>` for a column read (lib/columns.ts).
 // The owner's own browsing is not counted.
 export async function POST(request: Request) {
-  const body = (await request.json().catch(() => null)) as { v?: Record<string, unknown>; e?: string; from?: string; to?: string; src?: string; dx?: string } | null;
+  const body = (await request.json().catch(() => null)) as { v?: Record<string, unknown>; e?: string; from?: string; to?: string; src?: string; dx?: string; dl?: string } | null;
   if (!body || (await isAdmin()) || isBotUa(request.headers.get("user-agent") ?? "")) return new Response(null, { status: 204 });
   if (body.v) {
     const v = body.v;
@@ -20,6 +20,8 @@ export async function POST(request: Request) {
     if (v.ever === true && isSource(body.src)) await track(`src:${body.src}`);
     // A new browser counted as "direct": which kind of browser it was (lib/source.ts directKind).
     if (v.ever === true && body.src === "direct" && isDirectKind(body.dx)) await track(`dx:${body.dx}`);
+    // …and the page it first landed on, which says more of the road than the browser (from 11/16).
+    if (v.ever === true && body.src === "direct" && isLanding(body.dl)) await track(`dl:${body.dl}`);
   } else if (CLIENT_EVENTS.includes(body.e as ClientEvent)) {
     await track(body.e as ClientEvent);
     // A step out of a free page also counts for that page.

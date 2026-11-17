@@ -2,6 +2,8 @@ import { ASK_OPEN } from "@/lib/members";
 import type { MetadataRoute } from "next";
 import { siteUrl } from "@/lib/brand";
 import { publishedColumns } from "@/lib/columns";
+import { intlColumns } from "@/lib/intl/columns";
+import { EN_READINGS } from "@/lib/en/catalog";
 import { SHELF } from "@/lib/products";
 
 // Refreshed hourly: columns open on their dates.
@@ -23,6 +25,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...(ASK_OPEN ? [page("/ask", 0.7)] : []),
     // Each column with its day, so a crawler knows which ones are new.
     ...publishedColumns().map((c) => ({ ...page(`/column/${c.slug}`, 0.6), lastModified: new Date(`${c.date}T00:00:00+09:00`) })),
+    // English and Japanese (2026-11-16): the homes, the reading pages and the columns.
+    ...(["en", "ja"] as const).flatMap((l) => [
+      page(`/${l}`, 0.7),
+      page(`/${l}/column`, 0.6),
+      ...EN_READINGS.map((r) => page(`/${l}/readings/${r.id}`, 0.5)),
+      ...intlColumns(l).map((c) => ({ ...page(`/${l}/column/${c.slug}`, 0.6), lastModified: new Date(`${c.date}T00:00:00+09:00`) })),
+    ]),
+    page("/en/name", 0.6),
     page("/about", 0.5),
     page("/terms", 0.2),
     page("/refund", 0.2),
