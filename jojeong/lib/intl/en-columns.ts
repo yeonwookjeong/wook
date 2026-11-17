@@ -276,14 +276,14 @@ export const EN_COLUMNS: IntlColumn[] = [
     slug: "what-is-saju",
     ko: "culture-what-is-saju",
     noKo: true,
-    title: "What is saju? Korea's four pillars of destiny, where they came from and how Koreans use them today",
-    summary: "Saju is the Korean way of reading a life from the moment of birth. Where it came from, how Joseon's royal observatory used it, and why Koreans still check it before a wedding, a move or a new year.",
+    title: "What Is Saju? Korean Fortune Telling and the Four Pillars, Explained",
+    summary: "Saju is Korean fortune telling based on the four pillars of your birth. What saju means, where it came from, and why Koreans still check it before a wedding, a move or a new year.",
     date: "2026-11-17",
     points: ["What saju is, in one minute", "Its roots in the old Chinese calendar and in Joseon's royal observatory", "How Koreans live with it today, from weddings to saju cafés"],
     body: [
       {
         t: "p",
-        text: "If you have watched a Korean drama, you may have seen it: a mother takes a couple's birth dates to a fortune teller before the wedding, or a friend says someone was born with a “good palja”. Both are about saju (사주), the Korean way of reading a life from the moment of birth. It is not a passing trend. Koreans have used it for centuries, and many still open a saju reading at the start of each year the way others check the weather before a trip.",
+        text: "If you have watched a Korean drama, you may have seen it: a mother takes a couple's birth dates to a fortune teller before the wedding, or a friend says someone was born with a “good palja”. Both are about saju (사주), Korean fortune telling based on the moment you were born. It isn't a fad. Koreans have been doing this for centuries, and plenty of people still get a reading every January, the way you'd check the forecast before a trip.",
       },
       { t: "h2", text: "Saju in one minute" },
       {
@@ -306,7 +306,7 @@ export const EN_COLUMNS: IntlColumn[] = [
       },
       {
         t: "p",
-        text: "Reading a person's life from the stems and branches of their birth grew slowly over many centuries. The method used in Korea today took its shape in Song dynasty China, around a thousand years ago, when the character of the birth day began to be read as the person themself. That method carries the name of the scholar it is credited to, Xu Ziping, and the classic handbooks Koreans still study, such as the Yeonhae Japyeong, the Japyeong Jinjeon and the Jeokcheonsu, all build on it.",
+        text: "Using those characters to read a person's life came later, and slowly. The method Korea uses today took shape in Song dynasty China, around a thousand years ago, when the character of the birth day began to be read as the person themself. That method carries the name of the scholar it is credited to, Xu Ziping, and the classic handbooks Koreans still study, such as the Yeonhae Japyeong, the Japyeong Jinjeon and the Jeokcheonsu, all build on it.",
       },
       { t: "h2", text: "Saju at the Joseon court" },
       {
@@ -315,7 +315,7 @@ export const EN_COLUMNS: IntlColumn[] = [
       },
       {
         t: "p",
-        text: "That history is why saju in Korea sits closer to scholarship than to a party trick. It has its own classic texts, its own vocabulary and its own long arguments between schools, much like any old discipline.",
+        text: "So in Korea, saju feels less like a party trick and more like an old craft. It has textbooks, jargon, and schools that still argue with each other.",
       },
       { t: "h2", text: "How Koreans use saju today" },
       {
@@ -331,7 +331,7 @@ export const EN_COLUMNS: IntlColumn[] = [
       { t: "h2", text: "Palja in everyday speech" },
       {
         t: "p",
-        text: "You can hear saju in ordinary Korean even from people who never get a reading. “Palja ga jota” (팔자가 좋다), “his palja is good”, means someone lives an easy, lucky life. “Palja reul gochida” (팔자를 고치다), “to fix one's palja”, means to change one's fortune, often through a big win or a marriage. “Palja sogwan” (팔자소관) means “it was in my palja”, said with a shrug when something could not be helped.",
+        text: "Even Koreans who have never had a reading use the word. “Palja ga jota” (팔자가 좋다), “his palja is good”, means someone lives an easy, lucky life. “Palja reul gochida” (팔자를 고치다), “to fix one's palja”, means to change one's fortune, often through a big win or a marriage. “Palja sogwan” (팔자소관) means “it was in my palja”, said with a shrug when something could not be helped.",
       },
       { t: "h2", text: "Saju, BaZi and Western astrology" },
       {
@@ -345,7 +345,7 @@ export const EN_COLUMNS: IntlColumn[] = [
       { t: "h2", text: "Is it fate?" },
       {
         t: "p",
-        text: "Most Korean readers would say no, not in the sense of a sentence already written. A saju chart is read more like a climate than a script. It tells you whether you were born in a dry summer or a cold winter, which seasons will feel easy and which will feel heavy. What you plant, and when, is still up to you. That is also why Koreans return to it at turning points rather than every day: it is a way to think about timing, not a replacement for choosing.",
+        text: "Ask a Korean reader and most will say no, at least not in the sense of a script that's already written. They read a chart more like a climate. It tells you whether you were born in a dry summer or a cold winter, which seasons will feel easy and which will feel heavy. What you plant, and when, is still up to you. That's also why people come back to it at turning points, not every day. It helps you think about timing. It doesn't make the choice for you.",
       },
       {
         t: "qa",
