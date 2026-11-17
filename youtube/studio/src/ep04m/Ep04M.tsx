@@ -75,13 +75,15 @@ const Heart: React.FC<{ x: number; y: number; s: number; crack: number }> = ({ x
   );
 };
 
-// 민화풍 날개 (코드 그림, 퍼덕임)
+// 민화풍 날개 (코드 그림, 퍼덕임). 한 장을 그려 좌우로 뒤집어 붙인다 → 크기·높이·각도가 항상 대칭
 const Wings: React.FC<{ x: number; y: number; flap: number; s?: number }> = ({ x, y, flap, s = 1 }) => {
   const wing = (side: -1 | 1) => (
-    <svg width={260} height={200} viewBox="0 0 260 200" style={{ position: "absolute", left: side < 0 ? -200 : -60, top: -100, transform: `scaleX(${side}) rotate(${-flap * 22}deg)`, transformOrigin: "10px 120px" }}>
-      <path d="M10 120 C30 40 120 0 240 20 C210 40 230 50 200 64 C220 74 200 86 172 92 C186 104 160 112 138 114 C140 130 100 134 80 130 C60 150 30 148 10 120 Z" fill="#fbf6ec" stroke={INK} strokeWidth={7} strokeLinejoin="round" />
-      <path d="M50 110 C90 80 140 60 200 50 M60 124 C100 104 130 96 168 92" stroke="#c9bba4" strokeWidth={5} fill="none" strokeLinecap="round" />
-    </svg>
+    <div key={side} style={{ position: "absolute", left: side * 40, top: 0, transform: `scaleX(${side})` }}>
+      <svg width={260} height={200} viewBox="0 0 260 200" style={{ position: "absolute", left: -10, top: -120, transform: `rotate(${-flap * 18}deg)`, transformOrigin: "10px 120px", overflow: "visible" }}>
+        <path d="M10 120 C30 40 120 0 240 20 C210 40 230 50 200 64 C220 74 200 86 172 92 C186 104 160 112 138 114 C140 130 100 134 80 130 C60 150 30 148 10 120 Z" fill="#fbf6ec" stroke={INK} strokeWidth={7} strokeLinejoin="round" />
+        <path d="M50 110 C90 80 140 60 200 50 M60 124 C100 104 130 96 168 92" stroke="#c9bba4" strokeWidth={5} fill="none" strokeLinecap="round" />
+      </svg>
+    </div>
   );
   return (
     <div style={{ position: "absolute", left: x, top: y, transform: `scale(${s})` }}>
@@ -175,12 +177,13 @@ const Split: React.FC<SceneProps> = ({ t, f, dur }) => {
     </Stage>
   );
 };
-const Court: React.FC<SceneProps> = ({ t }) => <Stage bg="stonewall_old" z={lerp(1.45, 1.6, t)} fx={760} fy={1450} />;
+const BW: React.CSSProperties = { filter: "grayscale(1) sepia(0.15) contrast(1.05)" };
+const Court: React.FC<SceneProps> = ({ t }) => <div style={{ ...BW, position: "absolute", inset: 0 }}><Stage bg="stonewall_old" z={lerp(1.45, 1.6, t)} fx={760} fy={1450} /></div>;
 const Gone: React.FC<SceneProps> = ({ t }) => {
   const k = interpolate(t, [0.25, 0.85], [0, 1], cl);
   return (
     <>
-      <Stage bg="stonewall_old" z={1.6} fx={760} fy={1450} />
+      <div style={{ ...BW, position: "absolute", inset: 0 }}><Stage bg="stonewall_old" z={1.6} fx={760} fy={1450} /></div>
       <Stage bg="stonewall" z={lerp(1.6, 1.15, ease(k))} fx={760} fy={1450} o={k} />
     </>
   );
