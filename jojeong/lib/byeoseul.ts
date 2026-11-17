@@ -136,6 +136,8 @@ export type Board = {
   trial: Trial;
   age: number;
   strength: Reading["strength"];
+  // What the 일대기 scenes are told from (lib/byeoseulStory.ts).
+  story: { season: Reading["season"]; strong: boolean; dayStem: number; dayBranch: number; gyeok: TenGod };
 };
 
 const ranked = <K extends string>(m: Record<K, number>) => (Object.keys(m) as K[]).sort((a, b) => m[b] - m[a]);
@@ -144,7 +146,14 @@ export function boardOf(p: Pillars, daeun: Daeun[], birthYear: number): Board | 
   const f = factsOf(p);
   if (!f) return null;
   const posts = Object.fromEntries(EXAMS.map((e) => [e, ranked(postFit(f, e))])) as Record<Exam, Post[]>;
-  return { exams: ranked(examFit(f)), posts, trial: trialOf(f, p), age: passAge(f, p, daeun, birthYear), strength: f.r.strength };
+  return {
+    exams: ranked(examFit(f)),
+    posts,
+    trial: trialOf(f, p),
+    age: passAge(f, p, daeun, birthYear),
+    strength: f.r.strength,
+    story: { season: f.r.season, strong: f.r.strength === "신강" || f.r.strength === "극신강", dayStem: p.dayStem, dayBranch: p.dayBranch, gyeok: f.r.gyeok },
+  };
 }
 
 export type Life = { exam: Exam; post: Post; trial: Trial; age: number; tier: Tier; off: number };
