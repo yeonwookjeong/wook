@@ -7,7 +7,7 @@ export const EN_COLUMNS: IntlColumn[] = [
   {
     slug: "how-to-read-a-saju-chart",
     ko: "eight-cells",
-    title: "How to read a saju chart: the four pillars and eight characters, explained",
+    title: "Saju Chart: How to Read the Four Pillars and Eight Characters",
     summary: "A first guide to the Korean saju chart: what the four pillars are, what each of the eight characters stands for, the five elements, and which character is you.",
     date: "2026-11-16",
     points: ["What the four pillars and eight characters are", "What each of the eight cells looks at", "The five elements, and the one character that is you"],
@@ -81,7 +81,7 @@ export const EN_COLUMNS: IntlColumn[] = [
   {
     slug: "day-pillar-meaning",
     ko: "ilju",
-    title: "Your day pillar in saju: the one pillar that stands for you",
+    title: "Day Pillar Meaning in Saju: The One Pillar That Stands for You",
     summary: "Why the day pillar (ilju) is the heart of a saju chart, what its top and bottom characters mean, and why Koreans ask “what’s your ilju?” the way others ask about star signs.",
     date: "2026-11-16",
     points: ["Why the day pillar matters most", "The day master and the spouse seat", "Why there are sixty day pillars, and what they are not"],
@@ -130,7 +130,7 @@ export const EN_COLUMNS: IntlColumn[] = [
   {
     slug: "zodiac-year-starts-at-ipchun",
     ko: "ipchun-tti",
-    title: "Your Korean zodiac animal may be wrong: the saju year starts at ipchun, around February 4",
+    title: "Korean Zodiac Year Starts at Ipchun, Not January 1: Check Your Real Animal",
     summary: "In saju the year turns at ipchun, the start of spring, not on January 1 or the Lunar New Year. Who is affected, and why the month changes on solar terms too.",
     date: "2026-11-16",
     points: ["When the saju year really begins", "Who should check their animal again", "Why months change on solar terms, not on the 1st"],
@@ -177,7 +177,7 @@ export const EN_COLUMNS: IntlColumn[] = [
   {
     slug: "unknown-birth-time",
     ko: "unknown-hour",
-    title: "Don’t know your birth time? What a saju reading can still see",
+    title: "Saju Without Birth Time: What a Four Pillars Reading Can Still Show",
     summary: "Without the hour, a saju chart keeps six of its eight characters, including the one that stands for you. What is lost, what remains, and how to narrow down the hour.",
     date: "2026-11-16",
     points: ["What the hour pillar adds", "What six characters can still tell", "How to narrow down a birth time"],
@@ -226,7 +226,7 @@ export const EN_COLUMNS: IntlColumn[] = [
   {
     slug: "korean-compatibility-gunghap",
     ko: "gunghap-basics",
-    title: "Gunghap, Korean compatibility reading: how two saju charts are read together",
+    title: "Korean Compatibility Reading (Gunghap): How Saju Reads Two Charts Together",
     summary: "What Koreans mean by gunghap, why couples check it before a wedding, and the main things it compares: the day pillars, the five elements, and the pulls and clashes between characters.",
     date: "2026-11-16",
     points: ["What gunghap is, and why it matters in Korea", "What two charts are compared on", "What a gunghap can and cannot say"],
@@ -269,6 +269,98 @@ export const EN_COLUMNS: IntlColumn[] = [
         t: "qa",
         q: "Can a gunghap say we should break up?",
         a: "No. It describes how two people meet: where it is easy, where it rubs. What you do with that is yours.",
+      },
+    ],
+  },
+  {
+    slug: "what-is-saju",
+    ko: "culture-what-is-saju",
+    noKo: true,
+    title: "What Is Saju? Korean Fortune Telling and the Four Pillars, Explained",
+    summary: "Saju is Korean fortune telling based on the four pillars of your birth. What saju means, where it came from, and why Koreans still check it before a wedding, a move or a new year.",
+    date: "2026-11-17",
+    points: ["What saju is, in one minute", "Its roots in the old Chinese calendar and in Joseon's royal observatory", "How Koreans live with it today, from weddings to saju cafés"],
+    body: [
+      {
+        t: "p",
+        text: "If you have watched a Korean drama, you may have seen it: a mother takes a couple's birth dates to a fortune teller before the wedding, or a friend says someone was born with a “good palja”. Both are about saju (사주), Korean fortune telling based on the moment you were born. It isn't a fad. Koreans have been doing this for centuries, and plenty of people still get a reading every January, the way you'd check the forecast before a trip.",
+      },
+      { t: "h2", text: "Saju in one minute" },
+      {
+        t: "p",
+        text: "Saju means “four pillars”. Your birth is written as four moments, the year, the month, the day and the hour, and each moment is written with two characters from an old calendar. Four pillars of two characters make eight characters, so saju is also called palja (팔자), “the eight characters”.",
+      },
+      {
+        t: "p",
+        text: "Each of those characters belongs to one of five elements: wood, fire, earth, metal and water. Reading a saju means looking at how those elements lean against one another: which are plentiful, which are missing, which clash and which support. From that balance a reader talks about temperament, work, relationships and the tides of luck that turn every ten years and every year.",
+      },
+      {
+        t: "term",
+        k: "Saju (사주) and palja (팔자)",
+        v: "Two names for the same chart. Saju counts the four pillars; palja counts the eight characters. In everyday Korean, palja also simply means one's lot in life.",
+      },
+      { t: "h2", text: "Where it came from: a calendar older than paper" },
+      {
+        t: "p",
+        text: "The characters of a saju chart come from the sexagenary cycle: ten heavenly stems and twelve earthly branches, paired into sixty combinations. China used this cycle to count days for well over three thousand years; it already appears on oracle bones of the Shang dynasty. The twelve branches are the same twelve animals of the East Asian zodiac.",
+      },
+      {
+        t: "p",
+        text: "Using those characters to read a person's life came later, and slowly. The method Korea uses today took shape in Song dynasty China, around a thousand years ago, when the character of the birth day began to be read as the person themself. That method carries the name of the scholar it is credited to, Xu Ziping, and the classic handbooks Koreans still study, such as the Yeonhae Japyeong, the Japyeong Jinjeon and the Jeokcheonsu, all build on it.",
+      },
+      { t: "h2", text: "Saju at the Joseon court" },
+      {
+        t: "p",
+        text: "In Korea, saju was not only folk practice. The Joseon dynasty (1392 to 1897) ran a royal observatory, the Gwansanggam, which watched the sky, kept the calendar and chose auspicious days. One of its fields was myeonggwahak, the study of fate calculation. Officials for it were chosen through a state examination for specialists, and their work included reading the birth charts of the royal family and selecting days for royal weddings and ceremonies.",
+      },
+      {
+        t: "p",
+        text: "So in Korea, saju feels less like a party trick and more like an old craft. It has textbooks, jargon, and schools that still argue with each other.",
+      },
+      { t: "h2", text: "How Koreans use saju today" },
+      {
+        t: "list",
+        items: [
+          "Before a wedding: gunghap (궁합), comparing two charts to see where a couple fits easily and where they rub.",
+          "Choosing dates: weddings, openings and especially moving house. Many Koreans still move on a “son eomneun nal” (손 없는 날), a day traditionally free of wandering spirits, and moving companies are often booked out, and pricier, on those days.",
+          "At the new year: reading the year's fortune, either from a full saju or from the Tojeong Bigyeol, a simpler fortune book traditionally credited to the 16th century scholar Yi Ji-ham.",
+          "Naming a baby: some parents choose Hanja characters whose elements balance the child's chart.",
+          "For fun: saju cafés in neighbourhoods like Hongdae, where friends get readings over coffee, and saju apps on almost every phone.",
+        ],
+      },
+      { t: "h2", text: "Palja in everyday speech" },
+      {
+        t: "p",
+        text: "Even Koreans who have never had a reading use the word. “Palja ga jota” (팔자가 좋다), “his palja is good”, means someone lives an easy, lucky life. “Palja reul gochida” (팔자를 고치다), “to fix one's palja”, means to change one's fortune, often through a big win or a marriage. “Palja sogwan” (팔자소관) means “it was in my palja”, said with a shrug when something could not be helped.",
+      },
+      { t: "h2", text: "Saju, BaZi and Western astrology" },
+      {
+        t: "p",
+        text: "BaZi (八字), the Chinese name, means the same eight characters, and the core method is shared. What differs is the language and the culture around it: Korean readers use Korean terms, put weight on gunghap and date choosing, and many Koreans still count birthdays by the lunar calendar, which a saju reader converts before reading.",
+      },
+      {
+        t: "p",
+        text: "Western astrology starts from the positions of the planets at birth. Saju does not use the planets at all. It works from the calendar itself: the year, the month by the solar seasons, the day and the two-hour period of birth. Two people born on the same day in the same place share most of a chart, and only the hour separates them.",
+      },
+      { t: "h2", text: "Is it fate?" },
+      {
+        t: "p",
+        text: "Ask a Korean reader and most will say no, at least not in the sense of a script that's already written. They read a chart more like a climate. It tells you whether you were born in a dry summer or a cold winter, which seasons will feel easy and which will feel heavy. What you plant, and when, is still up to you. That's also why people come back to it at turning points, not every day. It helps you think about timing. It doesn't make the choice for you.",
+      },
+      {
+        t: "qa",
+        q: "Do I need to be Korean to have a saju?",
+        a: "No. Anyone with a birth date has one. The chart only needs the date, ideally the time, and the place, so the time can be set to local solar time.",
+      },
+      {
+        t: "qa",
+        q: "What if I do not know my birth time?",
+        a: "Six of the eight characters can still be read. Our guide on reading a chart without a birth time explains what changes and what stays.",
+      },
+      {
+        t: "qa",
+        q: "Where do I start?",
+        a: "Start with the chart itself: our guide to reading a saju chart walks through the four pillars and the eight characters one cell at a time.",
       },
     ],
   },

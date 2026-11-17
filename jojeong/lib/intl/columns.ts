@@ -16,7 +16,10 @@ export type IntlBlock =
 
 export type IntlColumn = {
   slug: string;
+  // The Korean column it grew from; for a culture piece written only for readers abroad, the key shared by its
+  // English and Japanese versions, with `noKo` set so no Korean hreflang is claimed.
   ko: string;
+  noKo?: true;
   title: string;
   summary: string;
   // YYYY-MM-DD (KST), the day it goes public.
