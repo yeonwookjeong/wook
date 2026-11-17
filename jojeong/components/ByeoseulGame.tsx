@@ -117,7 +117,7 @@ function Gyoji({ life, name, b }: { life: Life; name: string; b: Board }) {
         <span className="text-ink-soft">사관의 평</span>
         <p className="mt-1 font-myeongjo text-[15px] font-bold">&ldquo;{verdict(b)}&rdquo;</p>
       </div>
-      <span className="animate-stamp absolute right-4 bottom-4 flex size-14 rotate-[-8deg] items-center justify-center border-[3px] border-seal font-myeongjo text-[15px] leading-tight font-extrabold text-seal opacity-85">
+      <span className="animate-stamp absolute top-4 right-4 flex size-12 rotate-[-8deg] items-center justify-center border-[3px] border-seal font-myeongjo text-[15px] leading-tight font-extrabold text-seal opacity-85">
         御寶
       </span>
     </div>
