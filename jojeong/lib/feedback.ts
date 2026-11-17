@@ -2,14 +2,14 @@ import "server-only";
 import { changeCredits } from "./members";
 import { covers, getOrder } from "./pay";
 import { productById, type ProductId } from "./products";
-import { deleteFeedbackRaw, feedbackKeys, getFeedbackRaw, getFeedbacksRaw, setFeedbackRaw } from "./store";
+import { deleteFeedbackRaw, feedbackKeys, getFeedbackRaw, getFeedbacksRaw, getPublicReviewsRaw, setFeedbackRaw, setPublicReviewsRaw } from "./store";
 
 // How a bought report was liked: what the buyer liked, and whether it may be shown as a review (no name, only with
 // that tick). Kept per order and report; the order id is the buyer's own link, so only they reach it. Since
 // 2026-10-28 only liking is asked (a complaint goes to 문의하기), and a line of REWARD_MIN letters or more brings one
 // question for 정 훈도 (`rewarded`: given, to `member`), once per bought order. `up` false: an old 👎, kept from
 // buyers' eyes.
-export type Feedback = { order: string; product: ProductId; up: boolean; text: string; share: boolean; at: number; member?: string; rewarded?: boolean };
+export type Feedback = { order: string; product: ProductId; up: boolean; text: string; share: boolean; at: number; member?: string; rewarded?: boolean; shown?: boolean };
 import { FEEDBACK_MAX, rewardLength } from "./feedbackLimits";
 export { FEEDBACK_MAX, rewardLength };
 export const REWARD_MIN = 30;
@@ -59,4 +59,30 @@ export async function deleteDownFeedback(): Promise<number> {
 export async function listFeedback(limit = 200): Promise<Feedback[]> {
   const keys = [...new Set((await feedbackKeys().catch(() => [])).slice(-limit))].reverse();
   return (await getFeedbacksRaw(keys).catch(() => [])).flatMap((r) => parse(r) ?? []);
+}
+
+// ── Reviews on the site (2026-11-17 대표님, 사주아이처럼): only a 👍 the buyer agreed to share, and only once the
+// owner has put it up from the admin page. No name; a review that brought a question says so, as a review given
+// for something must (공정위 추천·보증 심사지침).
+export type PublicReview = { key: string; product: ProductId; text: string; at: number; rewarded: boolean };
+
+export async function publicReviews(): Promise<PublicReview[]> {
+  try {
+    const raw = await getPublicReviewsRaw();
+    return raw ? (JSON.parse(raw) as PublicReview[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function setReviewShown(order: string, product: string, on: boolean): Promise<void> {
+  const f = await getFeedback(order, product);
+  if (!f) return;
+  const key = keyOf(order, product);
+  const ok = on && f.up && f.share && f.text.trim().length > 0;
+  const list = (await publicReviews()).filter((r) => r.key !== key);
+  if (ok) list.push({ key, product: f.product, text: f.text.trim(), at: f.at, rewarded: Boolean(f.rewarded) });
+  list.sort((a, b) => b.at - a.at);
+  await setPublicReviewsRaw(JSON.stringify(list));
+  await setFeedbackRaw(key, JSON.stringify({ ...f, shown: ok }), false);
 }
