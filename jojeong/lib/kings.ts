@@ -3,7 +3,7 @@ import { josa } from "./josa";
 import { BRANCHES, BRANCHES_KO, ELEMENTS_KO, matchPillars, STEMS, STEMS_KO, type Pillars } from "./saju";
 
 // Lunar birthdays from the Annals, cross-checked against at least one published solar date each where available.
-const RAW: { name: string; lunar: [number, number, number]; note: string }[] = [
+export const KING_BIRTHS: { name: string; lunar: [number, number, number]; note: string }[] = [
   { name: "태조", lunar: [1335, 10, 11], note: "조선을 세운 개국 군주" },
   // Jeongjong Sillok yr 1 & 2: birthday court on 7/1 (kba_10107001_001). The often-cited 7/18 is lunar 7/1 converted to Julian, not a lunar date.
   { name: "정종", lunar: [1357, 7, 1], note: "왕위를 동생 태종에게 넘긴 조선 2대 왕" },
@@ -36,7 +36,7 @@ const RAW: { name: string; lunar: [number, number, number]; note: string }[] = [
 
 export type HistoricKing = { name: string; note: string; dayStem: number; dayBranch: number };
 
-export const KINGS: HistoricKing[] = RAW.map(({ name, note, lunar: [y, m, d] }) => {
+export const KINGS: HistoricKing[] = KING_BIRTHS.map(({ name, note, lunar: [y, m, d] }) => {
   const ec = Lunar.fromYmdHms(y, m, d, 12, 0, 0).getEightChar();
   return {
     name,

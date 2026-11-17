@@ -11,7 +11,7 @@ import { trackEvent } from "./VisitBeacon";
 // over paying, a bought report, the room, the owner's pages, a friend's link or a reading on screen, nor on the 도감
 // game itself (seeing it counts as seen). `gift`: the questions a Kakao sign-up brings, shown under it to non-members.
 // 벼슬길은 팝업 없이 바로 게임으로 (대표님 11/17).
-const QUIET = ["/byeoseul", "/ask", "/pay", "/admin", "/login", "/r/", "/my", "/leave", "/logout", "/e/", "/s/"];
+const QUIET = ["/byeoseul", "/star", "/ask", "/pay", "/admin", "/login", "/r/", "/my", "/leave", "/logout", "/e/", "/s/"];
 // Bumped when the notice changes (2026-10-27: 신살 도감 → 신살 유형 테스트; 2026-11-14: → 왕이 될 사주), so those who saw
 // the old one see it once more.
 const SEEN = "king1";
