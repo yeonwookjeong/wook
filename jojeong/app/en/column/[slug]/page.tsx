@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: PageProps<"/en/column/[slug]"
     description: c.summary,
     alternates: {
       canonical: `/en/column/${c.slug}`,
-      languages: { en: `/en/column/${c.slug}`, ko: `/column/${c.ko}`, ...(other && { ja: `/ja/column/${other.slug}` }) },
+      languages: { en: `/en/column/${c.slug}`, ...(!c.noKo && { ko: `/column/${c.ko}` }), ...(other && { ja: `/ja/column/${other.slug}` }) },
     },
     openGraph: { type: "article", url: `/en/column/${c.slug}`, siteName: SITE_NAME, locale: UI.en.locale, title: c.title, description: c.summary, publishedTime: c.date },
   };
