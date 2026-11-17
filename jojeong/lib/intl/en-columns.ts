@@ -7,7 +7,7 @@ export const EN_COLUMNS: IntlColumn[] = [
   {
     slug: "how-to-read-a-saju-chart",
     ko: "eight-cells",
-    title: "How to read a saju chart: the four pillars and eight characters, explained",
+    title: "Saju Chart: How to Read the Four Pillars and Eight Characters",
     summary: "A first guide to the Korean saju chart: what the four pillars are, what each of the eight characters stands for, the five elements, and which character is you.",
     date: "2026-11-16",
     points: ["What the four pillars and eight characters are", "What each of the eight cells looks at", "The five elements, and the one character that is you"],
@@ -81,7 +81,7 @@ export const EN_COLUMNS: IntlColumn[] = [
   {
     slug: "day-pillar-meaning",
     ko: "ilju",
-    title: "Your day pillar in saju: the one pillar that stands for you",
+    title: "Day Pillar Meaning in Saju: The One Pillar That Stands for You",
     summary: "Why the day pillar (ilju) is the heart of a saju chart, what its top and bottom characters mean, and why Koreans ask “what’s your ilju?” the way others ask about star signs.",
     date: "2026-11-16",
     points: ["Why the day pillar matters most", "The day master and the spouse seat", "Why there are sixty day pillars, and what they are not"],
@@ -130,7 +130,7 @@ export const EN_COLUMNS: IntlColumn[] = [
   {
     slug: "zodiac-year-starts-at-ipchun",
     ko: "ipchun-tti",
-    title: "Your Korean zodiac animal may be wrong: the saju year starts at ipchun, around February 4",
+    title: "Korean Zodiac Year Starts at Ipchun, Not January 1: Check Your Real Animal",
     summary: "In saju the year turns at ipchun, the start of spring, not on January 1 or the Lunar New Year. Who is affected, and why the month changes on solar terms too.",
     date: "2026-11-16",
     points: ["When the saju year really begins", "Who should check their animal again", "Why months change on solar terms, not on the 1st"],
@@ -177,7 +177,7 @@ export const EN_COLUMNS: IntlColumn[] = [
   {
     slug: "unknown-birth-time",
     ko: "unknown-hour",
-    title: "Don’t know your birth time? What a saju reading can still see",
+    title: "Saju Without Birth Time: What a Four Pillars Reading Can Still Show",
     summary: "Without the hour, a saju chart keeps six of its eight characters, including the one that stands for you. What is lost, what remains, and how to narrow down the hour.",
     date: "2026-11-16",
     points: ["What the hour pillar adds", "What six characters can still tell", "How to narrow down a birth time"],
@@ -226,7 +226,7 @@ export const EN_COLUMNS: IntlColumn[] = [
   {
     slug: "korean-compatibility-gunghap",
     ko: "gunghap-basics",
-    title: "Gunghap, Korean compatibility reading: how two saju charts are read together",
+    title: "Korean Compatibility Reading (Gunghap): How Saju Reads Two Charts Together",
     summary: "What Koreans mean by gunghap, why couples check it before a wedding, and the main things it compares: the day pillars, the five elements, and the pulls and clashes between characters.",
     date: "2026-11-16",
     points: ["What gunghap is, and why it matters in Korea", "What two charts are compared on", "What a gunghap can and cannot say"],
