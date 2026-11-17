@@ -23,7 +23,7 @@ function Row({ list, reverse }: { list: PublicReview[]; reverse?: boolean }) {
   // The list twice in a row, moved by half its width: an endless line with no seam.
   const sec = Math.max(30, list.length * 7);
   return (
-    <div className="review-row overflow-hidden">
+    <div className="review-row w-full min-w-0 overflow-hidden">
       <div className={`review-track flex w-max gap-3 ${reverse ? "review-reverse" : ""}`} style={{ animationDuration: `${sec}s` }}>
         {[...list, ...list].map((r, i) => (
           <Card key={`${r.key}-${i}`} r={r} />
@@ -41,7 +41,7 @@ export default async function ReviewStrip({ product, className = "" }: { product
   const two = list.length >= 8;
   const half = Math.ceil(list.length / 2);
   return (
-    <section aria-label="손님 후기" className={className}>
+    <section aria-label="손님 후기" className={`min-w-0 overflow-hidden ${className}`}>
       <p className="mb-2.5 text-center text-[13px] text-ink-soft">
         {own.length >= MIN ? "이 보고서를 받아 본 분들의 후기" : "보고서를 받아 본 분들의 후기"} <b className="text-seal">{list.length}</b>
       </p>

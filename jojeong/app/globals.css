@@ -130,6 +130,10 @@ p, li, dd, blockquote {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
 }
+/* The row takes no width from its cards, so the long track never widens the page around it. */
+.review-row {
+  contain: inline-size;
+}
 .review-track {
   animation: review-flow 40s linear infinite;
 }
