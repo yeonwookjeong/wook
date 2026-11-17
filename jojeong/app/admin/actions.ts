@@ -5,7 +5,7 @@ import { refresh } from "next/cache";
 import { isAdmin, setPreview, signIn, signOut } from "@/lib/admin";
 import { isGiftable, originNow } from "@/lib/gift";
 import { createGiftOrder, getOrder, giveBonus, markTestOrder, revokeGiftOrder, rewriteReport } from "@/lib/pay";
-import { deleteDownFeedback } from "@/lib/feedback";
+import { deleteDownFeedback, setReviewShown } from "@/lib/feedback";
 import { pricingNow } from "@/lib/pricing";
 import { addOrderToMember, changeCredits, getMember } from "@/lib/members";
 import { encodePerson } from "@/lib/pairToken";
@@ -104,6 +104,13 @@ export async function testOrderAction(formData: FormData) {
 
 // The old 👎 records removed for good (2026-10-28 대표님: what went wrong goes to 문의하기, not kept here).
 // Owner only, and only when asked twice (the box must be ticked).
+// A review put on the site or taken down (components/ReviewStrip.tsx), owner only.
+export async function reviewShownAction(formData: FormData) {
+  if (!(await isAdmin())) return;
+  await setReviewShown(String(formData.get("order") ?? ""), String(formData.get("product") ?? ""), formData.get("on") === "1");
+  refresh();
+}
+
 export async function deleteDownFeedbackAction(formData: FormData) {
   if (!(await isAdmin()) || formData.get("sure") !== "1") return;
   await deleteDownFeedback();

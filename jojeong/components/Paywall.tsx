@@ -1,5 +1,6 @@
 import Link from "next/link";
 import PayButton from "./PayButton";
+import ReviewStrip from "./ReviewStrip";
 import { hanjaNum } from "@/lib/hanjaNum";
 import { josa } from "@/lib/josa";
 import { currentMember, membersEnabled } from "@/lib/members";
@@ -106,6 +107,9 @@ export default async function Paywall({
           </li>
         ))}
       </ol>
+
+      {/* 결제 바로 위, 망설이는 순간에 이 보고서의 후기 (대표님 11/17). */}
+      <ReviewStrip product={product.id} className="-mx-5 mt-7" />
 
       <div className="mt-5 text-center">
         {sale && <p className="text-xs font-extrabold text-seal">{saleLabel(sale)}</p>}

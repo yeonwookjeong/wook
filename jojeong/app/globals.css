@@ -124,3 +124,27 @@ p, li, dd, blockquote {
     inset 0 0 0 5px var(--color-jjok),
     inset 0 0 0 6px rgb(212 175 95 / 0.2);
 }
+
+/* 후기 (components/ReviewStrip.tsx): letters drift sideways without end; the row takes no width from them, so the
+   long track never widens the page; still for those who ask for less motion. */
+@keyframes review-flow {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.review-row {
+  contain: inline-size;
+}
+.review-track {
+  animation: review-flow 40s linear infinite;
+}
+.review-reverse {
+  animation-direction: reverse;
+}
+.review-row:hover .review-track,
+.review-row:active .review-track {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .review-row { overflow-x: auto; }
+  .review-track { animation: none; }
+}

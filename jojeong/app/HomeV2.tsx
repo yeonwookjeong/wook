@@ -1,6 +1,7 @@
 import { Plaque } from "./ask/Hall";
 import Image from "next/image";
 import Link from "next/link";
+import ReviewStrip from "@/components/ReviewStrip";
 import { forgetMeAction } from "@/app/actions";
 import { HundoFace } from "@/app/ask/Letter";
 import AskLink from "@/components/AskLink";
@@ -280,14 +281,9 @@ export default async function HomeV2() {
         <HeroStage ask={ask} />
       )}
 
-      {/* How many charts he has read, under the first screen where it can be seen (it was lost on the picture). */}
-      {count >= SHOW_COUNT_FROM && (
-        <p className="mt-3 flex items-center justify-center gap-2 text-[13px] text-ink-soft">
-          <span aria-hidden className="h-px w-6 bg-gold/40" />
-          지금까지 <b className="font-myeongjo text-[17px] text-gold">{count.toLocaleString("ko-KR")}</b>건의 사주를 풀어 드렸어요
-          <span aria-hidden className="h-px w-6 bg-gold/40" />
-        </p>
-      )}
+      {/* How many charts he has read, under the first screen where it can be seen; with the reviews under it once
+          there are three on the site (대표님 11/17, 사주아이를 참고로), else the plain line. */}
+      {count >= SHOW_COUNT_FROM && <ReviewStrip count={count} className="mt-3" />}
 
       {/* The free extras, two to a row (a swiped row hid the last one half off the edge). */}
       <nav aria-label="무료로 보기" className="mt-4 grid grid-cols-2 gap-2">
