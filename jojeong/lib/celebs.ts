@@ -79,11 +79,10 @@ export function starBoard(me: Pillars): StarBoard {
     .sort((a, b) => b.same - a.same || a.c.fame - b.c.fame)
     .map(({ c, same }) => ({ ...hit(c), same }));
   const scored = CELEBS.map((c) => ({ c, score: gunghapScore(asPerson(me), asPerson(c.p), "친구") }));
-  // Within a title, the best-known first: a famous 백년지기 says more than an unknown 천생연분 one point higher.
-  const tier = (s: number) => TITLES.findIndex(([t]) => s >= t);
+  // 백년지기 and above, the best-known first: 차은우 as a 백년지기 says more than an unknown name as 천생연분.
   const best = scored
-    .filter((x) => x.score >= 80)
-    .sort((a, b) => tier(a.score) - tier(b.score) || a.c.fame - b.c.fame)
+    .filter((x) => x.score >= 85)
+    .sort((a, b) => a.c.fame - b.c.fame)
     .slice(0, 300)
     .map(({ c, score }) => ({ ...hit(c), score, title: titleOf(score), pct: topPct(score), why: reasons(me, c.p) }));
   return { sameIlju, twins, best };

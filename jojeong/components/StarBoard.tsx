@@ -72,7 +72,7 @@ export default function StarBoard({ board, ilju, letters }: { board: Board; ilju
         ) : (
           <ol className="mt-3 flex flex-col gap-2">
             {best.slice(0, nBest).map((h, i) => (
-              <li key={`${h.name}-${h.year}-${i}`} className="doc-paper flex items-start gap-3 px-4 py-3">
+              <li key={`${h.name}-${h.year}-${i}`} className="flex items-start gap-3 rounded-[14px] bg-[#fffaf0] px-4 py-3 shadow-[0_1px_0_rgb(134_96_26/0.2),inset_0_0_0_1px_rgb(134_96_26/0.16)]">
                 <span className="w-6 shrink-0 pt-0.5 text-center font-myeongjo text-[18px] font-extrabold text-gold">{i + 1}</span>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline gap-2">
@@ -118,7 +118,7 @@ export default function StarBoard({ board, ilju, letters }: { board: Board; ilju
           <p className="mt-1 text-[13px] text-ink-soft">여섯 글자 가운데 넷 이상이 그대와 같은 유명인이옵니다</p>
           <ul className="mt-3 flex flex-col gap-2">
             {twins.slice(0, nTwin).map((h, i) => (
-              <li key={`${h.name}-${h.year}-${i}`} className="doc-paper flex items-center gap-3 px-4 py-2.5">
+              <li key={`${h.name}-${h.year}-${i}`} className="flex items-center gap-3 rounded-[14px] bg-[#fffaf0] px-4 py-2.5 shadow-[inset_0_0_0_1px_rgb(134_96_26/0.16)]">
                 <span className="font-myeongjo text-[15px] font-extrabold text-seal">
                   {h.same}
                   <span className="text-[11px] text-ink-soft">/6</span>
