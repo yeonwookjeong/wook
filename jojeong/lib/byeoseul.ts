@@ -123,3 +123,43 @@ export function sajuPath(p: Pillars, daeun: Daeun[], birthYear: number): Path | 
 }
 
 export const __test = { factsOf };
+
+// ── The game (2026-11-17): what the page needs to let the reader walk either road. The chart's door at each gate is
+// rank 0; a door ranked lower (by the same fits) costs years before the exam, can turn the trial harsher, and
+// lowers the final rank. Nothing here is random: the same chart and the same picks give the same life.
+
+export type Tier = "high" | "mid" | "low";
+export type Board = {
+  // Doors in the chart's order of fit, best first.
+  exams: Exam[];
+  posts: Record<Exam, Post[]>;
+  trial: Trial;
+  age: number;
+  strength: Reading["strength"];
+};
+
+const ranked = <K extends string>(m: Record<K, number>) => (Object.keys(m) as K[]).sort((a, b) => m[b] - m[a]);
+
+export function boardOf(p: Pillars, daeun: Daeun[], birthYear: number): Board | null {
+  const f = factsOf(p);
+  if (!f) return null;
+  const posts = Object.fromEntries(EXAMS.map((e) => [e, ranked(postFit(f, e))])) as Record<Exam, Post[]>;
+  return { exams: ranked(examFit(f)), posts, trial: trialOf(f, p), age: passAge(f, p, daeun, birthYear), strength: f.r.strength };
+}
+
+export type Life = { exam: Exam; post: Post; trial: Trial; age: number; tier: Tier; off: number };
+
+// One walk through the four gates. `off` is how far the picks strayed from the chart (0 on the chart's road).
+export function lifeOf(b: Board, exam: Exam, post: Post): Life {
+  const off = b.exams.indexOf(exam) + Math.max(0, b.posts[exam].indexOf(post));
+  const age = b.age + b.exams.indexOf(exam) * 4 + Math.max(0, b.posts[exam].indexOf(post)) * 2;
+  let trial = b.trial;
+  if (off >= 5) trial = "exile";
+  else if (off >= 3 && (trial === "calm" || trial === "patron")) trial = "faction";
+  let score = b.strength === "신강" || b.strength === "극신강" ? 1 : 0;
+  if (trial === "patron") score += 1;
+  if (trial === "exile") score -= 1;
+  if (off >= 2) score -= 1;
+  if (off >= 4) score -= 1;
+  return { exam, post, trial, age, tier: score >= 1 ? "high" : score === 0 ? "mid" : "low", off };
+}
