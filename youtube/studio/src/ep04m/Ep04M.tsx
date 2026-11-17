@@ -30,8 +30,12 @@ const P: React.FC<{ pose: string; x: number; floor: number; s?: number; flip?: b
   const K: Record<string, number> = { c80_02: 640 / 496, c80_03: 640 / 496, c80_01: 610 / 481, c80_04: 610 / 481, cw_02: 640 / 410, cw_03: 640 / 410, cw_01: 610 / 401, cw_04: 610 / 401, fly_01: 640 / 256, fly_02: 640 / 256, fly_03: 640 / 256 };
   const k = K[pose] ?? (pose.startsWith("man") ? MAN_K : WOMAN_K);
   const h = SRC_H[pose] * k * s;
+  const fr = useCurrentFrame();
+  const breathe = 1 + 0.014 * Math.sin(fr * 0.16 + x * 0.01);
+  const sway = 1.2 * Math.sin(fr * 0.09 + x * 0.02);
+  const squash = 1;
   return (
-    <div style={{ position: "absolute", left: x, top: floor - h - bob, height: h, transform: `translateX(-50%) scale(${pop}) rotate(${rot}deg)`, transformOrigin: "50% 100%", opacity: o }}>
+    <div style={{ position: "absolute", left: x, top: floor - h - bob, height: h, transform: `translateX(-50%) scale(${pop * squash}, ${pop * breathe * (2 - squash)}) rotate(${rot + sway}deg)`, transformOrigin: "50% 100%", opacity: o }}>
       {/* 발밑 그림자 */}
       <div style={{ position: "absolute", left: "50%", bottom: -10 + bob, width: h * 0.42, height: h * 0.05, transform: "translateX(-50%)", borderRadius: "50%", background: "rgba(70,40,25,0.28)", filter: "blur(4px)", opacity: Math.max(0, 1 - bob / 120) }} />
       <Img src={src(pose)} style={{ height: h, transform: flip ? "scaleX(-1)" : undefined, display: "block" }} />
@@ -266,7 +270,27 @@ const CapTrack: React.FC<{ caps: Cap[]; dur: number }> = ({ caps, dur }) => {
   );
 };
 
-const ShotM: React.FC<{ mode: string; dur: number; pre: number; kind?: "cloud" | "old"; lang: Lang }> = ({ mode, dur, pre, kind, lang }) => {
+const OUTDOOR = new Set(["intro", "shoes", "walk", "away", "coin", "wall", "split", "court", "gone", "end"]);
+const ZOOMS = [1, 1.14, 1.04, 1.2, 1.08, 1.16];
+const beatCam = (f: number, dur: number, caps: Cap[]) => {
+  const n = Math.max(1, caps.length);
+  const per = dur / n;
+  const i = Math.min(n - 1, Math.max(0, Math.floor(f / per)));
+  const into = f - i * per;
+  const prevZ = i === 0 ? 1 : ZOOMS[(i - 1) % ZOOMS.length];
+  const z = ZOOMS[i % ZOOMS.length];
+  const k = interpolate(into, [0, 4], [0, 1], cl); // 4프레임 안에 바뀜: 컷처럼 느껴짐
+  const hl = caps[i]?.some((w) => w.hl);
+  const punch = hl ? 0.035 * Math.max(0, 1 - Math.abs(into - 3) / 6) : 0;
+  return `scale(${lerp(prevZ, z, k) + punch})`;
+};
+const DriftClouds: React.FC<{ f: number }> = ({ f }) => (
+  <>
+    <Img src={src("cloud_01")} style={{ position: "absolute", top: 120, left: ((f * 1.6) % 1500) - 300, height: 150, opacity: 0.85 }} />
+    <Img src={src("cloud_03")} style={{ position: "absolute", top: 420, left: 1200 - ((f * 1.1 + 600) % 1600), height: 130, opacity: 0.8 }} />
+  </>
+);
+const ShotM: React.FC<{ mode: string; dur: number; pre: number; kind?: "cloud" | "old"; lang: Lang; caps: Cap[] }> = ({ mode, dur, pre, kind, lang, caps }) => {
   const f0 = useCurrentFrame();
   const f = f0 - pre;
   const t = interpolate(f, [0, dur], [0, 1], cl);
@@ -275,8 +299,9 @@ const ShotM: React.FC<{ mode: string; dur: number; pre: number; kind?: "cloud" |
   const o = !pre ? 1 : kind === "cloud" ? (f0 < pre * 0.55 ? 0 : 1) : interpolate(f0, [0, pre], [0, 1], cl);
   return (
     <AbsoluteFill>
-      <AbsoluteFill style={{ opacity: o }}>
+      <AbsoluteFill style={{ opacity: o, transform: beatCam(f, dur, caps), transformOrigin: "540px 1450px" }}>
         <S t={t} f={Math.max(0, f)} dur={dur} lang={lang} />
+        {OUTDOOR.has(mode) && <DriftClouds f={f0} />}
       </AbsoluteFill>
       {pre > 0 && kind === "cloud" && f0 < pre * 1.3 && <CloudWipe p={f0 / (pre * 1.3)} />}
     </AbsoluteFill>
@@ -294,7 +319,7 @@ export const Ep04M: React.FC<{ lang?: Lang }> = ({ lang = "en" }) => {
         const pre = tr?.n ?? 0;
         return (
           <Sequence key={i} from={b.starts[i] - pre} durationInFrames={b.frames[i] + pre}>
-            <ShotM mode={shot.mode} dur={b.frames[i]} pre={pre} kind={tr?.kind} lang={lang} />
+            <ShotM mode={shot.mode} dur={b.frames[i]} pre={pre} kind={tr?.kind} lang={lang} caps={caps[i]} />
             {(shot.sfx ?? []).map((fx, k) => (
               <Sequence key={k} from={pre + Math.round((fx.at ?? 0) * FPS)} layout="none">
                 <Audio src={staticFile(`sfx/${fx.name}.wav`)} volume={fx.vol ?? 0.4} />
