@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { lifeOf, type Board, type Exam, type Life, type Post, type Trial } from "@/lib/byeoseul";
 import { bondScene, childScene, studyScene, trialEnd, verdict, workScene, type Scene } from "@/lib/byeoseulStory";
-import { ageWord, END_TEXT, EXAM_TEXT, POST_TEXT, TRIAL_TEXT } from "@/lib/byeoseulText";
+import { ageWord, endTitle, EXAM_TEXT, POST_TEXT, TRIAL_TEXT } from "@/lib/byeoseulText";
 import { josa } from "@/lib/josa";
 import TrackLink from "./TrackLink";
 
@@ -111,7 +111,7 @@ function Gyoji({ life, name, b }: { life: Life; name: string; b: Board }) {
         <br />
         {josa(TRIAL_TEXT[life.trial].name, "을/를")} 지나
       </p>
-      <p className="mt-4 font-myeongjo text-[28px] leading-tight font-extrabold">{END_TEXT[life.post][life.tier]}</p>
+      <p className="mt-4 font-myeongjo text-[28px] leading-tight font-extrabold">{endTitle(life.post, life.tier, b.story.dayStem)}</p>
       <p className="mt-1 font-myeongjo text-[14px] font-bold text-ink-soft">에 이르렀노라</p>
       <div className="mt-5 border-t border-ink/10 pt-4 text-[13px] leading-relaxed">
         <span className="text-ink-soft">사관의 평</span>
@@ -127,7 +127,7 @@ function Gyoji({ life, name, b }: { life: Life; name: string; b: Board }) {
 function LifeSummary({ life, b }: { life: Life; b: Board }) {
   return (
     <div className="rounded-2xl bg-white/80 px-4 py-4 shadow-[inset_0_0_0_1px_rgb(33_27_23/0.12)]">
-      <p className="font-myeongjo text-[22px] leading-tight font-extrabold">{END_TEXT[life.post][life.tier]}</p>
+      <p className="font-myeongjo text-[22px] leading-tight font-extrabold">{endTitle(life.post, life.tier, b.story.dayStem)}</p>
       <ul className="mt-2 flex flex-col gap-1 text-[13.5px] leading-snug text-ink-soft">
         <li>
           {ageWord(life.age)}에 {EXAM_TEXT[life.exam].name} 급제
@@ -268,7 +268,13 @@ export default function ByeoseulGame({ board: b, name }: { board: Board; name: s
       </>,
       <Art name="throne" />,
     );
-  else if (step === "bond") view = tap(<Lines scene={bondScene(b)} />, <Art name="gate" fit="contain" />);
+  else if (step === "bond")
+    view = tap(
+      <>
+        <div className="mx-auto mb-5 flex size-16 rotate-[-4deg] items-center justify-center rounded-full border-[3px] border-seal font-myeongjo text-[28px] font-extrabold text-seal">緣</div>
+        <Lines scene={bondScene(b)} />
+      </>,
+    );
   else if (step === "trial" && life)
     view = tap(
       <>
@@ -288,7 +294,7 @@ export default function ByeoseulGame({ board: b, name }: { board: Board; name: s
           <button
             type="button"
             onClick={() => {
-              if (navigator.share) navigator.share({ title: "벼슬길", text: `조선에서 나는 ${END_TEXT[life.post][life.tier]}`, url: "https://www.hundosaju.com/byeoseul" }).catch(() => {});
+              if (navigator.share) navigator.share({ title: "벼슬길", text: `조선에서 나는 ${endTitle(life.post, life.tier, b.story.dayStem)}`, url: "https://www.hundosaju.com/byeoseul" }).catch(() => {});
             }}
             className="rounded-xl bg-seal py-3 font-myeongjo text-[15px] font-extrabold text-hanji"
           >
@@ -323,7 +329,7 @@ export default function ByeoseulGame({ board: b, name }: { board: Board; name: s
             <p className="mt-3 text-[14px] leading-relaxed">
               {chartLife.tier === life.tier
                 ? "다른 문을 열었어도 닿은 높이는 같았사옵니다. 다만 사주대로였다면 더 일찍 닿았지요."
-                : `사주대로 걸었다면 ${END_TEXT[chartLife.post][chartLife.tier]}까지 갔을 길이옵니다.`}
+                : `사주대로 걸었다면 ${endTitle(chartLife.post, chartLife.tier, b.story.dayStem)}까지 갔을 길이옵니다.`}
             </p>
           </>
         ) : (

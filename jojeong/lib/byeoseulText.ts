@@ -36,17 +36,41 @@ export const TRIAL_TEXT: Record<Trial, { name: string; line: string; why: string
 export const END_TEXT: Record<Post, Record<Tier, string>> = {
   hongmun: { high: "홍문관 대제학", mid: "홍문관 응교", low: "낙향해 서원을 연 선비" },
   saheon: { high: "사헌부 대사헌", mid: "사헌부 장령", low: "바른말 끝에 물러난 언관" },
-  seungjeong: { high: "도승지를 거친 이조판서", mid: "승정원 승지", low: "고향으로 돌아간 훈장" },
+  seungjeong: { high: "이조판서", mid: "승정원 승지", low: "고향으로 돌아간 훈장" },
   suryeong: { high: "관찰사", mid: "고을 사또", low: "백성이 비석을 세워 준 현감" },
   seonjeon: { high: "금위대장", mid: "선전관", low: "궁궐 문을 지킨 늙은 무관" },
   hullyeon: { high: "훈련대장", mid: "훈련도감 초관", low: "활을 가르친 교관" },
   byeonbang: { high: "병마절도사", mid: "변방 첨절제사", low: "국경 마을의 늙은 장수" },
   podo: { high: "포도대장", mid: "포도청 종사관", low: "저잣거리에 이름난 포교" },
-  yeokgwan: { high: "사신단을 이끈 당상 역관", mid: "사역원 역관", low: "무역으로 거부가 된 역관" },
+  yeokgwan: { high: "당상 역관", mid: "사역원 역관", low: "무역으로 거부가 된 역관" },
   naeui: { high: "어의", mid: "내의원 의관", low: "마을 약방의 명의" },
   gwansang: { high: "관상감 정", mid: "관상감 훈도", low: "별을 보며 산 은자" },
   yulgwan: { high: "형조 율학교수", mid: "형조 율관", low: "억울한 백성을 돕는 송사꾼" },
 };
+
+// 같은 문, 같은 높이라도 사람마다 이름이 다르게 (대표님 11/17): the 일간's element (木火土金水) colors the last
+// office. A high or middle office takes an epithet; a low end, which is a life rather than an office, is told
+// whole in five ways.
+const EPITHET = ["새 길을 연", "이름을 떨친", "모두가 따른", "곧기로 이름난", "지혜로 이름난"];
+const LOW: Record<Post, [string, string, string, string, string]> = {
+  hongmun: ["낙향해 서원을 연 선비", "낙향해 시로 이름난 선비", "고향에 서당을 세운 선비", "벼슬을 버리고 절개를 지킨 선비", "강가에 숨어 책을 쓴 선비"],
+  saheon: ["바른말 끝에 물러나 후학을 기른 언관", "바른말 끝에 귀양 가 이름을 남긴 언관", "바른말 끝에 물러나 고향을 지킨 언관", "바른말 끝에 스스로 물러난 언관", "바른말 끝에 물러나 상소문집을 남긴 언관"],
+  seungjeong: ["고향으로 돌아가 아이들을 가르친 훈장", "고향에서 이름난 글방 훈장", "고향 마을의 큰어른", "고향으로 돌아가 족보를 바로잡은 선비", "고향으로 돌아가 일기를 남긴 선비"],
+  suryeong: ["백성이 비석을 세워 준 현감", "백성이 노래를 지어 준 현감", "흉년에 곳간을 연 현감", "뇌물을 돌려보낸 청백리 현감", "물길을 내어 들판을 살린 현감"],
+  seonjeon: ["궁궐 문을 지킨 늙은 무관", "활 솜씨로 이름난 늙은 무관", "임금이 끝까지 곁에 둔 늙은 무관", "칼 한 자루로 평생을 지킨 무관", "궁궐 일을 다 아는 늙은 무관"],
+  hullyeon: ["활을 가르친 교관", "군가를 지은 교관", "병사들이 아버지라 부른 교관", "엄하기로 이름난 교관", "병법서를 남긴 교관"],
+  byeonbang: ["국경 마을을 일군 늙은 장수", "오랑캐도 이름을 아는 장수", "국경 마을이 믿고 기댄 장수", "성 하나를 끝까지 지킨 장수", "국경의 지도를 그린 장수"],
+  podo: ["골목마다 아는 이가 있는 포교", "저잣거리에 이름난 포교", "억울한 이를 풀어 준 포교", "도적들이 가장 무서워한 포교", "한 번 본 얼굴은 잊지 않은 포교"],
+  yeokgwan: ["새 뱃길을 연 역관", "무역으로 거부가 된 역관", "사신들이 믿고 찾은 역관", "셈이 정확하기로 이름난 역관", "세 나라 말을 한 역관"],
+  naeui: ["마을 약방의 명의", "전염병을 막아 낸 의원", "가난한 이에게 값을 받지 않은 의원", "침술로 이름난 의원", "의서를 남긴 의원"],
+  gwansang: ["별을 보며 산 은자", "혜성을 먼저 알아본 은자", "농사 날을 일러 준 마을 어른", "달력을 바로잡은 은자", "하늘의 기록을 남긴 은자"],
+  yulgwan: ["억울한 백성을 돕는 송사꾼", "말솜씨로 이름난 송사꾼", "마을 다툼을 풀어 준 어른", "한 번도 지지 않은 송사꾼", "법전을 풀어 쓴 선비"],
+};
+
+export function endTitle(post: Post, tier: Tier, dayStem: number): string {
+  const el = Math.floor(dayStem / 2);
+  return tier === "low" ? LOW[post][el] : `${EPITHET[el]} ${END_TEXT[post][tier]}`;
+}
 
 const KO_NUM = ["", "한", "두", "세", "네", "다섯", "여섯", "일곱", "여덟", "아홉"];
 const KO_TENS = ["", "열", "스물", "서른", "마흔", "쉰", "예순", "일흔", "여든"];
