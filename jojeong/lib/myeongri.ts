@@ -13,7 +13,7 @@ export const ELEMENT_HANJA = ["木", "火", "土", "金", "水"] as const;
 // Branch elements: 子水 丑土 寅木 卯木 辰土 巳火 午火 未土 申金 酉金 戌土 亥水
 export const BRANCH_EL = [4, 2, 0, 0, 2, 1, 1, 2, 3, 3, 2, 4];
 // Main hidden stem (본기) of each branch, used for its yin/yang in the ten gods.
-const BRANCH_MAIN_STEM = [9, 5, 0, 1, 4, 2, 3, 5, 6, 7, 4, 8];
+export const BRANCH_MAIN_STEM = [9, 5, 0, 1, 4, 2, 3, 5, 6, 7, 4, 8];
 export const stemEl = (stem: number) => Math.floor(stem / 2);
 
 export type TenGod = "비견" | "겁재" | "식신" | "상관" | "편재" | "정재" | "편관" | "정관" | "편인" | "정인";

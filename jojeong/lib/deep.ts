@@ -21,9 +21,9 @@ const TRIAD_HEAD = (b: number) => [8, 5, 2, 11][b % 4]; // 申子辰→申, 巳�
 const DOHWA: Record<number, number> = { 8: 9, 5: 6, 2: 3, 11: 0 }; // 도화: 申子辰→酉, 巳酉丑→午, 寅午戌→卯, 亥卯未→子
 const YEOKMA: Record<number, number> = { 8: 2, 5: 11, 2: 8, 11: 5 }; // 역마: 申子辰→寅, 巳酉丑→亥, 寅午戌→申, 亥卯未→巳
 const HWAGAE: Record<number, number> = { 8: 4, 5: 1, 2: 10, 11: 7 }; // 화개: 申子辰→辰, 巳酉丑→丑, 寅午戌→戌, 亥卯未→未
-const CHEONEUL: number[][] = [[1, 7], [0, 8], [11, 9], [11, 9], [1, 7], [0, 8], [1, 7], [2, 6], [5, 3], [5, 3]]; // 천을귀인 by day stem
-const MUNCHANG = [5, 6, 8, 9, 8, 9, 11, 0, 2, 3]; // 문창귀인 by day stem
-const YANGIN: Record<number, number> = { 0: 3, 2: 6, 4: 6, 6: 9, 8: 0 }; // 양인 (yang day stems)
+export const CHEONEUL: number[][] = [[1, 7], [0, 8], [11, 9], [11, 9], [1, 7], [0, 8], [1, 7], [2, 6], [5, 3], [5, 3]]; // 천을귀인 by day stem
+export const MUNCHANG = [5, 6, 8, 9, 8, 9, 11, 0, 2, 3]; // 문창귀인 by day stem
+export const YANGIN: Record<number, number> = { 0: 3, 2: 6, 4: 6, 6: 9, 8: 0 }; // 양인 (yang day stems)
 
 export type Sal = "천을귀인" | "문창귀인" | "도화" | "역마" | "화개" | "양인" | "공망";
 
