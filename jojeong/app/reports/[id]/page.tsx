@@ -10,7 +10,6 @@ import GunghapForm from "@/components/GunghapForm";
 import MeForm from "@/components/MeForm";
 import IntimacyIntro from "@/components/IntimacyIntro";
 import PairIntro, { MiniChart } from "@/components/PairIntro";
-import ReunionIntro from "@/components/ReunionIntro";
 import TaekilForm from "@/components/TaekilForm";
 import TaekilResult from "@/components/TaekilResult";
 import Paywall from "@/components/Paywall";
@@ -55,7 +54,7 @@ import { isEngine2 } from "@/lib/patterns";
 import { askShown } from "@/lib/members";
 import { coupleOf, type Couple } from "@/lib/couple";
 import { intimacyOf } from "@/lib/intimacy";
-import { reunionOf } from "@/lib/reunion";
+import { chaptersForSit, situationOf } from "@/lib/reunionSit";
 import { readMe } from "@/lib/me";
 import { decodePerson, profileOf, relationOf, type Person } from "@/lib/pairToken";
 import type { Relation } from "@/lib/relations";
@@ -186,13 +185,13 @@ async function extrasOf(o: Order, product: Product) {
 const PAIR_FREE: Partial<Record<ProductId, string>> = {
   gunghap: "궁합 점수와 서로에게 어떤 사람인지는 무료로 바로 보여 드려요",
   sokgunghap: "두 사람의 애정 온도 유형과 끌림의 표시는 무료로 바로 보여 드려요",
-  jaehoe: "두 사람 사이에 남은 끈과 다시 닿기 좋은 해는 무료로 바로 보여 드려요",
+  jaehoe: "지금 상황에 맞춰 여덟 장의 순서를 정해 풀어 드려요",
 };
 
 // Every report, open in full (a free report, or a bought one). A present-day report on sale
 // (`locked`) shows everything computed for free and puts the payment where the written report would start;
 // a paid order (`paid`, from its link) or one this browser bought for the same chart opens it.
-type Pair = { a?: string; b?: string; rel?: string };
+type Pair = { a?: string; b?: string; rel?: string; kind?: string };
 type Search = { kind?: string; from?: string; n?: string; y?: string };
 
 async function OpenReport({
@@ -325,10 +324,10 @@ async function OpenReport({
 
   // 궁합·속궁합·재회운: two people typed in (or the reader's own saved chart and one typed in), carried in the link.
   if (isPair(product)) {
-    if (paid) pair = { a: paid.req.a, b: paid.req.b, rel: paid.req.rel };
+    if (paid) pair = { a: paid.req.a, b: paid.req.b, rel: paid.req.rel, kind: paid.req.kind };
     const a = decodePerson(pair.a);
     const b = decodePerson(pair.b);
-    if (!a || !b || !pair.a || !pair.b) {
+    if (!a || !b || !pair.a || !pair.b || (product.id === "jaehoe" && !paid && !situationOf(pair.kind))) {
       const saved = (await readMe())?.person.name ?? (await subjectFor(product))?.name ?? null;
       return (
         <>
@@ -343,7 +342,9 @@ async function OpenReport({
     }
     if (ADULT_ONLY.includes(product.id) && !(isAdult(a.birthYear) && isAdult(b.birthYear)))
       return (<><Header product={product} /><Notice href={`/reports/${product.id}`} cta="다시 입력하기">만 19세 이상 두 사람만 볼 수 있는 보고서예요.</Notice></>);
-    const req = { product: product.id, a: pair.a, b: pair.b, rel: FIXED_RELATION[product.id] ?? relationOf(pair.rel) };
+    // 재회운 v2 carries the reader's situation; without it (an old link) the form asks again.
+    const sit = product.id === "jaehoe" ? situationOf(pair.kind) : null;
+    const req = { product: product.id, a: pair.a, b: pair.b, rel: FIXED_RELATION[product.id] ?? relationOf(pair.rel), ...(sit && { kind: pair.kind! }) };
     const unlock = paid ?? (locked ? await ownedOrderFor(product.id, req) : asOwner(req));
     // A bought 궁합·재회운 shows the years as of its order (opened by its link or found as this buyer's), the same
     // ones its pinned text was written with.
@@ -353,18 +354,16 @@ async function OpenReport({
     // The free card's years are the first five rows of the bought report's ten-year table, so the two never disagree.
     const coupleYears = couple ? (pairYearsAt(a, b, relationOf(pair.rel), thisYear(boughtAt ? new Date(boughtAt) : undefined), 5, readAt)?.rows ?? []) : [];
     const closeness = product.id === "sokgunghap" ? intimacyOf(a, b) : null;
-    const reunion = product.id === "jaehoe" ? reunionOf(a, b, boughtAt ? sajuYear(new Date(boughtAt)) : undefined) : null;
     return (
       <>
         <Header product={product} subjectName={`${a.name}님과 ${b.name}님`} />
         {couple && <PairIntro a={a} b={b} c={couple} years={coupleYears} blank={renew ? "모름" : undefined} bare={r2(unlock)} />}
         {closeness && <IntimacyIntro a={a} b={b} x={closeness} />}
-        {reunion && <ReunionIntro a={a} b={b} r={reunion} />}
         {locked && !unlock ? (
           <Paywall
             product={product}
             request={req}
-            chapters={chaptersForRel(chaptersFor(product.id, (await pricingNow()) === "a"), product.id, REL_OF[req.rel])}
+            chapters={chaptersForSit(chaptersForRel(chaptersFor(product.id, (await pricingNow()) === "a"), product.id, REL_OF[req.rel]), sit)}
             note="두 사람의 태어난 시각을 알면 먼저 넣어 주세요. 결제한 뒤 입력을 바꾸면 다른 보고서로 봐요."
           />
         ) : (
@@ -1153,6 +1152,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/r
             a: typeof search.a === "string" ? search.a : undefined,
             b: typeof search.b === "string" ? search.b : undefined,
             rel: typeof search.rel === "string" ? search.rel : undefined,
+            kind: typeof search.kind === "string" ? search.kind : undefined,
           }}
           locked={!isOpen(product) && !paid && (owner || !(await isAdmin()))}
           preview={preview}

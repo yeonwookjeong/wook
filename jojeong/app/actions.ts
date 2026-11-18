@@ -1,5 +1,6 @@
 "use server";
 
+import { kindOf, situationOf } from "@/lib/reunionSit";
 import { cookies } from "next/headers";
 import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
@@ -194,7 +195,10 @@ export async function gunghapAction(_prev: FormState, formData: FormData): Promi
       throw new BirthInputError("속궁합은 만 19세 이상 두 사람만 볼 수 있어요.");
     const chosen = relationOf(formData.get("rel"));
     const rel = FIXED_RELATION[product] ?? (CHOOSABLE.includes(chosen) ? chosen : "lover");
-    url = `/reports/${product}?rel=${rel}&a=${encodePerson(a)}&b=${encodePerson(b)}`;
+    // 재회운 asks where things stand; the answer orders its chapters (lib/reunionSit.ts).
+    const sit = product === "jaehoe" ? situationOf(`${formData.get("sit")}.${formData.get("since")}`) : null;
+    if (product === "jaehoe" && !sit) throw new BirthInputError("지금 상황과 헤어진 지 얼마나 됐는지 골라 주세요.");
+    url = `/reports/${product}?rel=${rel}${sit ? `&kind=${kindOf(sit)}` : ""}&a=${encodePerson(a)}&b=${encodePerson(b)}`;
   } catch (e) {
     if (e instanceof BirthInputError) return { error: e.message };
     console.error(e);
