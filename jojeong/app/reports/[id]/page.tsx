@@ -365,6 +365,7 @@ async function OpenReport({
             request={req}
             chapters={chaptersForSit(chaptersForRel(chaptersFor(product.id, (await pricingNow()) === "a"), product.id, REL_OF[req.rel]), sit)}
             note="두 사람의 태어난 시각을 알면 먼저 넣어 주세요. 결제한 뒤 입력을 바꾸면 다른 보고서로 봐요."
+            {...(sit && { sub: `지금 상황에 맞춘 순서로 ${chaptersFor(product.id, true).length}장에 걸쳐 써 드려요` })}
           />
         ) : (
           <>
