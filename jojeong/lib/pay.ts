@@ -29,6 +29,9 @@ export type Order = {
   bundle?: ProductId[];
   // A set: the report page it was bought on (orders made before this was kept have none).
   from?: ProductId;
+  // A set bought for the difference (lib/upgrade.ts): the reports this chart already had, whose price came off.
+  // Orders made before this was kept have none; the owner's table tells them by the amount (lib/upgrade.ts isUpgrade).
+  upgraded?: ProductId[];
   amount: number;
   // "canceled": refunded in the Toss admin (learned through the webhook); the report closes again.
   status: "ready" | "paid" | "canceled";
@@ -93,7 +96,7 @@ export async function createOrder(
   req: JobRequest,
   who: string,
   amount: number,
-  set?: { set: SetId; bundle: ProductId[]; from?: ProductId },
+  set?: { set: SetId; bundle: ProductId[]; from?: ProductId; upgraded?: ProductId[] },
   credits?: { credits: number; member: string },
   extra?: { bonus?: number; bonusMember?: string; shop?: "a" },
 ): Promise<Order> {

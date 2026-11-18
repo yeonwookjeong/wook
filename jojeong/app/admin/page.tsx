@@ -6,6 +6,7 @@ import CopyButton from "@/components/CopyButton";
 import { GIFTABLE, originNow } from "@/lib/gift";
 import { SALE_KEYS, saleKey, saleLabel } from "@/lib/sales";
 import { productById, SETS, type ProductId } from "@/lib/products";
+import { upgradeNote } from "@/lib/upgrade";
 import { freshSiteErrors, lastReportError, listInquiries, listSiteErrors, memberViews, readingCount, type SiteError } from "@/lib/store";
 import { listFeedback } from "@/lib/feedback";
 import { memberFixAction } from "./actions";
@@ -198,7 +199,10 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
               <li key={o.id} className="flex items-center gap-2 py-2">
                 <span className="w-20 shrink-0 text-[11px] text-ink-soft">{day(o.paidAt ?? o.createdAt).slice(5)}</span>
                 <span className="min-w-0 flex-1">
-                  <b className="block truncate">{o.set ? SETS[o.set].title : productById(o.product)?.title}</b>
+                  <b className="block truncate">
+                    {o.set ? SETS[o.set].title : productById(o.product)?.title}
+                    {upgradeNote(o) && <span className="ml-1.5 rounded bg-gold/15 px-1.5 py-0.5 text-[11px] font-bold text-gold">{upgradeNote(o)}</span>}
+                  </b>
                   <span className="block truncate text-[11px] text-ink-soft">
                     {o.who}
                     {(o.bonus ?? 0) > 0 && ` · 질문 ${o.bonus} ${o.bonusGiven ? "지급됨" : "로그인 대기"}`}

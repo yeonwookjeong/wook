@@ -1,5 +1,5 @@
 import { ownedOrders, type Order } from "./pay";
-import { basePrice, bonusFor, PRICE, SETS, setPrice, type Pricing, type ProductId, type SetId } from "./products";
+import { basePrice, bonusFor, PRICE, productById, SETS, setPrice, type Pricing, type ProductId, type SetId } from "./products";
 
 // A set for a chart that already has some of its reports: what was paid for those comes off the set's price, so a
 // customer with 평생 사주 moves up to 사주 전서 for the difference instead of paying for 평생 사주 twice.
@@ -54,4 +54,13 @@ export function setOfferFrom(orders: Order[], set: SetId, p: string | undefined,
 
 export async function setOffer(set: SetId, p: string | undefined, pr: Pricing, ny: number | null): Promise<SetOffer | null> {
   return setOfferFrom(p ? await ownedOrders() : [], set, p, pr, ny);
+}
+
+// For the owner's table (2026-11-18 대표님 "내가 구분할 수 있게"): a set paid for the difference, with what it came up
+// from. Older orders kept no list, so a set paid below its price (never on sale) is read as one too.
+export function upgradeNote(o: Order): string | null {
+  if (!o.set || o.gift) return null;
+  const from = (o.upgraded ?? []).map((id) => productById(id)?.title).filter(Boolean);
+  if (from.length) return `차액, ${from.join(", ")}에서 올림`;
+  return o.amount < Math.min(setPrice(o.set, "a"), setPrice(o.set, "old")) ? "차액, 산 보고서에서 올림" : null;
 }
