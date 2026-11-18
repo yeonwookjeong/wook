@@ -193,15 +193,15 @@ const Ride1: React.FC<SP> = ({ t }) => {
 const Ride2: React.FC<SP> = ({ t, f, dur }) => {
   // 4번째 판 = F. 주황으로 깜빡이고, "Where's 4?"에서 물음표가 튀어나옴
   const [px, py] = CUT_PLATES[3];
-  const z = lerp(2.4, 2.6, ease(t));
+  const z = lerp(3.4, 3.8, ease(t));
   const q = spring({ frame: f - Math.round(dur * 0.5), fps: FPS, config: { damping: 9, stiffness: 220 } });
   const blink = 0.6 + 0.4 * Math.abs(Math.sin(f * 0.35));
   return (
-    <CutStage fx={px + 190} fy={py} z={z} lit={(i) => (i < 3 ? 1 : 0)} fColor={blink}>
+    <CutStage fx={px + 95} fy={py - 10} z={z} lit={(i) => (i < 3 ? 1 : 0)} fColor={blink}>
       {f >= Math.round(dur * 0.5) && (
-        <div style={{ position: "absolute", left: px + 22, top: py - 70, width: 70, height: 80, transform: `scale(${q})`, transformOrigin: "0 100%" }}>
+        <div style={{ position: "absolute", left: px + 22, top: py - 62, width: 52, height: 60, transform: `scale(${q})`, transformOrigin: "0 100%" }}>
           <div style={{ position: "absolute", inset: 0, borderRadius: 18, background: YELLOW, border: `5px solid ${INK}` }} />
-          <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: sans, fontWeight: 900, fontSize: 56, color: INK }}>?</span>
+          <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: sans, fontWeight: 900, fontSize: 44, color: INK }}>?</span>
         </div>
       )}
     </CutStage>
