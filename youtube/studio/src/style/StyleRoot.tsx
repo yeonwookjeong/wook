@@ -3,6 +3,7 @@ import { AbsoluteFill, Composition, continueRender, delayRender } from "remotion
 import { loadFont } from "@remotion/google-fonts/NotoSansKR";
 import { SceneA06 } from "./SceneA";
 import { SceneB } from "./SceneB";
+import { RigTest } from "../rig/RigTest";
 const { fontFamily: sans } = loadFont();
 const WORDS_EN = { lang: "en" as const, my: "MY", our: "OUR", myMom: "MY MOM", ourMom: "OUR MOM", house: "OUR HOUSE", school: "OUR SCHOOL", country: "OUR COUNTRY", myCo: "MY COMPANY", ourCo: "OUR COMPANY", boss: "BOSS" };
 /** 본편과 같은 자막 모양 (비교를 공정하게) */
@@ -65,6 +66,7 @@ export const StyleRoot: React.FC = () => (
   <>
     <Composition id="StyleA" component={StyleA} durationInFrames={1} fps={30} width={1080} height={1920} />
     <Composition id="StyleB" component={StyleB} durationInFrames={1} fps={30} width={1080} height={1920} />
+    <Composition id="RigTest" component={RigTest} durationInFrames={290} fps={30} width={1080} height={1920} />
     <Composition id="CastSheet" component={Sheet} durationInFrames={1} fps={30} width={1920} height={1080} />
   </>
 );

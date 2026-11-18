@@ -24,6 +24,7 @@ def main() -> int:
     ap.add_argument("name")
     ap.add_argument("--thresh", type=float, default=42.0)
     ap.add_argument("--star", default="", help="반짝이 표시 위치 x,y (그림 위에 겹쳤을 때만)")
+    ap.add_argument("--pass", dest="passk", type=float, default=2.4, help="바깥으로 칠 색 차이 배수 (얼굴처럼 바탕과 비슷한 색이 지워지면 낮춤)")
     ap.add_argument("--gap", type=int, default=14, help="이 거리 안의 조각은 같은 포즈로 묶음(px)")
     a = ap.parse_args()
 
@@ -40,7 +41,7 @@ def main() -> int:
 
     # 바깥 = 가장자리에서 출발해 '바탕 비슷한 색'(바탕·발밑 그림자·반짝이 표시)만 밟고 닿는 곳.
     # 윤곽선으로 둘러싸인 안쪽(크림색 티셔츠, 베이지 바지)은 닿지 못하므로 그림으로 남는다.
-    passable = dist < a.thresh * 2.4  # 발밑 그림자(바탕과 거리 약 80)까지 바깥으로
+    passable = dist < a.thresh * a.passk  # 발밑 그림자(바탕과 거리 약 80)까지 바깥으로
     lab, _ = ndi.label(passable)
     edge_labels = np.unique(np.concatenate([lab[0], lab[-1], lab[:, 0], lab[:, -1]]))
     exterior = np.isin(lab, edge_labels[edge_labels > 0])
