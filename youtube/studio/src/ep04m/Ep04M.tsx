@@ -25,7 +25,7 @@ const SRC_H: Record<string, number> = {
 };
 const MAN_K = 640 / 257; // 남자 키 640px
 const WOMAN_K = 610 / 308; // 여자 키 610px
-const P: React.FC<{ pose: string; x: number; floor: number; s?: number; flip?: boolean; bob?: number; o?: number; pop?: number; rot?: number }> = ({ pose, x, floor, s = 1, flip, bob = 0, o = 1, pop = 1, rot = 0 }) => {
+const P: React.FC<{ pose: string; x: number; floor: number; s?: number; flip?: boolean; bob?: number; o?: number; pop?: number; rot?: number; snap?: number }> = ({ pose, x, floor, s = 1, flip, bob = 0, o = 1, pop = 1, rot = 0, snap }) => {
   // 시트마다 그린 크기가 달라서 시트별 배율 (서 있는 키 기준: 남자 640, 여자 610)
   const K: Record<string, number> = { c80_02: 640 / 496, c80_03: 640 / 496, c80_01: 610 / 481, c80_04: 610 / 481, cw_02: 640 / 410, cw_03: 640 / 410, cw_01: 610 / 401, cw_04: 610 / 401, fly_01: 640 / 256, fly_02: 640 / 256, fly_03: 640 / 256 };
   const k = K[pose] ?? (pose.startsWith("man") ? MAN_K : WOMAN_K);
@@ -34,7 +34,8 @@ const P: React.FC<{ pose: string; x: number; floor: number; s?: number; flip?: b
   const breathe = 1;
   const sway = 0;
   void fr;
-  const squash = 1;
+  // 포즈가 바뀐 순간 납작했다가 통 튀어 오름 (종이 인형처럼)
+  const squash = snap !== undefined && snap >= 0 && snap < 14 ? spring({ frame: snap, fps: FPS, from: 0.86, to: 1, config: { damping: 8, stiffness: 300 } }) : 1;
   return (
     <div style={{ position: "absolute", left: x, top: floor - h - bob, height: h, transform: `translateX(-50%) scale(${pop * squash}, ${pop * breathe * (2 - squash)}) rotate(${rot + sway}deg)`, transformOrigin: "50% 100%", opacity: o }}>
       {/* 발밑 그림자 */}
@@ -106,14 +107,14 @@ const Wings: React.FC<{ x: number; y: number; flap: number; s?: number }> = ({ x
 type SceneProps = { t: number; f: number; dur: number; lang?: Lang };
 const FLOOR_PARK = 1700;
 
-const Intro: React.FC<SceneProps> = ({ t, f }) => {
+const Intro: React.FC<SceneProps> = ({ t, f, dur }) => {
   const w = ease(Math.min(1, t / 0.45));
   const walking = t < 0.45;
   const bob = walking ? Math.abs(Math.sin(f * 0.45)) * 12 : 0;
   return (
     <Stage bg="park" z={lerp(1, 1.08, t)} fy={1350}>
-      <P pose={walking ? "man_02" : "man_04"} x={lerp(-150, 400, w)} floor={FLOOR_PARK} bob={bob} />
-      <P pose={walking ? "woman_02" : "woman_01"} x={lerp(1230, 690, w)} floor={FLOOR_PARK} bob={bob} />
+      <P pose={walking ? "man_02" : "man_04"} x={lerp(-150, 400, w)} floor={FLOOR_PARK} bob={bob} snap={f - Math.round(0.45 * dur)} />
+      <P pose={walking ? "woman_02" : "woman_01"} x={lerp(1230, 690, w)} floor={FLOOR_PARK} bob={bob} snap={f - Math.round(0.45 * dur) - 3} />
       {[0, 1, 2].map((i) => <Badge key={i} label={`${i + 1}`} x={300 + i * 240} y={900} s={popAt(f, 70 + i * 12)} color={i === 2 ? YELLOW : undefined} />)}
     </Stage>
   );
@@ -123,7 +124,7 @@ const Shoes: React.FC<SceneProps> = ({ t, f, dur }) => {
   return (
     <Stage bg="park" z={lerp(1.12, 1.2, t)} fy={1400}>
       <P pose="man_06" flip x={410} floor={FLOOR_PARK} />
-      <P pose={open ? "woman_06" : "woman_01"} x={700} floor={FLOOR_PARK} pop={open ? 0.9 + 0.1 * popAt(f, Math.round(dur * 0.5)) : 1} />
+      <P pose={open ? "woman_06" : "woman_01"} x={700} floor={FLOOR_PARK} snap={f - Math.round(dur * 0.5)} />
     </Stage>
   );
 };
@@ -140,15 +141,15 @@ const Away: React.FC<SceneProps> = ({ t, f }) => (
   </Stage>
 );
 // 몇십 년 전(1980년대): 같은 공원, 흑백. 신발을 받으면 동전을 건네 "산 것"으로 친다 → 지금 커플은 웃어넘김
-const Coin: React.FC<SceneProps> = ({ t, f }) => {
+const Coin: React.FC<SceneProps> = ({ t, f, dur }) => {
   const swap = t > 0.33; // 동전과 신발이 오간 뒤
   const k = interpolate(t, [0.6, 0.68], [0, 1], cl);
   return (
     <>
       <div style={{ position: "absolute", inset: 0, filter: "grayscale(1) sepia(0.12) contrast(1.05)" }}>
         <Stage bg="park" z={1.12} fy={1400}>
-          <P pose={swap ? "c80_04" : "c80_01"} x={swap ? 420 : 400} floor={FLOOR_PARK} />
-          <P pose={swap ? "c80_03" : "c80_02"} x={swap ? 690 : 700} floor={FLOOR_PARK} pop={swap ? 1 : 0.97 + 0.03 * Math.sin(f * 0.3)} />
+          <P pose={swap ? "c80_04" : "c80_01"} x={swap ? 420 : 400} floor={FLOOR_PARK} snap={f - Math.round(0.33 * dur)} />
+          <P pose={swap ? "c80_03" : "c80_02"} x={swap ? 690 : 700} floor={FLOOR_PARK} snap={f - Math.round(0.33 * dur) - 3} />
         </Stage>
       </div>
       {k > 0 && (
@@ -165,7 +166,7 @@ const FLOOR_PUB = 1830;
 // 닭 날개를 건넴 → 먹음 → 놀람 → 등에 날개가 돋음 → 떠오름 → 뒤돌아 날아감, 여자는 빈손으로 멍하니
 // 자막 박자에 맞춤: "So feed your partner wings"에서 건네고 먹음 → "fly off"에서 놀람·날개 돋음·떠오름 → "someone else"에서 날아감
 const FLY_BEATS: Record<Lang, number[]> = { en: [0.5, 0.58, 0.667, 0.72, 0.78, 0.833], es: [0.43, 0.57, 0.71, 0.76, 0.81, 0.857] };
-const Fly: React.FC<SceneProps> = ({ t, f, lang = "en" }) => {
+const Fly: React.FC<SceneProps> = ({ t, f, dur, lang = "en" }) => {
   const B = FLY_BEATS[lang];
   const step = B.filter((b) => t >= b).length; // 0 = 그냥 앉아 있음
   const rise = ease(interpolate(t, [B[4], B[5]], [0, 1], cl));
@@ -175,8 +176,8 @@ const Fly: React.FC<SceneProps> = ({ t, f, lang = "en" }) => {
   const bob = step === 5 ? Math.sin(f * 0.5) * 14 : 0;
   return (
     <Stage bg="chicken_pub" z={1.08} fy={1500}>
-      <P pose={woman} x={300} floor={FLOOR_PUB} />
-      <P pose={man} x={lerp(770, 1000, away)} floor={FLOOR_PUB - rise * 260 - away * 900} bob={bob} s={1 - away * 0.45} />
+      <P pose={woman} x={300} floor={FLOOR_PUB} snap={step === 1 || step === 6 ? f - Math.round(B[step - 1] * dur) : undefined} />
+      <P snap={step > 0 ? f - Math.round(B[step - 1] * dur) : undefined} pose={man} x={lerp(770, 1000, away)} floor={FLOOR_PUB - rise * 260 - away * 900} bob={bob} s={1 - away * 0.45} />
     </Stage>
   );
 };
@@ -291,6 +292,33 @@ const DriftClouds: React.FC<{ f: number }> = ({ f }) => (
     <Img src={src("cloud_03")} style={{ position: "absolute", top: 420, left: 1200 - ((f * 1.1 + 600) % 1600), height: 130, opacity: 0.8 }} />
   </>
 );
+// [배율, 초점 x, 초점 y]: W 넓게 · M 두 사람 · 얼굴/물건 가까이. 자막 덩어리 순서대로 쓰고 모자라면 처음부터 반복
+type Fr = [number, number, number];
+const W: Fr = [1, 540, 1300];
+const SHOTPLAN: Record<string, Fr[]> = {
+  intro: [W, [1.3, 560, 1350], [1.15, 540, 1000], [1.15, 540, 1000], [1.25, 540, 1000]],
+  shoes: [[1.55, 430, 1300], [1.9, 690, 1250]],
+  walk: [[1.5, 400, 1250], W],
+  away: [[1.4, 480, 1350], W, [2.0, 330, 1250], [1.2, 560, 1350], [2.2, 330, 1200]],
+  coin: [W, [1.5, 560, 1300], [2.0, 600, 1250], [1.3, 560, 1350], [1.9, 450, 1200], [1.7, 690, 1250], [1.3, 560, 1350], [1.5, 560, 1300]],
+  chicken: [W, [1.6, 540, 1400]],
+  fly: [[1.25, 540, 1450], [1.5, 540, 1350], [1.4, 540, 1400], [1.35, 540, 1500], [1.2, 600, 1350], [1, 540, 1300], [1, 540, 1300]],
+  plate: [W],
+  wall: [W, [1.3, 560, 1300], [1.15, 540, 1250]],
+  split: [[1.3, 540, 1300], [1.6, 540, 1050], W],
+  court: [W, [1.4, 760, 1300], [1.6, 760, 1250], [1.2, 760, 1350], [1.5, 650, 1450], [1.3, 760, 1350], [1.6, 700, 1400]],
+  gone: [[1.3, 760, 1300], W, W],
+  end: [W, [1.4, 540, 1350], [1.2, 540, 1300], [1.5, 540, 1300], [1.3, 540, 1350], W, W],
+};
+const shotCam = (mode: string, f: number, dur: number, caps: Cap[]) => {
+  const plan = SHOTPLAN[mode] ?? [W];
+  const n = Math.max(1, caps.length);
+  const per = dur / n;
+  const i = Math.min(n - 1, Math.max(0, Math.floor(f / per)));
+  const [z, fx, fy] = plan[i % plan.length];
+  const drift = 1 + 0.03 * ((f - i * per) / per); // 컷 안에서 3%만 천천히 다가감
+  return { transform: `scale(${z * drift})`, transformOrigin: `${fx}px ${fy}px` };
+};
 const ShotM: React.FC<{ mode: string; dur: number; pre: number; kind?: "cloud" | "old"; lang: Lang; caps: Cap[] }> = ({ mode, dur, pre, kind, lang, caps }) => {
   const f0 = useCurrentFrame();
   const f = f0 - pre;
@@ -300,7 +328,7 @@ const ShotM: React.FC<{ mode: string; dur: number; pre: number; kind?: "cloud" |
   const o = !pre ? 1 : kind === "cloud" ? (f0 < pre * 0.55 ? 0 : 1) : interpolate(f0, [0, pre], [0, 1], cl);
   return (
     <AbsoluteFill>
-      <AbsoluteFill style={{ opacity: o }}>
+      <AbsoluteFill style={{ opacity: o, ...shotCam(mode, Math.max(0, f), dur, caps) }}>
         <S t={t} f={Math.max(0, f)} dur={dur} lang={lang} />
       </AbsoluteFill>
       {pre > 0 && kind === "cloud" && f0 < pre * 1.3 && <CloudWipe p={f0 / (pre * 1.3)} />}
