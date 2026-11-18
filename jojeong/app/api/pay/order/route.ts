@@ -49,7 +49,7 @@ export async function POST(request: Request) {
     // Reports of the set already bought for this chart come off its price (lib/upgrade.ts).
     const offer = await setOffer(set, req.p, pr, ny);
     if (!offer) return Response.json({ error: "이 사주로는 세트에 든 보고서를 이미 거의 다 갖고 계세요." }, { status: 400 });
-    const order = await createOrder(lead, req, `${decodePerson(req.p)?.name}님`, offer.price, { set, bundle: [lead, ...rest], ...(from && { from }) }, undefined, withBonus(offer.bonus));
+    const order = await createOrder(lead, req, `${decodePerson(req.p)?.name}님`, offer.price, { set, bundle: [lead, ...rest], ...(from && { from }), ...(offer.owned.length > 0 && { upgraded: offer.owned }) }, undefined, withBonus(offer.bonus));
     await track(`co:${saleKey(lead, set, undefined)}`);
     const name = withYear ? `${SETS[set].title} (${ny} 신년운세 포함)` : SETS[set].title;
     return Response.json({ orderId: order.id, amount: order.amount, orderName: offer.owned.length ? `${name}, 차액` : name, clientKey: payClientKey(), mock: payMock() });
