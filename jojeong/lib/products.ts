@@ -1,4 +1,17 @@
 import { OPEN } from "./open";
+
+// 재회운's eight chapters; lib/reunionSit.ts orders them by the reader's situation.
+export const JAEHOE_TOC = [
+  "남은 끈은 지금 어느 단계일까",
+  "우리가 멀어진 진짜 이유",
+  "그 사람 마음의 결",
+  "닿기 좋은 달, 피할 달",
+  "먼저 다가갈까, 기다릴까",
+  "다시 만나도 되풀이될 다툼",
+  "새 인연이 먼저 오는 해",
+  "놓아 줄 때를 아는 법",
+];
+
 // 정 훈도의 비밀 보고서. One free report (조선 신분 감정) opens the shelf; the paid ones all cost the same fixed
 // price, lowered only on the special days listed in SALES.
 
@@ -94,9 +107,9 @@ export const PRODUCTS: Product[] = [
     title: "재회운",
     hanja: "再會",
     for: "anyone",
-    tagline: "그 사람, 다시 올까? 왜 멀어졌는지, 다시 이어질 수 있는지, 언제가 기회인지",
-    toc: ["우리가 멀어진 진짜 이유", "그 사람 마음에 남아 있는 것", "다시 이어질 수 있는 인연일까", "연락이 닿기 좋은 때", "다시 만난다면 꼭 달라져야 할 것", "놓아 주는 게 나을 때"],
-    teaser: "두 사람의 사주와 앞으로 몇 해의 흐름으로 다시 이어질 인연인지, 언제가 기회인지 풀어 드려요.",
+    tagline: "남은 끈은 어느 단계인지, 닿기 좋은 달과 피할 달, 먼저 다가갈지 기다릴지. 지금 상황에 맞춰 풀어요",
+    toc: JAEHOE_TOC,
+    teaser: "지금 상황과 두 사람의 사주, 앞으로 열두 달의 흐름으로 다시 이어질 인연인지, 언제 마음을 전하면 덜 어긋나는지 풀어 드려요.",
     modern: true,
     shelved: true,
   },
@@ -267,7 +280,7 @@ export const PRICE = 990;
 export const PRICING_A_LIVE = OPEN;
 export type Pricing = "old" | "a";
 // 연애·결혼 1,900원 (2026-10-28 대표님): the most sought-after topic, with a question like the other 1,900s.
-const A_PRICE: Partial<Record<ProductId, number>> = { pyeongsaeng: 2900, gunghap: 1900, yeonae: 1900 };
+const A_PRICE: Partial<Record<ProductId, number>> = { pyeongsaeng: 2900, gunghap: 1900, yeonae: 1900, jaehoe: 1900 };
 // `ny`: the coming year (lib/yeonun.ts newYearOf), whose 연운 is the 신년운세.
 export function basePrice(id: ProductId, pr: Pricing, y?: string | number, ny?: number | null): number {
   if (pr === "old") return PRICE;

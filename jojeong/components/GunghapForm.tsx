@@ -6,6 +6,7 @@ import { CHOOSABLE, RELATIONS } from "@/lib/relations";
 import type { ProductId } from "@/lib/products";
 import PersonFields from "./PersonFields";
 import { keepValues } from "@/lib/keepForm";
+import { SINCES, SITS } from "@/lib/reunionSit";
 
 const choice =
   "block rounded-xl border border-ink/15 bg-white/50 py-2.5 text-center text-sm peer-checked:border-ink peer-checked:bg-ink peer-checked:text-hanji peer-focus-visible:ring-2 peer-focus-visible:ring-seal";
@@ -46,7 +47,34 @@ export default function GunghapForm({ savedName, product = "gunghap" }: { savedN
         </fieldset>
       )}
 
-      <h3 className={`font-myeongjo font-extrabold ${product === "gunghap" ? "mt-2 border-t border-seal/20 pt-4" : ""}`}>나</h3>
+      {product === "jaehoe" && (
+        <>
+          <fieldset className="flex flex-col gap-1.5">
+            <legend className="mb-1.5 text-sm font-semibold text-ink-soft">지금 어떤 상황인가요?</legend>
+            <div className="grid grid-cols-1 gap-2">
+              {Object.entries(SITS).map(([value, label], i) => (
+                <label key={value} className="cursor-pointer">
+                  <input type="radio" name="sit" value={value} defaultChecked={i === 0} className="peer sr-only" />
+                  <span className={choice}>{label}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+          <fieldset className="flex flex-col gap-1.5">
+            <legend className="mb-1.5 text-sm font-semibold text-ink-soft">헤어진 지 얼마나 됐나요?</legend>
+            <div className="grid grid-cols-3 gap-2">
+              {Object.entries(SINCES).map(([value, label], i) => (
+                <label key={value} className="cursor-pointer">
+                  <input type="radio" name="since" value={value} defaultChecked={i === 1} className="peer sr-only" />
+                  <span className={choice}>{label}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        </>
+      )}
+
+      <h3 className={`font-myeongjo font-extrabold ${product === "gunghap" || product === "jaehoe" ? "mt-2 border-t border-seal/20 pt-4" : ""}`}>나</h3>
       {savedName !== null && (
         <div className="grid grid-cols-2 gap-2">
           <label className="cursor-pointer">

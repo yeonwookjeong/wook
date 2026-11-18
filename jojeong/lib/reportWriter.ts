@@ -1,3 +1,4 @@
+import { chaptersForSit, monthsBrief, reunionMonths, situationBrief, situationOf } from "./reunionSit";
 import "server-only";
 import { createHash } from "node:crypto";
 import Anthropic from "@anthropic-ai/sdk";
@@ -100,6 +101,8 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
       ...(product.id === "gunghap" && (v === "v8" || v === "v9") ? pairBriefs(a, b, rel, nowYear, at ?? Date.now()) : []),
       ...(product.id === "sokgunghap" ? [intimacyBrief(a, b)] : []),
       ...(product.id === "jaehoe" ? [reunionBrief(a, b, briefYear, at ?? Date.now())] : []),
+      // v2: the reader's situation and the next twelve months (lib/reunionSit.ts). An order from before has neither.
+      ...(product.id === "jaehoe" && situationOf(req.kind) ? [situationBrief(situationOf(req.kind)!), monthsBrief(reunionMonths(a, b, new Date(at ?? Date.now())))] : []),
     ].join("\n\n");
   } else if (product.id === "gwangye" || product.id === "dwitjosa" || product.id === "insa") {
     if (!req.court) return { error: "조정을 찾을 수 없사옵니다.", status: 400 };
@@ -170,7 +173,9 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
   const titled =
     product.id === "gunghap"
       ? { chapters: chaptersForRel(asked.chapters, product.id, relNow, readAt), focus: focusForRel(asked.focus, product.id, relNow, readAt) }
-      : asked;
+      : product.id === "jaehoe"
+        ? { ...asked, chapters: chaptersForSit(asked.chapters, situationOf(req.kind)) }
+        : asked;
   const prompt = userPrompt(titled, subjectLine, briefs);
   const key = createHash("sha256").update([v, REPORT_MODEL, product.id, system, prompt].join("\n")).digest("base64url");
   return { key, system, prompt, title: product.title, modern: Boolean(product.modern) };
