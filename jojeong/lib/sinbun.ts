@@ -534,7 +534,7 @@ function lifeOf(key: `${Calling}-${Rank}`, sub: string | null, gender: Gender, t
   const rarity = n ? rarityText(n) : undefined;
   if (gender !== "f" && tier === "saeng") {
     const o = SAENG[group];
-    return { ...base, job: o.job, line: o.line, day: o.day ?? base.day, rise: o.rise, riseText: o.riseText, rarity, office, tag };
+    return { ...base, job: o.job, line: o.line, day: o.day ?? base.day, crisis: o.crisis ?? base.crisis, ending: o.ending ?? base.ending, rise: o.rise, riseText: o.riseText, rarity, office, tag };
   }
   const v = sub ? VARIANTS[`${key}|${sub}`] : undefined;
   if (gender !== "f" && tier === "top") {

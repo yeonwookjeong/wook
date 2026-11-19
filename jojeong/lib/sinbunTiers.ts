@@ -9,7 +9,7 @@ export type Tier = "top" | "mid" | "saeng";
 export const tierOf = (score: number, group: string): Tier => (score >= 6.5 ? "top" : score >= 5.5 || group === "비겁" ? "mid" : "saeng");
 export const TIER_TAG: Record<Exclude<Tier, "mid">, TagKind> = { top: "아패", saeng: "황양목패" };
 
-type Over = { job: string; line: string; office: string; rise: number; riseText: string; day?: [string, string, string] };
+type Over = { job: string; line: string; office: string; rise: number; riseText: string; day?: [string, string, string]; crisis?: string; ending?: string };
 
 // 2품 and up: the base office word in the job and line becomes the high office.
 export const TOP: Record<string, Over & { from: string; to: string }> = {
@@ -23,11 +23,11 @@ export const TOP: Record<string, Over & { from: string; to: string }> = {
 
 // 생원·진사: passed the small exam, went to 성균관 or home, no office. One life per line (the variants are offices).
 export const SAENG: Record<string, Over> = {
-  인성: { job: "글 잘 짓는 진사", line: "진사시에 붙어 성균관에서 글을 닦던 선비", office: "成均", rise: 3, riseText: "진사시에는 단번에 붙었으나 대과의 문은 좁았다. 벼슬 대신 글로 이름을 남겼다.", day: ["새벽에 성균관 명륜당에서 경전을 외었다.", "낮에는 동재 유생들과 시를 지어 겨루었다.", "밤에는 대과에 낼 글을 고쳐 쓰고 또 고쳐 썼다."] },
-  식상: { job: "시 잘 짓는 진사", line: "진사시에 붙어 시 한 수로 이름난 선비", office: "成均", rise: 3, riseText: "진사로 이름은 났으나 벼슬보다 시가 좋았다. 그의 시는 고을 아이들까지 외웠다.", day: ["새벽 안개를 보며 시 한 수를 먼저 지었다.", "낮에는 벗들과 정자에 올라 시회를 열었다.", "밤에는 지은 시를 골라 문집에 옮겨 적었다."] },
-  관성: { job: "예법 밝은 생원", line: "생원시에 붙어 고을의 예법을 바로 세운 선비", office: "成均", rise: 3, riseText: "생원으로 향교와 향약을 이끌며 고을의 어른이 되었다. 대과보다 고을이 그를 더 찾았다.", day: ["새벽에 사당에 절하고 하루를 열었다.", "낮에는 향교에서 유생들에게 예법을 가르쳤다.", "밤에는 고을 향약의 조목을 손보았다."] },
-  재성: { job: "셈 밝은 생원", line: "생원시에 붙고 집안과 고을 곳간을 일으킨 선비", office: "成均", rise: 3, riseText: "생원으로 벼슬은 없었으나 집안과 고을의 곳간을 든든히 했다.", day: ["새벽에 소작 장부와 곡식 섬을 맞춰 보았다.", "낮에는 고을 사창의 곡식 출납을 살폈다.", "밤에는 흉년에 대비할 셈을 거듭했다."] },
-  고른: { job: "고을 어른 생원", line: "생원시에 붙어 고을의 다툼을 풀던 선비", office: "成均", rise: 3, riseText: "생원으로 머물렀지만, 사또보다 그를 먼저 찾는 이가 많았다.", day: ["아침에 사랑방에서 고을 사람들의 하소연을 들었다.", "낮에는 논둑을 돌며 농사 형편을 살폈다.", "밤에는 향교 일과 집안 일을 번갈아 챙겼다."] },
+  인성: { job: "글 잘 짓는 진사", line: "진사시에 붙어 성균관에서 글을 닦던 선비", office: "成均", rise: 3, riseText: "진사시에는 단번에 붙었으나 대과의 문은 좁았다. 벼슬 대신 글로 이름을 남겼다.", day: ["새벽에 성균관 명륜당에서 경전을 외었다.", "낮에는 동재 유생들과 시를 지어 겨루었다.", "밤에는 대과에 낼 글을 고쳐 쓰고 또 고쳐 썼다."], crisis: "대과에 세 번 떨어졌다. 벗들이 다른 길을 권할 때, 그는 서당을 열어 고을 아이들에게 글을 가르치며 끝까지 붓을 놓지 않았다.", ending: "늙어서 엮은 문집이 고을마다 돌았다. 제자 가운데 대과 급제자가 여럿 나왔다." },
+  식상: { job: "시 잘 짓는 진사", line: "진사시에 붙어 시 한 수로 이름난 선비", office: "成均", rise: 3, riseText: "진사로 이름은 났으나 벼슬보다 시가 좋았다. 그의 시는 고을 아이들까지 외웠다.", day: ["새벽 안개를 보며 시 한 수를 먼저 지었다.", "낮에는 벗들과 정자에 올라 시회를 열었다.", "밤에는 지은 시를 골라 문집에 옮겨 적었다."], crisis: "벗의 억울한 일을 시로 꼬집었다가 고을 수령의 미움을 샀다. 그래도 그 시는 장터에서 노래가 되어 퍼졌다.", ending: "말년에 지은 시들이 문집으로 묶여 오래도록 읽혔다." },
+  관성: { job: "예법 밝은 생원", line: "생원시에 붙어 고을의 예법을 바로 세운 선비", office: "成均", rise: 3, riseText: "생원으로 향교와 향약을 이끌며 고을의 어른이 되었다. 대과보다 고을이 그를 더 찾았다.", day: ["새벽에 사당에 절하고 하루를 열었다.", "낮에는 향교에서 유생들에게 예법을 가르쳤다.", "밤에는 고을 향약의 조목을 손보았다."], crisis: "고을 세도가가 향약을 제 뜻대로 고치려 하자 홀로 맞섰다. 한동안 따돌림을 받았지만 고을 사람들이 결국 그의 편에 섰다.", ending: "그가 손본 향약은 그 고을에서 백 년 넘게 지켜졌다." },
+  재성: { job: "셈 밝은 생원", line: "생원시에 붙고 집안과 고을 곳간을 일으킨 선비", office: "成均", rise: 3, riseText: "생원으로 벼슬은 없었으나 집안과 고을의 곳간을 든든히 했다.", day: ["새벽에 소작 장부와 곡식 섬을 맞춰 보았다.", "낮에는 고을 사창의 곡식 출납을 살폈다.", "밤에는 흉년에 대비할 셈을 거듭했다."], crisis: "큰 흉년에 고을 사창이 바닥났다. 그는 제 집 곳간을 먼저 열고, 갚을 길을 따로 셈해 이웃 부잣집들의 곳간까지 열게 했다.", ending: "물려줄 것은 많지 않았지만, 그가 남긴 장부는 고을이 흉년마다 꺼내 보았다." },
+  고른: { job: "고을 어른 생원", line: "생원시에 붙어 고을의 다툼을 풀던 선비", office: "成均", rise: 3, riseText: "생원으로 머물렀지만, 사또보다 그를 먼저 찾는 이가 많았다.", day: ["아침에 사랑방에서 고을 사람들의 하소연을 들었다.", "낮에는 논둑을 돌며 농사 형편을 살폈다.", "밤에는 향교 일과 집안 일을 번갈아 챙겼다."], crisis: "가뭄에 두 마을이 물길을 두고 맞섰다. 그는 두 마을 장정들을 불러 새 보를 함께 쌓게 했고, 두 마을은 혼인까지 맺는 사이가 되었다.", ending: "세상을 떠나자 고을 사람들이 스스로 비를 세웠다." },
 };
 
 // How many of the 258,600 births land on each 양반 life by rung (scripts/sinbunTiers.mts).
