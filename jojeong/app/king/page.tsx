@@ -50,7 +50,11 @@ export default async function KingHome() {
         </p>
       </section>
 
-      <CourtBoard kingName="민준" seats={EXAMPLE} caption="예시, 친구가 들어올 때마다 자리가 채워지옵니다" />
+      {/* Clarity 11/17~19: 36% of sessions had dead clicks; the example board's seats look like buttons. The board
+          stays first (it shows at a glance what the game is), and a tap anywhere on it goes to the form. */}
+      <a href="#enthrone" className="block" aria-label="예시 조정도, 눌러서 내 조정 만들기">
+        <CourtBoard kingName="민준" seats={EXAMPLE} caption="예시이옵니다. 눌러서 전하의 조정을 만드시옵소서 ↓" />
+      </a>
 
       <ol className="mt-5 grid grid-cols-3 gap-2 text-center text-xs text-ink-soft">
         {[
