@@ -25,7 +25,7 @@ const GiftBox: React.FC<{ x: number; y: number; open: number; s?: number }> = ({
     <g stroke={INK} strokeWidth={6} strokeLinejoin="round">
       <rect x={-50} y={-40} width={100} height={78} rx={6} fill="#f2c14e" />
       <rect x={-8} y={-40} width={16} height={78} fill="#3e8e7e" />
-      <g transform={`translate(${-open * 90},${-open * 60}) rotate(${-open * 40})`}>
+      <g transform={`translate(0,${-open * 230}) rotate(${open * 25})`} opacity={1 - open}>
         <rect x={-56} y={-56} width={112} height={20} rx={5} fill="#f2c14e" />
         <rect x={-8} y={-56} width={16} height={20} fill="#3e8e7e" />
         <path d="M0,-56 q-28,-26 -30,-6 q8,10 30,6 q28,-26 30,-6 q-8,10 -30,6" fill="#3e8e7e" />
