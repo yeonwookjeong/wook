@@ -549,7 +549,9 @@ function lifeOf(key: `${Calling}-${Rank}`, sub: string | null, gender: Gender, t
 
 export function sinbunOf(p: Pillars, gender?: Gender): Sinbun {
   const { key, sub, tier } = keyOf(p);
-  return lifeOf(key, sub, gender, tier);
+  // 호패 was a man's tag, so a woman is read as the man she would have been (대표님 11/19): one set of 129 lives.
+  void gender;
+  return lifeOf(key, sub, "m", tier);
 }
 
 // ── The full free report: seven chapters, like the 가상 실록 ──
@@ -609,8 +611,9 @@ export type SinbunStory = Sinbun & {
 };
 
 export function sinbunStory(p: Pillars, gender?: Gender): SinbunStory {
+  void gender; // one set of lives for all (see sinbunOf)
   const { key, group, sub, basis, tier } = keyOf(p);
-  const s = lifeOf(key, sub, gender, tier);
+  const s = lifeOf(key, sub, "m", tier);
   const chart = readChart(p);
   // Four-character charts have no strength reading; fall back to the element that feeds the day master.
   const dayEl = stemEl(p.dayStem);
