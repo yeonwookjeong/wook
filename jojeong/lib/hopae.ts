@@ -1,9 +1,8 @@
 import { BRANCHES, STEMS } from "./saju";
 import type { Rank } from "./sinbun";
 
-// 조선 신분 감정's result drawn as a 호패, the way the real ones were made: per 『호패사목』(1677) ivory (아패) for
-// the high, horn (각패) below them, boxwood (황양목패) for 생원·진사, plain wood for the rest. The rank shows in the
-// material, never written on the tag. The front carries, as the real tags do, a line across the head (here the
+// 조선 신분 감정's result drawn as a 호패, the way the real ones were made: the material by office and standing,
+// as 『속대전』 sets it (below). The rank shows in the material, never written on the tag. The front carries, as the real tags do, a line across the head (here the
 // office), the name column (here the job), the birth year (○○生) and a second small column (the year of this
 // 감정); the back the year it was issued and a burnt brand. The tags are pictures made for us (no museum photo);
 // the letters are carved over them in SVG.
@@ -60,16 +59,38 @@ export const OFFICE: Record<string, string> = {
   "수라간 나인": "水剌",
 };
 
-// The four tags (public/hopae/*.webp, 510 × 1000, drawn for us, background cut). `face`: the flat front of the tag
-// in that picture (left, right, top, bottom), where the carving goes. The back is the same picture mirrored.
-type Material = { name: string; hanja: string; what: string; file: string; face: [number, number, number, number]; ink: string; shade: string; lit: string };
+// The tags, as 『속대전』 sets them (국립중앙박물관 호패 소장품 설명): 아패 for 2품 and up, 각패 for 3품 and below
+// and those who passed the 잡과, 황양목패 for 생원·진사, 소목방패 for 잡직·서인·서리, 대목방패 for 공천·사천. The
+// pictures (public/hopae/*.webp, 510 × 1000, drawn for us, background cut): the two plain wooden tags share one
+// picture, the small one drawn smaller. `face`: the flat front of the tag in that picture (left, right, top,
+// bottom), where the carving goes. The back is the same picture mirrored.
+export type TagKind = "아패" | "각패" | "황양목패" | "소목방패" | "대목방패";
+type Material = { name: string; hanja: string; what: string; who: string; file: string; scale: number; face: [number, number, number, number]; ink: string; shade: string; lit: string };
 
-export const MATERIAL: Record<Rank, Material> = {
-  양반: { name: "아패", hanja: "牙牌", what: "상아", file: "/hopae/a.webp", face: [156, 352, 238, 941], ink: "#9a1a12", shade: "#2a1608", lit: "#fff6e0" },
-  중인: { name: "각패", hanja: "角牌", what: "검은 뿔", file: "/hopae/g.webp", face: [160, 346, 240, 928], ink: "#cfbd99", shade: "#000000", lit: "#5a4636" },
-  상민: { name: "황양목패", hanja: "黃楊木牌", what: "회양목", file: "/hopae/y.webp", face: [148, 360, 232, 904], ink: "#3a2410", shade: "#2a1608", lit: "#fff1cf" },
-  천민: { name: "목패", hanja: "木牌", what: "막 깎은 나무", file: "/hopae/m.webp", face: [151, 362, 278, 943], ink: "#24140a", shade: "#1a0c04", lit: "#e8c99a" },
+const WOOD = { file: "/hopae/m.webp", face: [151, 362, 278, 943] as [number, number, number, number], ink: "#24140a", shade: "#1a0c04", lit: "#e8c99a" };
+export const MATERIAL: Record<TagKind, Material> = {
+  아패: { name: "아패", hanja: "牙牌", what: "상아", who: "2품 이상", file: "/hopae/a.webp", scale: 1, face: [156, 352, 238, 941], ink: "#9a1a12", shade: "#2a1608", lit: "#fff6e0" },
+  각패: { name: "각패", hanja: "角牌", what: "검은 뿔", who: "3품 이하, 잡과 합격", file: "/hopae/g.webp", scale: 1, face: [160, 346, 240, 928], ink: "#cfbd99", shade: "#000000", lit: "#5a4636" },
+  황양목패: { name: "황양목패", hanja: "黃楊木牌", what: "회양목", who: "생원, 진사", file: "/hopae/y.webp", scale: 1, face: [148, 360, 232, 904], ink: "#3a2410", shade: "#2a1608", lit: "#fff1cf" },
+  소목방패: { name: "소목방패", hanja: "小木方牌", what: "작은 나무", who: "잡직, 서리, 백성", scale: 0.84, ...WOOD },
+  대목방패: { name: "대목방패", hanja: "大木方牌", what: "큰 나무", who: "공노비, 사노비", scale: 1, ...WOOD },
 };
+export const TAG_ORDER: TagKind[] = ["아패", "각패", "황양목패", "소목방패", "대목방패"];
+
+// Which tag each of the 24 base lives (lib/sinbun.ts; a woman's life takes the man's of the same key, since 조선
+// women carried none) would have carried. Officials of 3품 and below (교리 정5품, 정랑 정5품, 감찰 정6품, 현감
+// 종6품, 사관, 무관) and 잡과 men (훈도, 역관, 의관): 각패. 잡직 (화원, 검서관, 별감) and 서인: 소목방패. 관노 and
+// 수노: 대목방패. 광대, 학승, 사공, 숙수: no rule names them; by law they were 양인 (서인), so 소목방패 (2026-11-19).
+export const TAG_OF_LIFE: Record<string, TagKind> = {
+  "인성-양반": "각패", "관성-양반": "각패", "재성-양반": "각패", "식상-양반": "각패", "비겁-양반": "각패", "고른-양반": "각패",
+  "관성-중인": "각패", "재성-중인": "각패", "고른-중인": "각패",
+  "식상-중인": "소목방패", "인성-중인": "소목방패", "비겁-중인": "소목방패",
+  "인성-상민": "소목방패", "재성-상민": "소목방패", "관성-상민": "소목방패", "고른-상민": "소목방패", "식상-상민": "소목방패", "비겁-상민": "소목방패",
+  "식상-천민": "소목방패", "인성-천민": "소목방패", "비겁-천민": "소목방패", "고른-천민": "소목방패",
+  "관성-천민": "대목방패", "재성-천민": "대목방패",
+};
+// For a shared link that carries only the standing.
+export const TAG_OF_RANK: Record<Rank, TagKind> = { 양반: "각패", 중인: "각패", 상민: "소목방패", 천민: "소목방패" };
 
 const ganji = (stem: number, branch: number) => STEMS[stem] + BRANCHES[branch];
 // This year's 간지 in Korea (a plain calendar year; the 감정 is dated, not a chart).
@@ -80,7 +101,7 @@ export function yearGanji(now = new Date()): string {
 // The 띠 year of a chart: its year pillar, or the branch alone for a chart without the year stem.
 export const bornOf = (yearStem: number | undefined, yearBranch: number) => (yearStem === undefined ? BRANCHES[yearBranch] : ganji(yearStem, yearBranch)) + "生";
 
-export type HopaeInput = { rank: Rank; job: string; office?: string; born: string; issued: string };
+export type HopaeInput = { kind: TagKind; job: string; office?: string; born: string; issued: string };
 
 export const HOPAE_W = 510;
 export const HOPAE_H = 1000;
@@ -89,7 +110,7 @@ export const HOPAE_H = 1000;
 // wall on the upper left of each stroke, a lit wall on the lower right, the groove filled with ink (red 주사 on
 // ivory, pale on horn, 먹 on wood). `id` keeps filter ids apart when several tags share a page.
 export function carvingSvg(h: HopaeInput, id: string, back = false): string {
-  const m = MATERIAL[h.rank];
+  const m = MATERIAL[h.kind];
   const [fl, fr, top, bottom] = m.face;
   const [l, r] = back ? [HOPAE_W - fr, HOPAE_W - fl] : [fl, fr];
   const cx = (l + r) / 2;

@@ -20,7 +20,7 @@ import { ReadingCard, SinbunCard } from "@/components/ResultCards";
 import { isShareKind, openCard, openPerson, type ReadingSummary, type SinbunSummary } from "@/lib/shareToken";
 import { track } from "@/lib/stats";
 import { yearReading } from "@/lib/yearly";
-import { yearGanji } from "@/lib/hopae";
+import { TAG_OF_RANK, yearGanji } from "@/lib/hopae";
 
 // What a friend opens from "친구에게 보내기". Two kinds of link, both signed (lib/shareToken.ts), nothing stored:
 //   the whole free result as the sender saw it, with the form for their own at the top and the foot; or
@@ -132,7 +132,7 @@ export default async function SharedPage({ params }: PageProps<"/s/[kind]/[token
           {kind === "sinbun" ? (
             (() => {
               const d = card as SinbunSummary;
-              return <SinbunCard who={`${josa(d.n, "이/가")} 조선에 태어났다면`} rank={d.r} job={d.j} line={d.l} rise={d.w} yong={d.y} tag={{ rank: d.r, job: d.j, born: "", issued: yearGanji() }} />;
+              return <SinbunCard who={`${josa(d.n, "이/가")} 조선에 태어났다면`} rank={d.r} job={d.j} line={d.l} rise={d.w} yong={d.y} tag={{ kind: d.t ?? TAG_OF_RANK[d.r], job: d.j, born: "", issued: yearGanji() }} />;
             })()
           ) : (
             (() => {

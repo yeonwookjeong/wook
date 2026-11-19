@@ -24,7 +24,7 @@ import ChannelCard from "@/components/ChannelCard";
 import { ReadingCard, SinbunCard } from "@/components/ResultCards";
 import { iljuFacts } from "@/lib/cards";
 import { sinbunStory } from "@/lib/sinbun";
-import { bornOf, yearGanji } from "@/lib/hopae";
+import { bornOf, TAG_OF_RANK, yearGanji } from "@/lib/hopae";
 import { sealCard, sealPerson } from "@/lib/shareToken";
 import NextStep from "@/components/NextStep";
 import TrackLink from "@/components/TrackLink";
@@ -518,7 +518,7 @@ async function OpenReport({
             file="hundosaju-sinbun"
             from="sinbun"
             paths={{
-              summary: `/s/sinbun/${sealCard("sinbun", { n: name.slice(0, 12), r: sinbun.rank, j: sinbun.job, l: sinbun.line, w: sinbun.rise, y: sinbun.yong })}`,
+              summary: `/s/sinbun/${sealCard("sinbun", { n: name.slice(0, 12), r: sinbun.rank, j: sinbun.job, l: sinbun.line, w: sinbun.rise, y: sinbun.yong, t: sinbun.tag })}`,
               full: `/s/sinbun/${sealPerson("sinbun", me.person)}`,
             }}
             texts={{
@@ -527,7 +527,7 @@ async function OpenReport({
               full: `조선에 태어났다면 나는 '${sinbun.job}', 너는 뭐였을지 봐 봐 (훈도사주)`,
             }}
             card={<SinbunCard who={`${josa(name, "이/가")} 조선에 태어났다면`} rank={sinbun.rank} job={sinbun.job} line={sinbun.line} rise={sinbun.rise} yong={sinbun.yong}
-                tag={{ rank: sinbun.rank, job: sinbun.job, office: sinbun.office, born: bornOf(pillars.yearStem, pillars.yearBranch), issued: yearGanji() }}
+                tag={{ kind: sinbun.tag ?? TAG_OF_RANK[sinbun.rank], job: sinbun.job, office: sinbun.office, born: bornOf(pillars.yearStem, pillars.yearBranch), issued: yearGanji() }}
                 rarity={sinbun.rarity}
               />}
           />

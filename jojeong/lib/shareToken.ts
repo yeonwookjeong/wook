@@ -1,3 +1,4 @@
+import type { TagKind } from "./hopae";
 import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { decodePerson, encodePerson, type Person } from "./pairToken";
@@ -39,7 +40,7 @@ export type ReadingSummary = {
   k: [label: string, type: string][];
   r: string; // "같은 신묘일주 중 약 3%만 이 구조", or ""
 };
-export type SinbunSummary = { n: string; r: Rank; j: string; l: string; w: number; y: number };
+export type SinbunSummary = { n: string; r: Rank; j: string; l: string; w: number; y: number; t?: TagKind };
 export type SummaryOf<K extends ShareKind> = K extends "reading" ? ReadingSummary : SinbunSummary;
 export const CARD_PREFIX = "c-";
 

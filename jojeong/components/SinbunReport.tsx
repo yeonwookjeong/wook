@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ELEMENT_HANJA, ELEMENT_KO } from "@/lib/myeongri";
 import type { Pillars } from "@/lib/saju";
 import { sinbunStory } from "@/lib/sinbun";
-import { bornOf, MATERIAL, yearGanji } from "@/lib/hopae";
+import { bornOf, MATERIAL, TAG_OF_RANK, TAG_ORDER, yearGanji } from "@/lib/hopae";
 import Hopae from "./Hopae";
 import SinbunUpsell, { SinbunMore } from "./SinbunUpsell";
 import Keep from "./Keep";
@@ -10,7 +10,6 @@ import SinsalNight, { NIGHT_GOLD, NIGHT_PANEL } from "./SinsalNight";
 import RoyalDoc from "./RoyalDoc";
 
 const HANJA_NUM = "一二三四五六七";
-const RANKS = ["양반", "중인", "상민", "천민"] as const;
 // The first sentence of a passage, for the one-glance rows.
 const firstLine = (t: string) => t.split(/(?<=\.)\s/)[0];
 
@@ -28,7 +27,8 @@ export default function SinbunReport({
   query: string;
 }) {
   const s = sinbunStory(pillars, gender);
-  const m = MATERIAL[s.rank];
+  const kind = s.tag ?? TAG_OF_RANK[s.rank];
+  const m = MATERIAL[kind];
   return (
     <>
       {/* The head: the 호패 alone on the night (the one thing the eye goes to), then what it says. */}
@@ -47,7 +47,7 @@ export default function SinbunReport({
             />
             <Hopae
               tag={{
-                rank: s.rank,
+                kind,
                 job: s.job,
                 office: s.office,
                 born: bornOf(pillars.yearStem, pillars.yearBranch),
@@ -71,6 +71,11 @@ export default function SinbunReport({
               {s.rank}, {m.name} {m.hanja}
             </span>
           </div>
+          {gender === "f" && (
+            <p className="mt-2 text-[11.5px] leading-relaxed text-hanji/70">
+              조선 여인은 호패를 차지 않았어요. 사내로 났다면 찼을 패를 새겨 드렸어요.
+            </p>
+          )}
         </section>
 
         <section
@@ -125,48 +130,54 @@ export default function SinbunReport({
 
         <SinbunUpsell group={s.group} job={s.job} rank={s.rank} />
 
-        {/* What the four tags mean: 『호패사목』(1677) set the material by standing. */}
+        {/* What the tags mean, as 『속대전』 sets them: the material by office and standing, not by the four ranks. */}
         <section className={`${NIGHT_PANEL} mt-4 px-3 py-4`}>
           <h2 className="text-center font-myeongjo text-[17px] font-extrabold">
-            호패는 신분마다 재질이 달랐어요
+            호패는 벼슬과 신분마다 재질이 달랐어요
           </h2>
-          <ul className="mt-3 grid grid-cols-4 gap-1.5 text-center">
-            {RANKS.map((r) => {
-              const t = MATERIAL[r];
-              const mine = r === s.rank;
+          <ul className="mt-3 grid grid-cols-5 gap-1 text-center">
+            {TAG_ORDER.map((k) => {
+              const t = MATERIAL[k];
+              const mine = k === kind;
               return (
                 <li
-                  key={r}
-                  className={`flex flex-col items-center rounded-xl px-1 pt-1.5 pb-2 ${mine ? "bg-[#d4af5f]/15 ring-1 ring-[#d4af5f]" : ""}`}
+                  key={k}
+                  className={`flex flex-col items-center rounded-xl px-0.5 pt-1.5 pb-2 ${mine ? "bg-[#d4af5f]/15 ring-1 ring-[#d4af5f]" : ""}`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={t.file}
                     alt=""
-                    className="h-[92px] w-auto object-contain"
+                    className="w-auto object-contain object-top"
+                    style={{ height: 80 * t.scale, marginBottom: 80 * (1 - t.scale) }}
                   />
                   <b
-                    className={`mt-1 font-myeongjo text-[13px] ${mine ? NIGHT_GOLD : ""}`}
+                    className={`mt-1 font-myeongjo text-[12px] leading-tight ${mine ? NIGHT_GOLD : ""}`}
                   >
                     {t.name}
                   </b>
-                  <span className="text-[10.5px] text-hanji/60">{t.hanja}</span>
-                  <span className="mt-0.5 text-[11px] leading-tight text-hanji/85">
+                  <span className="mt-0.5 text-[10.5px] leading-tight text-hanji/85">
                     {t.what}
                   </span>
                   <span
-                    className={`mt-1 rounded-full px-1.5 text-[10.5px] font-bold ${mine ? "bg-[#d4af5f] text-[#0f2236]" : "text-hanji/70"}`}
+                    className={`mt-1 rounded-full px-1 text-[10px] leading-snug font-bold ${mine ? "bg-[#d4af5f] text-[#0f2236]" : "text-hanji/70"}`}
                   >
-                    {mine ? `그대, ${r}` : r}
+                    {mine ? "그대" : t.who}
                   </span>
                 </li>
               );
             })}
           </ul>
-          <p className="mt-3 text-center text-[11px] leading-relaxed text-hanji/50">
-            1677년 『호패사목』은 2품 이상은 상아, 3품 이하는 뿔, 생원, 진사는
-            회양목으로 정했어요. 여기서는 감정한 신분에 맞춰 골랐어요.
+          <p className="mt-3 text-center text-[11px] leading-relaxed text-hanji/55">
+            『속대전』은 2품 이상은 상아, 3품 이하와 잡과 합격자는 뿔, 생원과 진사는 회양목, 잡직과 서리와 백성은 작은
+            나무, 노비는 큰 나무 패로 정했어요. 그대의 삶이 찼을 패를 골랐어요.
           </p>
+          {gender === "f" && (
+            <p className="mt-2 rounded-lg bg-white/[0.06] px-3 py-2 text-center text-[11.5px] leading-relaxed text-hanji/85">
+              조선에서 호패는 열여섯 살 넘은 남자만 찼어요. 여인이었던 그대에게는 같은 사주로 사내로 났다면 찼을 호패를
+              새겨 드렸어요.
+            </p>
+          )}
         </section>
 
         <SinbunMore group={s.group} job={s.job} />

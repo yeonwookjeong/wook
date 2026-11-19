@@ -9,7 +9,7 @@ import HopaeFace from "./HopaeFace";
 export default function Hopae({ tag, className = "", night = false }: { tag: HopaeInput; className?: string; night?: boolean }) {
   const id = useId().replace(/[^a-zA-Z0-9]/g, "");
   const [back, setBack] = useState(false);
-  const m = MATERIAL[tag.rank];
+  const m = MATERIAL[tag.kind];
   return (
     <div className={`flex flex-col items-center ${className}`}>
       <button

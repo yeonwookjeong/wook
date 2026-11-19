@@ -40,7 +40,7 @@ function Frame({ no, say, children }: { no: string; say: string; children: React
 // that carries no birth year), the plain paper card.
 export function SinbunCard({ who, rank, job, line, rise, yong, tag, rarity }: { who: string; rank: Rank; job: string; line: string; rise: number; yong: number; tag?: HopaeInput; rarity?: string }) {
   if (!tag) return <SinbunPaperCard who={who} rank={rank} job={job} line={line} rise={rise} yong={yong} />;
-  const m = MATERIAL[rank];
+  const m = MATERIAL[tag.kind];
   return (
     <div className="relative flex aspect-[4/5] w-full flex-col overflow-hidden rounded-2xl bg-[radial-gradient(circle_at_50%_38%,#24456a,transparent_60%),linear-gradient(180deg,#0b1626,#13263d_50%,#0f2236)] p-3.5 text-hanji">
       <div className="flex items-center justify-between px-1 text-[11px] font-extrabold">
