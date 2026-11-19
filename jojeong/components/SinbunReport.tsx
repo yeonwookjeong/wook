@@ -64,7 +64,7 @@ export default function SinbunReport({
           <div className="mt-3 flex flex-wrap justify-center gap-1.5">
             {s.rarity && (
               <span className="rounded-full bg-[#d4af5f] px-3 py-1 text-xs font-extrabold text-[#0f2236]">
-                100가지 삶 중 {s.rarity}
+                {gender === "f" ? 100 : 129}가지 삶 중 {s.rarity}
               </span>
             )}
             <span className="rounded-full border border-[#d4af5f]/60 px-3 py-1 text-xs font-extrabold text-[#d4af5f]">
