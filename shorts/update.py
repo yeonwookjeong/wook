@@ -20,7 +20,7 @@ HERE = Path(__file__).resolve().parent
 ZIP_URL = "https://github.com/yeonwookjeong/wook/archive/refs/heads/claude/coupang-shorts-tts-k8qbz1.zip"
 KEEP_DIRS = {"work", "out", "bgm", "broll", "my_tts", "fonts", "__pycache__"}  # 사장님 자료: 건드리지 않음
 KEEP_FILES = {"google_tts_key.txt", "gemini_key.txt", "elevenlabs_key.txt", "kakao_key.txt", "naver_key.txt",
-              "browser.txt", "channels.json"}
+              "browser.txt", "channels.json", "anthropic_key.txt"}
 
 
 def main():
@@ -56,7 +56,7 @@ def main():
         changed += 1
     # 레시피는 GitHub과 똑같이 맞춤 (올린 영상은 _완료로 옮겨지므로, 예전 위치에 남은 건 지움)
     for f in ((HERE / "recipes").rglob("*.json") if new_recipes else []):
-        if f.relative_to(HERE) not in new_recipes:
+        if f.relative_to(HERE) not in new_recipes and '"auto": true' not in f.read_text(encoding="utf-8"):  # auto.py가 만든 건 지키기
             f.unlink()
             removed += 1
     print(f"✅ 업데이트 완료 (바뀐 파일 {changed}개" + (f", 정리한 레시피 {removed}개" if removed else "") + ")")

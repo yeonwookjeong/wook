@@ -228,3 +228,14 @@ python3 watch.py add https://youtu.be/NDyePWmIYeM   # 채널 등록 (그 채널 
 python3 watch.py                                    # 지금 확인 → 아이템 소개 영상만 골라 CC 여부와 함께 out/새영상.md
 python3 watch.py --install                          # 매일 10시·18시 자동 확인 + 맥 알림
 ```
+
+## 완전 자동 (auto.py)
+
+```bash
+python3 -m pip install -U anthropic          # 처음 한 번
+echo "sk-ant-..." > anthropic_key.txt         # Claude API 키 (처음 한 번)
+python3 auto.py https://youtu.be/링크1 https://youtu.be/링크2
+```
+링크만 주면: 자막 스캔 → Claude가 내용 충분한 제품만 골라 대본 작성(recipe_rules.md·NARRATION.md 규칙) → 검수(걸리면 이유를 알려주고 최대 2번 다시 씀)
+→ 빈 번호에 끼워 넣기(이미 정한 번호는 안 바꿈, 앞뒤 같은 출연자 피함) → 영상 제작 → 쿠팡 확인 페이지.
+`--dry`면 대본만 만들고 영상은 안 만듦. auto.py가 만든 레시피는 update.py가 지우지 않음.
