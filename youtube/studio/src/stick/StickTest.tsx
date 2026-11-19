@@ -79,31 +79,31 @@ export const StickTest: React.FC = () => {
     }
     cam = { z: lerp(1.0, 1.25, ease(t)), fx: 560, fy: 1350 };
   } else if (f3 < 0) {
-    // ---- 장면 2: "Shoes take you places. Including away." 운동화가 혼자 깡충깡충 걸어감
+    // ---- 장면 2: "Shoes take you places." 여자가 바로 신고(쏙) 신나서 통통 걸어봄 → "Including away." 뒤돌아 길 쪽을 봄
     const t = f2 / WK;
-    man = { ...stand(f2), armR: [-30, -20], face: "o" };
-    woman = { ...stand(f2), armR: [-100, -10], face: "o" };
-    const sx = lerp(560, 1250, ease(t));
-    const sy = lerp(FLOOR - 20, FLOOR - 20, t);
-    shoes = <Sneakers x={sx} y={sy} s={1.4} hop={f2 * 0.6} />;
-    cam = { z: lerp(1.6, 1.3, ease(t)), fx: lerp(560, 760, ease(t)), fy: 1450 };
+    womShoes = true;
+    const snap = spring({ frame: f2, fps: FPS, config: { damping: 8, stiffness: 240 } });
+    const strut = interpolate(t, [0.15, 0.6], [0, 1], cl);
+    const turned = t > 0.66;
+    womX = 700 + Math.sin(strut * Math.PI) * 120;
+    womFlip = !(strut > 0 && strut < 0.5);
+    woman = turned ? { ...stand(f2), face: "back", head: -8 } : strut > 0 && strut < 1 ? { ...walk(f2, 0.45), armR: [-130, 0], armL: [-120, 0] } : { ...stand(f2), bob: (1 - snap) * -18 };
+    man = { ...stand(f2), armR: [-40, -20] };
+    cam = turned ? { z: 1.4, fx: 640, fy: 1350 } : { z: lerp(1.6, 1.3, ease(t)), fx: 700, fy: 1500 };
   } else {
-    // ---- 장면 3: "give your partner shoes" 신발이 깡충 돌아와 여자 발에 쏙 → "they'll use them" 신고 통통 → "to walk away from you" 신고 걸어가 버림
+    // ---- 장면 3: "The saying goes: give your partner shoes," 남자가 기대하며 다가감 → "and they'll use them" 신은 발 가까이 → "to walk away from you." 신은 채로 걸어가 버림
     const t = f3 / AW;
-    const back = interpolate(t, [0.05, 0.38], [0, 1], cl);
-    const on = t >= 0.4;
+    womShoes = true;
     const go = interpolate(t, [0.6, 1], [0, 1], cl);
-    womShoes = on;
-    if (!on) shoes = <Sneakers x={lerp(1250, 705, ease(back))} y={FLOOR + 8} s={1.0} hop={back < 1 ? f3 * 0.6 : 0} flip />;
-    const snap = on ? spring({ frame: f3 - Math.round(AW * 0.4), fps: FPS, config: { damping: 8, stiffness: 240 } }) : 0;
     womFlip = go <= 0;
     womX = lerp(700, 610, ease(go));
     womFloor = lerp(FLOOR, 1330, ease(go));
     womScale = lerp(1, 0.38, ease(go));
     womO = interpolate(t, [0.92, 1], [1, 0.0], cl);
-    woman = go > 0 ? { ...walk(f3), face: "back" } : on ? { ...stand(f3), head: 10, armR: [-60, -20], armL: [-50, -20], bob: (1 - snap) * -18 + Math.abs(Math.sin(f3 * 0.5)) * 8 } : { ...stand(f3), head: 14 };
-    man = go > 0.2 ? { armL: [2, 0], armR: [-2, 0], head: -6, lean: -3, bob: -4 } : { ...stand(f3), armR: [-80, -10] };
-    cam = go > 0 ? { z: lerp(1.35, 1.15, ease(go)), fx: lerp(640, 500, ease(go)), fy: lerp(1450, 1350, ease(go)) } : { z: 1.6, fx: lerp(900, 680, ease(back)), fy: 1500 };
+    woman = go > 0 ? { ...walk(f3), face: "back" } : { ...stand(f3) };
+    manX = go > 0 ? 390 : lerp(390, 470, ease(interpolate(t, [0, 0.3], [0, 1], cl)));
+    man = go > 0.2 ? { armL: [2, 0], armR: [-2, 0], head: -6, lean: -3, bob: -4 } : { ...stand(f3), armR: [-70, -10] };
+    cam = t < 0.3 ? { z: 1.2, fx: 560, fy: 1350 } : go <= 0 ? { z: 2.2, fx: 700, fy: FLOOR - 40 } : { z: lerp(1.35, 1.15, ease(go)), fx: lerp(640, 500, ease(go)), fy: lerp(1450, 1350, ease(go)) };
   }
   const H = 520;
   const caps = (CAPS.en as { text: string; hl?: boolean }[][][]).slice(1, 4);
@@ -134,9 +134,8 @@ export const StickTest: React.FC = () => {
         </Sequence>
       ))}
       <Sequence from={Math.round(SH * 0.55)} layout="none"><Audio src={staticFile("sfx/pop.wav")} volume={0.45} /></Sequence>
-      <Sequence from={SH + 6} layout="none"><Audio src={staticFile("sfx/whoosh.wav")} volume={0.35} /></Sequence>
-      <Sequence from={SH + WK + Math.round(AW * 0.4)} layout="none"><Audio src={staticFile("sfx/pop.wav")} volume={0.5} /></Sequence>
-      <Sequence from={SH + WK + Math.round(AW * 0.6)} layout="none"><Audio src={staticFile("sfx/whoosh.wav")} volume={0.35} /></Sequence>
+      <Sequence from={SH + 2} layout="none"><Audio src={staticFile("sfx/pop.wav")} volume={0.5} /></Sequence>
+            <Sequence from={SH + WK + Math.round(AW * 0.6)} layout="none"><Audio src={staticFile("sfx/whoosh.wav")} volume={0.35} /></Sequence>
     </AbsoluteFill>
   );
 };
