@@ -26,7 +26,7 @@ export type Sinbun = {
   riseText: string;
   ending: string; // 말년
   now: string;
-  // 100명 중 몇 명이 이 삶으로 나오는지 (one of the 100 lives; empty for four-character charts).
+  // 100명 중 몇 명이 이 삶으로 나오는지 (one of the lives: 129 for a man, 100 for a woman since 2026-11-19; empty for four-character charts).
   rarity?: string;
   // Two characters across the head of the 호패 (lib/hopae.ts), from the base life's office.
   office?: string;
