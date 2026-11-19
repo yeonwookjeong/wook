@@ -60,7 +60,7 @@ export const Stick: React.FC<{ look: Look; pose: Pose; x: number; floor: number;
       </defs>
       {/* 발밑 그림자 */}
       <ellipse cx={0} cy={0} rx={s(0.16)} ry={s(0.025)} fill="rgba(70,40,25,0.25)" />
-      <g filter={`url(#brush-${id})`} strokeLinecap="round" strokeLinejoin="round" fill="none">
+      <g strokeLinecap="round" strokeLinejoin="round" fill="none">
         {/* 뒤쪽 팔·다리는 조금 옅게 */}
         <g opacity={0.75}>
           <path d={armL.d} stroke={INK} strokeWidth={w} />
@@ -98,39 +98,7 @@ export const Stick: React.FC<{ look: Look; pose: Pose; x: number; floor: number;
             // 짧은 머리: 정수리 몇 가닥
             <path d={`M${hc[0] - hr * 0.55},${hc[1] - hr * 0.8} q${hr * 0.1},${-hr * 0.45} ${hr * 0.35},${-hr * 0.3} M${hc[0] - hr * 0.1},${hc[1] - hr * 0.98} q${hr * 0.12},${-hr * 0.48} ${hr * 0.38},${-hr * 0.2} M${hc[0] + hr * 0.35},${hc[1] - hr * 0.88} q${hr * 0.15},${-hr * 0.35} ${hr * 0.38},${-hr * 0.05}`} stroke={look.kind === "old" ? "#7a7276" : INK} strokeWidth={w * 0.85} />
           )}
-          {face === "back" ? (
-            look.kind === "woman" ? <circle cx={hc[0]} cy={hc[1]} r={hr * 1.02} fill={INK} stroke="none" /> : null
-          ) : (
-            (() => {
-              const ey = hc[1] + hr * 0.05, ex = hr * 0.34, lw = w * 0.5;
-              const big = face === "o";
-              const brow = face === "o" ? -0.55 : face === "sad" ? -0.38 : -0.36;
-              return (
-                <>
-                  {/* 눈썹 */}
-                  {[-1, 1].map((sd) => (
-                    <path key={`b${sd}`} d={face === "sad" ? `M${hc[0] + sd * ex * 0.55},${hc[1] + hr * (brow - 0.08)} L${hc[0] + sd * ex * 1.45},${hc[1] + hr * (brow + 0.06)}` : `M${hc[0] + sd * ex * 0.6},${hc[1] + hr * brow} q${sd * ex * 0.4},${-hr * 0.1} ${sd * ex * 0.85},${hr * 0.02}`} stroke={INK} strokeWidth={lw} />
-                  ))}
-                  {/* 눈 */}
-                  {[-1, 1].map((sd) =>
-                    face === "laugh" ? (
-                      <path key={`e${sd}`} d={`M${hc[0] + sd * ex - hr * 0.13},${ey + hr * 0.03} q${hr * 0.13},${-hr * 0.16} ${hr * 0.26},0`} stroke={INK} strokeWidth={lw} />
-                    ) : (
-                      <ellipse key={`e${sd}`} cx={hc[0] + sd * ex} cy={ey} rx={hr * (big ? 0.12 : 0.085)} ry={hr * (big ? 0.15 : 0.11)} fill={INK} stroke="none" />
-                    ),
-                  )}
-                  {/* 볼 */}
-                  {[-1, 1].map((sd) => <ellipse key={`c${sd}`} cx={hc[0] + sd * hr * 0.58} cy={hc[1] + hr * 0.32} rx={hr * 0.14} ry={hr * 0.09} fill="#ff9a8a" stroke="none" opacity={0.55} />)}
-                  {/* 입 */}
-                  {face === "o" && <ellipse cx={hc[0]} cy={hc[1] + hr * 0.5} rx={hr * 0.11} ry={hr * 0.15} fill="#7a2a38" stroke={INK} strokeWidth={lw * 0.7} />}
-                  {face === "flat" && <path d={`M${hc[0] - hr * 0.13},${hc[1] + hr * 0.5} l${hr * 0.26},0`} stroke={INK} strokeWidth={lw} />}
-                  {face === "sad" && <path d={`M${hc[0] - hr * 0.16},${hc[1] + hr * 0.58} q${hr * 0.16},${-hr * 0.16} ${hr * 0.32},0`} stroke={INK} strokeWidth={lw} />}
-                  {face === "smile" && <path d={`M${hc[0] - hr * 0.18},${hc[1] + hr * 0.4} q${hr * 0.18},${hr * 0.2} ${hr * 0.36},0`} stroke={INK} strokeWidth={lw} />}
-                  {face === "laugh" && <path d={`M${hc[0] - hr * 0.22},${hc[1] + hr * 0.36} q${hr * 0.22},${hr * 0.38} ${hr * 0.44},0 Z`} fill="#7a2a38" stroke={INK} strokeWidth={lw} />}
-                </>
-              );
-            })()
-          )}
+          {face === "back" && look.kind === "woman" && <circle cx={hc[0]} cy={hc[1]} r={hr * 1.02} fill={INK} stroke="none" />}
         </g>
       </g>
     </svg>
