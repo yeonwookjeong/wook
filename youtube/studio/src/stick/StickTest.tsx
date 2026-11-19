@@ -33,16 +33,26 @@ const GiftBox: React.FC<{ x: number; y: number; open: number; s?: number }> = ({
     </g>
   </svg>
 );
-// 운동화 한 켤레 (먹선)
+// 운동화 한 켤레 (먹선, 옆모습: 두꺼운 밑창 · 둥근 앞코 · 끈 · 초록 줄)
+const Shoe: React.FC = () => (
+  <g stroke={INK} strokeWidth={4.5} strokeLinejoin="round" strokeLinecap="round">
+    <path d="M6,40 C4,26 8,12 22,9 L40,8 C48,8 52,13 58,19 C72,25 96,28 108,34 C116,38 117,42 114,44 L8,44 Z" fill={SNEAK} />
+    <path d="M20,9 C26,5 36,5 40,8" fill="#3a2c34" />
+    <path d="M30,38 C46,34 60,28 78,26" stroke="#3e8e7e" strokeWidth={7} fill="none" />
+    <path d="M48,13 l8,-5 M54,18 l8,-5 M60,22 l8,-5" strokeWidth={3.5} />
+    <path d="M92,30 C96,34 98,38 98,44" strokeWidth={3} fill="none" />
+    <path d="M7,10 L16,10 L16,30 L7,30" fill="#3e8e7e" strokeWidth={3.5} />
+    <rect x={2} y={42} width={116} height={11} rx={5.5} fill="#ece4d4" />
+    <path d="M8,50 L112,50" strokeWidth={2.5} stroke="#a89a88" />
+  </g>
+);
 const Sneakers: React.FC<{ x: number; y: number; s?: number; hop?: number; flip?: boolean }> = ({ x, y, s = 1, hop = 0, flip }) => (
-  <svg width={160 * s} height={90 * s} viewBox="-80 -70 160 90" style={{ position: "absolute", left: x - 80 * s, top: y - 70 * s, overflow: "visible", transform: flip ? "scaleX(-1)" : undefined }}>
+  <svg width={180 * s} height={80 * s} viewBox="-30 -20 180 80" style={{ position: "absolute", left: x - 90 * s, top: y - 70 * s, overflow: "visible", transform: flip ? "scaleX(-1)" : undefined }}>
     {[0, 1].map((k) => {
       const ph = Math.sin(hop + k * Math.PI);
       return (
-        <g key={k} transform={`translate(${k ? 18 : -30},${-Math.max(0, ph) * 26}) rotate(${-ph * 10})`} stroke={INK} strokeWidth={5} strokeLinejoin="round">
-          <path d="M-32,0 q4,-30 30,-30 q20,0 34,22 q6,8 -2,10 l-58,0 z" fill={SNEAK} />
-          <path d="M-20,-14 l30,0" stroke="#3e8e7e" strokeWidth={6} />
-          <path d="M-32,0 l60,0" strokeWidth={7} />
+        <g key={k} transform={`translate(${k ? 22 : -18},${(k ? 4 : 0) - Math.max(0, ph) * 24}) rotate(${-ph * 8} 60 44)`}>
+          <Shoe />
         </g>
       );
     })}
