@@ -71,11 +71,9 @@ export default function SinbunReport({
               {s.rank}, {m.name} {m.hanja}
             </span>
           </div>
-          {gender === "f" && (
-            <p className="mt-2 text-[11.5px] leading-relaxed text-hanji/70">
-              조선에서 호패는 사내만 찼어요. 그대가 사내로 났다면 살았을 삶과 찼을 패이옵니다.
-            </p>
-          )}
+          <p className="mt-2 text-[11.5px] leading-relaxed text-hanji/70">
+            호패는 사내만 찼기에, 남녀 모두 사내로 났다면 살았을 삶과 찼을 패로 감정했어요.
+          </p>
         </section>
 
         <section
@@ -172,12 +170,10 @@ export default function SinbunReport({
             『속대전』은 2품 이상은 상아, 3품 이하와 잡과 합격자는 뿔, 생원과 진사는 회양목, 잡직과 서리와 백성은 작은
             나무, 노비는 큰 나무 패로 정했어요. 그대의 삶이 찼을 패를 골랐어요.
           </p>
-          {gender === "f" && (
-            <p className="mt-2 rounded-lg bg-white/[0.06] px-3 py-2 text-center text-[11.5px] leading-relaxed text-hanji/85">
-              조선에서 호패는 열여섯 살 넘은 사내만 찼어요. 그래서 여인인 그대도 같은 사주로 사내로 났다면 살았을 삶과
-              찼을 호패로 감정했어요.
-            </p>
-          )}
+          <p className="mt-2 rounded-lg bg-white/[0.06] px-3 py-2 text-center text-[11.5px] leading-relaxed text-hanji/85">
+            조선에서 호패는 열여섯 살 넘은 사내만 찼어요. 그래서 남녀 모두 같은 사주로 사내로 났다면 살았을 삶과 찼을
+            호패로 감정해요.
+          </p>
         </section>
 
         <SinbunMore group={s.group} job={s.job} />

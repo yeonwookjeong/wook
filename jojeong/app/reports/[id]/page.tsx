@@ -483,8 +483,13 @@ async function OpenReport({
             </p>
           )}
           <div className="mt-4">
-            <MeForm next={next} />
+            <MeForm next={next} noGender={product.id === "sinbun"} />
           </div>
+          {product.id === "sinbun" && (
+            <p className="mt-3 text-center text-[12px] leading-relaxed text-ink-soft">
+              호패는 조선의 사내만 찼어요. 그래서 남녀 모두 같은 사주로 사내로 났다면 살았을 삶과 찼을 호패로 감정해요.
+            </p>
+          )}
         </section>
       </>
     );

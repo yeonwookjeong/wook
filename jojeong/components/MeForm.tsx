@@ -19,7 +19,7 @@ const toTop = () => {
 };
 
 // "내 사주" for the reports: entered once, remembered in this browser.
-export default function MeForm({ next, submit = "내 사주로 보기", defaultName }: { next: string; submit?: string; defaultName?: string }) {
+export default function MeForm({ next, submit = "내 사주로 보기", defaultName, noGender = false }: { next: string; submit?: string; defaultName?: string; noGender?: boolean }) {
   const [state, formAction, pending] = useActionState<FormState, FormData>(saveMeAction, { error: null });
   const wasPending = useRef(false);
   useEffect(() => {
@@ -45,7 +45,7 @@ export default function MeForm({ next, submit = "내 사주로 보기", defaultN
     // and gets counted, instead of reloading the page with the birth date in the address.
     <form data-clarity-mask="true" action={formAction} onSubmit={onSubmit} className="flex flex-col gap-4">
       <input type="hidden" name="next" value={next} />
-      <PersonFields nameLabel="이름" unknownHour="모름" modern defaultName={defaultName} />
+      <PersonFields nameLabel="이름" unknownHour="모름" modern defaultName={defaultName} noGender={noGender} />
       {state.error && (
         <p role="alert" className="rounded-xl bg-seal/10 px-4 py-3 text-sm text-seal">
           {state.error}
