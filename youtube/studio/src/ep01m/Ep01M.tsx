@@ -144,67 +144,93 @@ const Aerial: React.FC<SP> = ({ t, f }) => {
   );
 };
 
-const Reveal: React.FC<SP> = ({ t, f, dur }) => {
-  // 앞 절반: 한 동 정면으로 다가감 / "is hiding a floor"에서 정면이 두 쪽으로 열리며 단면이 드러남
-  const openAt = 0.5;
-  const o = ease(interpolate(t, [openAt, openAt + 0.22], [0, 1], cl));
-  const z = lerp(1.0, 1.08, t);
-  const half = (side: -1 | 1) => (
-    <div style={{ position: "absolute", left: TX, top: 0, width: 254 * TK, height: 1920, clipPath: side < 0 ? "inset(0 50% 0 0)" : "inset(0 0 0 50%)", transform: `translateX(${side * o * 300}px) perspective(1200px) rotateY(${side * o * 70}deg)`, transformOrigin: side < 0 ? "0 50%" : "100% 50%", opacity: 1 - o * 0.15 }}>
-      <Img src={src("tower_bld")} style={{ width: 254 * TK, height: 1920 }} />
-      <Plates pts={TOWER_PLATES.map(([x, y]) => [x - TX, y] as const)} w={TOWER_PLATE_W} lit={() => 0} />
-    </div>
-  );
+// ---- 정면/단면 한 쌍 (같은 구도, 단면은 층 판에 맞춰 정렬해 둠). 무대 좌표 1080 x 2282
+const SK = 1080 / 459;
+const sx = (x: number) => (x - 24) * SK;
+const sy = (y: number) => (y - 28) * SK;
+const FLOORS = [285, 329, 372, 416, 459, 502, 546, 589, 631, 674, 716, 759, 801, 844, 886]; // 판 y (위층 → 1층)
+const PLATES = FLOORS.slice().reverse().map((y) => [sx(368.5), sy(y)] as const); // 1층부터
+const BX0 = sx(125), BX1 = sx(387);
+const ROOF = sy(200);
+const strips = (() => {
+  const r: [number, number][] = [[ROOF, sy(FLOORS[0] - 21.5)]];
+  FLOORS.forEach((y) => r.push([sy(y - 21.5), sy(y + 21.5)]));
+  return r;
+})();
+const STAGE_H = 2282;
+const stageCam = (fx: number, fy: number, z: number): React.CSSProperties => cam(Math.min(1080 - 540 / z, Math.max(540 / z, fx)), Math.min(STAGE_H - 960 / z, Math.max(960 / z, fy)), z);
+
+// 벽이 층마다 떨어져 나감: open = 0..1 (위층부터 아래층으로)
+const Building: React.FC<{ open: number; lit: (i: number) => number; fColor?: number; children?: React.ReactNode }> = ({ open, lit, fColor, children }) => {
+  const n = strips.length;
   return (
-    <AbsoluteFill>
-      <Img src={src("sky")} style={{ position: "absolute", width: 1080, height: 1920 }} />
-      <Birds f={f} y={250} dir={-1} n={2} s={0.8} />
-      <div style={{ position: "absolute", left: 0, top: 0, width: 1080, height: 1920, ...cam(540, 1000, z) }}>
-        {o > 0 && (
-          <div style={{ position: "absolute", left: TX, top: 0 }}>
-            <Img src={src("cutaway_bld")} style={{ width: 254 * TK, height: 1920 }} />
-            <Plates pts={CUT_PLATES.map(([x, y]) => [x - TX, y] as const)} w={CUT_PLATE_W} lit={() => 0} boxed />
-          </div>
-        )}
-        {half(-1)}
-        {half(1)}
-      </div>
-      {void dur}
-    </AbsoluteFill>
+    <>
+      <Img src={src("stage_facade")} style={{ position: "absolute", left: 0, top: 0, width: 1080, height: STAGE_H }} />
+      {strips.map(([y0, y1], i) => {
+        const p = interpolate(open * (n + 4) - i, [0, 4], [0, 1], cl); // 이 층 벽이 앞으로 넘어가는 진행도 (층마다 겹쳐서 차례로)
+        if (p <= 0) return null;
+        const clip = `inset(${y0}px ${1080 - BX1}px ${STAGE_H - y1}px ${BX0}px)`;
+        return (
+          <React.Fragment key={i}>
+            <Img src={src("stage_cutaway")} style={{ position: "absolute", left: 0, top: 0, width: 1080, height: STAGE_H, clipPath: clip }} />
+            {p < 1 && (
+              <div style={{ position: "absolute", left: 0, top: 0, width: 1080, height: STAGE_H, clipPath: clip, transform: `perspective(1400px) rotateX(${-88 * ease(p)}deg)`, transformOrigin: `540px ${y1}px`, filter: `brightness(${1 - 0.35 * p})` }}>
+                <Img src={src("stage_facade")} style={{ width: 1080, height: STAGE_H }} />
+              </div>
+            )}
+          </React.Fragment>
+        );
+      })}
+      <Plates pts={PLATES} w={14 * SK} lit={lit} fColor={fColor} />
+      {children}
+    </>
   );
 };
 
-const CutStage: React.FC<{ fx: number; fy: number; z: number; lit: (i: number) => number; fColor?: number; children?: React.ReactNode }> = ({ fx, fy, z, lit, fColor, children }) => (
-  <AbsoluteFill>
-    <Img src={src("sky")} style={{ position: "absolute", width: 1080, height: 1920 }} />
-    <div style={{ position: "absolute", left: 0, top: 0, width: 1080, height: 1920, ...cam(fx, Math.min(fy, 1920 - 960 / z), z) }}>
-      <Img src={src("cutaway_bld")} style={{ position: "absolute", left: TX, top: 0, width: 254 * TK, height: 1920 }} />
-      <Plates pts={CUT_PLATES} w={CUT_PLATE_W} lit={lit} fColor={fColor} boxed />
-      {children}
-    </div>
-  </AbsoluteFill>
-);
+const Reveal: React.FC<SP> = ({ t }) => {
+  // "this elevator": 지붕에서 아래로 훑어 내려옴 / "is hiding a floor": 위층부터 벽이 한 층씩 떨어져 나가며 안이 드러남
+  const openAt = 0.45;
+  const open = interpolate(t, [openAt, openAt + 0.45], [0, 1], cl);
+  const fy = lerp(950, 1250, ease(Math.min(1, t / openAt)));
+  return (
+    <AbsoluteFill style={{ background: "#f4b99a" }}>
+      <div style={{ position: "absolute", left: 0, top: 0, width: 1080, height: STAGE_H, ...stageCam(540, fy, lerp(1, 1.06, open)) }}>
+        <Building open={open} lit={() => 0} />
+      </div>
+    </AbsoluteFill>
+  );
+};
 const Ride1: React.FC<SP> = ({ t }) => {
   // 1층 → 3층으로 올라가며 판에 차례로 불 ("1, 2, 3…")
-  const fy = lerp(CUT_PLATES[0][1], CUT_PLATES[2][1], ease(t));
+  const fy = lerp(PLATES[0][1], PLATES[2][1], ease(t));
   const lit = (i: number) => (i > 2 ? 0 : interpolate(t, [0.5 + i * 0.15, 0.56 + i * 0.15], [0, 1], cl));
-  return <CutStage fx={520} fy={fy} z={2.3} lit={lit} />;
+  return (
+    <AbsoluteFill>
+      <div style={{ position: "absolute", left: 0, top: 0, width: 1080, height: STAGE_H, ...stageCam(680, fy, 2.2) }}>
+        <Building open={1} lit={lit} />
+      </div>
+    </AbsoluteFill>
+  );
 };
 const Ride2: React.FC<SP> = ({ t, f, dur }) => {
   // 4번째 판 = F. 주황으로 깜빡이고, "Where's 4?"에서 물음표가 튀어나옴
-  const [px, py] = CUT_PLATES[3];
-  const z = lerp(3.4, 3.8, ease(t));
+  const [px, py] = PLATES[3];
+  const z = lerp(3.2, 3.5, ease(t));
   const q = spring({ frame: f - Math.round(dur * 0.5), fps: FPS, config: { damping: 9, stiffness: 220 } });
   const blink = 0.6 + 0.4 * Math.abs(Math.sin(f * 0.35));
   return (
-    <CutStage fx={px + 95} fy={py - 10} z={z} lit={(i) => (i < 3 ? 1 : 0)} fColor={blink}>
-      {f >= Math.round(dur * 0.5) && (
-        <div style={{ position: "absolute", left: px + 22, top: py - 62, width: 52, height: 60, transform: `scale(${q})`, transformOrigin: "0 100%" }}>
-          <div style={{ position: "absolute", inset: 0, borderRadius: 18, background: YELLOW, border: `5px solid ${INK}` }} />
-          <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: sans, fontWeight: 900, fontSize: 44, color: INK }}>?</span>
-        </div>
-      )}
-    </CutStage>
+    <AbsoluteFill>
+      <div style={{ position: "absolute", left: 0, top: 0, width: 1080, height: STAGE_H, ...stageCam(px - 60, py, z) }}>
+        <Building open={1} lit={(i) => (i < 3 ? 1 : 0)} fColor={blink}>
+          {f >= Math.round(dur * 0.5) && (
+            <div style={{ position: "absolute", left: px - 95, top: py - 70, width: 52, height: 60, transform: `scale(${q})`, transformOrigin: "100% 100%" }}>
+              <div style={{ position: "absolute", inset: 0, borderRadius: 16, background: YELLOW, border: `5px solid ${INK}` }} />
+              <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: sans, fontWeight: 900, fontSize: 44, color: INK }}>?</span>
+            </div>
+          )}
+        </Building>
+      </div>
+    </AbsoluteFill>
   );
 };
 
