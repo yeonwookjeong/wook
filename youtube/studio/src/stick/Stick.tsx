@@ -130,8 +130,8 @@ export const walk = (f: number, speed = 0.3): Pose => {
   return {
     legL: [-26 * sw, -kneeL],
     legR: [26 * sw, -kneeR],
-    armL: [24 * sw, 18],
-    armR: [-24 * sw, 18],
+    armL: [38 * sw, 22 + 10 * sw],
+    armR: [-38 * sw, 22 - 10 * sw],
     bob: Math.abs(Math.cos(p)) * 7,
     lean: 4,
   };

@@ -266,10 +266,10 @@ const S7: React.FC<SP> = ({ f, dur, n }) => {
   const m = ease(interpolate(f, [a, b], [0, 1], cl));
   const x = lerp(122 * KX, 455 * KX, m), y = lerp(736 * KY, 737 * KY, m) - Math.sin(m * Math.PI) * 90;
   const innocent = f >= a;
-  const floor = 1420;
+  const floor = 1560; // 식탁이 허리까지 가려 앉아 있는 것처럼
   return (
     <Stage bg="m04v2/home_table.png" cam={{ z: 1.25, fx: lerp(430, 650, m), fy: 1250 }}>
-      <Stick id="d7" look={DAD} pose={innocent ? { ...stand(f), head: -18, armL: [-20, -40], armR: [20, 40] } : stand(f)} x={250} floor={floor} h={H} />
+      <Stick id="d7" look={DAD} pose={innocent ? { ...stand(f), head: -18, armL: [-20, -40], armR: [20, 40] } : stand(f)} x={250} floor={floor} h={H * 0.95} />
       <Stick id="mo7" look={WOMAN} pose={innocent ? { ...stand(f + 5), armL: [-60, -100], armR: [-60, -100] } : stand(f + 5)} x={540} floor={floor} h={H * 0.96} />
       <Stick id="s7" look={SON} pose={m > 0.8 ? { ...stand(f + 9), armR: [-120, -10], bob: Math.abs(Math.sin(f * 0.5)) * 6 } : stand(f + 9)} x={840} floor={floor} h={H * 0.72} flip />
       {/* 식탁 앞부분을 사람 위로 다시 덮어 사람이 식탁 뒤에 서 있게 */}
@@ -282,14 +282,15 @@ const F_WALL = 1610;
 const S8: React.FC<SP> = ({ f, dur }) => (
   <Stage bg="m04/stonewall.png" cam={{ z: lerp(1.25, 1.05, ease(f / dur)), fx: lerp(380, 540, ease(f / dur)), fy: 1250 }} ui={<NumCard n="3" x={150} y={640} f={f} at={0} s={0.8} hl />} />
 );
-// 손잡고 걷기 (남자 x, 여자 x+190, 두 손이 가운데서 만남)
-const Couple: React.FC<{ f: number; x: number; floor: number; h: number; gap?: number; apart?: number; id: string }> = ({ f, x, floor, h, gap = 190, apart = 0, id }) => {
+// 손잡고 걷기: 둘 다 오른쪽을 보고 걷고, 남자 앞팔과 여자 뒤팔이 가운데서 손을 맞잡음. 나머지 팔은 걸음에 맞춰 흔듦
+const Couple: React.FC<{ f: number; x: number; floor: number; h: number; gap?: number; apart?: number; id: string }> = ({ f, x, floor, h, gap = 240, apart = 0, id }) => {
   const hold = apart <= 0;
-  const w = walk(f, 0.3);
+  const wm = walk(f, 0.3), ww = walk(f + 10, 0.3);
+  const k = h / H;
   return (
     <>
-      <Stick id={`${id}m`} look={MAN} pose={{ ...w, armR: hold ? [55, 0] : w.armR }} x={x - apart * 160} floor={floor} h={h} />
-      <Stick id={`${id}w`} look={WOMAN} pose={{ ...walk(f + 4, 0.3), armR: hold ? [55, 0] : walk(f + 4, 0.3).armR }} x={x + gap * (h / H) + apart * 160} floor={floor} h={h} flip={!hold} />
+      <Stick id={`${id}m`} look={MAN} pose={{ ...wm, armR: hold ? [56, 4] : wm.armR }} x={x - apart * 160} floor={floor} h={h} />
+      <Stick id={`${id}w`} look={WOMAN} pose={{ ...ww, armL: hold ? [-56, -4] : ww.armL }} x={x + gap * k + apart * 160} floor={floor} h={h} flip={!hold} />
     </>
   );
 };
@@ -300,7 +301,7 @@ const S9: React.FC<SP> = ({ f, dur, n }) => {
   return (
     <Stage bg="m04/stonewall.png" cam={{ z: 1.2, fx: 540, fy: 1300 }}>
       <Heart x={545} y={F_WALL - 640} s={spring({ frame: f - 4, fps: FPS, config: { damping: 10 } })} crack={crack} />
-      <Couple id="c9" f={f} x={lerp(380, 450, f / dur)} floor={F_WALL} h={H} apart={apart} />
+      <Couple id="c9" f={f} x={lerp(340, 400, f / dur)} floor={F_WALL} h={H} apart={apart} />
     </Stage>
   );
 };
@@ -350,7 +351,7 @@ const S12: React.FC<SP> = ({ f, dur, n }) => {
         {[0, 1, 2].map((i) => <NumCard key={i} n={`${i + 1}`} x={330 + i * 210} y={760} f={f} at={q + i * 5} />)}
         <NumCard n="?" x={540} y={520} f={f} at={q + 18} hl />
       </>}>
-      <Couple id="c12" f={f} x={lerp(470, 445, p)} floor={fl} h={h} gap={150} />
+      <Couple id="c12" f={f} x={lerp(420, 415, p)} floor={fl} h={h} />
       {f > 4 && f < q && <Heart x={540} y={fl - h * 1.25} s={0.35 + 0.05 * Math.sin(f * 0.25)} crack={0} />}
     </Stage>
   );
