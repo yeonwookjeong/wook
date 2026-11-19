@@ -71,6 +71,11 @@ export default function SinbunReport({
               {s.rank}, {m.name} {m.hanja}
             </span>
           </div>
+          {gender === "f" && (
+            <p className="mt-2 text-[11.5px] leading-relaxed text-hanji/70">
+              조선 여인은 호패를 차지 않았어요. 사내로 났다면 찼을 패를 새겨 드렸어요.
+            </p>
+          )}
         </section>
 
         <section
