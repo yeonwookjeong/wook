@@ -20,7 +20,7 @@ const FLOOR = 1640;
 const SNEAK = "#f6f3ea";
 
 // 선물 상자 (먹선)
-const GiftBox: React.FC<{ x: number; y: number; open: number; s?: number }> = ({ x, y, open, s = 1 }) => (
+export const GiftBox: React.FC<{ x: number; y: number; open: number; s?: number }> = ({ x, y, open, s = 1 }) => (
   <svg width={140 * s} height={160 * s} viewBox="-70 -110 140 160" style={{ position: "absolute", left: x - 70 * s, top: y - 110 * s, overflow: "visible" }}>
     <g stroke={INK} strokeWidth={6} strokeLinejoin="round">
       <rect x={-50} y={-40} width={100} height={78} rx={6} fill="#f2c14e" />
@@ -34,7 +34,7 @@ const GiftBox: React.FC<{ x: number; y: number; open: number; s?: number }> = ({
   </svg>
 );
 const Shoe = ShoeArt;
-const Sneakers: React.FC<{ x: number; y: number; s?: number; hop?: number; flip?: boolean }> = ({ x, y, s = 1, hop = 0, flip }) => (
+export const Sneakers: React.FC<{ x: number; y: number; s?: number; hop?: number; flip?: boolean }> = ({ x, y, s = 1, hop = 0, flip }) => (
   <svg width={180 * s} height={80 * s} viewBox="-30 -20 180 80" style={{ position: "absolute", left: x - 90 * s, top: y - 70 * s, overflow: "visible", transform: flip ? "scaleX(-1)" : undefined }}>
     {[0, 1].map((k) => {
       const ph = Math.sin(hop + k * Math.PI);
