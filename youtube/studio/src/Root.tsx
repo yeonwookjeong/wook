@@ -13,6 +13,7 @@ import { Ep02, EP02, Ep02Check } from "./ep02/Ep02";
 import { Ep03, EP03, Ep03Check } from "./ep03/Ep03";
 import { Ep04, EP04, Ep04Check } from "./ep04/Ep04";
 import { Ep04M } from "./ep04m/Ep04M";
+import { Ep04V2, EP04V2_TOTAL } from "./ep04m/Ep04V2";
 import { Ep01M, EP01M_TOTAL } from "./ep01m/Ep01M";
 import { Ep05, EP05, Ep05Check } from "./ep05/Ep05";
 import { Ep06, EP06, Ep06Check } from "./ep06/Ep06";
@@ -49,6 +50,8 @@ export const RemotionRoot: React.FC = () => {
       <Composition id="Ep04" component={Ep04} durationInFrames={EP04.en.total} fps={30} width={1080} height={1920} defaultProps={{ lang: "en" as const }} />
       <Composition id="Ep04Es" component={Ep04} durationInFrames={EP04.es.total} fps={30} width={1080} height={1920} defaultProps={{ lang: "es" as const }} />
       <Composition id="Ep01M" component={Ep01M} durationInFrames={EP01M_TOTAL} fps={30} width={1080} height={1920} />
+      <Composition id="Ep04V2" component={Ep04V2} durationInFrames={EP04V2_TOTAL.en} fps={30} width={1080} height={1920} defaultProps={{ lang: "en" as const }} />
+      <Composition id="Ep04V2Es" component={Ep04V2} durationInFrames={EP04V2_TOTAL.es} fps={30} width={1080} height={1920} defaultProps={{ lang: "es" as const }} />
       <Composition id="Ep04M" component={Ep04M} durationInFrames={EP04.en.total} fps={30} width={1080} height={1920} defaultProps={{ lang: "en" as const }} />
       <Composition id="Ep04MEs" component={Ep04M} durationInFrames={EP04.es.total} fps={30} width={1080} height={1920} defaultProps={{ lang: "es" as const }} />
       <Composition id="Ep04Check" component={Ep04Check} durationInFrames={26} fps={30} width={1080} height={1920} />
