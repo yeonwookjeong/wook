@@ -1,0 +1,44 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+html,body{margin:0;width:540px;height:960px;overflow:hidden;background:#1d2a33}
+canvas{position:absolute;inset:0}
+#cap{position:absolute;left:24px;right:24px;top:74%;text-align:center;font:700 32px "WenQuanYi Zen Hei",sans-serif;color:#fff;line-height:1.35;word-break:keep-all;text-shadow:0 0 6px rgba(0,0,0,.95),0 2px 3px rgba(0,0,0,.95)}
+.lab{position:absolute;transform:translate(-50%,-50%);font:700 22px "WenQuanYi Zen Hei",sans-serif;color:#f3e9d2;letter-spacing:2px;text-shadow:0 2px 6px rgba(0,0,0,.8);opacity:0;white-space:nowrap}
+</style></head><body>
+<canvas id="c" width="540" height="960"></canvas>
+<div class="lab" id="lt">도쿄</div><div class="lab" id="lp">도쿄타워</div><div id="cap"></div>
+<script src="node_modules/d3-array/dist/d3-array.min.js"></script>
+<script src="node_modules/d3-geo/dist/d3-geo.min.js"></script>
+<script src="node_modules/topojson-client/dist/topojson-client.min.js"></script>
+<script>
+const W=540,H=960,cv=document.getElementById('c'),g=cv.getContext('2d');
+let land,jp,ready=0;const photo=new Image();photo.onload=()=>ready++;photo.src='v1_at2.png';
+fetch('node_modules/world-atlas/countries-10m.json').then(r=>r.json()).then(t=>{land=topojson.feature(t,t.objects.countries).features;jp=land.filter(f=>String(f.id)==='392');ready++;});
+window.isReady=()=>ready===2;
+const ease=x=>x<0?0:x>1?1:x*x*(3-2*x),lerp=(a,b,x)=>a+(b-a)*x;
+const TOWER=[139.7454,35.6586];
+const grain=document.createElement('canvas');grain.width=W;grain.height=H;
+function drawGrain(t){const gg=grain.getContext('2d'),im=gg.createImageData(W,H);let s=Math.floor(t*24)*9973;
+ for(let i=0;i<im.data.length;i+=4){s=(s*1103515245+12345)&0x7fffffff;const v=(s>>16)&255;im.data[i]=im.data[i+1]=im.data[i+2]=v;im.data[i+3]=14;}gg.putImageData(im,0,0);}
+window.renderAt=function(t){
+  const T=2.0, z=ease(t/1.75);                                   // 일본 → 도쿄만으로 훅 확대 (지수 확대)
+  const sc=1500*Math.pow(60000/1500,z*z);
+  const c=[lerp(137.0,TOWER[0],ease(t/1.2)),lerp(37.2,TOWER[1],ease(t/1.2))];
+  const proj=d3.geoMercator().center(c).scale(sc).translate([W/2,H*0.42]);const path=d3.geoPath(proj,g);
+  g.fillStyle='#1d2a33';g.fillRect(0,0,W,H);
+  g.beginPath();path({type:'FeatureCollection',features:land});g.fillStyle='#a79b84';g.fill();g.lineWidth=0.8;g.strokeStyle='rgba(40,35,28,.6)';g.stroke();
+  g.beginPath();path({type:'FeatureCollection',features:jp});g.fillStyle=`rgba(196,92,62,${0.55*(1-ease((t-0.9)/0.5))})`;g.fill();
+  const p=proj(TOWER);
+  const pulse=(t*1.6)%1;g.beginPath();g.arc(p[0],p[1],8+22*pulse,0,7);g.strokeStyle=`rgba(243,233,210,${1-pulse})`;g.lineWidth=2;g.stroke();
+  g.beginPath();g.arc(p[0],p[1],7,0,7);g.fillStyle='#c45c3e';g.fill();g.lineWidth=2;g.strokeStyle='#f3e9d2';g.stroke();
+  const vg=g.createRadialGradient(W/2,H/2,H*0.25,W/2,H/2,H*0.75);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.5)');g.fillStyle=vg;g.fillRect(0,0,W,H);
+  // 핀에서 실제 사진이 원형으로 열림
+  const rv=ease((t-1.55)/0.45);
+  if(rv>0){g.save();g.beginPath();g.arc(p[0],p[1],rv*1150,0,7);g.clip();
+    const k=lerp(1.25,1,rv);g.drawImage(photo,W/2-W*k/2+(p[0]-W/2)*(1-rv),H/2-H*k/2+(p[1]-H/2)*(1-rv),W*k,H*k);g.restore();}
+  drawGrain(t);g.drawImage(grain,0,0);
+  const lt=document.getElementById('lt'),lp=document.getElementById('lp');
+  lt.style.left=(p[0]+50)+'px';lt.style.top=(p[1]-40)+'px';lt.style.opacity=ease(t/0.3)*(1-ease((t-0.8)/0.3));
+  lp.style.left=p[0]+'px';lp.style.top=(p[1]+38)+'px';lp.style.opacity=ease((t-0.9)/0.3)*(1-ease((t-1.5)/0.15));
+  document.getElementById('cap').textContent=t<1.6?'도쿄의 상징, 도쿄타워.':'';
+};
+</script></body></html>
