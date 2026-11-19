@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { bornOf, yearGanji, type HopaeInput } from "@/lib/hopae";
+import { bornOf, TAG_OF_RANK, yearGanji, type HopaeInput } from "@/lib/hopae";
 import { sinbunOf, type Rank, type Sinbun } from "@/lib/sinbun";
 import type { Pillars } from "@/lib/saju";
 import HopaeFace from "./HopaeFace";
@@ -13,7 +13,7 @@ type Side = { name: string; life: Sinbun; tag: HopaeInput };
 export function sideOf(name: string, pillars: Pillars | null, gender: "m" | "f" | null | undefined, life?: Pick<Sinbun, "rank" | "job" | "line">): Side | null {
   const l = pillars ? sinbunOf(pillars, gender) : life ? ({ ...life } as Sinbun) : null;
   if (!l) return null;
-  return { name, life: l, tag: { rank: l.rank, job: l.job, office: l.office, born: pillars ? bornOf(pillars.yearStem, pillars.yearBranch) : "", issued: yearGanji() } };
+  return { name, life: l, tag: { kind: l.tag ?? TAG_OF_RANK[l.rank], job: l.job, office: l.office, born: pillars ? bornOf(pillars.yearStem, pillars.yearBranch) : "", issued: yearGanji() } };
 }
 
 // One line on the two lives, light and never a put-down.

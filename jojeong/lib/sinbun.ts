@@ -4,7 +4,7 @@ import { josa } from "./josa";
 import { hourStemFor, type Pillars } from "./saju";
 import { JOBS_F } from "./sinbunF";
 import { VARIANT_TOTAL, VARIANTS } from "./sinbunVariants";
-import { OFFICE } from "./hopae";
+import { OFFICE, TAG_OF_LIFE, type TagKind } from "./hopae";
 
 // 조선 신분 감정 (free): what someone would have been in Joseon. The calling comes from the chart's heaviest
 // ten-god group (hidden stems included); the rank from how well the chart is built (its 그릇): balance, whether
@@ -29,6 +29,8 @@ export type Sinbun = {
   rarity?: string;
   // Two characters across the head of the 호패 (lib/hopae.ts), from the base life's office.
   office?: string;
+  // The 호패 the life would have carried (lib/hopae.ts TAG_OF_LIFE); a woman's life takes the man's of the same key.
+  tag?: TagKind;
 };
 
 const JOBS: Record<`${Calling}-${Rank}`, Sinbun> = {
@@ -522,10 +524,11 @@ function keyOf(p: Pillars): { key: `${Calling}-${Rank}`; group: Calling; sub: st
 function lifeOf(key: `${Calling}-${Rank}`, sub: string | null, gender: Gender): Sinbun {
   const base = gender === "f" ? JOBS_F[key] : JOBS[key];
   const office = OFFICE[base.job];
+  const tag = TAG_OF_LIFE[key];
   const v = sub ? VARIANTS[`${key}|${sub}`] : undefined;
-  if (!v) return { ...base, office };
+  if (!v) return { ...base, office, tag };
   const [job, line] = gender === "f" ? v.f : v.m;
-  return { ...base, job, line, rarity: rarityText(v.n), office };
+  return { ...base, job, line, rarity: rarityText(v.n), office, tag };
 }
 
 export function sinbunOf(p: Pillars, gender?: Gender): Sinbun {
