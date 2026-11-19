@@ -123,6 +123,24 @@ const Plate: React.FC<SP> = ({ t }) => {
   );
 };
 
+// 효과음: 이 화면에서 실제로 일어나는 일에 맞춤 (옛 EP04 타이밍은 쓰지 않음). [소리, 장면 안 프레임, 음량]
+type Fx = [string, number, number];
+const CARD_LAND = 5; // 카드가 떨어져 닿는 데 걸리는 프레임
+const sfxOf = (mode: string, dur: number, lang: Lang): Fx[] => {
+  const at = (p: number) => Math.round(dur * p);
+  switch (mode) {
+    case "intro": return [0, 1, 2].map((i) => ["pop", at(0.32 + i * 0.12) + CARD_LAND, 0.4] as Fx);
+    case "shoes": return [["pop", CARD_LAND, 0.4], ["ding", at(0.45), 0.35]]; // 카드 "1" / 상자 열림
+    case "walk": return [["whoosh", 0, 0.18]]; // 신발로 바짝 다가감
+    case "away": return [["whoosh", at(0.15), 0.2]]; // 뒤로 빠지며 여자가 멀어짐
+    case "coin": return [["glitch", 0, 0.2], ["ding", at(0.36), 0.35], ["thud", at(0.47) + 3, 0.55], ["chime", at(0.66), 0.3]]; // 흑백 / 동전 / 도장 / 컬러로
+    case "chicken": return [["pop", CARD_LAND, 0.4]]; // 카드 "2"
+    case "fly": { const [b, u] = FLY[lang]; return [["pop", at(b), 0.35], ["whoosh", at(u), 0.35]]; } // 먹음 / 날아오름
+    case "plate": return [["pop", at(0.5), 0.3], ["ding", at(0.85), 0.3]]; // 날개 들림 / 아들 접시에 착지
+    default: return [];
+  }
+};
+
 const SCENES: Record<string, React.FC<SP>> = { intro: Intro, shoes: Shoes, walk: Walk, away: Away, coin: Coin, chicken: Chicken, fly: Fly, plate: Plate };
 // 장소가 바뀌는 곳: 구름이 쓸고 지나감
 const CLOUD_AT = new Set(["chicken", "plate"]);
@@ -185,9 +203,14 @@ export const Ep04V2: React.FC<{ lang?: Lang }> = ({ lang = "en" }) => {
         return (
           <Sequence key={i} from={b.starts[i] - pre} durationInFrames={b.frames[i] + pre}>
             <ShotV i={i} lang={lang} />
-            {(sh.sfx ?? []).map((fx, k) => (
-              <Sequence key={k} from={pre + Math.round((fx.at ?? 0) * FPS)} layout="none">
-                <Audio src={staticFile(`sfx/${fx.name}.wav`)} volume={fx.vol ?? 0.4} />
+            {pre > 0 && (
+              <Sequence from={0} layout="none">
+                <Audio src={staticFile("sfx/whoosh.wav")} volume={0.3} />
+              </Sequence>
+            )}
+            {sfxOf(sh.mode, b.frames[i], lang).map(([name, fr, vol], k) => (
+              <Sequence key={k} from={pre + fr} layout="none">
+                <Audio src={staticFile(`sfx/${name}.wav`)} volume={vol} />
               </Sequence>
             ))}
           </Sequence>
@@ -210,10 +233,7 @@ export const Ep04V2: React.FC<{ lang?: Lang }> = ({ lang = "en" }) => {
           <Audio src={staticFile(v.file)} />
         </Sequence>
       ))}
-      {/* 쿵 효과: 도장 */}
-      <Sequence from={b.starts[used.findIndex((s) => s.mode === "coin")] + Math.round(b.frames[used.findIndex((s) => s.mode === "coin")] * 0.47)} layout="none">
-        <Audio src={staticFile("sfx/thud.wav")} volume={0.45} />
-      </Sequence>
+
     </AbsoluteFill>
   );
 };
