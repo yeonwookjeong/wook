@@ -1,0 +1,54 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+html,body{margin:0;width:540px;height:960px;overflow:hidden;background:#1c1f22}
+canvas{position:absolute;inset:0}
+#cap{position:absolute;left:24px;right:24px;top:76%;text-align:center;font:700 32px "WenQuanYi Zen Hei",sans-serif;color:#fff;line-height:1.35;word-break:keep-all;text-shadow:0 0 6px rgba(0,0,0,.95),0 2px 3px rgba(0,0,0,.95)}
+#card{position:absolute;left:0;right:0;top:9%;text-align:center;font:700 92px "WenQuanYi Zen Hei",sans-serif;color:#f3e9d2;opacity:0;text-shadow:0 4px 20px rgba(0,0,0,.6)}
+.lab{position:absolute;transform:translate(-50%,-50%);font:700 22px "WenQuanYi Zen Hei",sans-serif;color:#f3e9d2;letter-spacing:2px;text-shadow:0 2px 6px rgba(0,0,0,.8);opacity:0;white-space:nowrap}
+</style></head><body>
+<canvas id="c" width="540" height="960"></canvas>
+<div class="lab" id="lk">한반도</div><div class="lab" id="lj">도쿄</div>
+<div id="card">약 90대</div><div id="cap"></div>
+<script src="node_modules/d3-array/dist/d3-array.min.js"></script>
+<script src="node_modules/d3-geo/dist/d3-geo.min.js"></script>
+<script src="node_modules/topojson-client/dist/topojson-client.min.js"></script>
+<script>
+const W=540,H=960,cv=document.getElementById('c'),g=cv.getContext('2d');
+let land,korea,ready=false;
+fetch('node_modules/world-atlas/countries-50m.json').then(r=>r.json()).then(t=>{
+  const all=topojson.feature(t,t.objects.countries).features;
+  land=all; korea=all.filter(f=>['410','408'].includes(String(f.id)));ready=true;});
+window.isReady=()=>ready;
+const ease=x=>x<0?0:x>1?1:x*x*(3-2*x),lerp=(a,b,x)=>a+(b-a)*x;
+const SEOUL=[127.0,37.6],TOKYO=[139.75,35.66];
+// 잡음 텍스처(필름 입자)
+const grain=document.createElement('canvas');grain.width=W;grain.height=H;
+function drawGrain(t){const gg=grain.getContext('2d'),im=gg.createImageData(W,H);let s=Math.floor(t*24)*9973;
+ for(let i=0;i<im.data.length;i+=4){s=(s*1103515245+12345)&0x7fffffff;const v=(s>>16)&255;im.data[i]=im.data[i+1]=im.data[i+2]=v;im.data[i+3]=14;}gg.putImageData(im,0,0);}
+function tank(x,y,s,a){g.save();g.translate(x,y);g.rotate(a);g.scale(s,s);g.fillStyle='#e9dcc0';
+ g.fillRect(-10,-3,20,7);g.fillRect(-6,-8,10,6);g.fillRect(4,-6,12,2);g.restore();}
+window.renderAt=function(t){
+  const T=3.7,a=ease(t/T);
+  const proj=d3.geoMercator().center([lerp(133.2,133.6,a),lerp(37.0,36.6,a)]).scale(lerp(1650,1850,a)).translate([W/2,H*0.45]);
+  const path=d3.geoPath(proj,g);
+  g.fillStyle='#1d2a33';g.fillRect(0,0,W,H);                      // 바다
+  g.beginPath();path({type:'FeatureCollection',features:land});g.fillStyle='#a79b84';g.fill();
+  g.lineWidth=0.8;g.strokeStyle='rgba(40,35,28,.6)';g.stroke();
+  g.beginPath();path({type:'FeatureCollection',features:korea});g.fillStyle=`rgba(196,92,62,${0.85*ease((t-0.2)/0.5)})`;g.fill(); // 한반도 강조
+  const p0=proj(SEOUL),p1=proj(TOKYO),cx=(p0[0]+p1[0])/2,cy=Math.min(p0[1],p1[1])-120;
+  const bez=(u)=>[(1-u)*(1-u)*p0[0]+2*(1-u)*u*cx+u*u*p1[0],(1-u)*(1-u)*p0[1]+2*(1-u)*u*cy+u*u*p1[1]];
+  const pr=ease((t-0.7)/1.8);                                        // 경로 그리기
+  if(pr>0){g.setLineDash([10,8]);g.lineDashOffset=-t*40;g.lineWidth=3;g.strokeStyle='#f3e9d2';g.beginPath();
+   for(let i=0;i<=60;i++){const u=i/60*pr,q=bez(u);i?g.lineTo(q[0],q[1]):g.moveTo(q[0],q[1]);}g.stroke();g.setLineDash([]);}
+  for(let k=0;k<3;k++){const u=ease((t-0.9-k*0.25)/1.7);if(u<=0)continue;const q=bez(Math.min(u,1)),q2=bez(Math.min(u+0.01,1));
+   tank(q[0],q[1],1.4,Math.atan2(q2[1]-q[1],q2[0]-q[0]));}
+  if(t>2.5){const r=10+18*((t-2.5)%0.8)/0.8;g.beginPath();g.arc(p1[0],p1[1],r,0,7);g.strokeStyle=`rgba(243,233,210,${1-((t-2.5)%0.8)/0.8})`;g.lineWidth=2;g.stroke();}
+  g.beginPath();g.arc(p1[0],p1[1],6,0,7);g.fillStyle='#c45c3e';g.fill();g.lineWidth=2;g.strokeStyle='#f3e9d2';g.stroke();
+  const vg=g.createRadialGradient(W/2,H/2,H*0.25,W/2,H/2,H*0.75);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.55)');g.fillStyle=vg;g.fillRect(0,0,W,H);
+  drawGrain(t);g.drawImage(grain,0,0);
+  const lk=document.getElementById('lk'),lj=document.getElementById('lj');
+  lk.style.left=(p0[0]+8)+'px';lk.style.top=(p0[1]-75)+'px';lk.style.opacity=ease((t-0.3)/0.4);
+  lj.style.left=p1[0]+'px';lj.style.top=(p1[1]+34)+'px';lj.style.opacity=ease((t-2.3)/0.4);
+  const cd=document.getElementById('card');cd.style.opacity=ease((t-1.9)/0.35);cd.style.transform=`scale(${lerp(1.15,1,ease((t-1.9)/0.4))})`;
+  document.getElementById('cap').textContent=t<3.5?'한국전쟁에서 부서진 미군 전차, 약 90대였죠.':'';
+};
+</script></body></html>
