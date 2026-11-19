@@ -27,7 +27,7 @@ function drawGrain(t){const gg=grain.getContext('2d'),im=gg.createImageData(W,H)
 function tank(x,y,s,a){g.save();g.translate(x,y);g.rotate(a);g.scale(s,s);g.fillStyle='#e9dcc0';
  g.fillRect(-10,-3,20,7);g.fillRect(-6,-8,10,6);g.fillRect(4,-6,12,2);g.restore();}
 window.renderAt=function(t){
-  const T=3.7,a=ease(t/T);
+  const T=5.0,a=ease(t/T);
   const proj=d3.geoMercator().center([lerp(133.2,133.6,a),lerp(37.0,36.6,a)]).scale(lerp(1650,1850,a)).translate([W/2,H*0.45]);
   const path=d3.geoPath(proj,g);
   g.fillStyle='#1d2a33';g.fillRect(0,0,W,H);                      // 바다
@@ -49,6 +49,6 @@ window.renderAt=function(t){
   lk.style.left=(p0[0]+8)+'px';lk.style.top=(p0[1]-75)+'px';lk.style.opacity=ease((t-0.3)/0.4);
   lj.style.left=p1[0]+'px';lj.style.top=(p1[1]+34)+'px';lj.style.opacity=ease((t-2.3)/0.4);
   const cd=document.getElementById('card');cd.style.opacity=ease((t-1.9)/0.35);cd.style.transform=`scale(${lerp(1.15,1,ease((t-1.9)/0.4))})`;
-  document.getElementById('cap').textContent=t<3.5?'한국전쟁에서 부서진 미군 전차, 약 90대였죠.':'';
+  document.getElementById('cap').textContent=t<4.8?(t<2.2?'한국전쟁이 끝나고':'고철이 된 미군 전차, 약 90대였죠.'):'';
 };
 </script></body></html>
