@@ -6,3 +6,9 @@
 - 1080p 업스케일: Plus 이상 10초까지 0
 - 이미지 Nano Banana Pro: 장당 약 12 (추정, 활동 내역으로 확인 필요)
 - 실수 기록: 에이전트 채팅에 맡겼다가 프레임 없이 720p 8초(24) 생성됨 → 시작·끝 프레임이 칸에 들어갔는지 눈으로 확인 후 승인
+
+# 국토지리원 항공사진 (2026-11-19 확인)
+- 타일: cyberjapandata.gsi.go.jp/xyz/{ort_riku10 1936~42 | ort_USA10 1945~50 | ort_old10 1961~69 | gazo1~4 1974~90 | seamlessphoto 현재}/{z}/{x}/{y}
+- 사진 타일은 '기본측량성과 이외'라 국토지리원 콘텐츠 이용규약(PDL1.0)으로 출처 표기만으로 이용. 가공했으면 가공 사실도 표기
+- 표기 예: 출처: 국토지리원 공중사진(1945~1950) 가공 / 지리원 타일 목록 https://maps.gsi.go.jp/development/ichiran.html
+- www.gsi.go.jp 접속은 TLS 구형 재협상 허용이 필요 (OPENSSL_CONF로 UnsafeLegacyRenegotiation)

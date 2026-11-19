@@ -1,0 +1,41 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+html,body{margin:0;width:540px;height:960px;overflow:hidden;background:#111}
+canvas{position:absolute;inset:0}
+#cap{position:absolute;left:24px;right:24px;top:74%;text-align:center;font:700 32px "WenQuanYi Zen Hei",sans-serif;color:#fff;line-height:1.35;word-break:keep-all;text-shadow:0 0 6px rgba(0,0,0,.95),0 2px 3px rgba(0,0,0,.95)}
+#era{position:absolute;left:24px;top:6%;font:700 20px "WenQuanYi Zen Hei",sans-serif;color:#f3e9d2;background:rgba(0,0,0,.45);padding:6px 12px;letter-spacing:1px;opacity:0}
+#pinlab{position:absolute;transform:translate(-50%,0);font:700 22px "WenQuanYi Zen Hei",sans-serif;color:#fff;background:#c45c3e;padding:4px 10px;border:2px solid #f3e9d2;opacity:0;white-space:nowrap}
+#credit{position:absolute;right:12px;bottom:10px;font:11px sans-serif;color:rgba(255,255,255,.7)}
+</style></head><body>
+<canvas id="c" width="540" height="960"></canvas>
+<div id="era">1945~1950년 · 도쿄 시바 공원 일대</div><div id="pinlab">이 자리</div><div id="cap"></div>
+<div id="credit">출처: 국토지리원 공중사진(1945~1950) 가공</div>
+<script>
+const W=540,H=960,cv=document.getElementById('c'),g=cv.getContext('2d');
+const img=new Image();let ready=0;img.onload=()=>ready=1;img.src='ort_USA10_z17.jpg';
+window.isReady=()=>ready===1;
+const IW=1152,IH=2048,PX=576,PY=1130;
+const ease=x=>x<0?0:x>1?1:x*x*(3-2*x),lerp=(a,b,x)=>a+(b-a)*x;
+const D3=4.3,D4=3.6,G=0.3,T=D3+G+D4+G;window.TOTAL=T;
+const caps=[[0,2.0,'문제는 철이었습니다.'],[2.0,D3+G,'전쟁에 진 일본엔<br>쓸 만한 철이 모자랐거든요.'],[D3+G,T,'그때 한 민간업자가<br>고철을 낙찰받습니다.']];
+const grain=document.createElement('canvas');grain.width=W;grain.height=H;
+function drawGrain(t){const gg=grain.getContext('2d'),im=gg.createImageData(W,H);let s=Math.floor(t*24)*9973;
+ for(let i=0;i<im.data.length;i+=4){s=(s*1103515245+12345)&0x7fffffff;const v=(s>>16)&255;im.data[i]=im.data[i+1]=im.data[i+2]=v;im.data[i+3]=16;}gg.putImageData(im,0,0);}
+window.renderAt=function(t){
+  const a=ease(t/T);
+  const z=lerp(W/IW*1.05,W/IW*2.6,a);                 // 넓게 → 탑 자리로 천천히 확대
+  const cx=lerp(IW/2,PX,ease(t/3)),cy=lerp(IH*0.5,PY,ease(t/3));
+  g.fillStyle='#111';g.fillRect(0,0,W,H);
+  g.filter='sepia(0.25) contrast(1.05)';
+  g.drawImage(img,W/2-cx*z,H*0.45-cy*z,IW*z,IH*z);g.filter='none';
+  const px=W/2+(PX-cx)*z,py=H*0.45+(PY-cy)*z;
+  const pa=ease((t-1.2)/0.4);
+  if(pa>0){const pu=(t*1.4)%1;g.beginPath();g.arc(px,py,10+26*pu,0,7);g.strokeStyle=`rgba(243,233,210,${(1-pu)*pa})`;g.lineWidth=2;g.stroke();
+    g.beginPath();g.arc(px,py,8,0,7);g.fillStyle=`rgba(196,92,62,${pa})`;g.fill();g.lineWidth=2;g.strokeStyle=`rgba(243,233,210,${pa})`;g.stroke();}
+  const vg=g.createRadialGradient(W/2,H/2,H*0.25,W/2,H/2,H*0.75);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.55)');g.fillStyle=vg;g.fillRect(0,0,W,H);
+  const bg=g.createLinearGradient(0,H*0.62,0,H);bg.addColorStop(0,'rgba(0,0,0,0)');bg.addColorStop(0.35,'rgba(0,0,0,.55)');bg.addColorStop(1,'rgba(0,0,0,.7)');g.fillStyle=bg;g.fillRect(0,H*0.62,W,H*0.38);
+  drawGrain(t);g.drawImage(grain,0,0);
+  const pl=document.getElementById('pinlab');pl.style.left=px+'px';pl.style.top=(py+20)+'px';pl.style.opacity=pa;
+  document.getElementById('era').style.opacity=ease(t/0.4);
+  const c=caps.find(([s,e])=>t>=s&&t<e);document.getElementById('cap').innerHTML=c?c[2]:'';
+};
+</script></body></html>
