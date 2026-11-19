@@ -50,7 +50,21 @@ export default async function KingHome() {
         </p>
       </section>
 
-      <CourtBoard kingName="민준" seats={EXAMPLE} caption="예시, 친구가 들어올 때마다 자리가 채워지옵니다" />
+      <section id="enthrone" className="doc-paper mt-5 scroll-mt-4 px-6 pt-8 pb-7">
+        <p className="text-center font-myeongjo text-sm font-extrabold tracking-[0.4em] text-seal">卽 位</p>
+        <p className="mt-1 mb-4 text-center font-myeongjo font-extrabold">{courts.length > 0 ? "새로 즉위하기" : "전하의 사주를 올리시옵소서"}</p>
+        <BirthForm mode="king" />
+      </section>
+      <p className="mt-3 text-center text-[12px] leading-relaxed text-ink-soft">
+        내 왕 유형, 가상 실록, 친구들의 관직까지 <b className="text-ink">전부 무료</b>이옵니다
+      </p>
+
+      {/* Clarity 11/17~19: 36% of sessions had dead clicks; the example board's seats look like buttons. The whole
+          board now answers a tap by going to the form. */}
+      <a href="#enthrone" className="block" aria-label="예시 조정도, 눌러서 내 조정 만들기">
+        <p className="mt-8 text-center font-myeongjo text-[15px] font-extrabold">친구를 부르면 이렇게 채워지옵니다</p>
+        <CourtBoard kingName="민준" seats={EXAMPLE} caption="예시이옵니다. 눌러서 전하의 조정을 만드시옵소서 ↑" />
+      </a>
 
       <ol className="mt-5 grid grid-cols-3 gap-2 text-center text-xs text-ink-soft">
         {[
@@ -94,14 +108,6 @@ export default async function KingHome() {
         </section>
       )}
 
-      <section id="enthrone" className="doc-paper mt-5 scroll-mt-4 px-6 pt-8 pb-7">
-        <p className="text-center font-myeongjo text-sm font-extrabold tracking-[0.4em] text-seal">卽 位</p>
-        <p className="mt-1 mb-4 text-center font-myeongjo font-extrabold">{courts.length > 0 ? "새로 즉위하기" : "전하의 사주를 올리시옵소서"}</p>
-        <BirthForm mode="king" />
-      </section>
-      <p className="mt-3 text-center text-[12px] leading-relaxed text-ink-soft">
-        내 왕 유형, 가상 실록, 친구들의 관직까지 <b className="text-ink">전부 무료</b>이옵니다
-      </p>
 
       <section className="mt-8 border-l-[3px] border-seal/60 py-1 pl-4">
         <p className="text-xs font-extrabold tracking-wider text-seal">알고 계셨사옵니까?</p>

@@ -28,7 +28,7 @@ export default function Hero() {
           href="#enthrone"
           className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full border-2 border-[#e2bc68] bg-seal px-5 py-2.5 font-myeongjo text-base font-extrabold whitespace-nowrap text-hanji shadow-[0_4px_0_#7d1a14]"
         >
-          내 조정 만들기 ↓
+          나랑 같은 일주 왕 찾기 ↓
         </a>
 
         {/* 정 훈도: 구석에서 허리 숙인 신하 */}
