@@ -63,8 +63,8 @@ const Caption: React.FC<{ cap: { text: string; hl?: boolean }[] }> = ({ cap }) =
   const f = useCurrentFrame();
   const pop = spring({ frame: f, fps: FPS, config: { damping: 12, stiffness: 260 } });
   return (
-    <div style={{ position: "absolute", left: 60, right: 60, top: 300, display: "flex", justifyContent: "center", flexWrap: "wrap", gap: "0 22px", transform: `scale(${0.85 + 0.15 * pop})` }}>
-      {cap.map((x, i) => <span key={i} style={{ fontFamily: sans, fontWeight: 900, fontSize: 86, color: x.hl ? "#ffd23a" : "#fff", WebkitTextStroke: `14px ${INK}`, paintOrder: "stroke fill" }}>{x.text}</span>)}
+    <div style={{ position: "absolute", left: 60, right: 60, top: 300, display: "flex", justifyContent: "center", alignItems: "center", flexWrap: "wrap", gap: "0 22px", textAlign: "center", transform: `scale(${0.85 + 0.15 * pop})` }}>
+      {cap.map((x, i) => <span key={i} style={{ fontFamily: sans, fontWeight: 900, fontSize: 86, lineHeight: 1.15, textAlign: "center", color: x.hl ? "#ffd23a" : "#fff", WebkitTextStroke: `14px ${INK}`, paintOrder: "stroke fill" }}>{x.text}</span>)}
     </div>
   );
 };
