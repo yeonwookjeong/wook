@@ -64,7 +64,7 @@ export default function SinbunReport({
           <div className="mt-3 flex flex-wrap justify-center gap-1.5">
             {s.rarity && (
               <span className="rounded-full bg-[#d4af5f] px-3 py-1 text-xs font-extrabold text-[#0f2236]">
-                {gender === "f" ? 100 : 129}가지 삶 중 {s.rarity}
+                129가지 삶 중 {s.rarity}
               </span>
             )}
             <span className="rounded-full border border-[#d4af5f]/60 px-3 py-1 text-xs font-extrabold text-[#d4af5f]">
@@ -73,7 +73,7 @@ export default function SinbunReport({
           </div>
           {gender === "f" && (
             <p className="mt-2 text-[11.5px] leading-relaxed text-hanji/70">
-              조선 여인은 호패를 차지 않았어요. 사내로 났다면 찼을 패를 새겨 드렸어요.
+              조선에서 호패는 사내만 찼어요. 그대가 사내로 났다면 살았을 삶과 찼을 패이옵니다.
             </p>
           )}
         </section>
@@ -174,8 +174,8 @@ export default function SinbunReport({
           </p>
           {gender === "f" && (
             <p className="mt-2 rounded-lg bg-white/[0.06] px-3 py-2 text-center text-[11.5px] leading-relaxed text-hanji/85">
-              조선에서 호패는 열여섯 살 넘은 남자만 찼어요. 여인이었던 그대에게는 같은 사주로 사내로 났다면 찼을 호패를
-              새겨 드렸어요.
+              조선에서 호패는 열여섯 살 넘은 사내만 찼어요. 그래서 여인인 그대도 같은 사주로 사내로 났다면 살았을 삶과
+              찼을 호패로 감정했어요.
             </p>
           )}
         </section>
