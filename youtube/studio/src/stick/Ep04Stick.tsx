@@ -256,15 +256,25 @@ const S6: React.FC<SP> = ({ f, dur, n, lang }) => {
     </Stage>
   );
 };
-// 가족 식탁(그림 속 가족) — 날개가 아빠 접시에서 아들 접시로 슬그머니
-const K572 = 1080 / 572;
+// 가족 식탁(졸라맨 가족) — 날개가 아빠 접시에서 아들 접시로 슬그머니, 아빠는 천장 보며 모른 척
+const KX = 1080 / 572, KY = 1920 / 1024;
+const TABLE_TOP = 716 * KY;
+const DAD: Look = { kind: "man", accent: "#26386b" };
+const SON: Look = { kind: "man", accent: "#f2c14e" };
 const S7: React.FC<SP> = ({ f, dur, n }) => {
   const a = chunk(dur, n, Math.max(1, n - 2)), b = chunk(dur, n, n - 1);
   const m = ease(interpolate(f, [a, b], [0, 1], cl));
-  const x = lerp(125 * K572, 422 * K572, m), y = lerp(780 * K572, 778 * K572, m) - Math.sin(m * Math.PI) * 70;
+  const x = lerp(122 * KX, 455 * KX, m), y = lerp(736 * KY, 737 * KY, m) - Math.sin(m * Math.PI) * 90;
+  const innocent = f >= a;
+  const floor = 1420;
   return (
-    <Stage bg="m04v2/f10_nowing.png" cam={{ z: 1.52, fx: lerp(390, 640, m), fy: 1450 }}>
-      <Img src={staticFile("m04v2/wing.png")} style={{ position: "absolute", left: x, top: y, width: 48 * K572, transform: `rotate(${Math.sin(m * Math.PI) * -12}deg)` }} />
+    <Stage bg="m04v2/home_table.png" cam={{ z: 1.25, fx: lerp(430, 650, m), fy: 1250 }}>
+      <Stick id="d7" look={DAD} pose={innocent ? { ...stand(f), head: -18, armL: [-20, -40], armR: [20, 40] } : stand(f)} x={250} floor={floor} h={H} />
+      <Stick id="mo7" look={WOMAN} pose={innocent ? { ...stand(f + 5), armL: [-60, -100], armR: [-60, -100] } : stand(f + 5)} x={540} floor={floor} h={H * 0.96} />
+      <Stick id="s7" look={SON} pose={m > 0.8 ? { ...stand(f + 9), armR: [-120, -10], bob: Math.abs(Math.sin(f * 0.5)) * 6 } : stand(f + 9)} x={840} floor={floor} h={H * 0.72} flip />
+      {/* 식탁 앞부분을 사람 위로 다시 덮어 사람이 식탁 뒤에 서 있게 */}
+      <Img src={staticFile("m04v2/home_table.png")} style={{ position: "absolute", left: 0, top: 0, width: 1080, height: 1920, clipPath: `inset(${TABLE_TOP}px 0 0 0)` }} />
+      <Img src={staticFile("m04v2/wing.png")} style={{ position: "absolute", left: x - 45, top: y - 30, width: 90, transform: `rotate(${Math.sin(m * Math.PI) * -12}deg)` }} />
     </Stage>
   );
 };
