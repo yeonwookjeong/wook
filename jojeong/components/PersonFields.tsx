@@ -25,6 +25,7 @@ export default function PersonFields({
   binaryGender = false,
   defaultName,
   foldExtras = false,
+  noGender = false,
 }: {
   prefix?: string;
   modern?: boolean;
@@ -36,6 +37,8 @@ export default function PersonFields({
   genderLabel?: string;
   // Only 남/여 (no "밝히지 않음"): where the reading cannot go deep without it.
   binaryGender?: boolean;
+  // 조선 신분 감정: one set of lives for all (호패 was a man's tag), so gender is not asked.
+  noGender?: boolean;
 }) {
   // The site's forms (modern) have no gender picked in advance: left alone, most people kept "밝히지 않음" and
   // lost the 10-year flow and the spouse star. The choice is required, "밝히지 않음" stays one of them.
@@ -46,6 +49,7 @@ export default function PersonFields({
     <>
       <BirthTimeFields unknownLabel={unknownHour} prefix={prefix} modern={modern} />
 
+      {!noGender && (
       <fieldset className="flex flex-col gap-1.5">
         <legend className="mb-1.5 text-sm font-semibold text-ink-soft">{label}</legend>
         <div className={`grid gap-2 ${genders.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
@@ -64,6 +68,7 @@ export default function PersonFields({
           ))}
         </div>
       </fieldset>
+      )}
     </>
   );
   return (
