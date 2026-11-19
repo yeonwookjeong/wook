@@ -4,6 +4,7 @@ import { josa } from "./josa";
 import { hourStemFor, type Pillars } from "./saju";
 import { JOBS_F } from "./sinbunF";
 import { VARIANT_TOTAL, VARIANTS } from "./sinbunVariants";
+import { SAENG, TIER_N, TIER_TAG, tierOf, TOP, type Tier } from "./sinbunTiers";
 import { OFFICE, TAG_OF_LIFE, type TagKind } from "./hopae";
 
 // 조선 신분 감정 (free): what someone would have been in Joseon. The calling comes from the chart's heaviest
@@ -491,12 +492,12 @@ function rarityText(n: number): string {
 
 type Gender = "m" | "f" | null | undefined;
 
-function keyOf(p: Pillars): { key: `${Calling}-${Rank}`; group: Calling; sub: string | null; basis: string[] } {
+export function keyOf(p: Pillars): { key: `${Calling}-${Rank}`; group: Calling; sub: string | null; basis: string[]; tier: Tier } {
   const chart = readChart(p);
   const v = vessel(p);
   if (!chart || !v) {
     const key = LEGACY[p.dayStem];
-    return { key, group: key.split("-")[0] as Calling, sub: null, basis: [] };
+    return { key, group: key.split("-")[0] as Calling, sub: null, basis: [], tier: "mid" };
   }
   // The group that weighs most once every hidden stem is counted (지장간) sets the calling.
   const entries = (Object.entries(chart.godWeights) as [GodGroup, number][]).sort((a, b) => b[1] - a[1]);
@@ -517,23 +518,38 @@ function keyOf(p: Pillars): { key: `${Calling}-${Rank}`; group: Calling; sub: st
       ? `같은 길 안에서도 꼭 필요한 기운인 ${ELEMENT_KO[chart.yong]}(${ELEMENT_HANJA[chart.yong]})의 빛깔로 이름이 났사옵니다`
       : `둘째로 두터운 ${CALLING_WHY[second]}이 ${Math.round((100 * weight2) / total)}%라, 같은 길 안에서도 그 빛깔로 이름이 났사옵니다`,
   ];
-  return { key: `${group}-${rank}`, group, sub: group === "고른" ? `용신${chart.yong}` : second, basis };
+  const tier: Tier = rank === "양반" ? tierOf(v.score, group) : "mid";
+  return { key: `${group}-${rank}`, group, sub: group === "고른" ? `용신${chart.yong}` : second, basis, tier };
 }
 
-// The base life for the gender, with the job and line of its variant and how rare that is.
-function lifeOf(key: `${Calling}-${Rank}`, sub: string | null, gender: Gender): Sinbun {
+// The base life for the gender, with the job and line of its variant and how rare that is. A 양반 above or below
+// the official rung (lib/sinbunTiers.ts) takes that rung's office, tag and road; a woman keeps her own life and
+// takes only the tag (조선 women carried none; hers is the one a man of the same chart would have carried).
+function lifeOf(key: `${Calling}-${Rank}`, sub: string | null, gender: Gender, tier: Tier = "mid"): Sinbun {
   const base = gender === "f" ? JOBS_F[key] : JOBS[key];
-  const office = OFFICE[base.job];
-  const tag = TAG_OF_LIFE[key];
+  const group = key.split("-")[0];
+  const tag = tier === "mid" ? TAG_OF_LIFE[key] : TIER_TAG[tier];
+  const office = tier === "top" ? TOP[group].office : tier === "saeng" ? SAENG[group].office : OFFICE[base.job];
+  const n = tier === "saeng" ? TIER_N[`${key}|saeng`] : sub ? TIER_N[`${key}|${sub}|${tier}`] ?? VARIANTS[`${key}|${sub}`]?.n : undefined;
+  const rarity = n ? rarityText(n) : undefined;
+  if (gender !== "f" && tier === "saeng") {
+    const o = SAENG[group];
+    return { ...base, job: o.job, line: o.line, day: o.day ?? base.day, rise: o.rise, riseText: o.riseText, rarity, office, tag };
+  }
   const v = sub ? VARIANTS[`${key}|${sub}`] : undefined;
+  if (gender !== "f" && tier === "top") {
+    const o = TOP[group];
+    const up = (t: string) => t.split(o.from).join(o.to);
+    return { ...base, job: v ? up(v.m[0]) : o.job, line: v ? up(v.m[1]) : o.line, rise: o.rise, riseText: o.riseText, rarity, office, tag };
+  }
   if (!v) return { ...base, office, tag };
   const [job, line] = gender === "f" ? v.f : v.m;
-  return { ...base, job, line, rarity: rarityText(v.n), office, tag };
+  return { ...base, job, line, rarity, office, tag };
 }
 
 export function sinbunOf(p: Pillars, gender?: Gender): Sinbun {
-  const { key, sub } = keyOf(p);
-  return lifeOf(key, sub, gender);
+  const { key, sub, tier } = keyOf(p);
+  return lifeOf(key, sub, gender, tier);
 }
 
 // ── The full free report: seven chapters, like the 가상 실록 ──
@@ -593,8 +609,8 @@ export type SinbunStory = Sinbun & {
 };
 
 export function sinbunStory(p: Pillars, gender?: Gender): SinbunStory {
-  const { key, group, sub, basis } = keyOf(p);
-  const s = lifeOf(key, sub, gender);
+  const { key, group, sub, basis, tier } = keyOf(p);
+  const s = lifeOf(key, sub, gender, tier);
   const chart = readChart(p);
   // Four-character charts have no strength reading; fall back to the element that feeds the day master.
   const dayEl = stemEl(p.dayStem);
