@@ -18,6 +18,20 @@ export type Look = { accent: string; kind: "man" | "woman" | "old"; shoes?: stri
 const D = Math.PI / 180;
 const seg = (x: number, y: number, a: number, len: number): [number, number] => [x + Math.sin(a * D) * len, y + Math.cos(a * D) * len];
 
+// 운동화 한 짝 (옆모습, 120 x 53, 오른쪽이 앞코)
+export const ShoeArt: React.FC = () => (
+  <g stroke={INK} strokeWidth={4.5} strokeLinejoin="round" strokeLinecap="round">
+    <path d="M6,40 C4,26 8,12 22,9 L40,8 C48,8 52,13 58,19 C72,25 96,28 108,34 C116,38 117,42 114,44 L8,44 Z" fill="#f6f3ea" />
+    <path d="M20,9 C26,5 36,5 40,8" fill="#3a2c34" />
+    <path d="M30,38 C46,34 60,28 78,26" stroke="#3e8e7e" strokeWidth={7} fill="none" />
+    <path d="M48,13 l8,-5 M54,18 l8,-5 M60,22 l8,-5" strokeWidth={3.5} />
+    <path d="M92,30 C96,34 98,38 98,44" strokeWidth={3} fill="none" />
+    <path d="M7,10 L16,10 L16,30 L7,30" fill="#3e8e7e" strokeWidth={3.5} />
+    <rect x={2} y={42} width={116} height={11} rx={5.5} fill="#ece4d4" />
+    <path d="M8,50 L112,50" strokeWidth={2.5} stroke="#a89a88" />
+  </g>
+);
+
 // 크기(키 h 기준 비율)
 const R = { head: 0.15, torso: 0.27, uArm: 0.15, fArm: 0.14, uLeg: 0.17, lLeg: 0.17 };
 
@@ -45,7 +59,9 @@ export const Stick: React.FC<{ look: Look; pose: Pose; x: number; floor: number;
   const face = pose.face ?? "smile";
   const foot = (e: [number, number]) =>
     look.shoes ? (
-      <path d={`M${e[0] - s(0.03)},${e[1] - s(0.012)} q${s(0.04)},${-s(0.03)} ${s(0.085)},${s(0.004)} q${s(0.012)},${s(0.016)} ${-s(0.004)},${s(0.022)} l${-s(0.08)},0 z`} fill={look.shoes} stroke={INK} strokeWidth={w * 0.55} strokeLinejoin="round" />
+      <g transform={`translate(${e[0] - s(0.045)},${e[1] - s(0.06)}) scale(${s(0.15) / 120})`}>
+        <ShoeArt />
+      </g>
     ) : (
       <path d={`M${e[0] - s(0.01)},${e[1]} l${s(0.055)},0`} stroke={INK} strokeWidth={w} strokeLinecap="round" />
     );

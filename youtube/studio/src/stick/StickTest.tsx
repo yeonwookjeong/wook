@@ -3,7 +3,7 @@ import React from "react";
 import { AbsoluteFill, Audio, Img, interpolate, Sequence, spring, staticFile, useCurrentFrame } from "remotion";
 import { loadFont as loadNotoSans } from "@remotion/google-fonts/NotoSansKR";
 import { CAPS, EP04 } from "../ep04/Ep04";
-import { INK, Look, Pose, Stick, stand, walk } from "./Stick";
+import { INK, Look, Pose, ShoeArt, Stick, stand, walk } from "./Stick";
 
 const { fontFamily: sans } = loadNotoSans();
 const FPS = 30;
@@ -33,19 +33,7 @@ const GiftBox: React.FC<{ x: number; y: number; open: number; s?: number }> = ({
     </g>
   </svg>
 );
-// 운동화 한 켤레 (먹선, 옆모습: 두꺼운 밑창 · 둥근 앞코 · 끈 · 초록 줄)
-const Shoe: React.FC = () => (
-  <g stroke={INK} strokeWidth={4.5} strokeLinejoin="round" strokeLinecap="round">
-    <path d="M6,40 C4,26 8,12 22,9 L40,8 C48,8 52,13 58,19 C72,25 96,28 108,34 C116,38 117,42 114,44 L8,44 Z" fill={SNEAK} />
-    <path d="M20,9 C26,5 36,5 40,8" fill="#3a2c34" />
-    <path d="M30,38 C46,34 60,28 78,26" stroke="#3e8e7e" strokeWidth={7} fill="none" />
-    <path d="M48,13 l8,-5 M54,18 l8,-5 M60,22 l8,-5" strokeWidth={3.5} />
-    <path d="M92,30 C96,34 98,38 98,44" strokeWidth={3} fill="none" />
-    <path d="M7,10 L16,10 L16,30 L7,30" fill="#3e8e7e" strokeWidth={3.5} />
-    <rect x={2} y={42} width={116} height={11} rx={5.5} fill="#ece4d4" />
-    <path d="M8,50 L112,50" strokeWidth={2.5} stroke="#a89a88" />
-  </g>
-);
+const Shoe = ShoeArt;
 const Sneakers: React.FC<{ x: number; y: number; s?: number; hop?: number; flip?: boolean }> = ({ x, y, s = 1, hop = 0, flip }) => (
   <svg width={180 * s} height={80 * s} viewBox="-30 -20 180 80" style={{ position: "absolute", left: x - 90 * s, top: y - 70 * s, overflow: "visible", transform: flip ? "scaleX(-1)" : undefined }}>
     {[0, 1].map((k) => {
@@ -100,18 +88,22 @@ export const StickTest: React.FC = () => {
     shoes = <Sneakers x={sx} y={sy} s={1.4} hop={f2 * 0.6} />;
     cam = { z: lerp(1.6, 1.3, ease(t)), fx: lerp(560, 760, ease(t)), fy: 1450 };
   } else {
-    // ---- 장면 3: 여자가 그 신발을 신고 걸어가 버림, 남자는 혼자 멍하니
+    // ---- 장면 3: "give your partner shoes" 신발이 깡충 돌아와 여자 발에 쏙 → "they'll use them" 신고 통통 → "to walk away from you" 신고 걸어가 버림
     const t = f3 / AW;
-    womShoes = true;
-    const go = interpolate(t, [0.3, 1], [0, 1], cl);
-    womFlip = go <= 0 ? true : false;
+    const back = interpolate(t, [0.05, 0.38], [0, 1], cl);
+    const on = t >= 0.4;
+    const go = interpolate(t, [0.6, 1], [0, 1], cl);
+    womShoes = on;
+    if (!on) shoes = <Sneakers x={lerp(1250, 705, ease(back))} y={FLOOR + 8} s={1.0} hop={back < 1 ? f3 * 0.6 : 0} flip />;
+    const snap = on ? spring({ frame: f3 - Math.round(AW * 0.4), fps: FPS, config: { damping: 8, stiffness: 240 } }) : 0;
+    womFlip = go <= 0;
     womX = lerp(700, 610, ease(go));
     womFloor = lerp(FLOOR, 1330, ease(go));
     womScale = lerp(1, 0.38, ease(go));
-    womO = interpolate(t, [0.9, 1], [1, 0.0], cl);
-    woman = go > 0 ? { ...walk(f3), face: "back" } : { ...stand(f3), face: "smile" };
-    man = t > 0.55 ? { armL: [2, 0], armR: [-2, 0], head: -6, lean: -3, face: "sad", bob: -4 } : { ...stand(f3), face: "o", armR: [-40, -30] };
-    cam = { z: lerp(1.1, 1.3, ease(t)), fx: lerp(560, 480, ease(t)), fy: 1350 };
+    womO = interpolate(t, [0.92, 1], [1, 0.0], cl);
+    woman = go > 0 ? { ...walk(f3), face: "back" } : on ? { ...stand(f3), head: 10, armR: [-60, -20], armL: [-50, -20], bob: (1 - snap) * -18 + Math.abs(Math.sin(f3 * 0.5)) * 8 } : { ...stand(f3), head: 14 };
+    man = go > 0.2 ? { armL: [2, 0], armR: [-2, 0], head: -6, lean: -3, bob: -4 } : { ...stand(f3), armR: [-80, -10] };
+    cam = go > 0 ? { z: lerp(1.35, 1.15, ease(go)), fx: lerp(640, 500, ease(go)), fy: lerp(1450, 1350, ease(go)) } : { z: 1.6, fx: lerp(900, 680, ease(back)), fy: 1500 };
   }
   const H = 520;
   const caps = (CAPS.en as { text: string; hl?: boolean }[][][]).slice(1, 4);
@@ -143,7 +135,8 @@ export const StickTest: React.FC = () => {
       ))}
       <Sequence from={Math.round(SH * 0.55)} layout="none"><Audio src={staticFile("sfx/pop.wav")} volume={0.45} /></Sequence>
       <Sequence from={SH + 6} layout="none"><Audio src={staticFile("sfx/whoosh.wav")} volume={0.35} /></Sequence>
-      <Sequence from={SH + WK + Math.round(AW * 0.55)} layout="none"><Audio src={staticFile("sfx/thud.wav")} volume={0.25} /></Sequence>
+      <Sequence from={SH + WK + Math.round(AW * 0.4)} layout="none"><Audio src={staticFile("sfx/pop.wav")} volume={0.5} /></Sequence>
+      <Sequence from={SH + WK + Math.round(AW * 0.6)} layout="none"><Audio src={staticFile("sfx/whoosh.wav")} volume={0.35} /></Sequence>
     </AbsoluteFill>
   );
 };
