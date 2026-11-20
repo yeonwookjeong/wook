@@ -40,6 +40,7 @@ export function freeOfNext(next: string): string {
   if (next.startsWith("/s/")) return "friend";
   if (next.startsWith("/sinsal")) return "sinsal";
   if (next === "/byeoseul") return "byeoseul";
+  if (next === "/star") return "star";
   const m = /^\/reports\/([a-z]+)/.exec(next);
   if (m) return isFreeView(m[1]) ? m[1] : "paid";
   return next.startsWith("/#today") ? "today" : "home";

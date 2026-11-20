@@ -49,7 +49,7 @@ export default async function StarPage() {
       ) : (
         <section className="doc-paper mt-6 px-5 py-5">
           <p className="mb-4 text-center text-[14px] text-ink-soft">생일을 넣으면 나와 같은 일주 유명인이 보이옵니다</p>
-          <MeForm next="/star" submit="유명인 찾아보기" />
+          <MeForm next="/star" noGender submit="유명인 찾아보기" />
         </section>
       )}
       <p className="mt-10 text-center text-[11.5px] leading-relaxed text-ink-soft/80">
