@@ -20,6 +20,8 @@ import { profileOf } from "@/lib/pairToken";
 import { ownedByProduct, ownedOrders } from "@/lib/pay";
 import { productById, SETS, type ProductId } from "@/lib/products";
 import { readingCount } from "@/lib/store";
+import { homeReviews } from "@/lib/feedback";
+import ReviewRotator from "@/components/ReviewRotator";
 import { pickAskSample } from "@/lib/askSamples";
 import { todayFor } from "@/lib/today";
 import { isPreview, newYearOf, newYearProduct, thisYear, yearDetail, yearName, yearNickname } from "@/lib/yeonun";
@@ -252,7 +254,7 @@ const SectionTitle = ({ children, sub }: { children: React.ReactNode; sub?: Reac
 );
 
 export default async function HomeV2() {
-  const [me, count, orders, ask, member] = await Promise.all([readMe(), readingCount(), ownedOrders().catch(() => []), askShown(), currentMember().catch(() => null)]);
+  const [me, count, orders, ask, member, reviews] = await Promise.all([readMe(), readingCount(), ownedOrders().catch(() => []), askShown(), currentMember().catch(() => null), homeReviews().catch(() => [])]);
   const today = todayFor(me?.person ?? null);
   const owned = ownedByProduct(orders);
   const ny = newYearOf();
@@ -483,6 +485,13 @@ export default async function HomeV2() {
       <Link href="/column" className="mt-2 block text-center text-[13px] font-bold text-seal">
         이야기 전체 보기 →
       </Link>
+
+      {reviews.length > 0 && (
+        <>
+          <SectionTitle>손님 후기</SectionTitle>
+          <ReviewRotator items={reviews} />
+        </>
+      )}
     </div>
   );
 }

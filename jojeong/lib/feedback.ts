@@ -2,7 +2,7 @@ import "server-only";
 import { changeCredits } from "./members";
 import { covers, getOrder } from "./pay";
 import { productById, type ProductId } from "./products";
-import { deleteFeedbackRaw, feedbackKeys, getFeedbackRaw, getFeedbacksRaw, setFeedbackRaw } from "./store";
+import { deleteFeedbackRaw, feedbackKeys, getFeedbackRaw, getFeedbacksRaw, getHomeReviewKeys, setFeedbackRaw, setHomeReviewKeys } from "./store";
 
 // How a bought report was liked: what the buyer liked, and whether it may be shown as a review (no name, only with
 // that tick). Kept per order and report; the order id is the buyer's own link, so only they reach it. Since
@@ -59,4 +59,26 @@ export async function deleteDownFeedback(): Promise<number> {
 export async function listFeedback(limit = 200): Promise<Feedback[]> {
   const keys = [...new Set((await feedbackKeys().catch(() => [])).slice(-limit))].reverse();
   return (await getFeedbacksRaw(keys).catch(() => [])).flatMap((r) => parse(r) ?? []);
+}
+
+// The home page's reviews (대표님 11/20: 골라서 메인 맨 아래에 돌아가며): only one the buyer allowed to be shown, liked,
+// with words. No name or order; a review that brought a question says so (대가를 받은 후기 표시).
+export type HomeReview = { text: string; product: string; rewarded: boolean };
+export const reviewKey = keyOf;
+export async function homeReviews(): Promise<HomeReview[]> {
+  const keys = await getHomeReviewKeys();
+  const raws = await getFeedbacksRaw(keys).catch(() => []);
+  return raws.flatMap((r) => {
+    const f = parse(r);
+    if (!f || !f.share || !f.up || !f.text.trim()) return [];
+    return [{ text: f.text.trim(), product: productById(f.product)?.title ?? "", rewarded: Boolean(f.rewarded) }];
+  });
+}
+export async function toggleHomeReview(key: string): Promise<void> {
+  const keys = await getHomeReviewKeys();
+  if (keys.includes(key)) return setHomeReviewKeys(keys.filter((k) => k !== key));
+  const [r] = await getFeedbacksRaw([key]);
+  const f = parse(r ?? null);
+  if (!f || !f.share || !f.up || !f.text.trim()) return;
+  await setHomeReviewKeys([...keys, key]);
 }
