@@ -4,6 +4,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { Profile } from "./profile";
 import type { Pillars } from "./saju";
+import { isNetError } from "./netError";
 
 export type Court = { id: string; kingName: string; king: Pillars; ownerToken: string; createdAt: number };
 export type Minister = {
@@ -549,6 +550,7 @@ export const maskPath = (path: string) =>
     .join("/")
     .slice(0, 120);
 export async function noteSiteError(e: { kind: SiteError["kind"]; message: string; route?: string; path: string; digest?: string }) {
+  if (e.kind === "client" && isNetError(e.message)) return; // the reader's line dropped, not our bug
   const day = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
   if ((await backend().incr(`errors:day:${day}`)) > ERROR_DAILY_CAP) return;
   const message = e.message.replace(/\s+/g, " ").trim().slice(0, 300) || "(내용 없음)";
@@ -584,6 +586,6 @@ export async function listSiteErrors(days = 14): Promise<SiteError[]> {
         return [];
       }
     })
-    .filter((e) => e.last >= since)
+    .filter((e) => e.last >= since && !(e.kind === "client" && isNetError(e.message)))
     .sort((a, b) => b.last - a.last);
 }

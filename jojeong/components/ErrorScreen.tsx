@@ -3,11 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { startTransition, useEffect } from "react";
+import { NET_ERROR } from "@/lib/netError";
 
-// Safari "Load failed", Chrome "Failed to fetch", Firefox "NetworkError": the phone lost the line mid-request
-// (LTE handover, the Threads in-app browser put to sleep). Not a bug on our side, so it is tried again by itself
-// once per page, and the words say what happened.
-const NET = /load failed|failed to fetch|networkerror|network request failed/i;
 
 // What a reader sees when a page breaks, in place of the framework's English screen: try again, or tell us with
 // the page and the error number filled in (the contact form adds the device and, if any, the orders itself).
@@ -15,7 +12,7 @@ const NET = /load failed|failed to fetch|networkerror|network request failed/i;
 export default function ErrorScreen({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   const path = typeof window === "undefined" ? "/" : window.location.pathname;
   const router = useRouter();
-  const net = !error.digest && NET.test(error.message);
+  const net = !error.digest && NET_ERROR.test(error.message);
   const retry = () =>
     startTransition(() => {
       router.refresh();
@@ -34,11 +31,12 @@ export default function ErrorScreen({ error, reset }: { error: Error & { digest?
         return () => clearTimeout(t);
       }
     }
-    if (error.digest) return;
+    // A lost line is not a bug: tried again above, never sent to the owner's error list.
+    if (error.digest || net) return;
     fetch("/api/err", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ path: window.location.pathname, message: `${net ? "연결 끊김, " : ""}${error.name}: ${error.message}` }),
+      body: JSON.stringify({ path: window.location.pathname, message: `${error.name}: ${error.message}` }),
       keepalive: true,
     }).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
