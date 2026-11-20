@@ -12,7 +12,7 @@ import { trackEvent } from "./VisitBeacon";
 // over paying, a bought report, the room, the owner's pages, a friend's link or a reading on screen, nor on the 도감
 // game itself (seeing it counts as seen). `gift`: the questions a Kakao sign-up brings, shown under it to non-members.
 // 벼슬길은 팝업 없이 바로 게임으로 (대표님 11/17).
-const QUIET = ["/byeoseul", "/ask", "/pay", "/admin", "/login", "/r/", "/my", "/leave", "/logout", "/e/", "/s/"];
+const QUIET = ["/byeoseul", "/star", "/ask", "/pay", "/admin", "/login", "/r/", "/my", "/leave", "/logout", "/e/", "/s/"];
 // Shown once per visit: kept in sessionStorage, so the next visit (a new tab or a new day) shows it again.
 const SEEN = "pop-visit";
 type Pick = "king" | "hopae";
