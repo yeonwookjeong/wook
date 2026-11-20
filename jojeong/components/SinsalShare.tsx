@@ -7,8 +7,8 @@ import { trackEvent } from "./VisitBeacon";
 
 // Sends the friend link with its line (the share sheet, else the clipboard). True when it was copied, for the
 // button to say so.
-async function sendLink(path: string, text: string): Promise<boolean> {
-  trackEvent("share_result", "sinsal");
+export async function sendLink(path: string, text: string, from = "sinsal"): Promise<boolean> {
+  trackEvent("share_result", from);
   let short = path;
   try {
     short = (await shortShareAction(path)) ?? path;

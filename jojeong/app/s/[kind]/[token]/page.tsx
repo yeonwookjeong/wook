@@ -21,6 +21,9 @@ import { isShareKind, openCard, openPerson, type ReadingSummary, type SinbunSumm
 import { track } from "@/lib/stats";
 import { yearReading } from "@/lib/yearly";
 import { TAG_OF_RANK, yearGanji } from "@/lib/hopae";
+import { boxOf, friendKeyOf } from "@/lib/hopaeBox";
+import { sinbunStory } from "@/lib/sinbun";
+import { hangHopae } from "@/lib/store";
 
 // What a friend opens from "친구에게 보내기". Two kinds of link, both signed (lib/shareToken.ts), nothing stored:
 //   the whole free result as the sender saw it, with the form for their own at the top and the foot; or
@@ -78,8 +81,18 @@ export default async function SharedPage({ params }: PageProps<"/s/[kind]/[token
 
   // 신분 감정: once the friend's own chart is on this device, the two 호패 side by side at the top.
   const sinbunCard = kind === "sinbun" && card ? (card as SinbunSummary) : null;
-  const them = kind === "sinbun" ? (person ? sideOf(name, person.pillars, person.gender) : sinbunCard ? sideOf(sinbunCard.n, null, null, { rank: sinbunCard.r, job: sinbunCard.j, line: sinbunCard.l }) : null) : null;
+  const them = kind === "sinbun" ? (person ? sideOf(name, person.pillars, person.gender) : sinbunCard ? sideOf(sinbunCard.n, null, null, { rank: sinbunCard.r, job: sinbunCard.j, line: sinbunCard.l, tag: sinbunCard.t }) : null) : null;
   const meSide = kind === "sinbun" && me && !(person && samePerson(person, me.person)) && !(sinbunCard && sinbunCard.n === me.person.name) ? sideOf(me.person.name, me.person.pillars, me.person.gender) : null;
+  // The friend's tag goes into the sender's 호패함 (lib/hopaeBox.ts): a name, a job and a tag, never the chart.
+  if (them && meSide && me) {
+    const owner = sinbunCard
+      ? { n: sinbunCard.n, r: sinbunCard.r, j: sinbunCard.j, l: sinbunCard.l, t: sinbunCard.t }
+      : (() => {
+          const s = sinbunStory(person!.pillars, person!.gender);
+          return { n: person!.name.slice(0, 12), r: s.rank, j: s.job, l: s.line, t: s.tag };
+        })();
+    await hangHopae(boxOf(owner), { k: friendKeyOf(me.token), n: me.person.name.slice(0, 12), j: meSide.life.job, t: meSide.tag.kind }).catch(() => {});
+  }
   // Back here after the form, so the pair shows.
   const next = kind === "sinbun" ? `/s/sinbun/${token}` : NEXT[kind];
 
@@ -100,7 +113,7 @@ export default async function SharedPage({ params }: PageProps<"/s/[kind]/[token
             생년월일만 넣으면 <b>무료</b>로 바로 보여 드려요
           </p>
           <div className="mt-4">
-            <MeForm next={next} submit={kind === "sinbun" ? "내 호패 보고 나란히 놓기" : "내 결과 보기"} />
+            <MeForm next={next} noGender={kind === "sinbun"} submit={kind === "sinbun" ? "내 호패 보고 나란히 놓기" : "내 결과 보기"} />
           </div>
         </>
       )}

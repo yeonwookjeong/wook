@@ -20,11 +20,14 @@ export default function SinbunReport({
   gender,
   heading,
   query,
+  box,
 }: {
   pillars: Pillars;
   gender?: "m" | "f" | null;
   heading: string;
   query: string;
+  // The reader's own 호패함 (components/HopaeBox.tsx), right under the tag, where the wish to show it is strongest.
+  box?: React.ReactNode;
 }) {
   const s = sinbunStory(pillars, gender);
   const kind = s.tag ?? TAG_OF_RANK[s.rank];
@@ -102,6 +105,8 @@ export default function SinbunReport({
             </p>
           </div>
         </section>
+
+        {box}
 
         <section className={`${NIGHT_PANEL} mt-4 px-4 py-4`}>
           <h2 className="text-center font-myeongjo text-[17px] font-extrabold">
