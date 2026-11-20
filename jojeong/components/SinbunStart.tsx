@@ -1,11 +1,10 @@
 import HopaeFace from "@/components/HopaeFace";
 import MeForm from "@/components/MeForm";
 import { MATERIAL, TAG_ORDER, type TagKind } from "@/lib/hopae";
-import { IN100 } from "@/lib/hopaeShare";
 
 // The 신분 감정 before a chart is entered, in the same shape as the 신살 test's first screen (SinsalStart): a dark
 // night of its own (lamp-lit wood rather than the 신살 sky), the question as the title, the five 호패 of 『속대전』
-// with how many in 100 carry each, then the form. Each tag is carved with a life that carried it.
+// (대표님 11/20: 결과 전에는 비율 없이), then the form. Each tag is carved with a life that carried it.
 const SAMPLE: Record<TagKind, string> = { 아패: "대제학", 각패: "교리", 황양목패: "생원", 소목방패: "훈장", 대목방패: "관노" };
 const GOLD = "text-[#e0b866]";
 
@@ -31,7 +30,6 @@ export default function SinbunStart({ next }: { next: string }) {
                 <HopaeFace tag={{ kind: k, job: SAMPLE[k], born: "甲子生", issued: "丙午" }} id={`start-${i}`} />
               </div>
               <p className="mt-1.5 text-[12.5px] font-bold">{MATERIAL[k].what}</p>
-              <p className="text-[11px] text-hanji/55">100명 중 {IN100[k]}</p>
             </div>
           ))}
         </div>
