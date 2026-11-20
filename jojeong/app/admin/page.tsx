@@ -7,11 +7,11 @@ import { GIFTABLE, originNow } from "@/lib/gift";
 import { SALE_KEYS, saleKey, saleLabel } from "@/lib/sales";
 import { productById, SETS, type ProductId } from "@/lib/products";
 import { upgradeNote } from "@/lib/upgrade";
-import { freshSiteErrors, lastReportError, listInquiries, listSiteErrors, memberViews, readingCount, type SiteError } from "@/lib/store";
-import { listFeedback } from "@/lib/feedback";
+import { freshSiteErrors, getHomeReviewKeys, lastReportError, listInquiries, listSiteErrors, memberViews, readingCount, type SiteError } from "@/lib/store";
+import { listFeedback, reviewKey } from "@/lib/feedback";
 import { memberFixAction } from "./actions";
 import { allMembers, memberNo, VIA_LABEL, viaOf, type Member } from "@/lib/members";
-import { adminSignOut, creditEventCreateAction, creditEventToggleAction, deleteDownFeedbackAction, giftCopyAction, reportErrorClearAction, giftRevokeAction, inquiryDeleteAction, inquiryDoneAction, rewriteReportAction, testOrderAction } from "./actions";
+import { adminSignOut, homeReviewAction, creditEventCreateAction, creditEventToggleAction, deleteDownFeedbackAction, giftCopyAction, reportErrorClearAction, giftRevokeAction, inquiryDeleteAction, inquiryDoneAction, rewriteReportAction, testOrderAction } from "./actions";
 import Dashboard, { rangeOf } from "./Dashboard";
 import { threadsPosts } from "@/lib/threads";
 import GiftForm from "./GiftForm";
@@ -851,7 +851,7 @@ async function Interest({ id }: { id: string }) {
 
 // How the bought reports were liked (components/ReportFeedback.tsx), newest first; a review only with its tick.
 async function FeedbackSection() {
-  const list = await listFeedback().catch(() => []);
+  const [list, onHome] = await Promise.all([listFeedback().catch(() => []), getHomeReviewKeys().catch(() => [] as string[])]);
   const up = list.filter((f) => f.up).length;
   return (
     <section className="doc-paper mt-4 px-4 py-4">
@@ -881,6 +881,14 @@ async function FeedbackSection() {
               {f.rewarded && <span className="ml-1 rounded bg-seal/10 px-1 text-[10.5px] font-bold text-seal">질문권 지급</span>}
               {f.member && <span className="ml-1 font-mono text-[10px] text-ink-soft">{memberNo(f.member)}</span>}
               {f.text && <span className="block text-ink-soft">{f.text}</span>}
+              {f.share && f.up && f.text.trim() && (
+                <form action={homeReviewAction} className="mt-1">
+                  <input type="hidden" name="key" value={reviewKey(f.order, f.product)} />
+                  <button className={`rounded-full px-2 py-0.5 text-[10.5px] font-bold ${onHome.includes(reviewKey(f.order, f.product)) ? "bg-seal text-white" : "border border-seal/40 text-seal"}`}>
+                    {onHome.includes(reviewKey(f.order, f.product)) ? "메인에 걸림 · 내리기" : "메인에 걸기"}
+                  </button>
+                </form>
+              )}
               {!f.up && <RewriteBox order={f.order} product={f.product} />}
             </li>
           ))}

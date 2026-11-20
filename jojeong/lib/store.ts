@@ -500,6 +500,19 @@ export async function deleteFeedbackRaw(key: string) {
 export async function feedbackKeys(): Promise<string[]> {
   return backend().list("feedbacks");
 }
+// The reviews the owner picked for the home page's last section (대표님 11/20), as feedback keys in order.
+export async function getHomeReviewKeys(): Promise<string[]> {
+  try {
+    const raw = await backend().get("home-reviews");
+    const v = raw ? (JSON.parse(raw) as unknown) : [];
+    return Array.isArray(v) ? v.filter((k): k is string => typeof k === "string") : [];
+  } catch {
+    return [];
+  }
+}
+export async function setHomeReviewKeys(keys: string[]) {
+  await backend().set("home-reviews", JSON.stringify([...new Set(keys)].slice(0, 30)));
+}
 export async function getFeedbacksRaw(keys: string[]): Promise<(string | null)[]> {
   return keys.length ? backend().mget(keys.map((k) => `fb:${k}`)) : [];
 }
