@@ -127,6 +127,22 @@ export async function getShare(code: string): Promise<string | null> {
   return backend().get(`share:${code}`);
 }
 
+// 호패함 (lib/hopaeBox.ts): the friends who opened someone's 신분 감정 link and entered their own chart, each kept
+// as a name, a job and a tag, never a birth date. One list per box; a friend is kept once (`k`, from their chart).
+export type HungTag = { k: string; n: string; j: string; t: string; at: number };
+const BOX_MAX = 60;
+export async function listHopaeBox(box: string): Promise<HungTag[]> {
+  if (!/^[\w-]{16}$/.test(box)) return [];
+  return (await backend().list(`hopae:${box}`)).map((raw) => JSON.parse(raw) as HungTag);
+}
+export async function hangHopae(box: string, tag: Omit<HungTag, "at">): Promise<void> {
+  if (!/^[\w-]{16}$/.test(box)) return;
+  const db = backend();
+  const now = await db.list(`hopae:${box}`);
+  if (now.length >= BOX_MAX || now.some((raw) => (JSON.parse(raw) as HungTag).k === tag.k)) return;
+  await db.push(`hopae:${box}`, JSON.stringify({ ...tag, at: Date.now() }));
+}
+
 export async function createCourt(kingName: string, king: Pillars): Promise<Court> {
   const court: Court = { id: id(6), kingName, king, ownerToken: id(18), createdAt: Date.now() };
   await backend().set(`court:${court.id}`, JSON.stringify(court));

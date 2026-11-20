@@ -24,7 +24,10 @@ import ChannelCard from "@/components/ChannelCard";
 import { ReadingCard, SinbunCard } from "@/components/ResultCards";
 import { iljuFacts } from "@/lib/cards";
 import { sinbunStory } from "@/lib/sinbun";
-import { bornOf, TAG_OF_RANK, yearGanji } from "@/lib/hopae";
+import SinbunStart from "@/components/SinbunStart";
+import HopaeBox from "@/components/HopaeBox";
+import { boxOf } from "@/lib/hopaeBox";
+import { bornOf, MATERIAL, TAG_OF_RANK, yearGanji } from "@/lib/hopae";
 import { sealCard, sealPerson } from "@/lib/shareToken";
 import NextStep from "@/components/NextStep";
 import TrackLink from "@/components/TrackLink";
@@ -65,7 +68,7 @@ import { pastHits } from "@/lib/pastHits";
 import IdentityCard from "@/components/IdentityCard";
 import PastCheck from "@/components/PastCheck";
 import { courtOfReader, subjectFor } from "@/lib/subject";
-import { getProfile } from "@/lib/store";
+import { getProfile, listHopaeBox } from "@/lib/store";
 import { covers, getOrder, ownedOrderFor, ownedOrders, readAtOf, type Order } from "@/lib/pay";
 import { isAdmin, isPreview } from "@/lib/admin";
 import { renewNow } from "@/lib/launch";
@@ -467,6 +470,7 @@ async function OpenReport({
   const base = `/reports/${product.id}`;
   const next = product.id === "yeonun" && /^\d{4}$/.test(search.y ?? "") ? `${base}?y=${search.y}` : base;
   const newYear = product.id === "yeonun" ? newYearOf() : null;
+  if (!me && !subject && product.id === "sinbun") return <SinbunStart next={next} />;
   if (!me && !subject)
     return (
       <>
@@ -483,13 +487,8 @@ async function OpenReport({
             </p>
           )}
           <div className="mt-4">
-            <MeForm next={next} noGender={product.id === "sinbun"} />
+            <MeForm next={next} />
           </div>
-          {product.id === "sinbun" && (
-            <p className="mt-3 text-center text-[12px] leading-relaxed text-ink-soft">
-              호패는 조선의 사내만 찼어요. 그래서 남녀 모두 같은 사주로 사내로 났다면 살았을 삶과 찼을 호패로 감정해요.
-            </p>
-          )}
         </section>
       </>
     );
@@ -509,6 +508,18 @@ async function OpenReport({
   if (product.id === "sinbun") {
     const gender = me ? me.person.gender : null;
     const sinbun = sinbunStory(pillars, gender);
+    const summary = { n: name.slice(0, 12), r: sinbun.rank, j: sinbun.job, l: sinbun.line, w: sinbun.rise, y: sinbun.yong, t: sinbun.tag };
+    const myKind = sinbun.tag ?? TAG_OF_RANK[sinbun.rank];
+    // 호패함: only on one's own result (a remembered chart), where the link to send is one's own.
+    const box =
+      self && me ? (
+        <HopaeBox
+          me={{ name, job: sinbun.job, kind: myKind }}
+          friends={await listHopaeBox(boxOf(summary)).catch(() => [])}
+          path={`/s/sinbun/${sealCard("sinbun", summary)}`}
+          text={`조선에 태어났다면 나는 ${MATERIAL[myKind].what} 호패를 찬 '${sinbun.job}'. 너는 무슨 호패야? 내 호패함에 걸어 줘 (훈도사주)`}
+        />
+      ) : undefined;
     return (
       <>
         <SinbunReport
@@ -516,6 +527,7 @@ async function OpenReport({
           gender={gender}
           heading={subject?.king ? `${name} 전하가 왕이 아니었다면` : `${josa(name, "이/가")} 조선에 태어났다면`}
           query={query}
+          box={box}
         />
         {self && me && (
           <ShareResult
@@ -523,7 +535,7 @@ async function OpenReport({
             file="hundosaju-sinbun"
             from="sinbun"
             paths={{
-              summary: `/s/sinbun/${sealCard("sinbun", { n: name.slice(0, 12), r: sinbun.rank, j: sinbun.job, l: sinbun.line, w: sinbun.rise, y: sinbun.yong, t: sinbun.tag })}`,
+              summary: `/s/sinbun/${sealCard("sinbun", summary)}`,
               full: `/s/sinbun/${sealPerson("sinbun", me.person)}`,
             }}
             texts={{

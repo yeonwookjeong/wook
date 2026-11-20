@@ -1,28 +1,23 @@
 import Link from "next/link";
 import { bornOf, TAG_OF_RANK, yearGanji, type HopaeInput } from "@/lib/hopae";
-import { sinbunOf, type Rank, type Sinbun } from "@/lib/sinbun";
+import { pairLine } from "@/lib/hopaeShare";
+import { sinbunOf, type Sinbun } from "@/lib/sinbun";
 import type { Pillars } from "@/lib/saju";
 import HopaeFace from "./HopaeFace";
 import SinsalNight, { NIGHT_GOLD, NIGHT_PANEL } from "./SinsalNight";
 
-const ORDER: Rank[] = ["양반", "중인", "상민", "천민"];
 
 type Side = { name: string; life: Sinbun; tag: HopaeInput };
 
 // A chart's side of the pair: its life and its tag (the birth year left off when the link carried none).
-export function sideOf(name: string, pillars: Pillars | null, gender: "m" | "f" | null | undefined, life?: Pick<Sinbun, "rank" | "job" | "line">): Side | null {
+export function sideOf(name: string, pillars: Pillars | null, gender: "m" | "f" | null | undefined, life?: Pick<Sinbun, "rank" | "job" | "line" | "tag">): Side | null {
   const l = pillars ? sinbunOf(pillars, gender) : life ? ({ ...life } as Sinbun) : null;
   if (!l) return null;
   return { name, life: l, tag: { kind: l.tag ?? TAG_OF_RANK[l.rank], job: l.job, office: l.office, born: pillars ? bornOf(pillars.yearStem, pillars.yearBranch) : "", issued: yearGanji() } };
 }
 
-// One line on the two lives, light and never a put-down.
-function lineOf(a: Side, b: Side): string {
-  if (a.life.job === b.life.job) return "조선에서도 같은 일을 했을 두 사람이에요. 그대로 동업자감이에요.";
-  if (a.life.rank === b.life.rank) return `둘 다 ${a.life.rank}으로 났어요. 같은 동네에서 마주쳤을 사이예요.`;
-  const [hi, lo] = ORDER.indexOf(a.life.rank) < ORDER.indexOf(b.life.rank) ? [a, b] : [b, a];
-  return `${hi.name}님은 ${hi.life.rank}, ${lo.name}님은 ${lo.life.rank}. 조선에서 만났다면 ${lo.name}님의 재주를 ${hi.name}님이 알아봤을 거예요.`;
-}
+// One line on the two of them in 조선, by their tags (lib/hopaeShare.ts), never a put-down.
+const lineOf = (a: Side, b: Side) => pairLine({ name: a.name, kind: a.tag.kind }, { name: b.name, kind: b.tag.kind });
 
 // The friend who opened a 신분 감정 link, once their own chart is on this device: the two 호패 side by side.
 export default function HopaePair({ me, them }: { me: Side; them: Side }) {
@@ -44,8 +39,9 @@ export default function HopaePair({ me, them }: { me: Side; them: Side }) {
           ))}
         </div>
         <p className={`${NIGHT_PANEL} mt-4 px-4 py-3 text-[13.5px] leading-relaxed text-hanji/90`}>{lineOf(them, me)}</p>
-        <Link href="/reports/sinbun" className="mt-4 block rounded-2xl bg-[#d4af5f] py-3.5 text-center font-myeongjo text-[16px] font-extrabold text-[#0f2236]">
-          내 호패 자세히 보기
+        <p className="mt-3 text-[12.5px] text-hanji/70">{them.name}의 호패함에 그대 호패가 걸렸사옵니다.</p>
+        <Link href="/reports/sinbun" className="mt-3 block rounded-2xl bg-[#d4af5f] py-3.5 text-center font-myeongjo text-[16px] font-extrabold text-[#0f2236]">
+          내 호패함 만들기
         </Link>
       </section>
     </SinsalNight>
