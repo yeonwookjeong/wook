@@ -72,9 +72,9 @@ export default function SinsalNote({ gift }: { gift: number }) {
             <Image src="/king/throne.webp" alt="일월오봉도 앞 어좌" width={1080} height={639} className="h-[clamp(130px,24dvh,210px)] w-auto object-contain" />
           ) : (
             // The five 호패 of 『속대전』, as the 신분 감정's first screen shows them (the small wooden one drawn smaller).
-            <div className="flex h-[clamp(130px,24dvh,210px)] items-start justify-center gap-2" aria-label="조선 호패 다섯 가지">
+            <div className="grid h-[clamp(130px,24dvh,210px)] w-full max-w-[330px] grid-cols-5 items-start gap-1" aria-label="조선 호패 다섯 가지">
               {IMG.map((f, i) => (
-                <Image key={i} src={`/hopae/${f}.webp`} alt="" width={510} height={1000} className={`w-auto drop-shadow-[0_6px_10px_rgb(0_0_0/0.45)] ${i === 3 ? "h-[84%]" : "h-full"}`} />
+                <Image key={i} src={`/hopae/${f}.webp`} alt="" width={510} height={1000} className={`w-full object-contain object-top drop-shadow-[0_6px_10px_rgb(0_0_0/0.45)] h-full ${i === 3 ? "origin-top scale-[0.84]" : ""}`} />
               ))}
             </div>
           )}
