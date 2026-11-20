@@ -467,6 +467,13 @@ export default async function HomeV2() {
         </li>
       </ul>
 
+      {reviews.length > 0 && (
+        <>
+          <SectionTitle>먼저 받아 본 손님들</SectionTitle>
+          <ReviewRotator items={reviews} />
+        </>
+      )}
+
       <SectionTitle>훈도의 사주 이야기</SectionTitle>
       <ul className="card flex flex-col divide-y divide-ink/10 px-4">
         {publishedColumns()
@@ -485,13 +492,6 @@ export default async function HomeV2() {
       <Link href="/column" className="mt-2 block text-center text-[13px] font-bold text-seal">
         이야기 전체 보기 →
       </Link>
-
-      {reviews.length > 0 && (
-        <>
-          <SectionTitle>손님 후기</SectionTitle>
-          <ReviewRotator items={reviews} />
-        </>
-      )}
     </div>
   );
 }
