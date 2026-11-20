@@ -15,6 +15,7 @@ import { trackEvent } from "./VisitBeacon";
 const QUIET = ["/byeoseul", "/ask", "/pay", "/admin", "/login", "/r/", "/my", "/leave", "/logout", "/e/", "/s/"];
 // Shown once per visit: kept in sessionStorage, so the next visit (a new tab or a new day) shows it again.
 const SEEN = "pop-visit";
+const LAST = "pop-last";
 type Pick = "king" | "hopae";
 const IMG = ["a", "g", "y", "m", "m"] as const;
 
@@ -30,7 +31,13 @@ export default function SinsalNote({ gift }: { gift: number }) {
     } catch {
       return;
     }
-    const pick: Pick = onKing || Math.random() < 0.5 ? "hopae" : "king";
+    // Half and half, taken in turn (대표님 11/20: 왕만 나온다): the browser remembers the last one shown and the next
+    // visit gets the other. A first visit flips a coin. On a game's own page only the other game is offered.
+    let last: string | null = null;
+    try {
+      last = localStorage.getItem(LAST);
+    } catch {}
+    const pick: Pick = onKing ? "hopae" : last === "king" ? "hopae" : last === "hopae" ? "king" : Math.random() < 0.5 ? "hopae" : "king";
     // Right as the page opens (대표님 11/14: 홈에 들어오자마자), but never over someone typing: if a field already has
     // the cursor, this visit is skipped and the notice waits for the next one. Never over a reading on screen.
     const t = setTimeout(() => {
@@ -39,6 +46,7 @@ export default function SinsalNote({ gift }: { gift: number }) {
       if (el && /^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName)) return;
       try {
         sessionStorage.setItem(SEEN, "1");
+        localStorage.setItem(LAST, pick);
       } catch {}
       setShow(pick);
       trackEvent(pick === "king" ? "king_pop" : "hopae_pop");
