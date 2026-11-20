@@ -6,7 +6,7 @@ type Review = { text: string; product: string; rewarded: boolean };
 
 // The home page's reviews (대표님 11/20: 상품과 칼럼 사이에 쭉): the ones the owner picked, as cards flowing sideways
 // on their own; a finger on the strip stops it, so a card can be read. Two lengths of the list run side by side
-// so the loop has no seam. Reduced motion: a plain sideways scroll. No names, ever.
+// so the loop has no seam. Reduced motion: a plain sideways scroll. No names, ever. No 질문권 label (대표님 11/20 결정).
 function Card({ r }: { r: Review }) {
   return (
     <li className="flex w-[260px] shrink-0 flex-col rounded-2xl bg-[#fffaf0] px-4 py-4 shadow-[0_1px_0_rgb(134_96_26/0.2),inset_0_0_0_1px_rgb(134_96_26/0.16)]">
@@ -14,7 +14,6 @@ function Card({ r }: { r: Review }) {
       <p className="mt-1 line-clamp-5 flex-1 text-[13.5px] leading-relaxed">{r.text}</p>
       <p className="mt-2.5 text-[11.5px] text-ink-soft">
         {r.product && <b className="text-ink">{r.product}</b>} 구매한 손님
-        {r.rewarded && <span className="block text-[10.5px]">질문권을 받고 남긴 후기</span>}
       </p>
     </li>
   );
