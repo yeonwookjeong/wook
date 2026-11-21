@@ -48,7 +48,12 @@ export const Stick: React.FC<{ look: Look; pose: Pose; x: number; floor: number;
   const limb = (o: [number, number], [a, b]: [number, number], l1: number, l2: number) => {
     const j = seg(o[0], o[1], a, l1);
     const e = seg(j[0], j[1], a + b, l2);
-    return { j, e, d: `M${o[0]},${o[1]} L${j[0]},${j[1]} L${e[0]},${e[1]}` };
+    // 팔다리는 곡선 하나: 관절을 조절점으로 (k = 0.8, 관절 쪽으로 휘지만 꺾이지 않음)
+    const mx = (o[0] + e[0]) / 2, my = (o[1] + e[1]) / 2;
+    // 관절을 지나는 곡선의 조절점은 2j - (o+e)/2. 그쪽으로 80%만 당김
+    const cx = mx + 0.8 * (2 * j[0] - mx - mx);
+    const cy = my + 0.8 * (2 * j[1] - my - my);
+    return { j, e, d: `M${o[0]},${o[1]} Q${cx},${cy} ${e[0]},${e[1]}` };
   };
   const legL = limb(hip, pose.legL ?? [0, 0], s(R.uLeg), s(R.lLeg));
   const legR = limb(hip, pose.legR ?? [0, 0], s(R.uLeg), s(R.lLeg));
@@ -130,8 +135,9 @@ export const walk = (f: number, speed = 0.3): Pose => {
   return {
     legL: [-26 * sw, -kneeL],
     legR: [26 * sw, -kneeR],
-    armL: [38 * sw, 22 + 10 * sw],
-    armR: [-38 * sw, 22 - 10 * sw],
+    // 팔뚝은 위팔보다 조금 늦게 따라옴(follow-through)
+    armL: [38 * sw, 24 + 16 * Math.sin(p - 0.9)],
+    armR: [-38 * sw, 24 - 16 * Math.sin(p - 0.9)],
     bob: Math.abs(Math.cos(p)) * 7,
     lean: 4,
   };
