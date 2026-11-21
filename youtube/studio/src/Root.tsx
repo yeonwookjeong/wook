@@ -14,6 +14,7 @@ import { Ep03, EP03, Ep03Check } from "./ep03/Ep03";
 import { Ep04, EP04, Ep04Check } from "./ep04/Ep04";
 import { Ep04M } from "./ep04m/Ep04M";
 import { Ep04Stick } from "./stick/Ep04Stick";
+import { Ep05Stick } from "./stick/Ep05Stick";
 import { Ep04V2, EP04V2_TOTAL } from "./ep04m/Ep04V2";
 import { Ep01M, EP01M_TOTAL } from "./ep01m/Ep01M";
 import { Ep05, EP05, Ep05Check } from "./ep05/Ep05";
@@ -53,6 +54,8 @@ export const RemotionRoot: React.FC = () => {
       <Composition id="Ep01M" component={Ep01M} durationInFrames={EP01M_TOTAL} fps={30} width={1080} height={1920} />
       <Composition id="Ep04V2" component={Ep04V2} durationInFrames={EP04V2_TOTAL.en} fps={30} width={1080} height={1920} defaultProps={{ lang: "en" as const }} />
       <Composition id="Ep04V2Es" component={Ep04V2} durationInFrames={EP04V2_TOTAL.es} fps={30} width={1080} height={1920} defaultProps={{ lang: "es" as const }} />
+      <Composition id="Ep05S" component={Ep05Stick} durationInFrames={EP05.en.total} fps={30} width={1080} height={1920} defaultProps={{ lang: "en" as const }} />
+      <Composition id="Ep05SEs" component={Ep05Stick} durationInFrames={EP05.es.total} fps={30} width={1080} height={1920} defaultProps={{ lang: "es" as const }} />
       <Composition id="Ep04S" component={Ep04Stick} durationInFrames={EP04.en.total} fps={30} width={1080} height={1920} defaultProps={{ lang: "en" as const }} />
       <Composition id="Ep04SEs" component={Ep04Stick} durationInFrames={EP04.es.total} fps={30} width={1080} height={1920} defaultProps={{ lang: "es" as const }} />
       <Composition id="Ep04M" component={Ep04M} durationInFrames={EP04.en.total} fps={30} width={1080} height={1920} defaultProps={{ lang: "en" as const }} />

@@ -28,13 +28,13 @@ const H = 520;
 const SNEAK = "#f6f3ea";
 
 // ---------------------------------------------------------------- 공용 그림
-type Cam = { z: number; fx: number; fy: number };
-const camStyle = (c: Cam): React.CSSProperties => {
+export type Cam = { z: number; fx: number; fy: number };
+export const camStyle = (c: Cam): React.CSSProperties => {
   const cx = Math.min(1080 - 540 / c.z, Math.max(540 / c.z, c.fx));
   const cy = Math.min(1920 - 960 / c.z, Math.max(960 / c.z, c.fy));
   return { transform: `translate(${540 - cx * c.z}px, ${960 - cy * c.z}px) scale(${c.z})`, transformOrigin: "0 0" };
 };
-const Stage: React.FC<{ bg: string; cam: Cam; gray?: number; children?: React.ReactNode; ui?: React.ReactNode }> = ({ bg, cam, gray = 0, children, ui }) => (
+export const Stage: React.FC<{ bg: string; cam: Cam; gray?: number; children?: React.ReactNode; ui?: React.ReactNode }> = ({ bg, cam, gray = 0, children, ui }) => (
   <AbsoluteFill style={{ background: "#f3ead8" }}>
     <AbsoluteFill style={{ ...camStyle(cam), filter: gray ? `grayscale(${gray}) sepia(${0.15 * gray}) contrast(1.04)` : undefined }}>
       <Img src={staticFile(bg)} style={{ width: 1080, height: 1920 }} />
@@ -44,7 +44,7 @@ const Stage: React.FC<{ bg: string; cam: Cam; gray?: number; children?: React.Re
   </AbsoluteFill>
 );
 
-const NumCard: React.FC<{ n: string; x: number; y: number; f: number; at: number; s?: number; hl?: boolean }> = ({ n, x, y, f, at, s = 1, hl }) => {
+export const NumCard: React.FC<{ n: string; x: number; y: number; f: number; at: number; s?: number; hl?: boolean }> = ({ n, x, y, f, at, s = 1, hl }) => {
   if (f < at) return null;
   const d = spring({ frame: f - at, fps: FPS, config: { damping: 10, stiffness: 160 } });
   return (
@@ -54,7 +54,7 @@ const NumCard: React.FC<{ n: string; x: number; y: number; f: number; at: number
     </div>
   );
 };
-const Stamp: React.FC<{ word: string; x: number; y: number; f: number; at: number }> = ({ word, x, y, f, at }) => {
+export const Stamp: React.FC<{ word: string; x: number; y: number; f: number; at: number }> = ({ word, x, y, f, at }) => {
   if (f < at) return null;
   const k = spring({ frame: f - at, fps: FPS, from: 2.2, to: 1, config: { damping: 14, stiffness: 320 } });
   return (
@@ -140,7 +140,7 @@ const Court: React.FC<{ x: number; y: number; s: number; o: number; label: strin
 
 // ---------------------------------------------------------------- 장면
 type SP = { f: number; dur: number; n: number; lang: Lang };
-const chunk = (dur: number, n: number, k: number) => Math.round((dur * k) / n);
+export const chunk = (dur: number, n: number, k: number) => Math.round((dur * k) / n);
 const F_PARK = 1640;
 
 const S0: React.FC<SP> = ({ f, dur, n }) => {
@@ -382,7 +382,7 @@ const sfxOf = (i: number, dur: number, n: number, lang: Lang): Fx[] => {
   }
 };
 
-const Caption: React.FC<{ cap: Cap }> = ({ cap }) => {
+export const Caption: React.FC<{ cap: Cap }> = ({ cap }) => {
   const frame = useCurrentFrame();
   const pop = spring({ frame, fps: FPS, config: { damping: 12, stiffness: 260 } });
   return (
@@ -391,7 +391,7 @@ const Caption: React.FC<{ cap: Cap }> = ({ cap }) => {
     </div>
   );
 };
-const CloudWipe: React.FC<{ p: number }> = ({ p }) => {
+export const CloudWipe: React.FC<{ p: number }> = ({ p }) => {
   const x = lerp(1300, -2300, p);
   return (
     <AbsoluteFill>
