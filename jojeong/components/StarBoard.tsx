@@ -5,7 +5,7 @@ import { useState } from "react";
 import type { CelebTag, Hit, StarBoard as Board } from "@/lib/celebs";
 
 // 나와 같은 일주 유명인 (대표님 11/20: 같은 일주가 본 놀이, 궁합은 연결 상품): same 일주 first, then 사주 쌍둥이,
-// then three best 궁합 as a taste and the paid 궁합 report. One set of category tabs. Names only, never a photo.
+// then the paid 궁합 report (덤 궁합 3 taken out, 대표님 11/21: 유명인 궁합은 상품으로). One set of category tabs. Names only, never a photo.
 const TABS: ("전체" | CelebTag)[] = ["전체", "아이돌", "배우", "가수", "운동선수", "역사 인물"];
 
 const sub = (h: Hit) => [h.tags.includes("역사 인물") ? h.note : h.note || h.tags[0], h.tags.includes("역사 인물") ? "" : `${h.year}년생`].filter(Boolean).join(", ");
@@ -25,45 +25,11 @@ function More({ shown, total, onMore }: { shown: number; total: number; onMore: 
   );
 }
 
-// One ranked list: the best (상위 n%) or the worst (하위 n%) of the 궁합.
-function Ranked({ list, n, foe }: { list: Hit[]; n: number; foe?: boolean }) {
-  if (list.length === 0) return <p className="mt-4 text-[14px] text-ink-soft">이 갈래에서는 아직 찾지 못했사옵니다.</p>;
-  return (
-    <ol className="mt-3 flex flex-col gap-2">
-      {list.slice(0, n).map((h, i) => (
-        <li key={`${h.name}-${h.year}-${i}`} className="flex items-start gap-3 rounded-[14px] bg-[#fffaf0] px-4 py-3 shadow-[0_1px_0_rgb(134_96_26/0.2),inset_0_0_0_1px_rgb(134_96_26/0.16)]">
-          <span className={`w-6 shrink-0 pt-0.5 text-center font-myeongjo text-[18px] font-extrabold ${foe ? "text-ink-soft" : "text-gold"}`}>{i + 1}</span>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-baseline gap-2">
-              <b className="truncate text-[16px]">{h.name}</b>
-              <span className="shrink-0 text-[12px] text-ink-soft">{sub(h)}</span>
-            </div>
-            {h.why && h.why.length > 0 && <p className="mt-1 text-[12.5px] leading-snug text-ink-soft">{h.why.join(", ")}</p>}
-          </div>
-          <div className="shrink-0 text-right">
-            <span
-              className={`inline-block rounded-md px-2 py-0.5 font-myeongjo text-[12.5px] font-extrabold ${
-                h.title === "천생연분" ? "bg-seal text-white" : h.title === "견원지간" ? "bg-ink text-white" : foe ? "bg-ink/10 text-ink" : "bg-gold/15 text-gold"
-              }`}
-            >
-              {h.title}
-            </span>
-            <p className="mt-1 text-[11px] text-ink-soft">
-              {foe ? "하위" : "상위"} {h.pct}%
-            </p>
-          </div>
-        </li>
-      ))}
-    </ol>
-  );
-}
-
 export default function StarBoard({ board, ilju, letters }: { board: Board; ilju: string; letters: { label: string; ch: string }[] }) {
   const [tab, setTab] = useState<(typeof TABS)[number]>("전체");
   const [nSame, setNSame] = useState(30);
   const [nTwin, setNTwin] = useState(8);
   const pick = (l: Hit[]) => (tab === "전체" ? l : l.filter((h) => h.tags.includes(tab)));
-  const best = pick(board.best);
   const same = pick(board.sameIlju);
   const twins = pick(board.twins);
   const choose = (t: (typeof TABS)[number]) => {
@@ -141,14 +107,6 @@ export default function StarBoard({ board, ilju, letters }: { board: Board; ilju
             ))}
           </ul>
           <More shown={nTwin} total={twins.length} onMore={() => setNTwin((n) => n + 8)} />
-        </section>
-      )}
-
-      {best.length > 0 && (
-        <section className="mt-9">
-          <h2 className="font-myeongjo text-[19px] font-extrabold">덤으로, 나와 궁합이 빼어난 유명인</h2>
-          <p className="mt-1 text-[13px] text-ink-soft">실제 사람 두 명을 짝지은 경우와 견주어, 상위 몇 %인지 칭호로 드리옵니다</p>
-          <Ranked list={best} n={3} />
         </section>
       )}
 
