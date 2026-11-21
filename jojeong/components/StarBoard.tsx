@@ -10,6 +10,12 @@ const TABS: ("전체" | CelebTag)[] = ["전체", "아이돌", "배우", "가수"
 
 const sub = (h: Hit) => [h.tags.includes("역사 인물") ? h.note : h.note || h.tags[0], h.tags.includes("역사 인물") ? "" : `${h.year}년생`].filter(Boolean).join(", ");
 
+// 와/과 after a name: 과 when the last syllable closes on a consonant.
+const wa = (w: string) => {
+  const c = w.charCodeAt(w.length - 1) - 0xac00;
+  return c >= 0 && c < 11172 && c % 28 ? "과" : "와";
+};
+
 function More({ shown, total, onMore }: { shown: number; total: number; onMore: () => void }) {
   if (shown >= total) return null;
   return (
@@ -146,7 +152,22 @@ export default function StarBoard({ board, ilju, letters }: { board: Board; ilju
         </section>
       )}
 
-      <section className="mt-10 rounded-[14px] bg-[#1d2a3a] px-5 py-5 text-center text-[#f3e3b8]">
+      {/* 유입 (대표님 11/21: 완성하고 내자): the result names two famous faces, the easiest thing to pass to a friend. */}
+      <button
+        type="button"
+        onClick={() => {
+          const top = board.sameIlju.slice(0, 2).map((h) => h.name).join(", ");
+          const text = `나는 ${ilju}일주${top ? `, ${top}${wa(top)} 같은 날 기둥` : ""}. 너는 누구랑 같을까`;
+          const url = "https://www.hundosaju.com/star";
+          if (navigator.share) navigator.share({ title: "나와 같은 일주 유명인", text, url }).catch(() => {});
+          else navigator.clipboard?.writeText(`${text} ${url}`).then(() => alert("링크를 복사했사옵니다")).catch(() => {});
+        }}
+        className="mt-9 w-full rounded-xl py-3.5 font-myeongjo text-[15px] font-extrabold text-seal shadow-[inset_0_0_0_1px_rgb(179_38_30/0.4)]"
+      >
+        벗에게 보내기
+      </button>
+
+      <section className="mt-6 rounded-[14px] bg-[#1d2a3a] px-5 py-5 text-center text-[#f3e3b8]">
         <p className="font-myeongjo text-[17px] font-extrabold">유명인 말고, 내 사람과는 어떨까</p>
         <p className="mt-1.5 text-[13px] leading-relaxed text-[#f3e3b8]/80">
           두 사람의 생일을 나란히 놓고

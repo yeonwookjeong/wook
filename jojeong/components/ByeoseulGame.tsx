@@ -271,8 +271,16 @@ export default function ByeoseulGame({ pillars, name }: { pillars: Pillars; name
         <ol className="mt-2 flex flex-col gap-1 text-[13.5px]">
           {held.map((s, i) => (
             <li key={i} className="flex gap-2">
-              <span className="w-14 shrink-0 text-ink-soft">{rankLabel(s.to)}</span>
-              <span>{s.to.name.replace("{조}", b.jo)}</span>
+              <span className="w-[5.5rem] shrink-0 whitespace-nowrap text-ink-soft">{rankLabel(s.to)}</span>
+              <span className="flex-1">{s.to.name.replace("{조}", b.jo)}</span>
+              {i > 0 && (() => {
+                // Up or down from the office before, so a run of moves reads as a story, not a bare list.
+                const lv = (o: typeof s.to) => o.rank * 2 + (o.dangsang ? 1 : 0);
+                const d = lv(s.to) - lv(held[i - 1].to);
+                return d > 0 ? <span className="text-[12px] font-bold text-seal">▲ 오름</span>
+                  : d < 0 ? <span className="text-[12px] font-bold text-[#1e4f8a]">▼ 내림</span>
+                  : <span className="text-[12px] text-ink-soft">옮김</span>;
+              })()}
             </li>
           ))}
         </ol>

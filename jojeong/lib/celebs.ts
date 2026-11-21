@@ -93,22 +93,33 @@ export type StarBoard = {
   worst: Hit[]; // 티격태격 and below, most known first
 };
 
+// How well known, for ordering: the list comes in Wikidata's order (how many language editions have the page), which
+// lifts footballers well past where Korean readers would put them (기유일주 opened with 윤석영). Outside the very top,
+// a name that is only an athlete (or mostly known abroad) counts as four times further down (대표님 11/21, 공개 전 손보기).
+const ATHLETE_ONLY = (c: Celeb) => c.tags.length === 1 && c.tags[0] === "운동선수";
+// A spaced name with no group (제나 우슈코비츠, 스티븐 연) is mostly known abroad: pushed down the same way.
+const ABROAD = (c: Celeb) => c.name.includes(" ") && !c.note;
+const known = (c: Celeb) => ((ATHLETE_ONLY(c) || ABROAD(c)) && c.fame >= 40 ? c.fame * 4 : c.fame);
+const byKnown = (a: { c: Celeb }, b: { c: Celeb }) => known(a.c) - known(b.c);
+
 export function starBoard(me: Pillars): StarBoard {
-  const sameIlju = CELEBS.filter((c) => c.p.dayStem === me.dayStem && c.p.dayBranch === me.dayBranch).map(hit);
+  const sameIlju = CELEBS.filter((c) => c.p.dayStem === me.dayStem && c.p.dayBranch === me.dayBranch)
+    .sort((a, b) => known(a) - known(b))
+    .map(hit);
   const twins = CELEBS.map((c) => ({ c, same: sameLetters(me, c.p) }))
     .filter((x) => x.same >= 4)
-    .sort((a, b) => b.same - a.same || a.c.fame - b.c.fame)
+    .sort((a, b) => b.same - a.same || byKnown(a, b))
     .map(({ c, same }) => ({ ...hit(c), same }));
   const scored = CELEBS.map((c) => ({ c, score: gunghapScore(asPerson(me), asPerson(c.p), "친구") }));
   // 백년지기 and above, the best-known first: 차은우 as a 백년지기 says more than an unknown name as 천생연분.
   const best = scored
     .filter((x) => x.score >= 85)
-    .sort((a, b) => a.c.fame - b.c.fame)
+    .sort(byKnown)
     .slice(0, 300)
     .map(({ c, score }) => ({ ...hit(c), score, title: titleOf(score), pct: topPct(score), why: reasons(me, c.p) }));
   const worst = scored
     .filter((x) => x.score <= 63)
-    .sort((a, b) => a.c.fame - b.c.fame)
+    .sort(byKnown)
     .slice(0, 300)
     .map(({ c, score }) => ({ ...hit(c), score, title: foeOf(score)!, pct: bottomPct(score), why: clashes(me, c.p) }));
   return { sameIlju, twins, best, worst };
