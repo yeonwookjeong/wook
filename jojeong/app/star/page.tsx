@@ -4,6 +4,8 @@ import MeForm from "@/components/MeForm";
 import StarBoard from "@/components/StarBoard";
 import { CELEB_COUNT, starBoard } from "@/lib/celebs";
 import { readMe } from "@/lib/me";
+import { pricingNow } from "@/lib/pricing";
+import { priceFor } from "@/lib/products";
 import { BRANCHES, STEMS, STEMS_KO, BRANCHES_KO } from "@/lib/saju";
 
 export const dynamic = "force-dynamic";
@@ -19,6 +21,7 @@ export const metadata: Metadata = {
 export default async function StarPage() {
   const me = await readMe();
   const p = me?.person.pillars;
+  const pr = await pricingNow();
   return (
     <>
       <header className="pt-6 text-center">
@@ -35,6 +38,7 @@ export default async function StarPage() {
           <FreeSeen k="star" />
           <StarBoard
             board={starBoard(p)}
+            prices={{ star: priceFor("stargunghap", pr), pair: priceFor("gunghap", pr) }}
             ilju={`${STEMS_KO[p.dayStem]}${BRANCHES_KO[p.dayBranch]}`}
             letters={[
               { label: "해", ch: STEMS[p.yearStem] },

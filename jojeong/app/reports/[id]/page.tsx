@@ -2,7 +2,7 @@ import KeepNote, { BonusTop } from "@/components/KeepNote";
 import ReportFeedback from "@/components/ReportFeedback";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import AdSlot from "@/components/AdSlot";
 import AiReport from "@/components/AiReport";
 import ChartIntro from "@/components/ChartIntro";
@@ -11,6 +11,7 @@ import MeForm from "@/components/MeForm";
 import IntimacyIntro from "@/components/IntimacyIntro";
 import PairIntro, { MiniChart } from "@/components/PairIntro";
 import ReunionIntro from "@/components/ReunionIntro";
+import StarPairIntro from "@/components/StarPairIntro";
 import TaekilForm from "@/components/TaekilForm";
 import TaekilResult from "@/components/TaekilResult";
 import Paywall from "@/components/Paywall";
@@ -190,6 +191,7 @@ const PAIR_FREE: Partial<Record<ProductId, string>> = {
   gunghap: "궁합 점수와 서로에게 어떤 사람인지는 무료로 바로 보여 드려요",
   sokgunghap: "두 사람의 애정 온도 유형과 끌림의 표시는 무료로 바로 보여 드려요",
   jaehoe: "두 사람 사이에 남은 끈과 다시 닿기 좋은 해는 무료로 바로 보여 드려요",
+  stargunghap: "두 사람의 칭호와 이유는 무료로 바로 보여 드려요",
 };
 
 // Every report, open in full (a free report, or a bought one). A present-day report on sale
@@ -332,6 +334,8 @@ async function OpenReport({
     const a = decodePerson(pair.a);
     const b = decodePerson(pair.b);
     if (!a || !b || !pair.a || !pair.b) {
+      // 유명인 궁합 has no form: the famous person is picked on /star.
+      if (product.id === "stargunghap") redirect("/star");
       const saved = (await readMe())?.person.name ?? (await subjectFor(product))?.name ?? null;
       return (
         <>
@@ -363,12 +367,13 @@ async function OpenReport({
         {couple && <PairIntro a={a} b={b} c={couple} years={coupleYears} blank={renew ? "모름" : undefined} bare={r2(unlock)} />}
         {closeness && <IntimacyIntro a={a} b={b} x={closeness} />}
         {reunion && <ReunionIntro a={a} b={b} r={reunion} />}
+        {product.id === "stargunghap" && <StarPairIntro a={a} b={b} />}
         {locked && !unlock ? (
           <Paywall
             product={product}
             request={req}
             chapters={chaptersForRel(chaptersFor(product.id, (await pricingNow()) === "a"), product.id, REL_OF[req.rel])}
-            note="두 사람의 태어난 시각을 알면 먼저 넣어 주세요. 결제한 뒤 입력을 바꾸면 다른 보고서로 봐요."
+            note={product.id === "stargunghap" ? "결제한 보고서는 '내 보고서'에서 언제든 다시 열려요." : "두 사람의 태어난 시각을 알면 먼저 넣어 주세요. 결제한 뒤 입력을 바꾸면 다른 보고서로 봐요."}
           />
         ) : (
           <>
@@ -383,8 +388,8 @@ async function OpenReport({
             )}
           </>
         )}
-        <Link href={`/reports/${product.id}`} className="mt-6 block border border-seal/40 py-3 text-center text-sm font-bold text-seal">
-          {product.id === "jaehoe" ? "다른 사람으로 재회운 보기" : `다른 사람과 ${product.title} 보기`} →
+        <Link href={product.id === "stargunghap" ? "/star" : `/reports/${product.id}`} className="mt-6 block border border-seal/40 py-3 text-center text-sm font-bold text-seal">
+          {product.id === "stargunghap" ? "다른 유명인과 궁합 보기" : product.id === "jaehoe" ? "다른 사람으로 재회운 보기" : `다른 사람과 ${product.title} 보기`} →
         </Link>
       </>
     );

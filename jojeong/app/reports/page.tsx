@@ -263,7 +263,7 @@ export default async function ReportsPage() {
   const price = priceNow();
   const owned = ownedByProduct(await ownedOrders().catch(() => []));
   const sale = saleNow();
-  const modern = SHELF.filter((p) => p.modern);
+  const modern = SHELF.filter((p) => p.modern && !p.unlisted);
   const ny = newYearOf();
 
   return (

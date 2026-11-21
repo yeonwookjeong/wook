@@ -2,7 +2,7 @@ import { OPEN } from "./open";
 // 정 훈도의 비밀 보고서. One free report (조선 신분 감정) opens the shelf; the paid ones all cost the same fixed
 // price, lowered only on the special days listed in SALES.
 
-export type ProductId = "sinbun" | "pyeongsaeng" | "gunghap" | "sokgunghap" | "jaehoe" | "taekil" | "gukjeong" | "yeonun" | "yeonae" | "jaemul" | "jikup" | "dwitjosa" | "gwangye" | "insa" | "jilmun";
+export type ProductId = "sinbun" | "pyeongsaeng" | "gunghap" | "sokgunghap" | "jaehoe" | "stargunghap" | "taekil" | "gukjeong" | "yeonun" | "yeonae" | "jaemul" | "jikup" | "dwitjosa" | "gwangye" | "insa" | "jilmun";
 
 export type Product = {
   id: ProductId;
@@ -17,6 +17,8 @@ export type Product = {
   free?: boolean;
   // Present-day reports speak plain 해요체 to "○○님"; the Joseon ones keep 정 훈도's court speech.
   modern?: boolean;
+  // Sold only from its own door, not listed on the shelf or in the sitemap (유명인 궁합: from /star).
+  unlisted?: boolean;
   // Taken off the shelf for now (kept for a later, better version): not listed, not sold, its page is gone.
   shelved?: boolean;
 };
@@ -88,6 +90,26 @@ export const PRODUCTS: Product[] = [
     teaser: "두 사람 사주의 열기와 촉촉함, 끌어당기는 기운으로 친밀감의 궁합을 풀어 드려요. 만 19세 이상만 볼 수 있어요.",
     modern: true,
     shelved: true,
+  },
+  {
+    // 유명인 궁합 (대표님 11/21: 유명인 놀이의 덤 궁합을 상품으로, 990원). Bought from /star: the reader picks a famous
+    // person from the result or by name, and the pair report reads the two charts as a fan would want them read.
+    id: "stargunghap",
+    title: "유명인 궁합",
+    hanja: "星合",
+    for: "anyone",
+    tagline: "내가 좋아하는 그 사람과 나, 사주로 보면 어떤 사이일까",
+    toc: [
+      "그 사람과 나, 첫 만남의 공기",
+      "서로의 사주에 비친 서로",
+      "닮은 점과 정반대인 점",
+      "만약 우리가 친구였다면",
+      "만약 우리가 함께 일했다면",
+      "그 사람에게서 배울 한 가지",
+    ],
+    teaser: "좋아하는 유명인과 내 사주를 나란히 놓고, 어떤 사이가 될지 재미로 풀어 드려요.",
+    modern: true,
+    unlisted: true,
   },
   {
     id: "jaehoe",
@@ -247,9 +269,9 @@ export const setOf = (v: unknown): SetId | null => (typeof v === "string" && v i
 export const setsWith = (id: ProductId, pr: Pricing = "old") => SETS_OFFERED[pr].filter((s) => SETS[s].products.includes(id));
 
 // Reports about two people typed in together (lib/pairToken.ts), and the relation some of them fix.
-export const PAIR_PRODUCTS: ProductId[] = ["gunghap", "sokgunghap", "jaehoe"];
+export const PAIR_PRODUCTS: ProductId[] = ["gunghap", "sokgunghap", "jaehoe", "stargunghap"];
 export const isPair = (p: Product | ProductId) => PAIR_PRODUCTS.includes(typeof p === "string" ? p : p.id);
-export const FIXED_RELATION: Partial<Record<ProductId, "lover" | "ex">> = { sokgunghap: "lover", jaehoe: "ex" };
+export const FIXED_RELATION: Partial<Record<ProductId, "lover" | "ex" | "friend">> = { sokgunghap: "lover", jaehoe: "ex", stargunghap: "friend" };
 // 속궁합 is for adults only (만 19세 이상, by birth year).
 export const ADULT_ONLY: ProductId[] = ["sokgunghap"];
 // 청소년보호법: 19세가 되는 해의 1월 1일부터 성인으로 본다.

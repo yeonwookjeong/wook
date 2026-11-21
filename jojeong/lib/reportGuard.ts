@@ -22,6 +22,14 @@ const RISKY: Partial<Record<string, (THEM: string, lover: boolean) => Rule[]>> =
     },
     ...(lover ? [] : [{ re: /배우자|연애|설렘|끌림|(?:남편|아내|연인)처럼|이성으로\s*(?:느끼|보|끌)|결혼/, why: "연인 아닌 관계에 연애 말", hard: true }]),
   ],
+  // 유명인 궁합: a real person, read only from the letters; no romance, no running them down (lib/reportPrompts.ts).
+  stargunghap: (THEM) => [
+    FATE,
+    ODDS,
+    { re: /천생연분/, why: "운명 단정" },
+    { re: /배우자|연애|설렘|(?:남편|아내|연인)(?:처럼|이\s*된다면|으로)|이성으로\s*(?:느끼|보|끌)|결혼/, why: "유명인 궁합에 연애 말", hard: true },
+    { re: new RegExp(String.raw`${THEM}[은는이가도]?[^.!?\n]{0,12}(?:이기적|차가운\s*사람|못된|나쁜\s*사람|형편없)`), why: "유명인 깎아내림" },
+  ],
   jaehoe: (THEM) => [
     { re: /(?:반드시|꼭|분명(?:히)?|결국)\s*(?:다시\s*)?(?:돌아(?:와|오|올)|만나(?:게|요|게\s*돼)|이어(?:져|질|지게)|연락(?:이\s*(?:와|올)|해\s*올))/, why: "재회 약속" },
     { re: /기다리(?:면|시면)[^.!?\n]{0,20}(?:와요|올\s*거|돌아|연락이\s*(?:와|올))/, why: "기다림 권유" },

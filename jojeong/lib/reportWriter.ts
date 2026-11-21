@@ -84,11 +84,13 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
     subjectLine =
       product.id === "jaehoe"
         ? `[대상] 읽는 사람: ${a.name} ('${a.name}님'이라 부를 것) / 헤어진 상대: ${b.name}`
+        : product.id === "stargunghap"
+          ? `[대상] 읽는 사람: ${a.name} ('${a.name}님'이라 부를 것) / 좋아하는 유명인: ${b.name} (태어난 시 모름, 이름 뒤에 '님'을 붙여 부를 것)`
         : `[대상] 읽는 사람: ${a.name} ('${a.name}님'이라 부를 것) / 상대: ${b.name} / 관계: ${RELATIONS[rel]}`;
     briefs = [
       chartBrief(a.name, a.pillars, profileOf(a), briefYear, REL_OF[rel] === "연인"),
       chartBrief(b.name, b.pillars, profileOf(b), briefYear, REL_OF[rel] === "연인"),
-      pairBrief(a.name, a.pillars, b.name, b.pillars, product.id === "gunghap" && v2 ? { score: gunghapScore(a, b, REL_OF[rel]), avg: gunghapAvg(a, b, REL_OF[rel]) } : undefined),
+      pairBrief(a.name, a.pillars, b.name, b.pillars, (product.id === "gunghap" && v2) || product.id === "stargunghap" ? { score: gunghapScore(a, b, REL_OF[rel]), avg: gunghapAvg(a, b, REL_OF[rel]) } : undefined),
       // 궁합 reads the relation, and from v8 tells the years once, by its ten-year table (pairBriefs). The other pair
       // reports keep the frozen brief, so what was written for them opens unchanged (lib/coupleLegacy.ts).
       product.id === "gunghap"

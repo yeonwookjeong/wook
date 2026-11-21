@@ -15,7 +15,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     page("/", 1),
     page("/reports", 0.8),
-    ...SHELF.filter((p) => p.modern || p.free).map((p) => page(`/reports/${p.id}`, 0.8)),
+    ...SHELF.filter((p) => (p.modern || p.free) && !p.unlisted).map((p) => page(`/reports/${p.id}`, 0.8)),
     page("/king", 0.7),
     page("/samjae", 0.6),
     page("/sinsal", 0.7),

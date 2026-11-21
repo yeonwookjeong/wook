@@ -83,8 +83,8 @@ export const sameLetters = (a: Pillars, b: Pillars) => {
   return x.reduce((n: number, v, i) => n + (v === y[i] ? 1 : 0), 0);
 };
 
-export type Hit = { name: string; tags: CelebTag[]; note: string; year: number; score?: number; title?: string; pct?: number; why?: string[]; same?: number };
-const hit = (c: Celeb): Hit => ({ name: c.name, tags: c.tags, note: c.note, year: c.year });
+export type Hit = { id: number; name: string; tags: CelebTag[]; note: string; year: number; score?: number; title?: string; pct?: number; why?: string[]; same?: number };
+const hit = (c: Celeb): Hit => ({ id: c.fame, name: c.name, tags: c.tags, note: c.note, year: c.year });
 
 export type StarBoard = {
   sameIlju: Hit[]; // same day pillar, most known first
@@ -123,4 +123,28 @@ export function starBoard(me: Pillars): StarBoard {
     .slice(0, 300)
     .map(({ c, score }) => ({ ...hit(c), score, title: foeOf(score)!, pct: bottomPct(score), why: clashes(me, c.p) }));
   return { sameIlju, twins, best, worst };
+}
+
+// ── 유명인 궁합 (the paid report, lib/products.ts stargunghap).
+// One famous person by their place in the list (the `id` of a Hit). The report link carries the name, which the
+// pair token caps at ten letters: a longer name is not offered.
+export const celebById = (id: number): Celeb | null => {
+  const c = CELEBS[id];
+  return c && [...c.name].length <= 10 ? c : null;
+};
+// The free card before the lock: the title, where it stands among real pairs, and why.
+export function starPair(me: Pillars, c: Pillars) {
+  const score = gunghapScore(asPerson(me), asPerson(c), "친구");
+  const foe = foeOf(score);
+  return { score, title: foe ?? titleOf(score), pct: foe ? bottomPct(score) : topPct(score), low: Boolean(foe), why: foe ? clashes(me, c) : reasons(me, c) };
+}
+// Names that start with or hold what was typed, best-known first (the search on /star).
+export function searchCelebs(q: string, n = 12): Hit[] {
+  const t = q.replace(/\s+/g, "").toLowerCase();
+  if (!t) return [];
+  const norm = (c: Celeb) => c.name.replace(/\s+/g, "").toLowerCase();
+  return CELEBS.filter((c) => norm(c).includes(t))
+    .sort((a, b) => Number(!norm(a).startsWith(t)) - Number(!norm(b).startsWith(t)) || known(a) - known(b))
+    .slice(0, n)
+    .map(hit);
 }
