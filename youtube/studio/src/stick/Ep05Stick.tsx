@@ -60,13 +60,13 @@ const Calendar: React.FC<{ a: string; b?: string; f: number; flipAt?: number }> 
   const page = (txt: string, red: boolean) => (
     <div style={{ position: "absolute", inset: 0, background: "#fbf7ee", border: `5px solid ${INK}`, display: "flex", flexDirection: "column" }}>
       <div style={{ height: "28%", background: red ? "#e2574c" : "#26386b", borderBottom: `4px solid ${INK}` }} />
-      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: serif, fontWeight: 900, fontSize: CAL.h * 0.5, color: INK }}>{txt}</div>
+      <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: serif, fontWeight: 900, fontSize: Math.min(CAL.h * 0.42, (CAL.w - 30) / (txt.length * 0.62)), color: INK, whiteSpace: "nowrap" }}>{txt}</div>
     </div>
   );
   return (
-    <div style={{ position: "absolute", left: CAL.x + 4, top: CAL.y + 4, width: CAL.w - 8, height: CAL.h - 8, perspective: 600 }}>
+    <div style={{ position: "absolute", left: CAL.x + 4, top: CAL.y + 4, width: CAL.w - 8, height: CAL.h - 8, perspective: 600, overflow: "hidden" }}>
       {b && p > 0 && page(b, true)}
-      {p < 1 && <div style={{ position: "absolute", inset: 0, transform: `rotateX(${p * 160}deg)`, transformOrigin: "50% 0", backfaceVisibility: "hidden" }}>{page(a, false)}</div>}
+      {p < 1 && <div style={{ position: "absolute", inset: 0, transform: `translateY(${-p * 100}%) rotate(${-p * 8}deg)`, transformOrigin: "50% 0" }}>{page(a, false)}</div>}
     </div>
   );
 };
