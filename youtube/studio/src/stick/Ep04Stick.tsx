@@ -46,9 +46,10 @@ export const Stage: React.FC<{ bg: string; cam: Cam; gray?: number; children?: R
 
 export const NumCard: React.FC<{ n: string; x: number; y: number; f: number; at: number; s?: number; hl?: boolean }> = ({ n, x, y, f, at, s = 1, hl }) => {
   if (f < at) return null;
+  const cw = n.length > 2 ? Math.max(170, n.length * 40 + 50) : 170;
   const d = spring({ frame: f - at, fps: FPS, config: { damping: 10, stiffness: 160 } });
   return (
-    <div style={{ position: "absolute", left: x - 85 * s, top: y - 100 * s + (1 - d) * -700, width: 170 * s, height: 200 * s, transform: `rotate(${(1 - d) * 18 - 4}deg)` }}>
+    <div style={{ position: "absolute", left: x - (cw / 2) * s, top: y - 100 * s + (1 - d) * -700, width: cw * s, height: 200 * s, transform: `rotate(${(1 - d) * 18 - 4}deg)` }}>
       <div style={{ position: "absolute", inset: 0, borderRadius: 20 * s, background: hl ? YELLOW : "#f6efe0", border: `${8 * s}px solid ${INK}`, boxShadow: `${8 * s}px ${10 * s}px 0 rgba(42,28,36,0.25)` }} />
       <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: n.length > 1 ? sans : serif, fontWeight: 900, fontSize: (n.length > 1 ? 54 : 130) * s, color: INK, lineHeight: 1 }}>{n}</span>
     </div>

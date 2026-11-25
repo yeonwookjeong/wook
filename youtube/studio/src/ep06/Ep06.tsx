@@ -55,7 +55,7 @@ const CAPS: Record<Lang, Cap[][]> = {
   ],
 };
 
-const WORDS: Record<Lang, Words06> = {
+export const WORDS: Record<Lang, Words06> = {
   en: { lang: "en", my: "MY", our: "OUR", myMom: "MY MOM", ourMom: "OUR MOM", house: "OUR HOUSE", school: "OUR SCHOOL", country: "OUR COUNTRY", myCo: "MY COMPANY", ourCo: "OUR COMPANY", boss: "BOSS" },
   es: { lang: "es", my: "MI", our: "NUESTRO", myMom: "MI MAMÁ", ourMom: "NUESTRA MAMÁ", house: "NUESTRA CASA", school: "NUESTRA ESCUELA", country: "NUESTRO PAÍS", myCo: "MI EMPRESA", ourCo: "NUESTRA EMPRESA", boss: "JEFE" },
 };
