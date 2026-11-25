@@ -6,7 +6,7 @@ import { loadFont as loadNotoSans } from "@remotion/google-fonts/NotoSansKR";
 import { loadFont as loadHahmlet } from "@remotion/google-fonts/Hahmlet";
 import { EP05 } from "../ep05/Ep05";
 import { INK, Look, Stick, stand } from "./Stick";
-import { Cam, Caption, chunk, CloudWipe, Stage, Stamp } from "./Ep04Stick";
+import { CB, cbAt, Cam, Caption, chunk, CloudWipe, Stage, Stamp } from "./Ep04Stick";
 
 const { fontFamily: sans } = loadNotoSans();
 const { fontFamily: serif } = loadHahmlet();
@@ -107,14 +107,14 @@ const Newspaper: React.FC<{ f: number; at: number; outAt: number; lang: Lang }> 
 };
 
 // ---------------------------------------------------------------- 장면
-type SP = { f: number; dur: number; n: number; lang: Lang };
+type SP = { f: number; dur: number; n: number; lang: Lang; cb: number[] };
 // 아기 침대 매트리스 위치(가운데 x, 누운 높이)
 const CRIBS = [160, 290, 420].map((x) => [x * KX, 572 * KY] as const);
 const BALLOON_Y = 455 * KY - 40;
 
-const S0: React.FC<SP> = ({ f, dur, n }) => {
+const S0: React.FC<SP> = ({ cb, f, dur, n }) => {
   // 첫 프레임부터 아기 풍선 "1" → "two years old"에서 "2"
-  const c2 = chunk(dur, n, 2);
+  const c2 = cbAt(cb, 2);
   const [bx, by] = CRIBS[1];
   return (
     <Stage bg="m05/nursery.png" cam={{ z: lerp(1.15, 1.6, ease(f / dur)), fx: bx, fy: lerp(1000, 950, f / dur) }}>
@@ -123,9 +123,9 @@ const S0: React.FC<SP> = ({ f, dur, n }) => {
     </Stage>
   );
 };
-const S1: React.FC<SP> = ({ f, dur, n }) => {
+const S1: React.FC<SP> = ({ cb, f, dur, n }) => {
   // "December 31st?" 달력 클로즈업 → "You're one" 아기 풍선 "1" 등장
-  const c1 = chunk(dur, n, 1), c2 = chunk(dur, n, 2);
+  const c1 = cbAt(cb, 1), c2 = cbAt(cb, 2);
   const [bx, by] = CRIBS[1];
   const cam: Cam = f < c2 ? { z: f < c1 ? 1.4 : 2.6, fx: CAL.x + CAL.w / 2, fy: CAL.y + CAL.h / 2 + 40 } : { z: 1.6, fx: bx, fy: 950 };
   return (
@@ -136,9 +136,9 @@ const S1: React.FC<SP> = ({ f, dur, n }) => {
     </Stage>
   );
 };
-const S2: React.FC<SP> = ({ f, dur, n }) => {
+const S2: React.FC<SP> = ({ cb, f, dur, n }) => {
   // 불꽃 → 달력 1/1 → 모든 아기 풍선 +1 → "Two."
-  const c1 = chunk(dur, n, 1), c2 = chunk(dur, n, 2), c4 = chunk(dur, n, 4);
+  const c1 = cbAt(cb, 1), c2 = cbAt(cb, 2), c4 = cbAt(cb, 4);
   const cam: Cam = f < c1 ? { z: 1.3, fx: (WIN.x0 + WIN.x1) / 2, fy: 900 } : f < c2 ? { z: 2.6, fx: CAL.x + CAL.w / 2, fy: CAL.y + CAL.h / 2 + 40 } : f < c4 ? { z: 1.05, fx: 540, fy: 1000 } : { z: 1.9, fx: CRIBS[1][0], fy: 920 };
   const sh = f >= c4 && f < c4 + 8 ? Math.sin((f - c4) * 2.5) * 8 : 0;
   return (
@@ -157,8 +157,8 @@ const S2: React.FC<SP> = ({ f, dur, n }) => {
 // 거실: 어른 머리 위 풍선이 세 개로 (한국 나이 · 연 나이 · 만 나이)
 const KY_T = 716 * KY;
 const AGES: Record<Lang, string[]> = { en: ["KOREAN", "YEAR", "INT'L"], es: ["COREANA", "POR AÑO", "INTERNAC."] };
-const S3: React.FC<SP> = ({ f, dur, n, lang }) => {
-  const c = (k: number) => chunk(dur, n, k);
+const S3: React.FC<SP> = ({ cb, f, dur, n, lang }) => {
+  const c = (k: number) => cbAt(cb, k);
   const vals = ["26", "25", "24"], cols = ["#f2c14e", "#9fd8c8", "#f4a9a0"];
   const at = [6, c(1) + 4, c(2) + 4];
   const bounce = f >= c(4) ? Math.abs(Math.sin((f - c(4)) * 0.4)) * 14 * Math.max(0, 1 - (f - c(4)) / 30) : 0;
@@ -184,9 +184,9 @@ const CROWD = [
   { x: 735, from: "19", to: "18", look: { kind: "man", accent: "#f2c14e" } as Look, h: 0.84 },
   { x: 930, from: "45", to: "44", look: { kind: "woman", accent: "#3e8e7e" } as Look, h: 0.9 },
 ];
-const S4: React.FC<SP> = ({ f, dur, n, lang }) => {
+const S4: React.FC<SP> = ({ cb, f, dur, n, lang }) => {
   // 신문 쾅 → 날아가며 공원 사람들 → "Overnight"부터 풍선 숫자가 차례로 줄어듦
-  const c = (k: number) => chunk(dur, n, k);
+  const c = (k: number) => cbAt(cb, k);
   const drop = n >= 6 ? c(4) : c(3);
   return (
     <Stage bg="m04/park.png" cam={{ z: lerp(1.05, 1.15, ease(f / dur)), fx: 540, fy: 1300 }} gray={0}
@@ -200,9 +200,9 @@ const S4: React.FC<SP> = ({ f, dur, n, lang }) => {
     </Stage>
   );
 };
-const S5: React.FC<SP> = ({ f, dur, n, lang }) => {
+const S5: React.FC<SP> = ({ cb, f, dur, n, lang }) => {
   // 군대 정문: 풍선이 줄어들려다 그대로(흔들림) → 편의점도 그대로 → BY YEAR 도장
-  const c = (k: number) => chunk(dur, n, k);
+  const c = (k: number) => cbAt(cb, k);
   const store = f >= c(2);
   const tryAt = store ? c(2) + 10 : c(1);
   const shake = f >= tryAt && f < tryAt + 18 ? Math.sin((f - tryAt) * 1.6) * 14 * (1 - (f - tryAt) / 18) : 0;
@@ -216,7 +216,7 @@ const S5: React.FC<SP> = ({ f, dur, n, lang }) => {
     </Stage>
   );
 };
-const S6: React.FC<SP> = ({ f }) => {
+const S6: React.FC<SP> = ({ cb, f }) => {
   // 빈자리에 "?" 풍선이 내려옴 — 시청자의 풍선
   const d = spring({ frame: f - 2, fps: FPS, config: { damping: 11, stiffness: 120 } });
   return (
@@ -229,8 +229,8 @@ const S6: React.FC<SP> = ({ f }) => {
 const SCENES = [S0, S1, S2, S3, S4, S5, S6];
 const CLOUD = new Set([3, 4, 6]);
 const PRE = 18;
-const sfxOf = (i: number, dur: number, n: number): Fx[] => {
-  const c = (k: number) => chunk(dur, n, k);
+const sfxOf = (i: number, dur: number, n: number, cb: number[] = []): Fx[] => {
+  const c = (k: number) => cbAt(cb, k);
   switch (i) {
     case 0: return [["pop", c(2), 0.45]];
     case 1: return [["thud", c(1), 0.4], ["pop", c(2) + 4, 0.45]];
@@ -250,7 +250,7 @@ const ShotS: React.FC<{ i: number; lang: Lang; n: number }> = ({ i, lang, n }) =
   const S = SCENES[i];
   return (
     <AbsoluteFill>
-      {(!pre || f0 >= pre * 0.55) && <S f={Math.max(0, f)} dur={EP05[lang].frames[i]} n={n} lang={lang} />}
+      {(!pre || f0 >= pre * 0.55) && <S cb={CB.ep05[lang][i]} f={Math.max(0, f)} dur={EP05[lang].frames[i]} n={n} lang={lang} />}
       {pre > 0 && f0 < pre * 1.3 && <CloudWipe p={f0 / (pre * 1.3)} />}
     </AbsoluteFill>
   );
@@ -266,7 +266,7 @@ export const Ep05Stick: React.FC<{ lang?: Lang }> = ({ lang = "en" }) => {
           <Sequence key={i} from={b.starts[i] - pre} durationInFrames={b.frames[i] + pre}>
             <ShotS i={i} lang={lang} n={caps[i].length} />
             {pre > 0 && <Sequence from={0} layout="none"><Audio src={staticFile("sfx/whoosh.wav")} volume={0.45} /></Sequence>}
-            {sfxOf(i, b.frames[i], caps[i].length).map(([name, fr, vol], k) => (
+            {sfxOf(i, b.frames[i], caps[i].length, CB.ep05[lang][i]).map(([name, fr, vol], k) => (
               <Sequence key={k} from={pre + fr} layout="none"><Audio src={staticFile(`sfx/${name}.wav`)} volume={vol} /></Sequence>
             ))}
           </Sequence>
@@ -277,7 +277,7 @@ export const Ep05Stick: React.FC<{ lang?: Lang }> = ({ lang = "en" }) => {
         return (
           <Sequence key={`c${i}`} from={b.starts[i]} durationInFrames={b.frames[i]} layout="none">
             {cs.map((c, k) => (
-              <Sequence key={k} from={Math.round(k * per)} durationInFrames={Math.round((k + 1) * per) - Math.round(k * per)} layout="none"><Caption cap={c} /></Sequence>
+              <Sequence key={k} from={CB.ep05[lang][i][k]} durationInFrames={CB.ep05[lang][i][k + 1] - CB.ep05[lang][i][k]} layout="none"><Caption cap={c} /></Sequence>
             ))}
           </Sequence>
         );

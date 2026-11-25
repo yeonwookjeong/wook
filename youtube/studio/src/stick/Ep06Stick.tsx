@@ -5,7 +5,7 @@ import { AbsoluteFill, Audio, Img, interpolate, Sequence, spring, staticFile, us
 import { loadFont as loadNotoSans } from "@remotion/google-fonts/NotoSansKR";
 import { EP06, WORDS } from "../ep06/Ep06";
 import { INK, Look, Pose, Stick, stand, walk } from "./Stick";
-import { Caption, chunk, CloudWipe, NumCard, Stage } from "./Ep04Stick";
+import { CB, cbAt, Caption, chunk, CloudWipe, NumCard, Stage } from "./Ep04Stick";
 
 const { fontFamily: sans } = loadNotoSans();
 const FPS = 30;
@@ -100,14 +100,14 @@ const SignText: React.FC<{ i: number; f: number; at: number }> = ({ i, f, at }) 
 };
 
 // ---------------------------------------------------------------- 장면
-type SP = { f: number; dur: number; n: number; lang: Lang };
+type SP = { f: number; dur: number; n: number; lang: Lang; cb: number[] };
 const T_TOP = 716 * (1920 / 1024); // 거실 식탁 윗선
 const TableFront: React.FC = () => <Img src={staticFile("m04v2/home_table.png")} style={{ position: "absolute", left: 0, top: 0, width: 1080, height: 1920, clipPath: `inset(${T_TOP}px 0 0 0)` }} />;
 
-const S0: React.FC<SP> = ({ f, dur, n, lang }) => {
+const S0: React.FC<SP> = ({ cb, f, dur, n, lang }) => {
   // "You're an only child." 아이 혼자(엄마 옆) → "But in Korea," MY MOM 말풍선 → "our mom." 쩍 갈라지고 OUR MOM
   const W = WORDS[lang];
-  const c1 = chunk(dur, n, 1), c2 = chunk(dur, n, 2);
+  const c1 = cbAt(cb, 1), c2 = cbAt(cb, 2);
   const crack = ease(interpolate(f, [c2, c2 + 8], [0, 1], cl));
   return (
     <Stage bg="m04v2/home_table.png" cam={{ z: lerp(1.35, 1.45, f / dur), fx: 560, fy: 1150 }}>
@@ -119,10 +119,10 @@ const S0: React.FC<SP> = ({ f, dur, n, lang }) => {
     </Stage>
   );
 };
-const S1: React.FC<SP> = ({ f, dur, n, lang }) => {
+const S1: React.FC<SP> = ({ cb, f, dur, n, lang }) => {
   // 집 → 학교 → 동네 전체(나라)에 OUR 꼬리표, 마지막 "our, not my"
   const W = WORDS[lang];
-  const c = (k: number) => chunk(dur, n, k);
+  const c = (k: number) => cbAt(cb, k);
   const cam = f < c(1) ? { z: 1.5, fx: X(170), fy: Y(780) } : f < c(2) ? { z: 1.5, fx: X(640), fy: Y(780) } : { z: lerp(1.1, 1.0, ease((f - c(2)) / Math.max(1, dur - c(2)))), fx: 540, fy: 1100 };
   return (
     <Stage bg="m06/street.png" cam={cam} ui={f >= c(3) ? (
@@ -137,10 +137,10 @@ const S1: React.FC<SP> = ({ f, dur, n, lang }) => {
     </Stage>
   );
 };
-const S2: React.FC<SP> = ({ f, dur, n, lang }) => {
+const S2: React.FC<SP> = ({ cb, f, dur, n, lang }) => {
   // 가족이 하나씩 들어와 둥글게 모임 → "ours" 위에 OUR → "our mom" 말풍선
   const W = WORDS[lang];
-  const c = (k: number) => chunk(dur, n, k);
+  const c = (k: number) => cbAt(cb, k);
   const inK = (k: number, from: number, to: number) => lerp(from, to, ease(interpolate(f, [k, k + 18], [0, 1], cl)));
   const ring = interpolate(f, [c(3), c(3) + 14], [0, 1], cl);
   return (
@@ -156,9 +156,9 @@ const S2: React.FC<SP> = ({ f, dur, n, lang }) => {
   );
 };
 const CO_CUT = 2; // 자막 덩어리 2("Our company")부터 사무실
-const S3: React.FC<SP> = ({ f, dur, n, lang }) => {
+const S3: React.FC<SP> = ({ cb, f, dur, n, lang }) => {
   const W = WORDS[lang];
-  const c = (k: number) => chunk(dur, n, k);
+  const c = (k: number) => cbAt(cb, k);
   if (f < c(CO_CUT)) {
     // 사장실: 명패 BOSS, 사장이 "MY COMPANY"
     const boss: Pose = { ...stand(f), armR: [-120, -30], armL: [-30, -110], lean: -4 };
@@ -181,9 +181,9 @@ const S3: React.FC<SP> = ({ f, dur, n, lang }) => {
     </Stage>
   );
 };
-const S4: React.FC<SP> = ({ f, dur, n }) => {
+const S4: React.FC<SP> = ({ cb, f, dur, n }) => {
   // 상점가 간판에 '우리○○'가 차례로 켜짐, 사람이 걸어 지나감
-  const c1 = chunk(dur, n, 1);
+  const c1 = cbAt(cb, 1);
   return (
     <Stage bg="m06/shop_street.png" cam={{ z: lerp(1.2, 1.05, ease(f / dur)), fx: 540, fy: lerp(950, 1050, f / dur) }}>
       {SIGNS.map((_, i) => <SignText key={i} i={i} f={f} at={4 + i * Math.max(5, Math.round((c1 + 6) / 4))} />)}
@@ -191,10 +191,10 @@ const S4: React.FC<SP> = ({ f, dur, n }) => {
     </Stage>
   );
 };
-const S5: React.FC<SP> = ({ f, dur, n, lang }) => {
+const S5: React.FC<SP> = ({ cb, f, dur, n, lang }) => {
   // MY / OUR 카드 사이 물음표, 아이가 둘을 번갈아 봄
   const W = WORDS[lang];
-  const c1 = chunk(dur, n, 1);
+  const c1 = cbAt(cb, 1);
   return (
     <Stage bg="m04/park.png" cam={{ z: 1.15, fx: 540, fy: 1300 }}
       ui={<>
@@ -210,8 +210,8 @@ const S5: React.FC<SP> = ({ f, dur, n, lang }) => {
 const SCENES = [S0, S1, S2, S3, S4, S5];
 const CLOUD = new Set([1, 2, 3, 4, 5]);
 const PRE = 18;
-const sfxOf = (i: number, dur: number, n: number): Fx[] => {
-  const c = (k: number) => chunk(dur, n, k);
+const sfxOf = (i: number, dur: number, n: number, cb: number[] = []): Fx[] => {
+  const c = (k: number) => cbAt(cb, k);
   switch (i) {
     case 0: return [["pop", c(1), 0.4], ["glitch", c(2), 0.35], ["pop", c(2) + 6, 0.45]];
     case 1: return [["pop", 8, 0.4], ["pop", c(1) + 6, 0.4], ["chime", c(2), 0.35], ["pop", c(3) + 5, 0.4], ["thud", c(3) + 8, 0.4], ["pop", c(3) + 11, 0.4]];
@@ -230,7 +230,7 @@ const ShotS: React.FC<{ i: number; lang: Lang; n: number }> = ({ i, lang, n }) =
   const S = SCENES[i];
   return (
     <AbsoluteFill>
-      {(!pre || f0 >= pre * 0.55) && <S f={Math.max(0, f)} dur={EP06[lang].frames[i]} n={n} lang={lang} />}
+      {(!pre || f0 >= pre * 0.55) && <S cb={CB.ep06[lang][i]} f={Math.max(0, f)} dur={EP06[lang].frames[i]} n={n} lang={lang} />}
       {pre > 0 && f0 < pre * 1.3 && <CloudWipe p={f0 / (pre * 1.3)} />}
     </AbsoluteFill>
   );
@@ -246,7 +246,7 @@ export const Ep06Stick: React.FC<{ lang?: Lang }> = ({ lang = "en" }) => {
           <Sequence key={i} from={b.starts[i] - pre} durationInFrames={b.frames[i] + pre}>
             <ShotS i={i} lang={lang} n={caps[i].length} />
             {pre > 0 && <Sequence from={0} layout="none"><Audio src={staticFile("sfx/whoosh.wav")} volume={0.4} /></Sequence>}
-            {sfxOf(i, b.frames[i], caps[i].length).map(([name, fr, vol], k) => (
+            {sfxOf(i, b.frames[i], caps[i].length, CB.ep06[lang][i]).map(([name, fr, vol], k) => (
               <Sequence key={k} from={pre + fr} layout="none"><Audio src={staticFile(`sfx/${name}.wav`)} volume={vol} /></Sequence>
             ))}
           </Sequence>
@@ -257,7 +257,7 @@ export const Ep06Stick: React.FC<{ lang?: Lang }> = ({ lang = "en" }) => {
         return (
           <Sequence key={`c${i}`} from={b.starts[i]} durationInFrames={b.frames[i]} layout="none">
             {cs.map((c, k) => (
-              <Sequence key={k} from={Math.round(k * per)} durationInFrames={Math.round((k + 1) * per) - Math.round(k * per)} layout="none"><Caption cap={c} /></Sequence>
+              <Sequence key={k} from={CB.ep06[lang][i][k]} durationInFrames={CB.ep06[lang][i][k + 1] - CB.ep06[lang][i][k]} layout="none"><Caption cap={c} /></Sequence>
             ))}
           </Sequence>
         );

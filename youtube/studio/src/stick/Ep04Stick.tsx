@@ -140,12 +140,19 @@ const Court: React.FC<{ x: number; y: number; s: number; o: number; label: strin
 );
 
 // ---------------------------------------------------------------- 장면
-type SP = { f: number; dur: number; n: number; lang: Lang };
+type SP = { f: number; dur: number; n: number; lang: Lang; cb: number[] };
 export const chunk = (dur: number, n: number, k: number) => Math.round((dur * k) / n);
+// 자막 덩어리가 음성에서 실제로 시작하는 프레임 (tools/chunk_times.py 로 만든 표). k가 소수면 사이를 이음
+import CHUNKS from "./chunks.json";
+export const CB = CHUNKS as Record<string, Record<string, number[][]>>;
+export const cbAt = (cb: number[], k: number) => {
+  const a = Math.max(0, Math.min(cb.length - 1, Math.floor(k))), b2 = Math.min(cb.length - 1, a + 1);
+  return Math.round(cb[a] + (cb[b2] - cb[a]) * (k - Math.floor(k)));
+};
 const F_PARK = 1640;
 
-const S0: React.FC<SP> = ({ f, dur, n }) => {
-  const c2 = chunk(dur, n, 2), c3 = chunk(dur, n, 3);
+const S0: React.FC<SP> = ({ cb, f, dur, n }) => {
+  const c2 = cbAt(cb, 2), c3 = cbAt(cb, 3);
   const inT = ease(Math.min(1, f / Math.max(1, c2)));
   const walking = f < c2;
   return (
@@ -156,7 +163,7 @@ const S0: React.FC<SP> = ({ f, dur, n }) => {
     </Stage>
   );
 };
-const S1: React.FC<SP> = ({ f, dur }) => {
+const S1: React.FC<SP> = ({ cb, f, dur }) => {
   // "Number one: shoes as a gift." 남자가 상자를 내밀고 → 상자가 열리며 운동화
   const t = f / dur;
   const opened = interpolate(t, [0.55, 0.7], [0, 1], cl);
@@ -170,10 +177,10 @@ const S1: React.FC<SP> = ({ f, dur }) => {
     </Stage>
   );
 };
-const S2: React.FC<SP> = ({ f, dur, n }) => {
+const S2: React.FC<SP> = ({ cb, f, dur, n }) => {
   // "Shoes take you places." 받자마자 신고 신나서 걸어 봄 → "Including away." 뒤돌아 길 쪽
   const t = f / dur;
-  const turnAt = chunk(dur, n, Math.max(1, n - 1));
+  const turnAt = cbAt(cb, Math.max(1, n - 1));
   const snap = spring({ frame: f, fps: FPS, config: { damping: 8, stiffness: 240 } });
   const strut = interpolate(f, [dur * 0.12, turnAt - 4], [0, 1], cl);
   const turned = f >= turnAt;
@@ -186,10 +193,10 @@ const S2: React.FC<SP> = ({ f, dur, n }) => {
     </Stage>
   );
 };
-const S3: React.FC<SP> = ({ f, dur, n }) => {
+const S3: React.FC<SP> = ({ cb, f, dur, n }) => {
   // "give your partner shoes," 남자 다가감 → "and they'll use them" 신은 발 → "to walk away from you." 신은 채 떠남
-  const goAt = chunk(dur, n, Math.max(1, n - 2));
-  const footAt = chunk(dur, n, Math.max(1, n - 3));
+  const goAt = cbAt(cb, Math.max(1, n - 2));
+  const footAt = cbAt(cb, Math.max(1, n - 3));
   const go = interpolate(f, [goAt, dur], [0, 1], cl);
   const g = ease(go);
   const cam: Cam = f < footAt ? { z: 1.2, fx: 560, fy: 1350 } : go <= 0 ? { z: 2.1, fx: 680, fy: F_PARK - 60 } : { z: lerp(1.35, 1.15, g), fx: lerp(640, 500, g), fy: lerp(1450, 1350, g) };
@@ -202,9 +209,9 @@ const S3: React.FC<SP> = ({ f, dur, n }) => {
     </Stage>
   );
 };
-const S4: React.FC<SP> = ({ f, dur, n, lang }) => {
+const S4: React.FC<SP> = ({ cb, f, dur, n, lang }) => {
   // 80년대(흑백): 여자가 신발을 내밀고 → "a coin" 남자가 동전 → 서로 바꿔 쥠 → SOLD 쾅 → "Today…" 컬러로 지금 커플 웃음
-  const cCoin = chunk(dur, n, 2), cSwap = chunk(dur, n, 3), cStamp = chunk(dur, n, 4), cNow = chunk(dur, n, n - 2);
+  const cCoin = cbAt(cb, 2), cSwap = cbAt(cb, 3), cStamp = cbAt(cb, 4), cNow = cbAt(cb, n - 2);
   const sw = ease(interpolate(f, [cSwap, cSwap + 12], [0, 1], cl));
   const now = f >= cNow;
   if (now) {
@@ -229,7 +236,7 @@ const S4: React.FC<SP> = ({ f, dur, n, lang }) => {
   );
 };
 const F_PUB = 1790;
-const S5: React.FC<SP> = ({ f, dur }) => (
+const S5: React.FC<SP> = ({ cb, f, dur }) => (
   <Stage bg="m04/chicken_pub.png" cam={{ z: lerp(1.05, 1.25, ease(f / dur)), fx: 540, fy: 1450 }} ui={<NumCard n="2" x={930} y={640} f={f} at={0} s={0.8} hl />}>
     <Stick id="m5" look={MAN} pose={stand(f)} x={880} floor={F_PUB} h={H} flip />
     <Stick id="w5" look={WOMAN} pose={stand(f + 9)} x={200} floor={F_PUB} h={H} />
@@ -237,9 +244,9 @@ const S5: React.FC<SP> = ({ f, dur }) => (
 );
 // 바람 카드 → 날개 건넴 → 먹음 → 등에 날개 → 날아감
 const FLYK: Record<Lang, { wind: number; cheat: number; feed: number; sprout: number }> = { en: { wind: 1, cheat: 2, feed: 3, sprout: 4 }, es: { wind: 1, cheat: 2, feed: 3, sprout: 5 } };
-const S6: React.FC<SP> = ({ f, dur, n, lang }) => {
+const S6: React.FC<SP> = ({ cb, f, dur, n, lang }) => {
   const K = FLYK[lang];
-  const cW = chunk(dur, n, K.wind), cC = chunk(dur, n, K.cheat), cF = chunk(dur, n, K.feed), cS = chunk(dur, n, K.sprout);
+  const cW = cbAt(cb, K.wind), cC = cbAt(cb, K.cheat), cF = cbAt(cb, K.feed), cS = cbAt(cb, K.sprout);
   const give = ease(interpolate(f, [cF, cF + 16], [0, 1], cl));
   const eat = f >= cF + 20;
   const lift = ease(interpolate(f, [cS + 10, dur], [0, 1], cl));
@@ -262,8 +269,8 @@ const KX = 1080 / 572, KY = 1920 / 1024;
 const TABLE_TOP = 716 * KY;
 const DAD: Look = { kind: "man", accent: "#26386b" };
 const SON: Look = { kind: "man", accent: "#f2c14e" };
-const S7: React.FC<SP> = ({ f, dur, n }) => {
-  const a = chunk(dur, n, Math.max(1, n - 2)), b = chunk(dur, n, n - 1);
+const S7: React.FC<SP> = ({ cb, f, dur, n }) => {
+  const a = cbAt(cb, Math.max(1, n - 2)), b = cbAt(cb, n - 1);
   const m = ease(interpolate(f, [a, b], [0, 1], cl));
   const x = lerp(122 * KX, 455 * KX, m), y = lerp(736 * KY, 737 * KY, m) - Math.sin(m * Math.PI) * 90;
   const innocent = f >= a;
@@ -280,7 +287,7 @@ const S7: React.FC<SP> = ({ f, dur, n }) => {
   );
 };
 const F_WALL = 1610;
-const S8: React.FC<SP> = ({ f, dur }) => (
+const S8: React.FC<SP> = ({ cb, f, dur }) => (
   <Stage bg="m04/stonewall.png" cam={{ z: lerp(1.25, 1.05, ease(f / dur)), fx: lerp(380, 540, ease(f / dur)), fy: 1250 }} ui={<NumCard n="3" x={150} y={640} f={f} at={0} s={0.8} hl />} />
 );
 // 손잡고 걷기: 둘 다 오른쪽을 보고 걷고, 남자 앞팔과 여자 뒤팔이 가운데서 손을 맞잡음. 나머지 팔은 걸음에 맞춰 흔듦
@@ -295,8 +302,8 @@ const Couple: React.FC<{ f: number; x: number; floor: number; h: number; gap?: n
     </>
   );
 };
-const S9: React.FC<SP> = ({ f, dur, n }) => {
-  const cB = chunk(dur, n, n - 1);
+const S9: React.FC<SP> = ({ cb, f, dur, n }) => {
+  const cB = cbAt(cb, n - 1);
   const crack = ease(interpolate(f, [cB, cB + 10], [0, 1], cl));
   const apart = ease(interpolate(f, [cB + 6, dur], [0, 1], cl));
   return (
@@ -307,9 +314,9 @@ const S9: React.FC<SP> = ({ f, dur, n }) => {
   );
 };
 const COURT_X = 640, COURT_Y = 1330;
-const S10: React.FC<SP> = ({ f, dur, n, lang }) => {
+const S10: React.FC<SP> = ({ cb, f, dur, n, lang }) => {
   // 흑백: 길 끝에 가정법원이 솟아오르고, 시무룩한 부부들이 그쪽으로 걸어감
-  const cCourt = chunk(dur, n, 2);
+  const cCourt = cbAt(cb, 2);
   const rise = spring({ frame: f - cCourt + 4, fps: FPS, config: { damping: 12, stiffness: 120 } });
   const walkT = interpolate(f, [0, dur], [0, 1], cl);
   return (
@@ -329,10 +336,10 @@ const S10: React.FC<SP> = ({ f, dur, n, lang }) => {
     </Stage>
   );
 };
-const S11: React.FC<SP> = ({ f, dur, n, lang }) => {
+const S11: React.FC<SP> = ({ cb, f, dur, n, lang }) => {
   // "The court moved away long ago." 법원이 먹물처럼 흩어짐 → "The story stayed." 컬러로
-  const gone = ease(interpolate(f, [0, chunk(dur, n, 2)], [0, 1], cl));
-  const col = interpolate(f, [chunk(dur, n, 2), chunk(dur, n, 2) + 14], [1, 0], cl);
+  const gone = ease(interpolate(f, [0, cbAt(cb, 2)], [0, 1], cl));
+  const col = interpolate(f, [cbAt(cb, 2), cbAt(cb, 2) + 14], [1, 0], cl);
   return (
     <Stage bg="m04/stonewall.png" gray={col} cam={{ z: lerp(1.5, 1.2, ease(f / dur)), fx: lerp(COURT_X, 560, ease(f / dur)), fy: lerp(1380, 1300, ease(f / dur)) }}>
       <div style={{ filter: `blur(${gone * 14}px)`, transform: `translateY(${gone * -60}px)` }}>
@@ -341,9 +348,9 @@ const S11: React.FC<SP> = ({ f, dur, n, lang }) => {
     </Stage>
   );
 };
-const S12: React.FC<SP> = ({ f, dur, n }) => {
+const S12: React.FC<SP> = ({ cb, f, dur, n }) => {
   // 손을 꼭 잡고 다가오는 커플 → "Which one would you risk?" 카드 1·2·3 + ?
-  const q = chunk(dur, n, n - 1);
+  const q = cbAt(cb, n - 1);
   const p = ease(interpolate(f, [0, q], [0, 1], cl));
   const h = H * lerp(0.6, 1.05, p), fl = lerp(1440, 1700, p);
   return (
@@ -363,8 +370,8 @@ const CLOUD = new Set([5, 7, 8]);
 const PRE = 18;
 
 // 효과음: 이 화면의 사건에 맞춤
-const sfxOf = (i: number, dur: number, n: number, lang: Lang): Fx[] => {
-  const c = (k: number) => chunk(dur, n, k);
+const sfxOf = (i: number, dur: number, n: number, lang: Lang, cb: number[] = []): Fx[] => {
+  const c = (k: number) => cbAt(cb, k);
   switch (i) {
     case 0: return [0, 1, 2].map((k) => ["pop", c(2) + k * 7 + 5, 0.4] as Fx);
     case 1: return [["pop", 5, 0.4], ["ding", Math.round(dur * 0.55), 0.35]];
@@ -411,7 +418,7 @@ const ShotS: React.FC<{ i: number; lang: Lang; n: number }> = ({ i, lang, n }) =
   const S = SCENES[i];
   return (
     <AbsoluteFill>
-      {(!pre || f0 >= pre * 0.55) && <S f={Math.max(0, f)} dur={dur} n={n} lang={lang} />}
+      {(!pre || f0 >= pre * 0.55) && <S cb={CB.ep04[lang][i]} f={Math.max(0, f)} dur={dur} n={n} lang={lang} />}
       {pre > 0 && f0 < pre * 1.3 && <CloudWipe p={f0 / (pre * 1.3)} />}
     </AbsoluteFill>
   );
@@ -428,7 +435,7 @@ export const Ep04Stick: React.FC<{ lang?: Lang }> = ({ lang = "en" }) => {
           <Sequence key={i} from={b.starts[i] - pre} durationInFrames={b.frames[i] + pre}>
             <ShotS i={i} lang={lang} n={caps[i].length} />
             {pre > 0 && <Sequence from={0} layout="none"><Audio src={staticFile("sfx/whoosh.wav")} volume={0.45} /></Sequence>}
-            {sfxOf(i, b.frames[i], caps[i].length, lang).map(([name, fr, vol], k) => (
+            {sfxOf(i, b.frames[i], caps[i].length, lang, CB.ep04[lang][i]).map(([name, fr, vol], k) => (
               <Sequence key={k} from={pre + fr} layout="none">
                 <Audio src={staticFile(`sfx/${name}.wav`)} volume={vol} />
               </Sequence>
@@ -441,7 +448,7 @@ export const Ep04Stick: React.FC<{ lang?: Lang }> = ({ lang = "en" }) => {
         return (
           <Sequence key={`c${i}`} from={b.starts[i]} durationInFrames={b.frames[i]} layout="none">
             {caps[i].map((c, k) => (
-              <Sequence key={k} from={Math.round(k * per)} durationInFrames={Math.round((k + 1) * per) - Math.round(k * per)} layout="none">
+              <Sequence key={k} from={CB.ep04[lang][i][k]} durationInFrames={CB.ep04[lang][i][k + 1] - CB.ep04[lang][i][k]} layout="none">
                 <Caption cap={c} />
               </Sequence>
             ))}
