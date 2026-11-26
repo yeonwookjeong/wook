@@ -1,0 +1,80 @@
+<title>김하성 원고 006</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{--bg:#f6f5f2;--paper:#fff;--ink:#1b1b1b;--muted:#6b6b6b;--line:#e3e1dc;--accent:#b0001e;--note:#fff7d6}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#141414;--paper:#1d1d1d;--ink:#ececec;--muted:#a3a3a3;--line:#333;--accent:#ff5a6e;--note:#3a3420;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141414;--paper:#1d1d1d;--ink:#ececec;--muted:#a3a3a3;--line:#333;--accent:#ff5a6e;--note:#3a3420;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font:16px/1.75 -apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding-block:20px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.box{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:14px 0}
+.label{font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--accent);margin:0 0 6px}
+.note{background:var(--note)}
+button{font:inherit;font-weight:700;padding:9px 14px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer}
+button.ghost{background:transparent;color:var(--accent)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.txt{white-space:pre-wrap;margin-top:12px;overflow-wrap:anywhere}
+.toast{color:var(--muted);font-size:14px}
+.src{color:var(--muted);font-size:13px}
+</style>
+<div class="wrap">
+  <div class="box note"><p class="label">발행 순서 (모바일)</p>
+  <ol style="margin:0;padding-left:20px"><li>[홈판용 제목 복사] → 제목 칸</li><li>[본문 복사] → 본문 칸 붙여넣기</li><li><b>(여기에 본인 한 줄)</b> 2곳을 직접 써서 바꾸기</li><li>【 】 줄은 소제목으로, [사진] 자리에 사진</li><li>카테고리 <b>야구</b>, 태그 붙여넣기, 검색허용 켜고 발행</li></ol></div>
+  <div class="box"><p class="label">1. 제목</p>
+    <p id="th" style="margin:4px 0"><b>&#x27;2000만 달러에서 500만 달러로&#x27; 김하성, 디트로이트가 1년을 건 이유</b></p><div class="row"><button class="ghost" data-copy="th">홈판용 제목 복사 (추천)</button></div>
+    <p id="ts" class="src" style="margin-top:10px">[82 단신] 김하성 디트로이트 계약, 1년 500만 달러·인센티브 100만 달러 (2026.11.26)</p><div class="row"><button class="ghost" data-copy="ts">검색용 제목 복사</button></div></div>
+  <div class="box"><p class="label">2. 본문</p><div class="row"><button data-copy="b">본문 복사</button><span class="toast" id="toast"></span></div><div id="b" class="txt">[사진: 김하성 경기 사진 (대표 이미지)]
+사진 = (구단 공식 계정)
+
+김하성(31)이 디트로이트 타이거스와 1년 500만 달러에 계약하기로 합의했다. 성적에 따른 인센티브 100만 달러가 붙어 최대 600만 달러다.
+1년 전 애틀랜타에서 받은 2,000만 달러의 4분의 1 수준이다. 신체검사를 통과하면 계약이 확정된다.
+
+【계약 내용】
+· 팀: 디트로이트 타이거스 (아메리칸리그 중부지구)
+· 기간·금액: 1년 500만 달러 + 인센티브 최대 100만 달러
+· 합의: 11월 24일(현지), ESPN이 처음 보도하고 MLB.com이 확인
+· 남은 절차: 신체검사 뒤 구단 공식 발표
+출처: MLB.com
+
+【디트로이트는 왜 김하성을 골랐나】 내야 수비
+디트로이트 스콧 해리스 야구운영사장은 계약 소식이 나오기 두 시간 전 기자들에게 이렇게 말했다.
+&quot;We also want to protect these arms. We want to make sure that we tighten up our infield defense.&quot;
+&quot;우리 투수들을 지켜 주고 싶다. 내야 수비를 단단하게 만들어야 한다.&quot;
+— 스콧 해리스, MLB.com 제이슨 벡(Jason Beck) 기사, 2026.11.24(현지)
+MLB.com은 이번 계약의 성격을 한 문장으로 정리했다.
+&quot;He&#x27;s healthy now, and the Tigers are willing to invest in a healthy Kim for a bounceback season with a low-risk, short-term contract.&quot;
+&quot;김하성은 이제 건강하다. 디트로이트는 위험 부담이 적은 단기 계약으로, 건강한 김하성의 반등 시즌에 투자하려 한다.&quot;
+— 제이슨 벡, MLB.com, 2026.11.24(현지)
+
+【어디서 뛰나】 유격수, 신인왕과 자리 나누기
+디트로이트에는 2026시즌 아메리칸리그 신인왕 케빈 맥고니글이 있다. 맥고니글은 올해 대부분 유격수로 뛰었지만, 수비 지표(DRS)는 3루수일 때 +8, 유격수일 때 +2였다.
+MLB.com은 김하성이 유격수를 맡고 맥고니글이 3루에서 더 많이 뛰는 그림을 예상했다. 김하성 영입이 맥고니글까지 더 잘 맞는 자리로 보내는 셈이다.
+(여기에 본인 한 줄: 신인왕과 한 팀이 된 김하성에 대한 생각)
+
+【숫자로 본 숙제】 타율 .116
+· 2026시즌(애틀랜타): 51경기, 129타수 15안타, 타율 .116, OPS .359
+· 포스트시즌: 4경기 5타수 무안타
+· 수비: OAA -2, 수비 득점 가치 -3 / DRS +4 (지표마다 엇갈림)
+· 전성기: 2022년 bWAR 5.0, 2023년 5.4 (골드글러브)
+출처: MLB.com
+MLB.com에 따르면 지난 시즌 부상은 고국 한국에서 빙판에 미끄러지며 생긴 오른손 가운뎃손가락 열상이었고, 수술까지 받았다. 이번 겨울은 처음으로 다치지 않고 보내는 비시즌이다.
+
+【타이밍】 직장폐쇄 직전의 계약
+메이저리그 노사협약은 한국시간 12월 2일 오후 만료된다. 사무국은 협약 만료를 일주일 앞두고 선수노조를 상대로 직장폐쇄가 합법이라는 판단을 구하는 소송까지 냈다. 직장폐쇄가 시작되면 FA 계약도 멈춘다. 김하성은 그 직전에 새 팀을 찾았다.
+디트로이트는 김하성에 이어 베테랑 선발 케빈 가우스먼과도 1년 2,500만 달러에 합의했다. 토론토 시절 류현진과 함께 뛴 투수다.
+
+【총평】
+몸값은 4분의 1로 줄었지만, 주전 유격수로 다시 뛸 수 있는 자리를 얻었다. 디트로이트가 원한 건 김하성의 방망이보다 수비다. 건강하게 개막을 맞는 것, 그게 이번 1년의 전부다.
+(여기에 본인 한 줄: 총평을 내 말투로)
+여러분은 김하성이 디트로이트에서 다시 골드글러브급 수비를 보여 줄 거라고 보시나요?
+</div></div>
+  <div class="box"><p class="label">3. 태그</p><p id="tg" style="margin:4px 0">#김하성 #디트로이트 #디트로이트타이거스 #김하성계약 #메이저리그 #MLB직장폐쇄 #맥고니글 #가우스먼 #해외파 #82SPORTS</p><div class="row"><button class="ghost" data-copy="tg">태그 복사</button></div></div>
+  <div class="box"><p class="label">4. 스레드 문안</p><p id="tr" class="txt" style="margin-top:4px">김하성, 디트로이트와 1년 500만 달러(+인센티브 100만).
+1년 전 2000만 달러의 4분의 1. 디트로이트가 원한 건 방망이보다 수비.
+신인왕 맥고니글과 유격수·3루 나누기, MLB.com 원문 정리 👇</p><div class="row"><button class="ghost" data-copy="tr">스레드 문안 복사</button></div></div>
+  <div class="box"><p class="label">5. 검수·출처 (블로그에 안 올림)</p><p class="src">검수 93점 (사진 없으면 83점)<br>계약·금액·인센티브·해리스 발언·맥고니글 DRS·2026 기록·부상 경위: mlb.com/news/ha-seong-kim-tigers-contract (Jason Beck, 2026.11.24)<br>가우스먼 1년 2500만 달러: ESPN·MLB.com 보도(국내 기사 재인용)<br>노사협약 만료 시각: 뉴스1 (12월 2일 오후 1시 59분, 한국시간)<br>소송: 스포츠경향·문화일보 보도</p></div>
+</div>
+<script>
+const toast=m=>{const t=document.getElementById('toast');if(t){t.textContent=m;setTimeout(()=>t.textContent='',2500)}};
+document.querySelectorAll('[data-copy]').forEach(b=>b.addEventListener('click',async()=>{const el=document.getElementById(b.dataset.copy);
+try{await navigator.clipboard.writeText(el.innerText);toast('복사됨')}catch(e){const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);const ok=document.execCommand('copy');s.removeAllRanges();toast(ok?'복사됨':'복사 실패: 직접 드래그해서 복사하세요')}}));
+</script>
