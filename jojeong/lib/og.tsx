@@ -612,139 +612,76 @@ export function sillokStory(kingName: string, king: Pillars, cast: Cast) {
   );
 }
 
-// Page link cards (2026-11-25): a bold promise, a glimpse of what the page shows, a button and 정 훈도 with a word,
-// so a link in a feed says what it opens. Laid out after the cards that travel best on X and Threads.
-const saju8 = `data:image/png;base64,${(await readFile(join(process.cwd(), "public/og-saju-mosaic.png"))).toString("base64")}`;
-
-function PageCard({
+// Page link cards (2026-11-26): read at phone width in a feed (about a third of full size), so only three things,
+// all big: a tag, a two-line promise, a button, and 정 훈도 large on the right. The 11-25 cards (a chart, twelve
+// months, four names in small type) could not be read at that size.
+function BigCard({
   bg,
-  pill,
-  pillStyle,
+  tag,
+  tagColor,
+  strike,
   head,
   headColors,
-  children,
   cta,
   mood,
-  bubble,
-  ring,
-  brand,
 }: {
   bg: string;
-  pill: string;
-  pillStyle: React.CSSProperties;
+  tag: string;
+  tagColor: string;
+  strike?: string;
   head: [string, string];
   headColors: [string, string];
-  children?: React.ReactNode;
   cta: string;
   mood: Mood;
-  bubble: [string, string];
-  ring: string;
-  brand: string;
 }) {
   return (
-    <div style={{ width: 1200, height: 630, display: "flex", background: bg, fontFamily: "Myeongjo", padding: "40px 60px 48px", position: "relative" }}>
-      <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", flex: 1 }}>
-        <div style={{ display: "flex", alignSelf: "flex-start", fontSize: 26, fontWeight: 800, padding: "6px 18px", borderRadius: 999, ...pillStyle }}>{pill}</div>
-        <div style={{ display: "flex", flexDirection: "column", fontSize: 66, fontWeight: 800, lineHeight: 1.22, marginTop: 22 }}>
-          <div style={{ display: "flex", color: headColors[0] }}>{head[0]}</div>
-          <div style={{ display: "flex", color: headColors[1] }}>{head[1]}</div>
-        </div>
-        {children}
-        <div style={{ display: "flex", alignSelf: "flex-start", background: "#c8321f", color: "#fff", fontSize: 36, fontWeight: 800, padding: "18px 40px", borderRadius: 999, marginTop: 30 }}>{cta}</div>
+    <div style={{ width: 1200, height: 630, display: "flex", background: bg, fontFamily: "Myeongjo", position: "relative", overflow: "hidden" }}>
+      <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", paddingLeft: 64, width: 820 }}>
+        <div style={{ display: "flex", fontSize: 42, fontWeight: 800, color: tagColor }}>{tag}</div>
+        {strike && (
+          <div style={{ display: "flex", fontSize: 62, fontWeight: 800, color: "#6b5f52", marginTop: 18, textDecoration: "line-through", textDecorationColor: "#b3261e" }}>{strike}</div>
+        )}
+        <div style={{ display: "flex", fontSize: strike ? 96 : 104, fontWeight: 800, color: headColors[0], lineHeight: 1.15, marginTop: strike ? 6 : 14 }}>{head[0]}</div>
+        <div style={{ display: "flex", fontSize: strike ? 96 : 104, fontWeight: 800, color: headColors[1], lineHeight: 1.15 }}>{head[1]}</div>
+        <div style={{ display: "flex", alignSelf: "flex-start", background: "#d0331f", color: "#fff", fontSize: 44, fontWeight: 800, padding: "16px 38px", borderRadius: 999, marginTop: 28 }}>{cta}</div>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", width: 340 }}>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", background: "#fff", color: "#211b17", fontSize: 28, fontWeight: 800, padding: "16px 26px", borderRadius: 22, lineHeight: 1.35, marginBottom: 18 }}>
-          <div style={{ display: "flex" }}>{bubble[0]}</div>
-          <div style={{ display: "flex" }}>{bubble[1]}</div>
-        </div>
-        {/* eslint-disable-next-line @next/next/no-img-element -- rendered by Satori, not the browser */}
-        <img src={art[mood]} width={290} height={290} alt="" style={{ borderRadius: 145, border: `8px solid ${ring}`, background: "#f4ecdb" }} />
-      </div>
-      <div style={{ display: "flex", position: "absolute", right: 60, bottom: 22, fontSize: 22, color: brand, fontWeight: 800 }}>훈도사주 hundosaju.com</div>
+      {/* eslint-disable-next-line @next/next/no-img-element -- rendered by Satori, not the browser */}
+      <img src={art[mood]} width={440} height={440} alt="" style={{ position: "absolute", right: -20, bottom: 60, borderRadius: 220, border: "10px solid #c99a3a", background: "#f4ecdb" }} />
     </div>
   );
 }
 
-// 신년운세: the twelve months with a sample of marks (○ good, △ careful); the page shows the reader's own for free.
-export function yeonunImage(pill: string) {
-  const good = [3, 5, 9];
+// 신년운세: `tag` names the year ("2027 정미년 신년운세").
+export function yeonunImage(tag: string) {
   return render(
-    <PageCard
-      bg="#17120f"
-      pill={pill}
-      pillStyle={{ border: "2px solid #c99a3a", color: "#e6c36a" }}
-      head={["내년, 내가", "풀리는 달 나왔사옵니다"]}
-      headColors={["#fff", "#e6c36a"]}
-      cta="생일 넣고 내 12달 보기 →"
-      mood="fan"
-      bubble={["좋은 달, 조심할 달", "짚어 드리옵니다"]}
-      ring="#c99a3a"
-      brand="#6f6357"
-    >
-      <div style={{ display: "flex", marginTop: 28 }}>
-        {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => {
-          const mark = good.includes(m) ? "○" : m === 7 ? "△" : "-";
-          const bgc = good.includes(m) ? "#c99a3a" : m === 7 ? "#c8321f" : "#2d2620";
-          return (
-            <div key={m} style={{ display: "flex", flexDirection: "column", alignItems: "center", marginRight: 7 }}>
-              <div style={{ display: "flex", fontSize: 20, color: "#a89a8b", marginBottom: 4 }}>{`${m}월`}</div>
-              <div style={{ display: "flex", width: 50, height: 50, borderRadius: 10, alignItems: "center", justifyContent: "center", fontSize: 24, fontWeight: 800, background: bgc, color: mark === "-" ? "#6f6357" : "#fff" }}>{mark}</div>
-            </div>
-          );
-        })}
-      </div>
-      <div style={{ display: "flex", fontSize: 22, color: "#a89a8b", marginTop: 12 }}>달마다 흐름은 무료로 먼저 보여 드리옵니다</div>
-    </PageCard>,
+    <BigCard bg="#17120f" tag={tag} tagColor="#e6c36a" head={["내가 풀리는 달", "나왔사옵니다"]} headColors={["#fff", "#e6c36a"]} cta="내 12달 보기 →" mood="fan" />,
     1200,
     630,
   );
 }
 
-// 무료 사주풀이: an eight-character chart under mosaic, only the day stem ("나") left readable.
+// 무료 사주풀이: the brand line, the common reading struck out.
 export function gukjeongImage() {
   return render(
-    <PageCard
+    <BigCard
       bg="#f4ecdb"
-      pill="무료 사주풀이"
-      pillStyle={{ background: "#211b17", color: "#f4ecdb" }}
-      head={["성격, 돈, 사랑, 일", "생일 하나로 나왔사옵니다"]}
+      tag="무료 사주풀이"
+      tagColor="#b3261e"
+      strike="누구에게나 맞는 말 말고,"
+      head={["나한테만", "맞는 말"]}
       headColors={["#211b17", "#b3261e"]}
-      cta="내 사주 무료로 보기 →"
+      cta="내 사주 보기 →"
       mood="face"
-      bubble={["10년 흐름까지", "보여 드리옵니다"]}
-      ring="#c99a3a"
-      brand="#8a7d70"
-    >
-      {/* eslint-disable-next-line @next/next/no-img-element -- rendered by Satori, not the browser */}
-      <img src={saju8} width={310} height={166} alt="" style={{ marginTop: 18 }} />
-    </PageCard>,
+    />,
     1200,
     630,
   );
 }
 
-// 신살 테스트: a few of the twenty names; the reader's own stays for the page.
+// 신살 테스트.
 export function sinsalImage() {
   return render(
-    <PageCard
-      bg="#4a0f0c"
-      pill="무료 신살 테스트"
-      pillStyle={{ border: "2px solid #f0b8a8", color: "#f6d3c8" }}
-      head={["그대 사주에 숨은", "살 이름 나왔사옵니다"]}
-      headColors={["#fff", "#ffd27a"]}
-      cta="내 살 유형 보기 →"
-      mood="shock"
-      bubble={["100명 중 몇 명인지도", "알려 드리옵니다"]}
-      ring="#c99a3a"
-      brand="#b98a7e"
-    >
-      <div style={{ display: "flex", marginTop: 26, alignItems: "center" }}>
-        {["도화살", "역마살", "화개살", "백호살"].map((c) => (
-          <div key={c} style={{ display: "flex", background: "#6b1a15", color: "#ffe1d6", fontSize: 26, fontWeight: 800, padding: "8px 16px", borderRadius: 12, marginRight: 10 }}>{c}</div>
-        ))}
-        <div style={{ display: "flex", fontSize: 24, color: "#d9a99c" }}>등 20가지</div>
-      </div>
-    </PageCard>,
+    <BigCard bg="#4a0f0c" tag="무료 신살 테스트" tagColor="#f6c9b8" head={["내 사주에 숨은", "살 이름"]} headColors={["#fff", "#ffd27a"]} cta="내 살 보기 →" mood="shock" />,
     1200,
     630,
   );
