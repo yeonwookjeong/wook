@@ -2,7 +2,7 @@ import "server-only";
 import { createHash } from "node:crypto";
 import Anthropic from "@anthropic-ai/sdk";
 import { GoogleGenAI, ThinkingLevel } from "@google/genai";
-import { chartBrief as chartBriefOf, pairBrief } from "./brief";
+import { chartBrief as chartBriefOf, nextYearBrief, pairBrief } from "./brief";
 import { isEngine2 } from "./patterns";
 import { coupleBrief, gunghapAvg, gunghapScore } from "./couple";
 import { coupleBriefV1 } from "./coupleLegacy";
@@ -57,6 +57,13 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
   const spec = product && SPECS[v][product.id as ProductId];
   // A free report is never written (no spec either): free means no AI cost.
   if (!product || product.free || !spec) return { error: "없는 보고서예요.", status: 404 };
+
+  // 평생 사주 bought from CH11_SINCE between September and 입춘: little of 올해 is left, so chapter 11 (지금 어디쯤인가)
+  // reads the coming year too, from its own brief. A report bought before keeps its prompt, and so its key.
+  const boughtAt = at ?? Date.now();
+  const ny = product.id === "pyeongsaeng" && (v === "v8" || v === "v9") && boughtAt >= CH11_SINCE ? newYearOf(new Date(boughtAt)) : null;
+  const ch11Year = ny !== null && ny > briefYear ? ny : null;
+  const nextBrief = (p: Pillars, profile: Profile | null) => (ch11Year !== null ? [nextYearBrief(p, profile, ch11Year)].filter(Boolean) : []);
 
   let subjectLine = "";
   let briefs = "";
@@ -141,6 +148,7 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
       chartBrief(me.name, me.pillars, profileOf(me), briefYear),
       freeBrief(me.pillars, profileOf(me), briefYear, oldBrief),
       ...deep(product.id, me.pillars, me.gender),
+      ...nextBrief(me.pillars, profileOf(me)),
       ...(y !== null ? [yeonunBrief(me.pillars, profileOf(me), y, nowYear)] : []),
     ].join("\n\n");
   } else {
@@ -151,7 +159,7 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
     subjectLine = product.modern
       ? `[대상] ${subject.name} ('${subject.name}님'이라 부를 것)`
       : `[대상] ${subject.name}${subject.king ? " (조정의 왕이므로 '전하'라 부를 것)" : " ('그대'라 부를 것)"}`;
-    briefs = [chartBrief(subject.name, subject.pillars, profile, briefYear), freeBrief(subject.pillars, profile, briefYear, oldBrief), ...deep(product.id, subject.pillars, profile?.gender ?? null)].join("\n\n");
+    briefs = [chartBrief(subject.name, subject.pillars, profile, briefYear), freeBrief(subject.pillars, profile, briefYear, oldBrief), ...deep(product.id, subject.pillars, profile?.gender ?? null), ...nextBrief(subject.pillars, profile)].join("\n\n");
   }
 
   const system = systemPromptFor(product, v);
@@ -163,7 +171,9 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
     ? { ...spec, chapters: YEONUN_PAST_TOC }
     : newYear
       ? { chapters: yearChaptersFor(true), focus: `${spec.focus}\n- 마지막 장 '${NEW_YEAR_CHAPTER}'은 입춘부터 석 달(2~4월)의 월운 판정을 근거로, 달마다 할 일 하나씩 구체적으로 쓴다(이 석 달은 화면에 달력으로 보인다).` }
-      : spec;
+      : ch11Year !== null
+        ? { ...spec, focus: ch11Focus(spec.focus, ch11Year) }
+        : spec;
   // 궁합 outside lovers: chapter titles without love words (lib/reportPrompts.ts chaptersForRel).
   // As of when it is read (bought, or written again from the owner's page), so a report written again comes out new.
   const relNow = REL_OF[relationOf(req.rel)];
@@ -174,6 +184,18 @@ export async function jobFor(req: JobRequest, v: PromptVersion = PROMPT_NOW, old
   const prompt = userPrompt(titled, subjectLine, briefs);
   const key = createHash("sha256").update([v, REPORT_MODEL, product.id, system, prompt].join("\n")).digest("base64url");
   return { key, system, prompt, title: product.title, modern: Boolean(product.modern) };
+}
+
+// From this moment (2026-11-26 16:00 KST, after it is deployed) a 평생 사주 bought near the year's end gets the chapter 11 below.
+export const CH11_SINCE = Date.parse("2026-11-26T07:00:00Z");
+// The line as v9 asks it, and as v8 still words it (lib/reportPrompts.ts FOCUS_V9).
+const CH11_OLD = ["올해", "2026년"].map((y) => `- 지금 어디쯤인가: 현재 대운과 ${y}, 나이에 맞춰 지금 겪고 있을 고민과 올해 안의 때(달)를 짚는다.`);
+// 11장 '지금 나는 인생의 어디쯤일까' bought near the year's end: 올해 has a month or so left, so its months said nothing
+// (a buyer of 11/19: every chapter but 11 was uncanny). The weight moves to the coming year, read from its brief.
+function ch11Focus(focus: string, y: number): string {
+  const line = `- 지금 어디쯤인가: 올해는 얼마 남지 않았다. 현재 대운의 몇 년째인지와 나이에 맞춰 지금 겪고 있을 고민은 짧게 짚고, 무게는 내년 ${y}년(${yearName(y).ko})에 둔다. 브리프 '■ 내년 ${y}'의 판정과 월운에서 움직이기 좋은 달 두세 개와 조심할 달 하나를 근거와 함께 짚는다. 이미 지난 달은 쓰지 않는다.`;
+  const old = CH11_OLD.find((o) => focus.includes(o));
+  return old ? focus.replace(old, line) : `${focus}\n${line}`;
 }
 
 function pairBriefs(a: Person, b: Person, rel: Relation, year: number, at: number): string[] {

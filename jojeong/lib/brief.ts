@@ -188,6 +188,18 @@ const unlove = (t: string) =>
     .filter((x) => !/연애|결혼|배우자/.test(x))
     .join(" ");
 
+// The coming year beside 올해, for a report bought near the year's end (lib/reportWriter.ts CH11_SINCE): the year's
+// grade and its twelve months, read by the same 연운 engine as any year but 2026.
+export function nextYearBrief(p: Pillars, profile: Profile | null, y: number): string {
+  const d = yearDetail(p, profile, y, y);
+  if (!d) return "";
+  return [
+    `■ 내년 ${y} ${d.hanja}(${d.ko})`,
+    `- 위 글자 ${d.gods[0]}, 아래 글자 ${d.gods[1]}; 일간의 12운성 ${d.stage}; 엔진 판정 ${d.verdict}; ${d.theme}`,
+    `- ${y} 월운(절기 기준, ◎좋음 ○무난 △조심 ✕고비): ${d.months.map((m) => `${m.from.split("/")[0]}월 ${m.gz} ${"✕△○◎"[m.rating]}${m.tags.length ? `(${m.tags.join(",")})` : ""}`).join(", ")}`,
+  ].join("\n");
+}
+
 // What sets this chart apart from others with the same day pillar, rarest first, and past years worth naming.
 function distinctLines(p: Pillars, profile: Profile | null, lover = true, v2 = true): string[] {
   const d = distinctOf(p, profile?.gender ?? null, v2);
