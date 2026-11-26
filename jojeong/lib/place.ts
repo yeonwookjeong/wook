@@ -4,8 +4,8 @@ import { ELEMENT_KO, readChart } from "@/lib/myeongri";
 import type { Person } from "@/lib/pairToken";
 import type { Pillars } from "@/lib/saju";
 import { dayPillar, todayFor } from "@/lib/today";
-import data from "./data/regions.json";
-import landData from "./data/land.json";
+import data from "./placeData/regions.json";
+import landData from "./placeData/land.json";
 
 // 내 사주 명당: each 시군구 scored by its own ground, read as the five elements, against what this chart needs
 // (lib/myeongri.ts readChart: 용신, 희신, 기신). The same for a reader wherever they live (decided 2026-11-10: the
@@ -139,9 +139,9 @@ const pctOf = (vals: number[]) => {
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 const LANDS = MAP.regions.map((r) => LAND[r.code]).filter(Boolean);
 const pMt = pctOf(LANDS.map((l) => l.mt)), pTop = pctOf(LANDS.map((l) => l.top)), pRock = pctOf(LANDS.map((l) => l.rock)), pFlat = pctOf(LANDS.map((l) => l.flat));
-const useOf = (l: Land): Use => l.use ?? { forest: 0, farm: 0, water: 0, town: 0, factory: 0 };
+const landUseOf = (l: Land): Use => l.use ?? { forest: 0, farm: 0, water: 0, town: 0, factory: 0 };
 const pTemp = pctOf(LANDS.map((l) => l.climate.temp)), pSun = pctOf(LANDS.map((l) => l.climate.sun)), pRain = pctOf(LANDS.map((l) => l.climate.rain));
-const pForest = pctOf(LANDS.map((l) => useOf(l).forest)), pFarm = pctOf(LANDS.map((l) => useOf(l).farm)), pTown = pctOf(LANDS.map((l) => useOf(l).town)), pFactory = pctOf(LANDS.map((l) => useOf(l).factory));
+const pForest = pctOf(LANDS.map((l) => landUseOf(l).forest)), pFarm = pctOf(LANDS.map((l) => landUseOf(l).farm)), pTown = pctOf(LANDS.map((l) => landUseOf(l).town)), pFactory = pctOf(LANDS.map((l) => landUseOf(l).factory));
 // Water, the strongest of: the sea at the border; the biggest river through it (the DEM's drainage, or a big river
 // Natural Earth names running 10 km or more through it, taken as 10,000 km²; 100 km² reads 0, 10,000 km² reads 1); a big dam lake (0.9); the farm
 // reservoirs' full surface (about 30 ha reads 0, 1,500 ha reads 1).
@@ -151,13 +151,13 @@ const waterOf = (l: Land) =>
     clamp01((Math.log10(Math.max(l.flow, l.ne >= 10 ? 10000 : 0, 1)) - 2) / 2),
     l.dam.length ? 0.9 : 0,
     clamp01((Math.log10(l.res + 1) - 1.5) / 1.7),
-    clamp01(useOf(l).water / 15), // rivers, ponds and ditches as a share of the land (지적통계)
+    clamp01(landUseOf(l).water / 15), // rivers, ponds and ditches as a share of the land (지적통계)
     0.6 * pRain(l.climate.rain), // a wet sky: the rainiest places read up to 0.6, never as much as a river
   );
 export function groundOf(code: string): number[] | null {
   const l = LAND[code];
   if (!l) return null;
-  const u = useOf(l);
+  const u = landUseOf(l);
   const mount = (pMt(l.mt) + pTop(l.top)) / 2;
   return [
     0.6 * pForest(u.forest) + 0.4 * mount, // 목: 숲과 산
@@ -256,7 +256,7 @@ export function rankOf(all: Scored[], code: string): { rank: number; of: number 
 function groundReason(r: Scored, e: number): string {
   const l = LAND[r.code];
   if (!l) return "";
-  const u = useOf(l);
+  const u = landUseOf(l);
   if (e === 0) return `숲(임야)이 땅의 ${Math.round(u.forest)}%예요`;
   const c = l.climate;
   if (e === 1) {
@@ -433,7 +433,7 @@ export function lookAlikes(all: Scored[], n: Need, k = 3): Scored[] {
 export type DongRow = [string, number, number, number, number, number, number, number, number, number];
 export type DongData = Record<string, DongRow[]>;
 let dongData: Promise<DongData> | null = null;
-export const loadDongs = () => (dongData ??= import("./data/dong.json").then((m) => (m.default as unknown as { dongs: DongData }).dongs));
+export const loadDongs = () => (dongData ??= import("./placeData/dong.json").then((m) => (m.default as unknown as { dongs: DongData }).dongs));
 
 export type DongScored = { name: string; fit: number; ground: number[]; why: string };
 type DongPct = { mt: (v: number) => number; top: (v: number) => number; rock: (v: number) => number; flat: (v: number) => number };
@@ -464,7 +464,7 @@ export function dongsOf(code: string, n: Need, d: DongData): DongScored[] {
   const l = LAND[code];
   if (!rows?.length || !g0 || !l) return [];
   const p = dongPctOf(d);
-  const u = useOf(l);
+  const u = landUseOf(l);
   const w = weightsOf(n);
   return rows
     .map((row) => {

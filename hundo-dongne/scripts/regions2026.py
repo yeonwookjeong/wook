@@ -1,4 +1,4 @@
-"""행정동 경계(2026-10-01) → 미니앱용 시군구 지도 데이터(src/data/regions.json).
+"""행정동 경계(2026-10-01) → 미니앱용 시군구 지도 데이터(jojeong/lib/placeData/regions.json).
 
 사용: python3 -I scripts/regions2026.py <HangJeongDong_ver20261001.geojson>
 원본: vuski/admdongkor ver20261001 (행정안전부 행정동 기준). 2026년 바뀐 곳이 들어 있다:
@@ -73,5 +73,5 @@ for code, geoms in groups.items():
     out.append({"code": code, "sido": sido, "name": name, "lon": round(best[1], 4), "lat": round(best[2], 4), "d": "".join(d)})
 
 out.sort(key=lambda r: r["code"])
-json.dump({"w": W, "h": H, "asOf": "2026-10-01", "regions": out}, open("src/data/regions.json", "w"), ensure_ascii=False, separators=(",", ":"))
+json.dump({"w": W, "h": H, "asOf": "2026-10-01", "regions": out}, open("../jojeong/lib/placeData/regions.json", "w"), ensure_ascii=False, separators=(",", ":"))
 print(len(out), W, H)

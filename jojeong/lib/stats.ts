@@ -18,7 +18,7 @@ export const CH_FROM_LABEL: Record<ChFrom, string> = { free: "무료 사주 끝"
 export type ClientEvent = (typeof CLIENT_EVENTS)[number];
 // The free pages whose result is counted once a day per browser (components/FreeSeen.tsx, `fv:<page>`), and where a
 // birth date was first entered (`fe:<page>`, app/actions.ts saveMeAction): the form is one and the same everywhere.
-export const FREE_VIEW = ["gukjeong", "sinbun", "sinsal", "minister", "court", "dwitjosa", "gwangye", "insa", "samjae", "ranking", "ilju"] as const;
+export const FREE_VIEW = ["gukjeong", "sinbun", "sinsal", "minister", "court", "dwitjosa", "gwangye", "insa", "samjae", "ranking", "ilju", "myeongdang"] as const;
 export type FreeView = (typeof FREE_VIEW)[number];
 export const FREE_VIEW_LABEL: Record<FreeView, string> = {
   gukjeong: "내 사주 무료 풀이",
@@ -32,12 +32,14 @@ export const FREE_VIEW_LABEL: Record<FreeView, string> = {
   samjae: "삼재",
   ranking: "일주 랭킹",
   ilju: "60일주 사전",
+  myeongdang: "내 사주 명당",
 };
 export const isFreeView = (v: unknown): v is FreeView => FREE_VIEW.includes(v as FreeView);
 // The page a birth-date form was sent from, by where it leads (MeForm's `next`).
 export function freeOfNext(next: string): string {
   if (next.startsWith("/s/")) return "friend";
   if (next.startsWith("/sinsal")) return "sinsal";
+  if (next.startsWith("/myeongdang")) return "myeongdang";
   const m = /^\/reports\/([a-z]+)/.exec(next);
   if (m) return isFreeView(m[1]) ? m[1] : "paid";
   return next.startsWith("/#today") ? "today" : "home";

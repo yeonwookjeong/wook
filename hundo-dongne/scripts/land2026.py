@@ -1,4 +1,4 @@
-"""시군구마다 땅의 모양(산, 평지, 바다, 큰 강, 호수) → src/data/land.json.
+"""시군구마다 땅의 모양(산, 평지, 바다, 큰 강, 호수) → jojeong/lib/placeData/land.json.
 
 사용: python3 -I scripts/land2026.py <HangJeongDong_ver20261001.geojson> <타일 폴더> <ne_10m_rivers_lake_centerlines_scale_rank.geojson> <저수지.csv> <지적통계.csv> <온천업소.csv> <평년값.csv> [출력]
 (numpy, numba, pillow, shapely 필요)
@@ -402,8 +402,8 @@ for f in src["features"]:
         round(float((s2 >= 16).mean()) * 100), round(float(((s2 < 2) & (e2 < 80)).mean()) * 100), round(sea * 100),
         round(float(up.max()) if up.size else 0.0), round(river_km, 1), round(c.x, 4), round(c.y, 4),
     ])
-json.dump({"asOf": "2026-10-01", "dongs": dongs}, open("src/data/dong.json", "w"), ensure_ascii=False, separators=(",", ":"))
+json.dump({"asOf": "2026-10-01", "dongs": dongs}, open("../jojeong/lib/placeData/dong.json", "w"), ensure_ascii=False, separators=(",", ":"))
 print(sum(len(v) for v in dongs.values()), "행정동")
 
-json.dump({"asOf": "2026-10-01", "regions": out}, open(sys.argv[8] if len(sys.argv) > 8 else "src/data/land.json", "w"), ensure_ascii=False, separators=(",", ":"))
+json.dump({"asOf": "2026-10-01", "regions": out}, open(sys.argv[8] if len(sys.argv) > 8 else "../jojeong/lib/placeData/land.json", "w"), ensure_ascii=False, separators=(",", ":"))
 print(len(out), "시군구")

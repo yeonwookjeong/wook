@@ -48,6 +48,7 @@ const CHIPS: { href: string; hanja: string; label: string }[] = [
   { href: "/king", hanja: "王", label: "왕이 될 사주" },
   { href: "/reports/sinbun", hanja: "身分", label: "조선 신분 감정" },
   { href: "/sinsal", hanja: "神煞", label: "신살 유형" },
+  { href: "/myeongdang", hanja: "明堂", label: "내 사주 명당" },
 ];
 
 const SHOW_COUNT_FROM = 100;

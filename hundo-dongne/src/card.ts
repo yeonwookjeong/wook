@@ -1,6 +1,6 @@
 import { File, Share } from "@apps-in-toss/web-framework";
 import { josa } from "@/lib/josa";
-import { MAP, proj, type Region } from "./place";
+import { MAP, proj, type Region } from "@/lib/place";
 
 // The share cards, drawn on a canvas so they can be saved to the phone and posted (story, chat) as a picture:
 // 한지 paper, the place in big seal red, the real 2026 map with the place stamped, and the 訓導 seal.

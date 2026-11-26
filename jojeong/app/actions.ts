@@ -221,9 +221,9 @@ export async function saveMeAction(_prev: FormState, formData: FormData): Promis
   redirect(meNext(next));
 }
 
-// Where the form may send the reader back to: a report, the 신살 도감, a friend's 신살 link, or today's card.
+// Where the form may send the reader back to: a report, the 신살 도감, 내 사주 명당, a friend's 신살 link, or today's card.
 function meNext(next: string) {
-  if (/^\/reports\/[a-z]+(\?y=\d{4})?$/.test(next) || next === "/sinsal" || /^\/s\/(sinsal|sinbun)\/[\w.-]{20,2400}$/.test(next) || /^\/sinsal\?f=[\w.-]{20,2400}$/.test(next)) return next;
+  if (/^\/reports\/[a-z]+(\?y=\d{4})?$/.test(next) || next === "/sinsal" || next === "/myeongdang" || /^\/s\/(sinsal|sinbun)\/[\w.-]{20,2400}$/.test(next) || /^\/sinsal\?f=[\w.-]{20,2400}$/.test(next)) return next;
   return next === "/#today" ? "/#today" : "/";
 }
 

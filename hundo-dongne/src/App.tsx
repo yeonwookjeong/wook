@@ -9,7 +9,7 @@ import { forgetAll, loadHome, loadMe, mateToken, readMate, saveHome, saveMe, typ
 import {
   byCode, dirsOf, elName, goodStars, guaFromNumber, guaLabel, guaOf, label, MAP, needOf, pairPlaces, PLACE_KIND, proj, rankOf, scoreAll, SIDOS, topPlaces,
   dongsOf, loadDongs, meetDays, meetPlaces, localPlaces, lookAlikes, type DongData, moveCheck, nickOf, weatherOf, tagsOf, weekendPlan, whyOf, type Gua, type Need, type Region, type Scored,
-} from "./place";
+} from "@/lib/place";
 
 // The pair link's token, from the address the app was opened with (intoss://hundo-dongne?with=…), or the browser's.
 function mateFromEntry(): Mate | null {

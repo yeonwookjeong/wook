@@ -17,6 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     page("/king", 0.7),
     page("/samjae", 0.6),
     page("/sinsal", 0.7),
+    page("/myeongdang", 0.7),
     page("/ranking", 0.7),
     page("/column", 0.7),
     page("/news", 0.4),

@@ -2,7 +2,7 @@
 // page first where there is one, the paid report after (무료 → 무료 → 유료). The pages and their steps live here,
 // so a new free page is one more line. Each click is counted as `to:<from>` as well as `to_saju`, for the
 // owner's dashboard (which page actually sends people on).
-export const STEP_FROM = ["king", "court", "minister", "sinbun", "reading", "gukjeong", "ranking", "samjae", "today", "ilju", "column", "sinsal"] as const;
+export const STEP_FROM = ["king", "court", "minister", "sinbun", "reading", "gukjeong", "ranking", "samjae", "today", "ilju", "column", "sinsal", "myeongdang"] as const;
 export type StepFrom = (typeof STEP_FROM)[number];
 // The free pages that carry a result card to save or send (components/SaveCard.tsx), counted per page.
 export const SHARE_FROM: StepFrom[] = ["sinbun", "reading", "ilju", "sinsal"];
@@ -21,6 +21,7 @@ export const STEP_LABEL: Record<StepFrom, string> = {
   ilju: "60일주 사전",
   column: "사주 이야기 (칼럼)",
   sinsal: "신살 유형 테스트",
+  myeongdang: "내 사주 명당",
 };
 
 export type Step = { href: string; title: string; line?: string; seal?: string; kicker?: string; free?: boolean };
@@ -68,6 +69,12 @@ export const STEPS = {
     ask: "살은 여덟 글자 위에 얹힌 표시예요",
     main: { href: "/reports/sinbun", seal: "身分", kicker: "무료", title: "조선에 태어났다면 나는? 내 호패 받기", line: "100가지 삶 가운데 하나, 양반·중인·상민 호패로", free: true },
     more: [{ href: "/reports/gukjeong", title: "내 사주 무료 풀이" }, { href: "/reports/pyeongsaeng", title: "평생 사주" }],
+  }),
+  // The land fills what the chart lacks: the step is the chart itself, read in full.
+  myeongdang: (): Steps => ({
+    ask: "왜 하필 그 기운이 모자랄까요",
+    main: { href: "/reports/pyeongsaeng", seal: "八字", kicker: "무료", title: "내 사주 전체 보기, 무엇이 많고 무엇이 모자란지", line: "성향 지도, 돈과 사랑과 일 판정, 10년 흐름까지", free: true },
+    more: [{ href: "/reports/taekil", title: "이사 날짜 잡기 (택일)" }, { href: "/sinsal", title: "신살 유형 테스트" }],
   }),
   // A day pillar is two of the eight characters: the step is the other six.
   ilju: (name: string): Steps => ({
