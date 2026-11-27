@@ -143,3 +143,42 @@ export const walk = (f: number, speed = 0.3): Pose => {
   };
 };
 export const stand = (f: number): Pose => ({ armL: [6, -4], armR: [-6, 4], bob: 1.2 * Math.sin(f * 0.1), lean: 0 });
+
+// ---- 손을 원하는 화면 위치에 닿게 하는 팔 각도 (두 마디 IK). 팔꿈치는 아래로 굽힘
+export const reachArm = (pose: Pose, x: number, floor: number, h: number, flip: boolean | undefined, tx: number, ty: number): [number, number] => {
+  const D2R = Math.PI / 180;
+  const legLen = (R.uLeg + R.lLeg) * h;
+  const hipY = -legLen - (pose.bob ?? 0);
+  const lean = pose.lean ?? 0;
+  const sx = Math.sin((180 + lean) * D2R) * R.torso * 0.86 * h;
+  const sy = hipY + Math.cos((180 + lean) * D2R) * R.torso * 0.86 * h;
+  // 화면 → 인형 좌표
+  let dx = (tx - x) * (flip ? -1 : 1) - sx;
+  let dy = ty - floor - sy;
+  const l1 = R.uArm * h, l2 = R.fArm * h;
+  let d = Math.hypot(dx, dy);
+  const dmax = l1 + l2 - 1;
+  if (d > dmax) { dx *= dmax / d; dy *= dmax / d; d = dmax; }
+  const th = Math.atan2(dx, dy) / D2R;
+  const al = Math.acos(Math.min(1, Math.max(-1, (l1 * l1 + d * d - l2 * l2) / (2 * l1 * d)))) / D2R;
+  const ga = Math.acos(Math.min(1, Math.max(-1, (l1 * l1 + l2 * l2 - d * d) / (2 * l1 * l2)))) / D2R;
+  const cand = [[th + al, -(180 - ga)], [th - al, 180 - ga]] as [number, number][];
+  // 팔꿈치가 더 아래인 쪽
+  const ey = (a: number) => Math.cos(a * D2R);
+  return ey(cand[0][0]) >= ey(cand[1][0]) ? cand[0] : cand[1];
+};
+
+// 손이 실제로 닿는 화면 좌표(팔 길이를 넘으면 그 방향으로 최대한 뻗은 곳)
+export const reachPoint = (pose: Pose, x: number, floor: number, h: number, flip: boolean | undefined, tx: number, ty: number): [number, number] => {
+  const D2R = Math.PI / 180;
+  const hipY = -(R.uLeg + R.lLeg) * h - (pose.bob ?? 0);
+  const lean = pose.lean ?? 0;
+  const sx = Math.sin((180 + lean) * D2R) * R.torso * 0.86 * h;
+  const sy = hipY + Math.cos((180 + lean) * D2R) * R.torso * 0.86 * h;
+  const sgn = flip ? -1 : 1;
+  const shX = x + sgn * sx, shY = floor + sy;
+  let dx = tx - shX, dy = ty - shY;
+  const d = Math.hypot(dx, dy), dmax = (R.uArm + R.fArm) * h - 1;
+  if (d > dmax) { dx *= dmax / d; dy *= dmax / d; }
+  return [shX + dx, shY + dy];
+};
